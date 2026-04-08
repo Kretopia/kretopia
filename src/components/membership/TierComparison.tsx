@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, X, Sparkles, Zap } from "lucide-react";
+import { Check, X, Sparkles, Zap, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { type AccountType } from "@/lib/subscriptionConfig";
 
 interface Feature {
   name: string;
@@ -10,15 +11,16 @@ interface Feature {
   pro: boolean | string;
 }
 
-const features: Feature[] = [
+const CREATOR_FEATURES: Feature[] = [
+  { name: "Credit Claiming", free: "Unlimited", pro: "Unlimited" },
   { name: "Daily Swipes", free: "30", pro: "Unlimited" },
-  { name: "Work Credits", free: "10/month", pro: "Unlimited" },
-  { name: "Basic Profile", free: true, pro: true },
   { name: "Direct Messaging", free: true, pro: true },
   { name: "Browse Matches", free: true, pro: true },
   { name: "AI Briefs", free: "3/month", pro: "Unlimited" },
   { name: "Invoices", free: "2/month", pro: "Unlimited" },
   { name: "Expenses", free: "5/month", pro: "Unlimited" },
+  { name: "Milestones", free: "3/month", pro: "Unlimited" },
+  { name: "Gig/Event Posts", free: "2/month", pro: "Unlimited" },
   { name: "AI Match Explanations", free: false, pro: true },
   { name: "Undo Swipe", free: false, pro: "3/day" },
   { name: "Profile Verification Badge", free: false, pro: true },
@@ -27,12 +29,34 @@ const features: Feature[] = [
   { name: "Priority Support", free: false, pro: true },
 ];
 
+const BRAND_FEATURES: Feature[] = [
+  { name: "Company Page", free: "Basic", pro: "Branded" },
+  { name: "Direct Messaging", free: true, pro: true },
+  { name: "Browse Talent", free: true, pro: true },
+  { name: "Opportunity Posts", free: "3/month", pro: "Unlimited" },
+  { name: "Invoices", free: "2/month", pro: "Unlimited" },
+  { name: "Expenses", free: "5/month", pro: "Unlimited" },
+  { name: "Milestones", free: "3/month", pro: "Unlimited" },
+  { name: "AI Talent Matching", free: "2/month", pro: "Unlimited" },
+  { name: "AI Job Descriptions", free: "2/month", pro: "Unlimited" },
+  { name: "Applicant Tracking", free: false, pro: true },
+  { name: "Hiring Analytics", free: false, pro: true },
+  { name: "Verification Badge", free: false, pro: true },
+  { name: "Advanced Talent Filters", free: false, pro: true },
+  { name: "Priority Listing", free: false, pro: true },
+  { name: "Platform Fee", free: "20%", pro: "15%" },
+  { name: "Priority Support", free: false, pro: true },
+];
+
 interface TierComparisonProps {
   currentTier?: string;
+  accountType?: AccountType;
 }
 
-export function TierComparison({ currentTier = "free" }: TierComparisonProps) {
+export function TierComparison({ currentTier = "free", accountType = "individual" }: TierComparisonProps) {
   const navigate = useNavigate();
+  const isCompany = accountType === "company";
+  const features = isCompany ? BRAND_FEATURES : CREATOR_FEATURES;
 
   const renderValue = (value: boolean | string) => {
     if (typeof value === "boolean") {
@@ -45,10 +69,15 @@ export function TierComparison({ currentTier = "free" }: TierComparisonProps) {
     return <span className="text-sm font-medium">{value}</span>;
   };
 
-  const tiers = [
-    { key: "free", name: "Spark", price: "$0", icon: <Zap className="h-5 w-5" /> },
-    { key: "pro", name: "Pro", price: "$12/mo", icon: <Sparkles className="h-5 w-5" />, popular: true },
-  ];
+  const tiers = isCompany
+    ? [
+        { key: "free", name: "Free", price: "$0", icon: <Building2 className="h-5 w-5" /> },
+        { key: "brand_pro", name: "Brand Pro", price: "$49/mo", icon: <Sparkles className="h-5 w-5" />, popular: true },
+      ]
+    : [
+        { key: "free", name: "Spark", price: "$0", icon: <Zap className="h-5 w-5" /> },
+        { key: "pro", name: "Pro", price: "$12/mo", icon: <Sparkles className="h-5 w-5" />, popular: true },
+      ];
 
   return (
     <div className="w-full overflow-x-auto pb-4">

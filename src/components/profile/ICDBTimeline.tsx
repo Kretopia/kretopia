@@ -720,6 +720,57 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
           userId={userId}
         />
       )}
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingCredit} onOpenChange={open => !open && setEditingCredit(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil className="h-4 w-4" /> Edit Credit</DialogTitle>
+            <DialogDescription>Update the details of this work credit.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Project Name *</Label>
+                <Input value={editForm.project_name} onChange={e => setEditForm(f => ({ ...f, project_name: e.target.value }))} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Your Role *</Label>
+                <Input value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Year</Label>
+                <Input type="number" value={editForm.year} onChange={e => setEditForm(f => ({ ...f, year: parseInt(e.target.value) || new Date().getFullYear() }))} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Category</Label>
+                <Select value={editForm.project_type} onValueChange={v => setEditForm(f => ({ ...f, project_type: v }))}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select type..." /></SelectTrigger>
+                  <SelectContent>
+                    {EDIT_PROJECT_TYPES.map(g => (
+                      <SelectGroup key={g.group}>
+                        <SelectLabel>{g.group}</SelectLabel>
+                        {g.items.map(i => <SelectItem key={i.value} value={i.value}>{i.label}</SelectItem>)}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Platform</Label>
+                <Input value={editForm.platform} onChange={e => setEditForm(f => ({ ...f, platform: e.target.value }))} placeholder="e.g., Netflix, IMDb" className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">URL</Label>
+                <Input value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." className="h-9 text-sm" />
+              </div>
+            </div>
+            <Button onClick={saveEdit} disabled={savingEdit} className="w-full">
+              {savingEdit && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />} Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

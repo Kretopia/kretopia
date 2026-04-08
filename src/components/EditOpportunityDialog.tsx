@@ -335,8 +335,10 @@ export const EditOpportunityDialog = ({
               <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
+                  <SelectItem value="active">✅ Active</SelectItem>
+                  <SelectItem value="paused">⏸️ Paused</SelectItem>
+                  <SelectItem value="filled">🎉 Filled</SelectItem>
+                  <SelectItem value="closed">🔒 Closed</SelectItem>
                 </SelectContent>
               </Select>
             </div>

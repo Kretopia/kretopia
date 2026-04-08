@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit } from "lucide-react";
+import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit, Copy, Trash2, PauseCircle, PlayCircle, Loader2, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Helmet } from "react-helmet-async";
 import { ApplyToOpportunityDialog } from "@/components/ApplyToOpportunityDialog";
 import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
@@ -44,8 +46,86 @@ const OpportunityDetail = () => {
   const [showApplyDialog, setShowApplyDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const isOwner = user && (opportunity?.created_by === user.id || opportunity?.scouted_by === user.id);
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!opportunity) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('opportunities')
+        .update({ status: newStatus } as any)
+        .eq('id', opportunity.id);
+      if (error) throw error;
+      setOpportunity({ ...opportunity, status: newStatus });
+      const labels: Record<string, string> = { active: "Reopened ✅", closed: "Closed 🔒", paused: "Paused ⏸️", filled: "Marked as Filled 🎉" };
+      toast({ title: labels[newStatus] || "Updated", description: `Gig is now ${newStatus}` });
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDuplicate = async () => {
+    if (!opportunity || !user) return;
+    setActionLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('opportunities')
+        .insert({
+          created_by: user.id,
+          title: `${opportunity.title} (Copy)`,
+          type: opportunity.type,
+          description: opportunity.description,
+          compensation: opportunity.compensation,
+          location: opportunity.location,
+          requirements: opportunity.requirements,
+          skills: opportunity.skills,
+          deliverables: opportunity.deliverables,
+          duration: opportunity.duration,
+          tags: opportunity.tags,
+          image_url: opportunity.image_url,
+          status: 'active',
+          barter_offering: opportunity.barter_offering,
+          barter_requesting: opportunity.barter_requesting,
+          platform_requirements: opportunity.platform_requirements,
+          min_followers: opportunity.min_followers,
+        } as any)
+        .select('id')
+        .single();
+      if (error) throw error;
+      toast({ title: "Duplicated! 📋", description: "Opening your new copy..." });
+      navigate(`/opportunity/${data.id}`);
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!opportunity) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('opportunities')
+        .delete()
+        .eq('id', opportunity.id);
+      if (error) throw error;
+      toast({ title: "Deleted", description: "Gig removed permanently" });
+      navigate('/desk');
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   const fetchData = async () => {
     if (!user) {
@@ -257,10 +337,46 @@ const OpportunityDetail = () => {
             Back
           </Button>
           <div className="flex gap-2">
-            {user && (opportunity.created_by === user.id || opportunity.scouted_by === user.id) && (
-              <Button variant="outline" size="icon" onClick={() => setShowEditDialog(true)}>
-                <Edit className="h-4 w-4" />
-              </Button>
+            {isOwner && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" disabled={actionLoading}>
+                    {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreVertical className="h-4 w-4" />}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                    <Edit className="h-4 w-4 mr-2" /> Edit Details
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {opportunity.status === 'active' && (
+                    <>
+                      <DropdownMenuItem onClick={() => handleStatusChange('paused')}>
+                        <PauseCircle className="h-4 w-4 mr-2" /> Pause Gig
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleStatusChange('filled')}>
+                        <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Filled
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleStatusChange('closed')}>
+                        <XCircle className="h-4 w-4 mr-2" /> Close Gig
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {(opportunity.status === 'closed' || opportunity.status === 'paused' || opportunity.status === 'filled') && (
+                    <DropdownMenuItem onClick={() => handleStatusChange('active')}>
+                      <PlayCircle className="h-4 w-4 mr-2" /> Reopen Gig
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleDuplicate}>
+                    <Copy className="h-4 w-4 mr-2" /> Duplicate
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} className="text-destructive focus:text-destructive">
+                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             <Button variant="outline" size="icon" onClick={handleBookmark}>
               {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
@@ -274,9 +390,19 @@ const OpportunityDetail = () => {
         </div>
 
         {/* Status Badge */}
-        {!isActive && (
+        {opportunity.status !== 'active' && (
           <div className="mb-4 rounded-lg bg-muted p-4 text-center">
-            <Badge variant="secondary">Campaign Ended</Badge>
+            <Badge variant="secondary">
+              {opportunity.status === 'closed' && '🔒 Campaign Ended'}
+              {opportunity.status === 'paused' && '⏸️ Paused'}
+              {opportunity.status === 'filled' && '🎉 Position Filled'}
+              {!['closed', 'paused', 'filled'].includes(opportunity.status) && opportunity.status}
+            </Badge>
+            {isOwner && (
+              <Button variant="link" size="sm" className="ml-2" onClick={() => handleStatusChange('active')}>
+                Reopen
+              </Button>
+            )}
           </div>
         )}
 
@@ -482,6 +608,25 @@ const OpportunityDetail = () => {
           }}
         />
       )}
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this gig?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the gig and all applications. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -124,9 +124,16 @@ export function QuickPostModal({ open, onOpenChange, type }: QuickPostModalProps
       let id: string;
       if (isGig) {
         id = await publishGig(user.id, formData);
-        toast.success("Gig posted! Add more details to attract talent.");
+        toast.success("Gig posted! Generating cover image...");
         onOpenChange(false);
         navigate(`/opportunity/${id}`);
+        // Fire-and-forget AI cover generation
+        supabase.functions.invoke("generate-gig-cover", {
+          body: { opportunityId: id, title: formData.title, category: formData.category, gigType: formData.gigType },
+        }).then(({ error }) => {
+          if (error) console.warn("Cover generation failed:", error);
+          else toast.success("Cover image generated!");
+        });
       } else {
         id = await publishEvent(user.id, formData);
         toast.success("Event posted! Add more details to get RSVPs.");
@@ -309,6 +316,10 @@ export async function processPendingPost(userId: string): Promise<string | null>
       }).select("id").single();
 
       if (error) throw error;
+      // Fire-and-forget AI cover generation
+      supabaseClient.functions.invoke("generate-gig-cover", {
+        body: { opportunityId: data.id, title: formData.title, category: formData.category, gigType: formData.gigType },
+      }).catch(() => {});
       return `/opportunity/${data.id}`;
     } else {
       const startTime = formData.eventDate || new Date(Date.now() + 7 * 86400000).toISOString();

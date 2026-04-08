@@ -474,7 +474,15 @@ const Search = () => {
               if (item.type === "external_credit") {
                 const ec = item.data as { project: string; role: string; year: number };
                 return (
-                  <button key={`ec-${ec.project}-${idx}`} onClick={() => navigate(`/production?name=${encodeURIComponent(ec.project)}`)} className="w-full text-left rounded-xl border border-dashed border-border bg-card p-3 hover:border-primary/30 transition-all">
+                  <button key={`ec-${ec.project}-${idx}`} onClick={() => {
+                    const claimData = {
+                      query: searchParams.get("q") || "",
+                      name: ec.project,
+                      credits: [{ project: ec.project, role: ec.role, year: ec.year }],
+                    };
+                    sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
+                    navigate(user ? '/profile' : '/auth?redirect=/profile');
+                  }} className="w-full text-left rounded-xl border border-dashed border-border bg-card p-3 hover:border-primary/30 transition-all">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
                         <ExternalLink className="h-2 w-2 mr-0.5" /> Web Source

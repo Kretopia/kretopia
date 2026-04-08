@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Receipt, Sparkles, Loader2, Camera, ScanLine } from "lucide-react";
 import { toast } from "sonner";
 import { EXPENSE_CATEGORIES } from "./ExpenseCategories";
+import { useFeatureGate } from "@/hooks/useFeatureGate";
 
 interface ExpenseFormProps {
   projectId?: string;

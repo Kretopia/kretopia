@@ -150,14 +150,14 @@ const EDIT_PROJECT_TYPES = [
 ];
 
 const POSTER_GRADIENTS = [
-  "from-rose-900/80 via-rose-800/60 to-black",
-  "from-blue-900/80 via-indigo-800/60 to-black",
-  "from-amber-900/80 via-orange-800/60 to-black",
-  "from-emerald-900/80 via-teal-800/60 to-black",
-  "from-purple-900/80 via-violet-800/60 to-black",
-  "from-cyan-900/80 via-sky-800/60 to-black",
-  "from-pink-900/80 via-fuchsia-800/60 to-black",
-  "from-slate-800/80 via-zinc-700/60 to-black",
+  "from-rose-950 via-rose-900/70 to-black",
+  "from-indigo-950 via-blue-900/70 to-black",
+  "from-amber-950 via-amber-900/70 to-black",
+  "from-emerald-950 via-teal-900/70 to-black",
+  "from-purple-950 via-violet-900/70 to-black",
+  "from-cyan-950 via-sky-900/70 to-black",
+  "from-pink-950 via-fuchsia-900/70 to-black",
+  "from-slate-900 via-zinc-800/70 to-black",
 ];
 
 const getMediaType = (credit: ICDBCredit): 'video' | 'audio' | 'image' | 'link' | null => {
@@ -472,8 +472,37 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const [bulkSelectMode, setBulkSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [fetchingArt, setFetchingArt] = useState(false);
 
   useEffect(() => { fetchData(); }, [userId]);
+
+  const handleFetchCoverArt = async () => {
+    setFetchingArt(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error("Please sign in"); return; }
+
+      const missingCount = credits.filter(c => !c.thumbnail_url && !c.primary_media_url).length;
+      if (missingCount === 0) { toast.info("All credits already have cover art!"); return; }
+
+      const { data, error } = await supabase.functions.invoke('backfill-credit-media', {
+        body: { user_id: userId, batch_size: 50 },
+      });
+
+      if (error) throw error;
+      if (data?.updated > 0) {
+        toast.success(`Found cover art for ${data.updated} credits!`);
+        fetchData();
+      } else {
+        toast.info("No additional cover art found from external sources");
+      }
+    } catch (err) {
+      console.error("Cover art fetch error:", err);
+      toast.error("Failed to fetch cover art");
+    } finally {
+      setFetchingArt(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -690,6 +719,12 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
               </>
             ) : (
               <>
+                {credits.some(c => !c.thumbnail_url && !c.primary_media_url) && (
+                  <Button variant="outline" size="sm" onClick={handleFetchCoverArt} disabled={fetchingArt} className="h-8 text-xs">
+                    {fetchingArt ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5 mr-1" />}
+                    {fetchingArt ? 'Fetching...' : 'Get Art'}
+                  </Button>
+                )}
                 {credits.length > 1 && (
                   <Button variant="outline" size="sm" onClick={() => setBulkSelectMode(true)} className="h-8 text-xs">
                     <CheckSquare className="h-3.5 w-3.5 mr-1" />

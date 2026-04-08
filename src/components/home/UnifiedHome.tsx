@@ -9,6 +9,8 @@ import { hasProAccess } from "@/lib/subscriptionConfig";
 import { QuickPostModal } from "@/components/QuickPostModal";
 import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
+import { checkProfileCompletion } from "@/lib/profileCompletion";
+import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";

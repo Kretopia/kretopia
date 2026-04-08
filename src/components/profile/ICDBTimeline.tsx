@@ -193,7 +193,8 @@ const getPlatformIcon = (platform: string | null) => {
 
 // Horizontal scroll row component
 function CategoryRow({ 
-  category, credits, isOwnProfile, onDelete, onEndorse, onPlay, onEdit, collaboratorProfiles, deletingId 
+  category, credits, isOwnProfile, onDelete, onEndorse, onPlay, onEdit, collaboratorProfiles, deletingId,
+  bulkSelectMode, selectedIds, onToggleSelect,
 }: {
   category: string;
   credits: ICDBCredit[];
@@ -204,6 +205,9 @@ function CategoryRow({
   onEdit: (credit: ICDBCredit) => void;
   collaboratorProfiles: Map<string, CollaboratorProfile>;
   deletingId: string | null;
+  bulkSelectMode?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -723,6 +727,9 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                 onEdit={openEdit}
                 collaboratorProfiles={collaboratorProfiles}
                 deletingId={deletingId}
+                bulkSelectMode={bulkSelectMode}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
               />
             );
           })}

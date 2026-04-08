@@ -316,6 +316,10 @@ export async function processPendingPost(userId: string): Promise<string | null>
       }).select("id").single();
 
       if (error) throw error;
+      // Fire-and-forget AI cover generation
+      supabaseClient.functions.invoke("generate-gig-cover", {
+        body: { opportunityId: data.id, title: formData.title, category: formData.category, gigType: formData.gigType },
+      }).catch(() => {});
       return `/opportunity/${data.id}`;
     } else {
       const startTime = formData.eventDate || new Date(Date.now() + 7 * 86400000).toISOString();

@@ -155,7 +155,7 @@ export const useProfileData = () => {
         const needsEnrichment = 
           pressData.some((p: any) => !p.publication || !p.image_url) ||
           (awardsData.length === 0 && creditsData.length >= 3) ||
-          !data?.professional_skills?.length ||
+          !Array.isArray(data?.professional_skills) || (data.professional_skills as any[]).length === 0 ||
           !data?.job_title;
           
         if (needsEnrichment) {

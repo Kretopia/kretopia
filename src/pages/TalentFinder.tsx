@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageTransition } from "@/components/PageTransition";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { useToast } from "@/hooks/use-toast";
+import { useFeatureGate } from "@/hooks/useFeatureGate";
 import {
   Sparkles, ArrowLeft, MapPin, Star, Loader2,
   Eye, UserPlus, MessageSquare, Zap, Send,

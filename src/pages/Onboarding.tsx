@@ -241,6 +241,7 @@ export default function Onboarding() {
           full_name: profile.full_name,
           role: profile.role,
           location: profile.location || null,
+          bio: bio || null,
         }).eq("user_id", user!.id);
         analytics.onboardingStep(1, "profile_basics_complete");
       } catch (error) {

@@ -154,7 +154,7 @@ export const AudioWaveformPlayer = ({ src, title, autoPlay = false }: AudioWavef
   };
 
   return (
-    <div className="w-full bg-card/80 backdrop-blur-sm rounded-xl p-4 space-y-3">
+    <div className="w-full bg-card rounded-xl p-4 space-y-3">
       <audio
         ref={audioRef}
         src={src}

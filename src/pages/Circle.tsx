@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { CreatorBrowseGrid } from "@/components/circle/CreatorBrowseGrid";
 import { SwipeFeature } from "@/components/swipe";
+import { GuestSwipePreview } from "@/components/swipe/GuestSwipePreview";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
@@ -206,37 +207,7 @@ export default function Circle() {
             {user ? (
               <SwipeFeature onMatch={handleMatch} filters={filters} onProfilesCountChange={setProfilesCount} />
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 px-4">
-                {/* Teaser card */}
-                <div className="w-full max-w-sm rounded-3xl overflow-hidden bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 border border-border shadow-xl">
-                  <div className="aspect-[3/4] relative flex flex-col items-center justify-center p-8 text-center">
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
-                    <div className="relative z-10 space-y-4">
-                      <div className="h-20 w-20 rounded-full bg-primary/20 mx-auto flex items-center justify-center">
-                        <Sparkles className="h-10 w-10 text-primary" />
-                      </div>
-                      <h3 className="text-xl font-bold">Find Your Creative Match</h3>
-                      <p className="text-sm text-muted-foreground max-w-xs">
-                        Swipe through talented creators, match with collaborators, and build your dream team.
-                      </p>
-                      <Button
-                        onClick={() => navigate('/auth')}
-                        className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-                        size="lg"
-                      >
-                        <UserPlus className="h-4 w-4" />
-                        Sign Up to Match
-                      </Button>
-                      <button 
-                        onClick={() => navigate('/auth')}
-                        className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        Already have an account? Log in
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <GuestSwipePreview />
             )}
           </TabsContent>
 

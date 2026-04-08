@@ -38,6 +38,7 @@ export default function TalentFinder() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { guard: guardAiMatch } = useFeatureGate("aiApplicantRankings");
 
   const [brief, setBrief] = useState("");
   const [matches, setMatches] = useState<TalentMatch[]>([]);
@@ -50,6 +51,7 @@ export default function TalentFinder() {
       toast({ title: "Tell us more", description: "Describe what you need in at least a sentence or two.", variant: "destructive" });
       return;
     }
+    if (!guardAiMatch()) return;
 
     setLoading(true);
     setHasSearched(true);

@@ -6,8 +6,10 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { ApplyToOpportunityDialog } from "@/components/ApplyToOpportunityDialog";
 import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
+import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { SEO } from "@/components/SEO";
 
 interface Opportunity {
@@ -224,6 +226,29 @@ const OpportunityDetail = () => {
         image={opportunity.image_url || undefined}
         url={`https://www.thrivein.io/opportunity/${opportunity.id}`}
       />
+      <Helmet>
+        <link rel="canonical" href={`https://www.thrivein.io/opportunity/${opportunity.id}`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "JobPosting",
+            "title": opportunity.title,
+            "description": opportunity.description || "",
+            "datePosted": opportunity.created_at,
+            "employmentType": opportunity.type === "Paid" ? "CONTRACTOR" : "VOLUNTEER",
+            "hiringOrganization": {
+              "@type": "Organization",
+              "name": "ThriveIN",
+              "sameAs": "https://www.thrivein.io"
+            },
+            ...(opportunity.location ? { "jobLocation": { "@type": "Place", "address": opportunity.location } } : {}),
+            ...(opportunity.compensation ? { "baseSalary": { "@type": "MonetaryAmount", "currency": "USD", "value": opportunity.compensation } } : {}),
+            "industry": "Creative Industries",
+            "url": `https://www.thrivein.io/opportunity/${opportunity.id}`,
+            ...(opportunity.image_url ? { "image": opportunity.image_url } : {})
+          })}
+        </script>
+      </Helmet>
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
@@ -240,9 +265,11 @@ const OpportunityDetail = () => {
             <Button variant="outline" size="icon" onClick={handleBookmark}>
               {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
             </Button>
-            <Button variant="outline" size="icon" onClick={handleShare}>
-              <Share2 className="h-4 w-4" />
-            </Button>
+            <SocialShareButtons
+              url={`/opportunity/${opportunity.id}`}
+              title={`🔥 ${opportunity.title} — ${opportunity.type} gig on ThriveIN`}
+              description={opportunity.description?.slice(0, 100)}
+            />
           </div>
         </div>
 

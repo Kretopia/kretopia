@@ -436,6 +436,7 @@ interface ICDBTimelineProps {
 }
 
 export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelineProps) {
+  const navigate = useNavigate();
   const [credits, setCredits] = useState<ICDBCredit[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);

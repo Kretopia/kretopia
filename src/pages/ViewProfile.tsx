@@ -435,6 +435,14 @@ const ViewProfile = () => {
                     <h1 className="text-2xl font-bold">{maskCreatorName(profile.full_name, !!user)}</h1>
                     {getVerificationBadge()}
                     
+                    {/* ThriveStatus Badge */}
+                    {credits.length > 0 && (
+                      <StatusBadge 
+                        status={calculateStatus(credits)} 
+                        showSocialProof
+                      />
+                    )}
+                    
                     {/* Industry Verified Badge */}
                     {isIndustryVerified && (
                       <Badge className="gap-1.5 bg-accent text-accent-foreground border-0">

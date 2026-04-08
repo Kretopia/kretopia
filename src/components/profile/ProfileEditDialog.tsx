@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useCallback, useRef } from "react";
-import { RefreshCw } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -236,7 +236,7 @@ export function ProfileEditDialog({
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [autoFilling, setAutoFilling] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
+  
   const [formData, setFormData] = useState({
     full_name: "",
     role: "",
@@ -551,44 +551,9 @@ export function ProfileEditDialog({
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">Social Media (Optional)</h3>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={async () => {
-                  setIsSyncing(true);
-                  try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session) {
-                      toast({ title: "Error", description: "You must be logged in", variant: "destructive" });
-                      return;
-                    }
-                    const { data, error } = await supabase.functions.invoke("sync-social-stats", {
-                      headers: { Authorization: `Bearer ${session.access_token}` },
-                    });
-                    if (error) throw error;
-                    if (data?.updated > 0) {
-                      toast({ title: "Stats Synced! ✨", description: `Updated ${data.updated} platform${data.updated > 1 ? 's' : ''} with live data` });
-                      onProfileUpdate();
-                    } else {
-                      toast({ title: "No updates", description: "Add your social URLs first, then sync", variant: "destructive" });
-                    }
-                  } catch {
-                    toast({ title: "Sync failed", description: "Could not fetch social stats", variant: "destructive" });
-                  } finally {
-                    setIsSyncing(false);
-                  }
-                }}
-                disabled={isSyncing}
-                className="gap-1.5 text-xs"
-              >
-                {isSyncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                {isSyncing ? "Syncing..." : "Auto-Sync Stats"}
-              </Button>
-            </div>
+            <h3 className="text-sm font-medium">Social Media (Optional)</h3>
             <p className="text-xs text-muted-foreground -mt-2">
-              Add your URLs and hit Auto-Sync to pull real follower counts automatically
+              Add your profile links so visitors can find you across platforms
             </p>
             
             <FieldWrapper label="Instagram" isIncomplete={false}>

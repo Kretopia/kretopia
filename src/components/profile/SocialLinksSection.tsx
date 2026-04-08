@@ -266,21 +266,7 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
                     placeholder="Average views per post - e.g., 100000"
                   />
                 </div>
-                <div className="flex gap-2">
-                  <Button onClick={handleSave} className="flex-1" variant="gradient">Save Social Data</Button>
-                  <Button 
-                    onClick={handleSyncStats} 
-                    variant="outline" 
-                    disabled={isSyncing}
-                    className="gap-1.5"
-                  >
-                    {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                    {isSyncing ? "Syncing..." : "Auto-Sync"}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  Auto-Sync pulls real follower counts from your profile URLs
-                </p>
+                <Button onClick={handleSave} className="w-full" variant="gradient">Save Social Data</Button>
               </div>
             </DialogContent>
           </Dialog>

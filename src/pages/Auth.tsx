@@ -87,6 +87,32 @@ const Auth = () => {
             analytics.onboardingStart();
             navigate(profile?.account_type === 'company' ? "/company-onboarding" : "/onboarding");
           } else {
+            // Auto-import pending claim credits for returning users
+            const pendingClaimRaw = sessionStorage.getItem('pending_claim_credits');
+            if (pendingClaimRaw) {
+              try {
+                const claimData = JSON.parse(pendingClaimRaw);
+                const creditsToInsert = (claimData.credits || [])
+                  .filter((c: any) => c.project && c.role)
+                  .map((c: any) => ({
+                    user_id: user.id,
+                    project_name: c.project,
+                    role: c.role,
+                    year: c.year || null,
+                    platform: c.platform || null,
+                    source: 'search_claim',
+                    verification_status: 'pending',
+                  }));
+                if (creditsToInsert.length > 0) {
+                  await supabase.from('credits').insert(creditsToInsert);
+                }
+                sessionStorage.setItem('show_claim_continue', JSON.stringify({
+                  name: claimData.name || claimData.query,
+                  count: creditsToInsert.length,
+                }));
+                sessionStorage.removeItem('pending_claim_credits');
+              } catch (e) { console.error('[Auth] Auto-import credits error:', e); }
+            }
             navigate(redirectTo);
           }
         };

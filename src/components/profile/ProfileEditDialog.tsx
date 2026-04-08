@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle2, AlertCircle, Save, Sparkles, Loader2 } from "lucide-react";
+import { CheckCircle2, AlertCircle, Save, Sparkles, Loader2, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
@@ -234,6 +234,7 @@ export function ProfileEditDialog({
 }: ProfileEditDialogProps) {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [autoFilling, setAutoFilling] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     role: "",
@@ -338,6 +339,34 @@ export function ProfileEditDialog({
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
+  const handleAIAutoFill = async () => {
+    if (!formData.full_name?.trim() || formData.full_name.trim().length < 3) {
+      toast({ title: "Enter your name first", variant: "destructive" });
+      return;
+    }
+    setAutoFilling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-autofill-profile", {
+        body: { full_name: formData.full_name.trim(), url: formData.website || formData.linkedin_url || null, current_role: formData.role || null },
+      });
+      if (error) throw error;
+      if (!data?.profile) throw new Error("No data");
+      const p = data.profile;
+      setFormData(prev => ({
+        ...prev,
+        role: p.role && !prev.role ? p.role : prev.role,
+        location: p.location && !prev.location ? p.location : prev.location,
+        bio: p.bio && !prev.bio ? p.bio : prev.bio,
+        website: p.website && !prev.website ? p.website : prev.website,
+      }));
+      toast({ title: "✨ Profile auto-filled!", description: "Review and save your updated profile." });
+    } catch (e: any) {
+      toast({ title: "Auto-fill unavailable", description: "Fill in details manually", variant: "destructive" });
+    } finally {
+      setAutoFilling(false);
+    }
+  };
+
   const isFieldIncomplete = useCallback((field: string) => {
     return incompleteFields.includes(field);
   }, [incompleteFields]);
@@ -356,6 +385,20 @@ export function ProfileEditDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* AI Auto-Fill Button */}
+          <Button
+            variant="outline"
+            className="w-full gap-2 border-primary/30 bg-primary/5 hover:bg-primary/10"
+            disabled={autoFilling || !formData.full_name?.trim() || formData.full_name.trim().length < 3}
+            onClick={handleAIAutoFill}
+          >
+            {autoFilling ? (
+              <><Loader2 className="h-4 w-4 animate-spin" /> Searching the web...</>
+            ) : (
+              <><Search className="h-4 w-4" /> AI Auto-Fill from Web</>
+            )}
+          </Button>
+
           <FieldWrapper 
             label="Full Name" 
             isIncomplete={isFieldIncomplete('full_name')}

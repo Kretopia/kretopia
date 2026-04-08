@@ -93,6 +93,45 @@ export default function Onboarding() {
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
 
+  // AI Auto-fill state
+  const [autoFilling, setAutoFilling] = useState(false);
+  const [autoFilled, setAutoFilled] = useState(false);
+
+  const handleAIAutoFill = async () => {
+    if (!profile.full_name?.trim() || profile.full_name.trim().length < 3) {
+      toast({ title: "Enter your name first", description: "We need your name to search for your profile", variant: "destructive" });
+      return;
+    }
+    setAutoFilling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-autofill-profile", {
+        body: { full_name: profile.full_name.trim(), url: importUrl.trim() || null, current_role: profile.role || null },
+      });
+      if (error) throw error;
+      if (!data?.profile) throw new Error("No profile data returned");
+
+      const p = data.profile;
+      if (p.role && !profile.role) setProfile(prev => ({ ...prev, role: p.role }));
+      if (p.location && !profile.location) {
+        setProfile(prev => ({ ...prev, location: p.location }));
+      }
+      if (p.bio && !bio) setBio(p.bio);
+      if (p.skills?.length) {
+        setSelectedSkills(prev => [...new Set([...prev, ...p.skills.slice(0, 8)])]);
+      }
+      if (p.website && !importUrl) setImportUrl(p.website);
+
+      setAutoFilled(true);
+      const filledCount = [p.role, p.bio, p.location, p.skills?.length].filter(Boolean).length;
+      toast({ title: "✨ Profile auto-filled!", description: `Found ${filledCount} fields from the web. Review and edit below.` });
+    } catch (e: any) {
+      console.error("AI auto-fill error:", e);
+      toast({ title: "Auto-fill unavailable", description: "Enter your details manually below", variant: "destructive" });
+    } finally {
+      setAutoFilling(false);
+    }
+  };
+
   // Pending credits to claim
   const [pendingCredits, setPendingCredits] = useState<any[]>([]);
   const [claimingCreditId, setClaimingCreditId] = useState<string | null>(null);
@@ -648,34 +687,7 @@ export default function Onboarding() {
             <div className="space-y-5">
               <div className="text-center">
                 <h2 className="text-2xl font-bold mb-1">Let's set you up</h2>
-                <p className="text-muted-foreground text-sm">Takes about 30 seconds</p>
-              </div>
-
-              {/* Quick Import from URL */}
-              <div className="border border-primary/20 rounded-lg p-3 bg-primary/5 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-medium">Quick Import</Label>
-                </div>
-                <p className="text-xs text-muted-foreground">Paste your LinkedIn, IMDb, or portfolio URL to auto-fill your profile</p>
-                <div className="flex gap-2">
-                  <Input
-                    value={importUrl}
-                    onChange={(e) => setImportUrl(e.target.value)}
-                    placeholder="https://linkedin.com/in/you or imdb.me/you"
-                    className="h-9 text-sm"
-                  />
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="h-9 px-3 shrink-0 gap-1.5"
-                    disabled={!importUrl.trim() || importing}
-                    onClick={handleImportUrl}
-                  >
-                    {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
-                    Import
-                  </Button>
-                </div>
+                <p className="text-muted-foreground text-sm">Enter your name and let AI do the rest</p>
               </div>
 
               {/* Photo */}
@@ -698,8 +710,55 @@ export default function Onboarding() {
               {/* Name */}
               <div>
                 <Label htmlFor="full_name">Your Name *</Label>
-                <Input id="full_name" value={profile.full_name} onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))} placeholder="Full name" />
+                <Input id="full_name" value={profile.full_name} onChange={(e) => { setProfile(prev => ({ ...prev, full_name: e.target.value })); setAutoFilled(false); }} placeholder="Full name" />
               </div>
+
+              {/* AI Auto-Fill — the magic button */}
+              {!autoFilled && (
+                <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-medium">AI Profile Builder</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Enter your name above and optionally a link. We'll search the web and fill your entire profile automatically.
+                  </p>
+                  <Input
+                    value={importUrl}
+                    onChange={(e) => setImportUrl(e.target.value)}
+                    placeholder="LinkedIn, IMDb, or website URL (optional)"
+                    className="h-9 text-sm"
+                  />
+                  <Button
+                    className="w-full gap-2"
+                    disabled={!profile.full_name?.trim() || profile.full_name.trim().length < 3 || autoFilling}
+                    onClick={handleAIAutoFill}
+                  >
+                    {autoFilling ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Searching the web...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-4 w-4" />
+                        Find &amp; Fill My Profile
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {autoFilled && (
+                <div className="border border-green-500/30 rounded-lg p-3 bg-green-500/5">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-medium text-green-600">Profile auto-filled! Review below.</span>
+                  </div>
+                </div>
+              )}
+
+
 
               {/* Role */}
               <div>

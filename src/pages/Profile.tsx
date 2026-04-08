@@ -25,6 +25,7 @@ import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 // Refactored sections
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
 import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
+import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -353,6 +354,9 @@ const ProfileContent = () => {
       />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
+        {/* Claim success banner */}
+        <ClaimContinueBanner onRefresh={fetchData} />
+
         {/* Profile Hero — compact, Instagram-style */}
         <ProfileHero
           profile={profile}

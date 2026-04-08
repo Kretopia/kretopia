@@ -275,7 +275,19 @@ const Search = () => {
 
                     <div className="flex items-center justify-between pt-3 border-t border-border">
                       <p className="text-[10px] text-primary">{kc.claim_prompt}</p>
-                      <button onClick={() => navigate('/auth')} className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-1">
+                      <button onClick={() => {
+                        // Store discovered credits for post-signup auto-import
+                        const claimData = {
+                          query: searchParams.get("q") || "",
+                          name: kc.name,
+                          industry: kc.industry,
+                          credits: kc.key_credits || [],
+                          known_for: kc.known_for || [],
+                          platforms: kc.platforms || [],
+                        };
+                        sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
+                        navigate(user ? '/profile' : '/auth?redirect=/profile');
+                      }} className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-1">
                         Claim Profile <ArrowRight className="h-3 w-3" />
                       </button>
                     </div>
@@ -417,23 +429,41 @@ const Search = () => {
                                     </button>
                                   </div>
                                 ) : (
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); navigate('/auth'); }}
-                                    className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 shrink-0"
-                                  >
-                                    <UserPlus className="h-3 w-3" /> Claim
-                                  </button>
+                                   <button
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       const claimData = {
+                                         query: searchParams.get("q") || "",
+                                         name: c.project_name,
+                                         credits: [{ project: c.project_name, role: "Unclaimed", year: c.year || new Date().getFullYear() }],
+                                       };
+                                       sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
+                                       navigate(user ? '/profile' : '/auth?redirect=/profile');
+                                     }}
+                                     className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 shrink-0"
+                                   >
+                                     <UserPlus className="h-3 w-3" /> Claim
+                                   </button>
                                 )}
                               </div>
                             );
                           })}
                           {/* Generic claim CTA */}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); navigate(user ? '/credits' : '/auth'); }}
-                            className="w-full mt-2 py-2 rounded-lg border border-dashed border-primary/25 text-[10px] font-semibold text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-1.5"
-                          >
-                            <UserPlus className="h-3 w-3" /> Worked on this? Claim your credit
-                          </button>
+                           <button
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               const claimData = {
+                                 query: searchParams.get("q") || "",
+                                 name: c.project_name,
+                                 credits: [{ project: c.project_name, role: "", year: c.year || new Date().getFullYear() }],
+                               };
+                               sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
+                               navigate(user ? '/profile' : '/auth?redirect=/profile');
+                             }}
+                             className="w-full mt-2 py-2 rounded-lg border border-dashed border-primary/25 text-[10px] font-semibold text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-1.5"
+                           >
+                             <UserPlus className="h-3 w-3" /> Worked on this? Claim your credit
+                           </button>
                         </div>
                       )}
                     </div>
@@ -444,7 +474,15 @@ const Search = () => {
               if (item.type === "external_credit") {
                 const ec = item.data as { project: string; role: string; year: number };
                 return (
-                  <button key={`ec-${ec.project}-${idx}`} onClick={() => navigate(`/production?name=${encodeURIComponent(ec.project)}`)} className="w-full text-left rounded-xl border border-dashed border-border bg-card p-3 hover:border-primary/30 transition-all">
+                  <button key={`ec-${ec.project}-${idx}`} onClick={() => {
+                    const claimData = {
+                      query: searchParams.get("q") || "",
+                      name: ec.project,
+                      credits: [{ project: ec.project, role: ec.role, year: ec.year }],
+                    };
+                    sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
+                    navigate(user ? '/profile' : '/auth?redirect=/profile');
+                  }} className="w-full text-left rounded-xl border border-dashed border-border bg-card p-3 hover:border-primary/30 transition-all">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
                         <ExternalLink className="h-2 w-2 mr-0.5" /> Web Source

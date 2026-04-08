@@ -181,7 +181,7 @@ export const UnifiedHome = () => {
               id: `ai-${i}`,
               title: r.title,
               subtitle: [r.type, r.year, r.platform].filter(Boolean).join(" · "),
-              avatar: null,
+              avatar: r.image_url || null,
             }));
             setSuggestions(aiResults.length > 0 ? aiResults : []);
           } catch {

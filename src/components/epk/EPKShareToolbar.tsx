@@ -56,41 +56,42 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId }: EPKShareTo
 
   return (
     <div className="mb-6 p-4 rounded-xl bg-primary/5 border border-primary/20">
-      <div className="flex items-center gap-2 mb-3">
-        <Share2 className="h-4 w-4 text-primary" />
-        <span className="text-sm font-semibold">Share your EPK</span>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Share2 className="h-4 w-4 text-primary" />
+          <span className="text-sm font-semibold">Share your EPK</span>
+        </div>
+        {navigator.share && (
+          <Button
+            size="sm"
+            className="h-9 gap-1.5 touch-manipulation"
+            onClick={handleNativeShare}
+          >
+            <Send className="h-3.5 w-3.5" />
+            Share
+          </Button>
+        )}
       </div>
       
       {/* Link preview */}
-      <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-background border text-xs">
+      <div className="flex items-center gap-2 mb-3 p-2.5 rounded-lg bg-background border text-xs">
         <span className="truncate text-muted-foreground flex-1 font-mono">{epkUrl}</span>
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-7 px-2 shrink-0"
+          className="h-8 w-8 p-0 shrink-0 touch-manipulation"
           onClick={handleCopyLink}
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
         </Button>
       </div>
 
-      {/* Share buttons */}
+      {/* Share buttons — 44px min touch targets */}
       <div className="grid grid-cols-4 gap-2">
-        {navigator.share && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-10 flex-col gap-0.5 text-[10px] col-span-4 mb-1"
-            onClick={handleNativeShare}
-          >
-            <Share2 className="h-4 w-4" />
-            Share
-          </Button>
-        )}
         <Button 
           variant="outline" 
           size="sm" 
-          className="h-10 flex-col gap-0.5 text-[10px]"
+          className="h-11 flex-col gap-0.5 text-[10px] touch-manipulation"
           onClick={handleWhatsApp}
         >
           <MessageCircle className="h-4 w-4 text-green-500" />
@@ -99,7 +100,7 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId }: EPKShareTo
         <Button 
           variant="outline" 
           size="sm" 
-          className="h-10 flex-col gap-0.5 text-[10px]"
+          className="h-11 flex-col gap-0.5 text-[10px] touch-manipulation"
           onClick={handleInstagram}
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -112,7 +113,7 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId }: EPKShareTo
         <Button 
           variant="outline" 
           size="sm" 
-          className="h-10 flex-col gap-0.5 text-[10px]"
+          className="h-11 flex-col gap-0.5 text-[10px] touch-manipulation"
           onClick={handleX}
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
@@ -123,7 +124,7 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId }: EPKShareTo
         <Button 
           variant="outline" 
           size="sm" 
-          className="h-10 flex-col gap-0.5 text-[10px]"
+          className="h-11 flex-col gap-0.5 text-[10px] touch-manipulation"
           onClick={handleCopyLink}
         >
           {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}

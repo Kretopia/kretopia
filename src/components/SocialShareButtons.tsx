@@ -13,6 +13,7 @@ interface SocialShareButtonsProps {
   title: string;
   description?: string;
   imageUrl?: string;
+  ogProxySlug?: string;
   variant?: "icon" | "full";
 }
 

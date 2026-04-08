@@ -1,4 +1,5 @@
 import { useState, useEffect, memo, useCallback, useRef } from "react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -235,6 +236,7 @@ export function ProfileEditDialog({
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [autoFilling, setAutoFilling] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     role: "",
@@ -244,6 +246,12 @@ export function ProfileEditDialog({
     instagram_url: "",
     twitter_url: "",
     linkedin_url: "",
+    youtube_url: "",
+    tiktok_url: "",
+    spotify_url: "",
+    behance_url: "",
+    imdb_url: "",
+    soundcloud_url: "",
     hourly_rate: "",
     project_rate: "",
     rate_currency: "USD",
@@ -263,6 +271,12 @@ export function ProfileEditDialog({
         instagram_url: profile.instagram_url || "",
         twitter_url: profile.twitter_url || "",
         linkedin_url: profile.linkedin_url || "",
+        youtube_url: (profile as any).youtube_url || "",
+        tiktok_url: (profile as any).tiktok_url || "",
+        spotify_url: (profile as any).spotify_url || "",
+        behance_url: (profile as any).behance_url || "",
+        imdb_url: (profile as any).imdb_url || "",
+        soundcloud_url: (profile as any).soundcloud_url || "",
         hourly_rate: (profile as any).hourly_rate?.toString() || "",
         project_rate: (profile as any).project_rate?.toString() || "",
         rate_currency: (profile as any).rate_currency || "USD",
@@ -298,6 +312,12 @@ export function ProfileEditDialog({
           instagram_url: formData.instagram_url || null,
           twitter_url: formData.twitter_url || null,
           linkedin_url: formData.linkedin_url || null,
+          youtube_url: formData.youtube_url || null,
+          tiktok_url: formData.tiktok_url || null,
+          spotify_url: formData.spotify_url || null,
+          behance_url: formData.behance_url || null,
+          imdb_url: formData.imdb_url || null,
+          soundcloud_url: formData.soundcloud_url || null,
           hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
           project_rate: formData.project_rate ? parseFloat(formData.project_rate) : null,
           rate_currency: formData.rate_currency || 'USD',
@@ -531,13 +551,75 @@ export function ProfileEditDialog({
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">Social Media (Optional)</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">Social Media (Optional)</h3>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={async () => {
+                  setIsSyncing(true);
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) {
+                      toast({ title: "Error", description: "You must be logged in", variant: "destructive" });
+                      return;
+                    }
+                    const { data, error } = await supabase.functions.invoke("sync-social-stats", {
+                      headers: { Authorization: `Bearer ${session.access_token}` },
+                    });
+                    if (error) throw error;
+                    if (data?.updated > 0) {
+                      toast({ title: "Stats Synced! ✨", description: `Updated ${data.updated} platform${data.updated > 1 ? 's' : ''} with live data` });
+                      onProfileUpdate();
+                    } else {
+                      toast({ title: "No updates", description: "Add your social URLs first, then sync", variant: "destructive" });
+                    }
+                  } catch {
+                    toast({ title: "Sync failed", description: "Could not fetch social stats", variant: "destructive" });
+                  } finally {
+                    setIsSyncing(false);
+                  }
+                }}
+                disabled={isSyncing}
+                className="gap-1.5 text-xs"
+              >
+                {isSyncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                {isSyncing ? "Syncing..." : "Auto-Sync Stats"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground -mt-2">
+              Add your URLs and hit Auto-Sync to pull real follower counts automatically
+            </p>
             
             <FieldWrapper label="Instagram" isIncomplete={false}>
               <Input
                 value={formData.instagram_url}
                 onChange={(e) => handleInputChange('instagram_url', e.target.value)}
                 placeholder="https://instagram.com/username"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="YouTube" isIncomplete={false}>
+              <Input
+                value={formData.youtube_url}
+                onChange={(e) => handleInputChange('youtube_url', e.target.value)}
+                placeholder="https://youtube.com/@yourchannel"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="TikTok" isIncomplete={false}>
+              <Input
+                value={formData.tiktok_url}
+                onChange={(e) => handleInputChange('tiktok_url', e.target.value)}
+                placeholder="https://tiktok.com/@username"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="Spotify" isIncomplete={false}>
+              <Input
+                value={formData.spotify_url}
+                onChange={(e) => handleInputChange('spotify_url', e.target.value)}
+                placeholder="https://open.spotify.com/artist/..."
               />
             </FieldWrapper>
 
@@ -554,6 +636,30 @@ export function ProfileEditDialog({
                 value={formData.linkedin_url}
                 onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
                 placeholder="https://linkedin.com/in/username"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="Behance" isIncomplete={false}>
+              <Input
+                value={formData.behance_url}
+                onChange={(e) => handleInputChange('behance_url', e.target.value)}
+                placeholder="https://behance.net/username"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="IMDb" isIncomplete={false}>
+              <Input
+                value={formData.imdb_url}
+                onChange={(e) => handleInputChange('imdb_url', e.target.value)}
+                placeholder="https://imdb.com/name/..."
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="SoundCloud" isIncomplete={false}>
+              <Input
+                value={formData.soundcloud_url}
+                onChange={(e) => handleInputChange('soundcloud_url', e.target.value)}
+                placeholder="https://soundcloud.com/username"
               />
             </FieldWrapper>
           </div>

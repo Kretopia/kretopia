@@ -33,6 +33,7 @@ const VERIFICATION_POINTS: Record<string, number> = {
   peer: 25,
   identity: 5,
   ai: 5,
+  verified: 5,     // generic "verified" (AI or identity confirmed)
   manual: 1,
   pending: 0,
   unverified: 0,

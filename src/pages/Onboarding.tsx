@@ -348,6 +348,32 @@ export default function Onboarding() {
         setSuggestedCircles(data || []);
       };
       fetchCircles();
+
+      // Fetch pending credits that mention this user's name
+      const fetchPendingCredits = async () => {
+        if (!profile.full_name || profile.full_name.length < 3) return;
+        const nameParts = profile.full_name.trim().split(/\s+/);
+        if (nameParts.length < 2) return;
+        
+        const { data: credits } = await supabase
+          .from('credits')
+          .select('id, project_name, role, project_type, year, user_id')
+          .or(`project_name.ilike.%${profile.full_name}%,role.ilike.%${profile.full_name}%`)
+          .neq('user_id', user.id)
+          .limit(10);
+        
+        // Also check collaborator mentions
+        const { data: collabCredits } = await supabase
+          .from('credits')
+          .select('id, project_name, role, project_type, year, user_id')
+          .contains('collaborator_user_ids', [user.id])
+          .limit(5);
+        
+        const allCredits = [...(credits || []), ...(collabCredits || [])];
+        const uniqueCredits = allCredits.filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i);
+        setPendingCredits(uniqueCredits);
+      };
+      fetchPendingCredits();
     }
   }, [currentStep, user, profile.role]);
 

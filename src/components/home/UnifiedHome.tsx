@@ -683,7 +683,7 @@ export const UnifiedHome = () => {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-primary" />
-                Magazine
+                ThriveIN Magazine
               </h2>
               <Link to="/magazine" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
                 Read all <ArrowRight className="h-3 w-3" />

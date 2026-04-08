@@ -17,18 +17,30 @@ const MagazineArticlePage = () => {
   useEffect(() => {
     const fetchArticle = async () => {
       if (!slug) return;
-      const { data, error } = await supabase
+
+      // Try by slug first, then fall back to ID
+      let { data, error } = await supabase
         .from("magazine_articles")
         .select("*")
         .eq("slug", slug)
         .eq("is_published", true)
         .maybeSingle();
 
+      if (!data && !error) {
+        const res = await supabase
+          .from("magazine_articles")
+          .select("*")
+          .eq("id", slug)
+          .eq("is_published", true)
+          .maybeSingle();
+        data = res.data;
+        error = res.error;
+      }
+
       if (error || !data) {
         setNotFound(true);
       } else {
         setArticle(data);
-        // Increment view count
         supabase
           .from("magazine_articles")
           .update({ view_count: (data.view_count || 0) + 1 })

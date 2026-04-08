@@ -430,8 +430,8 @@ const CreatorEPK = () => {
             </p>
           )}
 
-          {/* Social Links — only for authenticated users */}
-          {currentUserId && socialLinks.length > 0 && (
+          {/* Social Links — visible to all visitors */}
+          {socialLinks.length > 0 && (
             <div className="flex items-center justify-center gap-3 pt-2">
               {socialLinks.map((link, index) => (
                 <a
@@ -439,7 +439,7 @@ const CreatorEPK = () => {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-full bg-muted/50 hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="p-2.5 rounded-full bg-muted/50 hover:bg-primary/10 hover:text-primary transition-colors"
                   aria-label={link.label}
                 >
                   <link.icon className="h-5 w-5" />

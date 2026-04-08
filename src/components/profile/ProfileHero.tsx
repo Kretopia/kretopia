@@ -35,6 +35,7 @@ interface ProfileHeroProps {
   creditsCount?: number;
   verifiedCreditsCount?: number;
   awardsCount?: number;
+  creditsData?: { verification_status?: string | null }[];
   dashboardTrigger?: React.ReactNode;
 }
 

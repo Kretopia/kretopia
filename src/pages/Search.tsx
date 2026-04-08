@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateStatus } from "@/lib/statusEngine";
 import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
@@ -117,7 +118,8 @@ const Search = () => {
 
       if (error) throw error;
 
-      setProfiles(data?.platform?.profiles || []);
+      const rawProfiles = data?.platform?.profiles || [];
+      setProfiles(await enrichProfilesWithStatus(rawProfiles));
       setCredits(data?.platform?.credits || []);
       setOpportunities(data?.platform?.opportunities || []);
       setExternal(data?.external || null);
@@ -130,7 +132,7 @@ const Search = () => {
         supabase.from("credits").select("id, project_name, role, year, verification_status, credit_category, thumbnail_url, user_id").or(`project_name.ilike.${q},role.ilike.${q}`).order("year", { ascending: false }).limit(20),
         supabase.from("opportunities").select("id, title, description, type, compensation, location").eq("status", "active").or(`title.ilike.${q},description.ilike.${q}`).limit(10),
       ]);
-      setProfiles(profilesRes.data || []);
+      setProfiles(await enrichProfilesWithStatus(profilesRes.data || []));
       // Group fallback credits by project_name
       const fallbackCredits = creditsRes.data || [];
       const grouped = new Map<string, CreditResult>();

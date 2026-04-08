@@ -363,6 +363,7 @@ const Search = () => {
                         src={p.avatar_url}
                         fallback={(p.full_name || "?")[0]}
                         size="lg"
+                        tier={(p as any)._tier || undefined}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">

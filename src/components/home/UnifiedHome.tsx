@@ -74,7 +74,7 @@ export const UnifiedHome = () => {
   // Fetch public dashboard data
   useEffect(() => {
     const fetchPublic = async () => {
-      const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs, articlesRes] = await Promise.all([
+      const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs, articlesRes, eventsRes] = await Promise.all([
         supabase.from("credits").select("id, project_name, role, verification_status, credit_category, thumbnail_url, primary_media_url, url, project_type, user_id, year").not("thumbnail_url", "is", null).order("created_at", { ascending: false }).limit(8),
         supabase.from("profiles").select("user_id, full_name, avatar_url, role, verification_tier").eq("onboarding_completed", true).not("avatar_url", "is", null).order("created_at", { ascending: false }).limit(10),
         supabase.from("opportunities").select("id, title, type, location, created_at").eq("status", "active").order("created_at", { ascending: false }).limit(4),
@@ -82,6 +82,7 @@ export const UnifiedHome = () => {
         supabase.from("credits").select("id", { count: "exact", head: true }),
         supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "active"),
         supabase.from("magazine_articles").select("id, title, subtitle, cover_image_url, category, read_time_minutes, created_at, slug").eq("is_published", true).order("created_at", { ascending: false }).limit(3),
+        supabase.from("creative_jams").select("id, title, start_time, venue_name, category, cover_image_url, created_by").eq("is_public", true).gte("start_time", new Date().toISOString()).order("start_time", { ascending: true }).limit(4),
       ]);
       const credits = creditsRes.data || [];
       setTrendingCredits(credits);

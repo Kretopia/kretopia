@@ -150,14 +150,14 @@ const EDIT_PROJECT_TYPES = [
 ];
 
 const POSTER_GRADIENTS = [
-  "from-rose-900/80 via-rose-800/60 to-black",
-  "from-blue-900/80 via-indigo-800/60 to-black",
-  "from-amber-900/80 via-orange-800/60 to-black",
-  "from-emerald-900/80 via-teal-800/60 to-black",
-  "from-purple-900/80 via-violet-800/60 to-black",
-  "from-cyan-900/80 via-sky-800/60 to-black",
-  "from-pink-900/80 via-fuchsia-800/60 to-black",
-  "from-slate-800/80 via-zinc-700/60 to-black",
+  "from-rose-950 via-rose-900/70 to-black",
+  "from-indigo-950 via-blue-900/70 to-black",
+  "from-amber-950 via-amber-900/70 to-black",
+  "from-emerald-950 via-teal-900/70 to-black",
+  "from-purple-950 via-violet-900/70 to-black",
+  "from-cyan-950 via-sky-900/70 to-black",
+  "from-pink-950 via-fuchsia-900/70 to-black",
+  "from-slate-900 via-zinc-800/70 to-black",
 ];
 
 const getMediaType = (credit: ICDBCredit): 'video' | 'audio' | 'image' | 'link' | null => {

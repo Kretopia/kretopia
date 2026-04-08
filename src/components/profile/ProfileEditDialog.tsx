@@ -385,6 +385,20 @@ export function ProfileEditDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* AI Auto-Fill Button */}
+          <Button
+            variant="outline"
+            className="w-full gap-2 border-primary/30 bg-primary/5 hover:bg-primary/10"
+            disabled={autoFilling || !formData.full_name?.trim() || formData.full_name.trim().length < 3}
+            onClick={handleAIAutoFill}
+          >
+            {autoFilling ? (
+              <><Loader2 className="h-4 w-4 animate-spin" /> Searching the web...</>
+            ) : (
+              <><Search className="h-4 w-4" /> AI Auto-Fill from Web</>
+            )}
+          </Button>
+
           <FieldWrapper 
             label="Full Name" 
             isIncomplete={isFieldIncomplete('full_name')}

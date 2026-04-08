@@ -193,7 +193,7 @@ const getPlatformIcon = (platform: string | null) => {
 
 // Horizontal scroll row component
 function CategoryRow({ 
-  category, credits, isOwnProfile, onDelete, onEndorse, onPlay, collaboratorProfiles, deletingId 
+  category, credits, isOwnProfile, onDelete, onEndorse, onPlay, onEdit, collaboratorProfiles, deletingId 
 }: {
   category: string;
   credits: ICDBCredit[];
@@ -201,6 +201,7 @@ function CategoryRow({
   onDelete: (id: string, source: string) => void;
   onEndorse: (credit: any) => void;
   onPlay: (credit: ICDBCredit) => void;
+  onEdit: (credit: ICDBCredit) => void;
   collaboratorProfiles: Map<string, CollaboratorProfile>;
   deletingId: string | null;
 }) {

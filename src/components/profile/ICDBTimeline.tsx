@@ -87,14 +87,17 @@ const CATEGORY_META: Record<string, { label: string; icon: any }> = {
 
 const TYPE_TO_CATEGORY: Record<string, string> = {
   film: "film_tv", movie: "film_tv", tv: "film_tv", short_film: "film_tv", documentary: "film_tv", music_video: "film_tv", web_series: "film_tv",
-  album: "music", single: "music", ep: "music", podcast: "music", audiobook: "music", soca: "music", dancehall: "music", afrobeats: "music", gospel_concert: "music",
+  album: "music", single: "music", ep: "music", soca: "music", dancehall: "music", afrobeats: "music", gospel_concert: "music", audiobook: "music",
   theatre: "performing", musical: "performing", dance: "performing", comedy: "performing", spoken_word: "performing", opera: "performing", choreography: "performing", backup_dancer: "performing",
   live_event: "events", concert: "events", festival: "events", carnival: "events", pageant: "events", fashion_show: "events", awards_show: "events", exhibition: "events", conference: "events", tour: "events", dj_set: "events", mc_hosting: "events", event: "events", promo: "events", after_movie: "events",
-  youtube_series: "digital", ugc_campaign: "digital", livestream: "digital", online_course: "digital", workshop: "digital",
+  podcast: "digital", youtube_series: "digital", ugc_campaign: "digital", livestream: "digital", online_course: "digital", workshop: "digital",
   commercial: "commercial", brand_campaign: "commercial", corporate: "commercial", voiceover: "commercial", influencer_campaign: "commercial",
   art_exhibition: "art", mural: "art", graphic_design: "art", photography: "art", animation: "art",
   fashion_collection: "fashion", editorial_shoot: "fashion", runway: "fashion", beauty_campaign: "fashion", styling: "fashion",
   talent_management: "business", booking: "business", label_release: "business", publishing: "business", curation: "business",
+  // Direct category keys (for manual overrides)
+  film_tv: "film_tv", music: "music", events: "events", performing: "performing", digital: "digital",
+  commercial: "commercial", art: "art", fashion: "fashion", business: "business", other: "other",
 };
 
 // Source-based category inference when type is missing

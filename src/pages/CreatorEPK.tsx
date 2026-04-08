@@ -599,7 +599,7 @@ const CreatorEPK = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                ThriveCredits™
+                ThriveCredits
               </h3>
               <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
                 <Database className="h-3 w-3" />

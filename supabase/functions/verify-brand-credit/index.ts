@@ -18,7 +18,6 @@ serve(async (req) => {
     const { action, token, roleId, projectId, brandEmail, brandName, submittedBy } = await req.json();
 
     if (action === 'request') {
-      // Creator requests brand verification
       if (!roleId || !projectId || !brandEmail || !brandName || !submittedBy) {
         return new Response(JSON.stringify({ error: 'Missing required fields' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -35,8 +34,64 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      // In production: send email to brand with verification link
-      // For now, return the token
+      // Get submitter profile for email personalization
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', submittedBy)
+        .single();
+
+      // Get project title
+      const { data: project } = await supabase
+        .from('icdb_projects')
+        .select('title')
+        .eq('id', projectId)
+        .single();
+
+      // Send verification email to brand
+      const verifyUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.supabase.co').replace('https://', 'https://')}`;
+      const siteUrl = Deno.env.get('SITE_URL') || 'https://thrivein-new-beta.lovable.app';
+      const verificationLink = `${siteUrl}/verify-credit?token=${data.verification_token}`;
+
+      const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+      if (RESEND_API_KEY) {
+        const emailFrom = Deno.env.get('RESEND_FROM_EMAIL') || 'ThriveIN <noreply@thrivein.app>';
+        const creatorName = profile?.full_name || 'A creator';
+        const projectTitle = project?.title || 'a project';
+
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: emailFrom,
+            to: [brandEmail],
+            subject: `${creatorName} is requesting credit verification for "${projectTitle}"`,
+            html: `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px;">
+                <h2 style="margin-bottom: 8px;">Credit Verification Request</h2>
+                <p style="color: #666; margin-bottom: 24px;">
+                  <strong>${creatorName}</strong> has listed a credit on <strong>"${projectTitle}"</strong> and is requesting verification from <strong>${brandName}</strong>.
+                </p>
+                <p style="color: #666; margin-bottom: 24px;">
+                  By clicking the button below, you confirm that this person was involved in this project.
+                </p>
+                <a href="${verificationLink}" style="display: inline-block; background: #6366f1; color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                  Verify This Credit
+                </a>
+                <p style="color: #999; font-size: 12px; margin-top: 32px;">
+                  This link is unique and can only be used once. If you did not expect this email, you can safely ignore it.
+                </p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+                <p style="color: #999; font-size: 11px;">ThriveIN — The Professional Network for Creatives</p>
+              </div>
+            `,
+          }),
+        });
+      }
+
       return new Response(JSON.stringify({ 
         success: true, 
         token: data.verification_token,
@@ -47,7 +102,6 @@ serve(async (req) => {
     }
 
     if (action === 'verify') {
-      // Brand confirms credit via token
       if (!token) {
         return new Response(JSON.stringify({ error: 'Token required' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -72,7 +126,7 @@ serve(async (req) => {
         .update({ status: 'verified', verified_at: new Date().toISOString() })
         .eq('id', verification.id);
 
-      // Update the credit verification status if user has claimed
+      // Update the credit verification status to enterprise (100pts!)
       if (verification.role_id) {
         const { data: role } = await supabase
           .from('icdb_project_roles')
@@ -81,9 +135,11 @@ serve(async (req) => {
           .single();
 
         if (role?.claimed_by) {
-          // Update user's credit to brand-verified
           await supabase.from('credits')
-            .update({ verification_status: 'verified', verified_by_name: verification.brand_name })
+            .update({ 
+              verification_status: 'enterprise', 
+              verified_by_name: verification.brand_name 
+            })
             .eq('user_id', role.claimed_by)
             .ilike('project_name', `%${(verification as any).icdb_projects?.title || ''}%`);
         }

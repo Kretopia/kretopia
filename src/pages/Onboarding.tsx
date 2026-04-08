@@ -393,6 +393,7 @@ export default function Onboarding() {
         full_name: profile.full_name,
         role: profile.role,
         location: profile.location || null,
+        bio: bio || null,
         professional_skills: skillObjects.length > 0 ? skillObjects as any : null,
         onboarding_completed: true,
         onboarding_step: 6,

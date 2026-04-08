@@ -181,7 +181,6 @@ export function GuestSwipePreview() {
         {currentProfile && (
           <SwipeCard
             profile={currentProfile}
-            onViewProfile={() => navigate(`/creator/${currentProfile.user_id}`)}
             style={getCardStyle(true)}
           />
         )}

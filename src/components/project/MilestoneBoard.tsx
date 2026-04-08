@@ -57,12 +57,14 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     due_date: ''
   });
   const { toast } = useToast();
+  const { guard: guardMilestone, remaining: milestonesRemaining, cap: milestonesCap } = useFeatureGate("milestones");
 
   const handleCreateMilestone = async () => {
     if (!newMilestone.title.trim() || !newMilestone.amount) {
       toast({ title: "Error", description: "Title and amount are required", variant: "destructive" });
       return;
     }
+    if (!guardMilestone()) return;
 
     const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase

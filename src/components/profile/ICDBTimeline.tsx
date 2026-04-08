@@ -97,7 +97,7 @@ const TYPE_TO_CATEGORY: Record<string, string> = {
   talent_management: "business", booking: "business", label_release: "business", publishing: "business", curation: "business",
   // Direct category keys (for manual overrides)
   film_tv: "film_tv", music: "music", events: "events", performing: "performing", digital: "digital",
-  commercial: "commercial", art: "art", fashion: "fashion", business: "business", other: "other",
+  art: "art", fashion: "fashion", business: "business", other: "other",
 };
 
 // Source-based category inference when type is missing

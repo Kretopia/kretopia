@@ -146,15 +146,25 @@ export const useProfileData = () => {
         if (statsResult.status === 'fulfilled') setIndustryStats(statsResult.value.data || []);
         if (creditsResult.status === 'fulfilled') setCredits(creditsResult.value.data || []);
         if (awardsResult.status === 'fulfilled') setAwards(awardsResult.value.data || []);
-        if (pressResult.status === 'fulfilled') {
-          setPressLinks(pressResult.value.data || []);
-          // Auto-enrich press links missing metadata via Firecrawl
-          const pressData = pressResult.value.data || [];
-          if (pressData.some((p: any) => !p.publication || !p.image_url)) {
-            supabase.functions.invoke('enrich-press-links', {
-              body: { user_id: currentUserId, scrape_website: true },
-            }).catch(() => {});
-          }
+        if (pressResult.status === 'fulfilled') setPressLinks(pressResult.value.data || []);
+
+        // Auto-enrich profile in background (press, awards, skills, bio, job title)
+        const pressData = pressResult.status === 'fulfilled' ? pressResult.value.data || [] : [];
+        const awardsData = awardsResult.status === 'fulfilled' ? awardsResult.value.data || [] : [];
+        const creditsData = creditsResult.status === 'fulfilled' ? creditsResult.value.data || [] : [];
+        const needsEnrichment = 
+          pressData.some((p: any) => !p.publication || !p.image_url) ||
+          (awardsData.length === 0 && creditsData.length >= 3) ||
+          !data?.professional_skills?.length ||
+          !data?.job_title;
+          
+        if (needsEnrichment) {
+          supabase.functions.invoke('enrich-creator-profile', {
+            body: { user_id: currentUserId, scrape_website: true },
+          }).then(() => {
+            // Refresh profile data after enrichment
+            setTimeout(() => fetchData(currentUserId), 3000);
+          }).catch(() => {});
         }
       });
 

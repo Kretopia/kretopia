@@ -397,6 +397,15 @@ const CreditDatabase = () => {
                                 {credit.verification_status === 'verified' && (
                                   <ShieldCheck className="h-3.5 w-3.5 text-green-500" />
                                 )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+
                 {/* Web discovered results */}
                 {webResults.length > 0 && (
                   <section>
@@ -442,9 +451,6 @@ const CreditDatabase = () => {
                         </Card>
                       ))}
                     </div>
-                  </section>
-                )}
-              </div>
                   </section>
                 )}
               </div>

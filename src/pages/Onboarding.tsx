@@ -457,6 +457,36 @@ export default function Onboarding() {
         } catch (e) { console.error('[Onboarding] Auto-join event error:', e); }
       }
 
+      // Auto-import credits if user claimed from search
+      const pendingClaimRaw = sessionStorage.getItem('pending_claim_credits');
+      if (pendingClaimRaw && user) {
+        try {
+          const claimData = JSON.parse(pendingClaimRaw);
+          const creditsToInsert = (claimData.credits || [])
+            .filter((c: any) => c.project && c.role)
+            .map((c: any) => ({
+              user_id: user.id,
+              project_name: c.project,
+              role: c.role,
+              year: c.year || null,
+              platform: c.platform || null,
+              source: 'search_claim',
+              verification_status: 'pending',
+            }));
+          
+          if (creditsToInsert.length > 0) {
+            await supabase.from('credits').insert(creditsToInsert);
+            console.log('[Onboarding] Auto-imported', creditsToInsert.length, 'credits from search claim');
+          }
+          
+          // Store flag so profile page shows "continue adding" prompt
+          sessionStorage.setItem('show_claim_continue', JSON.stringify({
+            name: claimData.name || claimData.query,
+            count: creditsToInsert.length,
+          }));
+          sessionStorage.removeItem('pending_claim_credits');
+        } catch (e) { console.error('[Onboarding] Auto-import credits error:', e); }
+
       // Track partner organization signup
       const partnerCode = sessionStorage.getItem('partner_code');
       if (partnerCode && user) {

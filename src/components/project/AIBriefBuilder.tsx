@@ -51,6 +51,7 @@ export const AIBriefBuilder = ({
   onBriefGenerated 
 }: AIBriefBuilderProps) => {
   const { toast } = useToast();
+  const { guard: guardAiBrief } = useFeatureGate("aiBriefs");
   const [generating, setGenerating] = useState(false);
   const [brief, setBrief] = useState<GeneratedBrief | null>(null);
   const [roughIdea, setRoughIdea] = useState(projectDescription || "");
@@ -66,6 +67,7 @@ export const AIBriefBuilder = ({
       });
       return;
     }
+    if (!guardAiBrief()) return;
 
     setGenerating(true);
     try {

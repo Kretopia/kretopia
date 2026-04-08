@@ -22,6 +22,7 @@ const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY
 
 export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   const { user } = useAuth();
+  const { guard: guardExpense } = useFeatureGate("expenses");
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categorizing, setCategorizing] = useState(false);
@@ -124,6 +125,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
 
   const handleSave = async () => {
     if (!user || !form.title || !form.amount) return;
+    if (!guardExpense()) return;
     setSaving(true);
     try {
       const { error } = await supabase.from("expenses").insert({

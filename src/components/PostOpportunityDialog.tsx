@@ -13,6 +13,7 @@ import { Briefcase, Loader2, Upload, X, ArrowRightLeft, Handshake, Zap, Target, 
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
+import { useFeatureGate } from "@/hooks/useFeatureGate";
 
 interface PostOpportunityDialogProps {
   variant?: "default" | "outline" | "hero";
@@ -140,6 +141,7 @@ export const PostOpportunityDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!gigGate.guard()) return;
     setLoading(true);
 
     try {

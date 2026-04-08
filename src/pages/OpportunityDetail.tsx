@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { ApplyToOpportunityDialog } from "@/components/ApplyToOpportunityDialog";
 import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
 import { SEO } from "@/components/SEO";

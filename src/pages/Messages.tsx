@@ -554,11 +554,13 @@ const Messages = () => {
                   : "Start by discovering and connecting with other creators!"}
               </p>
               {!searchQuery && (
-                <Button onClick={() => navigate("/circle")} size="sm" className="gap-2">
-                  Discover Creators
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-               <PushNotificationPrompt trigger="message" className="mt-4 mx-4" />
+                <>
+                  <Button onClick={() => navigate("/circle")} size="sm" className="gap-2">
+                    Discover Creators
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <PushNotificationPrompt trigger="message" className="mt-4" />
+                </>
               )}
             </div>
           ) : (

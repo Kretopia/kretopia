@@ -687,37 +687,76 @@ export default function Onboarding() {
             <div className="space-y-5">
               <div className="text-center">
                 <h2 className="text-2xl font-bold mb-1">Let's set you up</h2>
-                <p className="text-muted-foreground text-sm">Takes about 30 seconds</p>
-              </div>
-
-              {/* Quick Import from URL */}
-              <div className="border border-primary/20 rounded-lg p-3 bg-primary/5 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-primary" />
-                  <Label className="text-sm font-medium">Quick Import</Label>
-                </div>
-                <p className="text-xs text-muted-foreground">Paste your LinkedIn, IMDb, or portfolio URL to auto-fill your profile</p>
-                <div className="flex gap-2">
-                  <Input
-                    value={importUrl}
-                    onChange={(e) => setImportUrl(e.target.value)}
-                    placeholder="https://linkedin.com/in/you or imdb.me/you"
-                    className="h-9 text-sm"
-                  />
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="h-9 px-3 shrink-0 gap-1.5"
-                    disabled={!importUrl.trim() || importing}
-                    onClick={handleImportUrl}
-                  >
-                    {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
-                    Import
-                  </Button>
-                </div>
+                <p className="text-muted-foreground text-sm">Enter your name and let AI do the rest</p>
               </div>
 
               {/* Photo */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="relative">
+                  <Avatar className={`h-20 w-20 ring-2 ${avatarUrl ? 'ring-green-500' : 'ring-muted'}`}>
+                    <AvatarImage src={avatarUrl} className="object-cover" />
+                    <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
+                  </Avatar>
+                  {avatarUrl && <CheckCircle2 className="absolute -bottom-1 -right-1 h-5 w-5 text-green-500 bg-background rounded-full" />}
+                </div>
+                <input type="file" id="avatar-upload" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileSelect(file); }} />
+                <Button variant={avatarUrl ? "outline" : "secondary"} size="sm" onClick={() => document.getElementById('avatar-upload')?.click()} disabled={uploadingAvatar}>
+                  {uploadingAvatar ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Upload className="h-4 w-4 mr-1" />}
+                  {avatarUrl ? "Change" : "Add Photo"}
+                </Button>
+                {!avatarUrl && <p className="text-xs text-muted-foreground">Profiles with photos get 14x more views</p>}
+              </div>
+
+              {/* Name */}
+              <div>
+                <Label htmlFor="full_name">Your Name *</Label>
+                <Input id="full_name" value={profile.full_name} onChange={(e) => { setProfile(prev => ({ ...prev, full_name: e.target.value })); setAutoFilled(false); }} placeholder="Full name" />
+              </div>
+
+              {/* AI Auto-Fill — the magic button */}
+              {!autoFilled && (
+                <div className="border border-primary/30 rounded-lg p-4 bg-primary/5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-medium">AI Profile Builder</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Enter your name above and optionally a link. We'll search the web and fill your entire profile automatically.
+                  </p>
+                  <Input
+                    value={importUrl}
+                    onChange={(e) => setImportUrl(e.target.value)}
+                    placeholder="LinkedIn, IMDb, or website URL (optional)"
+                    className="h-9 text-sm"
+                  />
+                  <Button
+                    className="w-full gap-2"
+                    disabled={!profile.full_name?.trim() || profile.full_name.trim().length < 3 || autoFilling}
+                    onClick={handleAIAutoFill}
+                  >
+                    {autoFilling ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Searching the web...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-4 w-4" />
+                        Find &amp; Fill My Profile
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {autoFilled && (
+                <div className="border border-green-500/30 rounded-lg p-3 bg-green-500/5">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-medium text-green-600">Profile auto-filled! Review below.</span>
+                  </div>
+                </div>
+              )}
               <div className="flex flex-col items-center gap-2">
                 <div className="relative">
                   <Avatar className={`h-20 w-20 ring-2 ${avatarUrl ? 'ring-green-500' : 'ring-muted'}`}>

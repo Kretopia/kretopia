@@ -68,6 +68,42 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
     }
   };
 
+  const handleSyncStats = async () => {
+    setIsSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({ title: "Error", description: "You must be logged in", variant: "destructive" });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("sync-social-stats", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) throw error;
+
+      if (data?.updated > 0) {
+        toast({ 
+          title: "Stats Synced! ✨", 
+          description: `Updated ${data.updated} platform${data.updated > 1 ? 's' : ''} with live data` 
+        });
+        onRefresh();
+      } else {
+        toast({ 
+          title: "No updates", 
+          description: "Add your social profile URLs first, then sync to pull real numbers",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Sync error:", error);
+      toast({ title: "Sync failed", description: "Could not fetch social stats. Try again later.", variant: "destructive" });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Warn before leaving with unsaved changes

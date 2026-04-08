@@ -31,14 +31,35 @@ Deno.serve(async (req) => {
     if (only_missing_bio) {
       query = query.or('bio.is.null,bio.eq.');
     } else {
-      // Get profiles missing bio OR skills OR job_title
+      // Get profiles missing bio OR skills OR job_title — we'll also check for missing credits below
       query = query.or('bio.is.null,bio.eq.,professional_skills.is.null,job_title.is.null');
     }
 
     const { data: profiles, error: fetchError } = await query;
     if (fetchError) throw fetchError;
 
-    console.log(`[batch-enrich] Found ${profiles?.length || 0} profiles to enrich`);
+    // Also find profiles with no credits at all — they need credit discovery
+    const profileUserIds = new Set((profiles || []).map((p: any) => p.user_id));
+    const { data: allProfs } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, bio, professional_skills, job_title, industry, role')
+      .not('full_name', 'is', null)
+      .neq('full_name', '')
+      .neq('full_name', 'New User')
+      .limit(100);
+
+    for (const p of (allProfs || [])) {
+      if (profileUserIds.has(p.user_id)) continue;
+      // Check if this user has any credits
+      const { count } = await supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', p.user_id);
+      if ((count || 0) === 0) {
+        profiles?.push(p);
+        profileUserIds.add(p.user_id);
+        if ((profiles?.length || 0) >= limit) break;
+      }
+    }
+
+    console.log(`[batch-enrich] Found ${profiles?.length || 0} profiles to enrich (incl. missing credits)`);
 
     const results = {
       total: profiles?.length || 0,

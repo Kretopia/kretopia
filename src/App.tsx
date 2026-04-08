@@ -183,6 +183,9 @@ const AppContent = () => {
       {showNavbar && <Navbar user={user} />}
       {showBottomNav && <BottomNav />}
       {user && !isPublicEPK && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
+      {user && !isAuthPage && <OnboardingTour />}
+      {!user && <NewsletterPopup />}
+      <PWAInstallPrompt />
       {showGuestBanner && <GuestBanner />}
       <main id="main-content" className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
         <Suspense fallback={<LoadingFallback />}>

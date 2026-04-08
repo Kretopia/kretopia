@@ -232,35 +232,52 @@ const Navbar = memo(({ user }: NavbarProps) => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[85vw] sm:w-[400px]">
                 <SheetHeader>
-                  <SheetTitle className="flex items-center gap-3">
+                   <SheetTitle className="flex items-center gap-3">
                     Menu
-                    {/* Mode toggle in hamburger too */}
-                    <div className="flex items-center bg-muted/60 rounded-full p-0.5 ml-auto">
-                      <button
-                        onClick={() => setMode("create")}
-                        className={cn(
-                          "px-3 py-1 rounded-full text-[11px] font-semibold transition-all",
-                          mode === "create" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
-                        )}
-                      >
-                        Explore
-                      </button>
-                      <button
-                        onClick={() => setMode("work")}
-                        className={cn(
-                          "px-3 py-1 rounded-full text-[11px] font-semibold transition-all",
-                          mode === "work" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
-                        )}
-                      >
-                        Work
-                      </button>
-                    </div>
+                    {/* Mode toggle in hamburger — hidden for company accounts */}
+                    {!isCompany && (
+                      <div className="flex items-center bg-muted/60 rounded-full p-0.5 ml-auto">
+                        <button
+                          onClick={() => setMode("create")}
+                          className={cn(
+                            "px-3 py-1 rounded-full text-[11px] font-semibold transition-all",
+                            mode === "create" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+                          )}
+                        >
+                          Explore
+                        </button>
+                        <button
+                          onClick={() => setMode("work")}
+                          className={cn(
+                            "px-3 py-1 rounded-full text-[11px] font-semibold transition-all",
+                            mode === "work" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+                          )}
+                        >
+                          Work
+                        </button>
+                      </div>
+                    )}
                   </SheetTitle>
                 </SheetHeader>
 
                 <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
 
-                  {mode === "create" ? (
+                  {isCompany ? (
+                    /* ====== COMPANY MENU ====== */
+                    <>
+                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Company</p>
+                      <MenuButton icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
+
+                      <Separator className="my-3" />
+
+                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Hiring</p>
+                      <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
+                      <MenuButton icon={Search} label="Find Talent" onClick={() => handleNavigation("/talent-finder")} />
+                      {isManagerMode && (
+                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
+                      )}
+                    </>
+                  ) : mode === "create" ? (
                     /* ====== EXPLORE MODE MENU ====== */
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>

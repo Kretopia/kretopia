@@ -137,7 +137,7 @@ export const useProfileData = () => {
       const backgroundPromises = [
         supabase.from('reviews').select('id, profile_id, reviewer_id, reviewer_name, reviewer_role, reviewer_company, reviewer_avatar_url, rating, review_text, project_name, collaboration_type, is_endorsed, is_verified, status, created_at, updated_at').eq('profile_id', currentUserId).order('created_at', { ascending: false }).limit(10),
         supabase.from('industry_stats').select('*').eq('user_id', currentUserId).order('display_order', { ascending: true }).limit(20),
-        supabase.from('credits').select('*').eq('user_id', currentUserId).order('year', { ascending: false }).limit(10),
+        supabase.from('credits').select('*').eq('user_id', currentUserId).order('year', { ascending: false }),
         supabase.from('awards').select('*').eq('user_id', currentUserId).order('year', { ascending: false }).limit(10),
         supabase.from('press_links').select('*').eq('user_id', currentUserId).order('published_date', { ascending: false }).limit(10)
       ];

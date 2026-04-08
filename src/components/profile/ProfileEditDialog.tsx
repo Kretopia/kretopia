@@ -234,6 +234,7 @@ export function ProfileEditDialog({
 }: ProfileEditDialogProps) {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [autoFilling, setAutoFilling] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     role: "",

@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatusAvatar } from "@/components/ui/status-avatar";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle, User } from "lucide-react";
+import { MapPin, MessageCircle, User, Sparkles } from "lucide-react";
 
 export interface NearbyCreator {
   user_id: string;

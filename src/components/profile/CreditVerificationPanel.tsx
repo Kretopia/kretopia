@@ -91,10 +91,15 @@ export function CreditVerificationPanel({ userId }: CreditVerificationPanelProps
       if (error) throw error;
 
       if (accept) {
-        // Increment endorsement count on the credit
         const endorsement = pendingEndorsements.find(e => e.id === endorsementId);
         if (endorsement) {
+          // Increment endorsement count
           await supabase.rpc('increment_endorsement_count' as any, { credit_id_param: endorsement.credit_id });
+          // Upgrade credit verification status to 'peer' (25pts in ThriveStatus™)
+          await supabase
+            .from('credits')
+            .update({ verification_status: 'peer', verified_by_user_id: userId })
+            .eq('id', endorsement.credit_id);
         }
       }
 

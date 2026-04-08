@@ -340,9 +340,15 @@ const Search = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="font-semibold text-sm text-foreground truncate">{p.full_name}</p>
-                          <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
-                            <Verified className="h-2 w-2 mr-0.5" /> On Platform
-                          </Badge>
+                          {(p as any)._socialProofLabel ? (
+                            <Badge className="text-[8px] bg-accent/10 border-accent/20 text-accent">
+                              <Sparkles className="h-2 w-2 mr-0.5" /> {(p as any)._socialProofLabel}
+                            </Badge>
+                          ) : (
+                            <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
+                              <Verified className="h-2 w-2 mr-0.5" /> On Platform
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-xs text-muted-foreground">{p.role}</p>
                         {skills.length > 0 && (

@@ -150,7 +150,7 @@ const ICDBProjectPage = () => {
     <>
       <Helmet>
         <title>{project.title} — ThriveCredits™ | ThriveIN</title>
-        <meta name="description" content={project.description || `${project.title} — a ${formatType(project.type)} project on ThriveCredits™.`} />
+        <meta name="description" content={project.description || `${project.title} — a ${formatType(project.type)} <meta name="description" content={project.description || `${project.title} — a ${formatType(project.type)} project on ThriveCredits.`} />} />
       </Helmet>
 
       <div className="min-h-screen bg-background pb-24">
@@ -158,7 +158,7 @@ const ICDBProjectPage = () => {
         <div className="bg-gradient-to-b from-primary/8 to-background border-b">
           <div className="container mx-auto px-4 py-4">
             <Button variant="ghost" size="sm" className="mb-3 -ml-2 gap-1 text-muted-foreground" onClick={() => navigate("/credits")}>
-              <ArrowLeft className="h-4 w-4" /> ThriveCredits™
+              <ArrowLeft className="h-4 w-4" /> ThriveCredits
             </Button>
 
             <div className="space-y-3">

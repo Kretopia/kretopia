@@ -75,7 +75,7 @@ ${topCredits.slice(0, 3).map(c => `- **${c.project_name}** — ${c.role}`).join(
           </div>
           <h3 className="text-lg font-bold mb-2">Embeddable Credits Widget</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Showcase your verified ThriveCredits™ on your website, portfolio, or LinkedIn. Pro feature.
+            Showcase your Showcase your verified ThriveCredits on your website, portfolio, or LinkedIn. Pro feature., portfolio, or LinkedIn. Pro feature.
           </p>
           <Button onClick={() => navigate("/subscription")} className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2">
             <Sparkles className="h-4 w-4" />

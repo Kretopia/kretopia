@@ -340,10 +340,9 @@ export default function CompanyOnboarding() {
       {showCropDialog && tempImageUrl && (
         <ImageCropDialog
           open={showCropDialog}
-          onOpenChange={setShowCropDialog}
+          onClose={() => setShowCropDialog(false)}
           imageUrl={tempImageUrl}
           onCropComplete={handleCroppedImage}
-          aspectRatio={1}
         />
       )}
     </div>

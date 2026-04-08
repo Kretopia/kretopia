@@ -276,6 +276,13 @@ Return ONLY the bio text, no quotes or labels.`,
     // ═══════════════════════════════════════════════════
     const existingCredits = new Set(credits.map((c: any) => `${c.project_name?.toLowerCase()}|${c.role?.toLowerCase()}`));
 
+    // Load deleted credits so we never re-add them
+    const { data: deletedCredits } = await supabase
+      .from('deleted_credits')
+      .select('project_name_lower, role_lower')
+      .eq('user_id', user_id);
+    const deletedSet = new Set((deletedCredits || []).map((d: any) => `${d.project_name_lower}|${d.role_lower}`));
+
     if (scrape_website && firecrawlKey && lovableKey && profile.full_name) {
       // Search for credits on professional platforms
       const creditSearchQueries = [
@@ -338,8 +345,26 @@ Rules:
             if (!c.project_name || !c.role) continue;
             const key = `${c.project_name.toLowerCase()}|${c.role.toLowerCase()}`;
             if (existingCredits.has(key)) continue;
+            // Skip credits the user previously deleted
+            if (deletedSet.has(key)) {
+              console.log(`[enrich] Skipping deleted credit: ${c.project_name}`);
+              continue;
+            }
 
-            const { error: insertErr } = await supabase.from('credits').upsert({
+            // Use plain insert instead of broken upsert with functional onConflict
+            // Check for existing credit first
+            const { data: existing } = await supabase.from('credits')
+              .select('id')
+              .eq('user_id', user_id)
+              .ilike('project_name', c.project_name)
+              .ilike('role', c.role)
+              .limit(1);
+            if (existing && existing.length > 0) {
+              existingCredits.add(key);
+              continue;
+            }
+
+            const { error: insertErr } = await supabase.from('credits').insert({
               user_id,
               project_name: c.project_name,
               role: c.role,
@@ -349,8 +374,8 @@ Rules:
               url: c.url || null,
               source: 'ai_discovered',
               verification_status: 'unverified',
-            }, { onConflict: 'user_id,lower(project_name),lower(role),coalesce(source,\'\')', ignoreDuplicates: true });
-            if (insertErr) console.log(`Credit insert skipped (likely dupe): ${c.project_name}`);
+            });
+            if (insertErr) console.log(`Credit insert skipped: ${c.project_name} - ${insertErr.message}`);
             existingCredits.add(key);
             newCreditsCount++;
           }

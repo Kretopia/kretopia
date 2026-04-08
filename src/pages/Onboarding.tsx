@@ -610,6 +610,33 @@ export default function Onboarding() {
                 <p className="text-muted-foreground text-sm">Takes about 30 seconds</p>
               </div>
 
+              {/* Quick Import from URL */}
+              <div className="border border-primary/20 rounded-lg p-3 bg-primary/5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-primary" />
+                  <Label className="text-sm font-medium">Quick Import</Label>
+                </div>
+                <p className="text-xs text-muted-foreground">Paste your LinkedIn, IMDb, or portfolio URL to auto-fill your profile</p>
+                <div className="flex gap-2">
+                  <Input
+                    value={importUrl}
+                    onChange={(e) => setImportUrl(e.target.value)}
+                    placeholder="https://linkedin.com/in/you or imdb.me/you"
+                    className="h-9 text-sm"
+                  />
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-9 px-3 shrink-0 gap-1.5"
+                    disabled={!importUrl.trim() || importing}
+                    onClick={handleImportUrl}
+                  >
+                    {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
+                    Import
+                  </Button>
+                </div>
+              </div>
+
               {/* Photo */}
               <div className="flex flex-col items-center gap-2">
                 <div className="relative">

@@ -178,7 +178,7 @@ export const ProfileHero = ({
                 </div>
               )}
               
-              {isIndustryVerified && (
+              {isIndustryVerified && !isOwnProfile && (
                 <Badge className="h-5 px-1.5 bg-accent/15 text-accent-foreground border border-accent/30 text-[10px] font-semibold gap-0.5">
                   <Star className="h-2.5 w-2.5 fill-accent text-accent" />
                   Industry
@@ -209,7 +209,7 @@ export const ProfileHero = ({
                   {displayLocation}
                 </span>
               )}
-              {profile.average_rating != null && (
+              {profile.average_rating != null && profile.average_rating > 0 && (
                 <span className="flex items-center gap-1 text-foreground font-medium">
                   <Star className="h-3 w-3 fill-accent text-accent" />
                   {profile.average_rating.toFixed(1)}
@@ -256,15 +256,7 @@ export const ProfileHero = ({
                   </Badge>
                 )}
               </div>
-            ) : isOwnProfile && (
-              <button
-                onClick={onEdit}
-                className="inline-flex items-center gap-1.5 text-[11px] font-medium text-accent-foreground/70 hover:text-accent-foreground transition-colors"
-              >
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-                Set your rates to get hired →
-              </button>
-            )}
+            ) : null}
           </div>
         </div>
 

@@ -339,7 +339,7 @@ Rules:
             const key = `${c.project_name.toLowerCase()}|${c.role.toLowerCase()}`;
             if (existingCredits.has(key)) continue;
 
-            await supabase.from('credits').insert({
+            const { error: insertErr } = await supabase.from('credits').upsert({
               user_id,
               project_name: c.project_name,
               role: c.role,
@@ -349,7 +349,8 @@ Rules:
               url: c.url || null,
               source: 'ai_discovered',
               verification_status: 'unverified',
-            });
+            }, { onConflict: 'user_id,lower(project_name),lower(role),coalesce(source,\'\')', ignoreDuplicates: true });
+            if (insertErr) console.log(`Credit insert skipped (likely dupe): ${c.project_name}`);
             existingCredits.add(key);
             newCreditsCount++;
           }

@@ -25,6 +25,7 @@ import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 // Refactored sections
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
 import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
+import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
 

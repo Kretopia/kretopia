@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, MapPin, Navigation, Users, Plus, Sparkles } from "lucide-react";
+import { Loader2, MapPin, Navigation, Users, Plus, Sparkles, List, Map } from "lucide-react";
 import { UnifiedNearbyMap } from "@/components/nearby/UnifiedNearbyMap";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionCard } from "@/components/sessions/SessionCard";
@@ -19,7 +19,6 @@ import { AtlasFilterTabs, type AtlasFilter } from "@/components/nearby/AtlasFilt
 import { useLocationBookmarks } from "@/hooks/useLocationBookmarks";
 import { AtlasSearchBar, defaultAtlasFilters, type AtlasSearchFilters } from "@/components/nearby/AtlasSearchBar";
 import { SeedLocationsDialog } from "@/components/nearby/SeedLocationsDialog";
-import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { analytics } from "@/lib/analytics";
 
 import { NearbyCreator, CreatorCard, formatDistance, getSkills } from "@/components/nearby/NearbyCreatorCard";
@@ -44,40 +43,16 @@ const NearbyCreators = () => {
   const [locationVisible, setLocationVisible] = useState(true);
   const [locationPrecision, setLocationPrecision] = useState<LocationPrecision>('approximate');
   const [selectedItem, setSelectedItem] = useState<{ type: MapItemType; id: string } | null>(null);
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('list');
   const [showCreateSession, setShowCreateSession] = useState(false);
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [selectedSession, setSelectedSession] = useState<NearbySession | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<CreativeLocation | null>(null);
   const [showSeedDialog, setShowSeedDialog] = useState(false);
-  const [profileVisibility, setProfileVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [atlasFilter, setAtlasFilter] = useState<AtlasFilter>('all');
   const [searchFilters, setSearchFilters] = useState<AtlasSearchFilters>(defaultAtlasFilters);
   const { bookmarkedIds, toggleBookmark } = useLocationBookmarks();
-
-  // Check profile visibility
-  useEffect(() => {
-    if (!user?.id) return;
-    const check = async () => {
-      try {
-        const [profileRes, portfolioRes, creditsRes] = await Promise.all([
-          supabase.from('profiles').select('avatar_url, bio').eq('user_id', user.id).single(),
-          supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-          supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        ]);
-        if (profileRes.data) {
-          const hasWork = (portfolioRes.count || 0) + (creditsRes.count || 0) > 0;
-          const missingFields: string[] = [];
-          if (!profileRes.data.avatar_url) missingFields.push('Profile Picture');
-          if (!profileRes.data.bio || profileRes.data.bio.length < 20) missingFields.push('Bio (20+ characters)');
-          if (!hasWork) missingFields.push('At least 1 Portfolio Item');
-          setProfileVisibility({ isVisible: missingFields.length === 0, missingFields });
-        }
-      } catch (e) { console.error('[NearbyCreators] visibility check error:', e); }
-    };
-    check();
-  }, [user?.id]);
 
   useEffect(() => {
     analytics.pageView("nearby-creators");
@@ -208,149 +183,185 @@ const NearbyCreators = () => {
     return r;
   }, [atlasFilter, locations, bookmarkedIds, searchFilters]);
 
+  const totalResults = filteredCreators.length + filteredSessions.length + filteredLocations.length;
+
   return (
-    <div className="container max-w-7xl mx-auto py-6 px-4 space-y-6 pb-24 md:pb-6">
-      <ProfileVisibilityBanner isVisible={profileVisibility.isVisible} missingFields={profileVisibility.missingFields} />
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Nearby</h1>
-          <p className="text-muted-foreground">Discover creators, studios, shoot spots &amp; sessions near you</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}>
-            {viewMode === 'map' ? <Users className="h-4 w-4 mr-2" /> : <MapPin className="h-4 w-4 mr-2" />}
-            {viewMode === 'map' ? 'List View' : 'Map View'}
-          </Button>
-          <Button onClick={detectLocation} disabled={locating} variant="gradient">
-            {locating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Navigation className="h-4 w-4 mr-2" />}
-            {userLocation ? 'Update Location' : 'Enable Location'}
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      {userLocation && (
-        <>
-          <AtlasFilterTabs active={atlasFilter} onChange={setAtlasFilter} counts={{
-            creators: creators.length, sessions: sessions.length,
-            studios: locations.filter(l => l.location_type === 'studio').length,
-            spaces: locations.filter(l => l.location_type === 'creative_space').length,
-            spots: locations.filter(l => l.location_type === 'shoot_spot').length,
-            venues: locations.filter(l => l.location_type === 'venue').length,
-            music_stores: locations.filter(l => l.location_type === 'music_store').length,
-            art_supplies: locations.filter(l => l.location_type === 'art_supply').length,
-            rental_houses: locations.filter(l => l.location_type === 'rental_house').length,
-            photo_labs: locations.filter(l => l.location_type === 'photo_lab').length,
-            bookmarked: locations.filter(l => bookmarkedIds.has(l.id)).length,
-          }} />
-          <AtlasSearchBar filters={searchFilters} onChange={setSearchFilters} />
-        </>
-      )}
-
-      <NearbyControls
-        radius={radius} onRadiusChange={setRadius}
-        locationVisible={locationVisible} onToggleVisibility={toggleVisibility}
-        locationPrecision={locationPrecision} onPrecisionChange={handlePrecisionChange}
-        onRefresh={fetchNearbyData} loading={loading} hasLocation={!!userLocation}
-        filtersOpen={filtersOpen} onFiltersOpenChange={setFiltersOpen}
-      />
-
-      {/* No Location State */}
-      {!userLocation && !loading && (
-        <Card className="py-12">
-          <CardContent className="text-center">
-            <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Enable Location</h3>
-            <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-              To discover creators and sessions near you, please enable location services.
-            </p>
-            <Button onClick={detectLocation} disabled={locating} variant="gradient">
-              {locating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Navigation className="h-4 w-4 mr-2" />}
-              Enable Location
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* AI Discovery CTA — mobile */}
-      {userLocation && (
-        <Card className="lg:hidden border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5">
-          <CardContent className="py-4">
-            <div className="flex items-center gap-3">
-              <div className="shrink-0 h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">Discover Creative Spots</p>
-                <p className="text-xs text-muted-foreground">AI finds studios, spaces & shoot spots near you</p>
-              </div>
-              <Button variant="gradient" size="sm" onClick={() => setShowSeedDialog(true)} className="shrink-0">
-                <Sparkles className="h-3.5 w-3.5 mr-1" />Search
+    <div className="min-h-screen pb-24 md:pb-6">
+      {/* Sticky header bar */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b">
+        <div className="px-3 py-2.5 sm:px-4">
+          {/* Row 1: Title + actions */}
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold truncate">Nearby</h1>
+              {userLocation && (
+                <p className="text-[11px] text-muted-foreground">
+                  {totalResults} result{totalResults !== 1 ? 's' : ''} within {radius}km
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {userLocation && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+                >
+                  {viewMode === 'map' ? <List className="h-4 w-4" /> : <Map className="h-4 w-4" />}
+                </Button>
+              )}
+              <Button
+                onClick={detectLocation}
+                disabled={locating}
+                variant="gradient"
+                size="sm"
+                className="h-8 text-xs px-3"
+              >
+                {locating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5" />}
+                <span className="ml-1.5 hidden xs:inline">{userLocation ? 'Update' : 'Enable'}</span>
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Main Content */}
-      {userLocation && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className={viewMode === 'map' ? 'lg:col-span-2' : 'lg:col-span-3'}>
-            {viewMode === 'map' ? (
-              <UnifiedNearbyMap
-                creators={filteredCreators} sessions={filteredSessions} locations={filteredLocations}
-                userLocation={userLocation} selectedItem={selectedItem}
-                onSelectCreator={(c) => setSelectedItem(c ? { type: 'creator', id: c.user_id } : null)}
-                onSelectSession={(s) => { if (s) { setSelectedItem({ type: 'session', id: s.id }); setSelectedSession(s); } else setSelectedItem(null); }}
-                onSelectLocation={(l) => setSelectedItem(l ? { type: 'location', id: l.id } : null)}
-                loading={loading}
-              />
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {loading ? (
-                  <div className="col-span-full flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-                ) : filteredCreators.length === 0 && filteredSessions.length === 0 && filteredLocations.length === 0 ? (
-                  <Card className="col-span-full py-12">
-                    <CardContent className="text-center">
-                      <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Nothing nearby</h3>
-                      <p className="text-muted-foreground mb-4">Try increasing your search radius or create a session!</p>
-                      <Button variant="gradient" onClick={() => setShowCreateSession(true)}><Plus className="h-4 w-4 mr-2" />Create Session</Button>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <>
-                    {filteredCreators.map((c) => <CreatorCard key={c.user_id} creator={c} onViewProfile={handleViewProfile} onMessage={handleMessage} />)}
-                    {filteredSessions.map((s) => <SessionCard key={s.id} session={s} onJoin={fetchNearbyData} onClick={() => setSelectedSession(s)} />)}
-                    {filteredLocations.map((loc) => (
-                      <LocationListItem key={loc.id} location={loc} isSelected={false} onClick={() => setSelectedLocation(loc)}
-                        formatDistance={formatDistance} isBookmarked={bookmarkedIds.has(loc.id)} onToggleBookmark={() => toggleBookmark(loc.id)} />
-                    ))}
-                  </>
-                )}
-              </div>
-            )}
           </div>
 
-          {viewMode === 'map' && (
-            <NearbySidebar
-              creators={filteredCreators} sessions={filteredSessions} locations={filteredLocations}
-              atlasFilter={atlasFilter} loading={loading} selectedItem={selectedItem}
-              onSelectCreator={(id) => setSelectedItem({ type: 'creator', id })}
-              onSelectSession={(s) => { setSelectedItem({ type: 'session', id: s.id }); setSelectedSession(s); }}
-              onSelectLocation={(loc) => { setSelectedItem({ type: 'location', id: loc.id }); setSelectedLocation(loc); }}
-              onViewProfile={handleViewProfile}
-              onCreateSession={() => setShowCreateSession(true)}
-              onAddLocation={() => setShowAddLocation(true)}
-              onSeedLocations={() => setShowSeedDialog(true)}
-              onRefresh={fetchNearbyData}
-              bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
-            />
+          {/* Row 2: Scrollable filter tabs */}
+          {userLocation && (
+            <div className="overflow-x-auto -mx-3 px-3 scrollbar-hide">
+              <AtlasFilterTabs active={atlasFilter} onChange={setAtlasFilter} counts={{
+                creators: creators.length, sessions: sessions.length,
+                studios: locations.filter(l => l.location_type === 'studio').length,
+                spaces: locations.filter(l => l.location_type === 'creative_space').length,
+                spots: locations.filter(l => l.location_type === 'shoot_spot').length,
+                venues: locations.filter(l => l.location_type === 'venue').length,
+                music_stores: locations.filter(l => l.location_type === 'music_store').length,
+                art_supplies: locations.filter(l => l.location_type === 'art_supply').length,
+                rental_houses: locations.filter(l => l.location_type === 'rental_house').length,
+                photo_labs: locations.filter(l => l.location_type === 'photo_lab').length,
+                bookmarked: locations.filter(l => bookmarkedIds.has(l.id)).length,
+              }} />
+            </div>
           )}
         </div>
-      )}
+
+        {/* Row 3: Search + filters (compact) */}
+        {userLocation && (
+          <div className="px-3 pb-2.5 sm:px-4">
+            <AtlasSearchBar filters={searchFilters} onChange={setSearchFilters} />
+          </div>
+        )}
+      </div>
+
+      {/* Content area */}
+      <div className="px-3 sm:px-4 py-3 space-y-3 max-w-7xl mx-auto">
+        <ProfileVisibilityBanner isVisible={true} missingFields={[]} />
+
+        {/* Controls (radius, visibility) */}
+        {userLocation && (
+          <NearbyControls
+            radius={radius} onRadiusChange={setRadius}
+            locationVisible={locationVisible} onToggleVisibility={toggleVisibility}
+            locationPrecision={locationPrecision} onPrecisionChange={handlePrecisionChange}
+            onRefresh={fetchNearbyData} loading={loading} hasLocation={!!userLocation}
+            filtersOpen={filtersOpen} onFiltersOpenChange={setFiltersOpen}
+          />
+        )}
+
+        {/* No Location State */}
+        {!userLocation && !loading && (
+          <Card className="mt-8">
+            <CardContent className="py-12 text-center">
+              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <MapPin className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Enable Location</h3>
+              <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
+                Allow location access to discover creators, studios, and sessions near you.
+              </p>
+              <Button onClick={detectLocation} disabled={locating} variant="gradient" size="lg">
+                {locating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Navigation className="h-4 w-4 mr-2" />}
+                Enable Location
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* AI Discovery CTA — compact inline */}
+        {userLocation && (
+          <button
+            onClick={() => setShowSeedDialog(true)}
+            className="w-full flex items-center gap-3 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 p-3 hover:from-primary/10 hover:to-accent/10 transition-colors text-left"
+          >
+            <div className="shrink-0 h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold truncate">AI Spot Discovery</p>
+              <p className="text-[10px] text-muted-foreground truncate">Find studios & creative spaces near you</p>
+            </div>
+            <span className="text-xs text-primary font-medium shrink-0">Search →</span>
+          </button>
+        )}
+
+        {/* Main Content */}
+        {userLocation && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className={viewMode === 'map' ? 'lg:col-span-2' : 'lg:col-span-3'}>
+              {viewMode === 'map' ? (
+                <div className="rounded-xl overflow-hidden border h-[50vh] sm:h-[60vh]">
+                  <UnifiedNearbyMap
+                    creators={filteredCreators} sessions={filteredSessions} locations={filteredLocations}
+                    userLocation={userLocation} selectedItem={selectedItem}
+                    onSelectCreator={(c) => setSelectedItem(c ? { type: 'creator', id: c.user_id } : null)}
+                    onSelectSession={(s) => { if (s) { setSelectedItem({ type: 'session', id: s.id }); setSelectedSession(s); } else setSelectedItem(null); }}
+                    onSelectLocation={(l) => setSelectedItem(l ? { type: 'location', id: l.id } : null)}
+                    loading={loading}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {loading ? (
+                    <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                  ) : totalResults === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center">
+                        <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-semibold mb-2">Nothing nearby</h3>
+                        <p className="text-sm text-muted-foreground mb-4">Try increasing your search radius or create a session!</p>
+                        <Button variant="gradient" onClick={() => setShowCreateSession(true)}><Plus className="h-4 w-4 mr-2" />Create Session</Button>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <>
+                      {filteredCreators.map((c) => <CreatorCard key={c.user_id} creator={c} onViewProfile={handleViewProfile} onMessage={handleMessage} />)}
+                      {filteredSessions.map((s) => <SessionCard key={s.id} session={s} onJoin={fetchNearbyData} onClick={() => setSelectedSession(s)} />)}
+                      {filteredLocations.map((loc) => (
+                        <LocationListItem key={loc.id} location={loc} isSelected={false} onClick={() => setSelectedLocation(loc)}
+                          formatDistance={formatDistance} isBookmarked={bookmarkedIds.has(loc.id)} onToggleBookmark={() => toggleBookmark(loc.id)} />
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {viewMode === 'map' && (
+              <NearbySidebar
+                creators={filteredCreators} sessions={filteredSessions} locations={filteredLocations}
+                atlasFilter={atlasFilter} loading={loading} selectedItem={selectedItem}
+                onSelectCreator={(id) => setSelectedItem({ type: 'creator', id })}
+                onSelectSession={(s) => { setSelectedItem({ type: 'session', id: s.id }); setSelectedSession(s); }}
+                onSelectLocation={(loc) => { setSelectedItem({ type: 'location', id: loc.id }); setSelectedLocation(loc); }}
+                onViewProfile={handleViewProfile}
+                onCreateSession={() => setShowCreateSession(true)}
+                onAddLocation={() => setShowAddLocation(true)}
+                onSeedLocations={() => setShowSeedDialog(true)}
+                onRefresh={fetchNearbyData}
+                bookmarkedIds={bookmarkedIds} onToggleBookmark={toggleBookmark}
+              />
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Dialogs */}
       <CreateSessionDialog open={showCreateSession} onOpenChange={setShowCreateSession} onCreated={fetchNearbyData} defaultLocation={userLocation || undefined} />

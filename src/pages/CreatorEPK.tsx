@@ -65,6 +65,8 @@ interface Profile {
   collab_intent?: string;
   rate_range?: string;
   is_claimed?: boolean;
+  cover_image_url?: string;
+  job_title?: string;
 }
 
 interface PortfolioItem {
@@ -84,6 +86,9 @@ interface Credit {
   year?: number;
   platform?: string;
   source?: string;
+  thumbnail_url?: string;
+  primary_media_url?: string;
+  credit_category?: string;
   isVerified?: boolean;
   verificationTier?: 'icdb' | 'ai' | 'peer' | 'payment' | 'manual';
 }
@@ -95,6 +100,19 @@ interface IndustryStat {
   stat_type: string;
   issuer?: string;
 }
+
+// Decode HTML entities from scraped data
+const decodeHtmlEntities = (text: string): string => {
+  if (!text) return text;
+  return text
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCharCode(parseInt(n, 16)))
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'");
+};
 
 const CreatorEPK = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -133,7 +151,7 @@ const CreatorEPK = () => {
         // Fetch from profiles table directly - RLS allows public read
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range, is_claimed, icdb_creator_id')
+          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range, is_claimed, icdb_creator_id, cover_image_url, job_title')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -171,10 +189,10 @@ const CreatorEPK = () => {
             .eq('user_id', userId)
             .limit(4),
           
-          // All Credits (work history)
+          // All Credits (work history) — include thumbnail + media
           supabase
             .from('credits')
-            .select('id, project_name, role, year, platform, verification_status, ai_confidence, endorsement_count, source')
+            .select('id, project_name, role, year, platform, verification_status, ai_confidence, endorsement_count, source, thumbnail_url, primary_media_url, credit_category')
             .eq('user_id', userId)
             .order('year', { ascending: false })
             .limit(12),
@@ -250,6 +268,13 @@ const CreatorEPK = () => {
           .slice(0, 12);
         
         setCredits(allCredits);
+
+        // Background: enrich press links via Firecrawl (fire-and-forget)
+        if (pressRes.data && pressRes.data.some((p: any) => !p.publication || !p.image_url)) {
+          supabase.functions.invoke('enrich-press-links', {
+            body: { user_id: userId },
+          }).catch(e => console.log('Press enrichment skipped:', e));
+        }
 
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -355,14 +380,29 @@ const CreatorEPK = () => {
         }}
       />
 
+      {/* Cover Image Hero */}
+      {profile.cover_image_url && (
+        <div className="relative h-40 sm:h-52 overflow-hidden">
+          <img 
+            src={profile.cover_image_url} 
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        </div>
+      )}
+
       {/* Main Content - Mobile-first vertical layout */}
-      <div className="max-w-lg mx-auto px-4 py-8 pb-32">
+      <div className="max-w-lg mx-auto px-4 pb-32" style={{ marginTop: profile.cover_image_url ? '-3rem' : '2rem' }}>
         
         {/* Profile Header */}
         <div className="text-center space-y-4 mb-8">
           {/* Avatar */}
           <div className="relative inline-block">
-            <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-xl">
+            <Avatar className={cn(
+              "h-28 w-28 border-4 shadow-xl",
+              profile.cover_image_url ? "border-background" : "border-primary/20"
+            )}>
               <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
               <AvatarFallback className="text-3xl font-bold bg-primary/10">
                 {profile.full_name?.charAt(0) || '?'}
@@ -380,8 +420,8 @@ const CreatorEPK = () => {
 
           {/* Name & Role */}
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold">{profile.full_name}</h1>
-            <p className="text-primary font-medium">{profile.role || 'Creator'}</p>
+            <h1 className="text-2xl font-bold tracking-tight">{profile.full_name}</h1>
+            <p className="text-primary font-medium">{profile.job_title || profile.role || 'Creator'}</p>
             {profile.location && (
               <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                 <MapPin className="h-3 w-3" />
@@ -414,8 +454,8 @@ const CreatorEPK = () => {
             </p>
           )}
 
-          {/* Social Links — only for authenticated users */}
-          {currentUserId && socialLinks.length > 0 && (
+          {/* Social Links — visible to all visitors */}
+          {socialLinks.length > 0 && (
             <div className="flex items-center justify-center gap-3 pt-2">
               {socialLinks.map((link, index) => (
                 <a
@@ -423,7 +463,7 @@ const CreatorEPK = () => {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-full bg-muted/50 hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="p-2.5 rounded-full bg-muted/50 hover:bg-primary/10 hover:text-primary transition-colors"
                   aria-label={link.label}
                 >
                   <link.icon className="h-5 w-5" />
@@ -583,18 +623,40 @@ const CreatorEPK = () => {
                     }[credit.verificationTier || 'manual'];
 
                     return (
-                      <div key={credit.id} className="flex-shrink-0 w-[140px]">
-                        <div className="rounded-lg overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/10 hover:border-primary/30 transition-all h-[180px] flex flex-col items-center justify-center gap-2 p-3 text-center">
-                          <CheckCircle2 className="h-8 w-8 text-primary/40" />
-                          <p className="text-xs font-semibold leading-tight line-clamp-2">{credit.project_name || credit.title}</p>
-                          <p className="text-[10px] text-muted-foreground truncate w-full">{credit.role}</p>
+                      <div key={credit.id} className="flex-shrink-0 w-[130px]">
+                        <div className="rounded-xl overflow-hidden border border-primary/10 hover:border-primary/30 transition-all h-[195px] flex flex-col relative group cursor-pointer"
+                          onClick={() => {
+                            const name = encodeURIComponent(decodeHtmlEntities(credit.project_name || credit.title || ''));
+                            window.location.href = `/production?name=${name}`;
+                          }}
+                        >
+                          {/* Thumbnail or gradient fallback */}
+                          {credit.thumbnail_url ? (
+                            <div className="w-full h-[130px] overflow-hidden">
+                              <img 
+                                src={credit.thumbnail_url} 
+                                alt={decodeHtmlEntities(credit.project_name || credit.title || '')}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-full h-[130px] bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
+                              <CheckCircle2 className="h-8 w-8 text-primary/40" />
+                            </div>
+                          )}
+                          <div className="p-2 flex-1 flex flex-col justify-between">
+                            <p className="text-[11px] font-semibold leading-tight line-clamp-2">{decodeHtmlEntities(credit.project_name || credit.title || '')}</p>
+                            <div className="flex items-center justify-between mt-1">
+                              <p className="text-[9px] text-muted-foreground truncate">{credit.role}</p>
+                              {credit.year && <span className="text-[9px] text-muted-foreground">{credit.year}</span>}
+                            </div>
+                          </div>
+                          {/* Verification badge overlay */}
                           {tierConfig.label && (
-                            <Badge variant="outline" className={cn("text-[8px] h-3.5 px-1", tierConfig.className)}>
+                            <Badge variant="outline" className={cn("absolute top-1.5 right-1.5 text-[7px] h-3.5 px-1 backdrop-blur-sm", tierConfig.className)}>
                               {tierConfig.label}
                             </Badge>
-                          )}
-                          {credit.year && (
-                            <span className="text-[10px] text-muted-foreground">{credit.year}</span>
                           )}
                         </div>
                       </div>
@@ -619,15 +681,25 @@ const CreatorEPK = () => {
                   <div
                     key={credit.id}
                     className={cn(
-                      "flex items-center justify-between p-3 rounded-lg",
+                      "flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-muted/80 transition-colors",
                       credit.isVerified
                         ? "bg-primary/5 border border-primary/10"
                         : "bg-muted/50"
                     )}
+                    onClick={() => {
+                      const name = encodeURIComponent(decodeHtmlEntities(credit.project_name || credit.title || ''));
+                      window.location.href = `/production?name=${name}`;
+                    }}
                   >
+                    {/* Thumbnail */}
+                    {credit.thumbnail_url && (
+                      <div className="w-10 h-10 rounded-md overflow-hidden shrink-0">
+                        <img src={credit.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      </div>
+                    )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-sm truncate">{credit.project_name || credit.title}</p>
+                        <p className="font-medium text-sm truncate">{decodeHtmlEntities(credit.project_name || credit.title || '')}</p>
                         {credit.isVerified && tierConfig.label && (
                           <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 gap-0.5", tierConfig.className)}>
                             <CheckCircle2 className="h-2.5 w-2.5" />
@@ -755,7 +827,7 @@ const CreatorEPK = () => {
                   Featured In
                 </h3>
                 <div className="space-y-2">
-                  {pressLinks.slice(0, 3).map((press) => (
+                  {pressLinks.slice(0, 4).map((press) => (
                     <a
                       key={press.id}
                       href={press.url}
@@ -763,9 +835,15 @@ const CreatorEPK = () => {
                       rel="noopener noreferrer"
                       className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                     >
-                      <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                      {press.image_url ? (
+                        <div className="w-10 h-10 rounded-md overflow-hidden shrink-0">
+                          <img src={press.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                      ) : (
+                        <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                      )}
                       <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{press.title}</p>
+                        <p className="font-medium text-sm truncate">{decodeHtmlEntities(press.title)}</p>
                         <p className="text-xs text-muted-foreground">{press.publication}</p>
                       </div>
                     </a>

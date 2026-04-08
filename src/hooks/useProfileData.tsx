@@ -146,7 +146,16 @@ export const useProfileData = () => {
         if (statsResult.status === 'fulfilled') setIndustryStats(statsResult.value.data || []);
         if (creditsResult.status === 'fulfilled') setCredits(creditsResult.value.data || []);
         if (awardsResult.status === 'fulfilled') setAwards(awardsResult.value.data || []);
-        if (pressResult.status === 'fulfilled') setPressLinks(pressResult.value.data || []);
+        if (pressResult.status === 'fulfilled') {
+          setPressLinks(pressResult.value.data || []);
+          // Auto-enrich press links missing metadata via Firecrawl
+          const pressData = pressResult.value.data || [];
+          if (pressData.some((p: any) => !p.publication || !p.image_url)) {
+            supabase.functions.invoke('enrich-press-links', {
+              body: { user_id: currentUserId, scrape_website: true },
+            }).catch(() => {});
+          }
+        }
       });
 
       // Fetch company-specific data in background if needed

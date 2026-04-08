@@ -94,6 +94,16 @@ interface ProfileInfo {
   role: string | null;
 }
 
+interface WebResult {
+  title: string;
+  description?: string;
+  url?: string;
+  image_url?: string;
+  platform?: string;
+  year?: number;
+  type?: string;
+}
+
 const CreditDatabase = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -101,6 +111,7 @@ const CreditDatabase = () => {
   const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
   const [userCredits, setUserCredits] = useState<UserCredit[]>([]);
+  const [webResults, setWebResults] = useState<WebResult[]>([]);
   const [profiles, setProfiles] = useState<Map<string, ProfileInfo>>(new Map());
   const [loading, setLoading] = useState(false);
   const [projectCount, setProjectCount] = useState(0);
@@ -148,6 +159,7 @@ const CreditDatabase = () => {
       setIcdbProjects([]);
       setAiSuggestions([]);
       setUserCredits([]);
+      setWebResults([]);
       return;
     }
     setLoading(true);
@@ -159,6 +171,7 @@ const CreditDatabase = () => {
       if (error) throw error;
       setIcdbProjects(data?.projects || []);
       setAiSuggestions(data?.suggestions || []);
+      setWebResults(data?.webResults || []);
       setProjectCount(data?.total || 0);
 
       // Also fetch creator credits matching search
@@ -236,7 +249,7 @@ const CreditDatabase = () => {
   const formatType = (type: string) =>
     type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-  const hasResults = icdbProjects.length > 0 || aiSuggestions.length > 0 || userCredits.length > 0;
+  const hasResults = icdbProjects.length > 0 || aiSuggestions.length > 0 || userCredits.length > 0 || webResults.length > 0;
 
   return (
     <>
@@ -389,6 +402,54 @@ const CreditDatabase = () => {
                           </Card>
                         );
                       })}
+                    </div>
+                  </section>
+                )}
+
+                {/* Web discovered results */}
+                {webResults.length > 0 && (
+                  <section>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Globe className="h-4 w-4 text-primary" />
+                      <h2 className="text-sm font-semibold">Discovered on the Web</h2>
+                      <span className="text-[11px] text-muted-foreground">({webResults.length})</span>
+                    </div>
+                    <div className="space-y-2">
+                      {webResults.map((result, i) => (
+                        <Card
+                          key={`web-${i}`}
+                          className="overflow-hidden hover:bg-muted/30 transition-colors border-border/50 cursor-pointer"
+                          onClick={() => result.url && window.open(result.url, '_blank')}
+                        >
+                          <CardContent className="p-3 flex items-center gap-3">
+                            {result.image_url ? (
+                              <img
+                                src={result.image_url}
+                                alt={result.title}
+                                className="h-12 w-12 rounded object-cover shrink-0 bg-muted"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <div className="h-12 w-12 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                                <Globe className="h-5 w-5 text-primary/60" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{result.title}</p>
+                              {result.description && (
+                                <p className="text-[11px] text-muted-foreground line-clamp-2">{result.description}</p>
+                              )}
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                {result.platform && (
+                                  <Badge variant="secondary" className="text-[9px] h-3.5 font-normal">{result.platform}</Badge>
+                                )}
+                                {result.year && <span className="text-[10px] text-muted-foreground">{result.year}</span>}
+                              </div>
+                            </div>
+                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
                   </section>
                 )}

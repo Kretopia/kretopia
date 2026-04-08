@@ -20,53 +20,52 @@ serve(async (req) => {
     const { query, category, user_name, user_role } = await req.json();
 
     if (!query || query.length < 2) {
-      return new Response(JSON.stringify({ projects: [], suggestions: [] }), {
+      return new Response(JSON.stringify({ projects: [], suggestions: [], webResults: [] }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Search existing ICDB projects
-    let dbQuery = supabase
-      .from('icdb_projects')
-      .select('*, icdb_project_roles(id, role_title, person_name, is_claimed, claimed_by)')
-      .or(`title.ilike.%${query}%,description.ilike.%${query}%,client_brand.ilike.%${query}%`)
-      .order('year', { ascending: false, nullsFirst: false })
-      .limit(20);
+    // Run DB search, AI suggestions, and web search in parallel
+    const dbSearchPromise = (async () => {
+      let dbQuery = supabase
+        .from('icdb_projects')
+        .select('*, icdb_project_roles(id, role_title, person_name, is_claimed, claimed_by)')
+        .or(`title.ilike.%${query}%,description.ilike.%${query}%,client_brand.ilike.%${query}%`)
+        .order('year', { ascending: false, nullsFirst: false })
+        .limit(20);
 
-    if (category && category !== 'all') {
-      dbQuery = dbQuery.eq('category', category);
-    }
-
-    const { data: dbResults, error } = await dbQuery;
-    if (error) throw error;
-
-    // Also search by contributor name
-    const { data: roleResults } = await supabase
-      .from('icdb_project_roles')
-      .select('project_id, role_title, person_name, icdb_projects(*)')
-      .ilike('person_name', `%${query}%`)
-      .limit(10);
-
-    // Merge results
-    const projectMap = new Map();
-    for (const p of (dbResults || [])) {
-      projectMap.set(p.id, p);
-    }
-    for (const r of (roleResults || [])) {
-      if (r.icdb_projects && !projectMap.has((r.icdb_projects as any).id)) {
-        projectMap.set((r.icdb_projects as any).id, {
-          ...(r.icdb_projects as any),
-          icdb_project_roles: [],
-          _matched_role: { name: r.person_name, role: r.role_title },
-        });
+      if (category && category !== 'all') {
+        dbQuery = dbQuery.eq('category', category);
       }
-    }
 
-    const projects = Array.from(projectMap.values());
+      const { data: dbResults, error } = await dbQuery;
+      if (error) throw error;
 
-    // If few DB results and AI is available, supplement with AI suggestions
-    let aiSuggestions: any[] = [];
-    if (projects.length < 5 && lovableApiKey && query.length >= 3) {
+      // Also search by contributor name
+      const { data: roleResults } = await supabase
+        .from('icdb_project_roles')
+        .select('project_id, role_title, person_name, icdb_projects(*)')
+        .ilike('person_name', `%${query}%`)
+        .limit(10);
+
+      const projectMap = new Map();
+      for (const p of (dbResults || [])) {
+        projectMap.set(p.id, p);
+      }
+      for (const r of (roleResults || [])) {
+        if (r.icdb_projects && !projectMap.has((r.icdb_projects as any).id)) {
+          projectMap.set((r.icdb_projects as any).id, {
+            ...(r.icdb_projects as any),
+            icdb_project_roles: [],
+            _matched_role: { name: r.person_name, role: r.role_title },
+          });
+        }
+      }
+      return Array.from(projectMap.values());
+    })();
+
+    const aiPromise = (async () => {
+      if (!lovableApiKey || query.length < 3) return [];
       try {
         const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
@@ -138,7 +137,7 @@ serve(async (req) => {
           const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
           if (toolCall?.function?.arguments) {
             const parsed = JSON.parse(toolCall.function.arguments);
-            aiSuggestions = (parsed.suggestions || []).map((s: any) => ({
+            return (parsed.suggestions || []).map((s: any) => ({
               ...s,
               _source: 'ai_suggestion',
             }));
@@ -147,11 +146,40 @@ serve(async (req) => {
       } catch (aiErr) {
         console.error('AI supplement failed:', aiErr);
       }
-    }
+      return [];
+    })();
+
+    // Call search-credits-web for Firecrawl-powered web results
+    const webPromise = (async () => {
+      try {
+        const webResponse = await fetch(`${supabaseUrl}/functions/v1/search-credits-web`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`,
+            'apikey': supabaseKey,
+          },
+          body: JSON.stringify({ query: query.trim() }),
+        });
+
+        if (webResponse.ok) {
+          const webData = await webResponse.json();
+          return Array.isArray(webData?.results) ? webData.results : [];
+        } else {
+          console.warn('search-credits-web failed:', webResponse.status);
+        }
+      } catch (webErr) {
+        console.error('search-credits-web error:', webErr);
+      }
+      return [];
+    })();
+
+    const [projects, aiSuggestions, webResults] = await Promise.all([dbSearchPromise, aiPromise, webPromise]);
 
     return new Response(JSON.stringify({ 
       projects, 
       suggestions: aiSuggestions,
+      webResults: webResults.slice(0, 10),
       total: projects.length,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

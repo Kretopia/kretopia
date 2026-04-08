@@ -151,6 +151,36 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
 
   useEffect(() => { fetchAllCredits(); }, [userId]);
 
+  // Auto-trigger media backfill for credits missing thumbnails
+  const triggerBackfill = async (creditsList: UnifiedCredit[]) => {
+    const missingCount = creditsList.filter(c => !c.thumbnailUrl).length;
+    if (missingCount === 0 || !isOwnProfile) return;
+    
+    // Throttle: only once per hour per user
+    const key = `backfill_last_${userId}`;
+    const last = localStorage.getItem(key);
+    if (last && Date.now() - parseInt(last) < 3600000) return;
+    localStorage.setItem(key, Date.now().toString());
+
+    try {
+      console.log(`[Backfill] Triggering for ${missingCount} credits missing thumbnails`);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      supabase.functions.invoke('backfill-credit-media', {
+        body: { user_id: userId, batch_size: 20 },
+      }).then(({ data }) => {
+        if (data?.updated > 0) {
+          console.log(`[Backfill] Updated ${data.updated} credits with media`);
+          // Silently refresh credits to show new thumbnails
+          fetchAllCredits();
+        }
+      }).catch(e => console.error('[Backfill] Error:', e));
+    } catch (e) {
+      console.error('[Backfill] Trigger error:', e);
+    }
+  };
+
   const fetchAllCredits = async () => {
     try {
       const { data, error } = await supabase
@@ -179,6 +209,9 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
         };
       });
       setCredits(allCredits);
+      
+      // Trigger backfill in background if needed
+      triggerBackfill(allCredits);
     } catch (error) {
       console.error('Error fetching credits:', error);
     } finally {
@@ -447,7 +480,16 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden'); }}
                           />
                         ) : null}
-                        <div className={cn("w-14 h-14 rounded-lg bg-muted flex items-center justify-center", credit.thumbnailUrl && "hidden")}>
+                        <div className={cn(
+                          "w-14 h-14 rounded-lg flex items-center justify-center",
+                          credit.thumbnailUrl && "hidden",
+                          credit.categoryKey === "film_tv" ? "bg-gradient-to-br from-amber-500/20 to-orange-500/20" :
+                          credit.categoryKey === "music" ? "bg-gradient-to-br from-purple-500/20 to-pink-500/20" :
+                          credit.categoryKey === "events" ? "bg-gradient-to-br from-blue-500/20 to-cyan-500/20" :
+                          credit.categoryKey === "digital" ? "bg-gradient-to-br from-red-500/20 to-rose-500/20" :
+                          credit.categoryKey === "fashion" ? "bg-gradient-to-br from-pink-500/20 to-fuchsia-500/20" :
+                          "bg-muted"
+                        )}>
                           <Icon className="h-6 w-6 text-muted-foreground" />
                         </div>
                         {isPlayable && (

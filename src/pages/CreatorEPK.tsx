@@ -803,7 +803,7 @@ const CreatorEPK = () => {
                   Featured In
                 </h3>
                 <div className="space-y-2">
-                  {pressLinks.slice(0, 3).map((press) => (
+                  {pressLinks.slice(0, 4).map((press) => (
                     <a
                       key={press.id}
                       href={press.url}
@@ -811,9 +811,15 @@ const CreatorEPK = () => {
                       rel="noopener noreferrer"
                       className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                     >
-                      <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                      {press.image_url ? (
+                        <div className="w-10 h-10 rounded-md overflow-hidden shrink-0">
+                          <img src={press.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                      ) : (
+                        <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                      )}
                       <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{press.title}</p>
+                        <p className="font-medium text-sm truncate">{decodeHtmlEntities(press.title)}</p>
                         <p className="text-xs text-muted-foreground">{press.publication}</p>
                       </div>
                     </a>

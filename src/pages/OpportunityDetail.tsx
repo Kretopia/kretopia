@@ -390,9 +390,19 @@ const OpportunityDetail = () => {
         </div>
 
         {/* Status Badge */}
-        {!isActive && (
+        {opportunity.status !== 'active' && (
           <div className="mb-4 rounded-lg bg-muted p-4 text-center">
-            <Badge variant="secondary">Campaign Ended</Badge>
+            <Badge variant="secondary">
+              {opportunity.status === 'closed' && '🔒 Campaign Ended'}
+              {opportunity.status === 'paused' && '⏸️ Paused'}
+              {opportunity.status === 'filled' && '🎉 Position Filled'}
+              {!['closed', 'paused', 'filled'].includes(opportunity.status) && opportunity.status}
+            </Badge>
+            {isOwner && (
+              <Button variant="link" size="sm" className="ml-2" onClick={() => handleStatusChange('active')}>
+                Reopen
+              </Button>
+            )}
           </div>
         )}
 

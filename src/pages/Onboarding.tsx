@@ -159,7 +159,70 @@ export default function Onboarding() {
     }
   };
 
-  const handleNext = async () => {
+  const handleGenerateBio = async () => {
+    if (!profile.full_name || !profile.role) return;
+    setGeneratingBio(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-bio", {
+        body: { fullName: profile.full_name, role: profile.role, location: profile.location, skills: selectedSkills },
+      });
+      if (error) throw error;
+      if (data?.bio) {
+        setBio(data.bio);
+        toast({ title: "✨ Bio generated!", description: "You can edit it before continuing." });
+      }
+    } catch (e: any) {
+      toast({ title: "Failed to generate bio", description: e.message, variant: "destructive" });
+    } finally {
+      setGeneratingBio(false);
+    }
+  };
+
+  const handleImportUrl = async () => {
+    if (!importUrl.trim()) return;
+    setImporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("import-profile-url", {
+        body: { url: importUrl.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) { toast({ title: "Import issue", description: data.error, variant: "destructive" }); return; }
+
+      // Apply extracted data
+      if (data.full_name && !profile.full_name) setProfile(prev => ({ ...prev, full_name: data.full_name }));
+      if (data.role && !profile.role) setProfile(prev => ({ ...prev, role: data.role }));
+      if (data.location && !profile.location) setProfile(prev => ({ ...prev, location: data.location }));
+      if (data.bio) setBio(data.bio);
+      if (data.skills?.length) {
+        setSelectedSkills(prev => [...new Set([...prev, ...data.skills.slice(0, 10)])]);
+      }
+      if (data.credits?.length) {
+        const first = data.credits[0];
+        setFirstCredit({ project_name: first.project_name || "", role: first.role || "", project_type: first.project_type || "" });
+      }
+
+      toast({ title: "🎉 Profile imported!", description: `Found ${data.credits?.length || 0} credits from ${new URL(importUrl).hostname}` });
+    } catch (e: any) {
+      toast({ title: "Import failed", description: e.message || "Check the URL and try again", variant: "destructive" });
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleClaimCredit = async (credit: any) => {
+    if (!user) return;
+    setClaimingCreditId(credit.id);
+    try {
+      await supabase.from("credits").update({ user_id: user.id }).eq("id", credit.id);
+      setPendingCredits(prev => prev.filter(c => c.id !== credit.id));
+      toast({ title: "✅ Credit claimed!", description: credit.project_name });
+    } catch (e) {
+      toast({ title: "Failed to claim", variant: "destructive" });
+    } finally {
+      setClaimingCreditId(null);
+    }
+  };
+
     const { analytics } = await import("@/lib/analytics");
 
     if (currentStep === 1) {

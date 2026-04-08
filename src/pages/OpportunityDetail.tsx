@@ -225,6 +225,29 @@ const OpportunityDetail = () => {
         image={opportunity.image_url || undefined}
         url={`https://www.thrivein.io/opportunity/${opportunity.id}`}
       />
+      <Helmet>
+        <link rel="canonical" href={`https://www.thrivein.io/opportunity/${opportunity.id}`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "JobPosting",
+            "title": opportunity.title,
+            "description": opportunity.description || "",
+            "datePosted": opportunity.created_at,
+            "employmentType": opportunity.type === "Paid" ? "CONTRACTOR" : "VOLUNTEER",
+            "hiringOrganization": {
+              "@type": "Organization",
+              "name": "ThriveIN",
+              "sameAs": "https://www.thrivein.io"
+            },
+            ...(opportunity.location ? { "jobLocation": { "@type": "Place", "address": opportunity.location } } : {}),
+            ...(opportunity.compensation ? { "baseSalary": { "@type": "MonetaryAmount", "currency": "USD", "value": opportunity.compensation } } : {}),
+            "industry": "Creative Industries",
+            "url": `https://www.thrivein.io/opportunity/${opportunity.id}`,
+            ...(opportunity.image_url ? { "image": opportunity.image_url } : {})
+          })}
+        </script>
+      </Helmet>
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">

@@ -9,6 +9,8 @@ import { hasProAccess } from "@/lib/subscriptionConfig";
 import { QuickPostModal } from "@/components/QuickPostModal";
 import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
+import { checkProfileCompletion } from "@/lib/profileCompletion";
+import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";
@@ -51,6 +53,7 @@ export const UnifiedHome = () => {
 
   // Auth-only data
   const [profile, setProfile] = useState<any>(null);
+  const [profileFull, setProfileFull] = useState<any>(null);
   const [myCredits, setMyCredits] = useState(0);
   const [myConnections, setMyConnections] = useState(0);
   const [greeting, setGreeting] = useState("");
@@ -132,12 +135,14 @@ export const UnifiedHome = () => {
   useEffect(() => {
     if (!user) return;
     const fetchAuth = async () => {
-      const [profileRes, creditsCount, connectionsCount] = await Promise.all([
+      const [profileRes, profileFullRes, creditsCount, connectionsCount] = await Promise.all([
         supabase.from("profiles").select("full_name, avatar_url, role, verification_tier, thrive_id").eq("user_id", user.id).single(),
+        supabase.from("profiles").select("*").eq("user_id", user.id).single(),
         supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("connections").select("id", { count: "exact", head: true }).or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`).eq("status", "accepted"),
       ]);
       setProfile(profileRes.data);
+      setProfileFull(profileFullRes.data);
       setMyCredits(creditsCount.count || 0);
       setMyConnections(connectionsCount.count || 0);
     };
@@ -470,6 +475,16 @@ export const UnifiedHome = () => {
               </button>
             ))}
           </div>
+
+          {/* Profile Completion Card - show if profile is less than 100% complete */}
+          {profileFull && (() => {
+            const completion = checkProfileCompletion(profileFull, myCredits);
+            return completion.percentage < 100 ? (
+              <div className="mb-4">
+                <ProfileCompletionCard completion={completion} />
+              </div>
+            ) : null;
+          })()}
         </div>
       )}
 

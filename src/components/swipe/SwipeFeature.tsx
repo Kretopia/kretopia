@@ -24,12 +24,8 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   
-  console.log('[SwipeFeature] Render - user:', user?.id, 'authLoading:', authLoading);
-  
   const { profiles, allProfilesCount, loading, error, fetchProfiles, removeProfile } = useSwipeProfiles(user?.id, filters);
   const { recordSwipe } = useSwipeActions(user?.id);
-  
-  console.log('[SwipeFeature] Profiles:', profiles.length, 'Loading:', loading, 'Error:', error);
 
   // Notify parent of profiles count for filters display
   useEffect(() => {

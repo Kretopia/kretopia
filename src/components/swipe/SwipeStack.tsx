@@ -37,7 +37,7 @@ export function SwipeStack({
   const currentProfile = profiles[0];
   const nextProfile = profiles[1];
 
-  console.log('[SwipeStack] Profiles count:', profiles.length, 'Current:', currentProfile?.full_name);
+  
 
   const SWIPE_THRESHOLD = 100;
   const DRAG_THRESHOLD = 50;

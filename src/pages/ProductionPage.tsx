@@ -13,9 +13,10 @@ import {
   ArrowLeft, ShieldCheck, MapPin, CalendarDays, Building2,
   ExternalLink, Users, UserPlus, Loader2, Globe, Music, Film,
   CheckCircle2, Sparkles, Database, Link2, Plus, Camera, Palette,
-  Megaphone, PartyPopper, ChevronDown, ChevronUp,
+  Megaphone, PartyPopper, ChevronDown, ChevronUp, Play,
 } from "lucide-react";
 import { AuthPrompt, useAuthPrompt } from "@/components/AuthPrompt";
+import { parseMediaUrl } from "@/lib/mediaUtils";
 
 interface AIRole {
   role: string;

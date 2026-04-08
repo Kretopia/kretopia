@@ -151,21 +151,34 @@ Deno.serve(async (req) => {
             }
           }
 
-          // TMDB source → fetch poster from TMDB API
-          if (!updates.thumbnail_url && credit.source === "tmdb" && credit.project_name) {
+          // TMDB source → fetch poster using Firecrawl to scrape TMDB search page
+          if (!updates.thumbnail_url && credit.source === "tmdb" && credit.project_name && firecrawlKey) {
             try {
-              const tmdbRes = await fetch(
-                `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(credit.project_name)}&api_key=2a4ed07cc37579e311f52eef14ee2e32`
-              );
-              if (tmdbRes.ok) {
-                const tmdbData = await tmdbRes.json();
-                const firstResult = tmdbData.results?.[0];
-                if (firstResult?.poster_path) {
-                  updates.thumbnail_url = `https://image.tmdb.org/t/p/w500${firstResult.poster_path}`;
+              const searchUrl = `https://www.themoviedb.org/search?query=${encodeURIComponent(credit.project_name)}`;
+              const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${firecrawlKey}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  url: searchUrl,
+                  formats: ["links"],
+                  onlyMainContent: true,
+                }),
+              });
+              if (scrapeRes.ok) {
+                const scrapeData = await scrapeRes.json();
+                const metadata = scrapeData.data?.metadata;
+                if (metadata?.ogImage) {
+                  updates.thumbnail_url = metadata.ogImage;
+                } else if (metadata?.image) {
+                  updates.thumbnail_url = metadata.image;
                 }
+                console.log(`TMDB scrape for "${credit.project_name}":`, metadata?.ogImage || 'no image');
               }
             } catch (e) {
-              console.log(`TMDB search failed for ${credit.id}:`, e);
+              console.log(`TMDB scrape failed for ${credit.id}:`, e);
             }
           }
 

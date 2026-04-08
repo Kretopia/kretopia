@@ -31,8 +31,9 @@ export const ForgotPasswordDialog = ({ open, onOpenChange }: ForgotPasswordDialo
     }
 
     setResetLoading(true);
+    const siteUrl = import.meta.env.VITE_SITE_URL || 'https://thrivein.io';
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/auth?reset=true`,
+      redirectTo: `${siteUrl}/auth?reset=true`,
     });
 
     if (error) {

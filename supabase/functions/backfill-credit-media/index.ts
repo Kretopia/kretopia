@@ -167,7 +167,14 @@ Deno.serve(async (req) => {
     for (const credit of credits) {
       try {
         const updates: Record<string, any> = {};
-        const name = credit.project_name || "";
+        const rawName = credit.project_name || "";
+        // Clean name for search: strip brackets, episode info, quotes
+        const name = rawName
+          .replace(/\[.*?\]/g, '')    // [S2-16 ep]
+          .replace(/\(.*?\)/g, '')    // (2024)
+          .replace(/[''"]/g, '')      // quotes
+          .replace(/\s+/g, ' ')
+          .trim();
         const src = (credit.source || "").toLowerCase();
         const cat = (credit.credit_category || "").toLowerCase();
         const needsUrl = !credit.url && !credit.primary_media_url;

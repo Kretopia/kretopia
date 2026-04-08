@@ -159,6 +159,7 @@ const CreditDatabase = () => {
       setIcdbProjects([]);
       setAiSuggestions([]);
       setUserCredits([]);
+      setWebResults([]);
       return;
     }
     setLoading(true);
@@ -170,6 +171,7 @@ const CreditDatabase = () => {
       if (error) throw error;
       setIcdbProjects(data?.projects || []);
       setAiSuggestions(data?.suggestions || []);
+      setWebResults(data?.webResults || []);
       setProjectCount(data?.total || 0);
 
       // Also fetch creator credits matching search
@@ -247,7 +249,7 @@ const CreditDatabase = () => {
   const formatType = (type: string) =>
     type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-  const hasResults = icdbProjects.length > 0 || aiSuggestions.length > 0 || userCredits.length > 0;
+  const hasResults = icdbProjects.length > 0 || aiSuggestions.length > 0 || userCredits.length > 0 || webResults.length > 0;
 
   return (
     <>

@@ -135,7 +135,13 @@ const Navbar = memo(({ user }: NavbarProps) => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2.5">
-        <BrandLogo size="md" showBeta linkToHome />
+        {/* Icon-only on mobile, full logo on sm+ */}
+        <span className="sm:hidden">
+          <BrandLogo size="sm" iconOnly linkToHome />
+        </span>
+        <span className="hidden sm:inline-flex">
+          <BrandLogo size="md" showBeta linkToHome />
+        </span>
 
         {/* ═══ PERSISTENT SEARCH BAR ═══ */}
         {user && !isLandingPage && (

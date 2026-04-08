@@ -29,7 +29,8 @@ const ACTIVITY_TEMPLATES = [
 ];
 
 export const UnifiedHome = () => {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);

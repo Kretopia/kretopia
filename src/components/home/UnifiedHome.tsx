@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 import { QuickPostModal } from "@/components/QuickPostModal";
 import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";

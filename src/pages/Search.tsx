@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StatusAvatar } from "@/components/ui/status-avatar";
 import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe, ChevronDown, ChevronUp, UserPlus, CheckCircle2, Film, Music, Camera, Calendar, Palette, Video, Mic } from "lucide-react";
 
 interface ProfileResult {
@@ -331,10 +332,11 @@ const Search = () => {
                 return (
                   <button key={`p-${p.user_id}`} onClick={() => navigate(`/profile/${p.user_id}`)} className="w-full text-left rounded-xl border border-border bg-card p-4 hover:border-primary/40 transition-all group">
                     <div className="flex items-start gap-3">
-                      <Avatar className="h-11 w-11 border-2 border-border">
-                        <AvatarImage src={p.avatar_url || ""} />
-                        <AvatarFallback className="bg-primary/10 text-primary">{(p.full_name || "?")[0]}</AvatarFallback>
-                      </Avatar>
+                      <StatusAvatar
+                        src={p.avatar_url}
+                        fallback={(p.full_name || "?")[0]}
+                        size="lg"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="font-semibold text-sm text-foreground truncate">{p.full_name}</p>

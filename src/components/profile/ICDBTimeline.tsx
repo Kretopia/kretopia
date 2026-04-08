@@ -87,14 +87,17 @@ const CATEGORY_META: Record<string, { label: string; icon: any }> = {
 
 const TYPE_TO_CATEGORY: Record<string, string> = {
   film: "film_tv", movie: "film_tv", tv: "film_tv", short_film: "film_tv", documentary: "film_tv", music_video: "film_tv", web_series: "film_tv",
-  album: "music", single: "music", ep: "music", podcast: "music", audiobook: "music", soca: "music", dancehall: "music", afrobeats: "music", gospel_concert: "music",
+  album: "music", single: "music", ep: "music", soca: "music", dancehall: "music", afrobeats: "music", gospel_concert: "music", audiobook: "music",
   theatre: "performing", musical: "performing", dance: "performing", comedy: "performing", spoken_word: "performing", opera: "performing", choreography: "performing", backup_dancer: "performing",
   live_event: "events", concert: "events", festival: "events", carnival: "events", pageant: "events", fashion_show: "events", awards_show: "events", exhibition: "events", conference: "events", tour: "events", dj_set: "events", mc_hosting: "events", event: "events", promo: "events", after_movie: "events",
-  youtube_series: "digital", ugc_campaign: "digital", livestream: "digital", online_course: "digital", workshop: "digital",
+  podcast: "digital", youtube_series: "digital", ugc_campaign: "digital", livestream: "digital", online_course: "digital", workshop: "digital",
   commercial: "commercial", brand_campaign: "commercial", corporate: "commercial", voiceover: "commercial", influencer_campaign: "commercial",
   art_exhibition: "art", mural: "art", graphic_design: "art", photography: "art", animation: "art",
   fashion_collection: "fashion", editorial_shoot: "fashion", runway: "fashion", beauty_campaign: "fashion", styling: "fashion",
   talent_management: "business", booking: "business", label_release: "business", publishing: "business", curation: "business",
+  // Direct category keys (for manual overrides)
+  film_tv: "film_tv", music: "music", events: "events", performing: "performing", digital: "digital",
+  art: "art", fashion: "fashion", business: "business", other: "other",
 };
 
 // Source-based category inference when type is missing
@@ -106,10 +109,10 @@ const SOURCE_TO_CATEGORY: Record<string, string> = {
 };
 
 function resolveCategory(credit: { project_type: string | null; credit_category: string | null; source: string }): string {
-  // Try credit_category first
-  if (credit.credit_category && TYPE_TO_CATEGORY[credit.credit_category]) return TYPE_TO_CATEGORY[credit.credit_category];
-  // If credit_category is already a group key
+  // Manual override: if credit_category is a direct group key, use it
   if (credit.credit_category && Object.keys(CATEGORY_META).includes(credit.credit_category)) return credit.credit_category;
+  // Try credit_category as a type
+  if (credit.credit_category && TYPE_TO_CATEGORY[credit.credit_category]) return TYPE_TO_CATEGORY[credit.credit_category];
   // Try project_type
   if (credit.project_type && TYPE_TO_CATEGORY[credit.project_type]) return TYPE_TO_CATEGORY[credit.project_type];
   // Infer from source
@@ -467,7 +470,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const [collaboratorProfiles, setCollaboratorProfiles] = useState<Map<string, CollaboratorProfile>>(new Map());
   const [activeMedia, setActiveMedia] = useState<ICDBCredit | null>(null);
   const [editingCredit, setEditingCredit] = useState<ICDBCredit | null>(null);
-  const [editForm, setEditForm] = useState({ project_name: "", role: "", year: new Date().getFullYear(), platform: "", url: "", project_type: "" });
+  const [editForm, setEditForm] = useState({ project_name: "", role: "", year: new Date().getFullYear(), platform: "", url: "", project_type: "", section_override: "" });
   const [savingEdit, setSavingEdit] = useState(false);
   const [bulkSelectMode, setBulkSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -627,7 +630,8 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
       year: credit.year || new Date().getFullYear(),
       platform: credit.platform || '',
       url: credit.url || '',
-      project_type: credit.project_type || credit.credit_category || '',
+      project_type: credit.project_type || '',
+      section_override: resolveCategory(credit),
     });
     setEditingCredit(credit);
   };
@@ -646,7 +650,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         platform: editForm.platform || null,
         url: editForm.url || null,
         project_type: editForm.project_type || null,
-        credit_category: editForm.project_type || null,
+        credit_category: editForm.section_override || editForm.project_type || null,
       }).eq('id', editingCredit.id);
       if (error) throw error;
       toast.success("Credit updated");
@@ -905,6 +909,19 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                 <Label className="text-xs">URL</Label>
                 <Input value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." className="h-9 text-sm" />
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Move to Section</Label>
+              <Select value={editForm.section_override} onValueChange={v => setEditForm(f => ({ ...f, section_override: v }))}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Auto-detect" /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORY_META).filter(([k]) => k !== 'other').map(([key, meta]) => (
+                    <SelectItem key={key} value={key}>{meta.label}</SelectItem>
+                  ))}
+                  <SelectItem value="other">Other Work</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground">Choose which row this credit appears in</p>
             </div>
             <Button onClick={saveEdit} disabled={savingEdit} className="w-full">
               {savingEdit && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />} Save Changes

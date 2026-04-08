@@ -117,7 +117,6 @@ export default function PartnerDirectory() {
         </main>
         <BottomNav />
       </div>
-      </div>
     );
   }
 

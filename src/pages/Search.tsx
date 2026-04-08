@@ -89,6 +89,31 @@ interface ExternalData {
   related_searches: string[];
 }
 
+/** Enrich profiles with ThriveStatus social proof labels */
+async function enrichProfilesWithStatus(rawProfiles: ProfileResult[]): Promise<ProfileResult[]> {
+  if (rawProfiles.length === 0) return rawProfiles;
+  const userIds = rawProfiles.map(p => p.user_id);
+  const { data: userCredits } = await supabase
+    .from('credits')
+    .select('user_id, verification_status')
+    .in('user_id', userIds);
+  
+  if (!userCredits || userCredits.length === 0) return rawProfiles;
+  
+  const byUser = new Map<string, { verification_status?: string | null }[]>();
+  for (const c of userCredits) {
+    if (!byUser.has(c.user_id)) byUser.set(c.user_id, []);
+    byUser.get(c.user_id)!.push(c);
+  }
+  
+  return rawProfiles.map(p => {
+    const creds = byUser.get(p.user_id);
+    if (!creds) return p;
+    const status = calculateStatus(creds);
+    return { ...p, _socialProofLabel: status.socialProofLabel, _tier: status.tier } as any;
+  });
+}
+
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();

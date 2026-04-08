@@ -8635,64 +8635,91 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"] | null
           avatar_url: string | null
           badge: Database["public"]["Enums"]["user_badge"] | null
+          behance_url: string | null
           bio: string | null
-          collab_intent: string | null
-          company_logo_url: string | null
-          company_name: string | null
+          cover_image_url: string | null
+          created_at: string | null
           full_name: string | null
-          industry: string | null
-          job_title: string | null
+          id_verified: boolean | null
+          imdb_url: string | null
+          instagram_url: string | null
           level: number | null
+          linkedin_url: string | null
           location: string | null
-          passion_skills: Json | null
+          membership_number: string | null
+          onboarding_completed: boolean | null
           professional_skills: Json | null
           role: string | null
-          subscription_tier: string | null
+          soundcloud_url: string | null
+          spotify_url: string | null
+          tiktok_url: string | null
+          twitter_url: string | null
+          updated_at: string | null
           user_id: string | null
-          verification_score: number | null
+          verification_status: string | null
+          verification_tier: string | null
           xp: number | null
+          youtube_url: string | null
         }
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
+          behance_url?: string | null
           bio?: string | null
-          collab_intent?: string | null
-          company_logo_url?: string | null
-          company_name?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
           full_name?: string | null
-          industry?: string | null
-          job_title?: string | null
+          id_verified?: boolean | null
+          imdb_url?: string | null
+          instagram_url?: string | null
           level?: number | null
+          linkedin_url?: string | null
           location?: string | null
-          passion_skills?: Json | null
+          membership_number?: string | null
+          onboarding_completed?: boolean | null
           professional_skills?: Json | null
           role?: string | null
-          subscription_tier?: string | null
+          soundcloud_url?: string | null
+          spotify_url?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          updated_at?: string | null
           user_id?: string | null
-          verification_score?: number | null
+          verification_status?: string | null
+          verification_tier?: string | null
           xp?: number | null
+          youtube_url?: string | null
         }
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
           badge?: Database["public"]["Enums"]["user_badge"] | null
+          behance_url?: string | null
           bio?: string | null
-          collab_intent?: string | null
-          company_logo_url?: string | null
-          company_name?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
           full_name?: string | null
-          industry?: string | null
-          job_title?: string | null
+          id_verified?: boolean | null
+          imdb_url?: string | null
+          instagram_url?: string | null
           level?: number | null
+          linkedin_url?: string | null
           location?: string | null
-          passion_skills?: Json | null
+          membership_number?: string | null
+          onboarding_completed?: boolean | null
           professional_skills?: Json | null
           role?: string | null
-          subscription_tier?: string | null
+          soundcloud_url?: string | null
+          spotify_url?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          updated_at?: string | null
           user_id?: string | null
-          verification_score?: number | null
+          verification_status?: string | null
+          verification_tier?: string | null
           xp?: number | null
+          youtube_url?: string | null
         }
         Relationships: []
       }
@@ -9399,6 +9426,17 @@ export type Database = {
       generate_membership_number: { Args: never; Returns: string }
       generate_secure_token: { Args: never; Returns: string }
       generate_unsubscribe_token: { Args: never; Returns: string }
+      get_brand_verification_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          brand_email: string
+          brand_name: string
+          created_at: string
+          id: string
+          project_id: string
+          status: string
+        }[]
+      }
       get_connection_path: {
         Args: { from_user_id: string; to_user_id: string }
         Returns: {
@@ -9594,6 +9632,10 @@ export type Database = {
       }
       increment_manager_earnings: {
         Args: { amount_input: number; manager_id_input: string }
+        Returns: undefined
+      }
+      increment_template_usage: {
+        Args: { template_id: string }
         Returns: undefined
       }
       is_profile_owner: { Args: { _profile_user_id: string }; Returns: boolean }

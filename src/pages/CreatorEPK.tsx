@@ -269,6 +269,13 @@ const CreatorEPK = () => {
         
         setCredits(allCredits);
 
+        // Background: enrich press links via Firecrawl (fire-and-forget)
+        if (pressRes.data && pressRes.data.some((p: any) => !p.publication || !p.image_url)) {
+          supabase.functions.invoke('enrich-press-links', {
+            body: { user_id: userId },
+          }).catch(e => console.log('Press enrichment skipped:', e));
+        }
+
       } catch (error) {
         console.error('Error fetching profile:', error);
         setNotFound(true);

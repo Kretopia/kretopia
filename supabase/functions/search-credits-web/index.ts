@@ -76,9 +76,21 @@ serve(async (req) => {
 
         // Extract snippets from real web results
         for (const result of flatResults) {
+          // Extract og:image or other image URLs from the scraped content
+          let imageUrl = '';
+          if (result.metadata?.og?.image) {
+            imageUrl = result.metadata.og.image;
+          } else if (result.metadata?.ogImage) {
+            imageUrl = result.metadata.ogImage;
+          } else if (result.markdown) {
+            const imgMatch = result.markdown.match(/!\[.*?\]\((https?:\/\/[^\s)]+\.(?:jpg|jpeg|png|webp)[^\s)]*)\)/i);
+            if (imgMatch) imageUrl = imgMatch[1];
+          }
+          
           const snippet = [
             result.title ? `Title: ${result.title}` : '',
             result.url ? `URL: ${result.url}` : '',
+            imageUrl ? `Image: ${imageUrl}` : '',
             result.description ? `Description: ${result.description}` : '',
             result.markdown ? `Content: ${result.markdown.slice(0, 1500)}` : '',
           ].filter(Boolean).join('\n');
@@ -117,6 +129,7 @@ Each result should have:
 - "platform": source platform (e.g., "IMDb", "Spotify", "YouTube", "LinkedIn", "Instagram")
 - "description": one-line description from the ACTUAL web content
 - "url": the actual URL from the search result
+- "image_url": extract any image URL found in the web results — look for og:image URLs, profile photos, album covers, video thumbnails, event flyers, poster images. Prefer high-quality images. Return null if none found.
 - "location": location if mentioned
 - "client_brand": brand/studio/label if mentioned
 
@@ -131,6 +144,7 @@ Each result should have:
 - "platform": platform where published
 - "description": one-line description
 - "url": known URL if any
+- "image_url": any known image URL (poster, cover, profile photo, thumbnail) or null
 - "location": location if known
 - "client_brand": associated brand/label/studio if known
 
@@ -168,6 +182,7 @@ Return up to 8 most relevant REAL results.`;
                       platform: { type: "string" },
                       description: { type: "string" },
                       url: { type: "string" },
+                      image_url: { type: "string" },
                       location: { type: "string" },
                       client_brand: { type: "string" },
                     },

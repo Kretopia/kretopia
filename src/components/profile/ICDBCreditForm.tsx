@@ -116,6 +116,7 @@ interface WebCreditResult {
   platform: string | null;
   description: string | null;
   url: string | null;
+  image_url: string | null;
   location: string | null;
   client_brand: string | null;
 }
@@ -745,6 +746,19 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
                         onClick={() => claimResult(result)}
                       >
                         <div className="flex items-start gap-3">
+                          {/* Thumbnail */}
+                          {result.image_url ? (
+                            <img 
+                              src={result.image_url} 
+                              alt={result.title}
+                              className="w-12 h-12 rounded-lg object-cover shrink-0 bg-muted"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+                              <Database className="h-5 w-5 text-muted-foreground/50" />
+                            </div>
+                          )}
                           <div className="min-w-0 flex-1 space-y-1">
                             <p className="text-sm font-semibold">{result.title}</p>
                             

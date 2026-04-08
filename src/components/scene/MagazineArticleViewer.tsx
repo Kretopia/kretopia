@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Eye, Share2, ExternalLink } from "lucide-react";
+import { ArrowLeft, Clock, Eye, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { motion } from "framer-motion";
 
 interface Article {
@@ -34,14 +35,8 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
     ? `https://thrivein.io/magazine/${article.slug}`
     : window.location.href;
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      await navigator.share({ title: article.title, text: article.subtitle || "", url: shareUrl });
-    } else {
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied!");
-    }
-  };
+  const shareTitle = article.title;
+  const shareDescription = article.subtitle || "";
 
   // Split markdown content into sections for inline image insertion
   const contentSections = article.content.split(/\n(?=##\s)/).filter(Boolean);
@@ -113,9 +108,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
               </a>
             </Button>
           )}
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleShare}>
-            <Share2 className="h-4 w-4" />
-          </Button>
+          <SocialShareButtons url={shareUrl} title={shareTitle} description={shareDescription} />
         </div>
       </div>
 

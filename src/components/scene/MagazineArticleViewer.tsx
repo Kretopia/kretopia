@@ -107,7 +107,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
               </a>
             </Button>
           )}
-          <SocialShareButtons url={shareUrl} title={shareTitle} description={shareDescription} />
+          <SocialShareButtons url={shareUrl} title={shareTitle} description={shareDescription} imageUrl={article.cover_image_url || undefined} />
         </div>
       </div>
 

@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Film, Tv, Music, Disc3, Video, Mic2, CalendarDays, Sparkles, Crown,
   Shirt, Megaphone, Briefcase, ShieldCheck, Loader2,
-  Plus, Trash2, Play, UserPlus, ChevronLeft, ChevronRight, Pencil, Wand2,
+  Plus, Trash2, Play, UserPlus, ChevronLeft, ChevronRight, Pencil,
   Youtube, Headphones, Image as ImageIcon, Upload,
 } from "lucide-react";
 import { toast } from "sonner";

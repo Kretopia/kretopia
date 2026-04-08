@@ -13,9 +13,10 @@ import {
   ArrowLeft, ShieldCheck, MapPin, CalendarDays, Building2,
   ExternalLink, Users, UserPlus, Loader2, Globe, Music, Film,
   CheckCircle2, Sparkles, Database, Link2, Plus, Camera, Palette,
-  Megaphone, PartyPopper, ChevronDown, ChevronUp,
+  Megaphone, PartyPopper, ChevronDown, ChevronUp, Play,
 } from "lucide-react";
 import { AuthPrompt, useAuthPrompt } from "@/components/AuthPrompt";
+import { parseMediaUrl } from "@/lib/mediaUtils";
 
 interface AIRole {
   role: string;
@@ -34,6 +35,7 @@ interface ProductionData {
   client_brand: string | null;
   external_url: string | null;
   image_url: string | null;
+  media_url: string | null;
   departments: { name: string; roles: AIRole[] }[];
   total_roles: number;
   source: string;
@@ -277,6 +279,40 @@ const ProductionPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Media Player Section */}
+        {(() => {
+          const mediaUrl = production.media_url || production.external_url;
+          if (!mediaUrl) return null;
+          const mediaInfo = parseMediaUrl(mediaUrl);
+          if (!mediaInfo) return null;
+          
+          const isAudio = mediaInfo.platform === 'spotify' || mediaInfo.platform === 'soundcloud';
+          
+          return (
+            <div className="border-b border-border">
+              <div className="container mx-auto max-w-3xl px-4 py-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Play className="h-4 w-4 text-primary" />
+                  <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">
+                    {isAudio ? 'Listen' : 'Watch'}
+                  </h2>
+                </div>
+                <div className={cn(
+                  "w-full rounded-xl overflow-hidden bg-black/50 border border-border",
+                  isAudio ? "aspect-[16/7]" : "aspect-video"
+                )}>
+                  <iframe
+                    src={mediaInfo.embedUrl}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Stats bar */}
         <div className="border-b border-border">

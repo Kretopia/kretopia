@@ -630,7 +630,8 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
       year: credit.year || new Date().getFullYear(),
       platform: credit.platform || '',
       url: credit.url || '',
-      project_type: credit.project_type || credit.credit_category || '',
+      project_type: credit.project_type || '',
+      section_override: resolveCategory(credit),
     });
     setEditingCredit(credit);
   };

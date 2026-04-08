@@ -96,7 +96,7 @@ const BottomNav = memo(() => {
         <div className="flex items-center justify-center gap-2 pt-1.5 pb-0.5">
           <button
             onClick={toggle}
-            className="flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-all active:scale-95 bg-muted/60 text-muted-foreground"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-all active:scale-95 bg-muted/60 text-muted-foreground touch-manipulation min-h-[36px]"
           >
             <span className={cn("h-1.5 w-1.5 rounded-full transition-colors", MODE_META[mode].accent)} />
             {MODE_META[mode].label}

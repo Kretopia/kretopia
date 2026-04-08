@@ -45,6 +45,7 @@ export default function TalentFinder() {
 
   const fetchCreators = async () => {
     setLoading(true);
+    // @ts-ignore – deep type instantiation
     let query = supabase
       .from("profiles")
       .select("user_id, full_name, avatar_url, role, location, bio, skills, badge, average_rating, total_reviews")

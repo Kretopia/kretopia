@@ -54,6 +54,7 @@ const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
 
 const Search = lazy(() => import("./pages/Search"));
+const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const NotificationsPage = lazy(() => import("./pages/Notifications"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
@@ -240,7 +241,7 @@ const AppContent = () => {
             <Route path="/checkin" element={<Navigate to="/" replace />} />
             
             {/* Public Browsable Routes */}
-            <Route path="/nearby" element={<Navigate to="/search" replace />} />
+            <Route path="/nearby" element={<AuthGate><NearbyCreators /></AuthGate>} />
             <Route path="/events" element={<Events />} />
             <Route path="/scene" element={<Scene />} />
             

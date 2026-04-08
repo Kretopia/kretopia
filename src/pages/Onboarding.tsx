@@ -757,27 +757,8 @@ export default function Onboarding() {
                   </div>
                 </div>
               )}
-              <div className="flex flex-col items-center gap-2">
-                <div className="relative">
-                  <Avatar className={`h-20 w-20 ring-2 ${avatarUrl ? 'ring-green-500' : 'ring-muted'}`}>
-                    <AvatarImage src={avatarUrl} className="object-cover" />
-                    <AvatarFallback><Camera className="h-8 w-8 text-muted-foreground" /></AvatarFallback>
-                  </Avatar>
-                  {avatarUrl && <CheckCircle2 className="absolute -bottom-1 -right-1 h-5 w-5 text-green-500 bg-background rounded-full" />}
-                </div>
-                <input type="file" id="avatar-upload" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileSelect(file); }} />
-                <Button variant={avatarUrl ? "outline" : "secondary"} size="sm" onClick={() => document.getElementById('avatar-upload')?.click()} disabled={uploadingAvatar}>
-                  {uploadingAvatar ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Upload className="h-4 w-4 mr-1" />}
-                  {avatarUrl ? "Change" : "Add Photo"}
-                </Button>
-                {!avatarUrl && <p className="text-xs text-muted-foreground">Profiles with photos get 14x more views</p>}
-              </div>
 
-              {/* Name */}
-              <div>
-                <Label htmlFor="full_name">Your Name *</Label>
-                <Input id="full_name" value={profile.full_name} onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))} placeholder="Full name" />
-              </div>
+
 
               {/* Role */}
               <div>

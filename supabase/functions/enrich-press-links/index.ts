@@ -75,10 +75,10 @@ Deno.serve(async (req) => {
                 .replace(/&gt;/g, '>')
                 .replace(/&quot;/g, '"')
                 .replace(/&apos;/g, "'")
-                .replace(/&#8211;/g, '–')
-                .replace(/&#8212;/g, '—')
-                .replace(/&#8216;/g, ''')
-                .replace(/&#8217;/g, ''')
+                .replace(/&#8211;/g, '\u2013')
+                .replace(/&#8212;/g, '\u2014')
+                .replace(/&#8216;/g, '\u2018')
+                .replace(/&#8217;/g, '\u2019')
                 .replace(/&#8220;/g, '\u201C')
                 .replace(/&#8221;/g, '\u201D');
               if (decoded !== link.title) updates.title = decoded;

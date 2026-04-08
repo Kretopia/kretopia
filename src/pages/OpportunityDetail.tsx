@@ -337,10 +337,46 @@ const OpportunityDetail = () => {
             Back
           </Button>
           <div className="flex gap-2">
-            {user && (opportunity.created_by === user.id || opportunity.scouted_by === user.id) && (
-              <Button variant="outline" size="icon" onClick={() => setShowEditDialog(true)}>
-                <Edit className="h-4 w-4" />
-              </Button>
+            {isOwner && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" disabled={actionLoading}>
+                    {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreVertical className="h-4 w-4" />}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                    <Edit className="h-4 w-4 mr-2" /> Edit Details
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {opportunity.status === 'active' && (
+                    <>
+                      <DropdownMenuItem onClick={() => handleStatusChange('paused')}>
+                        <PauseCircle className="h-4 w-4 mr-2" /> Pause Gig
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleStatusChange('filled')}>
+                        <CheckCircle2 className="h-4 w-4 mr-2" /> Mark as Filled
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleStatusChange('closed')}>
+                        <XCircle className="h-4 w-4 mr-2" /> Close Gig
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {(opportunity.status === 'closed' || opportunity.status === 'paused' || opportunity.status === 'filled') && (
+                    <DropdownMenuItem onClick={() => handleStatusChange('active')}>
+                      <PlayCircle className="h-4 w-4 mr-2" /> Reopen Gig
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleDuplicate}>
+                    <Copy className="h-4 w-4 mr-2" /> Duplicate
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} className="text-destructive focus:text-destructive">
+                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             <Button variant="outline" size="icon" onClick={handleBookmark}>
               {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}

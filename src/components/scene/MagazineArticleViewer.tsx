@@ -31,9 +31,9 @@ interface Props {
 }
 
 export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, isAuthenticated = true }: Props) => {
-  const shareUrl = article.slug
-    ? `https://thrivein.io/magazine/${article.slug}`
-    : window.location.href;
+  const articleSlugOrId = article.slug || article.id;
+  const ogProxyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-magazine?slug=${articleSlugOrId}`;
+  const shareUrl = ogProxyUrl;
 
   const shareTitle = article.title;
   const shareDescription = article.subtitle || "";

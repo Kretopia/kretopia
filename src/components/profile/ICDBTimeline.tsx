@@ -393,6 +393,13 @@ function CategoryRow({
               {/* Owner actions */}
               {isOwnProfile && (
                 <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
+                  <Button
+                    variant="secondary" size="icon"
+                    className="h-6 w-6 bg-black/50 text-white border-0 backdrop-blur-sm hover:bg-black/70"
+                    onClick={(e) => { e.stopPropagation(); onEdit(credit); }}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
                   {credit.verification_status !== 'verified' && credit.source !== 'verified' && (
                     <Button
                       variant="secondary" size="icon"
@@ -436,6 +443,9 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const [endorsementCredit, setEndorsementCredit] = useState<any>(null);
   const [collaboratorProfiles, setCollaboratorProfiles] = useState<Map<string, CollaboratorProfile>>(new Map());
   const [activeMedia, setActiveMedia] = useState<ICDBCredit | null>(null);
+  const [editingCredit, setEditingCredit] = useState<ICDBCredit | null>(null);
+  const [editForm, setEditForm] = useState({ project_name: "", role: "", year: new Date().getFullYear(), platform: "", url: "", project_type: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => { fetchData(); }, [userId]);
 
@@ -498,7 +508,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const categoryGroups = useMemo(() => {
     const groups: Record<string, ICDBCredit[]> = {};
     credits.forEach(c => {
-      const cat = TYPE_TO_CATEGORY[c.project_type || c.credit_category || ''] || 'other';
+      const cat = resolveCategory(c);
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(c);
     });
@@ -506,6 +516,47 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
     if (featured.length > 0) groups['featured'] = featured;
     return groups;
   }, [credits]);
+
+  const openEdit = (credit: ICDBCredit) => {
+    setEditForm({
+      project_name: credit.project_name,
+      role: credit.role,
+      year: credit.year || new Date().getFullYear(),
+      platform: credit.platform || '',
+      url: credit.url || '',
+      project_type: credit.project_type || credit.credit_category || '',
+    });
+    setEditingCredit(credit);
+  };
+
+  const saveEdit = async () => {
+    if (!editingCredit || !editForm.project_name || !editForm.role) {
+      toast.error("Project name and role are required");
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const { error } = await supabase.from('credits').update({
+        project_name: editForm.project_name,
+        role: editForm.role,
+        year: editForm.year,
+        platform: editForm.platform || null,
+        url: editForm.url || null,
+        project_type: editForm.project_type || null,
+        credit_category: editForm.project_type || null,
+      }).eq('id', editingCredit.id);
+      if (error) throw error;
+      toast.success("Credit updated");
+      setEditingCredit(null);
+      fetchData();
+      onRefresh?.();
+    } catch (error) {
+      console.error("Error updating credit:", error);
+      toast.error("Failed to update credit");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   // Group credits by category for Netflix-style rows
   const categoryRows = useMemo(() => {

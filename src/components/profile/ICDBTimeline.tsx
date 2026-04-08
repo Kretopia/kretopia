@@ -89,13 +89,65 @@ const TYPE_TO_CATEGORY: Record<string, string> = {
   film: "film_tv", movie: "film_tv", tv: "film_tv", short_film: "film_tv", documentary: "film_tv", music_video: "film_tv", web_series: "film_tv",
   album: "music", single: "music", ep: "music", podcast: "music", audiobook: "music", soca: "music", dancehall: "music", afrobeats: "music", gospel_concert: "music",
   theatre: "performing", musical: "performing", dance: "performing", comedy: "performing", spoken_word: "performing", opera: "performing", choreography: "performing", backup_dancer: "performing",
-  live_event: "events", concert: "events", festival: "events", carnival: "events", pageant: "events", fashion_show: "events", awards_show: "events", exhibition: "events", conference: "events", tour: "events", dj_set: "events", mc_hosting: "events",
+  live_event: "events", concert: "events", festival: "events", carnival: "events", pageant: "events", fashion_show: "events", awards_show: "events", exhibition: "events", conference: "events", tour: "events", dj_set: "events", mc_hosting: "events", event: "events", promo: "events", after_movie: "events",
   youtube_series: "digital", ugc_campaign: "digital", livestream: "digital", online_course: "digital", workshop: "digital",
   commercial: "commercial", brand_campaign: "commercial", corporate: "commercial", voiceover: "commercial", influencer_campaign: "commercial",
   art_exhibition: "art", mural: "art", graphic_design: "art", photography: "art", animation: "art",
   fashion_collection: "fashion", editorial_shoot: "fashion", runway: "fashion", beauty_campaign: "fashion", styling: "fashion",
   talent_management: "business", booking: "business", label_release: "business", publishing: "business", curation: "business",
 };
+
+// Source-based category inference when type is missing
+const SOURCE_TO_CATEGORY: Record<string, string> = {
+  spotify: "music", musicbrainz: "music", discogs: "music", soundcloud: "music",
+  tmdb: "film_tv", imdb: "film_tv",
+  youtube: "digital", vimeo: "digital", tiktok: "digital",
+  behance: "art", dribbble: "art",
+};
+
+function resolveCategory(credit: { project_type: string | null; credit_category: string | null; source: string }): string {
+  // Try credit_category first
+  if (credit.credit_category && TYPE_TO_CATEGORY[credit.credit_category]) return TYPE_TO_CATEGORY[credit.credit_category];
+  // If credit_category is already a group key
+  if (credit.credit_category && Object.keys(CATEGORY_META).includes(credit.credit_category)) return credit.credit_category;
+  // Try project_type
+  if (credit.project_type && TYPE_TO_CATEGORY[credit.project_type]) return TYPE_TO_CATEGORY[credit.project_type];
+  // Infer from source
+  if (credit.source && SOURCE_TO_CATEGORY[credit.source]) return SOURCE_TO_CATEGORY[credit.source];
+  return "other";
+}
+
+// Edit form project types for the select dropdown
+const EDIT_PROJECT_TYPES = [
+  { group: "Film & TV", items: [
+    { value: "film", label: "Film / Movie" }, { value: "tv", label: "TV Show / Series" },
+    { value: "documentary", label: "Documentary" }, { value: "music_video", label: "Music Video" },
+  ]},
+  { group: "Music & Audio", items: [
+    { value: "album", label: "Album" }, { value: "single", label: "Single / Track" },
+    { value: "ep", label: "EP" }, { value: "podcast", label: "Podcast" },
+  ]},
+  { group: "Events & Productions", items: [
+    { value: "live_event", label: "Live Event" }, { value: "concert", label: "Concert" },
+    { value: "festival", label: "Festival" }, { value: "carnival", label: "Carnival / Mas" },
+    { value: "fashion_show", label: "Fashion Show" },
+  ]},
+  { group: "Content & Digital", items: [
+    { value: "youtube_series", label: "YouTube Series" }, { value: "livestream", label: "Livestream" },
+  ]},
+  { group: "Commercial", items: [
+    { value: "commercial", label: "TV / Radio Ad" }, { value: "brand_campaign", label: "Brand Campaign" },
+  ]},
+  { group: "Art & Design", items: [
+    { value: "photography", label: "Photography" }, { value: "animation", label: "Animation" },
+  ]},
+  { group: "Fashion & Beauty", items: [
+    { value: "editorial_shoot", label: "Editorial Shoot" }, { value: "runway", label: "Runway Show" },
+  ]},
+  { group: "Performing Arts", items: [
+    { value: "theatre", label: "Theatre / Play" }, { value: "dance", label: "Dance Performance" },
+  ]},
+];
 
 const POSTER_GRADIENTS = [
   "from-rose-900/80 via-rose-800/60 to-black",

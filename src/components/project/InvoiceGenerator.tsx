@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingForm";
 import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
 import { InvoicePreview } from "./invoice/InvoicePreview";
+import { useFeatureGate } from "@/hooks/useFeatureGate";
 
 interface InvoiceGeneratorProps {
   projectId?: string;

@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard, Send, Users, Loader2 } from "lucide-react";
 import { awardXP } from "@/lib/xpSystem";
 import { analytics } from "@/lib/analytics";
+import { useFeatureGate } from "@/hooks/useFeatureGate";
 
 interface Milestone {
   id: string;

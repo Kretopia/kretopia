@@ -265,9 +265,11 @@ const OpportunityDetail = () => {
             <Button variant="outline" size="icon" onClick={handleBookmark}>
               {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
             </Button>
-            <Button variant="outline" size="icon" onClick={handleShare}>
-              <Share2 className="h-4 w-4" />
-            </Button>
+            <SocialShareButtons
+              url={`/opportunity/${opportunity.id}`}
+              title={`🔥 ${opportunity.title} — ${opportunity.type} gig on ThriveIN`}
+              description={opportunity.description?.slice(0, 100)}
+            />
           </div>
         </div>
 

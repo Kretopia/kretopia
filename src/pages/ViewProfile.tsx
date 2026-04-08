@@ -224,6 +224,9 @@ const ViewProfile = () => {
       import('@/lib/profileViewTracking').then(({ trackProfileView }) => {
         trackProfileView(userId, isFromMatch ? 'match' : 'public');
       });
+
+      // Check connection gate
+      checkConnectionGate(user.id, userId).then(setGateResult);
     }
   }, [userId, user]);
   

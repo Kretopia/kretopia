@@ -2,12 +2,16 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import {
   Film, Tv, Music, Disc3, Video, Mic2, CalendarDays, Sparkles, Crown,
   Shirt, Megaphone, Briefcase, ShieldCheck, Loader2,
-  Plus, Trash2, Play, UserPlus, ChevronLeft, ChevronRight,
+  Plus, Trash2, Play, UserPlus, ChevronLeft, ChevronRight, Pencil,
   Youtube, Headphones, Image as ImageIcon, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -85,13 +89,65 @@ const TYPE_TO_CATEGORY: Record<string, string> = {
   film: "film_tv", movie: "film_tv", tv: "film_tv", short_film: "film_tv", documentary: "film_tv", music_video: "film_tv", web_series: "film_tv",
   album: "music", single: "music", ep: "music", podcast: "music", audiobook: "music", soca: "music", dancehall: "music", afrobeats: "music", gospel_concert: "music",
   theatre: "performing", musical: "performing", dance: "performing", comedy: "performing", spoken_word: "performing", opera: "performing", choreography: "performing", backup_dancer: "performing",
-  live_event: "events", concert: "events", festival: "events", carnival: "events", pageant: "events", fashion_show: "events", awards_show: "events", exhibition: "events", conference: "events", tour: "events", dj_set: "events", mc_hosting: "events",
+  live_event: "events", concert: "events", festival: "events", carnival: "events", pageant: "events", fashion_show: "events", awards_show: "events", exhibition: "events", conference: "events", tour: "events", dj_set: "events", mc_hosting: "events", event: "events", promo: "events", after_movie: "events",
   youtube_series: "digital", ugc_campaign: "digital", livestream: "digital", online_course: "digital", workshop: "digital",
   commercial: "commercial", brand_campaign: "commercial", corporate: "commercial", voiceover: "commercial", influencer_campaign: "commercial",
   art_exhibition: "art", mural: "art", graphic_design: "art", photography: "art", animation: "art",
   fashion_collection: "fashion", editorial_shoot: "fashion", runway: "fashion", beauty_campaign: "fashion", styling: "fashion",
   talent_management: "business", booking: "business", label_release: "business", publishing: "business", curation: "business",
 };
+
+// Source-based category inference when type is missing
+const SOURCE_TO_CATEGORY: Record<string, string> = {
+  spotify: "music", musicbrainz: "music", discogs: "music", soundcloud: "music",
+  tmdb: "film_tv", imdb: "film_tv",
+  youtube: "digital", vimeo: "digital", tiktok: "digital",
+  behance: "art", dribbble: "art",
+};
+
+function resolveCategory(credit: { project_type: string | null; credit_category: string | null; source: string }): string {
+  // Try credit_category first
+  if (credit.credit_category && TYPE_TO_CATEGORY[credit.credit_category]) return TYPE_TO_CATEGORY[credit.credit_category];
+  // If credit_category is already a group key
+  if (credit.credit_category && Object.keys(CATEGORY_META).includes(credit.credit_category)) return credit.credit_category;
+  // Try project_type
+  if (credit.project_type && TYPE_TO_CATEGORY[credit.project_type]) return TYPE_TO_CATEGORY[credit.project_type];
+  // Infer from source
+  if (credit.source && SOURCE_TO_CATEGORY[credit.source]) return SOURCE_TO_CATEGORY[credit.source];
+  return "other";
+}
+
+// Edit form project types for the select dropdown
+const EDIT_PROJECT_TYPES = [
+  { group: "Film & TV", items: [
+    { value: "film", label: "Film / Movie" }, { value: "tv", label: "TV Show / Series" },
+    { value: "documentary", label: "Documentary" }, { value: "music_video", label: "Music Video" },
+  ]},
+  { group: "Music & Audio", items: [
+    { value: "album", label: "Album" }, { value: "single", label: "Single / Track" },
+    { value: "ep", label: "EP" }, { value: "podcast", label: "Podcast" },
+  ]},
+  { group: "Events & Productions", items: [
+    { value: "live_event", label: "Live Event" }, { value: "concert", label: "Concert" },
+    { value: "festival", label: "Festival" }, { value: "carnival", label: "Carnival / Mas" },
+    { value: "fashion_show", label: "Fashion Show" },
+  ]},
+  { group: "Content & Digital", items: [
+    { value: "youtube_series", label: "YouTube Series" }, { value: "livestream", label: "Livestream" },
+  ]},
+  { group: "Commercial", items: [
+    { value: "commercial", label: "TV / Radio Ad" }, { value: "brand_campaign", label: "Brand Campaign" },
+  ]},
+  { group: "Art & Design", items: [
+    { value: "photography", label: "Photography" }, { value: "animation", label: "Animation" },
+  ]},
+  { group: "Fashion & Beauty", items: [
+    { value: "editorial_shoot", label: "Editorial Shoot" }, { value: "runway", label: "Runway Show" },
+  ]},
+  { group: "Performing Arts", items: [
+    { value: "theatre", label: "Theatre / Play" }, { value: "dance", label: "Dance Performance" },
+  ]},
+];
 
 const POSTER_GRADIENTS = [
   "from-rose-900/80 via-rose-800/60 to-black",
@@ -137,7 +193,7 @@ const getPlatformIcon = (platform: string | null) => {
 
 // Horizontal scroll row component
 function CategoryRow({ 
-  category, credits, isOwnProfile, onDelete, onEndorse, onPlay, collaboratorProfiles, deletingId 
+  category, credits, isOwnProfile, onDelete, onEndorse, onPlay, onEdit, collaboratorProfiles, deletingId 
 }: {
   category: string;
   credits: ICDBCredit[];
@@ -145,6 +201,7 @@ function CategoryRow({
   onDelete: (id: string, source: string) => void;
   onEndorse: (credit: any) => void;
   onPlay: (credit: ICDBCredit) => void;
+  onEdit: (credit: ICDBCredit) => void;
   collaboratorProfiles: Map<string, CollaboratorProfile>;
   deletingId: string | null;
 }) {
@@ -177,8 +234,8 @@ function CategoryRow({
   };
 
   const getCreditThumbnail = (credit: ICDBCredit): string | null => {
-    if (credit.primary_media_url && credit.media_type === 'image') return credit.primary_media_url;
     if (credit.thumbnail_url) return credit.thumbnail_url;
+    if (credit.primary_media_url) return credit.primary_media_url;
     if (credit.url) {
       const mediaInfo = parseMediaUrl(credit.url);
       if (mediaInfo?.thumbnailUrl) return mediaInfo.thumbnailUrl;
@@ -336,6 +393,13 @@ function CategoryRow({
               {/* Owner actions */}
               {isOwnProfile && (
                 <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
+                  <Button
+                    variant="secondary" size="icon"
+                    className="h-6 w-6 bg-black/50 text-white border-0 backdrop-blur-sm hover:bg-black/70"
+                    onClick={(e) => { e.stopPropagation(); onEdit(credit); }}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
                   {credit.verification_status !== 'verified' && credit.source !== 'verified' && (
                     <Button
                       variant="secondary" size="icon"
@@ -379,6 +443,9 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const [endorsementCredit, setEndorsementCredit] = useState<any>(null);
   const [collaboratorProfiles, setCollaboratorProfiles] = useState<Map<string, CollaboratorProfile>>(new Map());
   const [activeMedia, setActiveMedia] = useState<ICDBCredit | null>(null);
+  const [editingCredit, setEditingCredit] = useState<ICDBCredit | null>(null);
+  const [editForm, setEditForm] = useState({ project_name: "", role: "", year: new Date().getFullYear(), platform: "", url: "", project_type: "" });
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => { fetchData(); }, [userId]);
 
@@ -441,7 +508,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const categoryGroups = useMemo(() => {
     const groups: Record<string, ICDBCredit[]> = {};
     credits.forEach(c => {
-      const cat = TYPE_TO_CATEGORY[c.project_type || c.credit_category || ''] || 'other';
+      const cat = resolveCategory(c);
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(c);
     });
@@ -449,6 +516,47 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
     if (featured.length > 0) groups['featured'] = featured;
     return groups;
   }, [credits]);
+
+  const openEdit = (credit: ICDBCredit) => {
+    setEditForm({
+      project_name: credit.project_name,
+      role: credit.role,
+      year: credit.year || new Date().getFullYear(),
+      platform: credit.platform || '',
+      url: credit.url || '',
+      project_type: credit.project_type || credit.credit_category || '',
+    });
+    setEditingCredit(credit);
+  };
+
+  const saveEdit = async () => {
+    if (!editingCredit || !editForm.project_name || !editForm.role) {
+      toast.error("Project name and role are required");
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const { error } = await supabase.from('credits').update({
+        project_name: editForm.project_name,
+        role: editForm.role,
+        year: editForm.year,
+        platform: editForm.platform || null,
+        url: editForm.url || null,
+        project_type: editForm.project_type || null,
+        credit_category: editForm.project_type || null,
+      }).eq('id', editingCredit.id);
+      if (error) throw error;
+      toast.success("Credit updated");
+      setEditingCredit(null);
+      fetchData();
+      onRefresh?.();
+    } catch (error) {
+      console.error("Error updating credit:", error);
+      toast.error("Failed to update credit");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   // Group credits by category for Netflix-style rows
   const categoryRows = useMemo(() => {
@@ -556,6 +664,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                   role: credit.role, year: credit.year,
                 })}
                 onPlay={(credit) => setActiveMedia(credit)}
+                onEdit={openEdit}
                 collaboratorProfiles={collaboratorProfiles}
                 deletingId={deletingId}
               />
@@ -611,6 +720,57 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
           userId={userId}
         />
       )}
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingCredit} onOpenChange={open => !open && setEditingCredit(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil className="h-4 w-4" /> Edit Credit</DialogTitle>
+            <DialogDescription>Update the details of this work credit.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Project Name *</Label>
+                <Input value={editForm.project_name} onChange={e => setEditForm(f => ({ ...f, project_name: e.target.value }))} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Your Role *</Label>
+                <Input value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Year</Label>
+                <Input type="number" value={editForm.year} onChange={e => setEditForm(f => ({ ...f, year: parseInt(e.target.value) || new Date().getFullYear() }))} className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Category</Label>
+                <Select value={editForm.project_type} onValueChange={v => setEditForm(f => ({ ...f, project_type: v }))}>
+                  <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select type..." /></SelectTrigger>
+                  <SelectContent>
+                    {EDIT_PROJECT_TYPES.map(g => (
+                      <SelectGroup key={g.group}>
+                        <SelectLabel>{g.group}</SelectLabel>
+                        {g.items.map(i => <SelectItem key={i.value} value={i.value}>{i.label}</SelectItem>)}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Platform</Label>
+                <Input value={editForm.platform} onChange={e => setEditForm(f => ({ ...f, platform: e.target.value }))} placeholder="e.g., Netflix, IMDb" className="h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">URL</Label>
+                <Input value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." className="h-9 text-sm" />
+              </div>
+            </div>
+            <Button onClick={saveEdit} disabled={savingEdit} className="w-full">
+              {savingEdit && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />} Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

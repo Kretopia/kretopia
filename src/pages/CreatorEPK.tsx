@@ -65,6 +65,8 @@ interface Profile {
   collab_intent?: string;
   rate_range?: string;
   is_claimed?: boolean;
+  cover_image_url?: string;
+  job_title?: string;
 }
 
 interface PortfolioItem {

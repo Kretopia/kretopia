@@ -597,34 +597,6 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         </div>
         {isOwnProfile && (
           <div className="flex gap-2">
-            {credits.some(c => !c.thumbnail_url && !c.primary_media_url) && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs"
-                disabled={enriching}
-                onClick={async () => {
-                  setEnriching(true);
-                  try {
-                    const { data, error } = await supabase.functions.invoke('backfill-credit-media', {
-                      body: { user_id: userId, batch_size: 50 },
-                    });
-                    if (error) throw error;
-                    toast.success(data.message || `Enriched ${data.updated} credits`);
-                    fetchData();
-                    onRefresh?.();
-                  } catch (e: any) {
-                    console.error('Enrichment error:', e);
-                    toast.error('Failed to enrich credits');
-                  } finally {
-                    setEnriching(false);
-                  }
-                }}
-              >
-                {enriching ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Wand2 className="h-3.5 w-3.5 mr-1" />}
-                {enriching ? 'Enriching...' : 'Auto-Fill Images'}
-              </Button>
-            )}
             <Button variant="outline" size="sm" onClick={() => setIsFormOpen(true)} className="h-8 text-xs">
               <Plus className="h-3.5 w-3.5 mr-1" />
               Add Work

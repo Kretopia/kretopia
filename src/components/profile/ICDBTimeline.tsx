@@ -109,10 +109,10 @@ const SOURCE_TO_CATEGORY: Record<string, string> = {
 };
 
 function resolveCategory(credit: { project_type: string | null; credit_category: string | null; source: string }): string {
-  // Try credit_category first
-  if (credit.credit_category && TYPE_TO_CATEGORY[credit.credit_category]) return TYPE_TO_CATEGORY[credit.credit_category];
-  // If credit_category is already a group key
+  // Manual override: if credit_category is a direct group key, use it
   if (credit.credit_category && Object.keys(CATEGORY_META).includes(credit.credit_category)) return credit.credit_category;
+  // Try credit_category as a type
+  if (credit.credit_category && TYPE_TO_CATEGORY[credit.credit_category]) return TYPE_TO_CATEGORY[credit.credit_category];
   // Try project_type
   if (credit.project_type && TYPE_TO_CATEGORY[credit.project_type]) return TYPE_TO_CATEGORY[credit.project_type];
   // Infer from source

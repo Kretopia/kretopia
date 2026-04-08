@@ -68,6 +68,8 @@ const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const Events = lazy(() => import("./pages/Events"));
 const Scene = lazy(() => import("./pages/Scene"));
+const Podcast = lazy(() => import("./pages/Podcast"));
+const Magazine = lazy(() => import("./pages/Magazine"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
@@ -236,7 +238,9 @@ const AppContent = () => {
             <Route path="/scene" element={<Scene />} />
             
             {/* Public Magazine Article - SEO accessible */}
-            <Route path="/magazine/:slug" element={<Navigate to="/" replace />} />
+            <Route path="/magazine/:slug" element={<MagazineArticlePage />} />
+            <Route path="/magazine" element={<Magazine />} />
+            <Route path="/podcast" element={<Podcast />} />
             
             {/* PWA Install Page */}
             <Route path="/install" element={<Install />} />

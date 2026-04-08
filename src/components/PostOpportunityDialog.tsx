@@ -69,6 +69,7 @@ export const PostOpportunityDialog = ({
   const navigate = useNavigate();
   const { subscriptionInfo } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
+  const gigGate = useFeatureGate("gigPosts");
 
   const [formData, setFormData] = useState({
     email: "",

@@ -910,6 +910,19 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                 <Input value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." className="h-9 text-sm" />
               </div>
             </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Move to Section</Label>
+              <Select value={editForm.section_override} onValueChange={v => setEditForm(f => ({ ...f, section_override: v }))}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Auto-detect" /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORY_META).filter(([k]) => k !== 'other').map(([key, meta]) => (
+                    <SelectItem key={key} value={key}>{meta.label}</SelectItem>
+                  ))}
+                  <SelectItem value="other">Other Work</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground">Choose which row this credit appears in</p>
+            </div>
             <Button onClick={saveEdit} disabled={savingEdit} className="w-full">
               {savingEdit && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />} Save Changes
             </Button>

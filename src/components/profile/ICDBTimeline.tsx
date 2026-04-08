@@ -330,7 +330,7 @@ function CategoryRow({
               <div className="absolute top-1.5 left-1.5 right-1.5 flex items-start justify-between gap-0.5">
                 {getVerificationBadge(credit)}
                 {platformIcon && (
-                  <div className="rounded-full bg-black/50 backdrop-blur-sm p-1">
+                  <div className="rounded-full bg-black/60 p-1">
                     {platformIcon}
                   </div>
                 )}
@@ -395,7 +395,7 @@ function CategoryRow({
                 <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
                   <Button
                     variant="secondary" size="icon"
-                    className="h-6 w-6 bg-black/50 text-white border-0 backdrop-blur-sm hover:bg-black/70"
+                    className="h-6 w-6 bg-black/60 text-white border-0 hover:bg-black/70"
                     onClick={(e) => { e.stopPropagation(); onEdit(credit); }}
                   >
                     <Pencil className="h-3 w-3" />

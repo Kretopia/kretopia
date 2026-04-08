@@ -229,7 +229,7 @@ export const ProfileContentSections = ({
         className={cn(
           "md:hidden z-40 -mx-3 px-3 transition-all duration-200",
           isTabBarSticky
-            ? "sticky top-[56px] bg-background/95 backdrop-blur-md border-b border-border py-2 shadow-sm"
+            ? "sticky top-[56px] bg-background border-b border-border py-2 shadow-sm"
             : "py-2"
         )}
       >

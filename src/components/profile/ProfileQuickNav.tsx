@@ -73,7 +73,7 @@ export function ProfileQuickNav() {
 
   return (
     <div className="hidden md:block fixed right-4 lg:right-6 top-1/2 -translate-y-1/2 z-[100]">
-      <div className="bg-card/95 backdrop-blur-sm border-2 border-primary/20 rounded-xl shadow-2xl p-2 space-y-1 min-w-[160px] lg:min-w-[180px]">
+      <div className="bg-card border-2 border-primary/20 rounded-xl shadow-2xl p-2 space-y-1 min-w-[160px] lg:min-w-[180px]">
         {sections.map((section) => (
           <button
             key={section.id}

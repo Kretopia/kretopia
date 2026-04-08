@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StatusAvatar } from "@/components/ui/status-avatar";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, MessageCircle, User } from "lucide-react";
 
@@ -44,12 +44,11 @@ export const CreatorCard = ({ creator, onViewProfile, onMessage }: CreatorCardPr
     <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-start gap-3 mb-3">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={creator.avatar_url || undefined} />
-            <AvatarFallback className="bg-primary/10 text-primary">
-              {creator.full_name?.charAt(0) || 'U'}
-            </AvatarFallback>
-          </Avatar>
+          <StatusAvatar
+            src={creator.avatar_url}
+            fallback={creator.full_name?.charAt(0) || 'U'}
+            size="lg"
+          />
           <div className="flex-1 min-w-0">
             <h4 className="font-semibold truncate">{creator.full_name}</h4>
             <p className="text-sm text-muted-foreground truncate">{creator.role}</p>
@@ -104,12 +103,11 @@ export const CreatorListItem = ({ creator, isSelected, onClick, onViewProfile }:
     >
       <CardContent className="p-3">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={creator.avatar_url || undefined} />
-            <AvatarFallback className="bg-primary/10 text-primary text-sm">
-              {creator.full_name?.charAt(0) || 'U'}
-            </AvatarFallback>
-          </Avatar>
+          <StatusAvatar
+            src={creator.avatar_url}
+            fallback={creator.full_name?.charAt(0) || 'U'}
+            size="md"
+          />
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-sm truncate">{creator.full_name}</h4>
             <p className="text-xs text-muted-foreground truncate">{creator.role}</p>

@@ -162,7 +162,7 @@ const BrandWorkHome = () => {
             </h1>
             <p className="text-sm text-muted-foreground">Find, hire & manage creative talent</p>
           </div>
-          <CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />
+          {/* Company accounts don't need cross-mode nudge */}
         </div>
 
         {/* Stats Row */}
@@ -238,7 +238,7 @@ const BrandWorkHome = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">Find Talent</p>
-              <p className="text-xs text-muted-foreground">Browse and search verified creators for your next project</p>
+              <p className="text-xs text-muted-foreground">Describe what you need — paid or barter — AI matches you instantly</p>
             </div>
             <ArrowRight className="h-4 w-4 text-primary shrink-0" />
           </div>

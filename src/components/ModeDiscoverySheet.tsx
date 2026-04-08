@@ -3,21 +3,34 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, Briefcase, ArrowRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavMode } from "@/hooks/useNavMode";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const STORAGE_KEY = "thrivein-mode-onboarded";
 
 export function ModeDiscoverySheet() {
   const [show, setShow] = useState(false);
   const { setMode } = useNavMode();
+  const { user } = useAuth();
 
   useEffect(() => {
-    try {
-      if (!localStorage.getItem(STORAGE_KEY)) {
-        const timer = setTimeout(() => setShow(true), 1500);
-        return () => clearTimeout(timer);
-      }
-    } catch {}
-  }, []);
+    if (!user) return;
+    // Skip for company accounts — they only get Work mode
+    supabase
+      .from("profiles")
+      .select("account_type")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.account_type === "company") return;
+        try {
+          if (!localStorage.getItem(STORAGE_KEY)) {
+            const timer = setTimeout(() => setShow(true), 1500);
+            return () => clearTimeout(timer);
+          }
+        } catch {}
+      });
+  }, [user]);
 
   const dismiss = (selectedMode?: "create" | "work") => {
     try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}

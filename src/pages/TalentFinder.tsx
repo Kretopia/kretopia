@@ -126,7 +126,7 @@ export default function TalentFinder() {
               <Sparkles className="h-5 w-5 text-primary" />
               AI Talent Finder
             </h1>
-            <p className="text-xs text-muted-foreground">Describe your project — AI finds the best creators</p>
+            <p className="text-xs text-muted-foreground">Describe your project — paid or barter — AI finds the best creators</p>
           </div>
           <Badge variant="secondary" className="gap-1 text-xs shrink-0">
             <Crown className="h-3 w-3 text-primary" /> Pro
@@ -150,7 +150,7 @@ export default function TalentFinder() {
                   <Textarea
                     value={brief}
                     onChange={e => setBrief(e.target.value)}
-                    placeholder={`e.g. "I need a video editor with experience in music videos and color grading. Budget around $500, 2-week turnaround. Ideally someone in the Caribbean or US who can do remote work."`}
+                    placeholder={`e.g. "I need a video editor for a music video, budget $500, 2-week turnaround" or "Looking for a content creator to feature our villa — free 2-night stay in exchange for 1 Reel + 3 Stories"`}
                     rows={4}
                     maxLength={800}
                     disabled={loading}

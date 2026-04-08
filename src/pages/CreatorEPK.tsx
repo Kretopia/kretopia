@@ -99,6 +99,19 @@ interface IndustryStat {
   issuer?: string;
 }
 
+// Decode HTML entities from scraped data
+const decodeHtmlEntities = (text: string): string => {
+  if (!text) return text;
+  return text
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCharCode(parseInt(n, 16)))
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'");
+};
+
 const CreatorEPK = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();

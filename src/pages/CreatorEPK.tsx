@@ -657,15 +657,26 @@ const CreatorEPK = () => {
                   <div
                     key={credit.id}
                     className={cn(
-                      "flex items-center justify-between p-3 rounded-lg",
+                      "flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-muted/80 transition-colors",
                       credit.isVerified
                         ? "bg-primary/5 border border-primary/10"
                         : "bg-muted/50"
                     )}
+                    onClick={() => {
+                      const name = encodeURIComponent(decodeHtmlEntities(credit.project_name || credit.title || ''));
+                      window.location.href = `/production?name=${name}`;
+                    }}
                   >
+                    {/* Thumbnail */}
+                    {credit.thumbnail_url && (
+                      <div className="w-10 h-10 rounded-md overflow-hidden shrink-0">
+                        <img src={credit.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      </div>
+                    )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-sm truncate">{credit.project_name || credit.title}</p>
+                        <p className="font-medium text-sm truncate">{decodeHtmlEntities(credit.project_name || credit.title || '')}</p>
+                        {credit.isVerified && tierConfig.label && (
                         {credit.isVerified && tierConfig.label && (
                           <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 gap-0.5", tierConfig.className)}>
                             <CheckCircle2 className="h-2.5 w-2.5" />

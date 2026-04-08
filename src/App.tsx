@@ -22,6 +22,9 @@ import { NetworkStatus } from "./components/NetworkStatus";
 import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
 import { GuestBanner } from "./components/GuestBanner";
 import { AuthGate } from "./components/AuthGate";
+import { OnboardingTour } from "./components/OnboardingTour";
+import { NewsletterPopup } from "./components/NewsletterPopup";
+import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 
 // Lazy load active page components
 const UnifiedHome = lazy(() => import("./components/home/UnifiedHome"));

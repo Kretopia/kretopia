@@ -106,6 +106,7 @@ const ViewProfile = () => {
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(searchParams.get('showClaim') === 'true');
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [gateResult, setGateResult] = useState<GateCheckResult | null>(null);
   
   const isFromMatch = searchParams.get('from') === 'match';
   

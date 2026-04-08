@@ -486,8 +486,9 @@ export default function Onboarding() {
           }));
           sessionStorage.removeItem('pending_claim_credits');
         } catch (e) { console.error('[Onboarding] Auto-import credits error:', e); }
+      }
 
-      // Track partner organization signup
+
       const partnerCode = sessionStorage.getItem('partner_code');
       if (partnerCode && user) {
         try {

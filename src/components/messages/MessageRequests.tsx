@@ -202,12 +202,11 @@ export const MessageRequests = ({
           <Card key={request.id} className="hover:bg-muted/50 transition-colors">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={request.sender_avatar} />
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    {request.sender_name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <StatusAvatar
+                  src={request.sender_avatar}
+                  fallback={request.sender_name?.charAt(0) || 'U'}
+                  size="lg"
+                />
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">

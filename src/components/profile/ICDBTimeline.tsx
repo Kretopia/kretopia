@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Film, Tv, Music, Disc3, Video, Mic2, CalendarDays, Sparkles, Crown,
   Shirt, Megaphone, Briefcase, ShieldCheck, Loader2,
-  Plus, Trash2, Play, UserPlus, ChevronLeft, ChevronRight, Pencil, Wand2,
+  Plus, Trash2, Play, UserPlus, ChevronLeft, ChevronRight, Pencil,
   Youtube, Headphones, Image as ImageIcon, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -447,7 +447,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const [editingCredit, setEditingCredit] = useState<ICDBCredit | null>(null);
   const [editForm, setEditForm] = useState({ project_name: "", role: "", year: new Date().getFullYear(), platform: "", url: "", project_type: "" });
   const [savingEdit, setSavingEdit] = useState(false);
-  const [enriching, setEnriching] = useState(false);
+  
 
   useEffect(() => { fetchData(); }, [userId]);
 
@@ -597,34 +597,6 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         </div>
         {isOwnProfile && (
           <div className="flex gap-2">
-            {credits.some(c => !c.thumbnail_url && !c.primary_media_url) && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs"
-                disabled={enriching}
-                onClick={async () => {
-                  setEnriching(true);
-                  try {
-                    const { data, error } = await supabase.functions.invoke('backfill-credit-media', {
-                      body: { user_id: userId, batch_size: 50 },
-                    });
-                    if (error) throw error;
-                    toast.success(data.message || `Enriched ${data.updated} credits`);
-                    fetchData();
-                    onRefresh?.();
-                  } catch (e: any) {
-                    console.error('Enrichment error:', e);
-                    toast.error('Failed to enrich credits');
-                  } finally {
-                    setEnriching(false);
-                  }
-                }}
-              >
-                {enriching ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Wand2 className="h-3.5 w-3.5 mr-1" />}
-                {enriching ? 'Enriching...' : 'Auto-Fill Images'}
-              </Button>
-            )}
             <Button variant="outline" size="sm" onClick={() => setIsFormOpen(true)} className="h-8 text-xs">
               <Plus className="h-3.5 w-3.5 mr-1" />
               Add Work

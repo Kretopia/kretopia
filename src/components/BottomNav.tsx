@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, Briefcase, LayoutDashboard, Wallet, User, Home, Users, CalendarDays } from "lucide-react";
+import { Sparkles, Briefcase, LayoutDashboard, Wallet, User, Home, Users, CalendarDays, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { memo, useRef } from "react";
+import { memo, useRef, useState, useEffect } from "react";
 import { useNavMode, NavMode } from "@/hooks/useNavMode";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const CREATE_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
@@ -18,6 +20,13 @@ const WORK_ITEMS = [
   { path: "/profile", icon: User, label: "Profile" },
 ];
 
+const COMPANY_ITEMS = [
+  { path: "/desk", icon: LayoutDashboard, label: "Desk" },
+  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+  { path: "/talent-finder", icon: UserSearch, label: "Talent" },
+  { path: "/thrivepay", icon: Wallet, label: "Pay" },
+];
+
 const MODE_META: Record<NavMode, { label: string; accent: string }> = {
   create: { label: "Explore", accent: "bg-[hsl(var(--mode-accent))]" },
   work: { label: "Work", accent: "bg-[hsl(var(--mode-accent))]" },
@@ -25,13 +34,29 @@ const MODE_META: Record<NavMode, { label: string; accent: string }> = {
 
 const BottomNav = memo(() => {
   const location = useLocation();
-  const { mode, toggle } = useNavMode();
+  const { user } = useAuth();
+  const { mode, toggle, setMode } = useNavMode();
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
+  const [isCompany, setIsCompany] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("account_type")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        const company = data?.account_type === "company";
+        setIsCompany(company);
+        if (company && mode === "create") setMode("work");
+      });
+  }, [user?.id]);
 
   if (location.pathname === "/auth") return null;
 
-  const items = mode === "create" ? CREATE_ITEMS : WORK_ITEMS;
+  const items = isCompany ? COMPANY_ITEMS : (mode === "create" ? CREATE_ITEMS : WORK_ITEMS);
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -66,16 +91,18 @@ const BottomNav = memo(() => {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      <div className="flex items-center justify-center gap-2 pt-1.5 pb-0.5">
-        <button
-          onClick={toggle}
-          className="flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-all active:scale-95 bg-muted/60 text-muted-foreground"
-        >
-          <span className={cn("h-1.5 w-1.5 rounded-full transition-colors", MODE_META[mode].accent)} />
-          {MODE_META[mode].label}
-          <span className="text-[8px] opacity-50 ml-0.5">← swipe →</span>
-        </button>
-      </div>
+      {!isCompany && (
+        <div className="flex items-center justify-center gap-2 pt-1.5 pb-0.5">
+          <button
+            onClick={toggle}
+            className="flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-all active:scale-95 bg-muted/60 text-muted-foreground"
+          >
+            <span className={cn("h-1.5 w-1.5 rounded-full transition-colors", MODE_META[mode].accent)} />
+            {MODE_META[mode].label}
+            <span className="text-[8px] opacity-50 ml-0.5">← swipe →</span>
+          </button>
+        </div>
+      )}
 
       <div className="flex items-center justify-around px-2 py-1">
         {items.map((item) => {

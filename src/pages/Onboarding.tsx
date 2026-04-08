@@ -85,6 +85,19 @@ export default function Onboarding() {
   const [joinedCircleIds, setJoinedCircleIds] = useState<Set<string>>(new Set());
   const [joiningCircleId, setJoiningCircleId] = useState<string | null>(null);
 
+  // AI Bio state
+  const [bio, setBio] = useState("");
+  const [generatingBio, setGeneratingBio] = useState(false);
+
+  // Profile URL import state
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+
+  // Pending credits to claim
+  const [pendingCredits, setPendingCredits] = useState<any[]>([]);
+  const [claimingCreditId, setClaimingCreditId] = useState<string | null>(null);
+  const [joiningCircleId, setJoiningCircleId] = useState<string | null>(null);
+
   // Email verification state
   const [emailToVerify, setEmailToVerify] = useState<string>("");
   const [resendingEmail, setResendingEmail] = useState(false);

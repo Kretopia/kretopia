@@ -223,6 +223,7 @@ export default function Onboarding() {
     }
   };
 
+  const handleNext = async () => {
     const { analytics } = await import("@/lib/analytics");
 
     if (currentStep === 1) {

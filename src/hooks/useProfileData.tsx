@@ -150,32 +150,40 @@ export const useProfileData = () => {
         if (awardsResult.status === 'fulfilled') setAwards(awardsResult.value.data || []);
         if (pressResult.status === 'fulfilled') setPressLinks(pressResult.value.data || []);
 
-        // Auto-enrich profile in background (press, awards, skills, bio, job title)
-        const pressData = pressResult.status === 'fulfilled' ? pressResult.value.data || [] : [];
-        const awardsData = awardsResult.status === 'fulfilled' ? awardsResult.value.data || [] : [];
-        const creditsData = creditsResult.status === 'fulfilled' ? creditsResult.value.data || [] : [];
-        const needsEnrichment = 
-          pressData.some((p: any) => !p.publication || !p.image_url) ||
-          (awardsData.length === 0 && creditsData.length >= 3) ||
-          !Array.isArray(data?.professional_skills) || (data.professional_skills as any[]).length === 0 ||
-          !data?.job_title;
-          
-        if (needsEnrichment) {
-          supabase.functions.invoke('enrich-creator-profile', {
-            body: { user_id: currentUserId, scrape_website: true },
-          }).then(async () => {
-            // Silently refresh just the enriched fields without showing skeletons
-            const [profileRefresh, awardsRefresh, pressRefresh] = await Promise.all([
-              supabase.from('profiles').select('*').eq('user_id', currentUserId!).maybeSingle(),
-              supabase.from('awards').select('*').eq('user_id', currentUserId!).order('year', { ascending: false }).limit(10),
-              supabase.from('press_links').select('*').eq('user_id', currentUserId!).order('published_date', { ascending: false }).limit(10),
-            ]);
-            if (profileRefresh.data) {
-              setProfile({ ...profileRefresh.data, section_order: profileRefresh.data.section_order });
-            }
-            if (awardsRefresh.data) setAwards(awardsRefresh.data);
-            if (pressRefresh.data) setPressLinks(pressRefresh.data);
-          }).catch(() => {});
+        // Auto-enrich profile ONLY for own profile, with a 24h cooldown
+        const isOwnProfile = currentUserId === user?.id;
+        const enrichCooldownKey = `enrich_last_${currentUserId}`;
+        const lastEnrich = localStorage.getItem(enrichCooldownKey);
+        const cooldownMs = 24 * 60 * 60 * 1000; // 24 hours
+        const canEnrich = isOwnProfile && (!lastEnrich || Date.now() - parseInt(lastEnrich) > cooldownMs);
+
+        if (canEnrich) {
+          const pressData = pressResult.status === 'fulfilled' ? pressResult.value.data || [] : [];
+          const awardsData = awardsResult.status === 'fulfilled' ? awardsResult.value.data || [] : [];
+          const creditsData = creditsResult.status === 'fulfilled' ? creditsResult.value.data || [] : [];
+          const needsEnrichment = 
+            pressData.some((p: any) => !p.publication || !p.image_url) ||
+            (awardsData.length === 0 && creditsData.length >= 3) ||
+            !Array.isArray(data?.professional_skills) || (data.professional_skills as any[]).length === 0 ||
+            !data?.job_title;
+            
+          if (needsEnrichment) {
+            localStorage.setItem(enrichCooldownKey, Date.now().toString());
+            supabase.functions.invoke('enrich-creator-profile', {
+              body: { user_id: currentUserId, scrape_website: true },
+            }).then(async () => {
+              const [profileRefresh, awardsRefresh, pressRefresh] = await Promise.all([
+                supabase.from('profiles').select('*').eq('user_id', currentUserId!).maybeSingle(),
+                supabase.from('awards').select('*').eq('user_id', currentUserId!).order('year', { ascending: false }).limit(10),
+                supabase.from('press_links').select('*').eq('user_id', currentUserId!).order('published_date', { ascending: false }).limit(10),
+              ]);
+              if (profileRefresh.data) {
+                setProfile({ ...profileRefresh.data, section_order: profileRefresh.data.section_order });
+              }
+              if (awardsRefresh.data) setAwards(awardsRefresh.data);
+              if (pressRefresh.data) setPressLinks(pressRefresh.data);
+            }).catch(() => {});
+          }
         }
       });
 

@@ -93,6 +93,45 @@ export default function Onboarding() {
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
 
+  // AI Auto-fill state
+  const [autoFilling, setAutoFilling] = useState(false);
+  const [autoFilled, setAutoFilled] = useState(false);
+
+  const handleAIAutoFill = async () => {
+    if (!profile.full_name?.trim() || profile.full_name.trim().length < 3) {
+      toast({ title: "Enter your name first", description: "We need your name to search for your profile", variant: "destructive" });
+      return;
+    }
+    setAutoFilling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-autofill-profile", {
+        body: { full_name: profile.full_name.trim(), url: importUrl.trim() || null, current_role: profile.role || null },
+      });
+      if (error) throw error;
+      if (!data?.profile) throw new Error("No profile data returned");
+
+      const p = data.profile;
+      if (p.role && !profile.role) setProfile(prev => ({ ...prev, role: p.role }));
+      if (p.location && !profile.location) {
+        setProfile(prev => ({ ...prev, location: p.location }));
+      }
+      if (p.bio && !bio) setBio(p.bio);
+      if (p.skills?.length) {
+        setSelectedSkills(prev => [...new Set([...prev, ...p.skills.slice(0, 8)])]);
+      }
+      if (p.website && !importUrl) setImportUrl(p.website);
+
+      setAutoFilled(true);
+      const filledCount = [p.role, p.bio, p.location, p.skills?.length].filter(Boolean).length;
+      toast({ title: "✨ Profile auto-filled!", description: `Found ${filledCount} fields from the web. Review and edit below.` });
+    } catch (e: any) {
+      console.error("AI auto-fill error:", e);
+      toast({ title: "Auto-fill unavailable", description: "Enter your details manually below", variant: "destructive" });
+    } finally {
+      setAutoFilling(false);
+    }
+  };
+
   // Pending credits to claim
   const [pendingCredits, setPendingCredits] = useState<any[]>([]);
   const [claimingCreditId, setClaimingCreditId] = useState<string | null>(null);

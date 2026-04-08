@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { processPendingPost } from "@/components/QuickPostModal";
+import { processPendingPost } from "@/lib/pendingPost";
 import { User, Session } from "@supabase/supabase-js";
 
 interface SubscriptionInfo {

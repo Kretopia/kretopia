@@ -622,10 +622,39 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         </div>
         {isOwnProfile && (
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsFormOpen(true)} className="h-8 text-xs">
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              Add Work
-            </Button>
+            {bulkSelectMode ? (
+              <>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => {
+                  if (selectedIds.size === credits.length) setSelectedIds(new Set());
+                  else setSelectedIds(new Set(credits.map(c => c.id)));
+                }}>
+                  {selectedIds.size === credits.length ? <Square className="h-3.5 w-3.5 mr-1" /> : <CheckSquare className="h-3.5 w-3.5 mr-1" />}
+                  {selectedIds.size === credits.length ? 'Deselect All' : 'Select All'}
+                </Button>
+                {selectedIds.size > 0 && (
+                  <Button variant="destructive" size="sm" className="h-8 text-xs" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                    {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />}
+                    Delete {selectedIds.size}
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setBulkSelectMode(false); setSelectedIds(new Set()); }}>
+                  <XCircle className="h-3.5 w-3.5 mr-1" /> Cancel
+                </Button>
+              </>
+            ) : (
+              <>
+                {credits.length > 1 && (
+                  <Button variant="outline" size="sm" onClick={() => setBulkSelectMode(true)} className="h-8 text-xs">
+                    <CheckSquare className="h-3.5 w-3.5 mr-1" />
+                    Select
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => setIsFormOpen(true)} className="h-8 text-xs">
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Add Work
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>

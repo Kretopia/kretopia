@@ -699,7 +699,7 @@ export const UnifiedHome = () => {
                   className="shrink-0 w-[200px] sm:w-[240px] snap-start"
                 >
                   <div className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
-                    onClick={() => navigate(a.slug ? `/magazine/${a.slug}` : "/scene")}
+                    onClick={() => navigate(a.slug ? `/magazine/${a.slug}` : `/magazine/${a.id}`)}
                   >
                     {a.cover_image_url ? (
                       <div className="aspect-[16/9] overflow-hidden">

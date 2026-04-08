@@ -6,6 +6,40 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+function extractJsonObject(raw: string) {
+  const cleaned = raw
+    .replace(/^```json\s*/im, '')
+    .replace(/^```\s*/im, '')
+    .replace(/```\s*$/im, '')
+    .trim();
+
+  if (cleaned.startsWith('{') || cleaned.startsWith('[')) {
+    return JSON.parse(cleaned);
+  }
+
+  const objStart = cleaned.indexOf('{');
+  const objEnd = cleaned.lastIndexOf('}');
+  if (objStart !== -1 && objEnd > objStart) {
+    return JSON.parse(cleaned.slice(objStart, objEnd + 1));
+  }
+
+  throw new Error('No valid JSON found in AI response');
+}
+
+function normalizeText(value: string | null | undefined) {
+  return (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function buildRelatedSearches(query: string) {
+  return [
+    `${query} creator`,
+    `${query} credits`,
+    `${query} youtube`,
+    `${query} spotify`,
+    `${query} instagram`,
+  ];
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -25,9 +59,9 @@ serve(async (req) => {
       });
     }
 
-    const q = `%${query.trim()}%`;
+    const trimmedQuery = query.trim();
+    const q = `%${trimmedQuery}%`;
 
-    // Step 1: Platform data queries in parallel
     const [profilesRes, creditsRes, oppsRes] = await Promise.all([
       supabase
         .from('profiles')
@@ -54,7 +88,6 @@ serve(async (req) => {
     const matchedCredits = creditsRes.data || [];
     const platformOpps = oppsRes.data || [];
 
-    // Step 1b: For each matched credit, fetch ALL sibling credits on the same project
     const projectNames = [...new Set(matchedCredits.map(c => c.project_name))];
     let allRelatedCredits: any[] = [];
     if (projectNames.length > 0) {
@@ -67,7 +100,6 @@ serve(async (req) => {
       allRelatedCredits = siblings || [];
     }
 
-    // Group credits by project_name into production cards
     const projectMap = new Map<string, any>();
     for (const credit of allRelatedCredits) {
       if (!projectMap.has(credit.project_name)) {
@@ -91,6 +123,7 @@ serve(async (req) => {
         verification_status: credit.verification_status,
       });
     }
+
     for (const credit of matchedCredits) {
       if (!projectMap.has(credit.project_name)) {
         projectMap.set(credit.project_name, {
@@ -113,7 +146,6 @@ serve(async (req) => {
     }
     const platformCredits = Array.from(projectMap.values());
 
-    // Step 1c: Fetch profile info for all user_ids in roles
     const allRoleUserIds = new Set<string>();
     platformCredits.forEach(p => p.roles.forEach((r: any) => allRoleUserIds.add(r.user_id)));
     let roleProfiles: Record<string, { full_name: string; avatar_url: string | null }> = {};
@@ -137,15 +169,70 @@ serve(async (req) => {
       }));
     });
 
-    // Step 2: AI-powered external knowledge synthesis
-    let externalResults: any = null;
+    let webResults: any[] = [];
+    try {
+      const webResponse = await fetch(`${supabaseUrl}/functions/v1/search-credits-web`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseKey}`,
+          'apikey': supabaseKey,
+        },
+        body: JSON.stringify({ query: trimmedQuery }),
+      });
 
-    if (lovableApiKey) {
+      if (webResponse.ok) {
+        const webData = await webResponse.json();
+        webResults = Array.isArray(webData?.results) ? webData.results : [];
+      } else {
+        console.warn('search-credits-web failed:', webResponse.status, await webResponse.text());
+      }
+    } catch (webErr) {
+      console.error('search-credits-web invocation error:', webErr);
+    }
+
+    const existingProjectNames = new Set(platformCredits.map((credit) => normalizeText(credit.project_name)));
+    const visualResults = webResults
+      .filter((result) => result?.title)
+      .filter((result) => !existingProjectNames.has(normalizeText(result.title)))
+      .slice(0, 10)
+      .map((result) => ({
+        title: result.title,
+        subtitle: result.role_suggestion || undefined,
+        type: result.type || 'work',
+        year: result.year || undefined,
+        platform: result.platform || undefined,
+        description: result.description || undefined,
+        image_url: result.image_url || undefined,
+        url: result.url || undefined,
+      }));
+
+    let externalResults: any = {
+      knowledge_card: null,
+      alternative_matches: [],
+      visual_results: visualResults,
+      related_searches: buildRelatedSearches(trimmedQuery),
+    };
+
+    if (lovableApiKey && webResults.length > 0) {
       try {
-        const hasPlatformData = platformProfiles.length > 0 || platformCredits.length > 0;
-        const platformContext = hasPlatformData
-          ? `\n\nPlatform already has these results (avoid duplicating): ${platformCredits.map(c => c.project_name).join(', ')}. ${platformProfiles.map(p => p.full_name).join(', ')}.`
-          : '';
+        const platformContext = [
+          ...platformProfiles.map((profile) => `Platform profile: ${profile.full_name} (${profile.role || 'creator'})`),
+          ...platformCredits.map((credit) => `Platform credit: ${credit.project_name}`),
+        ].slice(0, 12).join('\n');
+
+        const groundedWebContext = webResults.slice(0, 10).map((result, index) => [
+          `Result ${index + 1}:`,
+          `Title: ${result.title || ''}`,
+          `Type: ${result.type || ''}`,
+          `Platform: ${result.platform || ''}`,
+          `Description: ${result.description || ''}`,
+          `URL: ${result.url || ''}`,
+          `Image URL: ${result.image_url || ''}`,
+          `Year: ${result.year || ''}`,
+          `Location: ${result.location || ''}`,
+          `Brand: ${result.client_brand || ''}`,
+        ].filter(Boolean).join('\n')).join('\n---\n');
 
         const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
@@ -158,83 +245,54 @@ serve(async (req) => {
             messages: [
               {
                 role: 'system',
-            content: `You are the creative industry's most comprehensive knowledge engine for ThriveIN — the "IMDb + LinkedIn for ALL creatives." You must search across EVERY possible source of creative work.
+                content: `You are structuring search results for a creative industry search engine. You MUST ONLY use the grounded web results provided. Never invent facts, followers, collaborations, counts, credits, or biographies.
 
-SEARCH ACROSS ALL OF THESE (not just film/music):
-- Film & TV: IMDb, TMDb, Letterboxd, TV Guide
-- Music: Spotify, Apple Music, SoundCloud, Discogs, Genius, Bandcamp, YouTube Music
-- Video & Content: YouTube channels, TikTok creators, Vimeo, Twitch
-- Podcasts: Apple Podcasts, Spotify Podcasts, YouTube podcasts, Google Podcasts
-- Social Media: Instagram (photographers, models, influencers), Twitter/X, LinkedIn
-- Design & Visual: Behance, Dribbble, DeviantArt, ArtStation
-- Fashion & Modeling: Vogue, ELLE, Harper's Bazaar, runway shows, fashion weeks, model agencies (IMG, Elite, Wilhelmina, Storm, Next), editorial shoots, lookbooks, campaigns, casting databases, Models.com, FashionModelDirectory
-- Events: Eventbrite, festival lineups, conference speakers, DJ sets, live performances
-- Photography: Getty Images, Shutterstock contributors, photo exhibitions
-- Dance & Theatre: Broadway, West End, dance companies, choreography credits
-- Writing & Publishing: Amazon, Medium, Substack, published books, articles
-- Advertising & Brand: Campaign archives, ad agencies, brand collaborations
-- Gaming: Game credits, voice acting, game design
-- Press & Media: News articles, magazine features, interviews, press releases
-- Flyers, posters, event promotions, brand campaigns
+Rules:
+1. If the results clearly point to one person/project, build a knowledge_card.
+2. If the query is ambiguous or points to multiple identities, set knowledge_card to null.
+3. alternative_matches must only include distinct identities directly evidenced in the provided results.
+4. Keep related_searches short and practical.
+5. Do not output visual_results; those are handled separately.
 
-CRITICAL RULES:
-1. ALWAYS return results. For ANY query, find relevant creative work, people, or projects.
-2. Include thumbnail_url suggestions when you know the visual identity (album art URLs, movie posters, YouTube thumbnails).
-3. For shows/podcasts/YouTube channels: list the HOST, notable guests, episode count, and all platforms.
-4. Include "image_suggestion" field: describe what a visual card for this result should look like.
-5. For people: search across ALL platforms they might be on — not just one. Consider all possible people with the same name.
-6. For events/festivals: include venue, date, lineup, and poster/flyer info.
-7. For brands: include campaign work, ambassadors, and creative team.
-8. Always return at least 5 key_credits and 5 related_searches.
-9. IMPORTANT: If the query is a person's name, consider that there may be MULTIPLE people with that name. Always populate the "alternative_matches" array with other possible people this could refer to (different industries, locations, or roles). Include at least 3 alternatives when the query looks like a person name.
-
-Return a JSON object:
+Return JSON only in this shape:
 {
   "knowledge_card": {
-    "type": "person" | "production" | "brand" | "event" | "podcast" | "show" | "channel" | "festival" | "agency" | "venue" | "concept",
+    "type": "person" | "production" | "brand" | "event" | "podcast" | "channel" | "concept",
     "name": "Official name",
-    "description": "2-3 sentence summary with specific details (episode counts, follower counts, years active, etc.)",
-    "known_for": ["Specific work 1", "Specific work 2", "Specific work 3"],
-    "industry": "Film | Music | Fashion | Events | Digital | Photography | Dance | Theatre | Podcast | Content Creation | Modeling | Design | Mixed",
+    "description": "1-2 sentence grounded summary",
+    "known_for": ["Work 1", "Work 2"],
+    "industry": "Music | Film | Content Creation | Fashion | Mixed | etc",
     "key_credits": [
-      {"project": "Project Name", "role": "Specific Role", "year": 2023, "platform": "YouTube/Spotify/IMDb/etc", "image_suggestion": "Description of what a visual card should show"}
+      {"project": "Project Name", "role": "Role", "year": 2024, "platform": "Spotify", "image_suggestion": "Short grounded visual hint"}
     ],
-    "collaborators": ["Name 1", "Name 2", "Name 3"],
-    "platforms": ["YouTube", "Spotify", "Instagram"],
-    "fun_fact": "Interesting industry detail",
-    "claim_prompt": "Why this person/project should be on ThriveIN",
-    "social_links": {"instagram": "handle", "youtube": "channel", "spotify": "link"}
+    "collaborators": ["Name 1"],
+    "fun_fact": "Optional grounded detail",
+    "claim_prompt": "Short claim prompt",
+    "platforms": ["Spotify", "YouTube"],
+    "social_links": {"instagram": "url or handle"}
   },
   "alternative_matches": [
     {
-      "name": "Full Name",
-      "description": "One-line summary of WHO this person is",
-      "industry": "Fashion | Film | Music | etc",
-      "location": "City, Country if known",
-      "known_for": ["Key work 1", "Key work 2"]
+      "name": "Full Name or identity label",
+      "description": "One-line grounded summary",
+      "industry": "Industry",
+      "location": "Location if stated",
+      "known_for": ["Known item 1", "Known item 2"]
     }
   ],
-  "visual_results": [
-    {
-      "title": "Project/Work Name",
-      "subtitle": "Role or context",
-      "type": "film | music | event | podcast | photo | video | fashion | design | modeling | runway",
-      "year": 2023,
-      "platform": "Where it lives",
-      "description": "One-line description",
-      "image_suggestion": "What a thumbnail should depict",
-      "url": "Known URL if any"
-    }
-  ],
-  "related_searches": ["Search 1", "Search 2", "Search 3", "Search 4", "Search 5"]
-}
-
-IMPORTANT: The "visual_results" array should contain 5-10 individual works/projects that match the query, each as a visual card. Think of these as search results you'd see on Google Images but for creative work.${platformContext}`
+  "related_searches": ["search 1", "search 2", "search 3", "search 4", "search 5"]
+}`,
               },
               {
                 role: 'user',
-                content: `Search query: "${query}"`
-              }
+                content: `Search query: "${trimmedQuery}"
+
+Existing platform results:
+${platformContext || 'None'}
+
+Grounded web results:
+${groundedWebContext}`,
+              },
             ],
             response_format: { type: 'json_object' },
           }),
@@ -242,31 +300,25 @@ IMPORTANT: The "visual_results" array should contain 5-10 individual works/proje
 
         if (aiResponse.ok) {
           const aiData = await aiResponse.json();
-          const content = aiData.choices?.[0]?.message?.content;
-          if (content) {
-            externalResults = JSON.parse(content);
+          const finishReason = aiData.choices?.[0]?.finish_reason || aiData.stop_reason;
+          if (finishReason !== 'length' && finishReason !== 'max_tokens') {
+            const content = aiData.choices?.[0]?.message?.content;
+            if (content) {
+              const grounded = extractJsonObject(content);
+              externalResults = {
+                knowledge_card: grounded?.knowledge_card || null,
+                alternative_matches: Array.isArray(grounded?.alternative_matches) ? grounded.alternative_matches : [],
+                visual_results: visualResults,
+                related_searches: Array.isArray(grounded?.related_searches) && grounded.related_searches.length > 0
+                  ? grounded.related_searches
+                  : buildRelatedSearches(trimmedQuery),
+              };
+            }
           }
-        } else if (aiResponse.status === 429 || aiResponse.status === 402) {
-          console.warn('AI rate limited/credits exhausted, returning platform-only results');
         }
       } catch (aiErr) {
-        console.error('AI synthesis error:', aiErr);
+        console.error('Grounded search synthesis error:', aiErr);
       }
-    }
-
-    // Fallback
-    if (!externalResults) {
-      externalResults = {
-        knowledge_card: null,
-        visual_results: [],
-        related_searches: [
-          `${query} film`,
-          `${query} music`,
-          `${query} photographer`,
-          `${query} events`,
-          `${query} credits`,
-        ],
-      };
     }
 
     return new Response(JSON.stringify({
@@ -276,7 +328,7 @@ IMPORTANT: The "visual_results" array should contain 5-10 individual works/proje
         opportunities: platformOpps,
       },
       external: externalResults,
-      query: query.trim(),
+      query: trimmedQuery,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

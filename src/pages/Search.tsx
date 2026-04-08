@@ -67,6 +67,7 @@ interface VisualResult {
   year?: number;
   platform?: string;
   description?: string;
+  image_url?: string;
   image_suggestion?: string;
   url?: string;
 }
@@ -474,8 +475,19 @@ const Search = () => {
                             onClick={() => navigate(`/production?name=${encodeURIComponent(vr.title)}`)}
                             className="text-left rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-all group"
                           >
-                            <div className="aspect-[4/3] bg-gradient-to-br from-primary/10 to-muted flex items-center justify-center relative">
-                              <VrIcon className="h-8 w-8 text-primary/20" />
+                            <div className="aspect-[4/3] bg-gradient-to-br from-primary/10 to-muted flex items-center justify-center relative overflow-hidden">
+                              {vr.image_url ? (
+                                <img
+                                  src={vr.image_url}
+                                  alt={vr.title}
+                                  className="h-full w-full object-cover"
+                                  loading="lazy"
+                                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                                />
+                              ) : (
+                                <VrIcon className="h-8 w-8 text-primary/20" />
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-card/70 via-transparent to-transparent" />
                               {vr.platform && (
                                 <Badge className="absolute top-1.5 right-1.5 text-[7px] bg-card/90 border-border text-muted-foreground">
                                   {vr.platform}

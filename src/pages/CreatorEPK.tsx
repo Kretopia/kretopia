@@ -414,8 +414,8 @@ const CreatorEPK = () => {
             </p>
           )}
 
-          {/* Social Links */}
-          {socialLinks.length > 0 && (
+          {/* Social Links — only for authenticated users */}
+          {currentUserId && socialLinks.length > 0 && (
             <div className="flex items-center justify-center gap-3 pt-2">
               {socialLinks.map((link, index) => (
                 <a
@@ -477,7 +477,7 @@ const CreatorEPK = () => {
 
         {/* CTA Buttons */}
         <div className="space-y-3 mb-8">
-          {profile.calendly_url && (
+          {currentUserId && profile.calendly_url && (
             <Button 
               onClick={handleBookCall}
               className="w-full h-14 text-base font-semibold bg-primary hover:bg-primary/90 shadow-lg"
@@ -488,7 +488,7 @@ const CreatorEPK = () => {
             </Button>
           )}
           
-          {profile.website && (
+          {currentUserId && profile.website && (
             <Button 
               onClick={handleVisitWebsite}
               variant="outline"

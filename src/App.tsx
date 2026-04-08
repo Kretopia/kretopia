@@ -70,8 +70,6 @@ const Events = lazy(() => import("./pages/Events"));
 const Scene = lazy(() => import("./pages/Scene"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Magazine = lazy(() => import("./pages/Magazine"));
-const Magazine = lazy(() => import("./pages/Magazine"));
-const Podcast = lazy(() => import("./pages/Podcast"));
 const MagazineArticlePage = lazy(() => import("./pages/MagazineArticlePage"));
 const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));

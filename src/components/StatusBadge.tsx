@@ -14,10 +14,11 @@ const TIER_ICONS = {
 interface StatusBadgeProps {
   status: StatusResult;
   showPoints?: boolean;
+  showSocialProof?: boolean;
   size?: "sm" | "md";
 }
 
-export function StatusBadge({ status, showPoints = false, size = "sm" }: StatusBadgeProps) {
+export function StatusBadge({ status, showPoints = false, showSocialProof = false, size = "sm" }: StatusBadgeProps) {
   const Icon = TIER_ICONS[status.tier] || Shield;
   const isSmall = size === "sm";
 
@@ -40,7 +41,7 @@ export function StatusBadge({ status, showPoints = false, size = "sm" }: StatusB
         status.color,
         isSmall ? "text-[10px]" : "text-xs",
       )}>
-        {status.label}
+        {showSocialProof && status.socialProofLabel ? status.socialProofLabel : status.label}
       </span>
       {showPoints && (
         <span className={cn(

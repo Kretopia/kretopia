@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 import { QuickPostModal } from "@/components/QuickPostModal";
 import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,7 +29,8 @@ const ACTIVITY_TEMPLATES = [
 ];
 
 export const UnifiedHome = () => {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -792,6 +794,7 @@ export const UnifiedHome = () => {
         )}
 
         {/* ── CTA CARD ── */}
+        {(!user || !isPro) && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -823,6 +826,7 @@ export const UnifiedHome = () => {
             </div>
           </div>
         </motion.div>
+        )}
 
         {/* ── Guest Post CTA ── */}
         {!user && (

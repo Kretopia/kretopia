@@ -789,6 +789,38 @@ export default function Onboarding() {
                 )}
               </div>
 
+              {/* Claim Pending Credits */}
+              {pendingCredits.length > 0 && (
+                <div className="border border-amber-500/30 rounded-lg p-4 space-y-3 bg-amber-500/5">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-amber-600" />
+                    <Label className="text-sm font-medium">Credits mentioning you 🎬</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    We found credits that may be yours. Claim them to build your professional record.
+                  </p>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {pendingCredits.map((credit) => (
+                      <div key={credit.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{credit.project_name}</p>
+                          <p className="text-xs text-muted-foreground">{credit.role} {credit.year ? `• ${credit.year}` : ""}</p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          className="h-7 text-xs px-3 shrink-0"
+                          disabled={claimingCreditId === credit.id}
+                          onClick={() => handleClaimCredit(credit)}
+                        >
+                          {claimingCreditId === credit.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Claim"}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Join Circles — suggested based on role */}
               {suggestedCircles.length > 0 && (
                 <div className="border border-primary/20 rounded-lg p-4 space-y-3 bg-primary/5">

@@ -161,9 +161,18 @@ export const useProfileData = () => {
         if (needsEnrichment) {
           supabase.functions.invoke('enrich-creator-profile', {
             body: { user_id: currentUserId, scrape_website: true },
-          }).then(() => {
-            // Refresh profile data after enrichment
-            setTimeout(() => fetchData(currentUserId), 3000);
+          }).then(async () => {
+            // Silently refresh just the enriched fields without showing skeletons
+            const [profileRefresh, awardsRefresh, pressRefresh] = await Promise.all([
+              supabase.from('profiles').select('*').eq('user_id', currentUserId!).maybeSingle(),
+              supabase.from('awards').select('*').eq('user_id', currentUserId!).order('year', { ascending: false }).limit(10),
+              supabase.from('press_links').select('*').eq('user_id', currentUserId!).order('published_date', { ascending: false }).limit(10),
+            ]);
+            if (profileRefresh.data) {
+              setProfile({ ...profileRefresh.data, section_order: profileRefresh.data.section_order });
+            }
+            if (awardsRefresh.data) setAwards(awardsRefresh.data);
+            if (pressRefresh.data) setPressLinks(pressRefresh.data);
           }).catch(() => {});
         }
       });

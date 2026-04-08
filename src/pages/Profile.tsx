@@ -48,6 +48,7 @@ const ProfileContent = () => {
   } = useProfileContext();
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const trackView = async () => {
       const { analytics } = await import("@/lib/analytics");
       analytics.pageView("profile");
@@ -398,18 +399,6 @@ const ProfileContent = () => {
           }
         />
 
-        {/* Social Stats — visible on profile */}
-        <div className="mt-4">
-          <SocialStatsSection
-            youtubeSubscribers={profile.youtube_subscribers}
-            instagramFollowers={profile.instagram_followers}
-            tiktokFollowers={profile.tiktok_followers}
-            spotifyListeners={profile.spotify_listeners}
-            twitterFollowers={profile.twitter_followers}
-            linkedinConnections={profile.linkedin_connections}
-            verifiedMetrics={profile.verified_metrics}
-          />
-        </div>
 
         {/* Content Sections — immediately after hero, Instagram-style */}
         <div className="mt-4">

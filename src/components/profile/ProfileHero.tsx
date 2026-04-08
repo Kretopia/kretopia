@@ -2,7 +2,7 @@ import { AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, UserCheck, IdCard, Shield, Clock } from "lucide-react";
+import { MapPin, Star, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, UserCheck, IdCard, Shield, Clock, Youtube, Instagram, Music, Twitter, Linkedin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { calculateStatus, type StatusResult } from "@/lib/statusEngine";
 import { AchievementBadges } from "./AchievementBadges";
@@ -13,6 +13,7 @@ import { useState } from "react";
 import { ClaimProfileDialog } from "./ClaimProfileDialog";
 import { TrustSignals } from "./TrustSignals";
 import { AvailabilityIndicator } from "./AvailabilityIndicator";
+import { SocialStatsInline } from "./SocialStatsInline";
 
 interface ProfileHeroProps {
   profile: any;
@@ -340,6 +341,17 @@ export const ProfileHero = ({
             {profile.bio}
           </p>
         )}
+
+        {/* Social Stats — inline under bio */}
+        <SocialStatsInline
+          youtubeSubscribers={profile.youtube_subscribers}
+          instagramFollowers={profile.instagram_followers}
+          tiktokFollowers={profile.tiktok_followers}
+          spotifyListeners={profile.spotify_listeners}
+          twitterFollowers={profile.twitter_followers}
+          linkedinConnections={profile.linkedin_connections}
+          verifiedMetrics={profile.verified_metrics}
+        />
 
         {/* Action Buttons */}
         <div className="flex gap-2 flex-wrap pt-1">

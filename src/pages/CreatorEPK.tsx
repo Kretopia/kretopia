@@ -677,7 +677,6 @@ const CreatorEPK = () => {
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-sm truncate">{decodeHtmlEntities(credit.project_name || credit.title || '')}</p>
                         {credit.isVerified && tierConfig.label && (
-                        {credit.isVerified && tierConfig.label && (
                           <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 gap-0.5", tierConfig.className)}>
                             <CheckCircle2 className="h-2.5 w-2.5" />
                             {tierConfig.label}

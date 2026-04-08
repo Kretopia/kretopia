@@ -54,6 +54,7 @@ const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
 
 const Search = lazy(() => import("./pages/Search"));
+const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const NotificationsPage = lazy(() => import("./pages/Notifications"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 

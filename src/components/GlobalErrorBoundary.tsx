@@ -1,6 +1,6 @@
 import { Component, ReactNode } from 'react';
 import { Button } from './ui/button';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Home, RefreshCw, WifiOff } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -9,6 +9,7 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  isOffline: boolean;
 }
 
 export class GlobalErrorBoundary extends Component<Props, State> {
@@ -16,15 +17,26 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     super(props);
     this.state = {
       hasError: false,
-      error: null
+      error: null,
+      isOffline: typeof navigator !== 'undefined' ? !navigator.onLine : false,
     };
   }
 
-  static getDerivedStateFromError(error: Error): State {
-    return {
-      hasError: true,
-      error
-    };
+  componentDidMount() {
+    window.addEventListener('online', this.handleOnline);
+    window.addEventListener('offline', this.handleOffline);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('online', this.handleOnline);
+    window.removeEventListener('offline', this.handleOffline);
+  }
+
+  handleOnline = () => this.setState({ isOffline: false });
+  handleOffline = () => this.setState({ isOffline: true });
+
+  static getDerivedStateFromError(error: Error): Partial<State> {
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -40,6 +52,14 @@ export class GlobalErrorBoundary extends Component<Props, State> {
   };
 
   render() {
+    // Offline banner — non-blocking, shown above content
+    const offlineBanner = this.state.isOffline ? (
+      <div className="fixed top-0 left-0 right-0 z-[100] bg-destructive text-destructive-foreground text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2 animate-slide-down">
+        <WifiOff className="h-4 w-4" />
+        You're offline. Some features may be unavailable.
+      </div>
+    ) : null;
+
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
@@ -78,6 +98,12 @@ export class GlobalErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return (
+      <>
+        {offlineBanner}
+        {this.state.isOffline && <div className="h-10" />}
+        {this.props.children}
+      </>
+    );
   }
 }

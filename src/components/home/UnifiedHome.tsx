@@ -11,6 +11,7 @@ import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
+import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";
@@ -485,6 +486,9 @@ export const UnifiedHome = () => {
               </div>
             ) : null;
           })()}
+
+          {/* Push Notification Prompt */}
+          <PushNotificationPrompt trigger="default" className="mb-4" />
         </div>
       )}
 

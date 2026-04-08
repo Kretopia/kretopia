@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
+import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { IceBreakers } from "@/components/messages/IceBreakers";
 import { TypingIndicator, useTypingStatus } from "@/components/messages/TypingIndicator";
 import { MessageAttachments, AttachmentPreview } from "@/components/messages/MessageAttachments";
@@ -553,10 +554,13 @@ const Messages = () => {
                   : "Start by discovering and connecting with other creators!"}
               </p>
               {!searchQuery && (
-                <Button onClick={() => navigate("/circle")} size="sm" className="gap-2">
-                  Discover Creators
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
+                <>
+                  <Button onClick={() => navigate("/circle")} size="sm" className="gap-2">
+                    Discover Creators
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  <PushNotificationPrompt trigger="message" className="mt-4" />
+                </>
               )}
             </div>
           ) : (

@@ -33,7 +33,7 @@ async function firecrawlSearch(query: string, apiKey: string, limit = 8) {
 }
 
 async function aiExtract(prompt: string, systemPrompt: string, lovableKey: string) {
-  const res = await fetch('https://ai.lovable.dev/chat/completions', {
+  const res = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${lovableKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({

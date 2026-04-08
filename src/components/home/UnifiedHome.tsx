@@ -475,6 +475,16 @@ export const UnifiedHome = () => {
               </button>
             ))}
           </div>
+
+          {/* Profile Completion Card - show if profile is less than 100% complete */}
+          {profileFull && (() => {
+            const completion = checkProfileCompletion(profileFull, myCredits);
+            return completion.percentage < 100 ? (
+              <div className="mb-4">
+                <ProfileCompletionCard completion={completion} />
+              </div>
+            ) : null;
+          })()}
         </div>
       )}
 

@@ -30,26 +30,39 @@ function extractSpotifyInfo(url: string): { type: string; id: string } | null {
 function inferCategory(credit: any): string | null {
   const name = (credit.project_name || "").toLowerCase();
   const role = (credit.role || "").toLowerCase();
-  const platform = (credit.platform || credit.source || "").toLowerCase();
+  const src = (credit.source || "").toLowerCase();
+  const plat = (credit.platform || "").toLowerCase();
   const url = (credit.url || credit.primary_media_url || "").toLowerCase();
 
   // Source-based
-  if (["tmdb", "imdb"].includes(platform)) return "film";
-  if (["spotify", "musicbrainz", "discogs", "soundcloud"].includes(platform)) {
-    // Check if podcast
+  if (["tmdb", "imdb"].includes(src)) return "film";
+  if (["spotify", "musicbrainz", "discogs", "soundcloud"].includes(src)) {
     if (credit.credit_category === "podcast" || role.includes("host") || name.includes("podcast") || name.includes("talks")) return "podcast";
     return "album";
   }
-  if (platform.includes("youtube") || url.includes("youtube.com") || url.includes("youtu.be")) return "music_video";
-  if (platform.includes("vimeo") || url.includes("vimeo.com")) return "film";
+  if (src.includes("youtube") || url.includes("youtube.com") || url.includes("youtu.be")) return "music_video";
+  if (src.includes("vimeo") || url.includes("vimeo.com")) return "film";
+
+  // Platform field often contains the real type (e.g., "Film", "Netflix", "TV Series", "Album")
+  if (plat.includes("film") || plat.includes("feature") || plat.includes("independent") || plat.includes("short")) return "film";
+  if (plat.includes("netflix") || plat.includes("hulu") || plat.includes("amazon") || plat.includes("disney") || plat.includes("hbo") || plat.includes("apple tv")) return "tv";
+  if (plat.includes("tv") || plat.includes("television") || plat.includes("oxygen") || plat.includes("lifetime") || plat.includes("abc") || plat.includes("nbc") || plat.includes("cbs") || plat.includes("fox")) return "tv";
+  if (plat.includes("documentary")) return "documentary";
+  if (plat.includes("album") || plat.includes("music album")) return "album";
+  if (plat.includes("music") || plat.includes("single")) return "single";
+  if (plat.includes("podcast")) return "podcast";
+  if (plat.includes("commercial") || plat.includes("ad")) return "commercial";
+  if (plat.includes("theater") || plat.includes("theatre") || plat.includes("stage") || plat.includes("broadway")) return "theatre";
 
   // Role-based
-  if (role.includes("actor") || role.includes("casting") || role.includes("director") || role.includes("producer")) return "film";
+  if (role.includes("actor") || role.includes("actress") || role.includes("casting") || role.includes("director") || role.includes("producer") || role.includes("writer") || role.includes("cinematograph")) return "film";
   if (role.includes("host") || role.includes("podcast")) return "podcast";
   if (role.includes("dj")) return "dj_set";
   if (role.includes("photographer")) return "photography";
   if (role.includes("model") || role.includes("stylist")) return "editorial_shoot";
   if (role.includes("dancer") || role.includes("choreograph")) return "dance";
+  if (role.includes("musician") || role.includes("singer") || role.includes("rapper") || role.includes("vocalist")) return "album";
+  if (role.includes("editor") || role.includes("colorist") || role.includes("sound design") || role.includes("gaffer") || role.includes("grip") || role.includes("art director")) return "film";
 
   // Name-based
   if (name.includes("promo") || name.includes("event") || name.includes("festival") || name.includes("after movie") || name.includes("aftermovie")) return "live_event";
@@ -59,6 +72,8 @@ function inferCategory(credit: any): string | null {
   if (name.includes("show") && (role.includes("actor") || role.includes("guest"))) return "tv";
   if (name.includes("album") || name.includes("ep ") || name.includes("single")) return "album";
   if (name.includes("film") || name.includes("movie") || name.includes("documentary")) return "film";
+  if (name.includes("season") || name.includes("episode")) return "tv";
+  if (name.includes("music video")) return "music_video";
 
   return null;
 }

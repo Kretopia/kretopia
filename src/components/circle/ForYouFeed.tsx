@@ -379,6 +379,8 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         if (p.user_id === user.id) return false;
         if (swipedUserIds.has(p.user_id)) return false;
         if (connectedUserIds.has(p.user_id)) return false;
+        // Must have profile picture
+        if (!p.avatar_url || p.avatar_url.trim() === '') return false;
         // Must have bio (10+ chars — lowered from 20)
         if (!p.bio || p.bio.trim().length < 10) return false;
         // Must have at least 1 credit

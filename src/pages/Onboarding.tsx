@@ -532,6 +532,16 @@ export default function Onboarding() {
         await supabase.functions.invoke("verify-credentials", { body: { userId: user.id } });
       } catch (e) { console.error("Credential verification error:", e); }
 
+      // Auto-enrich profile with AI (press, awards, skills, bio) — fire and forget
+      try {
+        supabase.functions.invoke("enrich-creator-profile", {
+          body: { user_id: user.id, scrape_website: true },
+        }).then(({ data, error }) => {
+          if (error) console.error("[Onboarding] Enrichment error:", error);
+          else console.log("[Onboarding] Profile enriched:", data);
+        });
+      } catch (e) { console.error("[Onboarding] Enrichment invoke error:", e); }
+
       try {
         await supabase.rpc('generate_invite_codes', { user_id_param: user.id, num_codes: 5 });
       } catch (e) { console.error("Invite code generation error:", e); }

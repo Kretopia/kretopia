@@ -95,8 +95,28 @@ export default function PartnerDirectory() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto px-4 py-6 pb-24 max-w-4xl">
+          <div className="h-8 w-48 rounded bg-muted animate-pulse mb-6" />
+          <div className="flex gap-2 mb-6">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-9 w-20 rounded-full bg-muted animate-pulse" />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="rounded-xl border bg-card p-4 space-y-3 animate-pulse">
+                <div className="h-12 w-12 rounded-lg bg-muted" />
+                <div className="h-5 w-3/4 rounded bg-muted" />
+                <div className="h-4 w-full rounded bg-muted" />
+                <div className="h-4 w-1/2 rounded bg-muted" />
+              </div>
+            ))}
+          </div>
+        </main>
+        <BottomNav />
+      </div>
       </div>
     );
   }

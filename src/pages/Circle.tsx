@@ -193,7 +193,7 @@ export default function Circle() {
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Pro Circle
+              Network
               {connections.length > 0 && (
                 <span className="ml-1 text-[10px] bg-primary/10 text-primary px-1.5 rounded-full">
                   {connections.length}
@@ -206,9 +206,37 @@ export default function Circle() {
             {user ? (
               <SwipeFeature onMatch={handleMatch} filters={filters} onProfilesCountChange={setProfilesCount} />
             ) : (
-              <AuthGate>
-                <div className="h-[60vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-3xl" />
-              </AuthGate>
+              <div className="flex flex-col items-center justify-center py-12 px-4">
+                {/* Teaser card */}
+                <div className="w-full max-w-sm rounded-3xl overflow-hidden bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 border border-border shadow-xl">
+                  <div className="aspect-[3/4] relative flex flex-col items-center justify-center p-8 text-center">
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
+                    <div className="relative z-10 space-y-4">
+                      <div className="h-20 w-20 rounded-full bg-primary/20 mx-auto flex items-center justify-center">
+                        <Sparkles className="h-10 w-10 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-bold">Find Your Creative Match</h3>
+                      <p className="text-sm text-muted-foreground max-w-xs">
+                        Swipe through talented creators, match with collaborators, and build your dream team.
+                      </p>
+                      <Button
+                        onClick={() => navigate('/auth')}
+                        className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+                        size="lg"
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        Sign Up to Match
+                      </Button>
+                      <button 
+                        onClick={() => navigate('/auth')}
+                        className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        Already have an account? Log in
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </TabsContent>
 

@@ -721,6 +721,30 @@ export default function Onboarding() {
                 })()}
               </div>
 
+              {/* Bio + AI Generate */}
+              <div className="space-y-1.5">
+                <Label>Bio</Label>
+                <Textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell the creative world who you are..."
+                  className="min-h-[60px] resize-none text-sm"
+                />
+                {profile.full_name && profile.role && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs gap-1.5 text-primary hover:text-primary"
+                    disabled={generatingBio}
+                    onClick={handleGenerateBio}
+                  >
+                    {generatingBio ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                    {generatingBio ? "Writing..." : "AI Write Bio"}
+                  </Button>
+                )}
+              </div>
+
               {/* Continue */}
               <Button onClick={handleNext} className="w-full gap-2" size="lg">
                 Continue <ArrowRight className="h-4 w-4" />

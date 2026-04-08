@@ -151,7 +151,7 @@ const CreatorEPK = () => {
         // Fetch from profiles table directly - RLS allows public read
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range, is_claimed, icdb_creator_id')
+          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range, is_claimed, icdb_creator_id, cover_image_url, job_title')
           .eq('user_id', userId)
           .maybeSingle();
 

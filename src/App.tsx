@@ -164,7 +164,7 @@ const AppContent = () => {
   const isPublicBrowse = publicBrowseRoutes.some(r => location.pathname.startsWith(r));
   
   // Show bottom nav for authenticated users OR guests on public browse routes (+ landing)
-  const showBottomNav = !isPublicEPK && !isAuthPage && !isDeckPage && (user || isPublicBrowse || isLandingPage);
+  const showBottomNav = !isPublicEPK && !isAuthPage && !isDeckPage && !!user;
   const showNavbar = !isPublicEPK && !isAuthPage && !isDeckPage;
   const showGuestBanner = !user && (isPublicBrowse || isLandingPage) && !isAuthPage;
   

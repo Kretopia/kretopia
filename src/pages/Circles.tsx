@@ -225,13 +225,35 @@ const CirclesPage = () => {
 
 const CirclesList = ({ circles, loading, navigate }: { circles: CircleData[]; loading: boolean; navigate: (path: string) => void }) => {
   if (loading) {
-    return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="rounded-xl border bg-card p-4 animate-pulse">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-full bg-muted" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-2/3 rounded bg-muted" />
+                <div className="h-3 w-1/2 rounded bg-muted" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   }
   if (circles.length === 0) {
     return (
-      <div className="text-center py-12">
-        <MessageSquareMore className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-        <p className="text-sm text-muted-foreground">No circles match your search</p>
+      <div className="text-center py-12 px-4">
+        <div className="rounded-full bg-muted/50 p-6 mb-4 inline-flex">
+          <MessageSquareMore className="h-10 w-10 text-muted-foreground" />
+        </div>
+        <h3 className="font-semibold mb-2">No circles found</h3>
+        <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-4">
+          Try a different search or create your own circle to connect with creators.
+        </p>
+        <Button size="sm" onClick={() => navigate("/circle")}>
+          Browse Creators
+        </Button>
       </div>
     );
   }

@@ -161,9 +161,13 @@ export default function PartnerDirectory() {
                 </div>
 
                 {filteredPartners.length === 0 && (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground">
-                      No partners found in this category yet.
+                  <div className="text-center py-12 px-4">
+                    <div className="rounded-full bg-muted/50 p-5 mb-4 inline-flex">
+                      <Loader2 className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="font-semibold mb-2">No partners yet</h3>
+                    <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                      Partners and perks will appear here as new deals become available.
                     </p>
                   </div>
                 )}

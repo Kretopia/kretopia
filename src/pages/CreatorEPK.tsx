@@ -380,14 +380,29 @@ const CreatorEPK = () => {
         }}
       />
 
+      {/* Cover Image Hero */}
+      {profile.cover_image_url && (
+        <div className="relative h-40 sm:h-52 overflow-hidden">
+          <img 
+            src={profile.cover_image_url} 
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        </div>
+      )}
+
       {/* Main Content - Mobile-first vertical layout */}
-      <div className="max-w-lg mx-auto px-4 py-8 pb-32">
+      <div className="max-w-lg mx-auto px-4 pb-32" style={{ marginTop: profile.cover_image_url ? '-3rem' : '2rem' }}>
         
         {/* Profile Header */}
         <div className="text-center space-y-4 mb-8">
           {/* Avatar */}
           <div className="relative inline-block">
-            <Avatar className="h-28 w-28 border-4 border-primary/20 shadow-xl">
+            <Avatar className={cn(
+              "h-28 w-28 border-4 shadow-xl",
+              profile.cover_image_url ? "border-background" : "border-primary/20"
+            )}>
               <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
               <AvatarFallback className="text-3xl font-bold bg-primary/10">
                 {profile.full_name?.charAt(0) || '?'}

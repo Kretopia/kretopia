@@ -35,6 +35,10 @@ import { SEO } from "@/components/SEO";
 import CreatorEPK from "./CreatorEPK";
 import { DegreeBadge } from "@/components/circle/DegreeBadge";
 import { useConnectionDegree } from "@/hooks/useNetworkStats";
+import { calculateStatus } from "@/lib/statusEngine";
+import { checkConnectionGate, type GateCheckResult } from "@/lib/connectionGate";
+import { StatusBadge } from "@/components/StatusBadge";
+import { ConnectionGateBanner } from "@/components/ConnectionGateBanner";
 
 // Import profile section components
 import { SkillsSection } from "@/components/profile/SkillsSection";
@@ -102,6 +106,7 @@ const ViewProfile = () => {
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(searchParams.get('showClaim') === 'true');
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [gateResult, setGateResult] = useState<GateCheckResult | null>(null);
   
   const isFromMatch = searchParams.get('from') === 'match';
   
@@ -219,6 +224,9 @@ const ViewProfile = () => {
       import('@/lib/profileViewTracking').then(({ trackProfileView }) => {
         trackProfileView(userId, isFromMatch ? 'match' : 'public');
       });
+
+      // Check connection gate
+      checkConnectionGate(user.id, userId).then(setGateResult);
     }
   }, [userId, user]);
   
@@ -228,13 +236,16 @@ const ViewProfile = () => {
     
     setIsConnecting(true);
     try {
-      // Insert connection request
+      const isGated = gateResult?.gate === 'request_only';
+      
+      // Insert connection request — mark as filtered if gated
       const { error } = await supabase
         .from('connections')
         .insert({
           user_id: user.id,
           connected_user_id: userId,
-          status: 'pending'
+          status: 'pending',
+          is_message_request: isGated,
         });
       
       if (error) {
@@ -245,12 +256,16 @@ const ViewProfile = () => {
         }
       } else {
         setConnectionStatus('pending');
-        toast.success(`Connection request sent to ${profile?.full_name}`);
+        if (isGated) {
+          toast.success(`Request sent — it will appear in ${profile?.full_name}'s filtered inbox`);
+        } else {
+          toast.success(`Connection request sent to ${profile?.full_name}`);
+        }
         
         // Create notification for the other user
         await supabase.from('notifications').insert({
           user_id: userId,
-          title: 'New Connection Request',
+          title: isGated ? 'Filtered Connection Request' : 'New Connection Request',
           message: `${profile?.full_name || 'Someone'} wants to connect with you`,
           type: 'connection',
           link: `/profile/${user.id}`,
@@ -419,6 +434,14 @@ const ViewProfile = () => {
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
                     <h1 className="text-2xl font-bold">{maskCreatorName(profile.full_name, !!user)}</h1>
                     {getVerificationBadge()}
+                    
+                    {/* ThriveStatus Badge */}
+                    {credits.length > 0 && (
+                      <StatusBadge 
+                        status={calculateStatus(credits)} 
+                        showSocialProof
+                      />
+                    )}
                     
                     {/* Industry Verified Badge */}
                     {isIndustryVerified && (
@@ -591,13 +614,22 @@ const ViewProfile = () => {
                   </Button>
                 ) : (
                   <>
+                    {gateResult?.gate === 'request_only' && (
+                      <ConnectionGateBanner
+                        gate={gateResult.gate}
+                        message={gateResult.message}
+                        recipientName={profile?.full_name}
+                        className="w-full"
+                      />
+                    )}
                     <Button 
                       onClick={handleConnect} 
                       disabled={isConnecting}
                       className="gap-2"
+                      variant={gateResult?.gate === 'request_only' ? 'outline' : 'default'}
                     >
                       <UserPlus className="h-4 w-4" />
-                      {isConnecting ? 'Connecting...' : 'Connect'}
+                      {isConnecting ? 'Sending...' : gateResult?.gate === 'request_only' ? 'Send Request' : 'Connect'}
                     </Button>
                     <Button variant="outline" onClick={() => navigate('/circle')} className="gap-2">
                       <Users className="h-4 w-4" />

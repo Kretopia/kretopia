@@ -6,7 +6,8 @@ import { ProfileStrengthScore, calculateProfileStrength } from "@/components/pro
 import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
 import { ProTrialBanner } from "@/components/profile/ProTrialBanner";
 import { CreditScore } from "@/components/profile/CreditScore";
-import { StatusProgressCard } from "@/components/wallet/StatusProgressCard";
+import { StatusProgressionCard } from "@/components/StatusProgressionCard";
+import { calculateStatus } from "@/lib/statusEngine";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
 import { WhoViewedProfile } from "@/components/profile/WhoViewedProfile";
@@ -82,8 +83,8 @@ export const ProfileDashboardDrawer = ({
             />
           )}
 
-          {/* Status Tier */}
-          <StatusProgressCard />
+          {/* ThriveStatus™ Progression */}
+          <StatusProgressionCard status={calculateStatus(credits || [])} />
 
           {/* Credit Score */}
           {(credits?.length > 0 || awards?.length > 0) && (

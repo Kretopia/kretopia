@@ -17,6 +17,7 @@ import { SignInForm } from "@/components/auth/SignInForm";
 import { SignUpWizard } from "@/components/auth/SignUpWizard";
 import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const Auth = () => {
   const [email, setEmail] = useState("");

@@ -12,6 +12,7 @@ import {
   Film, Tv, Music, Disc3, Video, Mic2, CalendarDays, Sparkles, Crown,
   Shirt, Megaphone, Briefcase, ShieldCheck, Loader2,
   Plus, Trash2, Play, UserPlus, ChevronLeft, ChevronRight, Pencil,
+  Youtube, Headphones, Image as ImageIcon, Upload, CheckSquare, Square, XCircle,
   Youtube, Headphones, Image as ImageIcon, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -447,7 +448,9 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const [editingCredit, setEditingCredit] = useState<ICDBCredit | null>(null);
   const [editForm, setEditForm] = useState({ project_name: "", role: "", year: new Date().getFullYear(), platform: "", url: "", project_type: "" });
   const [savingEdit, setSavingEdit] = useState(false);
-  
+  const [bulkSelectMode, setBulkSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => { fetchData(); }, [userId]);
 
@@ -505,6 +508,29 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
       onRefresh?.();
     } catch { toast.error("Failed to remove"); }
     finally { setDeletingId(null); }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const { error } = await supabase.from('credits').delete().in('id', [...selectedIds]);
+      if (error) throw error;
+      setCredits(prev => prev.filter(c => !selectedIds.has(c.id)));
+      toast.success(`${selectedIds.size} credit${selectedIds.size > 1 ? 's' : ''} removed`);
+      setSelectedIds(new Set());
+      setBulkSelectMode(false);
+      onRefresh?.();
+    } catch { toast.error("Failed to remove credits"); }
+    finally { setBulkDeleting(false); }
   };
 
   const categoryGroups = useMemo(() => {

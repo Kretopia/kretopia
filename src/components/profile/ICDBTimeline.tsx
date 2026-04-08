@@ -234,8 +234,8 @@ function CategoryRow({
   };
 
   const getCreditThumbnail = (credit: ICDBCredit): string | null => {
-    if (credit.primary_media_url && credit.media_type === 'image') return credit.primary_media_url;
     if (credit.thumbnail_url) return credit.thumbnail_url;
+    if (credit.primary_media_url) return credit.primary_media_url;
     if (credit.url) {
       const mediaInfo = parseMediaUrl(credit.url);
       if (mediaInfo?.thumbnailUrl) return mediaInfo.thumbnailUrl;

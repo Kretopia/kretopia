@@ -1,5 +1,6 @@
 import { AuthCreatorTeaser } from "@/components/auth/AuthCreatorTeaser";
 import { ShieldCheck, Briefcase, DollarSign, Store, Zap } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const FEATURES = [
   { icon: ShieldCheck, label: "AI-Powered Matching", desc: "Find your perfect collaborator in seconds" },
@@ -16,17 +17,12 @@ export const AuthBrandingPanel = () => (
     
     <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
       <div className="mb-8">
-        <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          ThriveIN
-        </span>
-        <span className="ml-2 rounded-full bg-accent/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
-          Beta
-        </span>
+        <BrandLogo size="lg" showBeta />
       </div>
       
       <h2 className="text-3xl xl:text-4xl font-bold leading-tight mb-4">
         Your Creative Career,{" "}
-        <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <span className="text-primary">
           One Platform.
         </span>
       </h2>

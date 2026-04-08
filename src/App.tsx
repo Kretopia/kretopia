@@ -99,16 +99,17 @@ const LoadingFallback = () => (
 );
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
-  
+  const { user, loading, session } = useAuth();
+
   if (loading) {
     return <LoadingFallback />;
   }
-  
-  if (!user) {
+
+  // Only show the auth gate after auth hydration is complete and there is truly no session
+  if (!session || !user) {
     return <AuthGate>{children}</AuthGate>;
   }
-  
+
   return <>{children}</>;
 };
 

@@ -2,9 +2,11 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useProfileContext } from "@/contexts/ProfileContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export const useProfileData = () => {
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
   const {
     setProfile,
     setUserBadge,
@@ -207,34 +209,23 @@ export const useProfileData = () => {
 
   useEffect(() => {
     let mounted = true;
-    
-    const initProfile = async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        
-        if (!mounted) return;
-        
-        if (error || !user) {
-          console.error('[Profile] Auth error:', error);
-          setIsLoading(false);
-          return;
-        }
-        
-        // Track page view
-        const { analytics } = await import("@/lib/analytics");
-        analytics.pageView("profile");
-        
-        // Pass userId to avoid duplicate auth call in fetchData
-        fetchData(user.id);
-      } catch (error) {
-        console.error('[Profile] Error in initProfile:', error);
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-    
-    initProfile();
+
+    if (authLoading) {
+      return () => {
+        mounted = false;
+      };
+    }
+
+    if (!user?.id) {
+      setIsLoading(false);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    if (mounted) {
+      fetchData(user.id);
+    }
 
     // Set up lightweight real-time subscriptions - only for portfolio
     let updateTimeout: NodeJS.Timeout;
@@ -256,7 +247,7 @@ export const useProfileData = () => {
       clearTimeout(updateTimeout);
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [authLoading, user?.id]);
 
   return { fetchData };
 };

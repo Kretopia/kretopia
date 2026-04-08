@@ -39,6 +39,7 @@ interface SocialLinksSectionProps {
 export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialLinksSectionProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editData, setEditData] = useState(profile);
+  const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
 
   const formatNumber = (num?: number) => {

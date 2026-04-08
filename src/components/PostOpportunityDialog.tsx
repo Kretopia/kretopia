@@ -142,7 +142,8 @@ export const PostOpportunityDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!gigGate.guard()) return;
+    const isFreePost = formData.type === "barter" || formData.type === "collab";
+    if (isFreePost && !gigGate.guard()) return;
     setLoading(true);
 
     try {

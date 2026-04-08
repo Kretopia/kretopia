@@ -396,8 +396,18 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
 
             <TabsContent value="browse" className="mt-0">
               {loading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => (
+                    <Card key={i}><CardContent className="p-4 space-y-3 animate-pulse">
+                      <div className="h-40 rounded-lg bg-muted" />
+                      <div className="h-5 w-3/4 rounded bg-muted" />
+                      <div className="h-4 w-1/2 rounded bg-muted" />
+                      <div className="flex gap-2">
+                        <div className="h-6 w-16 rounded-full bg-muted" />
+                        <div className="h-6 w-20 rounded-full bg-muted" />
+                      </div>
+                    </CardContent></Card>
+                  ))}
                 </div>
               ) : filteredEvents.length === 0 ? (
                 <Card>

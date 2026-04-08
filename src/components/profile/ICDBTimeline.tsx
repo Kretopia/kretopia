@@ -650,7 +650,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         platform: editForm.platform || null,
         url: editForm.url || null,
         project_type: editForm.project_type || null,
-        credit_category: editForm.project_type || null,
+        credit_category: editForm.section_override || editForm.project_type || null,
       }).eq('id', editingCredit.id);
       if (error) throw error;
       toast.success("Credit updated");

@@ -243,7 +243,7 @@ export const UnifiedHome = () => {
                       animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
                       exit={{ y: -20, opacity: 0, filter: "blur(4px)" }}
                       transition={{ duration: 0.35 }}
-                      className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+                      className="text-primary"
                     >
                       {HERO_ROLES[heroRoleIdx]}
                     </motion.span>

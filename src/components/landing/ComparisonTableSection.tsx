@@ -21,7 +21,7 @@ export const ComparisonTableSection = () => {
         <div className="text-center mb-10 sm:mb-12">
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
             You're Using{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="text-primary">
               9 Different Apps
             </span>
           </h2>

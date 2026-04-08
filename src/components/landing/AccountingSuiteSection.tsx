@@ -36,7 +36,7 @@ export const AccountingSuiteSection = () => {
           </div>
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
             Get Paid.{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <span className="text-primary">
               Stay Paid.
             </span>
           </h2>

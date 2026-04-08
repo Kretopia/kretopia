@@ -76,9 +76,21 @@ serve(async (req) => {
 
         // Extract snippets from real web results
         for (const result of flatResults) {
+          // Extract og:image or other image URLs from the scraped content
+          let imageUrl = '';
+          if (result.metadata?.og?.image) {
+            imageUrl = result.metadata.og.image;
+          } else if (result.metadata?.ogImage) {
+            imageUrl = result.metadata.ogImage;
+          } else if (result.markdown) {
+            const imgMatch = result.markdown.match(/!\[.*?\]\((https?:\/\/[^\s)]+\.(?:jpg|jpeg|png|webp)[^\s)]*)\)/i);
+            if (imgMatch) imageUrl = imgMatch[1];
+          }
+          
           const snippet = [
             result.title ? `Title: ${result.title}` : '',
             result.url ? `URL: ${result.url}` : '',
+            imageUrl ? `Image: ${imageUrl}` : '',
             result.description ? `Description: ${result.description}` : '',
             result.markdown ? `Content: ${result.markdown.slice(0, 1500)}` : '',
           ].filter(Boolean).join('\n');

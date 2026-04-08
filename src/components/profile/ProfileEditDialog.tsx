@@ -1,4 +1,5 @@
 import { useState, useEffect, memo, useCallback, useRef } from "react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -235,6 +236,7 @@ export function ProfileEditDialog({
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [autoFilling, setAutoFilling] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     role: "",
@@ -244,6 +246,12 @@ export function ProfileEditDialog({
     instagram_url: "",
     twitter_url: "",
     linkedin_url: "",
+    youtube_url: "",
+    tiktok_url: "",
+    spotify_url: "",
+    behance_url: "",
+    imdb_url: "",
+    soundcloud_url: "",
     hourly_rate: "",
     project_rate: "",
     rate_currency: "USD",

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Star, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, UserCheck, IdCard, Shield, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getTierByPoints, getTierProgress, getNextTier } from "@/lib/tierSystem";
+import { calculateStatus, type StatusResult } from "@/lib/statusEngine";
 import { AchievementBadges } from "./AchievementBadges";
 import { DegreeBadge, ConnectionPathDisplay } from "@/components/circle/DegreeBadge";
 import { useConnectionDegree } from "@/hooks/useNetworkStats";

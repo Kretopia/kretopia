@@ -117,6 +117,7 @@ Each result should have:
 - "platform": source platform (e.g., "IMDb", "Spotify", "YouTube", "LinkedIn", "Instagram")
 - "description": one-line description from the ACTUAL web content
 - "url": the actual URL from the search result
+- "image_url": extract any image URL found in the web results — look for og:image URLs, profile photos, album covers, video thumbnails, event flyers, poster images. Prefer high-quality images. Return null if none found.
 - "location": location if mentioned
 - "client_brand": brand/studio/label if mentioned
 
@@ -131,6 +132,7 @@ Each result should have:
 - "platform": platform where published
 - "description": one-line description
 - "url": known URL if any
+- "image_url": any known image URL (poster, cover, profile photo, thumbnail) or null
 - "location": location if known
 - "client_brand": associated brand/label/studio if known
 
@@ -168,6 +170,7 @@ Return up to 8 most relevant REAL results.`;
                       platform: { type: "string" },
                       description: { type: "string" },
                       url: { type: "string" },
+                      image_url: { type: "string" },
                       location: { type: "string" },
                       client_brand: { type: "string" },
                     },

@@ -664,6 +664,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                   role: credit.role, year: credit.year,
                 })}
                 onPlay={(credit) => setActiveMedia(credit)}
+                onEdit={openEdit}
                 collaboratorProfiles={collaboratorProfiles}
                 deletingId={deletingId}
               />

@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, User, Briefcase, Link2, Wand2, Search, Users } from "lucide-react";
+import { Camera, Upload, Loader2, CheckCircle2, ArrowRight, Mail, X, Sparkles, User, Briefcase, Link2, Wand2, Search, Users, Globe, ExternalLink } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { SEO } from "@/components/SEO";
@@ -85,6 +85,18 @@ export default function Onboarding() {
   const [joinedCircleIds, setJoinedCircleIds] = useState<Set<string>>(new Set());
   const [joiningCircleId, setJoiningCircleId] = useState<string | null>(null);
 
+  // AI Bio state
+  const [bio, setBio] = useState("");
+  const [generatingBio, setGeneratingBio] = useState(false);
+
+  // Profile URL import state
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+
+  // Pending credits to claim
+  const [pendingCredits, setPendingCredits] = useState<any[]>([]);
+  const [claimingCreditId, setClaimingCreditId] = useState<string | null>(null);
+
   // Email verification state
   const [emailToVerify, setEmailToVerify] = useState<string>("");
   const [resendingEmail, setResendingEmail] = useState(false);
@@ -147,6 +159,70 @@ export default function Onboarding() {
     }
   };
 
+  const handleGenerateBio = async () => {
+    if (!profile.full_name || !profile.role) return;
+    setGeneratingBio(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-bio", {
+        body: { fullName: profile.full_name, role: profile.role, location: profile.location, skills: selectedSkills },
+      });
+      if (error) throw error;
+      if (data?.bio) {
+        setBio(data.bio);
+        toast({ title: "✨ Bio generated!", description: "You can edit it before continuing." });
+      }
+    } catch (e: any) {
+      toast({ title: "Failed to generate bio", description: e.message, variant: "destructive" });
+    } finally {
+      setGeneratingBio(false);
+    }
+  };
+
+  const handleImportUrl = async () => {
+    if (!importUrl.trim()) return;
+    setImporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("import-profile-url", {
+        body: { url: importUrl.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) { toast({ title: "Import issue", description: data.error, variant: "destructive" }); return; }
+
+      // Apply extracted data
+      if (data.full_name && !profile.full_name) setProfile(prev => ({ ...prev, full_name: data.full_name }));
+      if (data.role && !profile.role) setProfile(prev => ({ ...prev, role: data.role }));
+      if (data.location && !profile.location) setProfile(prev => ({ ...prev, location: data.location }));
+      if (data.bio) setBio(data.bio);
+      if (data.skills?.length) {
+        setSelectedSkills(prev => [...new Set([...prev, ...data.skills.slice(0, 10)])]);
+      }
+      if (data.credits?.length) {
+        const first = data.credits[0];
+        setFirstCredit({ project_name: first.project_name || "", role: first.role || "", project_type: first.project_type || "" });
+      }
+
+      toast({ title: "🎉 Profile imported!", description: `Found ${data.credits?.length || 0} credits from ${new URL(importUrl).hostname}` });
+    } catch (e: any) {
+      toast({ title: "Import failed", description: e.message || "Check the URL and try again", variant: "destructive" });
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleClaimCredit = async (credit: any) => {
+    if (!user) return;
+    setClaimingCreditId(credit.id);
+    try {
+      await supabase.from("credits").update({ user_id: user.id }).eq("id", credit.id);
+      setPendingCredits(prev => prev.filter(c => c.id !== credit.id));
+      toast({ title: "✅ Credit claimed!", description: credit.project_name });
+    } catch (e) {
+      toast({ title: "Failed to claim", variant: "destructive" });
+    } finally {
+      setClaimingCreditId(null);
+    }
+  };
+
   const handleNext = async () => {
     const { analytics } = await import("@/lib/analytics");
 
@@ -165,6 +241,7 @@ export default function Onboarding() {
           full_name: profile.full_name,
           role: profile.role,
           location: profile.location || null,
+          bio: bio || null,
         }).eq("user_id", user!.id);
         analytics.onboardingStep(1, "profile_basics_complete");
       } catch (error) {
@@ -271,6 +348,32 @@ export default function Onboarding() {
         setSuggestedCircles(data || []);
       };
       fetchCircles();
+
+      // Fetch pending credits that mention this user's name
+      const fetchPendingCredits = async () => {
+        if (!profile.full_name || profile.full_name.length < 3) return;
+        const nameParts = profile.full_name.trim().split(/\s+/);
+        if (nameParts.length < 2) return;
+        
+        const { data: credits } = await supabase
+          .from('credits')
+          .select('id, project_name, role, project_type, year, user_id')
+          .or(`project_name.ilike.%${profile.full_name}%,role.ilike.%${profile.full_name}%`)
+          .neq('user_id', user.id)
+          .limit(10);
+        
+        // Also check collaborator mentions
+        const { data: collabCredits } = await supabase
+          .from('credits')
+          .select('id, project_name, role, project_type, year, user_id')
+          .contains('collaborator_user_ids', [user.id])
+          .limit(5);
+        
+        const allCredits = [...(credits || []), ...(collabCredits || [])];
+        const uniqueCredits = allCredits.filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i);
+        setPendingCredits(uniqueCredits);
+      };
+      fetchPendingCredits();
     }
   }, [currentStep, user, profile.role]);
 
@@ -316,6 +419,7 @@ export default function Onboarding() {
         full_name: profile.full_name,
         role: profile.role,
         location: profile.location || null,
+        bio: bio || null,
         professional_skills: skillObjects.length > 0 ? skillObjects as any : null,
         onboarding_completed: true,
         onboarding_step: 6,
@@ -506,6 +610,33 @@ export default function Onboarding() {
                 <p className="text-muted-foreground text-sm">Takes about 30 seconds</p>
               </div>
 
+              {/* Quick Import from URL */}
+              <div className="border border-primary/20 rounded-lg p-3 bg-primary/5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-primary" />
+                  <Label className="text-sm font-medium">Quick Import</Label>
+                </div>
+                <p className="text-xs text-muted-foreground">Paste your LinkedIn, IMDb, or portfolio URL to auto-fill your profile</p>
+                <div className="flex gap-2">
+                  <Input
+                    value={importUrl}
+                    onChange={(e) => setImportUrl(e.target.value)}
+                    placeholder="https://linkedin.com/in/you or imdb.me/you"
+                    className="h-9 text-sm"
+                  />
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-9 px-3 shrink-0 gap-1.5"
+                    disabled={!importUrl.trim() || importing}
+                    onClick={handleImportUrl}
+                  >
+                    {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
+                    Import
+                  </Button>
+                </div>
+              </div>
+
               {/* Photo */}
               <div className="flex flex-col items-center gap-2">
                 <div className="relative">
@@ -590,6 +721,30 @@ export default function Onboarding() {
                 })()}
               </div>
 
+              {/* Bio + AI Generate */}
+              <div className="space-y-1.5">
+                <Label>Bio</Label>
+                <Textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell the creative world who you are..."
+                  className="min-h-[60px] resize-none text-sm"
+                />
+                {profile.full_name && profile.role && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs gap-1.5 text-primary hover:text-primary"
+                    disabled={generatingBio}
+                    onClick={handleGenerateBio}
+                  >
+                    {generatingBio ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                    {generatingBio ? "Writing..." : "AI Write Bio"}
+                  </Button>
+                )}
+              </div>
+
               {/* Continue */}
               <Button onClick={handleNext} className="w-full gap-2" size="lg">
                 Continue <ArrowRight className="h-4 w-4" />
@@ -633,6 +788,38 @@ export default function Onboarding() {
                   <p className="text-xs text-muted-foreground mt-1">{selectedSkills.length} selected</p>
                 )}
               </div>
+
+              {/* Claim Pending Credits */}
+              {pendingCredits.length > 0 && (
+                <div className="border border-amber-500/30 rounded-lg p-4 space-y-3 bg-amber-500/5">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-amber-600" />
+                    <Label className="text-sm font-medium">Credits mentioning you 🎬</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    We found credits that may be yours. Claim them to build your professional record.
+                  </p>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {pendingCredits.map((credit) => (
+                      <div key={credit.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{credit.project_name}</p>
+                          <p className="text-xs text-muted-foreground">{credit.role} {credit.year ? `• ${credit.year}` : ""}</p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          className="h-7 text-xs px-3 shrink-0"
+                          disabled={claimingCreditId === credit.id}
+                          onClick={() => handleClaimCredit(credit)}
+                        >
+                          {claimingCreditId === credit.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Claim"}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Join Circles — suggested based on role */}
               {suggestedCircles.length > 0 && (

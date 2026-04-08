@@ -599,18 +599,40 @@ const CreatorEPK = () => {
                     }[credit.verificationTier || 'manual'];
 
                     return (
-                      <div key={credit.id} className="flex-shrink-0 w-[140px]">
-                        <div className="rounded-lg overflow-hidden bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/10 hover:border-primary/30 transition-all h-[180px] flex flex-col items-center justify-center gap-2 p-3 text-center">
-                          <CheckCircle2 className="h-8 w-8 text-primary/40" />
-                          <p className="text-xs font-semibold leading-tight line-clamp-2">{credit.project_name || credit.title}</p>
-                          <p className="text-[10px] text-muted-foreground truncate w-full">{credit.role}</p>
+                      <div key={credit.id} className="flex-shrink-0 w-[130px]">
+                        <div className="rounded-xl overflow-hidden border border-primary/10 hover:border-primary/30 transition-all h-[195px] flex flex-col relative group cursor-pointer"
+                          onClick={() => {
+                            const name = encodeURIComponent(decodeHtmlEntities(credit.project_name || credit.title || ''));
+                            window.location.href = `/production?name=${name}`;
+                          }}
+                        >
+                          {/* Thumbnail or gradient fallback */}
+                          {credit.thumbnail_url ? (
+                            <div className="w-full h-[130px] overflow-hidden">
+                              <img 
+                                src={credit.thumbnail_url} 
+                                alt={decodeHtmlEntities(credit.project_name || credit.title || '')}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-full h-[130px] bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
+                              <CheckCircle2 className="h-8 w-8 text-primary/40" />
+                            </div>
+                          )}
+                          <div className="p-2 flex-1 flex flex-col justify-between">
+                            <p className="text-[11px] font-semibold leading-tight line-clamp-2">{decodeHtmlEntities(credit.project_name || credit.title || '')}</p>
+                            <div className="flex items-center justify-between mt-1">
+                              <p className="text-[9px] text-muted-foreground truncate">{credit.role}</p>
+                              {credit.year && <span className="text-[9px] text-muted-foreground">{credit.year}</span>}
+                            </div>
+                          </div>
+                          {/* Verification badge overlay */}
                           {tierConfig.label && (
-                            <Badge variant="outline" className={cn("text-[8px] h-3.5 px-1", tierConfig.className)}>
+                            <Badge variant="outline" className={cn("absolute top-1.5 right-1.5 text-[7px] h-3.5 px-1 backdrop-blur-sm", tierConfig.className)}>
                               {tierConfig.label}
                             </Badge>
-                          )}
-                          {credit.year && (
-                            <span className="text-[10px] text-muted-foreground">{credit.year}</span>
                           )}
                         </div>
                       </div>

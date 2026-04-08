@@ -447,7 +447,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const [editingCredit, setEditingCredit] = useState<ICDBCredit | null>(null);
   const [editForm, setEditForm] = useState({ project_name: "", role: "", year: new Date().getFullYear(), platform: "", url: "", project_type: "" });
   const [savingEdit, setSavingEdit] = useState(false);
-  const [enriching, setEnriching] = useState(false);
+  
 
   useEffect(() => { fetchData(); }, [userId]);
 

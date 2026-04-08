@@ -35,6 +35,10 @@ import { SEO } from "@/components/SEO";
 import CreatorEPK from "./CreatorEPK";
 import { DegreeBadge } from "@/components/circle/DegreeBadge";
 import { useConnectionDegree } from "@/hooks/useNetworkStats";
+import { calculateStatus } from "@/lib/statusEngine";
+import { checkConnectionGate, type GateCheckResult } from "@/lib/connectionGate";
+import { StatusBadge } from "@/components/StatusBadge";
+import { ConnectionGateBanner } from "@/components/ConnectionGateBanner";
 
 // Import profile section components
 import { SkillsSection } from "@/components/profile/SkillsSection";

@@ -558,6 +558,7 @@ const Messages = () => {
                   Discover Creators
                   <ArrowRight className="h-4 w-4" />
                 </Button>
+               <PushNotificationPrompt trigger="message" className="mt-4 mx-4" />
               )}
             </div>
           ) : (

@@ -313,7 +313,7 @@ function CategoryRow({
               className="group relative rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl shrink-0"
               style={{ width: "140px", aspectRatio: "2/3" }}
               onClick={() => {
-                if (credit.url || credit.primary_media_url) onPlay(credit);
+                navigate(`/production?name=${encodeURIComponent(credit.project_name)}`);
               }}
             >
               {/* Poster background */}
@@ -655,7 +655,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                           key={credit.id}
                           className="group relative rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl shrink-0"
                           style={{ width: "160px", aspectRatio: "2/3" }}
-                          onClick={() => { if (credit.url || credit.primary_media_url) setActiveMedia(credit); }}
+                          onClick={() => navigate(`/production?name=${encodeURIComponent(credit.project_name)}`)}
                         >
                           {thumbnail ? (
                             <img src={thumbnail} alt={credit.project_name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />

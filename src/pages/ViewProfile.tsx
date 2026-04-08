@@ -236,13 +236,16 @@ const ViewProfile = () => {
     
     setIsConnecting(true);
     try {
-      // Insert connection request
+      const isGated = gateResult?.gate === 'request_only';
+      
+      // Insert connection request — mark as filtered if gated
       const { error } = await supabase
         .from('connections')
         .insert({
           user_id: user.id,
           connected_user_id: userId,
-          status: 'pending'
+          status: 'pending',
+          is_message_request: isGated,
         });
       
       if (error) {
@@ -253,12 +256,16 @@ const ViewProfile = () => {
         }
       } else {
         setConnectionStatus('pending');
-        toast.success(`Connection request sent to ${profile?.full_name}`);
+        if (isGated) {
+          toast.success(`Request sent — it will appear in ${profile?.full_name}'s filtered inbox`);
+        } else {
+          toast.success(`Connection request sent to ${profile?.full_name}`);
+        }
         
         // Create notification for the other user
         await supabase.from('notifications').insert({
           user_id: userId,
-          title: 'New Connection Request',
+          title: isGated ? 'Filtered Connection Request' : 'New Connection Request',
           message: `${profile?.full_name || 'Someone'} wants to connect with you`,
           type: 'connection',
           link: `/profile/${user.id}`,

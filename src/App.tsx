@@ -30,6 +30,8 @@ import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 const UnifiedHome = lazy(() => import("./components/home/UnifiedHome"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const CompanyOnboarding = lazy(() => import("./pages/CompanyOnboarding"));
+const TalentFinder = lazy(() => import("./pages/TalentFinder"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
@@ -196,6 +198,7 @@ const AppContent = () => {
             <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/company-onboarding" element={<ProtectedRoute><CompanyOnboarding /></ProtectedRoute>} />
             
             {/* Core Feature Pages - Public browsable, actions gated */}
             <Route path="/circle" element={<Circle />} />
@@ -284,7 +287,8 @@ const AppContent = () => {
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />
             <Route path="/opportunity-dashboard" element={<Navigate to="/desk" replace />} />
             <Route path="/manage-opportunities" element={<Navigate to="/desk" replace />} />
-            
+            <Route path="/talent-finder" element={<ProtectedRoute><TalentFinder /></ProtectedRoute>} />
+
             {/* Rewards - hidden for now */}
             <Route path="/rewards" element={<Navigate to="/" replace />} />
             

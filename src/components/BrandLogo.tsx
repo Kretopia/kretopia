@@ -18,9 +18,9 @@ interface BrandLogoProps {
 }
 
 const sizeConfig = {
-  sm: { icon: "h-8 w-8", text: "text-base", gap: "gap-1.5" },
-  md: { icon: "h-10 w-10", text: "text-xl", gap: "gap-2" },
-  lg: { icon: "h-12 w-12", text: "text-2xl", gap: "gap-2.5" },
+  sm: { icon: "h-9 w-9", text: "text-base", gap: "gap-1.5" },
+  md: { icon: "h-11 w-11", text: "text-xl", gap: "gap-2" },
+  lg: { icon: "h-14 w-14", text: "text-2xl", gap: "gap-2.5" },
 } as const;
 
 /**
@@ -57,7 +57,7 @@ export function BrandLogo({
         </span>
       )}
       {showBeta && (
-        <span className="bg-primary/10 text-primary text-[10px] uppercase tracking-widest font-semibold px-1.5 py-0.5 rounded-md leading-none">
+        <span className="hidden sm:inline-block bg-primary/10 text-primary text-[10px] uppercase tracking-widest font-semibold px-1.5 py-0.5 rounded-md leading-none">
           BETA
         </span>
       )}

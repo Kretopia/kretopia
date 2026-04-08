@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,6 +26,45 @@ serve(async (req) => {
       });
     }
 
+    // Fetch ALL actual credit data from DB for this production
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: dbCredits } = await supabase
+      .from('credits')
+      .select('role, year, platform, location, client_brand, project_type, credit_category, url, primary_media_url, thumbnail_url, media_type, description, tags, user_id')
+      .ilike('project_name', project_name);
+
+    // Build a factual summary from DB data
+    const dbRoles = (dbCredits || []).map(c => c.role);
+    const dbYear = (dbCredits || []).find(c => c.year)?.year || null;
+    const dbPlatform = (dbCredits || []).find(c => c.platform)?.platform || null;
+    const dbLocation = (dbCredits || []).find(c => c.location)?.location || null;
+    const dbClientBrand = (dbCredits || []).find(c => c.client_brand)?.client_brand || null;
+    const dbProjectType = (dbCredits || []).find(c => c.project_type)?.project_type || null;
+    const dbCategory = (dbCredits || []).find(c => c.credit_category)?.credit_category || null;
+    const dbUrl = (dbCredits || []).find(c => c.url)?.url || null;
+    const dbMediaUrl = (dbCredits || []).find(c => c.primary_media_url)?.primary_media_url || null;
+    const dbThumbnail = (dbCredits || []).find(c => c.thumbnail_url)?.thumbnail_url || null;
+    const dbDescription = (dbCredits || []).find(c => c.description)?.description || null;
+
+    const dbFactsBlock = `
+VERIFIED DATABASE FACTS (use these as ground truth, do NOT contradict):
+- Project name: "${project_name}"
+- Claimed roles on platform: ${JSON.stringify(dbRoles)}
+- Year: ${dbYear || 'unknown'}
+- Platform: ${dbPlatform || 'unknown'}
+- Location: ${dbLocation || 'unknown'}
+- Client/Brand: ${dbClientBrand || 'unknown'}
+- Project type: ${dbProjectType || dbCategory || 'unknown'}
+- External URL: ${dbUrl || 'none'}
+- Media URL: ${dbMediaUrl || 'none'}
+- Thumbnail: ${dbThumbnail || 'none'}
+- Description from DB: ${dbDescription || 'none'}
+- Number of people who claimed credits: ${(dbCredits || []).length}
+`;
+
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -32,70 +72,46 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
-            content: `You are a creative industry database engine. Given a project/production name, return comprehensive production details and ALL known roles/credits.
+            content: `You are a creative industry database engine. You must return production details based PRIMARILY on the verified database facts provided. 
 
-Return a JSON object:
+CRITICAL RULES:
+1. NEVER fabricate or guess specific person names for roles. If you don't know who filled a role, set "name" to null.
+2. Use the year, platform, location, client_brand from the database facts. Only fill in fields the DB has as "unknown" if you are HIGHLY confident from widely-known public knowledge.
+3. For the description: if the DB has one, use it. Otherwise write a brief, factual description. Do NOT invent plot details or creative descriptions unless this is a widely-known production.
+4. For departments and roles: include the CLAIMED roles from the database. Then suggest COMMON industry-standard roles that typically exist for this type of production, but set name to null for all unclaimed roles.
+5. If this is an obscure or local production you don't recognize, say so in the description and keep departments minimal — only include the roles actually claimed plus a few generic ones.
+6. The "source" field should be "Platform Database" if most info comes from DB, or "AI + Platform Database" if you supplemented.
+7. image_url should be null unless the DB has a thumbnail — use that.
+
+Return JSON:
 {
   "production": {
-    "name": "Official name",
-    "type": "Song" | "Album" | "Film" | "TV Show" | "Music Video" | "Commercial" | "Ad Campaign" | "Fashion Show" | "Event" | "Podcast" | "Photo Shoot" | "Other",
-    "year": 2023,
-    "industry": "Music" | "Film" | "Fashion" | "Events" | "Advertising" | "Photography" | "Digital",
-    "description": "2-3 sentence description",
-    "platform": "Spotify" | "Netflix" | "YouTube" | null,
-    "location": "City, Country" or null,
-    "client_brand": "Brand name" or null,
-    "external_url": "URL to the project" or null,
-    "image_url": null,
+    "name": "Official name from DB",
+    "type": "Song" | "Album" | "Film" | "TV Show" | "Music Video" | "Commercial" | "Event" | "Other",
+    "year": number or null,
+    "industry": "Music" | "Film" | "Film & TV" | "Fashion" | "Events" | "Advertising" | "Photography" | "Digital",
+    "description": "Brief factual description",
+    "platform": string or null,
+    "location": string or null,
+    "client_brand": string or null,
+    "external_url": string or null,
+    "image_url": string or null,
+    "media_url": string or null,
     "departments": [
-      {
-        "name": "Performance",
-        "roles": [
-          {"role": "Lead Artist", "name": "Person Name"},
-          {"role": "Featured Artist", "name": "Person Name"}
-        ]
-      },
-      {
-        "name": "Production",
-        "roles": [
-          {"role": "Producer", "name": "Person Name"},
-          {"role": "Executive Producer", "name": "Person Name"},
-          {"role": "Co-Producer", "name": null}
-        ]
-      },
-      {
-        "name": "Engineering",
-        "roles": [
-          {"role": "Mixing Engineer", "name": "Person Name"},
-          {"role": "Mastering Engineer", "name": "Person Name"},
-          {"role": "Recording Engineer", "name": null}
-        ]
-      }
+      { "name": "Department", "roles": [{"role": "Role Title", "name": "Person Name or null"}] }
     ],
-    "total_roles": 15,
-    "source": "AI Knowledge Base"
+    "total_roles": number,
+    "source": "Platform Database" | "AI + Platform Database"
   }
-}
-
-IMPORTANT:
-- Include ALL known roles organized by department
-- For music: Performance, Songwriting, Production, Engineering, Music Video, Management, Label
-- For film: Cast, Direction, Production, Cinematography, Editing, Sound, Music, Art Department, Costume, VFX
-- For fashion: Creative Direction, Styling, Photography, Hair & Makeup, Models, Production
-- For events: Production, Technical, Entertainment, Catering, Marketing
-- For ads: Creative, Production, Direction, Post-Production, Client
-- Include names where known from public sources
-- Set name to null for roles you don't know the person for
-- Be factual — only include people you're confident about
-- The existing_roles array shows roles already claimed on our platform — include these departments but the roles will be merged client-side`
+}`
           },
           {
             role: 'user',
-            content: `Project: "${project_name}"\nAlready claimed roles on platform: ${JSON.stringify(existing_roles || [])}`
+            content: `${dbFactsBlock}\n\nGenerate the production detail JSON for "${project_name}".`
           }
         ],
         response_format: { type: 'json_object' },
@@ -110,7 +126,31 @@ IMPORTANT:
     const content = aiData.choices?.[0]?.message?.content;
     if (!content) throw new Error('No AI response content');
 
-    const parsed = JSON.parse(content);
+    let parsed;
+    try {
+      // Clean markdown fences if present
+      let cleaned = content
+        .replace(/^```json\s*/im, "")
+        .replace(/^```\s*/im, "")
+        .replace(/```\s*$/im, "")
+        .trim();
+      parsed = JSON.parse(cleaned);
+    } catch {
+      throw new Error('Failed to parse AI response as JSON');
+    }
+
+    // Post-process: override AI fields with DB ground truth where available
+    if (parsed.production) {
+      const p = parsed.production;
+      p.name = project_name; // Always use exact project name
+      if (dbYear) p.year = dbYear;
+      if (dbPlatform && dbPlatform !== 'unknown') p.platform = dbPlatform;
+      if (dbLocation && dbLocation !== 'unknown') p.location = dbLocation;
+      if (dbClientBrand && dbClientBrand !== 'unknown') p.client_brand = dbClientBrand;
+      if (dbUrl) p.external_url = dbUrl;
+      if (dbThumbnail) p.image_url = dbThumbnail;
+      if (dbMediaUrl) p.media_url = dbMediaUrl;
+    }
 
     return new Response(JSON.stringify(parsed), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

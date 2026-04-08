@@ -84,6 +84,9 @@ interface Credit {
   year?: number;
   platform?: string;
   source?: string;
+  thumbnail_url?: string;
+  primary_media_url?: string;
+  credit_category?: string;
   isVerified?: boolean;
   verificationTier?: 'icdb' | 'ai' | 'peer' | 'payment' | 'manual';
 }

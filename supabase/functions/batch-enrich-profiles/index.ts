@@ -35,21 +35,31 @@ Deno.serve(async (req) => {
       query = query.or('bio.is.null,bio.eq.,professional_skills.is.null,job_title.is.null');
     }
 
-    // Also find profiles that have no credits at all (separate query, merged)
-    const { data: noCreditProfiles } = await supabase
+    const { data: profiles, error: fetchError } = await query;
+    if (fetchError) throw fetchError;
+
+    // Also find profiles with no credits at all — they need credit discovery
+    const profileUserIds = new Set((profiles || []).map((p: any) => p.user_id));
+    const { data: allProfs } = await supabase
       .from('profiles')
       .select('user_id, full_name, bio, professional_skills, job_title, industry, role')
       .not('full_name', 'is', null)
       .neq('full_name', '')
       .neq('full_name', 'New User')
-      .limit(limit);
+      .limit(100);
 
-    // We'll merge and deduplicate after both queries run
+    for (const p of (allProfs || [])) {
+      if (profileUserIds.has(p.user_id)) continue;
+      // Check if this user has any credits
+      const { count } = await supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', p.user_id);
+      if ((count || 0) === 0) {
+        profiles?.push(p);
+        profileUserIds.add(p.user_id);
+        if ((profiles?.length || 0) >= limit) break;
+      }
+    }
 
-    const { data: profiles, error: fetchError } = await query;
-    if (fetchError) throw fetchError;
-
-    console.log(`[batch-enrich] Found ${profiles?.length || 0} profiles to enrich`);
+    console.log(`[batch-enrich] Found ${profiles?.length || 0} profiles to enrich (incl. missing credits)`);
 
     const results = {
       total: profiles?.length || 0,

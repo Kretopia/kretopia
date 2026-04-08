@@ -441,7 +441,7 @@ const CreatorEPK = () => {
             <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted/50 border">
               <Fingerprint className="h-3.5 w-3.5 text-primary" />
               <span className="text-[11px] font-mono font-semibold text-primary">{(profile as any).icdb_creator_id}</span>
-              <Badge variant="outline" className="text-[9px] h-4 border-primary/20">ThriveCredits™</Badge>
+              <Badge variant="outline" className="text-[9px] h-4 border-primary/20">ThriveCredits</Badge>
             </div>
           )}
 
@@ -594,12 +594,12 @@ const CreatorEPK = () => {
           </div>
         )}
 
-        {/* ThriveCredits™ — Verified Work History */}
+        {/* ThriveCredits — Verified Work History */}
         {credits.length > 0 && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                ThriveCredits™
+                ThriveCredits
               </h3>
               <Badge variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
                 <Database className="h-3 w-3" />

@@ -551,13 +551,75 @@ export function ProfileEditDialog({
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">Social Media (Optional)</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">Social Media (Optional)</h3>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={async () => {
+                  setIsSyncing(true);
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) {
+                      toast({ title: "Error", description: "You must be logged in", variant: "destructive" });
+                      return;
+                    }
+                    const { data, error } = await supabase.functions.invoke("sync-social-stats", {
+                      headers: { Authorization: `Bearer ${session.access_token}` },
+                    });
+                    if (error) throw error;
+                    if (data?.updated > 0) {
+                      toast({ title: "Stats Synced! ✨", description: `Updated ${data.updated} platform${data.updated > 1 ? 's' : ''} with live data` });
+                      onProfileUpdate();
+                    } else {
+                      toast({ title: "No updates", description: "Add your social URLs first, then sync", variant: "destructive" });
+                    }
+                  } catch {
+                    toast({ title: "Sync failed", description: "Could not fetch social stats", variant: "destructive" });
+                  } finally {
+                    setIsSyncing(false);
+                  }
+                }}
+                disabled={isSyncing}
+                className="gap-1.5 text-xs"
+              >
+                {isSyncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                {isSyncing ? "Syncing..." : "Auto-Sync Stats"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground -mt-2">
+              Add your URLs and hit Auto-Sync to pull real follower counts automatically
+            </p>
             
             <FieldWrapper label="Instagram" isIncomplete={false}>
               <Input
                 value={formData.instagram_url}
                 onChange={(e) => handleInputChange('instagram_url', e.target.value)}
                 placeholder="https://instagram.com/username"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="YouTube" isIncomplete={false}>
+              <Input
+                value={formData.youtube_url}
+                onChange={(e) => handleInputChange('youtube_url', e.target.value)}
+                placeholder="https://youtube.com/@yourchannel"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="TikTok" isIncomplete={false}>
+              <Input
+                value={formData.tiktok_url}
+                onChange={(e) => handleInputChange('tiktok_url', e.target.value)}
+                placeholder="https://tiktok.com/@username"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="Spotify" isIncomplete={false}>
+              <Input
+                value={formData.spotify_url}
+                onChange={(e) => handleInputChange('spotify_url', e.target.value)}
+                placeholder="https://open.spotify.com/artist/..."
               />
             </FieldWrapper>
 
@@ -574,6 +636,30 @@ export function ProfileEditDialog({
                 value={formData.linkedin_url}
                 onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
                 placeholder="https://linkedin.com/in/username"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="Behance" isIncomplete={false}>
+              <Input
+                value={formData.behance_url}
+                onChange={(e) => handleInputChange('behance_url', e.target.value)}
+                placeholder="https://behance.net/username"
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="IMDb" isIncomplete={false}>
+              <Input
+                value={formData.imdb_url}
+                onChange={(e) => handleInputChange('imdb_url', e.target.value)}
+                placeholder="https://imdb.com/name/..."
+              />
+            </FieldWrapper>
+
+            <FieldWrapper label="SoundCloud" isIncomplete={false}>
+              <Input
+                value={formData.soundcloud_url}
+                onChange={(e) => handleInputChange('soundcloud_url', e.target.value)}
+                placeholder="https://soundcloud.com/username"
               />
             </FieldWrapper>
           </div>

@@ -12,7 +12,7 @@ import {
   Film, Tv, Music, Disc3, Video, Mic2, CalendarDays, Sparkles, Crown,
   Shirt, Megaphone, Briefcase, ShieldCheck, Loader2,
   Plus, Trash2, Play, UserPlus, ChevronLeft, ChevronRight, Pencil,
-  Youtube, Headphones, Image as ImageIcon, Upload,
+  Youtube, Headphones, Image as ImageIcon, Upload, CheckSquare, Square, XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -193,7 +193,8 @@ const getPlatformIcon = (platform: string | null) => {
 
 // Horizontal scroll row component
 function CategoryRow({ 
-  category, credits, isOwnProfile, onDelete, onEndorse, onPlay, onEdit, collaboratorProfiles, deletingId 
+  category, credits, isOwnProfile, onDelete, onEndorse, onPlay, onEdit, collaboratorProfiles, deletingId,
+  bulkSelectMode, selectedIds, onToggleSelect,
 }: {
   category: string;
   credits: ICDBCredit[];
@@ -204,6 +205,9 @@ function CategoryRow({
   onEdit: (credit: ICDBCredit) => void;
   collaboratorProfiles: Map<string, CollaboratorProfile>;
   deletingId: string | null;
+  bulkSelectMode?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -310,12 +314,30 @@ function CategoryRow({
           return (
             <div
               key={credit.id}
-              className="group relative rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl shrink-0"
+              className={cn(
+                "group relative rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl shrink-0",
+                bulkSelectMode && selectedIds?.has(credit.id) && "ring-2 ring-primary"
+              )}
               style={{ width: "140px", aspectRatio: "2/3" }}
               onClick={() => {
-                navigate(`/production?name=${encodeURIComponent(credit.project_name)}`);
+                if (bulkSelectMode && onToggleSelect) {
+                  onToggleSelect(credit.id);
+                } else {
+                  navigate(`/production?name=${encodeURIComponent(credit.project_name)}`);
+                }
               }}
             >
+              {/* Bulk select checkbox */}
+              {bulkSelectMode && (
+                <div className="absolute top-1.5 right-1.5 z-20">
+                  <div className={cn(
+                    "h-5 w-5 rounded border-2 flex items-center justify-center transition-colors",
+                    selectedIds?.has(credit.id) ? "bg-primary border-primary text-primary-foreground" : "border-white/70 bg-black/40"
+                  )}>
+                    {selectedIds?.has(credit.id) && <CheckSquare className="h-3.5 w-3.5" />}
+                  </div>
+                </div>
+              )}
               {/* Poster background */}
               {thumbnail ? (
                 <img src={thumbnail} alt={credit.project_name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
@@ -447,7 +469,9 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const [editingCredit, setEditingCredit] = useState<ICDBCredit | null>(null);
   const [editForm, setEditForm] = useState({ project_name: "", role: "", year: new Date().getFullYear(), platform: "", url: "", project_type: "" });
   const [savingEdit, setSavingEdit] = useState(false);
-  
+  const [bulkSelectMode, setBulkSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => { fetchData(); }, [userId]);
 
@@ -505,6 +529,29 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
       onRefresh?.();
     } catch { toast.error("Failed to remove"); }
     finally { setDeletingId(null); }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkDeleting(true);
+    try {
+      const { error } = await supabase.from('credits').delete().in('id', [...selectedIds]);
+      if (error) throw error;
+      setCredits(prev => prev.filter(c => !selectedIds.has(c.id)));
+      toast.success(`${selectedIds.size} credit${selectedIds.size > 1 ? 's' : ''} removed`);
+      setSelectedIds(new Set());
+      setBulkSelectMode(false);
+      onRefresh?.();
+    } catch { toast.error("Failed to remove credits"); }
+    finally { setBulkDeleting(false); }
   };
 
   const categoryGroups = useMemo(() => {
@@ -597,10 +644,39 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
         </div>
         {isOwnProfile && (
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setIsFormOpen(true)} className="h-8 text-xs">
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              Add Work
-            </Button>
+            {bulkSelectMode ? (
+              <>
+                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => {
+                  if (selectedIds.size === credits.length) setSelectedIds(new Set());
+                  else setSelectedIds(new Set(credits.map(c => c.id)));
+                }}>
+                  {selectedIds.size === credits.length ? <Square className="h-3.5 w-3.5 mr-1" /> : <CheckSquare className="h-3.5 w-3.5 mr-1" />}
+                  {selectedIds.size === credits.length ? 'Deselect All' : 'Select All'}
+                </Button>
+                {selectedIds.size > 0 && (
+                  <Button variant="destructive" size="sm" className="h-8 text-xs" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                    {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />}
+                    Delete {selectedIds.size}
+                  </Button>
+                )}
+                <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { setBulkSelectMode(false); setSelectedIds(new Set()); }}>
+                  <XCircle className="h-3.5 w-3.5 mr-1" /> Cancel
+                </Button>
+              </>
+            ) : (
+              <>
+                {credits.length > 1 && (
+                  <Button variant="outline" size="sm" onClick={() => setBulkSelectMode(true)} className="h-8 text-xs">
+                    <CheckSquare className="h-3.5 w-3.5 mr-1" />
+                    Select
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => setIsFormOpen(true)} className="h-8 text-xs">
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Add Work
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -669,6 +745,9 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                 onEdit={openEdit}
                 collaboratorProfiles={collaboratorProfiles}
                 deletingId={deletingId}
+                bulkSelectMode={bulkSelectMode}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
               />
             );
           })}

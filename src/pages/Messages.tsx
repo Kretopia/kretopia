@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
+import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { IceBreakers } from "@/components/messages/IceBreakers";
 import { TypingIndicator, useTypingStatus } from "@/components/messages/TypingIndicator";
 import { MessageAttachments, AttachmentPreview } from "@/components/messages/MessageAttachments";

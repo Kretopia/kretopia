@@ -96,7 +96,6 @@ export default function Onboarding() {
   // Pending credits to claim
   const [pendingCredits, setPendingCredits] = useState<any[]>([]);
   const [claimingCreditId, setClaimingCreditId] = useState<string | null>(null);
-  const [joiningCircleId, setJoiningCircleId] = useState<string | null>(null);
 
   // Email verification state
   const [emailToVerify, setEmailToVerify] = useState<string>("");

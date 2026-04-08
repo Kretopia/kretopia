@@ -20,7 +20,7 @@ import { CompanyProfileView } from "@/components/profile/CompanyProfileView";
 import { CompanyProfileEditDialog } from "@/components/profile/CompanyProfileEditDialog";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { ProfileDashboardDrawer } from "@/components/profile/ProfileDashboardDrawer";
-import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
+
 
 // Refactored sections
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";

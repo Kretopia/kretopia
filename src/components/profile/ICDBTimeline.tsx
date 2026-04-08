@@ -13,7 +13,6 @@ import {
   Shirt, Megaphone, Briefcase, ShieldCheck, Loader2,
   Plus, Trash2, Play, UserPlus, ChevronLeft, ChevronRight, Pencil,
   Youtube, Headphones, Image as ImageIcon, Upload, CheckSquare, Square, XCircle,
-  Youtube, Headphones, Image as ImageIcon, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";

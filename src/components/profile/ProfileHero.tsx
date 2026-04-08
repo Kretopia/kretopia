@@ -272,8 +272,7 @@ export const ProfileHero = ({
         <div className="rounded-xl bg-muted/50 p-3 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm">{tier.icon}</span>
-              <span className="text-xs font-bold tracking-wide uppercase text-foreground">{tier.displayName}</span>
+              <span className={`text-xs font-bold tracking-wide uppercase ${statusResult.color}`}>{statusResult.label}</span>
               {profile.badge && (
                 <Badge variant="secondary" className="h-4 text-[9px] px-1.5">
                   {profile.badge === 'founder' ? '👑 Founder' : 
@@ -283,15 +282,15 @@ export const ProfileHero = ({
                 </Badge>
               )}
             </div>
-            {nextTier && (
+            {statusResult.nextTier && statusResult.pointsToNext !== undefined && (
               <span className="text-[10px] text-muted-foreground">
-                {(nextTier.minPoints - (profile.points || 0)).toLocaleString()} pts to {nextTier.displayName}
+                {statusResult.pointsToNext} pts to {nextTierLabel}
               </span>
             )}
           </div>
           <div className="h-1.5 rounded-full bg-border overflow-hidden">
             <div 
-              className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-500", tier.color)}
+              className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-500 from-primary to-primary/70")}
               style={{ width: `${tierProgress}%` }}
             />
           </div>

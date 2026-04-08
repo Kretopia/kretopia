@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Loader2, Wand2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { FreeTierGate } from "@/components/FreeTierGate";
+import { useFeatureGate } from "@/hooks/useFeatureGate";
 
 interface GeneratedJobDescription {
   title: string;
@@ -26,6 +27,7 @@ export function AIJobDescriptionGenerator({ onGenerated, isPro }: AIJobDescripti
   const [brief, setBrief] = useState("");
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
+  const { guard: guardJobDesc } = useFeatureGate("aiJobDescriptions");
 
   const handleGenerate = async () => {
     if (!brief.trim()) {
@@ -36,6 +38,7 @@ export function AIJobDescriptionGenerator({ onGenerated, isPro }: AIJobDescripti
       });
       return;
     }
+    if (!guardJobDesc()) return;
 
     setGenerating(true);
     try {

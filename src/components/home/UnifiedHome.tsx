@@ -44,6 +44,7 @@ export const UnifiedHome = () => {
   const [featuredCreators, setFeaturedCreators] = useState<any[]>([]);
   const [activeGigs, setActiveGigs] = useState<any[]>([]);
   const [latestArticles, setLatestArticles] = useState<any[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [stats, setStats] = useState({ creators: 0, credits: 0, gigs: 0 });
 
   // Auth-only data

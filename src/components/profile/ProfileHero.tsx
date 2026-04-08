@@ -64,9 +64,13 @@ export const ProfileHero = ({
   dashboardTrigger,
 }: ProfileHeroProps) => {
   const { user } = useAuth();
-  const tier = getTierByPoints(profile.points || 0);
-  const tierProgress = getTierProgress(profile.points || 0);
-  const nextTier = getNextTier(profile.points || 0);
+  const statusResult = calculateStatus(creditsData);
+  const tierProgress = statusResult.pointsToNext 
+    ? Math.min(100, (statusResult.points / (statusResult.points + statusResult.pointsToNext)) * 100)
+    : 100;
+  const nextTierLabel = statusResult.nextTier 
+    ? statusResult.nextTier.charAt(0).toUpperCase() + statusResult.nextTier.slice(1)
+    : null;
   const isCompany = profile.account_type === 'company';
   const [showClaimDialog, setShowClaimDialog] = useState(false);
   

@@ -9,6 +9,7 @@ import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, Us
 import { Helmet } from "react-helmet-async";
 import { ApplyToOpportunityDialog } from "@/components/ApplyToOpportunityDialog";
 import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
+import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { SEO } from "@/components/SEO";
 
 interface Opportunity {

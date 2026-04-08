@@ -89,8 +89,24 @@ const Navbar = memo(({ user }: NavbarProps) => {
     navigate(path);
   };
 
+  // Force work mode for company accounts
+  useEffect(() => {
+    if (accountType === "company" && mode === "create") {
+      setMode("work");
+    }
+  }, [accountType, mode]);
+
+  const isCompany = accountType === "company";
+
   // Desktop nav items per mode
-  const desktopNavItems = mode === "create"
+  const desktopNavItems = isCompany
+    ? [
+        { path: "/desk", icon: FolderKanban, label: "Desk" },
+        { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+        { path: "/talent-finder", icon: Search, label: "Talent" },
+        { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
+      ]
+    : mode === "create"
     ? [
         { path: "/", icon: Home, label: "Home" },
         { path: "/scene", icon: Zap, label: "Scene" },
@@ -145,26 +161,28 @@ const Navbar = memo(({ user }: NavbarProps) => {
         {user && !isLandingPage && (
           <div className="hidden lg:flex items-center gap-1">
             {/* Mode toggle pill */}
-            <div className="flex items-center bg-muted/60 rounded-full p-0.5 mr-2">
-              <button
-                onClick={() => setMode("create")}
-                className={cn(
-                  "px-3 py-1 rounded-full text-xs font-semibold transition-all",
-                  mode === "create" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Explore
-              </button>
-              <button
-                onClick={() => setMode("work")}
-                className={cn(
-                  "px-3 py-1 rounded-full text-xs font-semibold transition-all",
-                  mode === "work" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Work
-              </button>
-            </div>
+            {!isCompany && (
+              <div className="flex items-center bg-muted/60 rounded-full p-0.5 mr-2">
+                <button
+                  onClick={() => setMode("create")}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-semibold transition-all",
+                    mode === "create" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Explore
+                </button>
+                <button
+                  onClick={() => setMode("work")}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-semibold transition-all",
+                    mode === "work" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Work
+                </button>
+              </div>
+            )}
 
             {desktopNavItems.map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path || 

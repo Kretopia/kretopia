@@ -12,14 +12,21 @@ interface SocialShareButtonsProps {
   url: string;
   title: string;
   description?: string;
+  imageUrl?: string;
   variant?: "icon" | "full";
 }
 
-export function SocialShareButtons({ url, title, description, variant = "icon" }: SocialShareButtonsProps) {
+export function SocialShareButtons({ url, title, description, imageUrl, variant = "icon" }: SocialShareButtonsProps) {
   const fullUrl = url.startsWith("http") ? url : `https://www.thrivein.io${url}`;
   const text = `${title}${description ? ` — ${description}` : ""}`;
   const encodedUrl = encodeURIComponent(fullUrl);
   const encodedText = encodeURIComponent(text);
+
+  // For WhatsApp: include image URL in message so it renders as a preview
+  const whatsappText = imageUrl
+    ? `${text}\n\n${fullUrl}\n\n${imageUrl}`
+    : `${text} ${fullUrl}`;
+  const encodedWhatsappText = encodeURIComponent(whatsappText);
 
   const handleNativeShare = async () => {
     if (navigator.share) {
@@ -37,7 +44,7 @@ export function SocialShareButtons({ url, title, description, variant = "icon" }
   };
 
   const shareLinks = {
-    whatsapp: `https://wa.me/?text=${encodedText}%20${encodedUrl}`,
+    whatsapp: `https://wa.me/?text=${encodedWhatsappText}`,
     x: `https://x.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,

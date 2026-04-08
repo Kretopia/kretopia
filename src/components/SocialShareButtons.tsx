@@ -13,19 +13,24 @@ interface SocialShareButtonsProps {
   title: string;
   description?: string;
   imageUrl?: string;
+  ogProxySlug?: string;
   variant?: "icon" | "full";
 }
 
-export function SocialShareButtons({ url, title, description, imageUrl, variant = "icon" }: SocialShareButtonsProps) {
+export function SocialShareButtons({ url, title, description, imageUrl, ogProxySlug, variant = "icon" }: SocialShareButtonsProps) {
   const fullUrl = url.startsWith("http") ? url : `https://www.thrivein.io${url}`;
   const text = `${title}${description ? ` — ${description}` : ""}`;
   const encodedUrl = encodeURIComponent(fullUrl);
   const encodedText = encodeURIComponent(text);
 
-  // For WhatsApp: include image URL in message so it renders as a preview
-  const whatsappText = imageUrl
-    ? `${text}\n\n${fullUrl}\n\n${imageUrl}`
-    : `${text} ${fullUrl}`;
+  // For platforms with crawlers (WhatsApp, Facebook, LinkedIn), use OG proxy URL so they get rich card previews
+  const ogUrl = ogProxySlug
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-magazine?slug=${ogProxySlug}`
+    : fullUrl;
+  const encodedOgUrl = encodeURIComponent(ogUrl);
+
+  // WhatsApp: clean message with just title + OG-proxy link (WhatsApp will scrape OG tags from link)
+  const whatsappText = `${text}\n\n${ogUrl}`;
   const encodedWhatsappText = encodeURIComponent(whatsappText);
 
   const handleNativeShare = async () => {
@@ -46,8 +51,8 @@ export function SocialShareButtons({ url, title, description, imageUrl, variant 
   const shareLinks = {
     whatsapp: `https://wa.me/?text=${encodedWhatsappText}`,
     x: `https://x.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${ogProxySlug ? encodedOgUrl : encodedUrl}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${ogProxySlug ? encodedOgUrl : encodedUrl}`,
   };
 
   if (variant === "icon") {

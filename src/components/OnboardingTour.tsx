@@ -1,51 +1,55 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, ArrowRight, ArrowLeft, Sparkles } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { X, ArrowRight, ArrowLeft, Sparkles, User, Search, Heart, MessageSquare, Briefcase } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 interface TourStep {
   title: string;
   description: string;
+  icon: React.ReactNode;
   action?: string;
   route?: string;
-  highlight?: string;
 }
 
 const tourSteps: TourStep[] = [
   {
-    title: "Welcome to ThriveHub! 🎉",
-    description: "Let's take a quick tour to help you get started and make the most of the platform.",
-    action: "Start Tour",
+    title: "Welcome to ThriveIN! 🎉",
+    description: "Your creative career starts here. Let's show you around — it only takes a minute.",
+    icon: <Sparkles className="h-8 w-8 text-primary" />,
+    action: "Let's Go",
   },
   {
-    title: "Complete Your Profile",
-    description: "A complete profile helps you get better matches and opportunities. Add your skills, portfolio, and experience.",
-    action: "Go to Profile",
+    title: "Build Your Profile",
+    description: "Add your skills, credits, and portfolio. A complete profile gets you 5x more visibility to collaborators and clients.",
+    icon: <User className="h-8 w-8 text-primary" />,
+    action: "Set Up Profile",
     route: "/profile",
   },
   {
-    title: "Discover Opportunities",
-    description: "Swipe through opportunities that match your skills. Swipe right to show interest, left to pass.",
-    action: "Explore Opportunities",
-    route: "/discover?tab=opportunities",
-  },
-  {
-    title: "Find Collaborators",
-    description: "Connect with other creators. Match with people who complement your skills and vision.",
-    action: "Meet Creators",
-    route: "/discover?tab=creators",
-  },
-  {
-    title: "Your Network",
-    description: "View your matches, send messages, and start collaborating on projects together.",
-    action: "View Circle",
+    title: "Discover & Browse",
+    description: "Search for creators, events, gigs, and opportunities. Use Explore mode to discover what's happening in the creative world.",
+    icon: <Search className="h-8 w-8 text-primary" />,
+    action: "Start Exploring",
     route: "/circle",
   },
   {
-    title: "You're All Set! ✨",
-    description: "You're ready to thrive! Start connecting, collaborating, and creating amazing things.",
+    title: "Swipe & Match",
+    description: "Find your next collaborator with our AI-powered matching. Swipe right to connect, and start creating together.",
+    icon: <Heart className="h-8 w-8 text-primary" />,
+    action: "Try Matching",
+    route: "/circle",
+  },
+  {
+    title: "Message & Collaborate",
+    description: "When you match, start a conversation. Use The Desk for project management, file sharing, and team coordination.",
+    icon: <MessageSquare className="h-8 w-8 text-primary" />,
+  },
+  {
+    title: "You're Ready to Thrive! ✨",
+    description: "Your creative toolkit is set up. Start connecting, claim your credits, and build your reputation.",
+    icon: <Briefcase className="h-8 w-8 text-primary" />,
     action: "Get Started",
   },
 ];
@@ -55,7 +59,6 @@ export const OnboardingTour = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     checkOnboardingStatus();
@@ -68,7 +71,6 @@ export const OnboardingTour = () => {
 
       setUserId(user.id);
 
-      // Check if user has completed onboarding
       const { data: profile } = await supabase
         .from("profiles")
         .select("onboarding_completed")
@@ -132,59 +134,63 @@ export const OnboardingTour = () => {
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
       <Card className="max-w-lg w-full border-primary/20 shadow-xl">
         <CardContent className="pt-6">
-          {/* Header */}
           <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">
-                Step {currentStep + 1} of {tourSteps.length}
-              </span>
-            </div>
+            <span className="text-xs font-medium text-muted-foreground">
+              {currentStep + 1} / {tourSteps.length}
+            </span>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleSkip}
-              className="h-8 w-8"
+              className="h-8 w-8 -mt-1 -mr-2"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          {/* Progress bar */}
-          <div className="w-full bg-secondary rounded-full h-2 mb-6">
-            <div
-              className="bg-primary h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((currentStep + 1) / tourSteps.length) * 100}%` }}
-            />
+          {/* Progress */}
+          <div className="flex gap-1 mb-6">
+            {tourSteps.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1 flex-1 rounded-full transition-colors ${
+                  i <= currentStep ? 'bg-primary' : 'bg-muted'
+                }`}
+              />
+            ))}
           </div>
 
-          {/* Content */}
-          <div className="space-y-4 mb-6">
-            <h2 className="text-2xl font-bold">{step.title}</h2>
-            <p className="text-muted-foreground">{step.description}</p>
+          {/* Icon + Content */}
+          <div className="flex flex-col items-center text-center space-y-4 mb-6">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+              {step.icon}
+            </div>
+            <h2 className="text-xl font-bold">{step.title}</h2>
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">{step.description}</p>
           </div>
 
           {/* Actions */}
           <div className="flex items-center justify-between gap-3">
             <Button
               variant="outline"
+              size="sm"
               onClick={handlePrevious}
               disabled={isFirstStep}
-              className="gap-2"
+              className="gap-1"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3.5 w-3.5" />
               Back
             </Button>
 
             <div className="flex gap-2">
               {!isLastStep && (
-                <Button variant="ghost" onClick={handleSkip}>
-                  Skip Tour
+                <Button variant="ghost" size="sm" onClick={handleSkip}>
+                  Skip
                 </Button>
               )}
-              <Button onClick={handleNext} className="gap-2">
+              <Button size="sm" onClick={handleNext} className="gap-1">
                 {step.action || "Next"}
-                {!isLastStep && <ArrowRight className="h-4 w-4" />}
+                {!isLastStep && <ArrowRight className="h-3.5 w-3.5" />}
               </Button>
             </div>
           </div>

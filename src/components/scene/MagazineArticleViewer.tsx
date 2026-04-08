@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock, Eye, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import ReactMarkdown from "react-markdown";
-import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { motion } from "framer-motion";
@@ -34,12 +33,11 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
   const articleSlugOrId = article.slug || article.id;
   const shareUrl = `https://www.thrivein.io/magazine/${articleSlugOrId}`;
   const socialShareUrl = `https://www.thrivein.io/share/magazine/${articleSlugOrId}/`;
+  const shareTitle = article.title;
   const shareDescription = article.subtitle || "";
 
-  // Split markdown content into sections for inline image insertion
   const contentSections = article.content.split(/\n(?=##\s)/).filter(Boolean);
 
-  // Category-themed inline images for visual breaks
   const inlineImages: Record<string, string[]> = {
     fashion: [
       "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=80",
@@ -92,7 +90,6 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
       transition={{ duration: 0.3 }}
       className="max-w-3xl mx-auto"
     >
-      {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/50">
         <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5 -ml-2">
           <ArrowLeft className="h-4 w-4" />
@@ -110,7 +107,6 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
         </div>
       </div>
 
-      {/* Hero Cover */}
       {article.cover_image_url && (
         <div className="relative aspect-[2/1] sm:aspect-[21/9] overflow-hidden">
           <img
@@ -123,7 +119,6 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
         </div>
       )}
 
-      {/* Article Header */}
       <header className="px-5 pt-6 pb-4 space-y-3">
         <Badge variant="secondary" className="capitalize text-[11px] font-medium">
           {article.category}
@@ -161,11 +156,9 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
         </div>
       </header>
 
-      {/* Article Body */}
       <div className="px-5 pb-8">
         {contentSections.map((section, i) => (
           <div key={i}>
-            {/* Render markdown section */}
             <article className="prose prose-sm dark:prose-invert max-w-none
               prose-headings:font-semibold prose-headings:tracking-tight prose-headings:mt-10 prose-headings:mb-4
               prose-h2:text-lg prose-h2:border-b prose-h2:border-border/30 prose-h2:pb-2.5
@@ -180,7 +173,6 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
               <ReactMarkdown>{section}</ReactMarkdown>
             </article>
 
-            {/* Insert inline image after the first and third sections */}
             {(i === 0 || i === 2) && categoryImages[i === 0 ? 0 : 1] && (
               <figure className="my-8 rounded-xl overflow-hidden">
                 <img
@@ -197,7 +189,6 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
           </div>
         ))}
 
-        {/* Tags */}
         {article.slug && (
           <div className="flex flex-wrap gap-2 mt-10 pt-6 border-t border-border/50">
             <span className="text-xs text-muted-foreground mr-1">Tags:</span>
@@ -210,7 +201,6 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
         )}
       </div>
 
-      {/* CTA Banner for non-authenticated visitors */}
       {!isAuthenticated && (
         <div className="sticky bottom-0 bg-gradient-to-t from-background via-background to-background/0 pt-8">
           <div className="mx-4 mb-4 p-5 rounded-2xl bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 border border-primary/20 backdrop-blur-sm">
@@ -223,7 +213,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
                   Join ThriveIN — The Creative Economy Platform
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                  Connect with creatives worldwide, discover collaboration opportunities, manage projects, 
+                  Connect with creatives worldwide, discover collaboration opportunities, manage projects,
                   and grow your creative career. All in one place.
                 </p>
               </div>

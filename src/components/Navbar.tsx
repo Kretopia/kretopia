@@ -135,13 +135,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2.5">
-        {/* Icon-only on mobile, full logo on sm+ */}
-        <span className="sm:hidden">
-          <BrandLogo size="sm" iconOnly linkToHome />
-        </span>
-        <span className="hidden sm:inline-flex">
-          <BrandLogo size="md" showBeta linkToHome />
-        </span>
+        <BrandLogo size="md" showBeta linkToHome />
 
         {/* ═══ PERSISTENT SEARCH BAR ═══ */}
         {user && !isLandingPage && (
@@ -207,7 +201,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           </div>
         )}
 
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="flex items-center gap-1 sm:gap-3">
           {user && !isLandingPage && (
             <div className="flex items-center gap-0.5">
               {/* Mobile search toggle */}
@@ -380,10 +374,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 </Button>
               </Link>
               <Link to="/auth">
-                <Button variant="ghost">Sign In</Button>
+                <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4">Sign In</Button>
               </Link>
               <Link to="/auth">
-                <Button variant="gradient">Get Started</Button>
+                <Button variant="gradient" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-4">Get Started</Button>
               </Link>
             </>
           ) : null}

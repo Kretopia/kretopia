@@ -171,10 +171,10 @@ const CreatorEPK = () => {
             .eq('user_id', userId)
             .limit(4),
           
-          // All Credits (work history)
+          // All Credits (work history) — include thumbnail + media
           supabase
             .from('credits')
-            .select('id, project_name, role, year, platform, verification_status, ai_confidence, endorsement_count, source')
+            .select('id, project_name, role, year, platform, verification_status, ai_confidence, endorsement_count, source, thumbnail_url, primary_media_url, credit_category')
             .eq('user_id', userId)
             .order('year', { ascending: false })
             .limit(12),

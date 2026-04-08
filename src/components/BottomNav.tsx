@@ -74,6 +74,7 @@ const BottomNav = memo(() => {
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
+    if (isCompany) return; // No mode swiping for company accounts
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
     if (Math.abs(dx) > 60 && dy < 40) {

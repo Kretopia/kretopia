@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Instagram } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -11,7 +12,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-3">
-            <h3 className="font-bold text-lg bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ThriveIN</h3>
+            <BrandLogo size="md" />
             <p className="text-sm text-muted-foreground">
               The ultimate platform for creators to connect, collaborate, and thrive.
             </p>

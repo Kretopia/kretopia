@@ -7,7 +7,7 @@ import {
   MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import thriveinIcon from "@/assets/thrivein-icon.png";
+import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
@@ -135,11 +135,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2.5">
-        <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="ThriveIN Home">
-          <img src={thriveinIcon} alt="ThriveIN Icon" className="h-9 w-9 sm:h-10 sm:w-10 object-contain" />
-          <span className="text-lg sm:text-xl font-bold tracking-tight gradient-text hidden sm:inline">thriveIN</span>
-          <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] uppercase tracking-widest font-semibold hidden sm:inline-flex">BETA</Badge>
-        </Link>
+        <BrandLogo size="md" showBeta linkToHome />
 
         {/* ═══ PERSISTENT SEARCH BAR ═══ */}
         {user && !isLandingPage && (

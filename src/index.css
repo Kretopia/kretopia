@@ -42,14 +42,14 @@ All colors MUST be HSL.
     --warning-foreground: 0 0% 100%;
     --radius: 0.75rem;
 
-    /* Clean gradient system */
-    --gradient-primary: linear-gradient(135deg, hsl(235 65% 52%), hsl(250 55% 62%));
-    --gradient-secondary: linear-gradient(135deg, hsl(200 70% 45%), hsl(235 65% 52%));
+    /* Clean gradient system — subtle background washes only, no decorative brand gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(235 65% 52%), hsl(235 65% 46%));
+    --gradient-secondary: linear-gradient(135deg, hsl(235 65% 52% / 0.08), hsl(235 65% 52% / 0.03));
     --gradient-accent: linear-gradient(180deg, hsl(220 20% 98%), hsl(220 14% 96%));
-    --gradient-subtle: linear-gradient(180deg, hsl(235 65% 52% / 0.04), hsl(250 55% 62% / 0.04));
+    --gradient-subtle: linear-gradient(180deg, hsl(235 65% 52% / 0.03), transparent);
     --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.92), hsl(0 0% 100% / 0.75));
     --gradient-gold: linear-gradient(135deg, hsl(45 90% 55%), hsl(35 85% 50%));
-    --gradient-hero: linear-gradient(135deg, hsl(235 65% 52%), hsl(250 55% 58%), hsl(45 90% 55%));
+    --gradient-hero: linear-gradient(180deg, hsl(235 65% 52% / 0.06), transparent);
 
     /* Refined shadow system */
     --shadow-xs: 0 1px 2px hsl(230 25% 10% / 0.04);
@@ -119,7 +119,7 @@ All colors MUST be HSL.
     --warning-foreground: 0 0% 98%;
 
     --gradient-accent: linear-gradient(180deg, hsl(230 20% 7%), hsl(230 18% 10%));
-    --gradient-subtle: linear-gradient(180deg, hsl(235 70% 65% / 0.06), hsl(250 55% 62% / 0.06));
+    --gradient-subtle: linear-gradient(180deg, hsl(235 70% 65% / 0.04), transparent);
     --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.08), hsl(0 0% 100% / 0.04));
 
     --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.2);
@@ -219,12 +219,10 @@ All colors MUST be HSL.
     background: var(--gradient-accent);
   }
 
-  /* Gradient text utility - for branding elements */
+  /* Brand text — solid primary, no gradient on wordmark */
   .gradient-text {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: hsl(var(--primary));
+    -webkit-text-fill-color: hsl(var(--primary));
   }
 
   /* Glass morphism effect */

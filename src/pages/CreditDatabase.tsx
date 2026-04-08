@@ -94,6 +94,16 @@ interface ProfileInfo {
   role: string | null;
 }
 
+interface WebResult {
+  title: string;
+  description?: string;
+  url?: string;
+  image_url?: string;
+  platform?: string;
+  year?: number;
+  type?: string;
+}
+
 const CreditDatabase = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -101,6 +111,7 @@ const CreditDatabase = () => {
   const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
   const [userCredits, setUserCredits] = useState<UserCredit[]>([]);
+  const [webResults, setWebResults] = useState<WebResult[]>([]);
   const [profiles, setProfiles] = useState<Map<string, ProfileInfo>>(new Map());
   const [loading, setLoading] = useState(false);
   const [projectCount, setProjectCount] = useState(0);

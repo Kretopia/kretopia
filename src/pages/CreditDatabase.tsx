@@ -4,27 +4,27 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
-  Database, Filter, MapPin, Building2, CalendarDays, Sparkles,
+  Database, MapPin, Building2, CalendarDays, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
+  TrendingUp, X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const CATEGORY_GROUPS = [
-  { label: "All Industries", value: "all", icon: Globe },
+  { label: "All", value: "all", icon: Globe },
   { label: "Film & TV", value: "film_tv", icon: Film },
   { label: "Music & Audio", value: "music", icon: Music },
   { label: "Performing Arts", value: "performing", icon: Theater },
-  { label: "Events & Productions", value: "events", icon: Camera },
-  { label: "Content & Digital", value: "digital", icon: Tv },
-  { label: "Fashion & Beauty", value: "fashion", icon: Sparkles },
+  { label: "Events", value: "events", icon: Camera },
+  { label: "Digital", value: "digital", icon: Tv },
+  { label: "Fashion", value: "fashion", icon: Sparkles },
   { label: "Art & Design", value: "art", icon: Palette },
 ];
 
@@ -98,95 +98,86 @@ const CreditDatabase = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("all");
-  const [tab, setTab] = useState<"projects" | "credits">("projects");
   const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
   const [userCredits, setUserCredits] = useState<UserCredit[]>([]);
   const [profiles, setProfiles] = useState<Map<string, ProfileInfo>>(new Map());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [projectCount, setProjectCount] = useState(0);
-  const [creditCount, setCreditCount] = useState(0);
   const [claimDialog, setClaimDialog] = useState<{ project: ICDBProject; role: ICDBProject['icdb_project_roles'] extends (infer T)[] | undefined ? T : never } | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [trendingProjects, setTrendingProjects] = useState<ICDBProject[]>([]);
+  const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Debounce search
+  const isSearching = debouncedSearch.length >= 2;
+
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(t);
   }, [search]);
 
-  // Get current user
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setCurrentUserId(data?.user?.id || null);
     });
   }, []);
 
-  // Fetch ICDB projects
-  const fetchProjects = useCallback(async () => {
-    setLoading(true);
-    try {
-      if (debouncedSearch.length >= 2) {
-        // Use edge function for AI-supplemented search
-        const { data, error } = await supabase.functions.invoke('search-icdb', {
-          body: { query: debouncedSearch, category: category !== 'all' ? category : undefined },
-        });
-        if (error) throw error;
-        setIcdbProjects(data?.projects || []);
-        setAiSuggestions(data?.suggestions || []);
-        setProjectCount(data?.total || 0);
-      } else {
-        // Direct DB query for browsing
-        let query = supabase
+  // Fetch trending/recent on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase
           .from('icdb_projects')
-          .select('*, icdb_project_roles(id, role_title, person_name, is_claimed, claimed_by)', { count: 'exact' })
-          .order('year', { ascending: false, nullsFirst: false })
-          .limit(30);
-
-        if (category !== 'all') {
-          query = query.eq('category', category);
-        }
-
-        const { data, error, count } = await query;
-        if (error) throw error;
-        setIcdbProjects((data || []) as ICDBProject[]);
-        setAiSuggestions([]);
-        setProjectCount(count || 0);
+          .select('*, icdb_project_roles(id, role_title, person_name, is_claimed, claimed_by)')
+          .order('created_at', { ascending: false })
+          .limit(12);
+        setTrendingProjects((data || []) as ICDBProject[]);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setInitialLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching ICDB projects:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearch, category]);
+    })();
+  }, []);
 
-  // Fetch user credits (legacy)
-  const fetchCredits = useCallback(async () => {
-    if (tab !== 'credits') return;
+  // Search
+  const fetchResults = useCallback(async () => {
+    if (!isSearching) {
+      setIcdbProjects([]);
+      setAiSuggestions([]);
+      setUserCredits([]);
+      return;
+    }
     setLoading(true);
     try {
-      let query = supabase
-        .from('credits')
-        .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count', { count: 'exact' })
-        .order('year', { ascending: false, nullsFirst: false })
-        .limit(30);
+      // Fetch projects via edge function
+      const { data, error } = await supabase.functions.invoke('search-icdb', {
+        body: { query: debouncedSearch, category: category !== 'all' ? category : undefined },
+      });
+      if (error) throw error;
+      setIcdbProjects(data?.projects || []);
+      setAiSuggestions(data?.suggestions || []);
+      setProjectCount(data?.total || 0);
 
-      if (debouncedSearch) {
-        query = query.or(`project_name.ilike.%${debouncedSearch}%,role.ilike.%${debouncedSearch}%,client_brand.ilike.%${debouncedSearch}%`);
-      }
+      // Also fetch creator credits matching search
+      let creditQuery = supabase
+        .from('credits')
+        .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count')
+        .or(`project_name.ilike.%${debouncedSearch}%,role.ilike.%${debouncedSearch}%,client_brand.ilike.%${debouncedSearch}%`)
+        .order('year', { ascending: false, nullsFirst: false })
+        .limit(20);
+
       if (category !== 'all') {
         const types = Object.entries(TYPE_TO_CATEGORY).filter(([, cat]) => cat === category).map(([type]) => type);
         if (types.length > 0) {
-          query = query.or(`project_type.in.(${types.join(',')}),credit_category.in.(${types.join(',')})`);
+          creditQuery = creditQuery.or(`project_type.in.(${types.join(',')}),credit_category.in.(${types.join(',')})`);
         }
       }
 
-      const { data, error, count } = await query;
-      if (error) throw error;
-
-      const userIds = [...new Set((data || []).map(c => c.user_id))];
+      const { data: creditData } = await creditQuery;
+      const userIds = [...new Set((creditData || []).map(c => c.user_id))];
       if (userIds.length > 0) {
         const { data: profileData } = await supabase
           .from('profiles')
@@ -196,22 +187,18 @@ const CreditDatabase = () => {
         profileData?.forEach((p: any) => map.set(p.user_id, p));
         setProfiles(map);
       }
-
-      setUserCredits((data || []) as UserCredit[]);
-      setCreditCount(count || 0);
+      setUserCredits((creditData || []) as UserCredit[]);
     } catch (err) {
-      console.error('Error fetching credits:', err);
+      console.error('Error searching:', err);
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, category, tab]);
+  }, [debouncedSearch, category, isSearching]);
 
   useEffect(() => {
-    if (tab === 'projects') fetchProjects();
-    else fetchCredits();
-  }, [tab, fetchProjects, fetchCredits]);
+    fetchResults();
+  }, [fetchResults]);
 
-  // Claim a role
   const handleClaim = async () => {
     if (!claimDialog || !currentUserId) return;
     setClaiming(true);
@@ -220,10 +207,8 @@ const CreditDatabase = () => {
         .from('icdb_project_roles')
         .update({ claimed_by: currentUserId, is_claimed: true })
         .eq('id', claimDialog.role.id);
-
       if (error) throw error;
 
-      // Also create a credit entry for the user
       await supabase.from('credits').insert({
         user_id: currentUserId,
         project_name: claimDialog.project.title,
@@ -239,7 +224,7 @@ const CreditDatabase = () => {
 
       toast.success('Credit claimed! It now appears on your profile.');
       setClaimDialog(null);
-      fetchProjects();
+      fetchResults();
     } catch (err) {
       console.error('Claim error:', err);
       toast.error('Failed to claim credit');
@@ -251,6 +236,8 @@ const CreditDatabase = () => {
   const formatType = (type: string) =>
     type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+  const hasResults = icdbProjects.length > 0 || aiSuggestions.length > 0 || userCredits.length > 0;
+
   return (
     <>
       <Helmet>
@@ -259,296 +246,192 @@ const CreditDatabase = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">
-        {/* Hero */}
-        <div className="border-b bg-gradient-to-b from-primary/5 to-background">
-          <div className="container mx-auto px-4 py-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2.5 rounded-xl bg-primary/10">
-                <Database className="h-6 w-6 text-primary" />
+        {/* Search Hero */}
+        <div className={cn(
+          "transition-all duration-300",
+          isSearching
+            ? "border-b bg-background py-4"
+            : "bg-gradient-to-b from-primary/8 to-background py-8 md:py-12"
+        )}>
+          <div className="container mx-auto px-4">
+            {!isSearching && (
+              <div className="text-center mb-5">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
+                  ThriveCredits™
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  The global creative record — search any project, person, or production
+                </p>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">ThriveCredits™</h1>
-                <p className="text-xs text-muted-foreground">Your Verified Creative History</p>
-              </div>
-            </div>
+            )}
 
-            <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
-              <span className="flex items-center gap-1">
-                <Film className="h-3.5 w-3.5" /> {projectCount.toLocaleString()} projects
-              </span>
-              <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" /> Cross-industry
-              </span>
-              <Badge variant="outline" className="text-[10px] h-4 gap-0.5 border-primary/30 text-primary">
-                <Sparkles className="h-2.5 w-2.5" /> AI-Powered
-              </Badge>
-            </div>
-
-            {/* Search */}
-            <div className="relative mb-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            {/* Search bar */}
+            <div className="relative max-w-xl mx-auto">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground" />
               <Input
-                placeholder="Search projects, people, labels, studios..."
-                className="pl-9 h-10"
+                placeholder="Search projects, creators, labels, studios..."
+                className={cn(
+                  "pl-10 pr-10 border-border/60 bg-card shadow-sm",
+                  isSearching ? "h-10" : "h-12 text-base"
+                )}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                autoFocus={false}
               />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
             </div>
 
             {/* Category chips */}
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-3 justify-center">
               {CATEGORY_GROUPS.map(g => {
                 const Icon = g.icon;
+                const isActive = category === g.value;
                 return (
-                  <Button
+                  <button
                     key={g.value}
-                    variant={category === g.value ? "default" : "outline"}
-                    size="sm"
-                    className="h-7 text-[11px] gap-1 shrink-0 rounded-full"
+                    className={cn(
+                      "flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shrink-0 transition-all",
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                    )}
                     onClick={() => setCategory(g.value)}
                   >
                     <Icon className="h-3 w-3" />
                     {g.label}
-                  </Button>
+                  </button>
                 );
               })}
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="container mx-auto px-4 pt-3">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-            <TabsList className="w-full">
-              <TabsTrigger value="projects" className="flex-1 text-xs gap-1">
-                <Database className="h-3 w-3" /> Projects
-              </TabsTrigger>
-              <TabsTrigger value="credits" className="flex-1 text-xs gap-1">
-                <Users className="h-3 w-3" /> Creator Credits
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <div className="flex justify-end gap-2 mt-2">
-            <Button variant="outline" size="sm" className="gap-1.5 text-[11px] h-7" onClick={() => navigate('/credits/hub')}>
-              <Database className="h-3 w-3" /> My Credits
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-[11px] h-7" onClick={() => navigate('/credits/discover')}>
-              <Sparkles className="h-3 w-3" /> AI Discovery
-            </Button>
-          </div>
-        </div>
-
-        {/* Results */}
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4">
+          {/* Search results */}
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">
-                {debouncedSearch ? 'Searching credits...' : 'Loading projects...'}
-              </p>
+              <Loader2 className="h-7 w-7 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Searching the creative record...</p>
             </div>
-          ) : tab === 'projects' ? (
-            <>
-              {/* ICDB Projects */}
-              {icdbProjects.length === 0 && aiSuggestions.length === 0 ? (
-                <div className="text-center py-16">
-                  <Database className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    {debouncedSearch ? 'No projects found' : 'Start searching'}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {debouncedSearch
-                      ? 'Try different keywords or browse by category'
-                      : 'Search for any creative project across all industries'}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {/* DB results */}
-                  {icdbProjects.map(project => (
-                    <Card key={project.id} className="overflow-hidden hover:shadow-sm transition-shadow cursor-pointer" onClick={() => navigate(`/credits/project/${project.id}`)}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-sm truncate">{project.title}</h3>
-                              {project.is_verified && (
-                                <Badge variant="outline" className="text-[9px] h-4 gap-0.5 border-blue-500/30 text-blue-600 shrink-0">
-                                  <ShieldCheck className="h-2 w-2" /> Verified
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap mt-0.5">
-                              <Badge variant="secondary" className="text-[10px] h-4">{formatType(project.type)}</Badge>
-                              {project.year && (
-                                <span className="flex items-center gap-0.5">
-                                  <CalendarDays className="h-2.5 w-2.5" /> {project.year}
-                                </span>
-                              )}
-                              {project.location && (
-                                <span className="flex items-center gap-0.5">
-                                  <MapPin className="h-2.5 w-2.5" /> {project.location}
-                                </span>
-                              )}
-                              {project.client_brand && (
-                                <span className="flex items-center gap-0.5">
-                                  <Building2 className="h-2.5 w-2.5" /> {project.client_brand}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          {project.external_url && (
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0" asChild>
-                              <a href={project.external_url} target="_blank" rel="noopener noreferrer">
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </a>
-                            </Button>
-                          )}
-                        </div>
-
-                        {project.description && (
-                          <p className="text-[11px] text-muted-foreground mb-3 line-clamp-2">{project.description}</p>
-                        )}
-
-                        {/* Contributors */}
-                        {project.icdb_project_roles && project.icdb_project_roles.length > 0 && (
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Credits</p>
-                            {project.icdb_project_roles.map(role => (
-                              <div key={role.id} className="flex items-center justify-between gap-2 p-1.5 rounded-md hover:bg-muted/50">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <Avatar className="h-6 w-6 shrink-0">
-                                    <AvatarFallback className="text-[9px] bg-muted">
-                                      {role.person_name?.[0] || '?'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="min-w-0">
-                                    <p className="text-xs font-medium truncate">{role.person_name || 'Unknown'}</p>
-                                    <p className="text-[10px] text-muted-foreground">{role.role_title}</p>
-                                  </div>
-                                </div>
-                                {role.is_claimed ? (
-                                  <Badge variant="outline" className="text-[9px] h-4 border-green-500/30 text-green-600 shrink-0">
-                                    Claimed
-                                  </Badge>
-                                ) : currentUserId ? (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-6 text-[10px] gap-0.5 shrink-0"
-                                    onClick={() => setClaimDialog({ project, role })}
-                                  >
-                                    <UserPlus className="h-2.5 w-2.5" /> Claim
-                                  </Button>
-                                ) : null}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-
-                  {/* AI Suggestions */}
-                  {aiSuggestions.length > 0 && (
-                    <>
-                      <div className="flex items-center gap-2 mt-6 mb-2">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        <p className="text-xs font-medium text-muted-foreground">AI-Discovered Projects</p>
-                      </div>
-                      {aiSuggestions.map((suggestion, i) => (
-                        <Card key={`ai-${i}`} className="overflow-hidden border-dashed border-primary/20">
-                          <CardContent className="p-4">
-                            <div className="flex items-start gap-2 mb-2">
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2">
-                                  <h3 className="font-semibold text-sm truncate">{suggestion.title}</h3>
-                                  <Badge variant="outline" className="text-[9px] h-4 gap-0.5 border-primary/30 text-primary shrink-0">
-                                    <Sparkles className="h-2 w-2" /> AI
-                                  </Badge>
-                                </div>
-                                <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap mt-0.5">
-                                  <Badge variant="secondary" className="text-[10px] h-4">{formatType(suggestion.type)}</Badge>
-                                  {suggestion.year && <span>{suggestion.year}</span>}
-                                  {suggestion.location && (
-                                    <span className="flex items-center gap-0.5">
-                                      <MapPin className="h-2.5 w-2.5" /> {suggestion.location}
-                                    </span>
-                                  )}
-                                  {suggestion.client_brand && (
-                                    <span className="flex items-center gap-0.5">
-                                      <Building2 className="h-2.5 w-2.5" /> {suggestion.client_brand}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground line-clamp-2">{suggestion.description}</p>
-                            {suggestion.contributors && suggestion.contributors.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-1">
-                                {suggestion.contributors.slice(0, 5).map((c, j) => (
-                                  <Badge key={j} variant="secondary" className="text-[9px] h-4">
-                                    {c.name} — {c.role}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
+          ) : isSearching ? (
+            hasResults ? (
+              <div className="py-4 space-y-6">
+                {/* Projects section */}
+                {(icdbProjects.length > 0 || aiSuggestions.length > 0) && (
+                  <section>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Database className="h-4 w-4 text-primary" />
+                      <h2 className="text-sm font-semibold">Projects</h2>
+                      <span className="text-[11px] text-muted-foreground">({icdbProjects.length + aiSuggestions.length})</span>
+                    </div>
+                    <div className="space-y-2">
+                      {icdbProjects.map(project => (
+                        <ProjectCard
+                          key={project.id}
+                          project={project}
+                          currentUserId={currentUserId}
+                          onClaim={(role) => setClaimDialog({ project, role })}
+                          onNavigate={() => navigate(`/credits/project/${project.id}`)}
+                          formatType={formatType}
+                        />
                       ))}
-                    </>
-                  )}
-                </div>
-              )}
-            </>
+                      {aiSuggestions.map((s, i) => (
+                        <AISuggestionCard key={`ai-${i}`} suggestion={s} formatType={formatType} />
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* People section */}
+                {userCredits.length > 0 && (
+                  <section>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Users className="h-4 w-4 text-primary" />
+                      <h2 className="text-sm font-semibold">Creators</h2>
+                      <span className="text-[11px] text-muted-foreground">({userCredits.length})</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {userCredits.map(credit => {
+                        const profile = profiles.get(credit.user_id);
+                        return (
+                          <Card
+                            key={credit.id}
+                            className="overflow-hidden cursor-pointer hover:bg-muted/30 transition-colors border-border/50"
+                            onClick={() => navigate(`/profile/${credit.user_id}`)}
+                          >
+                            <CardContent className="p-3 flex items-center gap-3">
+                              <Avatar className="h-9 w-9 shrink-0">
+                                <AvatarImage src={profile?.avatar_url || ''} />
+                                <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                                  {profile?.full_name?.[0] || '?'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{profile?.full_name || 'Unknown'}</p>
+                                <p className="text-[11px] text-muted-foreground truncate">
+                                  {credit.role} on <span className="font-medium text-foreground/80">{credit.project_name}</span>
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {credit.year && <span className="text-[10px] text-muted-foreground">{credit.year}</span>}
+                                {credit.verification_status === 'verified' && (
+                                  <ShieldCheck className="h-3.5 w-3.5 text-green-500" />
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <Search className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                <h3 className="text-base font-semibold mb-1">No results for "{debouncedSearch}"</h3>
+                <p className="text-sm text-muted-foreground">Try different keywords or browse by category</p>
+              </div>
+            )
           ) : (
-            /* Creator Credits tab */
-            <>
-              {userCredits.length === 0 ? (
-                <div className="text-center py-16">
-                  <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No credits found</h3>
-                  <p className="text-sm text-muted-foreground">Try a different search</p>
+            /* Browse mode — show trending */
+            <div className="py-5">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-semibold">Recently Added</h2>
+              </div>
+              {initialLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : trendingProjects.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {trendingProjects.map(project => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      currentUserId={currentUserId}
+                      onClaim={(role) => setClaimDialog({ project, role })}
+                      onNavigate={() => navigate(`/credits/project/${project.id}`)}
+                      formatType={formatType}
+                      compact
+                    />
+                  ))}
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {userCredits.map(credit => {
-                    const profile = profiles.get(credit.user_id);
-                    return (
-                      <Card
-                        key={credit.id}
-                        className="overflow-hidden cursor-pointer hover:shadow-sm transition-shadow"
-                        onClick={() => navigate(`/profile/${credit.user_id}`)}
-                      >
-                        <CardContent className="p-3 flex items-center gap-3">
-                          <Avatar className="h-8 w-8 shrink-0">
-                            <AvatarImage src={profile?.avatar_url || ''} />
-                            <AvatarFallback className="text-[10px]">
-                              {profile?.full_name?.[0] || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{credit.project_name}</p>
-                            <p className="text-[11px] text-muted-foreground truncate">
-                              {profile?.full_name || 'Unknown'} — {credit.role}
-                            </p>
-                            <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground">
-                              {credit.year && <span>{credit.year}</span>}
-                              {credit.platform && <span>· {credit.platform}</span>}
-                            </div>
-                          </div>
-                          {credit.verification_status === 'verified' && (
-                            <Badge variant="outline" className="text-[9px] h-4 gap-0.5 border-green-500/30 text-green-600 shrink-0">
-                              <ShieldCheck className="h-2 w-2" /> Verified
-                            </Badge>
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                <div className="text-center py-12">
+                  <Database className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">Start searching to discover creative projects</p>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -561,7 +444,6 @@ const CreditDatabase = () => {
             <DialogDescription>
               Confirm that you are <strong>{claimDialog?.role?.person_name}</strong> and worked
               on <strong>{claimDialog?.project?.title}</strong> as <strong>{claimDialog?.role?.role_title}</strong>.
-              This will be added to your verified credits.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2 text-sm">
@@ -579,12 +461,6 @@ const CreditDatabase = () => {
                 <span>{claimDialog.project.year}</span>
               </div>
             )}
-            {claimDialog?.project?.client_brand && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Label/Studio</span>
-                <span>{claimDialog.project.client_brand}</span>
-              </div>
-            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setClaimDialog(null)}>Cancel</Button>
@@ -598,5 +474,129 @@ const CreditDatabase = () => {
     </>
   );
 };
+
+/* ─── Sub-components ─── */
+
+function ProjectCard({ project, currentUserId, onClaim, onNavigate, formatType, compact }: {
+  project: ICDBProject;
+  currentUserId: string | null;
+  onClaim: (role: any) => void;
+  onNavigate: () => void;
+  formatType: (t: string) => string;
+  compact?: boolean;
+}) {
+  const roleCount = project.icdb_project_roles?.length || 0;
+  const claimedCount = project.icdb_project_roles?.filter(r => r.is_claimed).length || 0;
+
+  return (
+    <Card
+      className="overflow-hidden hover:bg-muted/30 transition-colors cursor-pointer border-border/50"
+      onClick={onNavigate}
+    >
+      <CardContent className={compact ? "p-3" : "p-4"}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-0.5">
+              <h3 className={cn("font-semibold truncate", compact ? "text-xs" : "text-sm")}>{project.title}</h3>
+              {project.is_verified && (
+                <ShieldCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground flex-wrap">
+              <Badge variant="secondary" className="text-[10px] h-4 font-normal">{formatType(project.type)}</Badge>
+              {project.year && <span>{project.year}</span>}
+              {project.client_brand && (
+                <span className="flex items-center gap-0.5">
+                  <Building2 className="h-2.5 w-2.5" /> {project.client_brand}
+                </span>
+              )}
+              {project.location && !compact && (
+                <span className="flex items-center gap-0.5">
+                  <MapPin className="h-2.5 w-2.5" /> {project.location}
+                </span>
+              )}
+            </div>
+          </div>
+          {roleCount > 0 && (
+            <div className="flex items-center gap-1 shrink-0">
+              <Users className="h-3 w-3 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground">{claimedCount}/{roleCount}</span>
+            </div>
+          )}
+        </div>
+
+        {!compact && project.description && (
+          <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-2">{project.description}</p>
+        )}
+
+        {/* Inline roles — show up to 3 */}
+        {!compact && project.icdb_project_roles && project.icdb_project_roles.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {project.icdb_project_roles.slice(0, 3).map(role => (
+              <button
+                key={role.id}
+                className={cn(
+                  "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] transition-colors",
+                  role.is_claimed
+                    ? "bg-green-500/10 text-green-600"
+                    : "bg-muted hover:bg-primary/10 hover:text-primary"
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!role.is_claimed && currentUserId) onClaim(role);
+                }}
+              >
+                {role.person_name || 'Unknown'} — {role.role_title}
+                {role.is_claimed && <ShieldCheck className="h-2.5 w-2.5" />}
+                {!role.is_claimed && currentUserId && <UserPlus className="h-2.5 w-2.5" />}
+              </button>
+            ))}
+            {project.icdb_project_roles.length > 3 && (
+              <span className="text-[10px] text-muted-foreground px-2 py-0.5">
+                +{project.icdb_project_roles.length - 3} more
+              </span>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function AISuggestionCard({ suggestion, formatType }: { suggestion: AISuggestion; formatType: (t: string) => string }) {
+  return (
+    <Card className="overflow-hidden border-dashed border-primary/20 bg-primary/[0.02]">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="font-semibold text-sm truncate">{suggestion.title}</h3>
+          <Badge variant="outline" className="text-[9px] h-4 gap-0.5 border-primary/30 text-primary shrink-0">
+            <Sparkles className="h-2 w-2" /> AI
+          </Badge>
+        </div>
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground flex-wrap">
+          <Badge variant="secondary" className="text-[10px] h-4 font-normal">{formatType(suggestion.type)}</Badge>
+          {suggestion.year && <span>{suggestion.year}</span>}
+          {suggestion.client_brand && (
+            <span className="flex items-center gap-0.5">
+              <Building2 className="h-2.5 w-2.5" /> {suggestion.client_brand}
+            </span>
+          )}
+        </div>
+        {suggestion.description && (
+          <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-2">{suggestion.description}</p>
+        )}
+        {suggestion.contributors && suggestion.contributors.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {suggestion.contributors.slice(0, 4).map((c, j) => (
+              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded-full bg-muted text-[10px]">
+                {c.name} — {c.role}
+              </span>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default CreditDatabase;

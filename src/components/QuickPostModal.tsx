@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Briefcase, CalendarDays, DollarSign, Loader2, MapPin, Tag } from "lucide-react";
+import { Briefcase, CalendarDays, DollarSign, Loader2, MapPin, Sparkles, Tag } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +46,7 @@ export function QuickPostModal({ open, onOpenChange, type }: QuickPostModalProps
   const [budget, setBudget] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [generatingDesc, setGeneratingDesc] = useState(false);
 
   const isGig = type === "gig";
 
@@ -161,12 +162,43 @@ export function QuickPostModal({ open, onOpenChange, type }: QuickPostModalProps
           />
 
           {/* Description */}
-          <Textarea
-            placeholder={isGig ? "Describe what you need — skills, deliverables, timeline..." : "What's the event about?"}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="min-h-[80px] resize-none"
-          />
+          <div className="space-y-1.5">
+            <Textarea
+              placeholder={isGig ? "Describe what you need — skills, deliverables, timeline..." : "What's the event about?"}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="min-h-[80px] resize-none"
+            />
+            {isGig && title.trim().length >= 3 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs gap-1.5 text-primary hover:text-primary"
+                disabled={generatingDesc}
+                onClick={async () => {
+                  setGeneratingDesc(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke("generate-gig-description", {
+                      body: { title: title.trim(), category, gigType, location: location.trim() },
+                    });
+                    if (error) throw error;
+                    if (data?.description) {
+                      setDescription(data.description);
+                      toast.success("Description generated!");
+                    }
+                  } catch (err: any) {
+                    toast.error(err.message || "Failed to generate description");
+                  } finally {
+                    setGeneratingDesc(false);
+                  }
+                }}
+              >
+                {generatingDesc ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                {generatingDesc ? "Writing..." : "AI Write Description"}
+              </Button>
+            )}
+          </div>
 
           {/* Location */}
           <div className="relative">

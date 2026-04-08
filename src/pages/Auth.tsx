@@ -196,11 +196,14 @@ const Auth = () => {
       if (error) {
         const { analytics: errAnalytics } = await import("@/lib/analytics");
         const errorType = error.message.includes("Invalid login") ? "invalid_credentials"
+          : error.message.includes("Email not confirmed") ? "email_not_confirmed"
           : error.message.includes("Failed to fetch") ? "network_error" : "other";
         errAnalytics.errorOccurred('signin_failed', errorType, 'auth');
 
         if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
           toast({ title: "Connection Error", description: "Please check your internet connection and try again.", variant: "destructive" });
+        } else if (error.message.includes("Email not confirmed")) {
+          toast({ title: "Email Not Verified", description: "Please check your inbox and click the verification link before signing in.", variant: "destructive" });
         } else if (error.message.includes("Invalid login credentials")) {
           toast({ title: "Login Failed", description: "Invalid email or password. Please try again.", variant: "destructive" });
         } else {
@@ -236,7 +239,8 @@ const Auth = () => {
     analytics.featureUsed(`${provider}_signin_attempt`);
 
     try {
-      const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: window.location.origin });
+      const siteUrl = import.meta.env.VITE_SITE_URL || 'https://thrivein.io';
+      const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: siteUrl });
 
       if ('redirected' in result && result.redirected) return;
 
@@ -276,7 +280,7 @@ const Auth = () => {
     const { data: signUpData, error } = await supabase.auth.signUp({
       email, password,
       options: {
-        emailRedirectTo: `${window.location.origin}/circle`,
+        emailRedirectTo: `${(import.meta.env.VITE_SITE_URL || 'https://thrivein.io')}/circle`,
         data: { account_type: accountType, invite_code: inviteCode },
       },
     });

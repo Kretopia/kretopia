@@ -53,6 +53,7 @@ export const UnifiedHome = () => {
 
   // Auth-only data
   const [profile, setProfile] = useState<any>(null);
+  const [profileFull, setProfileFull] = useState<any>(null);
   const [myCredits, setMyCredits] = useState(0);
   const [myConnections, setMyConnections] = useState(0);
   const [greeting, setGreeting] = useState("");

@@ -60,6 +60,7 @@ export const ProfileHero = ({
   creditsCount = 0,
   verifiedCreditsCount = 0,
   awardsCount = 0,
+  creditsData = [],
   dashboardTrigger,
 }: ProfileHeroProps) => {
   const { user } = useAuth();

@@ -38,15 +38,17 @@ export interface TierLimits {
 export const FREE_TIER_MONTHLY_CAPS = {
   // Project workspace
   approvalRequests: 2,
-  milestones: 3,
-  invoices: 2,
+  milestones: 5,
+  invoices: 5,
   templateUses: 1,
   aiBriefs: 3,
   
   // Earnings (Accounting)
-  expenses: 5,
+  expenses: 10,
   
-  // Opportunities
+  // Opportunities — posting is free but limited
+  gigPosts: 3,            // Creator gig/event posts per month
+  opportunityPostings: 5, // Brand job postings per month
   aiApplicantRankings: 2,
   aiJobDescriptions: 2,
 
@@ -61,6 +63,8 @@ export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, 
   templateUses: -1,
   aiBriefs: -1,
   expenses: -1,
+  gigPosts: -1,
+  opportunityPostings: -1,
   aiApplicantRankings: -1,
   aiJobDescriptions: -1,
   workCredits: -1,
@@ -73,6 +77,8 @@ export const ENTERPRISE_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY
   templateUses: -1,
   aiBriefs: -1,
   expenses: -1,
+  gigPosts: -1,
+  opportunityPostings: -1,
   aiApplicantRankings: -1,
   aiJobDescriptions: -1,
   workCredits: -1,
@@ -97,6 +103,8 @@ export function getFeatureDisplayName(feature: FreeTierFeature): string {
     templateUses: "template uses",
     aiBriefs: "AI briefs",
     expenses: "expenses",
+    gigPosts: "gig posts",
+    opportunityPostings: "job postings",
     aiApplicantRankings: "AI applicant rankings",
     aiJobDescriptions: "AI job descriptions",
     workCredits: "work credits",
@@ -106,7 +114,7 @@ export function getFeatureDisplayName(feature: FreeTierFeature): string {
 
 const INDIVIDUAL_LIMITS: Record<SubscriptionTier, TierLimits> = {
   free: {
-    swipesPerDay: 30,
+    swipesPerDay: 20,
     maxPortfolioItems: 5,
     canUndoSwipe: false,
     undoSwipesPerDay: 0,
@@ -114,7 +122,7 @@ const INDIVIDUAL_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasAIMatchExplanations: false,
     hasAdvancedFilters: false,
     hasAdvancedProfile: false,
-    maxOpportunityPostings: 1,
+    maxOpportunityPostings: 3,
     hasApplicantTracking: false,
     hasBrandedPage: false,
     hasOpportunityAnalytics: false,
@@ -217,7 +225,7 @@ const INDIVIDUAL_LIMITS: Record<SubscriptionTier, TierLimits> = {
 
 const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
   free: {
-    swipesPerDay: 30,
+    swipesPerDay: 20,
     maxPortfolioItems: 5,
     canUndoSwipe: false,
     undoSwipesPerDay: 0,
@@ -225,7 +233,7 @@ const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasAIMatchExplanations: false,
     hasAdvancedFilters: false,
     hasAdvancedProfile: false,
-    maxOpportunityPostings: 3,
+    maxOpportunityPostings: 5,
     hasApplicantTracking: false,
     hasBrandedPage: false,
     hasOpportunityAnalytics: false,

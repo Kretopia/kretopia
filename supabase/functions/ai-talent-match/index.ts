@@ -27,10 +27,15 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) throw new Error('Unauthorized');
 
-    const { opportunity_id, role_filter, skills_filter, limit = 10 } = await req.json();
+    const { opportunity_id, role_filter, skills_filter, brief_text, limit = 10 } = await req.json();
 
-    // Get opportunity details if provided
+    // Build context from opportunity or freeform brief
     let opportunityContext = '';
+    
+    if (brief_text && typeof brief_text === 'string' && brief_text.trim().length > 0) {
+      opportunityContext = `Hiring Brief:\n${brief_text.trim()}`;
+    }
+    
     if (opportunity_id) {
       const { data: opp } = await supabase
         .from('opportunities')

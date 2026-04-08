@@ -313,7 +313,7 @@ function CategoryRow({
               className="group relative rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl shrink-0"
               style={{ width: "140px", aspectRatio: "2/3" }}
               onClick={() => {
-                if (credit.url || credit.primary_media_url) onPlay(credit);
+                navigate(`/production?name=${encodeURIComponent(credit.project_name)}`);
               }}
             >
               {/* Poster background */}
@@ -436,6 +436,7 @@ interface ICDBTimelineProps {
 }
 
 export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelineProps) {
+  const navigate = useNavigate();
   const [credits, setCredits] = useState<ICDBCredit[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -605,7 +606,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                 onClick={async () => {
                   setEnriching(true);
                   try {
-                    const { data, error } = await supabase.functions.invoke('enrich-credits', {
+                    const { data, error } = await supabase.functions.invoke('backfill-credit-media', {
                       body: { user_id: userId, batch_size: 50 },
                     });
                     if (error) throw error;
@@ -655,7 +656,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                           key={credit.id}
                           className="group relative rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl shrink-0"
                           style={{ width: "160px", aspectRatio: "2/3" }}
-                          onClick={() => { if (credit.url || credit.primary_media_url) setActiveMedia(credit); }}
+                          onClick={() => navigate(`/production?name=${encodeURIComponent(credit.project_name)}`)}
                         >
                           {thumbnail ? (
                             <img src={thumbnail} alt={credit.project_name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />

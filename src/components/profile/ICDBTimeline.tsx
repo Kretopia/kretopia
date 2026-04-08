@@ -314,12 +314,30 @@ function CategoryRow({
           return (
             <div
               key={credit.id}
-              className="group relative rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl shrink-0"
+              className={cn(
+                "group relative rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl shrink-0",
+                bulkSelectMode && selectedIds?.has(credit.id) && "ring-2 ring-primary"
+              )}
               style={{ width: "140px", aspectRatio: "2/3" }}
               onClick={() => {
-                navigate(`/production?name=${encodeURIComponent(credit.project_name)}`);
+                if (bulkSelectMode && onToggleSelect) {
+                  onToggleSelect(credit.id);
+                } else {
+                  navigate(`/production?name=${encodeURIComponent(credit.project_name)}`);
+                }
               }}
             >
+              {/* Bulk select checkbox */}
+              {bulkSelectMode && (
+                <div className="absolute top-1.5 right-1.5 z-20">
+                  <div className={cn(
+                    "h-5 w-5 rounded border-2 flex items-center justify-center transition-colors",
+                    selectedIds?.has(credit.id) ? "bg-primary border-primary text-primary-foreground" : "border-white/70 bg-black/40"
+                  )}>
+                    {selectedIds?.has(credit.id) && <CheckSquare className="h-3.5 w-3.5" />}
+                  </div>
+                </div>
+              )}
               {/* Poster background */}
               {thumbnail ? (
                 <img src={thumbnail} alt={credit.project_name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />

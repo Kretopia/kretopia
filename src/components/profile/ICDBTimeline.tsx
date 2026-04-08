@@ -606,7 +606,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                 onClick={async () => {
                   setEnriching(true);
                   try {
-                    const { data, error } = await supabase.functions.invoke('enrich-credits', {
+                    const { data, error } = await supabase.functions.invoke('backfill-credit-media', {
                       body: { user_id: userId, batch_size: 50 },
                     });
                     if (error) throw error;

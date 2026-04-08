@@ -606,13 +606,22 @@ const ViewProfile = () => {
                   </Button>
                 ) : (
                   <>
+                    {gateResult?.gate === 'request_only' && (
+                      <ConnectionGateBanner
+                        gate={gateResult.gate}
+                        message={gateResult.message}
+                        recipientName={profile?.full_name}
+                        className="w-full"
+                      />
+                    )}
                     <Button 
                       onClick={handleConnect} 
                       disabled={isConnecting}
                       className="gap-2"
+                      variant={gateResult?.gate === 'request_only' ? 'outline' : 'default'}
                     >
                       <UserPlus className="h-4 w-4" />
-                      {isConnecting ? 'Connecting...' : 'Connect'}
+                      {isConnecting ? 'Sending...' : gateResult?.gate === 'request_only' ? 'Send Request' : 'Connect'}
                     </Button>
                     <Button variant="outline" onClick={() => navigate('/circle')} className="gap-2">
                       <Users className="h-4 w-4" />

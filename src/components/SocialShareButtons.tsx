@@ -12,26 +12,21 @@ interface SocialShareButtonsProps {
   url: string;
   title: string;
   description?: string;
-  imageUrl?: string;
-  ogProxySlug?: string;
+  socialUrl?: string;
   variant?: "icon" | "full";
 }
 
-export function SocialShareButtons({ url, title, description, imageUrl, ogProxySlug, variant = "icon" }: SocialShareButtonsProps) {
+export function SocialShareButtons({ url, title, description, socialUrl, variant = "icon" }: SocialShareButtonsProps) {
   const fullUrl = url.startsWith("http") ? url : `https://www.thrivein.io${url}`;
+  const networkUrl = socialUrl?.startsWith("http")
+    ? socialUrl
+    : socialUrl
+      ? `https://www.thrivein.io${socialUrl}`
+      : fullUrl;
   const text = `${title}${description ? ` — ${description}` : ""}`;
   const encodedUrl = encodeURIComponent(fullUrl);
+  const encodedNetworkUrl = encodeURIComponent(networkUrl);
   const encodedText = encodeURIComponent(text);
-
-  // For platforms with crawlers (WhatsApp, Facebook, LinkedIn), use OG proxy URL so they get rich card previews
-  const ogUrl = ogProxySlug
-    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-magazine?slug=${ogProxySlug}`
-    : fullUrl;
-  const encodedOgUrl = encodeURIComponent(ogUrl);
-
-  // WhatsApp: clean message with just title + OG-proxy link (WhatsApp will scrape OG tags from link)
-  const whatsappText = `${text}\n\n${ogUrl}`;
-  const encodedWhatsappText = encodeURIComponent(whatsappText);
 
   const handleNativeShare = async () => {
     if (navigator.share) {
@@ -49,10 +44,10 @@ export function SocialShareButtons({ url, title, description, imageUrl, ogProxyS
   };
 
   const shareLinks = {
-    whatsapp: `https://wa.me/?text=${encodedWhatsappText}`,
-    x: `https://x.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${ogProxySlug ? encodedOgUrl : encodedUrl}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${ogProxySlug ? encodedOgUrl : encodedUrl}`,
+    whatsapp: `https://wa.me/?text=${encodedNetworkUrl}`,
+    x: `https://x.com/intent/tweet?text=${encodedText}&url=${encodedNetworkUrl}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedNetworkUrl}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedNetworkUrl}`,
   };
 
   if (variant === "icon") {

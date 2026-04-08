@@ -33,8 +33,7 @@ interface Props {
 export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, isAuthenticated = true }: Props) => {
   const articleSlugOrId = article.slug || article.id;
   const shareUrl = `https://www.thrivein.io/magazine/${articleSlugOrId}`;
-
-  const shareTitle = article.title;
+  const socialShareUrl = `https://www.thrivein.io/share/magazine/${articleSlugOrId}/`;
   const shareDescription = article.subtitle || "";
 
   // Split markdown content into sections for inline image insertion
@@ -107,7 +106,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
               </a>
             </Button>
           )}
-          <SocialShareButtons url={shareUrl} title={shareTitle} description={shareDescription} ogProxySlug={articleSlugOrId} />
+          <SocialShareButtons url={shareUrl} title={shareTitle} description={shareDescription} socialUrl={socialShareUrl} />
         </div>
       </div>
 

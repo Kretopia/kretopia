@@ -90,6 +90,7 @@ export const UnifiedHome = () => {
       setFeaturedCreators(creators);
       setActiveGigs(gigsRes.data || []);
       setLatestArticles(articlesRes.data || []);
+      setUpcomingEvents(eventsRes.data || []);
       setStats({ creators: statsCreators.count || 0, credits: statsCredits.count || 0, gigs: statsGigs.count || 0 });
 
       // Set activity names from real creators

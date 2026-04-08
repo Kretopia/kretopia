@@ -209,7 +209,7 @@ const ProductionPage = () => {
     <>
       <Helmet>
         <title>{projectName} — ThriveCredits™ | ThriveIN</title>
-        <meta name="description" content={production.description || `${projectName} — <meta name="description" content={production.description || `${projectName} — production credits on ThriveCredits. See the full roll call and claim your credit.`} /> and claim your credit.`} />
+        <meta name="description" content={production.description || `${projectName} — production credits on ThriveCredits. See the full roll call and claim your credit.`} /> content={production.description || `${projectName} — production credits on ThriveCredits. See the full roll call and claim your credit.`} /> and claim your credit.`} />
         <meta property="og:title" content={`${projectName} — ThriveCredits™`} />
         <meta property="og:description" content={`${production.total_roles} roles · ${totalClaimed} claimed · See full production credits and claim yours on ThriveIN`} />
         <meta property="og:type" content="website" />

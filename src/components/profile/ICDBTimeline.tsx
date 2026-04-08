@@ -472,8 +472,37 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const [bulkSelectMode, setBulkSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [fetchingArt, setFetchingArt] = useState(false);
 
   useEffect(() => { fetchData(); }, [userId]);
+
+  const handleFetchCoverArt = async () => {
+    setFetchingArt(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error("Please sign in"); return; }
+
+      const missingCount = credits.filter(c => !c.thumbnail_url && !c.primary_media_url).length;
+      if (missingCount === 0) { toast.info("All credits already have cover art!"); return; }
+
+      const { data, error } = await supabase.functions.invoke('backfill-credit-media', {
+        body: { user_id: userId, batch_size: 50 },
+      });
+
+      if (error) throw error;
+      if (data?.updated > 0) {
+        toast.success(`Found cover art for ${data.updated} credits!`);
+        fetchData();
+      } else {
+        toast.info("No additional cover art found from external sources");
+      }
+    } catch (err) {
+      console.error("Cover art fetch error:", err);
+      toast.error("Failed to fetch cover art");
+    } finally {
+      setFetchingArt(false);
+    }
+  };
 
   const fetchData = async () => {
     try {

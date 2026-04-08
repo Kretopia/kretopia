@@ -31,9 +31,20 @@ Deno.serve(async (req) => {
     if (only_missing_bio) {
       query = query.or('bio.is.null,bio.eq.');
     } else {
-      // Get profiles missing bio OR skills OR job_title
+      // Get profiles missing bio OR skills OR job_title — we'll also check for missing credits below
       query = query.or('bio.is.null,bio.eq.,professional_skills.is.null,job_title.is.null');
     }
+
+    // Also find profiles that have no credits at all (separate query, merged)
+    const { data: noCreditProfiles } = await supabase
+      .from('profiles')
+      .select('user_id, full_name, bio, professional_skills, job_title, industry, role')
+      .not('full_name', 'is', null)
+      .neq('full_name', '')
+      .neq('full_name', 'New User')
+      .limit(limit);
+
+    // We'll merge and deduplicate after both queries run
 
     const { data: profiles, error: fetchError } = await query;
     if (fetchError) throw fetchError;

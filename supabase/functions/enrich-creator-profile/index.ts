@@ -272,7 +272,97 @@ Return ONLY the bio text, no quotes or labels.`,
     }
 
     // ═══════════════════════════════════════════════════
-    // 5. AUTO-INFER JOB TITLE IF MISSING
+    // 5. DISCOVER CREDITS FROM WEB (IMDb, Spotify, etc.)
+    // ═══════════════════════════════════════════════════
+    const existingCredits = new Set(credits.map((c: any) => `${c.project_name?.toLowerCase()}|${c.role?.toLowerCase()}`));
+
+    if (scrape_website && firecrawlKey && lovableKey && profile.full_name) {
+      // Search for credits on professional platforms
+      const creditSearchQueries = [
+        `"${profile.full_name}" site:imdb.com`,
+        `"${profile.full_name}" site:spotify.com OR site:music.apple.com OR site:soundcloud.com`,
+        `"${profile.full_name}" credits OR filmography OR discography OR portfolio`,
+      ];
+
+      let allCreditSnippets = '';
+      for (const q of creditSearchQueries) {
+        try {
+          const res = await firecrawlSearch(q, firecrawlKey, 5);
+          for (const r of (res?.data || []).slice(0, 3)) {
+            allCreditSnippets += `\nSource: ${r.url}\nTitle: ${r.title}\nDescription: ${r.description || ''}\n---`;
+          }
+        } catch (e) {
+          console.error('Credit search failed:', e);
+        }
+      }
+
+      // Also scrape their IMDb/LinkedIn/website if available
+      const urlsToScrape = [profile.imdb_url, profile.linkedin_url, profile.website].filter(Boolean);
+      for (const url of urlsToScrape.slice(0, 2)) {
+        try {
+          const scrapeData = await firecrawlScrape(url!, firecrawlKey);
+          const md = scrapeData?.data?.markdown || '';
+          if (md) allCreditSnippets += `\n\n--- Scraped: ${url} ---\n${md.slice(0, 4000)}`;
+        } catch (e) {
+          console.error(`Scrape failed for ${url}:`, e);
+        }
+      }
+
+      if (allCreditSnippets.length > 50) {
+        try {
+          const creditsRaw = await aiExtract(
+            `Creator: ${profile.full_name}\nRole: ${profile.role || profile.job_title || 'Creative'}\n\nWeb data:\n${allCreditSnippets.slice(0, 8000)}`,
+            `You extract professional credits/work history from web data for a creative professional.
+Return a JSON array of credits. Each credit:
+- "project_name": Name of the project/film/song/album/show/campaign (string, required)
+- "role": Their specific role (e.g. "Director", "Producer", "Songwriter", "Cinematographer") (string, required)
+- "year": Year (number or null)
+- "credit_category": One of: "film", "tv", "music", "music_video", "commercial", "fashion", "events", "theatre", "podcast", "photography", "design", "gaming", "other"
+- "platform": Source platform if known (e.g. "IMDb", "Spotify", "LinkedIn") or null
+- "url": URL to the specific work if available, or null
+
+Rules:
+- Only include credits specifically FOR this person
+- Do NOT fabricate credits. Only use verifiable data from the web results.
+- Deduplicate: if same project+role appears multiple times, include only once
+- Max 20 credits
+- Return raw JSON array, no markdown`,
+            lovableKey
+          );
+
+          const cleanJson = creditsRaw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const discoveredCredits: any[] = JSON.parse(cleanJson);
+          let newCreditsCount = 0;
+
+          for (const c of discoveredCredits) {
+            if (!c.project_name || !c.role) continue;
+            const key = `${c.project_name.toLowerCase()}|${c.role.toLowerCase()}`;
+            if (existingCredits.has(key)) continue;
+
+            await supabase.from('credits').insert({
+              user_id,
+              project_name: c.project_name,
+              role: c.role,
+              year: c.year || null,
+              credit_category: c.credit_category || null,
+              platform: c.platform || null,
+              url: c.url || null,
+              source: 'ai_discovered',
+              verification_status: 'unverified',
+            });
+            existingCredits.add(key);
+            newCreditsCount++;
+          }
+          (results as any).new_credits = newCreditsCount;
+          console.log(`[enrich] Discovered ${newCreditsCount} new credits for ${profile.full_name}`);
+        } catch (e) {
+          console.error('Credit extraction failed:', e);
+        }
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // 6. AUTO-INFER JOB TITLE IF MISSING
     // ═══════════════════════════════════════════════════
     if (lovableKey && !profile.job_title && credits.length >= 2) {
       try {
@@ -291,7 +381,7 @@ Return ONLY the bio text, no quotes or labels.`,
     }
 
     // ═══════════════════════════════════════════════════
-    // 6. AUTO-INFER INDUSTRY IF MISSING
+    // 7. AUTO-INFER INDUSTRY IF MISSING
     // ═══════════════════════════════════════════════════
     if (!profile.industry && credits.length >= 2) {
       const categories = credits.map((c: any) => c.credit_category).filter(Boolean);

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Globe, Linkedin, Instagram, Twitter, Music, ExternalLink, Users, Eye, CheckCircle2, Calendar } from "lucide-react";
+import { Globe, Linkedin, Instagram, Twitter, Music, ExternalLink, Users, Eye, CheckCircle2, Calendar, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,6 +39,7 @@ interface SocialLinksSectionProps {
 export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialLinksSectionProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editData, setEditData] = useState(profile);
+  const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
 
   const formatNumber = (num?: number) => {
@@ -64,6 +65,42 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
       setIsEditOpen(false);
       setHasUnsavedChanges(false);
       onRefresh();
+    }
+  };
+
+  const handleSyncStats = async () => {
+    setIsSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({ title: "Error", description: "You must be logged in", variant: "destructive" });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("sync-social-stats", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) throw error;
+
+      if (data?.updated > 0) {
+        toast({ 
+          title: "Stats Synced! ✨", 
+          description: `Updated ${data.updated} platform${data.updated > 1 ? 's' : ''} with live data` 
+        });
+        onRefresh();
+      } else {
+        toast({ 
+          title: "No updates", 
+          description: "Add your social profile URLs first, then sync to pull real numbers",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Sync error:", error);
+      toast({ title: "Sync failed", description: "Could not fetch social stats. Try again later.", variant: "destructive" });
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -229,7 +266,21 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
                     placeholder="Average views per post - e.g., 100000"
                   />
                 </div>
-                <Button onClick={handleSave} className="w-full" variant="gradient">Save Social Data</Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleSave} className="flex-1" variant="gradient">Save Social Data</Button>
+                  <Button 
+                    onClick={handleSyncStats} 
+                    variant="outline" 
+                    disabled={isSyncing}
+                    className="gap-1.5"
+                  >
+                    {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                    {isSyncing ? "Syncing..." : "Auto-Sync"}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  Auto-Sync pulls real follower counts from your profile URLs
+                </p>
               </div>
             </DialogContent>
           </Dialog>

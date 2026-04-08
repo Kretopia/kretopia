@@ -470,7 +470,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const [collaboratorProfiles, setCollaboratorProfiles] = useState<Map<string, CollaboratorProfile>>(new Map());
   const [activeMedia, setActiveMedia] = useState<ICDBCredit | null>(null);
   const [editingCredit, setEditingCredit] = useState<ICDBCredit | null>(null);
-  const [editForm, setEditForm] = useState({ project_name: "", role: "", year: new Date().getFullYear(), platform: "", url: "", project_type: "" });
+  const [editForm, setEditForm] = useState({ project_name: "", role: "", year: new Date().getFullYear(), platform: "", url: "", project_type: "", section_override: "" });
   const [savingEdit, setSavingEdit] = useState(false);
   const [bulkSelectMode, setBulkSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

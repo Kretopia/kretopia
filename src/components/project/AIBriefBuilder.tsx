@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useFeatureGate } from "@/hooks/useFeatureGate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,6 +51,7 @@ export const AIBriefBuilder = ({
   onBriefGenerated 
 }: AIBriefBuilderProps) => {
   const { toast } = useToast();
+  const { guard: guardAiBrief } = useFeatureGate("aiBriefs");
   const [generating, setGenerating] = useState(false);
   const [brief, setBrief] = useState<GeneratedBrief | null>(null);
   const [roughIdea, setRoughIdea] = useState(projectDescription || "");
@@ -65,6 +67,7 @@ export const AIBriefBuilder = ({
       });
       return;
     }
+    if (!guardAiBrief()) return;
 
     setGenerating(true);
     try {

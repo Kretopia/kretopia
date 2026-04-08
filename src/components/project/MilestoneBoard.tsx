@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard, Send, Users, Loader2 } from "lucide-react";
 import { awardXP } from "@/lib/xpSystem";
 import { analytics } from "@/lib/analytics";
+import { useFeatureGate } from "@/hooks/useFeatureGate";
 
 interface Milestone {
   id: string;
@@ -56,12 +57,14 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     due_date: ''
   });
   const { toast } = useToast();
+  const { guard: guardMilestone, remaining: milestonesRemaining, cap: milestonesCap } = useFeatureGate("milestones");
 
   const handleCreateMilestone = async () => {
     if (!newMilestone.title.trim() || !newMilestone.amount) {
       toast({ title: "Error", description: "Title and amount are required", variant: "destructive" });
       return;
     }
+    if (!guardMilestone()) return;
 
     const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase

@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingForm";
 import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
 import { InvoicePreview } from "./invoice/InvoicePreview";
+import { useFeatureGate } from "@/hooks/useFeatureGate";
 
 interface InvoiceGeneratorProps {
   projectId?: string;
@@ -33,6 +34,7 @@ type InvoiceInsert = Database['public']['Tables']['invoices']['Insert'];
 
 export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   const { user } = useAuth();
+  const { guard: guardInvoice, remaining: invoicesRemaining, cap: invoicesCap } = useFeatureGate("invoices");
   const [invoices, setInvoices] = useState<any[]>([]);
   const [showListDialog, setShowListDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -196,6 +198,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       toast.error("Please fill in client name and all line item descriptions");
       return;
     }
+    if (!guardInvoice()) return;
 
     setLoading(true);
     try {

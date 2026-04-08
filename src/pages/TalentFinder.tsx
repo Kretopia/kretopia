@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageTransition } from "@/components/PageTransition";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { useToast } from "@/hooks/use-toast";
+import { useFeatureGate } from "@/hooks/useFeatureGate";
 import {
   Sparkles, ArrowLeft, MapPin, Star, Loader2,
   Eye, UserPlus, MessageSquare, Zap, Send,
@@ -37,6 +38,7 @@ export default function TalentFinder() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { guard: guardAiMatch } = useFeatureGate("aiApplicantRankings");
 
   const [brief, setBrief] = useState("");
   const [matches, setMatches] = useState<TalentMatch[]>([]);
@@ -49,6 +51,7 @@ export default function TalentFinder() {
       toast({ title: "Tell us more", description: "Describe what you need in at least a sentence or two.", variant: "destructive" });
       return;
     }
+    if (!guardAiMatch()) return;
 
     setLoading(true);
     setHasSearched(true);

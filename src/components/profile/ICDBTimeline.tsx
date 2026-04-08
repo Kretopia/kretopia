@@ -522,6 +522,15 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
   const handleDelete = async (id: string, source: string) => {
     setDeletingId(id);
     try {
+      // Record deletion so AI enricher won't re-add it
+      const creditToDelete = credits.find(c => c.id === id);
+      if (creditToDelete) {
+        await supabase.from('deleted_credits').upsert({
+          user_id: userId,
+          project_name_lower: creditToDelete.project_name.toLowerCase(),
+          role_lower: creditToDelete.role.toLowerCase(),
+        }, { onConflict: 'user_id,project_name_lower,role_lower', ignoreDuplicates: true });
+      }
       const { error } = await supabase.from('credits').delete().eq("id", id);
       if (error) throw error;
       setCredits(prev => prev.filter(c => c.id !== id));
@@ -543,6 +552,22 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
     if (selectedIds.size === 0) return;
     setBulkDeleting(true);
     try {
+      // Record deletions so AI enricher won't re-add them
+      const creditsToDelete = credits.filter(c => selectedIds.has(c.id));
+      const deletedRecords = creditsToDelete.map(c => ({
+        user_id: userId,
+        project_name_lower: c.project_name.toLowerCase(),
+        role_lower: c.role.toLowerCase(),
+      }));
+      
+      // Insert into deleted_credits (ignore conflicts for already-tracked ones)
+      if (deletedRecords.length > 0) {
+        await supabase.from('deleted_credits').upsert(deletedRecords, { 
+          onConflict: 'user_id,project_name_lower,role_lower',
+          ignoreDuplicates: true 
+        });
+      }
+
       const { error } = await supabase.from('credits').delete().in('id', [...selectedIds]);
       if (error) throw error;
       setCredits(prev => prev.filter(c => !selectedIds.has(c.id)));

@@ -1922,6 +1922,30 @@ export type Database = {
         }
         Relationships: []
       }
+      deleted_credits: {
+        Row: {
+          deleted_at: string
+          id: string
+          project_name_lower: string
+          role_lower: string
+          user_id: string
+        }
+        Insert: {
+          deleted_at?: string
+          id?: string
+          project_name_lower: string
+          role_lower: string
+          user_id: string
+        }
+        Update: {
+          deleted_at?: string
+          id?: string
+          project_name_lower?: string
+          role_lower?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       deliverable_comments: {
         Row: {
           annotation_x: number | null

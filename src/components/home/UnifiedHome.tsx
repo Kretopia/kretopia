@@ -792,46 +792,20 @@ export const UnifiedHome = () => {
           </div>
         </section>
 
+        {/* Trust badges - guest only */}
         {!user && (
-          <section className="mb-8">
-            <div className="grid grid-cols-1 gap-3 mb-6">
-              {/* How it works */}
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { icon: Database, title: "Claim Credits", desc: "Build your verified work history", step: "1" },
-                  { icon: Globe, title: "Get Discovered", desc: "Show up in industry searches", step: "2" },
-                  { icon: Briefcase, title: "Get Hired", desc: "Land gigs from top productions", step: "3" },
-                ].map((s, i) => (
-                  <motion.div
-                    key={s.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
-                    className="rounded-2xl bg-card border border-border/60 p-3 text-center relative overflow-hidden"
-                  >
-                    <span className="absolute top-2 left-2 text-[10px] font-extrabold text-primary/20">{s.step}</span>
-                    <s.icon className="h-5 w-5 text-primary mx-auto mb-2" />
-                    <p className="text-[11px] font-bold text-foreground mb-0.5">{s.title}</p>
-                    <p className="text-[9px] text-muted-foreground leading-relaxed">{s.desc}</p>
-                  </motion.div>
-                ))}
+          <div className="flex items-center justify-center gap-4 flex-wrap mb-6">
+            {[
+              { icon: Shield, label: "Verified Identity" },
+              { icon: CheckCircle, label: "Escrow Protected" },
+              { icon: Star, label: "Peer Endorsed" },
+            ].map(b => (
+              <div key={b.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <b.icon className="h-3.5 w-3.5 text-primary/60" />
+                <span className="font-medium">{b.label}</span>
               </div>
-            </div>
-
-            {/* Trust badges */}
-            <div className="flex items-center justify-center gap-4 flex-wrap mb-6">
-              {[
-                { icon: Shield, label: "Verified Identity" },
-                { icon: CheckCircle, label: "Escrow Protected" },
-                { icon: Star, label: "Peer Endorsed" },
-              ].map(b => (
-                <div key={b.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                  <b.icon className="h-3.5 w-3.5 text-primary/60" />
-                  <span className="font-medium">{b.label}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+            ))}
+          </div>
         )}
 
         {/* ── CTA CARD ── */}

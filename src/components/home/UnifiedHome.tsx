@@ -259,7 +259,7 @@ export const UnifiedHome = () => {
                 </span>
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
-                Claim your credits. Get verified. Get discovered.
+                The professional platform where creatives verify their work, find collaborators, and get hired.
               </p>
             </div>
 
@@ -325,32 +325,54 @@ export const UnifiedHome = () => {
               ))}
             </div>
 
-            {/* Social proof stats */}
-            <div className="flex items-center justify-center gap-6 sm:gap-8 mb-4">
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.creators.toLocaleString()}</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Creators</p>
-              </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.credits.toLocaleString()}</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Credits</p>
-              </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.gigs}</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Live Gigs</p>
-              </div>
-            </div>
-
             {/* Primary CTA */}
-            <div className="flex justify-center mb-2">
+            <div className="flex justify-center mb-5">
               <Link
                 to="/auth"
                 className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-7 py-3 text-sm font-bold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl hover:shadow-primary/20 active:scale-[0.98]"
               >
                 Join Free — Build Your Profile <ArrowRight className="h-4 w-4" />
               </Link>
+            </div>
+
+            {/* How it works — prominent */}
+            <div className="grid grid-cols-3 gap-2 mb-5">
+              {[
+                { icon: Database, title: "Claim Credits", desc: "Build your verified work history", step: "1" },
+                { icon: Globe, title: "Get Discovered", desc: "Show up in industry searches", step: "2" },
+                { icon: Briefcase, title: "Get Hired", desc: "Land gigs & collaborations", step: "3" },
+              ].map((s, i) => (
+                <motion.div
+                  key={s.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + i * 0.1 }}
+                  className="rounded-2xl bg-card border border-border/60 p-3 text-center relative overflow-hidden"
+                >
+                  <span className="absolute top-1.5 left-2 text-[10px] font-extrabold text-primary/20">{s.step}</span>
+                  <s.icon className="h-5 w-5 text-primary mx-auto mb-1.5" />
+                  <p className="text-[11px] font-bold text-foreground mb-0.5">{s.title}</p>
+                  <p className="text-[9px] text-muted-foreground leading-relaxed">{s.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Social proof stats */}
+            <div className="flex items-center justify-center gap-6 sm:gap-8 mb-2">
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.creators.toLocaleString()}+</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Creators</p>
+              </div>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.credits.toLocaleString()}+</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Credits Claimed</p>
+              </div>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl font-extrabold text-foreground">62+</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Connections</p>
+              </div>
             </div>
           </div>
         </div>

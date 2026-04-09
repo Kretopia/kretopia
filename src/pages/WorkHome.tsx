@@ -312,7 +312,7 @@ const CreatorWorkHome = () => {
       const [projRes, gigsRes, msRes, invoicesRes] = await Promise.all([
         supabase.from("projects").select("*").order("updated_at", { ascending: false }).limit(20),
         // @ts-ignore – deep type instantiation
-        supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("created_by", user.id).order("created_at", { ascending: false }).limit(5),
+        supabase.from("opportunities").select("id, title, status, created_at, compensation").eq("created_by", user.id).order("created_at", { ascending: false }).limit(5),
         supabase.from("milestones").select("id", { count: "exact", head: true }).eq("status", "pending"),
         // @ts-ignore – deep type instantiation
         supabase.from("invoices").select("amount, status, currency").eq("user_id", user.id),
@@ -426,7 +426,7 @@ const CreatorWorkHome = () => {
                 <div key={g.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all" onClick={() => navigate(`/opportunity/${g.id}`)}>
                   <Briefcase className="h-3.5 w-3.5 text-[hsl(var(--mode-accent))] shrink-0" />
                   <span className="text-sm font-medium truncate flex-1">{g.title}</span>
-                  <Badge variant="secondary" className="text-[10px]">{g.budget_range || "Open"}</Badge>
+                  <Badge variant="secondary" className="text-[10px]">{g.compensation || "Open"}</Badge>
                 </div>
               ))}
             </div>

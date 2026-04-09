@@ -31,7 +31,7 @@ interface ProfileContentSectionsProps {
 }
 
 const PROFILE_TABS = [
-  { id: "work", label: "Work", icon: Briefcase },
+  { id: "work", label: "Credits", icon: Briefcase },
   { id: "skills", label: "Skills", icon: Zap },
   { id: "reviews", label: "Reviews", icon: Star },
   { id: "more", label: "More", icon: Award },
@@ -84,8 +84,8 @@ export const ProfileContentSections = ({
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-lg font-bold">Work</h2>
-                <p className="text-xs text-muted-foreground">Your creative portfolio & verified credits</p>
+                <h2 className="text-lg font-bold">Credits</h2>
+                <p className="text-xs text-muted-foreground">Your verified work history & creative portfolio</p>
               </div>
             </div>
             <ICDBTimeline userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />

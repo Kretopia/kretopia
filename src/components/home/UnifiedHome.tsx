@@ -617,17 +617,26 @@ export const UnifiedHome = () => {
         </section>
 
         {/* ── OPEN GIGS ── */}
-        {activeGigs.length > 0 && (
-          <section className="mb-8">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Zap className="h-4 w-4 text-warning" />
-                {user ? "Gigs For You" : "Open Gigs"}
-              </h2>
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <Zap className="h-4 w-4 text-warning" />
+              {user ? "Gigs For You" : "Open Gigs"}
+            </h2>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setQuickPostType("gig")}
+                className="text-[10px] font-semibold text-success flex items-center gap-1 hover:text-success/80 transition-colors"
+              >
+                <PlusCircle className="h-3.5 w-3.5" /> Post
+              </button>
+              <span className="text-border">·</span>
               <Link to="/opportunities" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
                 Browse <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
+          </div>
+          {activeGigs.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {activeGigs.map((g, i) => (
                 <motion.button
@@ -655,21 +664,38 @@ export const UnifiedHome = () => {
                 </motion.button>
               ))}
             </div>
-          </section>
-        )}
+          ) : (
+            <button
+              onClick={() => setQuickPostType("gig")}
+              className="w-full rounded-xl border border-dashed border-border hover:border-success/40 bg-card/50 p-4 text-center transition-all group"
+            >
+              <PlusCircle className="h-5 w-5 text-success/50 mx-auto mb-1.5 group-hover:text-success transition-colors" />
+              <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">Post a gig or hire talent</p>
+            </button>
+          )}
+        </section>
 
         {/* ── UPCOMING EVENTS ── */}
-        {upcomingEvents.length > 0 && (
-          <section className="mb-8">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-warning" />
-                Upcoming Events
-              </h2>
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-warning" />
+              Upcoming Events
+            </h2>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setQuickPostType("event")}
+                className="text-[10px] font-semibold text-warning flex items-center gap-1 hover:text-warning/80 transition-colors"
+              >
+                <PlusCircle className="h-3.5 w-3.5" /> Create
+              </button>
+              <span className="text-border">·</span>
               <Link to="/scene" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
                 View all <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
+          </div>
+          {upcomingEvents.length > 0 ? (
             <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
               {upcomingEvents.map((ev: any, i: number) => {
                 const eventDate = new Date(ev.start_time);

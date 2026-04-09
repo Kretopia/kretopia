@@ -722,12 +722,6 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
               </>
             ) : (
               <>
-                {credits.some(c => !c.thumbnail_url && !c.primary_media_url) && (
-                  <Button variant="outline" size="sm" onClick={handleFetchCoverArt} disabled={fetchingArt} className="h-8 text-xs">
-                    {fetchingArt ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5 mr-1" />}
-                    {fetchingArt ? 'Fetching...' : 'Get Art'}
-                  </Button>
-                )}
                 {credits.length > 1 && (
                   <Button variant="outline" size="sm" onClick={() => setBulkSelectMode(true)} className="h-8 text-xs">
                     <CheckSquare className="h-3.5 w-3.5 mr-1" />
@@ -736,7 +730,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
                 )}
                 <Button variant="outline" size="sm" onClick={() => setIsFormOpen(true)} className="h-8 text-xs">
                   <Plus className="h-3.5 w-3.5 mr-1" />
-                  Add Work
+                  Add Credit
                 </Button>
               </>
             )}

@@ -120,7 +120,7 @@ const ViewProfile = () => {
     }
   }, [user, userId, navigate]);
 
-  // Moved to render section below to avoid hooks-after-return violation
+  // Auth gate moved below all hooks to avoid React hooks violation
 
   const fetchData = async () => {
     if (!userId || !user) return;
@@ -263,7 +263,7 @@ const ViewProfile = () => {
         await supabase.from('notifications').insert({
           user_id: userId,
           title: isGated ? 'Filtered Connection Request' : 'New Connection Request',
-          message: `${profile?.full_name || 'Someone'} wants to connect with you`,
+          message: `${user.user_metadata?.full_name || 'Someone'} wants to connect with you`,
           type: 'connection',
           link: `/profile/${user.id}`,
           action_url: '/circle?tab=network',

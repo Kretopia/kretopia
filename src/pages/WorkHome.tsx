@@ -301,23 +301,30 @@ const CreatorWorkHome = () => {
   const [projects, setProjects] = useState<any[]>([]);
   const [gigs, setGigs] = useState<any[]>([]);
   const [showCreateProject, setShowCreateProject] = useState(false);
-  const [unreadMessages, setUnreadMessages] = useState(0);
   const [pendingMilestones, setPendingMilestones] = useState(0);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [earnings, setEarnings] = useState({ pending: 0, total: 0 });
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const [projRes, gigsRes, msRes] = await Promise.all([
+      const [projRes, gigsRes, msRes, invoicesRes] = await Promise.all([
         supabase.from("projects").select("*").order("updated_at", { ascending: false }).limit(20),
         // @ts-ignore – deep type instantiation
-        supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("posted_by", user.id).order("created_at", { ascending: false }).limit(5),
+        supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("created_by", user.id).order("created_at", { ascending: false }).limit(5),
         supabase.from("milestones").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("invoices").select("amount, status, currency").eq("user_id", user.id),
       ]);
       setProjects(projRes.data || []);
       setGigs(gigsRes.data || []);
       setPendingMilestones(msRes.count || 0);
+
+      // Calculate earnings
+      const invoices = invoicesRes.data || [];
+      const pendingAmount = invoices.filter((i: any) => i.status === "pending" || i.status === "sent").reduce((sum: number, i: any) => sum + (i.amount || 0), 0);
+      const totalAmount = invoices.filter((i: any) => i.status === "paid").reduce((sum: number, i: any) => sum + (i.amount || 0), 0);
+      setEarnings({ pending: pendingAmount, total: totalAmount });
 
       // Build recent activity from projects
       const allProjects = projRes.data || [];

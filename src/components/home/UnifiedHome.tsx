@@ -743,8 +743,16 @@ export const UnifiedHome = () => {
                 );
               })}
             </div>
-          </section>
-        )}
+          ) : (
+            <button
+              onClick={() => setQuickPostType("event")}
+              className="w-full rounded-xl border border-dashed border-border hover:border-warning/40 bg-card/50 p-4 text-center transition-all group"
+            >
+              <PlusCircle className="h-5 w-5 text-warning/50 mx-auto mb-1.5 group-hover:text-warning transition-colors" />
+              <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">Create a meetup or event</p>
+            </button>
+          )}
+        </section>
 
         {/* ── MAGAZINE ── */}
         {latestArticles.length > 0 && (

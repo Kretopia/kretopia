@@ -108,13 +108,21 @@ const SOURCE_TO_CATEGORY: Record<string, string> = {
   behance: "art", dribbble: "art",
 };
 
-function resolveCategory(credit: { project_type: string | null; credit_category: string | null; source: string }): string {
+function resolveCategory(credit: { project_type: string | null; credit_category: string | null; source: string; role?: string; project_name?: string }): string {
   // Manual override: if credit_category is a direct group key, use it
   if (credit.credit_category && Object.keys(CATEGORY_META).includes(credit.credit_category)) return credit.credit_category;
   // Try credit_category as a type
   if (credit.credit_category && TYPE_TO_CATEGORY[credit.credit_category]) return TYPE_TO_CATEGORY[credit.credit_category];
   // Try project_type
   if (credit.project_type && TYPE_TO_CATEGORY[credit.project_type]) return TYPE_TO_CATEGORY[credit.project_type];
+  // Infer from role keywords before falling back to source
+  const roleLower = (credit.role || '').toLowerCase();
+  const nameLower = (credit.project_name || '').toLowerCase();
+  if (roleLower.includes('podcast') || nameLower.includes('podcast')) return "digital";
+  if (roleLower.includes('host') && nameLower.includes('podcast')) return "digital";
+  if (roleLower.includes('dancer') || roleLower.includes('choreograph')) return "performing";
+  if (roleLower.includes('fashion') || roleLower.includes('model') || roleLower.includes('stylist')) return "fashion";
+  if (roleLower.includes('theatre') || roleLower.includes('theater') || roleLower.includes('actor') || roleLower.includes('actress')) return "performing";
   // Infer from source
   if (credit.source && SOURCE_TO_CATEGORY[credit.source]) return SOURCE_TO_CATEGORY[credit.source];
   return "other";

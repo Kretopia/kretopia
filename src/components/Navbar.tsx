@@ -294,7 +294,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
-                      <MenuButton icon={Briefcase} label="Manage Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                       )}

@@ -287,8 +287,8 @@ const AppContent = () => {
             
             {/* Opportunity Management */}
             <Route path="/opportunity/:id" element={<OpportunityDetail />} />
-            <Route path="/opportunity-dashboard" element={<Navigate to="/desk" replace />} />
-            <Route path="/manage-opportunities" element={<Navigate to="/desk" replace />} />
+            <Route path="/opportunity-dashboard" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
+            <Route path="/manage-opportunities" element={<ProtectedRoute><ManageOpportunities /></ProtectedRoute>} />
             <Route path="/talent-finder" element={<ProtectedRoute><TalentFinder /></ProtectedRoute>} />
 
             {/* Rewards - hidden for now */}

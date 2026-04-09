@@ -6,6 +6,7 @@ import {
   DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2,
   MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home
 } from "lucide-react";
+import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
@@ -120,17 +121,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/profile", icon: User, label: "Profile" },
       ];
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-      setSearchOpen(false);
-    }
-  };
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">
@@ -139,18 +130,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
         {/* ═══ PERSISTENT SEARCH BAR ═══ */}
         {user && !isLandingPage && (
-          <form onSubmit={handleSearchSubmit} className="hidden sm:flex flex-1 max-w-sm mx-4">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search creators, credits, gigs..."
-                className="w-full h-9 rounded-xl border border-border bg-muted/40 pl-9 pr-3 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:bg-card transition-all placeholder:text-muted-foreground/50"
-              />
-            </div>
-          </form>
+          <UnifiedSearchDropdown
+            variant="navbar"
+            className="hidden sm:block flex-1 max-w-sm mx-4"
+          />
         )}
 
         {/* Desktop Navigation - Mode Aware */}
@@ -385,19 +368,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
       {/* Mobile search bar — slides open */}
       {searchOpen && user && !isLandingPage && (
         <div className="sm:hidden border-t border-border/50 px-3 py-2 bg-background">
-          <form onSubmit={(e) => { handleSearchSubmit(e); setSearchOpen(false); }}>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search creators, credits, gigs..."
-                autoFocus
-                className="w-full h-10 rounded-xl border border-border bg-muted/40 pl-9 pr-3 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
-              />
-            </div>
-          </form>
+          <UnifiedSearchDropdown
+            variant="inline"
+            autoFocus
+            onOpenChange={(isOpen) => { if (!isOpen) setSearchOpen(false); }}
+          />
         </div>
       )}
     </nav>

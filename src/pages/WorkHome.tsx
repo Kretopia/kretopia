@@ -314,6 +314,7 @@ const CreatorWorkHome = () => {
         // @ts-ignore – deep type instantiation
         supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("created_by", user.id).order("created_at", { ascending: false }).limit(5),
         supabase.from("milestones").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        // @ts-ignore – deep type instantiation
         supabase.from("invoices").select("amount, status, currency").eq("user_id", user.id),
       ]);
       setProjects(projRes.data || []);

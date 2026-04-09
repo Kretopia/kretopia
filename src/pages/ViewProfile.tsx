@@ -113,17 +113,17 @@ const ViewProfile = () => {
   // Get connection degree info
   const { degree, path: connectionPath } = useConnectionDegree(user?.id, userId);
 
-  // If not authenticated, show public EPK
-  if (!authLoading && !user) {
-    return <CreatorEPK />;
-  }
-
   // If viewing own profile, redirect to /profile
   useEffect(() => {
     if (user && userId === user.id) {
       navigate('/profile', { replace: true });
     }
   }, [user, userId, navigate]);
+
+  // If not authenticated, show public EPK
+  if (!authLoading && !user) {
+    return <CreatorEPK />;
+  }
 
   const fetchData = async () => {
     if (!userId || !user) return;

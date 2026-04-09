@@ -24,7 +24,7 @@ export const SUBSCRIPTION_PRODUCTS = {
   founder: {
     name: "Founder Circle ⭕",
     tier: "founder" as const,
-    price: 199,
+    price: 499,
     oneTime: true,
     priceId: "price_1T1O6yJvOS7zG18hgCeJU1cF",
     productId: "prod_TzMqfksF7u6WBH",

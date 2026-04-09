@@ -288,7 +288,7 @@ const Slide8 = () => (
         {[
           { title: "Transaction Fees", items: ["Free Tier: 15%", "Pro Tier: 8%"], icon: "" },
           { title: "Subscription", items: ["Pro: $12/month", ""], icon: "" },
-          { title: "Founder Circle", items: ["$199 Lifetime", ""], icon: "👑" },
+          { title: "Founder Circle", items: ["$499 Lifetime", ""], icon: "👑" },
           { title: "Future Expansion", items: ["Financial tools", "Creator credit layer"], icon: "" },
         ].map((item, i) => (
           <div key={i} className="p-8 rounded-3xl bg-white/5 border border-white/10 space-y-6">

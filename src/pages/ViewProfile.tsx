@@ -120,10 +120,7 @@ const ViewProfile = () => {
     }
   }, [user, userId, navigate]);
 
-  // If not authenticated, show public EPK
-  if (!authLoading && !user) {
-    return <CreatorEPK />;
-  }
+  // Moved to render section below to avoid hooks-after-return violation
 
   const fetchData = async () => {
     if (!userId || !user) return;

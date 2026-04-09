@@ -474,3 +474,36 @@ const CreatorWorkHome = () => {
     </PageTransition>
   );
 };
+
+// ── Main WorkHome — routes to correct dashboard ──────────────
+const WorkHome = () => {
+  const { user } = useAuth();
+  const [accountType, setAccountType] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (!user) { setChecking(false); return; }
+    supabase
+      .from("profiles")
+      .select("account_type")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        setAccountType(data?.account_type || "individual");
+        setChecking(false);
+      });
+  }, [user]);
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--mode-accent))]" />
+      </div>
+    );
+  }
+
+  if (accountType === "company") return <BrandWorkHome />;
+  return <CreatorWorkHome />;
+};
+
+export default WorkHome;

@@ -336,7 +336,7 @@ export const EditOpportunityDialog = ({
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="paused">⏸Paused</SelectItem>
+                  <SelectItem value="paused">Paused</SelectItem>
                   <SelectItem value="filled">Filled</SelectItem>
                   <SelectItem value="closed">Closed</SelectItem>
                 </SelectContent>

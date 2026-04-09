@@ -78,7 +78,7 @@ export function FeedbackWidget() {
       }
       if (data?.saved) {
         setSaved(true);
-        toast({ title: "Feedback saved! 🙏", description: "Thanks for helping us improve." });
+        toast({ title: "Feedback saved!", description: "Thanks for helping us improve." });
       }
       if (data?.category) {
         setCategory(data.category);
@@ -110,7 +110,7 @@ export function FeedbackWidget() {
   };
 
   const categoryLabels: Record<string, string> = {
-    bug: "🐛 Bug",
+    bug: "Bug",
     feature: "Feature",
     ui: "UI/UX",
     general: "General",

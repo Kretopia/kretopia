@@ -106,7 +106,7 @@ export const ProfilePreviewDialog = ({
       <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>
-            {isDemo ? '👀 Demo Profile Preview' : 'Profile Preview'}
+            {isDemo ? 'Demo Profile Preview' : 'Profile Preview'}
           </DialogTitle>
         </DialogHeader>
         

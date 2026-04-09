@@ -123,7 +123,7 @@ export default function Onboarding() {
 
       setAutoFilled(true);
       const filledCount = [p.role, p.bio, p.location, p.skills?.length].filter(Boolean).length;
-      toast({ title: "✨ Profile auto-filled!", description: `Found ${filledCount} fields from the web. Review and edit below.` });
+      toast({ title: "Profile auto-filled!", description: `Found ${filledCount} fields from the web. Review and edit below.` });
     } catch (e: any) {
       console.error("AI auto-fill error:", e);
       toast({ title: "Auto-fill unavailable", description: "Enter your details manually below", variant: "destructive" });
@@ -208,7 +208,7 @@ export default function Onboarding() {
       if (error) throw error;
       if (data?.bio) {
         setBio(data.bio);
-        toast({ title: "✨ Bio generated!", description: "You can edit it before continuing." });
+        toast({ title: "Bio generated!", description: "You can edit it before continuing." });
       }
     } catch (e: any) {
       toast({ title: "Failed to generate bio", description: e.message, variant: "destructive" });
@@ -240,7 +240,7 @@ export default function Onboarding() {
         setFirstCredit({ project_name: first.project_name || "", role: first.role || "", project_type: first.project_type || "" });
       }
 
-      toast({ title: "🎉 Profile imported!", description: `Found ${data.credits?.length || 0} credits from ${new URL(importUrl).hostname}` });
+      toast({ title: "Profile imported!", description: `Found ${data.credits?.length || 0} credits from ${new URL(importUrl).hostname}` });
     } catch (e: any) {
       toast({ title: "Import failed", description: e.message || "Check the URL and try again", variant: "destructive" });
     } finally {
@@ -254,7 +254,7 @@ export default function Onboarding() {
     try {
       await supabase.from("credits").update({ user_id: user.id }).eq("id", credit.id);
       setPendingCredits(prev => prev.filter(c => c.id !== credit.id));
-      toast({ title: "✅ Credit claimed!", description: credit.project_name });
+      toast({ title: "Credit claimed!", description: credit.project_name });
     } catch (e) {
       toast({ title: "Failed to claim", variant: "destructive" });
     } finally {
@@ -334,7 +334,7 @@ export default function Onboarding() {
       setAvatarUrl(publicUrl);
       setShowCropDialog(false);
       setTempImageUrl("");
-      toast({ title: "📸 Photo uploaded!", description: "Looking good!" });
+      toast({ title: "Photo uploaded!", description: "Looking good!" });
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast({ title: "Upload failed", description: "Please try again", variant: "destructive" });
@@ -431,7 +431,7 @@ export default function Onboarding() {
       if (circle) {
         await supabase.from('spark_rooms').update({ member_count: (circle.member_count || 0) + 1 }).eq('id', circleId);
       }
-      toast({ title: "Joined! 🎉", description: `You're now part of the community` });
+      toast({ title: "Joined!", description: `You're now part of the community` });
     } catch (e: any) {
       if (e?.code === '23505') {
         setJoinedCircleIds(prev => new Set([...prev, circleId]));
@@ -593,7 +593,7 @@ export default function Onboarding() {
 
       if (!emailVerified) {
         setCurrentStep(7);
-        toast({ title: "Almost there! 📧", description: "Please verify your email to start matching." });
+        toast({ title: "Almost there!", description: "Please verify your email to start matching." });
       } else {
         setPendingConnectForCelebration(pendingConnect || null);
         setShowCelebration(true);
@@ -617,11 +617,11 @@ export default function Onboarding() {
       if (connectionError) throw connectionError;
       await supabase.from('matches').insert({ user1_id: user.id, user2_id: targetUserId, match_type: 'creator', status: 'active' });
       const notifications = [
-        { user_id: user.id, type: 'connection', title: `Connected with ${targetProfile?.full_name || 'a creator'}! 🎉`, message: `You're now connected via QR code. Start collaborating!`, link: `/profile/${targetUserId}?from=match`, action_url: `/messages?user=${targetUserId}`, action_text: 'Send Message', image_url: targetProfile?.avatar_url },
-        { user_id: targetUserId, type: 'connection', title: `${currentProfile?.full_name || 'Someone'} joined and connected with you! 🎉`, message: `New connection via your QR code. Say hello!`, link: `/profile/${user.id}?from=match`, action_url: `/messages?user=${user.id}`, action_text: 'Send Message', image_url: currentProfile?.avatar_url }
+        { user_id: user.id, type: 'connection', title: `Connected with ${targetProfile?.full_name || 'a creator'}!`, message: `You're now connected via QR code. Start collaborating!`, link: `/profile/${targetUserId}?from=match`, action_url: `/messages?user=${targetUserId}`, action_text: 'Send Message', image_url: targetProfile?.avatar_url },
+        { user_id: targetUserId, type: 'connection', title: `${currentProfile?.full_name || 'Someone'} joined and connected with you!`, message: `New connection via your QR code. Say hello!`, link: `/profile/${user.id}?from=match`, action_url: `/messages?user=${user.id}`, action_text: 'Send Message', image_url: currentProfile?.avatar_url }
       ];
       await supabase.from('notifications').insert(notifications);
-      toast({ title: "Connected! 🎉", description: `You and ${targetProfile?.full_name || 'this creator'} are now connected!` });
+      toast({ title: "Connected!", description: `You and ${targetProfile?.full_name || 'this creator'} are now connected!` });
     } catch (error) { console.error('Auto-connect error:', error); }
   };
 
@@ -631,7 +631,7 @@ export default function Onboarding() {
     try {
       const { error } = await supabase.auth.resend({ type: 'signup', email: emailToVerify });
       if (error) throw error;
-      toast({ title: "Email sent! 📧", description: "Check your inbox for the verification link." });
+      toast({ title: "Email sent!", description: "Check your inbox for the verification link." });
     } catch (error: any) {
       toast({ title: "Failed to resend", description: error.message || "Please try again later.", variant: "destructive" });
     } finally { setResendingEmail(false); }
@@ -643,7 +643,7 @@ export default function Onboarding() {
       const checkVerification = async () => {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser?.email_confirmed_at || currentUser?.confirmed_at) {
-          toast({ title: "🎉 Email verified!", description: "Welcome to ThriveIN!" });
+          toast({ title: "Email verified!", description: "Welcome to ThriveIN!" });
           navigate("/circle");
         }
       };
@@ -795,7 +795,7 @@ export default function Onboarding() {
                       {LOCATION_HIERARCHY.map(country => (
                         <SelectItem key={country.value} value={country.value}>{country.flag} {country.label}</SelectItem>
                       ))}
-                      <SelectItem value="Remote">🌍 Remote / Worldwide</SelectItem>
+                      <SelectItem value="Remote">Remote / Worldwide</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -856,7 +856,7 @@ export default function Onboarding() {
           {currentStep === 2 && (
             <div className="space-y-5">
               <div className="text-center">
-                <h2 className="text-2xl font-bold mb-1">Boost your profile ✨</h2>
+                <h2 className="text-2xl font-bold mb-1">Boost your profile</h2>
                 <p className="text-muted-foreground text-sm">Optional — do this now or anytime from your profile</p>
               </div>
 
@@ -894,7 +894,7 @@ export default function Onboarding() {
                 <div className="border border-amber-500/30 rounded-lg p-4 space-y-3 bg-amber-500/5">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-amber-600" />
-                    <Label className="text-sm font-medium">Credits mentioning you 🎬</Label>
+                    <Label className="text-sm font-medium">Credits mentioning you</Label>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     We found credits that may be yours. Claim them to build your professional record.
@@ -926,7 +926,7 @@ export default function Onboarding() {
                 <div className="border border-primary/20 rounded-lg p-4 space-y-3 bg-primary/5">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-primary" />
-                    <Label className="text-sm font-medium">Your Circles are waiting 🔥</Label>
+                    <Label className="text-sm font-medium">Your Circles are waiting</Label>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Join communities of creatives like you. Collaborate, get gigs, and grow together.
@@ -996,7 +996,7 @@ export default function Onboarding() {
                       <div className="max-h-36 overflow-y-auto space-y-1.5">
                         {searchResults.map((result, i) => (
                           <button key={i} type="button" className="w-full text-left border border-border rounded-md p-2 hover:bg-accent/50 transition-colors"
-                            onClick={() => { setFirstCredit({ project_name: result.title || '', role: result.role_suggestion || '', project_type: result.type || '' }); setSearchResults([]); toast({ title: "✨ Credit selected!", description: result.title }); }}>
+                            onClick={() => { setFirstCredit({ project_name: result.title || '', role: result.role_suggestion || '', project_type: result.type || '' }); setSearchResults([]); toast({ title: "Credit selected!", description: result.title }); }}>
                             <p className="font-medium text-sm truncate">{result.title}</p>
                             <div className="flex items-center gap-2 mt-0.5">
                               {result.year && <span className="text-xs text-muted-foreground">{result.year}</span>}
@@ -1015,7 +1015,7 @@ export default function Onboarding() {
                         setAiLoading(true);
                         try {
                           const { data } = await supabase.functions.invoke('ai-credit-import', { body: { type: 'link', content: creditLink, userId: user!.id } });
-                          if (data?.project_name) { setFirstCredit({ project_name: data.project_name, role: data.role || '', project_type: data.project_type || '' }); toast({ title: "✨ Imported!", description: data.project_name }); }
+                          if (data?.project_name) { setFirstCredit({ project_name: data.project_name, role: data.role || '', project_type: data.project_type || '' }); toast({ title: "Imported!", description: data.project_name }); }
                           else toast({ title: "Couldn't extract", description: "Try manual entry", variant: "destructive" });
                         } catch (e) { toast({ title: "Import failed", variant: "destructive" }); } finally { setAiLoading(false); }
                       }}>

@@ -394,7 +394,7 @@ export function UnclaimedProfilesTab() {
       if (approve && claimRequest?.claimant_user_id) {
         await supabase.from('notifications').insert({
           user_id: claimRequest.claimant_user_id,
-          title: 'Profile Claim Approved! 🎉',
+          title: 'Profile Claim Approved!',
           message: 'Your profile claim has been approved. Your profile data has been transferred to your account.',
           type: 'system',
           link: '/profile',

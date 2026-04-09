@@ -121,7 +121,7 @@ export const EventCoverPicker = ({
       // Store the file temporarily for after crop
       (window as any).__aiCoverFile = file;
 
-      toast({ title: "Image generated! ✨", description: "Crop it to fit your event." });
+      toast({ title: "Image generated!", description: "Crop it to fit your event." });
     } catch (err: any) {
       const msg = err?.message || "Failed to generate image";
       if (msg.includes("429") || msg.includes("rate")) {

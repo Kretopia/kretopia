@@ -97,7 +97,7 @@ function SortableTask({ task, onUpdate, isDraggingAny, collaborators = [] }: { t
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Task updated! ✅" });
+      toast({ title: "Task updated!" });
       setIsEditing(false);
       onUpdate();
     }
@@ -330,7 +330,7 @@ export function TaskBoard({ tasks: externalTasks, projectId, onUpdate, collabora
         toast({ title: "Error moving task", description: error.message, variant: "destructive" });
       } else {
         toast({ 
-          title: "Task moved! ✅",
+          title: "Task moved!",
           description: `Moved to ${STATUSES.find(s => s.value === targetStatus)?.label}`
         });
         // Clear optimistic update and refetch
@@ -377,7 +377,7 @@ export function TaskBoard({ tasks: externalTasks, projectId, onUpdate, collabora
       console.error('Task creation error:', error);
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Task created! ✅" });
+      toast({ title: "Task created!" });
       setNewTask({ title: '', description: '', due_date: '', status: 'todo', assigned_to: 'unassigned' });
       setCreateDialogOpen(false);
       onUpdate();

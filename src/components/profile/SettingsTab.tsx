@@ -62,7 +62,7 @@ export const SettingsTab = () => {
       if (error) throw error;
 
       toast({
-        title: "Password updated! 🔒",
+        title: "Password updated!",
         description: "Your password has been changed successfully",
       });
 
@@ -99,7 +99,7 @@ export const SettingsTab = () => {
       if (error) throw error;
 
       toast({
-        title: "Verification email sent! 📧",
+        title: "Verification email sent!",
         description: "Check your new email to confirm the change",
       });
 
@@ -157,7 +157,7 @@ export const SettingsTab = () => {
       URL.revokeObjectURL(url);
 
       toast({
-        title: "Data exported! 📦",
+        title: "Data exported!",
         description: "Your data has been downloaded",
       });
     } catch (error: any) {

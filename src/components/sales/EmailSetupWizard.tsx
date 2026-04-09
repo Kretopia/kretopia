@@ -61,7 +61,7 @@ export function EmailSetupWizard({ onComplete }: { onComplete?: () => void }) {
         toast.error(data.error);
         return;
       }
-      toast.success("Gmail connected successfully! 🎉");
+      toast.success("Gmail connected successfully!");
       setConnected(true);
       queryClient.invalidateQueries({ queryKey: ["user_email_settings"] });
       setTimeout(() => onComplete?.(), 1500);
@@ -269,7 +269,7 @@ export function EmailSetupWizard({ onComplete }: { onComplete?: () => void }) {
                 <div className="mx-auto w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
                   <CheckCircle2 className="h-6 w-6 text-green-500" />
                 </div>
-                <h3 className="font-semibold text-lg">You're all set! 🎉</h3>
+                <h3 className="font-semibold text-lg">You're all set!</h3>
                 <p className="text-sm text-muted-foreground">
                   Your Gmail is connected. You can now send outreach emails directly from ThriveIN.
                 </p>

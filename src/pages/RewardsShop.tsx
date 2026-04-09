@@ -109,7 +109,7 @@ const RewardsShop = () => {
     setPurchasing(item.id);
     try {
       await item.action();
-      toast({ title: "Purchase Complete! 🎉", description: `You got ${item.name}!` });
+      toast({ title: "Purchase Complete!", description: `You got ${item.name}!` });
       await fetchUserData(); // Refresh from DB
     } catch (error) {
       toast({ title: "Purchase Failed", description: "Something went wrong.", variant: "destructive" });

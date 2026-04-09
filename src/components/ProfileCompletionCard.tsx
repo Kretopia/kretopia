@@ -45,7 +45,7 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
         <div className="flex items-center gap-3">
           <CheckCircle2 className="h-8 w-8 text-primary" />
           <div className="flex-1">
-            <h3 className="text-lg font-semibold">Profile Complete! 🎉</h3>
+            <h3 className="text-lg font-semibold">Profile Complete!</h3>
             <p className="text-sm text-muted-foreground">Your profile is fully optimized for discovery</p>
           </div>
           <Badge variant="secondary" className="text-lg px-4 py-2">100%</Badge>

@@ -68,7 +68,7 @@ const ClaimGig = () => {
     if (error) {
       toast({ title: "Claim failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Gig claimed! 🎉", description: "You now own this listing. Share it to get applications!" });
+      toast({ title: "Gig claimed!", description: "You now own this listing. Share it to get applications!" });
       navigate(`/opportunity/${opportunity.id}`);
     }
     setClaiming(false);

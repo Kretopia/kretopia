@@ -143,7 +143,7 @@ export const QRScanner = ({ onClose, onSuccess }: QRScannerProps) => {
           );
 
           toast({
-            title: "Check-in Successful! 🎉",
+            title: "Check-in Successful!",
             description: `You earned ${locationData.points_per_visit} points at ${locationData.name}`,
           });
 

@@ -17,17 +17,17 @@ const pageMessages = {
     stat: "Users with complete profiles receive 5x more gigs",
   },
   opportunities: {
-    title: "Stand Out to Clients! 💼",
+    title: "Stand Out to Clients!",
     description: "A complete profile increases your chances of landing gigs by 300%.",
     stat: "92% of gigs go to profiles with portfolio items",
   },
   circle: {
-    title: "Maximize Connections! 🤝",
+    title: "Maximize Connections!",
     description: "Complete profiles receive 5x more connection requests from other creators.",
     stat: "Complete profiles get 8x more profile views",
   },
   messages: {
-    title: "Start More Conversations! 💬",
+    title: "Start More Conversations!",
     description: "People are 3x more likely to message you when your profile is complete.",
     stat: "Complete profiles have 90% response rates",
   },
@@ -76,7 +76,7 @@ export const ProfileCompletionBanner = ({ completion, page = "discover" }: Profi
           </p>
           <div className="flex items-start gap-2 mb-2 text-xs bg-background/80 rounded p-2">
             <Sparkles className="h-3 w-3 text-primary mt-0.5 flex-shrink-0" />
-            <span className="font-medium">✨ Earn +50 XP when you reach 100%! {message.stat}</span>
+            <span className="font-medium">Earn +50 XP when you reach 100%! {message.stat}</span>
           </div>
           <div className="flex flex-wrap gap-1">
             {topMissing.map((field) => (

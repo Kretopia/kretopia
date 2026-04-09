@@ -35,10 +35,10 @@ const confettiConfig = {
 };
 
 const CELEBRATION_PROMPTS = [
-  "Your creative journey just got 10x more exciting! 🚀",
-  "This is the start of something amazing! ✨",
-  "Time to create magic together! 🎨",
-  "Your network is growing - so is your potential! 💫"
+  "Your creative journey just got 10x more exciting!",
+  "This is the start of something amazing!",
+  "Time to create magic together!",
+  "Your network is growing - so is your potential!"
 ];
 
 export function FirstMatchCelebration({

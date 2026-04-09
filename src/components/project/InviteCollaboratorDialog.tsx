@@ -157,7 +157,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       console.log('Email sent successfully:', emailData);
 
       toast({
-        title: "Invite sent! 📧",
+        title: "Invite sent!",
         description: `Invitation sent to ${emailToInvite}`,
       });
       setSearchInput("");
@@ -230,7 +230,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       }
 
       toast({
-        title: "Invite sent! 🎉",
+        title: "Invite sent!",
         description: `${userName} has been invited to the project`,
       });
       setSearchInput("");

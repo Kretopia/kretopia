@@ -377,7 +377,7 @@ const ViewProfile = () => {
                     <Sparkles className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold">You're matched! 🎉</p>
+                    <p className="font-semibold">You're matched!</p>
                     <p className="text-sm text-muted-foreground">Start a conversation or collaborate on a project</p>
                   </div>
                 </div>
@@ -470,9 +470,9 @@ const ViewProfile = () => {
                         className={profile.badge === 'odos' ? "bg-green-500 hover:bg-green-600" : ""}
                       >
                         {profile.badge === 'founder' ? '👑 Founder' : 
-                         profile.badge === 'og' ? '⭐ OG' : 
+                         profile.badge === 'og' ? 'OG' : 
                          profile.badge === 'odos' ? '🌿 ODOS' :
-                         profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
+                         profile.badge === 'official' ? '✓ Official' : 'Beta'}
                       </Badge>
                     )}
                   </div>

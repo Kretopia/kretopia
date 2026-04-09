@@ -59,7 +59,7 @@ export const useSavedOpportunity = (opportunityId: string, userId: string | unde
       if (!error) {
         setIsSaved(true);
         toast({
-          title: "Saved! 🔖",
+          title: "Saved!",
           description: "Added to your bookmarks",
         });
       } else {

@@ -110,7 +110,7 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
         image_url: imageUrl,
       });
       if (error) throw error;
-      toast({ title: "Pin added! 📌" });
+      toast({ title: "Pin added!" });
       setPinTitle(""); setPinFile(null); setPinUrl(""); setPinDialogOpen(false);
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
@@ -135,7 +135,7 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Sticky note added! 📝" });
+      toast({ title: "Sticky note added!" });
       setNoteTitle(""); setNoteContent(""); setNoteColor("#FEF3C7"); setNoteDialogOpen(false);
     }
   };
@@ -166,7 +166,7 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
           image_url: data.imageUrl,
         });
         if (insertErr) throw insertErr;
-        toast({ title: "AI image generated! ✨" });
+        toast({ title: "AI image generated!" });
         setAiPrompt(""); setAiDialogOpen(false);
       } else {
         toast({ title: "No image returned", description: data?.text || "Try a different prompt", variant: "destructive" });
@@ -311,7 +311,7 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Generate with AI ✨</DialogTitle>
+                <DialogTitle>Generate with AI</DialogTitle>
                 <DialogDescription>Describe the visual concept you want to explore</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-2">

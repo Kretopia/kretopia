@@ -497,7 +497,7 @@ const Messages = () => {
           </div>
           <PageTip
             id="messages"
-            title="💬 Your conversations live here"
+            title="Your conversations live here"
             message="Match with creators in Circle first, then come here to chat. Tip: mention something specific from their profile to break the ice!"
           />
           

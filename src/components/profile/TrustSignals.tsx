@@ -103,7 +103,7 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
       });
       if (error) throw new Error(error.message || "Verification failed");
       if (data?.error) throw new Error(data.error);
-      toast({ title: "Phone verified! ✅", description: "Your phone number has been verified." });
+      toast({ title: "Phone verified!", description: "Your phone number has been verified." });
       setActiveDialog(null);
       setPhoneNumber("");
       setOtpCode("");
@@ -140,7 +140,7 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
         .eq("user_id", user.id);
       if (error) throw error;
 
-      toast({ title: "ID submitted! ✅", description: "Your identity has been verified." });
+      toast({ title: "ID submitted!", description: "Your identity has been verified." });
       setActiveDialog(null);
       setIdFile(null);
       window.location.reload();

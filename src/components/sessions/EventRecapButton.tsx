@@ -59,7 +59,7 @@ export const EventRecapButton = ({ eventId, eventTitle, eventCategory, venueName
       if (error) throw error;
 
       toast({
-        title: "Recap posted! 🎉",
+        title: "Recap posted!",
         description: "Your event recap is now on the feed",
       });
     } catch (error: any) {

@@ -146,7 +146,7 @@ const ChallengeDetail = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["challenge-entries", id] });
       queryClient.invalidateQueries({ queryKey: ["my-votes", id] });
-      toast.success("Vote cast! 🔥");
+      toast.success("Vote cast!");
     },
     onError: (err: any) => {
       if (err.message?.includes("duplicate")) {
@@ -197,7 +197,7 @@ const ChallengeDetail = () => {
       setSubmitDescription("");
       setSubmitFile(null);
       setSubmitPreview(null);
-      toast.success("Entry submitted! Good luck! 🎨");
+      toast.success("Entry submitted! Good luck!");
     },
     onError: () => toast.error("Failed to submit entry"),
   });
@@ -450,7 +450,7 @@ const ChallengeDetail = () => {
                   disabled={submitMutation.isPending}
                   onClick={() => submitMutation.mutate()}
                 >
-                  {submitMutation.isPending ? "Submitting..." : "Submit Entry 🚀"}
+                  {submitMutation.isPending ? "Submitting..." : "Submit Entry"}
                 </Button>
               </div>
             </DialogContent>

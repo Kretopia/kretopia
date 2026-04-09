@@ -117,7 +117,7 @@ export function WorkspaceQuickPanel({ tasks, files, collaborators, projectId, cu
             </div>
           ))}
           {pendingTasks.length === 0 && tasks.length > 0 && (
-            <p className="text-xs text-muted-foreground text-center py-2">All tasks complete! 🎉</p>
+            <p className="text-xs text-muted-foreground text-center py-2">All tasks complete!</p>
           )}
           {tasks.length === 0 && (
             <p className="text-xs text-muted-foreground text-center py-3">No tasks yet</p>

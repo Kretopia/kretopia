@@ -38,10 +38,10 @@ interface SessionCardProps {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  music: '🎵 Music', film: '🎬 Film', photo: '📸 Photo', art: '🎨 Art',
-  podcast: '🎙️ Podcast', workshop: '📚 Workshop', networking: '🤝 Networking',
-  content: '📱 Content', festival: '🎪 Festival', showcase: '🌟 Showcase',
-  general: '✨ Creative',
+  music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
+  podcast: '🎙️ Podcast', workshop: 'Workshop', networking: 'Networking',
+  content: 'Content', festival: 'Festival', showcase: 'Showcase',
+  general: 'Creative',
 };
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -69,7 +69,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
       } else {
         await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' });
         setParticipation('going');
-        toast({ title: "Joined! 🎉" });
+        toast({ title: "Joined!" });
       }
       onJoin?.();
     } catch {
@@ -86,7 +86,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
       navigator.share({ title: session.title, url }).catch(() => {});
     } else {
       navigator.clipboard.writeText(url);
-      toast({ title: "Link copied! 🔗" });
+      toast({ title: "Link copied!" });
     }
   };
 

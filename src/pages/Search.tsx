@@ -298,7 +298,7 @@ const Search = () => {
                     )}
 
                     {kc.fun_fact && (
-                      <p className="text-[11px] text-muted-foreground italic mb-3">💡 {kc.fun_fact}</p>
+                      <p className="text-[11px] text-muted-foreground italic mb-3">{kc.fun_fact}</p>
                     )}
 
                     <div className="flex items-center justify-between pt-3 border-t border-border">

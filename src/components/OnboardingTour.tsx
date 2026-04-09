@@ -15,7 +15,7 @@ interface TourStep {
 
 const tourSteps: TourStep[] = [
   {
-    title: "Welcome to ThriveIN! 🎉",
+    title: "Welcome to ThriveIN!",
     description: "Your creative career starts here. Let's show you around — it only takes a minute.",
     icon: <Sparkles className="h-8 w-8 text-primary" />,
     action: "Let's Go",
@@ -47,7 +47,7 @@ const tourSteps: TourStep[] = [
     icon: <MessageSquare className="h-8 w-8 text-primary" />,
   },
   {
-    title: "You're Ready to Thrive! ✨",
+    title: "You're Ready to Thrive!",
     description: "Your creative toolkit is set up. Start connecting, claim your credits, and build your reputation.",
     icon: <Briefcase className="h-8 w-8 text-primary" />,
     action: "Get Started",

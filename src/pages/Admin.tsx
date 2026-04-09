@@ -186,7 +186,7 @@ export default function Admin() {
     
     try {
       toast({
-        title: "🤖 AI Discovery Agent Started",
+        title: "AI Discovery Agent Started",
         description: "Searching for authentic creatives across the web... This may take a few minutes.",
       });
 
@@ -202,7 +202,7 @@ export default function Admin() {
       }
       
       toast({
-        title: "AI Discovery Complete! 🎯",
+        title: "AI Discovery Complete!",
         description: `Discovered ${data?.summary?.discovered || 0} creatives, imported ${data?.summary?.imported || 0} new profiles.`,
       });
     } catch (error: any) {

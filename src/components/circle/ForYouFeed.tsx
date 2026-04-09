@@ -244,7 +244,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             console.error('[ForYou] Error creating pending connection:', pendingError);
           }
           
-          toast.success(`Interest sent to ${currentCreator.full_name}! 💫`);
+          toast.success(`Interest sent to ${currentCreator.full_name}!`);
         }
       }
 

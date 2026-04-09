@@ -52,7 +52,7 @@ export const ScoutGigDialog = ({ trigger }: ScoutGigDialogProps) => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setResult(data.opportunity);
-      toast({ title: "Gig scouted! 🎯", description: "AI extracted and created the listing" });
+      toast({ title: "Gig scouted!", description: "AI extracted and created the listing" });
     } catch (err: any) {
       toast({ title: "Extraction failed", description: err.message, variant: "destructive" });
     } finally {
@@ -69,7 +69,7 @@ export const ScoutGigDialog = ({ trigger }: ScoutGigDialogProps) => {
     const url = getClaimUrl();
     const shareText = `🎯 I spotted a gig for you on ThriveIN! Claim it as yours and start receiving applications:\n\n${url}`;
     navigator.clipboard.writeText(shareText);
-    toast({ title: "Claim link copied! 📋", description: "Send it to the person who posted this gig" });
+    toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
   };
 
   const handleShareClaimLink = async () => {

@@ -120,7 +120,7 @@ export const EditOpportunityDialog = ({
 
       // Reload with enhanced data
       await loadOpportunity();
-      toast({ title: "✨ Enhanced!", description: "AI has polished your gig listing" });
+      toast({ title: "Enhanced!", description: "AI has polished your gig listing" });
     } catch (error: any) {
       console.error('AI enhance error:', error);
       toast({ title: "Enhancement failed", description: error.message || "Try again shortly", variant: "destructive" });
@@ -144,7 +144,7 @@ export const EditOpportunityDialog = ({
 
       // Reload to show new image
       await loadOpportunity();
-      toast({ title: "🎨 Cover generated!", description: "AI created a cover image for your gig" });
+      toast({ title: "Cover generated!", description: "AI created a cover image for your gig" });
     } catch (error: any) {
       console.error('AI image error:', error);
       toast({ title: "Image generation failed", description: error.message || "Try again shortly", variant: "destructive" });
@@ -267,19 +267,19 @@ export const EditOpportunityDialog = ({
               <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="job">💼 Paid Job</SelectItem>
-                  <SelectItem value="collab">🤝 Collaboration</SelectItem>
-                  <SelectItem value="gig">⚡ Quick Gig</SelectItem>
-                  <SelectItem value="project">🎯 Project-Based</SelectItem>
-                  <SelectItem value="internship">🎓 Internship</SelectItem>
-                  <SelectItem value="barter">🔄 Barter/Trade</SelectItem>
+                  <SelectItem value="job">Paid Job</SelectItem>
+                  <SelectItem value="collab">Collaboration</SelectItem>
+                  <SelectItem value="gig">Quick Gig</SelectItem>
+                  <SelectItem value="project">Project-Based</SelectItem>
+                  <SelectItem value="internship">Internship</SelectItem>
+                  <SelectItem value="barter">Barter/Trade</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {formData.type === 'barter' && (
               <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-purple-300 bg-primary/5">
-                <p className="text-xs font-semibold text-indigo-700 dark:text-purple-300">🔄 Barter Details</p>
+                <p className="text-xs font-semibold text-indigo-700 dark:text-purple-300">Barter Details</p>
                 <div className="space-y-2">
                   <Label htmlFor="edit-barter-offering">What You're Offering</Label>
                   <Input id="edit-barter-offering" value={formData.barter_offering} onChange={(e) => setFormData({ ...formData, barter_offering: e.target.value })} placeholder="e.g., Free dinner for 2" />
@@ -335,10 +335,10 @@ export const EditOpportunityDialog = ({
               <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">✅ Active</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="paused">⏸️ Paused</SelectItem>
-                  <SelectItem value="filled">🎉 Filled</SelectItem>
-                  <SelectItem value="closed">🔒 Closed</SelectItem>
+                  <SelectItem value="filled">Filled</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -95,7 +95,7 @@ export const MyPendingInvitations = () => {
       if (error) throw error;
 
       toast({
-        title: "Invitation accepted! 🎉",
+        title: "Invitation accepted!",
         description: "You've joined the project",
       });
       

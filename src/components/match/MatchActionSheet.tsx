@@ -53,7 +53,7 @@ export const MatchActionSheet = ({ isOpen, onClose, matchedUser, currentUserId }
       if (error) throw error;
 
       toast({
-        title: "Message sent! 💬",
+        title: "Message sent!",
         description: `Your message was sent to ${matchedUser.full_name}`,
       });
 

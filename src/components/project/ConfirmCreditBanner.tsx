@@ -72,7 +72,7 @@ export const ConfirmCreditBanner = ({
         }
 
         toast({
-          title: "Credit confirmed! 🎬",
+          title: "Credit confirmed!",
           description: `"${pendingCredit.role}" on "${projectTitle}" added to your profile.`,
         });
       } else {

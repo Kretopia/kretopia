@@ -46,7 +46,7 @@ export function ClaimLocationDialog({ open, onOpenChange, locationId, locationNa
         throw error;
       }
       toast({
-        title: "Claim submitted! 🏢",
+        title: "Claim submitted!",
         description: "We'll verify your ownership and link your brand page.",
       });
       setBusinessName('');

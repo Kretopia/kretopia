@@ -55,10 +55,10 @@ interface SessionDetailDialogProps {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  music: '🎵 Music', film: '🎬 Film', photo: '📸 Photo', art: '🎨 Art',
-  podcast: '🎙️ Podcast', workshop: '📚 Workshop', networking: '🤝 Networking',
-  content: '📱 Content', festival: '🎪 Festival', showcase: '🌟 Showcase',
-  general: '✨ Creative',
+  music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
+  podcast: '🎙️ Podcast', workshop: 'Workshop', networking: 'Networking',
+  content: 'Content', festival: 'Festival', showcase: 'Showcase',
+  general: 'Creative',
 };
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -123,7 +123,7 @@ export const SessionDetailDialog = ({
         // Free event — join directly
         await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' });
         setParticipation('going');
-        toast({ title: "You're in! 🎉" });
+        toast({ title: "You're in!" });
         onRefresh?.();
       }
     } catch (err: any) {
@@ -198,7 +198,7 @@ export const SessionDetailDialog = ({
                     {!isPast && (
                       <DropdownMenuItem onClick={async () => {
                         await supabase.from('creative_jams').update({ status: 'completed' } as any).eq('id', session.id).eq('created_by', user?.id || '');
-                        toast({ title: "Event marked complete ✅" });
+                        toast({ title: "Event marked complete" });
                         onRefresh?.();
                         onOpenChange(false);
                       }}>
@@ -368,7 +368,7 @@ export const SessionDetailDialog = ({
                           )}
                         </div>
                         {session.external_ticket_url && (
-                          <p className="text-xs text-muted-foreground mt-2">🔗 Tickets via external platform</p>
+                          <p className="text-xs text-muted-foreground mt-2">Tickets via external platform</p>
                         )}
                       </div>
                     </div>

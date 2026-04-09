@@ -105,7 +105,7 @@ export const WaitlistForm = () => {
 
         if (decision === 'approve') {
           toast({
-            title: "🎉 Approved Instantly!",
+            title: "Approved Instantly!",
             description: "Check your email for your invite code",
           });
         } else if (decision === 'review') {
@@ -150,7 +150,7 @@ export const WaitlistForm = () => {
           <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
             <CheckCircle className="h-10 w-10 text-white" />
           </div>
-          <h3 className="mb-2 text-2xl font-bold">🎉 Approved Instantly!</h3>
+          <h3 className="mb-2 text-2xl font-bold">Approved Instantly!</h3>
           <p className="text-muted-foreground mb-4">
             Your profile looks great! We've sent your invite code to <strong>{formData.email}</strong>
           </p>

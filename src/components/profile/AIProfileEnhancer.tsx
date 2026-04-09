@@ -66,7 +66,7 @@ Return ONLY the bio text, nothing else.`
       if (data?.content) {
         onBioGenerated(data.content);
         toast({
-          title: "Bio generated! ✨",
+          title: "Bio generated!",
           description: "Your AI-powered bio is ready",
         });
         setBioPrompt('');
@@ -124,7 +124,7 @@ Return as JSON array of strings only: ["skill1", "skill2", ...]`
         const skills = JSON.parse(data.content);
         onSkillsGenerated(skills);
         toast({
-          title: "Skills suggested! ✨",
+          title: "Skills suggested!",
           description: "Review and add the ones that fit",
         });
       }

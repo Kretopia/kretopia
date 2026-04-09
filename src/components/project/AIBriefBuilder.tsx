@@ -165,7 +165,7 @@ Respond ONLY with valid JSON (no markdown, no code blocks):
       onBriefGenerated?.(safeBrief);
 
       toast({
-        title: "Brief generated! ✨",
+        title: "Brief generated!",
         description: "Your professional project brief is ready",
       });
     } catch (error: any) {

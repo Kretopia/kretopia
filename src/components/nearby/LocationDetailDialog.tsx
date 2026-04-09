@@ -132,7 +132,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
           .eq('location_id', location.id)
           .eq('user_id', user.id);
         if (error) throw error;
-        toast({ title: "Review updated ✨" });
+        toast({ title: "Review updated" });
       } else {
         const { error } = await supabase
           .from('location_reviews')
@@ -144,7 +144,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
             image_urls: reviewPhotos.length > 0 ? reviewPhotos : null,
           });
         if (error) throw error;
-        toast({ title: "Review submitted ⭐" });
+        toast({ title: "Review submitted" });
       }
       setHasReviewed(true);
       setShowReviewForm(false);

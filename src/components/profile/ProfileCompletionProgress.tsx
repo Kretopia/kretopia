@@ -21,7 +21,7 @@ export const ProfileCompletionProgress = ({
   };
 
   const getStatusMessage = (percentage: number) => {
-    if (percentage === 100) return "Your profile is complete and optimized! 🎉";
+    if (percentage === 100) return "Your profile is complete and optimized!";
     if (percentage >= 75) return "Almost there! Just a few more fields...";
     if (percentage >= 50) return "You're halfway there! Keep going!";
     return "Let's get your profile started!";

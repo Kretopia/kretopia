@@ -162,7 +162,7 @@ Format as JSON array:
       if (error) throw error;
 
       toast({
-        title: "Connection request sent! 🤝",
+        title: "Connection request sent!",
         description: "We'll notify you if they connect back",
       });
 

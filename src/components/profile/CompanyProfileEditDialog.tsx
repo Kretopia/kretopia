@@ -112,7 +112,7 @@ const CompanyEditForm = memo(({
         <Progress value={completion.percentage} className="h-3" />
         <p className="text-xs text-muted-foreground">
           {completion.missing.length === 0 ? (
-            <span className="text-primary font-medium">🎉 Your company profile is complete!</span>
+            <span className="text-primary font-medium">Your company profile is complete!</span>
           ) : (
             <>Complete {completion.missing.length} more {completion.missing.length === 1 ? 'field' : 'fields'} to reach 100%</>
           )}

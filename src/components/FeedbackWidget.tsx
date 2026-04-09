@@ -111,9 +111,9 @@ export function FeedbackWidget() {
 
   const categoryLabels: Record<string, string> = {
     bug: "🐛 Bug",
-    feature: "💡 Feature",
-    ui: "🎨 UI/UX",
-    general: "💬 General",
+    feature: "Feature",
+    ui: "UI/UX",
+    general: "General",
   };
 
   if (!user || dismissed) return null;

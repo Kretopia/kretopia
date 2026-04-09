@@ -71,7 +71,7 @@ const AcceptInvite = () => {
               if (updateError) throw updateError;
 
               toast({
-                title: "Welcome to the project! 🎉",
+                title: "Welcome to the project!",
                 description: "You've successfully joined the project team.",
               });
             } else if (invitation.status === 'accepted') {
@@ -116,7 +116,7 @@ const AcceptInvite = () => {
             if (updateError) throw updateError;
 
             toast({
-              title: "Welcome to the project! 🎉",
+              title: "Welcome to the project!",
               description: "You've successfully joined the project team.",
             });
           } else {

@@ -28,9 +28,9 @@ interface ReportBlockDialogProps {
 const REPORT_REASONS = [
   { value: 'spam', label: '🚫 Spam', description: 'Unsolicited or repetitive content' },
   { value: 'harassment', label: '⚠️ Harassment', description: 'Bullying, threats, or intimidation' },
-  { value: 'fake_profile', label: '🎭 Fake Profile', description: 'Impersonation or misleading identity' },
+  { value: 'fake_profile', label: 'Fake Profile', description: 'Impersonation or misleading identity' },
   { value: 'inappropriate_content', label: '🔞 Inappropriate Content', description: 'Offensive or NSFW material' },
-  { value: 'other', label: '📝 Other', description: 'Something else not listed above' },
+  { value: 'other', label: 'Other', description: 'Something else not listed above' },
 ] as const;
 
 export function ReportBlockDialog({

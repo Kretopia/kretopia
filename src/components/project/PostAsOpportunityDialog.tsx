@@ -91,7 +91,7 @@ export function PostAsOpportunityDialog({
       if (error) throw error;
 
       toast({
-        title: "Posted successfully! 🎉",
+        title: "Posted successfully!",
         description: "Your project is now visible in the Discover section",
       });
       setOpen(false);

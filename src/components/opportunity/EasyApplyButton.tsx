@@ -149,7 +149,7 @@ export const EasyApplyButton = ({ opportunityId, opportunityTitle, className, si
       }
 
       toast({
-        title: "Applied! ⚡",
+        title: "Applied!",
         description: "Your profile and portfolio have been sent",
       });
     } catch (error: any) {

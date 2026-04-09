@@ -70,7 +70,7 @@ const RISK_CONFIG = {
 const VERDICT_CONFIG = {
   in_scope: { icon: CheckCircle2, color: "text-green-500", bg: "bg-green-500/10", label: "In Scope ✓" },
   out_of_scope: { icon: AlertTriangle, color: "text-red-500", bg: "bg-red-500/10", label: "Out of Scope ✗" },
-  borderline: { icon: Info, color: "text-yellow-500", bg: "bg-yellow-500/10", label: "Borderline ⚠" },
+  borderline: { icon: Info, color: "text-yellow-500", bg: "bg-yellow-500/10", label: "Borderline" },
 };
 
 export function ScopeGuardian({ projectId, project, milestones, onMilestonesGenerated }: ScopeGuardianProps) {
@@ -166,7 +166,7 @@ export function ScopeGuardian({ projectId, project, milestones, onMilestonesGene
           escrow_status: 'none',
         });
       }
-      toast({ title: "Milestones created! ✨", description: `${milestoneResult.milestones.length} milestones added to your project.` });
+      toast({ title: "Milestones created!", description: `${milestoneResult.milestones.length} milestones added to your project.` });
       onMilestonesGenerated?.();
     } catch (err: any) {
       toast({ title: "Failed to create milestones", description: err.message, variant: "destructive" });
@@ -302,7 +302,7 @@ export function ScopeGuardian({ projectId, project, milestones, onMilestonesGene
                               </Badge>
                               <p className="text-sm font-medium">"{flag.text}"</p>
                             </div>
-                            <p className="text-xs text-muted-foreground">⚠ {flag.issue}</p>
+                            <p className="text-xs text-muted-foreground">{flag.issue}</p>
                             <p className="text-xs text-green-600 dark:text-green-400">✓ {flag.suggestion}</p>
                           </div>
                         ))}

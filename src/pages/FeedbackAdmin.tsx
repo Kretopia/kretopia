@@ -131,7 +131,7 @@ const FeedbackAdmin = () => {
     if (error) {
       toast({ title: "Error", variant: "destructive" });
     } else {
-      toast({ title: action === "fix_it" ? "Marked for fixing 🔧" : action === "implement" ? "Marked for implementation 🚀" : "Acknowledged ✓" });
+      toast({ title: action === "fix_it" ? "Marked for fixing" : action === "implement" ? "Marked for implementation" : "Acknowledged ✓" });
       setItems(prev => prev.map(i => i.id === id ? { ...i, action_taken: action, status: newStatus } : i));
       if (selectedItem?.id === id) setSelectedItem(prev => prev ? { ...prev, action_taken: action, status: newStatus } : null);
     }
@@ -213,14 +213,14 @@ const FeedbackAdmin = () => {
                           <Badge className={`text-xs ${stat.color}`}>{stat.label}</Badge>
                           {item.action_taken && (
                             <Badge variant="outline" className="text-xs">
-                              {item.action_taken === "fix_it" ? "🔧 Fix" : item.action_taken === "implement" ? "🚀 Implement" : "✓ Ack"}
+                              {item.action_taken === "fix_it" ? "Fix" : item.action_taken === "implement" ? "Implement" : "✓ Ack"}
                             </Badge>
                           )}
                         </div>
                         <p className="text-sm line-clamp-2">{summary}</p>
                         <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                           <span>{new Date(item.created_at).toLocaleDateString()}</span>
-                          {item.page_url && <span>📍 {item.page_url}</span>}
+                          {item.page_url && <span>{item.page_url}</span>}
                         </div>
                       </div>
 

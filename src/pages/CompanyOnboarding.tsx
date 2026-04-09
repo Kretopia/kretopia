@@ -140,7 +140,7 @@ export default function CompanyOnboarding() {
       return;
     }
 
-    toast({ title: "Welcome to ThriveIN! 🎉", description: "Your company page is ready." });
+    toast({ title: "Welcome to ThriveIN!", description: "Your company page is ready." });
     navigate("/work");
     setLoading(false);
   };

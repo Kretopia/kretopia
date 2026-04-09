@@ -69,7 +69,7 @@ export const PartnerSubmissionsTab = () => {
       if (updateError) throw updateError;
 
       toast({
-        title: "Partner approved! ✅",
+        title: "Partner approved!",
         description: `${submission.company_name} is now live`
       });
       

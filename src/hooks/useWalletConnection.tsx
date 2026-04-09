@@ -79,7 +79,7 @@ export function useWalletConnection() {
       });
       if (!error) {
         toast({
-          title: "Wallet connected! 🎉",
+          title: "Wallet connected!",
           description: `${normalizedAddress.slice(0, 6)}...${normalizedAddress.slice(-4)} linked to your profile.`,
         });
         fetchWallets();
@@ -141,7 +141,7 @@ export function useWalletConnection() {
       if (error) throw error;
 
       toast({
-        title: "Wallet connected! 🎉",
+        title: "Wallet connected!",
         description: `${address.slice(0, 6)}...${address.slice(-4)} linked to your profile.`,
       });
 

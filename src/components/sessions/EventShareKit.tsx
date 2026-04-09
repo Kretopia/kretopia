@@ -56,7 +56,7 @@ export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps)
   const copyLink = async () => {
     await navigator.clipboard.writeText(eventUrl);
     setCopied(true);
-    toast({ title: "Link copied! 🔗" });
+    toast({ title: "Link copied!" });
     setTimeout(() => setCopied(false), 2000);
   };
 

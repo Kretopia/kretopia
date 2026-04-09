@@ -88,7 +88,7 @@ export const ProfileStrengthScore = ({
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-bold mb-0.5">Profile Strength</h3>
             <p className="text-[11px] text-muted-foreground mb-2">
-              {score >= 90 ? "🏆 Outstanding! You stand out." :
+              {score >= 90 ? "Outstanding! You stand out." :
                score >= 70 ? "Almost there! A few more touches." :
                score >= 50 ? "Good start! Keep building." :
                "Let's make you discoverable!"}

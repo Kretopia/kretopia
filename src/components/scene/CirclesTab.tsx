@@ -264,7 +264,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
           if (!error) {
             setIsMember(true);
             setUserRole("member");
-            toast({ title: "Welcome! 🎉", description: `You're now a member of ${circle.title}` });
+            toast({ title: "Welcome!", description: `You're now a member of ${circle.title}` });
             // Clean up URL params
             window.history.replaceState({}, '', window.location.pathname + '?tab=circles');
           }
@@ -328,7 +328,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
     }
     setIsMember(true);
     setUserRole("member");
-    toast({ title: "Welcome! 🎉", description: `You're now in ${circle.title}` });
+    toast({ title: "Welcome!", description: `You're now in ${circle.title}` });
   };
 
   const sendMessage = async () => {
@@ -387,7 +387,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
       .update({ is_pinned: pin, pinned_by: pin ? user?.id : null })
       .eq("id", messageId);
     fetchMessages();
-    toast({ title: pin ? "Message pinned 📌" : "Message unpinned" });
+    toast({ title: pin ? "Message pinned" : "Message unpinned" });
   };
 
   const shareCircle = async () => {
@@ -400,10 +400,10 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
       if (navigator.share) {
         await navigator.share({ title: circle.title, text: shareText, url });
       } else {
-        toast({ title: "Link copied! 🔗", description: "Share it with others" });
+        toast({ title: "Link copied!", description: "Share it with others" });
       }
     } catch {
-      toast({ title: "Link copied! 🔗", description: "Share it with others" });
+      toast({ title: "Link copied!", description: "Share it with others" });
     }
   };
 
@@ -499,7 +499,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
       {/* Circle rules (if any) */}
       {circle.rules && isMember && messages.length === 0 && (
         <Card className="mx-1 mt-2 p-3 border-primary/10 bg-primary/5">
-          <p className="text-xs font-semibold mb-1">📋 Circle Rules</p>
+          <p className="text-xs font-semibold mb-1">Circle Rules</p>
           <p className="text-xs text-muted-foreground whitespace-pre-line">{circle.rules}</p>
         </Card>
       )}
@@ -621,7 +621,7 @@ export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: bo
           created_by: user.id,
         } as any);
       }
-      toast({ title: "Circle created! 🎉", description: `${title} is live` });
+      toast({ title: "Circle created!", description: `${title} is live` });
       setTitle(""); setDescription(""); setCategory("general"); setIsPrivate(false); setIsPaid(false); setPrice(""); setRules("");
       onOpenChange(false);
       onCreated();

@@ -49,7 +49,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
   };
 
   const getShareText = () => {
-    return `Check out ${profile.full_name}'s creative profile on ThriveIN! 🚀`;
+    return `Check out ${profile.full_name}'s creative profile on ThriveIN!`;
   };
 
   const generateCardBlob = async (): Promise<Blob | null> => {
@@ -84,7 +84,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
       link.download = `${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}-thrivein.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
-      toast({ title: "Card downloaded!", description: "Share it on your socials 🚀" });
+      toast({ title: "Card downloaded!", description: "Share it on your socials" });
     } catch (err) {
       console.error("Download error:", err);
       toast({ title: "Download failed", variant: "destructive" });
@@ -230,7 +230,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
               <h3 className="text-white font-bold text-lg leading-tight">{profile.full_name || "Creator"}</h3>
               <p className="text-purple-300 text-sm mt-0.5">{profile.role || "Creative"}</p>
               {profile.location && (
-                <p className="text-white/40 text-xs mt-1">📍 {profile.location}</p>
+                <p className="text-white/40 text-xs mt-1">{profile.location}</p>
               )}
 
               {profile.bio && (

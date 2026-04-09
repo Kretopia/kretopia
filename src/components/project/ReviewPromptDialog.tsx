@@ -60,7 +60,7 @@ export const ReviewPromptDialog = ({
 
       setSubmitted(true);
       toast({
-        title: "Review submitted! ⭐",
+        title: "Review submitted!",
         description: `Thanks for reviewing your work with ${reviewTarget.full_name}`,
       });
 
@@ -82,7 +82,7 @@ export const ReviewPromptDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>🎉 Project Complete!</DialogTitle>
+          <DialogTitle>Project Complete!</DialogTitle>
           <DialogDescription>
             How was your experience working with {reviewTarget.full_name} on "{projectTitle}"?
           </DialogDescription>

@@ -211,7 +211,7 @@ export function WalletXPSection() {
     setPurchasing(item.id);
     try {
       await item.action();
-      toast({ title: "Purchase Complete! 🎉", description: `You got ${item.name}!` });
+      toast({ title: "Purchase Complete!", description: `You got ${item.name}!` });
       await fetchUserData();
     } catch { toast({ title: "Purchase Failed", variant: "destructive" }); }
     finally { setPurchasing(null); }

@@ -277,7 +277,7 @@ export function StartProjectFromMatchDialog({
         // Always send in-app notification regardless of email availability
         await supabase.from('notifications').insert({
           user_id: matchedUser.id,
-          title: "🚀 New Project Invitation",
+          title: "New Project Invitation",
           message: `${userProfile?.full_name || 'Someone'} invited you to collaborate on ${validationResult.data.title}`,
           type: 'project_invite',
           category: 'collaboration',
@@ -320,7 +320,7 @@ export function StartProjectFromMatchDialog({
       });
 
       toast({
-        title: "Project created! 🎉",
+        title: "Project created!",
         description: `${matchedUser.name} has been invited to collaborate`,
       });
 

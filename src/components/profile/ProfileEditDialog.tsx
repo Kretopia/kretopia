@@ -176,7 +176,7 @@ export const LOCATION_OPTIONS = [
   { value: 'Medellín, Colombia', label: '🇨🇴 Medellín, Colombia' },
   { value: 'Buenos Aires, Argentina', label: '🇦🇷 Buenos Aires, Argentina' },
   // Global
-  { value: 'Remote', label: '🌍 Remote / Worldwide' },
+  { value: 'Remote', label: 'Remote / Worldwide' },
   { value: 'Other', label: 'Other' },
 ];
 
@@ -336,7 +336,7 @@ export function ProfileEditDialog({
       toast({
         title: "Profile updated",
         description: newCompletion.percentage === 100 
-          ? "🎉 Your profile is now complete!" 
+          ? "Your profile is now complete!" 
           : `Profile ${newCompletion.percentage}% complete`,
       });
 
@@ -379,7 +379,7 @@ export function ProfileEditDialog({
         bio: p.bio && !prev.bio ? p.bio : prev.bio,
         website: p.website && !prev.website ? p.website : prev.website,
       }));
-      toast({ title: "✨ Profile auto-filled!", description: "Review and save your updated profile." });
+      toast({ title: "Profile auto-filled!", description: "Review and save your updated profile." });
     } catch (e: any) {
       toast({ title: "Auto-fill unavailable", description: "Fill in details manually", variant: "destructive" });
     } finally {

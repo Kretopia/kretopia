@@ -398,7 +398,7 @@ Thank you so much!`;
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">⭐ Beginner</SelectItem>
+                          <SelectItem value="1">Beginner</SelectItem>
                           <SelectItem value="2">⭐⭐ Intermediate</SelectItem>
                           <SelectItem value="3">⭐⭐⭐ Proficient</SelectItem>
                           <SelectItem value="4">⭐⭐⭐⭐ Advanced</SelectItem>

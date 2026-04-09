@@ -176,7 +176,7 @@ const Settings = () => {
     if (outcome === "accepted") {
       setIsInstalled(true);
       toast({
-        title: "App Installed! 🎉",
+        title: "App Installed!",
         description: "ThriveIN has been added to your home screen",
       });
     }
@@ -275,7 +275,7 @@ const Settings = () => {
       if (error) throw error;
 
       toast({
-        title: "Password updated! 🔒",
+        title: "Password updated!",
         description: "Your password has been changed successfully",
       });
 
@@ -311,7 +311,7 @@ const Settings = () => {
       if (error) throw error;
 
       toast({
-        title: "Verification email sent! 📧",
+        title: "Verification email sent!",
         description: "Check your new email to confirm the change",
       });
 
@@ -366,7 +366,7 @@ const Settings = () => {
       URL.revokeObjectURL(url);
 
       toast({
-        title: "Data exported! 📦",
+        title: "Data exported!",
         description: "Your data has been downloaded",
       });
     } catch (error: any) {

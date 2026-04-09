@@ -220,7 +220,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
           }
           
           toast({
-            title: "Project created! 🎉",
+            title: "Project created!",
             description: `Invitation sent to ${selectedUser.full_name}`,
           });
         }
@@ -254,13 +254,13 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
           });
 
           toast({
-            title: "Project created! 🎉",
+            title: "Project created!",
             description: "Invitation sent successfully.",
           });
         }
       } else {
         toast({
-          title: "Project created! 🎉",
+          title: "Project created!",
           description: "You can now add tasks, milestones, and more.",
         });
       }

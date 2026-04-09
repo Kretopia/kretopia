@@ -271,7 +271,7 @@ export function StartProjectDialog({
       // Create in-app notification for the collaborator
       await supabase.from('notifications').insert({
         user_id: collaborator.id,
-        title: "🚀 New Project Created",
+        title: "New Project Created",
         message: `${userProfile?.full_name || 'Someone'} started a project with you: ${validationResult.data.title}`,
         type: 'project_invite',
         category: 'collaboration',
@@ -297,7 +297,7 @@ export function StartProjectDialog({
       }
 
       toast({
-        title: "Project created! 🎉",
+        title: "Project created!",
         description: `${collaborator.name} has been added as a collaborator`,
       });
 

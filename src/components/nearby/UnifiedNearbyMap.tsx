@@ -315,7 +315,7 @@ export const UnifiedNearbyMap = ({
           </div>
         )}
         <div className="pt-1 border-t border-border mt-1">
-          <span className="text-muted-foreground">📍 Privacy-protected</span>
+          <span className="text-muted-foreground">Privacy-protected</span>
         </div>
       </div>
       

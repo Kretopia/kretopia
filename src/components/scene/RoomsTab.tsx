@@ -44,14 +44,14 @@ interface RoomMessage {
 }
 
 const ROOM_CATEGORIES = [
-  { value: "general", label: "💬 General" },
-  { value: "feedback", label: "🎯 Feedback" },
-  { value: "music", label: "🎵 Music" },
-  { value: "film", label: "🎬 Film" },
-  { value: "design", label: "🎨 Design" },
-  { value: "photo", label: "📸 Photo" },
-  { value: "tech", label: "💻 Tech" },
-  { value: "collab", label: "🤝 Collabs" },
+  { value: "general", label: "General" },
+  { value: "feedback", label: "Feedback" },
+  { value: "music", label: "Music" },
+  { value: "film", label: "Film" },
+  { value: "design", label: "Design" },
+  { value: "photo", label: "Photo" },
+  { value: "tech", label: "Tech" },
+  { value: "collab", label: "Collabs" },
 ];
 
 export const RoomsTab = () => {
@@ -162,7 +162,7 @@ export const RoomsTab = () => {
 };
 
 const RoomCard = ({ room, onClick }: { room: Room; onClick: () => void }) => {
-  const categoryLabel = ROOM_CATEGORIES.find(c => c.value === room.category)?.label || "💬 General";
+  const categoryLabel = ROOM_CATEGORIES.find(c => c.value === room.category)?.label || "General";
 
   return (
     <div
@@ -391,7 +391,7 @@ const CreateRoomDialog = ({
         });
       }
 
-      toast({ title: "Room created! 🎉", description: `${title} is live` });
+      toast({ title: "Room created!", description: `${title} is live` });
       setTitle("");
       setDescription("");
       setCategory("general");

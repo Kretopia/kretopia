@@ -244,7 +244,7 @@ const CircleDetail = () => {
     } catch (e) { console.error("Welcome DM failed:", e); }
     setIsMember(true);
     setUserRole("member");
-    toast({ title: "Welcome! 🎉", description: `You're now in ${circle.title}` });
+    toast({ title: "Welcome!", description: `You're now in ${circle.title}` });
   };
 
   const sendMessage = async () => {
@@ -294,7 +294,7 @@ const CircleDetail = () => {
   const pinMessage = async (messageId: string, pin: boolean) => {
     await supabase.from("spark_room_messages").update({ is_pinned: pin, pinned_by: pin ? user?.id : null }).eq("id", messageId);
     fetchMessages();
-    toast({ title: pin ? "Message pinned 📌" : "Message unpinned" });
+    toast({ title: pin ? "Message pinned" : "Message unpinned" });
   };
 
   const handlePollVote = async (messageId: string, optionIndex: number) => {
@@ -317,8 +317,8 @@ const CircleDetail = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       if (navigator.share) { await navigator.share({ title: circle.title, text: shareText, url }); }
-      else { toast({ title: "Link copied! 🔗" }); }
-    } catch { toast({ title: "Link copied! 🔗" }); }
+      else { toast({ title: "Link copied!" }); }
+    } catch { toast({ title: "Link copied!" }); }
   };
 
   const handleCircleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -331,7 +331,7 @@ const CircleDetail = () => {
     const { data: urlData } = supabase.storage.from("media").getPublicUrl(path);
     await supabase.from("spark_rooms").update({ cover_url: urlData.publicUrl }).eq("id", circle.id);
     setCircle({ ...circle, cover_url: urlData.publicUrl });
-    toast({ title: "Circle image updated! 🎨" });
+    toast({ title: "Circle image updated!" });
   };
 
   const createChannel = async () => {
@@ -345,7 +345,7 @@ const CircleDetail = () => {
     setShowNewChannel(false);
     const { data } = await supabase.from("circle_channels").select("*").eq("circle_id", circleId!).order("position");
     setChannels((data || []) as Channel[]);
-    toast({ title: "Channel created! 🎉" });
+    toast({ title: "Channel created!" });
   };
 
   if (loading) {
@@ -617,11 +617,11 @@ const CircleDetail = () => {
               <p className="text-sm text-muted-foreground max-w-sm">
                 {isAnnouncementChannel
                   ? "This is an announcements channel. Only moderators and admins can post here."
-                  : "This is the beginning of the conversation. Say hello! 👋"}
+                  : "This is the beginning of the conversation. Say hello!"}
               </p>
               {circle.rules && (
                 <div className="mt-4 p-3 rounded-xl bg-muted/50 border border-border/50 max-w-sm text-left">
-                  <p className="text-xs font-semibold mb-1">📋 Circle Rules</p>
+                  <p className="text-xs font-semibold mb-1">Circle Rules</p>
                   <p className="text-xs text-muted-foreground whitespace-pre-line">{circle.rules}</p>
                 </div>
               )}

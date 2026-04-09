@@ -63,7 +63,7 @@ export function LevelUpCelebration({ newLevel, xp, previousLevel, open, onClose 
 
           {/* Celebration Text */}
           <div>
-            <h2 className="text-2xl font-bold mb-1">Level Up! 🎉</h2>
+            <h2 className="text-2xl font-bold mb-1">Level Up!</h2>
             <p className="text-muted-foreground">
               You reached <span className={`font-bold bg-gradient-to-r ${levelData.color} bg-clip-text text-transparent`}>Level {newLevel}</span>
             </p>

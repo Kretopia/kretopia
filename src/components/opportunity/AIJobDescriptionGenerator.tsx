@@ -84,7 +84,7 @@ Make it professional but approachable. Use language that appeals to creative pro
 
       onGenerated(parsed);
       toast({
-        title: "Job description generated! ✨",
+        title: "Job description generated!",
         description: "Review and edit the fields below before posting.",
       });
     } catch (error: any) {

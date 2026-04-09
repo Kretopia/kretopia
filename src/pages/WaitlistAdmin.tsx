@@ -152,7 +152,7 @@ const WaitlistAdmin = () => {
 
       {entry.ai_reasoning && (
         <div className="mb-3 p-3 bg-accent/50 rounded-lg">
-          <p className="text-xs font-medium mb-1">🤖 AI Analysis:</p>
+          <p className="text-xs font-medium mb-1">AI Analysis:</p>
           <p className="text-xs text-muted-foreground">{entry.ai_reasoning}</p>
         </div>
       )}

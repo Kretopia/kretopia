@@ -46,7 +46,7 @@ export const ConnectionSuccessStep = ({
           <CheckCircle2 className="h-8 w-8 text-white" />
         </div>
         <h2 className="text-3xl font-bold mb-3">
-          {connectionCount > 0 ? "Connections Sent! 🎉" : "You're All Set!"}
+          {connectionCount > 0 ? "Connections Sent!" : "You're All Set!"}
         </h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
           {connectionCount > 0 
@@ -93,7 +93,7 @@ export const ConnectionSuccessStep = ({
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold mb-2">💡 Pro Tip: Ice Breaker Ideas</h3>
+              <h3 className="font-semibold mb-2">Pro Tip: Ice Breaker Ideas</h3>
               <p className="text-sm text-muted-foreground mb-3">
                 When your connections accept, try these conversation starters:
               </p>

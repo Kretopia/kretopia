@@ -105,7 +105,7 @@ export function FeedbackTab() {
     const newStatus = action === "fix_it" || action === "implement" ? "in_progress" : "reviewed";
     const { error } = await supabase.from("feedback").update({ action_taken: action, status: newStatus }).eq("id", id);
     if (!error) {
-      const label = action === "fix_it" ? "Marked for fixing 🔧" : action === "implement" ? "Marked for implementation 🚀" : "Acknowledged ✓";
+      const label = action === "fix_it" ? "Marked for fixing" : action === "implement" ? "Marked for implementation" : "Acknowledged ✓";
       toast({ title: label });
       setItems(prev => prev.map(i => i.id === id ? { ...i, action_taken: action, status: newStatus } : i));
       if (selectedItem?.id === id) setSelectedItem(prev => prev ? { ...prev, action_taken: action, status: newStatus } : null);
@@ -171,14 +171,14 @@ export function FeedbackTab() {
                       <Badge className={`text-xs ${stat.color}`}>{stat.label}</Badge>
                       {item.action_taken && (
                         <Badge variant="outline" className="text-xs">
-                          {item.action_taken === "fix_it" ? "🔧 Fix" : item.action_taken === "implement" ? "🚀 Implement" : "✓ Ack"}
+                          {item.action_taken === "fix_it" ? "Fix" : item.action_taken === "implement" ? "Implement" : "✓ Ack"}
                         </Badge>
                       )}
                     </div>
                     <p className="text-sm line-clamp-2">{summary}</p>
                     <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                       <span>{new Date(item.created_at).toLocaleDateString()}</span>
-                      {item.page_url && <span>📍 {item.page_url}</span>}
+                      {item.page_url && <span>{item.page_url}</span>}
                     </div>
                   </div>
 

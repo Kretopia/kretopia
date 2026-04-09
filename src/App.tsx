@@ -71,6 +71,7 @@ const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const ProductionPage = lazy(() => import("./pages/ProductionPage"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
+const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 
 const EventPage = lazy(() => import("./pages/EventPage"));
 const Events = lazy(() => import("./pages/Events"));

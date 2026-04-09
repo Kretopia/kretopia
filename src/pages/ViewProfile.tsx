@@ -113,17 +113,14 @@ const ViewProfile = () => {
   // Get connection degree info
   const { degree, path: connectionPath } = useConnectionDegree(user?.id, userId);
 
-  // If not authenticated, show public EPK
-  if (!authLoading && !user) {
-    return <CreatorEPK />;
-  }
-
   // If viewing own profile, redirect to /profile
   useEffect(() => {
     if (user && userId === user.id) {
       navigate('/profile', { replace: true });
     }
   }, [user, userId, navigate]);
+
+  // Auth gate moved below all hooks to avoid React hooks violation
 
   const fetchData = async () => {
     if (!userId || !user) return;
@@ -266,7 +263,7 @@ const ViewProfile = () => {
         await supabase.from('notifications').insert({
           user_id: userId,
           title: isGated ? 'Filtered Connection Request' : 'New Connection Request',
-          message: `${profile?.full_name || 'Someone'} wants to connect with you`,
+          message: `${user.user_metadata?.full_name || 'Someone'} wants to connect with you`,
           type: 'connection',
           link: `/profile/${user.id}`,
           action_url: '/circle?tab=network',
@@ -308,6 +305,11 @@ const ViewProfile = () => {
       </Badge>
     );
   };
+
+  // If not authenticated, show public EPK
+  if (!authLoading && !user) {
+    return <CreatorEPK />;
+  }
 
   if (authLoading || isLoading) {
     return (

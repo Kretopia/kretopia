@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
+import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";

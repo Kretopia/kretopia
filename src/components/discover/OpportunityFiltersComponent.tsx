@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ interface OpportunityFiltersComponentProps {
 }
 
 export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium, userLevel }: OpportunityFiltersComponentProps) => {
+  const navigate = useNavigate();
   const clearFilters = () => {
     onFilterChange({
       search: '',
@@ -215,7 +217,7 @@ export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium
       </div>
 
       {!isPremium && (
-        <Button variant="default" className="w-full" onClick={() => window.location.href = '/subscription'}>
+        <Button variant="default" className="w-full" onClick={() => navigate('/subscription')}>
           Unlock Premium Filters
         </Button>
       )}

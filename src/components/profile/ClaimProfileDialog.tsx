@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ interface ClaimProfileDialogProps {
 type Step = 'intro' | 'camera' | 'verifying' | 'credentials' | 'creating' | 'success' | 'failed';
 
 export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: ClaimProfileDialogProps) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [step, setStep] = useState<Step>('intro');
   const [selfieImage, setSelfieImage] = useState<string | null>(null);
@@ -335,7 +337,7 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
     // Redirect to the user's own profile
     const claimingUserId = user?.id || newUserId;
     if (claimingUserId) {
-      window.location.href = `/profile`;
+      navigate('/profile');
     }
   };
 

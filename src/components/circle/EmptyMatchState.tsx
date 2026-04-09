@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MessageCircle, RefreshCw } from "lucide-react";
 import { NetworkVisualization } from "./NetworkVisualization";
@@ -9,6 +10,7 @@ interface EmptyMatchStateProps {
 }
 
 export const EmptyMatchState = ({ onRefresh }: EmptyMatchStateProps) => {
+  const navigate = useNavigate();
   const [showInvite, setShowInvite] = useState(false);
 
   return (
@@ -37,7 +39,7 @@ export const EmptyMatchState = ({ onRefresh }: EmptyMatchStateProps) => {
             <RefreshCw className="h-4 w-4" />
             Refresh Feed
           </Button>
-          <Button onClick={() => window.location.href = '/messages'} size="sm" className="gap-2">
+          <Button onClick={() => navigate('/messages')} size="sm" className="gap-2">
             <MessageCircle className="h-4 w-4" />
             Check Messages
           </Button>

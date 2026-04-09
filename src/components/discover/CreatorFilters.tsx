@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ interface CreatorFiltersProps {
 }
 
 export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel, inlineMode = false }: CreatorFiltersProps) => {
+  const navigate = useNavigate();
   const clearFilters = () => {
     onFilterChange({
       search: '',
@@ -243,7 +245,7 @@ export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel, 
               </p>
             </div>
           </div>
-          <Button variant="default" className="w-full" onClick={() => window.location.href = '/subscription'}>
+          <Button variant="default" className="w-full" onClick={() => navigate('/subscription')}>
             Upgrade to Pro
           </Button>
         </div>

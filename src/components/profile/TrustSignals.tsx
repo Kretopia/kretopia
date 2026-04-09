@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Mail, Phone, ShieldCheck, CreditCard, CheckCircle2, Circle, Loader2, Upload, X, MessageCircle, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -29,6 +30,7 @@ const signals = [
 type VerifyDialogType = "email" | "phone" | "id" | "payment" | null;
 
 export function TrustSignals({ emailVerified, phoneVerified, idVerified, paymentVerified, isOwnProfile, compact }: TrustSignalsProps) {
+  const navigate = useNavigate();
   const [activeDialog, setActiveDialog] = useState<VerifyDialogType>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneLoading, setPhoneLoading] = useState(false);
@@ -445,7 +447,7 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
             <p className="text-sm text-muted-foreground">
               Your payment verification badge is automatically activated when you set up your wallet or receive your first payment through the platform.
             </p>
-            <Button onClick={() => { setActiveDialog(null); window.location.href = "/thrivepay"; }} className="w-full gap-2">
+            <Button onClick={() => { setActiveDialog(null); navigate("/thrivepay"); }} className="w-full gap-2">
               <CreditCard className="h-4 w-4" />
               Go to Wallet Setup
             </Button>

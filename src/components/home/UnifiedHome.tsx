@@ -14,13 +14,6 @@ import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 
-interface Suggestion {
-  type: "creator" | "credit" | "gig";
-  id: string;
-  title: string;
-  subtitle?: string;
-  avatar?: string | null;
-}
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director"];
 
@@ -36,12 +29,6 @@ export const UnifiedHome = () => {
   const { user, subscriptionInfo } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
   const [heroRoleIdx, setHeroRoleIdx] = useState(0);
 

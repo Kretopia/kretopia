@@ -20,15 +20,15 @@ import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
 
 // ── Category taxonomy (mirrors ICDBCreditForm) ──────────────────────
 const CATEGORY_GROUPS = [
-  { label: "Film & TV", key: "film_tv", emoji: "🎬", types: ["film", "tv", "short_film", "documentary", "music_video", "web_series", "movie"] },
-  { label: "Music & Audio", key: "music", emoji: "🎵", types: ["album", "single", "ep", "podcast", "audiobook", "soca", "dancehall", "afrobeats", "gospel_concert"] },
-  { label: "Performing Arts", key: "performing", emoji: "🎭", types: ["theatre", "theater", "musical", "dance", "choreography", "backup_dancer", "comedy", "spoken_word", "opera", "stage", "play", "recital", "pantomime"] },
+  { label: "Film & TV", key: "film_tv", emoji: "", types: ["film", "tv", "short_film", "documentary", "music_video", "web_series", "movie"] },
+  { label: "Music & Audio", key: "music", emoji: "", types: ["album", "single", "ep", "podcast", "audiobook", "soca", "dancehall", "afrobeats", "gospel_concert"] },
+  { label: "Performing Arts", key: "performing", emoji: "", types: ["theatre", "theater", "musical", "dance", "choreography", "backup_dancer", "comedy", "spoken_word", "opera", "stage", "play", "recital", "pantomime"] },
   { label: "Events & Productions", key: "events", emoji: "📅", types: ["live_event", "concert", "tour", "festival", "carnival", "pageant", "fashion_show", "awards_show", "exhibition", "conference", "dj_set", "mc_hosting", "event", "promo", "after_movie"] },
-  { label: "Content & Digital", key: "digital", emoji: "📱", types: ["youtube_series", "ugc_campaign", "livestream", "online_course", "workshop", "video"] },
-  { label: "Commercial", key: "commercial", emoji: "📢", types: ["commercial", "brand_campaign", "corporate", "voiceover", "influencer_campaign", "ad", "hosting", "mc"] },
-  { label: "Art & Design", key: "art", emoji: "🎨", types: ["art_exhibition", "mural", "graphic_design", "photography", "animation"] },
+  { label: "Content & Digital", key: "digital", emoji: "", types: ["youtube_series", "ugc_campaign", "livestream", "online_course", "workshop", "video"] },
+  { label: "Commercial", key: "commercial", emoji: "", types: ["commercial", "brand_campaign", "corporate", "voiceover", "influencer_campaign", "ad", "hosting", "mc"] },
+  { label: "Art & Design", key: "art", emoji: "", types: ["art_exhibition", "mural", "graphic_design", "photography", "animation"] },
   { label: "Fashion & Beauty", key: "fashion", emoji: "👗", types: ["fashion_collection", "editorial_shoot", "runway", "beauty_campaign", "styling"] },
-  { label: "Business & Industry", key: "business", emoji: "💼", types: ["talent_management", "booking", "label_release", "publishing", "curation"] },
+  { label: "Business & Industry", key: "business", emoji: "", types: ["talent_management", "booking", "label_release", "publishing", "curation"] },
 ];
 
 // Build a flat lookup: type → category key
@@ -351,7 +351,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
 
   // Add "Other" if there are uncategorized
   if (grouped['other']?.length) {
-    orderedGroups.push({ label: "Other", key: "other", emoji: "📁", types: [], credits: grouped['other'] });
+    orderedGroups.push({ label: "Other", key: "other", emoji: "", types: [], credits: grouped['other'] });
   }
 
   // ── Shared credit form fields ────────────────────────────

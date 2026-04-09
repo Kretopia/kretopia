@@ -284,8 +284,7 @@ export function QuickPostModal({ open, onOpenChange, type }: QuickPostModalProps
 
           {!user && (
             <p className="text-[10px] text-muted-foreground text-center">
-              Your details are saved — just create an account to go live ✨
-            </p>
+              Your details are saved — just create an account to go live             </p>
           )}
         </div>
       </DialogContent>

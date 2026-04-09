@@ -206,9 +206,9 @@ export const CompanyProfileView = ({
                     className={cn("h-5 text-xs", profile.badge === 'odos' && "bg-green-500 hover:bg-green-600")}
                   >
                     {profile.badge === 'founder' ? '👑 Founder' :
-                     profile.badge === 'og' ? '⭐ OG' :
+                     profile.badge === 'og' ? 'OG' :
                      profile.badge === 'odos' ? '🌿 ODOS' :
-                     profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
+                     profile.badge === 'official' ? '✓ Official' : 'Beta'}
                   </Badge>
                 )}
               </div>

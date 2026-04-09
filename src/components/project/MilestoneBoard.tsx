@@ -81,7 +81,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Milestone created! 🎯" });
+      toast({ title: "Milestone created!" });
       analytics.milestoneCreated(projectId, parseFloat(newMilestone.amount));
       setNewMilestone({ title: '', description: '', amount: '', due_date: '' });
       setCreateDialogOpen(false);
@@ -105,10 +105,10 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
         if (user) {
           const milestone = milestones.find(m => m.id === milestoneId);
           await awardXP(user.id, 'MILESTONE_COMPLETED', `Completed milestone: ${milestone?.title || 'Milestone'}`);
-          toast({ title: "Milestone completed! +200 XP ✅" });
+          toast({ title: "Milestone completed! +200 XP" });
         }
       } else {
-        toast({ title: "Milestone updated! ✅" });
+        toast({ title: "Milestone updated!" });
       }
       onUpdate();
     }
@@ -128,7 +128,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Payment recorded! 💰" });
+      toast({ title: "Payment recorded!" });
       onUpdate();
     }
   };
@@ -165,7 +165,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
       // Open Stripe checkout in new tab
       if (data?.url) {
         window.open(data.url, '_blank');
-        toast({ title: useEscrow ? "Escrow payment window opened! 🔒" : "Payment window opened! 💳" });
+        toast({ title: useEscrow ? "Escrow payment window opened!" : "Payment window opened! 💳" });
       }
     } catch (error: any) {
       console.error('Error creating payment:', error);
@@ -194,7 +194,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
 
       if (error) throw error;
 
-      toast({ title: "Funds released! 💰", description: "Payment has been transferred to the creator." });
+      toast({ title: "Funds released!", description: "Payment has been transferred to the creator." });
       onUpdate();
     } catch (error: any) {
       console.error('Error capturing payment:', error);
@@ -256,7 +256,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
       }
 
       if (data?.summary?.captured > 0) {
-        toast({ title: `${data.summary.captured} escrow payment(s) released! 💰` });
+        toast({ title: `${data.summary.captured} escrow payment(s) released!` });
         onUpdate();
       }
     } catch (error: any) {
@@ -289,7 +289,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
       if (error) throw error;
 
       toast({ 
-        title: "Get Paid link sent! 📧", 
+        title: "Get Paid link sent!", 
         description: data?.emailSent 
           ? `Sent to ${getPaidEmail}` 
           : data?.notificationSent 
@@ -488,7 +488,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
                        </Badge>
                        {milestone.escrow_status === 'authorized' && (
                          <Badge variant="secondary" className="bg-purple-100 text-indigo-800">
-                           🔒 Escrow Secured
+                           Escrow Secured
                          </Badge>
                        )}
                        {milestone.escrow_status === 'captured' && (
@@ -539,7 +539,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
                              onClick={() => handleStripePayment(milestone, true)}
                              className="gap-2"
                            >
-                             🔒 Secure with Escrow
+                             Secure with Escrow
                            </Button>
                          )}
 
@@ -611,7 +611,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
                                onClick={() => handleStripePayment(milestone, true)}
                                className="gap-2"
                              >
-                               🔒 Pay with Escrow
+                               Pay with Escrow
                              </Button>
                              <Button
                                size="sm"

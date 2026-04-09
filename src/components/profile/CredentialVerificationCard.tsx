@@ -59,12 +59,12 @@ export function CredentialVerificationCard({
       
       if (data.tier === 'elite') {
         toast({
-          title: "🏆 Elite Verified!",
+          title: "Elite Verified!",
           description: `Congratulations! You've been verified as Elite with ${data.achievements?.length || 0} achievements.`,
         });
       } else if (data.tier === 'industry') {
         toast({
-          title: "⭐ Industry Verified!",
+          title: "Industry Verified!",
           description: `Your industry credentials have been verified.`,
         });
       } else {

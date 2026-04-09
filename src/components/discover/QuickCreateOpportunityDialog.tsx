@@ -96,7 +96,7 @@ export const QuickCreateOpportunityDialog = ({ open: controlledOpen, onOpenChang
       }
 
       toast({
-        title: "Opportunity Created! 🎉",
+        title: "Opportunity Created!",
         description: `${formData.title} is now live. +50 XP earned!`,
       });
 

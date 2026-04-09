@@ -220,7 +220,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
           }
           
           toast({
-            title: "Project created! 🎉",
+            title: "Project created!",
             description: `Invitation sent to ${selectedUser.full_name}`,
           });
         }
@@ -254,13 +254,13 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
           });
 
           toast({
-            title: "Project created! 🎉",
+            title: "Project created!",
             description: "Invitation sent successfully.",
           });
         }
       } else {
         toast({
-          title: "Project created! 🎉",
+          title: "Project created!",
           description: "You can now add tasks, milestones, and more.",
         });
       }
@@ -501,7 +501,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
         {/* Info footer */}
         <div className="bg-muted/50 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
           <p className="text-xs text-muted-foreground">
-            💡 After creation, you can add budget, deadlines, milestones, and payment details in project settings.
+            After creation, you can add budget, deadlines, milestones, and payment details in project settings.
           </p>
         </div>
       </DialogContent>

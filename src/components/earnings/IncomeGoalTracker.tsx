@@ -46,7 +46,7 @@ export function IncomeGoalTracker({ currentIncome, currencySymbol }: IncomeGoalT
     if (!error) {
       setGoal(amount);
       setEditing(false);
-      toast({ title: "Goal set! 🎯" });
+      toast({ title: "Goal set!" });
     }
   };
 
@@ -95,7 +95,7 @@ export function IncomeGoalTracker({ currentIncome, currencySymbol }: IncomeGoalT
               <p className="text-xs text-muted-foreground">{currencySymbol}{remaining.toFixed(0)} to go this month</p>
             )}
             {progress >= 100 && (
-              <p className="text-xs text-green-500 font-medium">🎉 Goal reached!</p>
+              <p className="text-xs text-green-500 font-medium">Goal reached!</p>
             )}
           </>
         ) : (

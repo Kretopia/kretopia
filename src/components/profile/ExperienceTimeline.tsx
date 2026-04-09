@@ -29,7 +29,7 @@ export const ExperienceTimeline = ({ credits, awards = [] }: ExperienceTimelineP
   if (experiences.length === 0) {
     return (
       <Card className="p-8 text-center space-y-3">
-        <div className="text-5xl mb-2">💼</div>
+        <div className="text-5xl mb-2"></div>
         <h3 className="text-xl font-semibold">No experience listed yet</h3>
         <p className="text-muted-foreground">Work history and achievements will appear here</p>
       </Card>

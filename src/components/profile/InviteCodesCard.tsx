@@ -224,7 +224,7 @@ ${inviteUrl}`;
       {availableInvites > 0 && (
         <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg bg-primary/5 border border-primary/20">
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            💡 <strong>Pro Tip:</strong> Share your invite codes with fellow creators you know
+            <strong>Pro Tip:</strong> Share your invite codes with fellow creators you know
             and trust. Each person who joins with your code strengthens the ThriveIN community!
           </p>
         </div>

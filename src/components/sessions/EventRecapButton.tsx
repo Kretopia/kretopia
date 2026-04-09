@@ -44,7 +44,7 @@ export const EventRecapButton = ({ eventId, eventTitle, eventCategory, venueName
         .eq('jam_id', eventId)
         .in('status', ['going', 'interested']);
 
-      const content = `🎉 Just wrapped up "${eventTitle}"${venueName ? ` at ${venueName}` : ''}! ${count ? `${count} amazing creators joined.` : ''} What an incredible experience connecting with fellow creatives. 🙌\n\n#ThriveIN #CreatorEvent #${eventCategory}`;
+      const content = `Just wrapped up "${eventTitle}"${venueName ? ` at ${venueName}` : ''}! ${count ? `${count} amazing creators joined.` : ''} What an incredible experience connecting with fellow creatives. 🙌\n\n#ThriveIN #CreatorEvent #${eventCategory}`;
 
       const { error } = await supabase.from('feed_posts').insert({
         user_id: user.id,
@@ -59,7 +59,7 @@ export const EventRecapButton = ({ eventId, eventTitle, eventCategory, venueName
       if (error) throw error;
 
       toast({
-        title: "Recap posted! 🎉",
+        title: "Recap posted!",
         description: "Your event recap is now on the feed",
       });
     } catch (error: any) {

@@ -12,13 +12,12 @@ import { Switch } from "@/components/ui/switch";
 
 const AdminBroadcast = () => {
   const [title, setTitle] = useState("We've Made ThriveIN Even Better!");
-  const [message, setMessage] = useState(`Hey there! 👋
-
+  const [message, setMessage] = useState(`Hey there! 
 We've been working hard on ThriveIN and just shipped some exciting updates:
 
-✨ AI-powered matching - Find your perfect collaborator faster
-📁 Project Workspaces - Manage projects with your matches  
-🎯 Improved matching experience - Better profiles, smoother swiping
+AI-powered matching - Find your perfect collaborator faster
+Project Workspaces - Manage projects with your matches  
+Improved matching experience - Better profiles, smoother swiping
 
 Your next creative collaboration is waiting. Come back and:
 • Upload your portfolio to get discovered
@@ -301,7 +300,7 @@ The ThriveIN Team`);
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
-              ⚠️ This will send to all {userCount} registered users. Test first!
+              This will send to all {userCount} registered users. Test first!
             </p>
           </CardContent>
         </Card>

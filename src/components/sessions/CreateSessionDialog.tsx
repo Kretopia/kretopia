@@ -26,17 +26,17 @@ interface CreateSessionDialogProps {
 }
 
 const EVENT_CATEGORIES = [
-  { value: 'music', label: '🎵 Music Jam / Concert' },
-  { value: 'film', label: '🎬 Film Shoot / Screening' },
-  { value: 'photo', label: '📸 Photo Walk / Shoot' },
-  { value: 'art', label: '🎨 Art Collab / Exhibition' },
-  { value: 'podcast', label: '🎙️ Podcast / Live Recording' },
-  { value: 'content', label: '📱 Content Creation' },
-  { value: 'workshop', label: '📚 Workshop / Masterclass' },
-  { value: 'networking', label: '🤝 Networking / Meetup' },
-  { value: 'festival', label: '🎪 Festival / Fair' },
-  { value: 'showcase', label: '🌟 Showcase / Open Mic' },
-  { value: 'general', label: '✨ General Creative' },
+  { value: 'music', label: 'Music Jam / Concert' },
+  { value: 'film', label: 'Film Shoot / Screening' },
+  { value: 'photo', label: 'Photo Walk / Shoot' },
+  { value: 'art', label: 'Art Collab / Exhibition' },
+  { value: 'podcast', label: '🎙Podcast / Live Recording' },
+  { value: 'content', label: 'Content Creation' },
+  { value: 'workshop', label: 'Workshop / Masterclass' },
+  { value: 'networking', label: 'Networking / Meetup' },
+  { value: 'festival', label: 'Festival / Fair' },
+  { value: 'showcase', label: 'Showcase / Open Mic' },
+  { value: 'general', label: 'General Creative' },
 ];
 
 export const CreateSessionDialog = ({ 
@@ -157,7 +157,7 @@ export const CreateSessionDialog = ({
       if (error) throw error;
 
       toast({
-        title: "Event created! 🎉",
+        title: "Event created!",
         description: "Others can now find and join your event",
       });
 
@@ -215,7 +215,7 @@ export const CreateSessionDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">✨ Create an Event</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">Create an Event</DialogTitle>
           <DialogDescription>Host a meetup, jam session, workshop, or event for creators</DialogDescription>
         </DialogHeader>
 
@@ -297,7 +297,7 @@ export const CreateSessionDialog = ({
               </Button>
             </div>
             {formData.latitude && formData.longitude && (
-              <p className="text-xs text-muted-foreground">📍 {formData.venue_name || 'Location set'} ({formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)})</p>
+              <p className="text-xs text-muted-foreground">{formData.venue_name || 'Location set'} ({formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)})</p>
             )}
           </div>
 

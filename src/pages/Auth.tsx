@@ -162,11 +162,11 @@ const Auth = () => {
       await supabase.from('matches').insert({ user1_id: user.id, user2_id: targetUserId, match_type: 'creator', status: 'active' });
 
       await supabase.from('notifications').insert([
-        { user_id: user.id, type: 'connection', title: `Connected with ${targetProfile?.full_name || 'a creator'}! 🎉`, message: `You're now connected via QR code. Start collaborating!`, link: `/profile/${targetUserId}?from=match`, action_url: `/messages?user=${targetUserId}`, action_text: 'Send Message', image_url: targetProfile?.avatar_url },
-        { user_id: targetUserId, type: 'connection', title: `${currentProfile?.full_name || 'Someone'} connected with you! 🎉`, message: `New connection via QR code. Say hello!`, link: `/profile/${user.id}?from=match`, action_url: `/messages?user=${user.id}`, action_text: 'Send Message', image_url: currentProfile?.avatar_url }
+        { user_id: user.id, type: 'connection', title: `Connected with ${targetProfile?.full_name || 'a creator'}!`, message: `You're now connected via QR code. Start collaborating!`, link: `/profile/${targetUserId}?from=match`, action_url: `/messages?user=${targetUserId}`, action_text: 'Send Message', image_url: targetProfile?.avatar_url },
+        { user_id: targetUserId, type: 'connection', title: `${currentProfile?.full_name || 'Someone'} connected with you!`, message: `New connection via QR code. Say hello!`, link: `/profile/${user.id}?from=match`, action_url: `/messages?user=${user.id}`, action_text: 'Send Message', image_url: currentProfile?.avatar_url }
       ]);
 
-      toast({ title: "Connected! 🎉", description: `You and ${targetProfile?.full_name || 'this creator'} are now connected!` });
+      toast({ title: "Connected!", description: `You and ${targetProfile?.full_name || 'this creator'} are now connected!` });
       navigate(`/profile/${targetUserId}?from=match`);
     } catch (error) {
       console.error('Auto-connect error:', error);
@@ -307,7 +307,7 @@ const Auth = () => {
 
       if (connectUserId) localStorage.setItem('pendingConnect', connectUserId);
 
-      toast({ title: "Welcome to ThriveIN! 🎉", description: "Let's set up your profile." });
+      toast({ title: "Welcome to ThriveIN!", description: "Let's set up your profile." });
       navigate(accountType === "company" ? "/company-onboarding" : "/onboarding");
     }
     setLoading(false);

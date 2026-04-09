@@ -131,7 +131,7 @@ const FeedbackAdmin = () => {
     if (error) {
       toast({ title: "Error", variant: "destructive" });
     } else {
-      toast({ title: action === "fix_it" ? "Marked for fixing 🔧" : action === "implement" ? "Marked for implementation 🚀" : "Acknowledged ✓" });
+      toast({ title: action === "fix_it" ? "Marked for fixing" : action === "implement" ? "Marked for implementation" : "Acknowledged ✓" });
       setItems(prev => prev.map(i => i.id === id ? { ...i, action_taken: action, status: newStatus } : i));
       if (selectedItem?.id === id) setSelectedItem(prev => prev ? { ...prev, action_taken: action, status: newStatus } : null);
     }
@@ -213,14 +213,14 @@ const FeedbackAdmin = () => {
                           <Badge className={`text-xs ${stat.color}`}>{stat.label}</Badge>
                           {item.action_taken && (
                             <Badge variant="outline" className="text-xs">
-                              {item.action_taken === "fix_it" ? "🔧 Fix" : item.action_taken === "implement" ? "🚀 Implement" : "✓ Ack"}
+                              {item.action_taken === "fix_it" ? "Fix" : item.action_taken === "implement" ? "Implement" : "✓ Ack"}
                             </Badge>
                           )}
                         </div>
                         <p className="text-sm line-clamp-2">{summary}</p>
                         <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                           <span>{new Date(item.created_at).toLocaleDateString()}</span>
-                          {item.page_url && <span>📍 {item.page_url}</span>}
+                          {item.page_url && <span>{item.page_url}</span>}
                         </div>
                       </div>
 
@@ -228,12 +228,12 @@ const FeedbackAdmin = () => {
                       <div className="flex gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
                         {item.category === "bug" && item.action_taken !== "fix_it" && (
                           <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={() => setActionTaken(item.id, "fix_it")}>
-                            🔧 Fix
+                            Fix
                           </Button>
                         )}
                         {item.category === "feature" && item.action_taken !== "implement" && (
                           <Button size="sm" className="h-8 text-xs" onClick={() => setActionTaken(item.id, "implement")}>
-                            🚀 Implement
+                            Implement
                           </Button>
                         )}
                         <DropdownMenu>
@@ -333,7 +333,7 @@ const FeedbackAdmin = () => {
                       onClick={() => setActionTaken(selectedItem.id, "fix_it")}
                       disabled={saving}
                     >
-                      🔧 Fix This Bug
+                      Fix This Bug
                     </Button>
                     <Button
                       size="sm"
@@ -341,7 +341,7 @@ const FeedbackAdmin = () => {
                       onClick={() => setActionTaken(selectedItem.id, "implement")}
                       disabled={saving}
                     >
-                      🚀 Implement Feature
+                      Implement Feature
                     </Button>
                     <Button
                       size="sm"

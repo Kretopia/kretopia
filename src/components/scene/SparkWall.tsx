@@ -631,8 +631,8 @@ const InlineVideoPlayer = ({ src, thumbnail }: { src: string; thumbnail?: string
 function getCategoryEmoji(category: string | null): string | null {
   if (!category) return null;
   const map: Record<string, string> = {
-    music: "🎵", film: "🎬", photo: "📸", art: "🎨", design: "🎨",
-    video: "🎬", audio: "🎵", podcast: "🎙️", writing: "✍️",
+    music: "", film: "", photo: "", art: "", design: "",
+    video: "", audio: "", podcast: "🎙", writing: "✍",
   };
   return map[category.toLowerCase()] || null;
 }

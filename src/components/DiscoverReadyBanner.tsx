@@ -16,8 +16,7 @@ export const DiscoverReadyBanner = ({ portfolioCount }: DiscoverReadyBannerProps
       <AlertDescription className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex-1 min-w-[200px]">
           <p className="font-semibold text-foreground mb-1">
-            Almost ready to be discovered! 🎉
-          </p>
+            Almost ready to be discovered!           </p>
           <p className="text-sm text-muted-foreground">
             Add at least one portfolio item to start appearing in Discover and get matched with other creators
           </p>

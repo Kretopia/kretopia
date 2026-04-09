@@ -164,7 +164,7 @@ export default function CheckIn() {
         .eq("user_id", user.id);
 
       toast({
-        title: "Check-in Successful! 🎉",
+        title: "Check-in Successful!",
         description: `You earned ${location.points_per_visit} points at ${location.name}`,
       });
 

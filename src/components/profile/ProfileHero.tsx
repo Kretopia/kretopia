@@ -269,9 +269,9 @@ export const ProfileHero = ({
               {profile.badge && (
                 <Badge variant="secondary" className="h-4 text-[9px] px-1.5">
                   {profile.badge === 'founder' ? '👑 Founder' : 
-                   profile.badge === 'og' ? '⭐ OG' : 
+                   profile.badge === 'og' ? 'OG' : 
                    profile.badge === 'odos' ? '🌿 ODOS' :
-                   profile.badge === 'official' ? '✓ Official' : '🚀 Beta'}
+                   profile.badge === 'official' ? '✓ Official' : 'Beta'}
                 </Badge>
               )}
             </div>

@@ -112,7 +112,7 @@ const CompanyEditForm = memo(({
         <Progress value={completion.percentage} className="h-3" />
         <p className="text-xs text-muted-foreground">
           {completion.missing.length === 0 ? (
-            <span className="text-primary font-medium">🎉 Your company profile is complete!</span>
+            <span className="text-primary font-medium">Your company profile is complete!</span>
           ) : (
             <>Complete {completion.missing.length} more {completion.missing.length === 1 ? 'field' : 'fields'} to reach 100%</>
           )}
@@ -206,7 +206,7 @@ const CompanyEditForm = memo(({
       <div className="flex gap-2 justify-end mt-4">
         <Button onClick={handleSave}>
           <CheckCircle2 className="mr-2 h-4 w-4" />
-          Save Changes {completion.percentage === 100 ? '🎉' : ''}
+          Save Changes {completion.percentage === 100 ? '' : ''}
         </Button>
       </div>
     </>

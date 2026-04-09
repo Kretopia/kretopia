@@ -55,7 +55,7 @@ export const CircleInviteTools = ({ circleId, circleTitle, inviteCode }: CircleI
       await supabase.functions.invoke("send-circle-invite", {
         body: { circleId, emails: emailList, circleTitle },
       });
-      toast({ title: `${emailList.length} invite(s) sent! ✉️` });
+      toast({ title: `${emailList.length} invite(s) sent!` });
       setEmails("");
     } catch {
       toast({ title: "Some invites failed", variant: "destructive" });
@@ -85,7 +85,7 @@ export const CircleInviteTools = ({ circleId, circleTitle, inviteCode }: CircleI
       await supabase.functions.invoke("send-circle-invite", {
         body: { circleId, emails: contacts.map(c => c.email), circleTitle },
       });
-      toast({ title: `${contacts.length} invites sent from CSV! 📋` });
+      toast({ title: `${contacts.length} invites sent from CSV!` });
       setCsvFile(null);
     } catch {
       toast({ title: "Import failed", variant: "destructive" });

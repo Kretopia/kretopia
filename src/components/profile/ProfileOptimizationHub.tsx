@@ -113,7 +113,7 @@ export const ProfileOptimizationHub = ({
             {activeQuickWins.length === 0 ? (
               <div className="text-center py-8">
                 <CheckCircle2 className="h-12 w-12 text-primary mx-auto mb-3" />
-                <h3 className="text-lg font-semibold mb-2">All Quick Wins Complete! 🎉</h3>
+                <h3 className="text-lg font-semibold mb-2">All Quick Wins Complete!</h3>
                 <p className="text-sm text-muted-foreground">
                   Your profile is optimized for maximum visibility
                 </p>

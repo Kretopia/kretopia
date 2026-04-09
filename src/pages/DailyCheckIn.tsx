@@ -108,7 +108,7 @@ const DailyCheckIn = () => {
       setLastCheckIn(today);
 
       toast({
-        title: `🔥 Day ${newStreak} streak!`,
+        title: `Day ${newStreak} streak!`,
         description: `+${bonusXP} XP earned. ${newStreak >= 7 ? "Weekly bonus activated!" : "Keep it going!"}`,
       });
     } catch (err) {
@@ -212,7 +212,7 @@ const DailyCheckIn = () => {
             ].map((tier) => (
               <div key={tier.days} className="flex items-center justify-between">
                 <span className={cn(streak >= tier.days ? "text-foreground font-medium" : "text-muted-foreground")}>
-                  {streak >= tier.days ? "✅" : "🔒"} {tier.label}
+                  {streak >= tier.days ? "" : ""} {tier.label}
                 </span>
                 <Badge variant="secondary" className="text-[10px]">+{tier.xp} XP</Badge>
               </div>

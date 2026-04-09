@@ -110,7 +110,7 @@ export const CreatePostDialog = ({ open, onOpenChange, onPostCreated }: CreatePo
       if (error) throw error;
 
       toast({
-        title: "Post shared! 🔥",
+        title: "Post shared!",
         description: "Your post has been shared with your circle"
       });
 

@@ -145,7 +145,7 @@ export const AddDigitalProductDialog = ({ open, onOpenChange, onSuccess }: AddDi
       if (error) throw error;
 
       toast({
-        title: "Success! 🎉",
+        title: "Success!",
         description: "Your digital product is now available for sale!"
       });
 
@@ -257,17 +257,17 @@ export const AddDigitalProductDialog = ({ open, onOpenChange, onSuccess }: AddDi
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="music">🎵 Music & Audio</SelectItem>
-                <SelectItem value="design">🎨 Design & Graphics</SelectItem>
-                <SelectItem value="video">🎬 Video & Film</SelectItem>
-                <SelectItem value="photo">📸 Photography</SelectItem>
-                <SelectItem value="writing">✍️ Writing & Copy</SelectItem>
-                <SelectItem value="development">💻 Web & App Dev</SelectItem>
-                <SelectItem value="marketing">📢 Marketing & Social</SelectItem>
+                <SelectItem value="music">Music & Audio</SelectItem>
+                <SelectItem value="design">Design & Graphics</SelectItem>
+                <SelectItem value="video">Video & Film</SelectItem>
+                <SelectItem value="photo">Photography</SelectItem>
+                <SelectItem value="writing">✍Writing & Copy</SelectItem>
+                <SelectItem value="development">Web & App Dev</SelectItem>
+                <SelectItem value="marketing">Marketing & Social</SelectItem>
                 <SelectItem value="3d">🧊 3D & Animation</SelectItem>
                 <SelectItem value="fashion">👗 Fashion & Beauty</SelectItem>
-                <SelectItem value="education">📚 Courses & Tutorials</SelectItem>
-                <SelectItem value="other">📦 Other</SelectItem>
+                <SelectItem value="education">Courses & Tutorials</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>

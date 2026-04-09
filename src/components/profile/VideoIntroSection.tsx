@@ -44,7 +44,7 @@ export const VideoIntroSection = ({ videoUrl, isOwnProfile, onRefresh }: VideoIn
 
       if (error) throw error;
 
-      toast({ title: "Video intro uploaded! 🎬" });
+      toast({ title: "Video intro uploaded!" });
       onRefresh();
     } catch (err: any) {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });

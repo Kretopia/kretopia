@@ -20,11 +20,11 @@ interface ProfilePreviewSheetProps {
 }
 
 const COLLAB_INTENT_LABELS: Record<string, string> = {
-  looking_to_hire: '💼 Looking to Hire',
-  available_for_hire: '🎯 Available for Hire',
-  open_to_trade: '🔄 Open to Trade',
-  seeking_collaborators: '🤝 Seeking Collaborators',
-  just_networking: '👋 Just Networking'
+  looking_to_hire: 'Looking to Hire',
+  available_for_hire: 'Available for Hire',
+  open_to_trade: 'Open to Trade',
+  seeking_collaborators: 'Seeking Collaborators',
+  just_networking: 'Just Networking'
 };
 
 export function ProfilePreviewSheet({
@@ -138,7 +138,7 @@ export function ProfilePreviewSheet({
                       profile.badge === 'beta' && "bg-blue-500/10 text-blue-600 border-blue-500/30"
                     )}
                   >
-                    {profile.badge === 'og' ? '⭐ OG' : '🚀 Beta'}
+                    {profile.badge === 'og' ? 'OG' : 'Beta'}
                   </Badge>
                 )}
 

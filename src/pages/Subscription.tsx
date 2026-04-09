@@ -259,7 +259,7 @@ export default function Subscription() {
         </Tabs>
 
         <p className="text-sm text-primary font-medium mt-3">
-          🎉 Start with a 7-day free trial — no commitment
+          Start with a 7-day free trial — no commitment
         </p>
         
         {hasPaidSub && (

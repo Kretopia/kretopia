@@ -46,7 +46,7 @@ interface SimpleProjectChatProps {
   collaborators?: Collaborator[];
 }
 
-const QUICK_EMOJIS = ["👍", "❤️", "🔥", "😂", "🎉", "👀", "💯", "🙌"];
+const QUICK_EMOJIS = ["👍", "❤", "", "😂", "", "👀", "💯", "🙌"];
 
 export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessageSent, collaborators = [] }: SimpleProjectChatProps) => {
   const { toast } = useToast();

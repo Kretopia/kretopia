@@ -110,7 +110,7 @@ export const EventCohosts = ({ eventId, isCreator }: EventCohostsProps) => {
       }]);
       setSearchQuery("");
       setSearchResults([]);
-      toast({ title: "Co-host added! 🤝" });
+      toast({ title: "Co-host added!" });
     }
     setAdding(false);
   };

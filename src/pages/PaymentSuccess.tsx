@@ -129,10 +129,10 @@ export default function PaymentSuccess() {
                   {isFounderTier ? (
                     <>
                       <li>• ⭕ Exclusive Founder Circle badge</li>
-                      <li>• ♾️ Lifetime Pro access</li>
-                      <li>• 💰 5% platform fees</li>
+                      <li>• ♾Lifetime Pro access</li>
+                      <li>• 5% platform fees</li>
                       <li>• 🎁 +{bonusXp || 5000} Bonus XP</li>
-                      <li>• 🎟️ Event access perks</li>
+                      <li>• 🎟Event access perks</li>
                       <li>• All Pro features unlocked</li>
                     </>
                   ) : (

@@ -149,7 +149,7 @@ export const EasyApplyButton = ({ opportunityId, opportunityTitle, className, si
       }
 
       toast({
-        title: "Applied! ⚡",
+        title: "Applied!",
         description: "Your profile and portfolio have been sent",
       });
     } catch (error: any) {
@@ -217,7 +217,7 @@ export const EasyApplyButton = ({ opportunityId, opportunityTitle, className, si
                   </div>
                   {profile.avg_response_hours != null && profile.avg_response_hours > 0 && (
                     <Badge variant="outline" className="text-[10px] shrink-0 border-blue-500/40 text-blue-600 bg-blue-500/5">
-                      ⚡ Fast responder
+                      Fast responder
                     </Badge>
                   )}
                 </div>

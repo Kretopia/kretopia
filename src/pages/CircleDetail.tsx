@@ -98,7 +98,7 @@ const CircleDetail = () => {
           circle_id: circleId,
           name: "general",
           channel_type: "text",
-          icon_emoji: "💬",
+          icon_emoji: "",
           position: 0,
           is_default: true,
           created_by: user.id,
@@ -233,7 +233,7 @@ const CircleDetail = () => {
     const memberName = profile?.full_name || "A new member";
     await supabase.from("spark_room_messages").insert({
       room_id: circle.id, user_id: user.id,
-      content: `👋 ${memberName} just joined the circle! Welcome aboard!`,
+      content: `${memberName} just joined the circle! Welcome aboard!`,
       message_type: "system",
     });
     try {
@@ -244,7 +244,7 @@ const CircleDetail = () => {
     } catch (e) { console.error("Welcome DM failed:", e); }
     setIsMember(true);
     setUserRole("member");
-    toast({ title: "Welcome! 🎉", description: `You're now in ${circle.title}` });
+    toast({ title: "Welcome!", description: `You're now in ${circle.title}` });
   };
 
   const sendMessage = async () => {
@@ -294,7 +294,7 @@ const CircleDetail = () => {
   const pinMessage = async (messageId: string, pin: boolean) => {
     await supabase.from("spark_room_messages").update({ is_pinned: pin, pinned_by: pin ? user?.id : null }).eq("id", messageId);
     fetchMessages();
-    toast({ title: pin ? "Message pinned 📌" : "Message unpinned" });
+    toast({ title: pin ? "Message pinned" : "Message unpinned" });
   };
 
   const handlePollVote = async (messageId: string, optionIndex: number) => {
@@ -311,14 +311,14 @@ const CircleDetail = () => {
 
   const shareCircle = async () => {
     const url = `https://www.thrivein.io/circle/${circle.id}`;
-    const shareText = `Join "${circle.title}" on ThriveIN — where creatives connect, collaborate, and grow together 🚀\n\n${url}`;
+    const shareText = `Join "${circle.title}" on ThriveIN — where creatives connect, collaborate, and grow together \n\n${url}`;
     try {
       await navigator.clipboard.writeText(shareText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       if (navigator.share) { await navigator.share({ title: circle.title, text: shareText, url }); }
-      else { toast({ title: "Link copied! 🔗" }); }
-    } catch { toast({ title: "Link copied! 🔗" }); }
+      else { toast({ title: "Link copied!" }); }
+    } catch { toast({ title: "Link copied!" }); }
   };
 
   const handleCircleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -331,21 +331,21 @@ const CircleDetail = () => {
     const { data: urlData } = supabase.storage.from("media").getPublicUrl(path);
     await supabase.from("spark_rooms").update({ cover_url: urlData.publicUrl }).eq("id", circle.id);
     setCircle({ ...circle, cover_url: urlData.publicUrl });
-    toast({ title: "Circle image updated! 🎨" });
+    toast({ title: "Circle image updated!" });
   };
 
   const createChannel = async () => {
     if (!user || !newChannelName.trim()) return;
     await supabase.from("circle_channels").insert({
       circle_id: circleId!, name: newChannelName.trim(), channel_type: newChannelType,
-      icon_emoji: newChannelType === "announcements" ? "📢" : newChannelType === "events" ? "📅" : newChannelType === "shop" ? "🛍️" : newChannelType === "media" ? "📸" : "💬",
+      icon_emoji: newChannelType === "announcements" ? "" : newChannelType === "events" ? "📅" : newChannelType === "shop" ? "🛍" : newChannelType === "media" ? "" : "",
       position: channels.length, created_by: user.id,
     } as any);
     setNewChannelName("");
     setShowNewChannel(false);
     const { data } = await supabase.from("circle_channels").select("*").eq("circle_id", circleId!).order("position");
     setChannels((data || []) as Channel[]);
-    toast({ title: "Channel created! 🎉" });
+    toast({ title: "Channel created!" });
   };
 
   if (loading) {
@@ -415,7 +415,7 @@ const CircleDetail = () => {
                 <img src={circle.cover_url} className="w-9 h-9 rounded-xl object-cover" alt="" />
               ) : (
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-lg shrink-0">
-                  {circle.icon_emoji || "💬"}
+                  {circle.icon_emoji || ""}
                 </div>
               )}
               {isAdmin && (
@@ -468,7 +468,7 @@ const CircleDetail = () => {
                 <div className="flex flex-wrap gap-1">
                   {["text", "announcements", "events", "shop", "media"].map(t => (
                     <Button key={t} variant={newChannelType === t ? "default" : "outline"} size="sm" className="text-[10px] h-5 px-1.5 rounded-full capitalize" onClick={() => setNewChannelType(t)}>
-                      {t === "announcements" ? "📢" : t === "events" ? "📅" : t === "shop" ? "🛍️" : t === "media" ? "📸" : "💬"} {t}
+                      {t === "announcements" ? "" : t === "events" ? "📅" : t === "shop" ? "🛍" : t === "media" ? "" : ""} {t}
                     </Button>
                   ))}
                 </div>
@@ -611,17 +611,17 @@ const CircleDetail = () => {
           {!msgLoading && messages.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-3xl mb-4">
-                {circle.icon_emoji || "💬"}
+                {circle.icon_emoji || ""}
               </div>
               <h3 className="font-bold text-lg mb-1">Welcome to #{activeChannel?.name}!</h3>
               <p className="text-sm text-muted-foreground max-w-sm">
                 {isAnnouncementChannel
                   ? "This is an announcements channel. Only moderators and admins can post here."
-                  : "This is the beginning of the conversation. Say hello! 👋"}
+                  : "This is the beginning of the conversation. Say hello!"}
               </p>
               {circle.rules && (
                 <div className="mt-4 p-3 rounded-xl bg-muted/50 border border-border/50 max-w-sm text-left">
-                  <p className="text-xs font-semibold mb-1">📋 Circle Rules</p>
+                  <p className="text-xs font-semibold mb-1">Circle Rules</p>
                   <p className="text-xs text-muted-foreground whitespace-pre-line">{circle.rules}</p>
                 </div>
               )}
@@ -693,7 +693,7 @@ const CircleDetail = () => {
                 if (!activeChannel?.id || !user || !circle) return;
                 await supabase.from("spark_room_messages").insert({
                   room_id: circle.id, channel_id: activeChannel.id, user_id: user.id,
-                  content: `📊 ${question}`, message_type: "poll", poll_data: pollData,
+                  content: `${question}`, message_type: "poll", poll_data: pollData,
                 } as any);
                 setShowPollCreator(false);
                 fetchMessages();

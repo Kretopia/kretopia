@@ -126,9 +126,9 @@ export function VerificationProgress({
           </div>
           <Progress value={totalScore} className="h-2" />
           <p className="text-xs text-muted-foreground">
-            {totalScore >= 60 ? "✅ Auto-approved at 60+" : 
+            {totalScore >= 60 ? "Auto-approved at 60+" : 
              totalScore >= 40 ? "⏳ Manual review 40-59" : 
-             "❌ Need 40+ points"}
+             "Need 40+ points"}
           </p>
         </div>
         

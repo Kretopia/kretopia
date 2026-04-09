@@ -72,7 +72,7 @@ export const ThriveDeskShowcase = () => {
           <Card className="p-8 border-2 border-primary bg-gradient-to-br from-primary/5 to-secondary/5 shadow-glow">
             <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <span>Project Workspace</span>
-              <span className="text-primary">✨</span>
+              <span className="text-primary"></span>
             </h3>
             <div className="space-y-4">
               <div className="flex items-start gap-3">

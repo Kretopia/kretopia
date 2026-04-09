@@ -28,7 +28,7 @@ export const TestimonialsSection = ({
   if (reviews.length === 0) {
     return (
       <Card className="p-8 text-center space-y-3">
-        <div className="text-5xl mb-2">⭐</div>
+        <div className="text-5xl mb-2"></div>
         <h3 className="text-xl font-semibold">No reviews yet</h3>
         <p className="text-muted-foreground">Reviews from collaborators will appear here</p>
       </Card>

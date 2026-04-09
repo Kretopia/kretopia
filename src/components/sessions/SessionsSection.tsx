@@ -188,7 +188,7 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
           });
         }
 
-        toast({ title: "Ticket purchased! 🎉", description: "You're in! See you at the event." });
+        toast({ title: "Ticket purchased!", description: "You're in! See you at the event." });
         fetchSessions();
       } catch (err) {
         console.error('Error adding participant after ticket purchase:', err);

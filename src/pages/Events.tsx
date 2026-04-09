@@ -41,10 +41,10 @@ interface EventItem {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  music: '🎵 Music', film: '🎬 Film', photo: '📸 Photo', art: '🎨 Art',
-  podcast: '🎙️ Podcast', workshop: '📚 Workshop', networking: '🤝 Networking',
-  content: '📱 Content', festival: '🎪 Festival', showcase: '🌟 Showcase',
-  general: '✨ Creative',
+  music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
+  podcast: '🎙Podcast', workshop: 'Workshop', networking: 'Networking',
+  content: 'Content', festival: 'Festival', showcase: 'Showcase',
+  general: 'Creative',
 };
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -53,14 +53,14 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 const CATEGORY_FILTERS = [
   { value: 'all', label: 'All' },
-  { value: 'music', label: '🎵 Music' },
-  { value: 'film', label: '🎬 Film' },
-  { value: 'photo', label: '📸 Photo' },
-  { value: 'art', label: '🎨 Art' },
-  { value: 'workshop', label: '📚 Workshop' },
-  { value: 'networking', label: '🤝 Networking' },
-  { value: 'festival', label: '🎪 Festival' },
-  { value: 'showcase', label: '🌟 Showcase' },
+  { value: 'music', label: 'Music' },
+  { value: 'film', label: 'Film' },
+  { value: 'photo', label: 'Photo' },
+  { value: 'art', label: 'Art' },
+  { value: 'workshop', label: 'Workshop' },
+  { value: 'networking', label: 'Networking' },
+  { value: 'festival', label: 'Festival' },
+  { value: 'showcase', label: 'Showcase' },
 ];
 
 const EventCard = ({ event, onClick }: { event: EventItem; onClick: () => void }) => {
@@ -121,10 +121,10 @@ const EventCard = ({ event, onClick }: { event: EventItem; onClick: () => void }
           </div>
           <div className="flex items-center gap-1.5">
             {isHot && (
-              <Badge className="text-[10px] py-0 px-1.5 bg-orange-500/10 text-orange-600 border-0">🔥 Hot</Badge>
+              <Badge className="text-[10px] py-0 px-1.5 bg-orange-500/10 text-orange-600 border-0">Hot</Badge>
             )}
             {isSoon && !isPast && (
-              <Badge className="text-[10px] py-0 px-1.5 bg-primary/10 text-primary border-0">⚡ Soon</Badge>
+              <Badge className="text-[10px] py-0 px-1.5 bg-primary/10 text-primary border-0">Soon</Badge>
             )}
             {spotsLeft <= 5 && spotsLeft > 0 && !isPast && (
               <Badge variant="destructive" className="text-[10px] py-0 px-1.5">{spotsLeft} left</Badge>

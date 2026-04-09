@@ -166,7 +166,7 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
       setPublishing(false);
       return;
     }
-    toast.success("Article published! 🎉");
+    toast.success("Article published!");
     onPublished();
   };
 

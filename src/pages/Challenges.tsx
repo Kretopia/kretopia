@@ -150,7 +150,7 @@ const Challenges = () => {
                   const isFirst = idx === 0;
                   const heights = ["h-24", "h-20", "h-16"];
                   const podiumHeight = heights[idx] || "h-16";
-                  const medals = ["🥇", "🥈", "🥉"];
+                  const medals = ["", "", ""];
 
                   return (
                     <div key={entry.id} className="flex flex-col items-center flex-1 max-w-[100px]">

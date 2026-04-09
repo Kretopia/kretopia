@@ -122,10 +122,10 @@ export const SavedOpportunitiesDialog = () => {
                         </p>
                         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                           {saved.opportunities?.location && (
-                            <span>📍 {saved.opportunities.location}</span>
+                            <span>{saved.opportunities.location}</span>
                           )}
                           {saved.opportunities?.compensation && (
-                            <span>💰 {saved.opportunities.compensation}</span>
+                            <span>{saved.opportunities.compensation}</span>
                           )}
                         </div>
                         {saved.notes && (

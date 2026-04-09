@@ -223,7 +223,7 @@ export const ProjectTemplates = ({ onSelect }: { onSelect?: () => void }) => {
       if (milestonesError) throw milestonesError;
 
       toast({
-        title: "Project created! 🎉",
+        title: "Project created!",
         description: `${projectTitle} created with ${tasksToInsert.length} tasks and ${milestonesToInsert.length} milestones`,
       });
 

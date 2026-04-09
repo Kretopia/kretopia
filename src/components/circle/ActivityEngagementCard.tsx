@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Flame, MessageCircle, Share2, Sparkles } from "lucide-react";
+import { Flame, MessageCircle, Share2, Sparkles, Palette, Trophy, Newspaper, Clapperboard } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -34,15 +34,15 @@ export const ActivityEngagementCard = ({
   const getActivityIcon = () => {
     switch (activity.activity_type) {
       case 'portfolio':
-        return '🎨';
+        return <Palette className="h-4 w-4 text-primary" />;
       case 'award':
-        return '🏆';
+        return <Trophy className="h-4 w-4 text-amber-500" />;
       case 'press':
-        return '📰';
+        return <Newspaper className="h-4 w-4 text-blue-500" />;
       case 'credit':
-        return '🎬';
+        return <Clapperboard className="h-4 w-4 text-emerald-500" />;
       default:
-        return '✨';
+        return <Sparkles className="h-4 w-4 text-primary" />;
     }
   };
 

@@ -57,7 +57,7 @@ export const FeeCalculator = ({ subscriptionTier = 'free' }: FeeCalculatorProps)
 
         <div className="bg-muted rounded-lg p-4 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="font-semibold text-primary">💰 Talent Receives</span>
+            <span className="font-semibold text-primary">Talent Receives</span>
             <span className="font-bold text-primary">${breakdown.talentPayout.toFixed(2)}</span>
           </div>
 

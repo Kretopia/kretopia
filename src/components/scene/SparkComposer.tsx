@@ -72,7 +72,7 @@ export const SparkComposer = ({ userProfile, onPostCreated }: SparkComposerProps
       } as any);
 
       resetAll();
-      toast({ title: "Sparked! 🔥" });
+      toast({ title: "Sparked!" });
       onPostCreated();
     } catch {
       toast({ title: "Error posting", variant: "destructive" });
@@ -105,8 +105,7 @@ export const SparkComposer = ({ userProfile, onPostCreated }: SparkComposerProps
               className="w-full rounded-xl bg-muted/50 px-3.5 py-2.5 text-sm text-muted-foreground cursor-pointer hover:bg-muted/80 transition-colors"
               onClick={() => setExpanded(true)}
             >
-              What's inspiring you? ✨
-            </div>
+              What's inspiring you?             </div>
           ) : (
             <div className="space-y-2">
               <Textarea
@@ -124,7 +123,7 @@ export const SparkComposer = ({ userProfile, onPostCreated }: SparkComposerProps
                   {mediaFile?.type.startsWith("video") ? (
                     <video src={mediaPreview} className="h-20 rounded-lg" />
                   ) : mediaFile?.type.startsWith("audio") ? (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg text-xs">🎵 {mediaFile.name}</div>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg text-xs">{mediaFile.name}</div>
                   ) : (
                     <img src={mediaPreview} className="h-20 rounded-lg object-cover" alt="preview" />
                   )}

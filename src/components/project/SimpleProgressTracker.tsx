@@ -23,12 +23,12 @@ export const SimpleProgressTracker = ({
   };
 
   const getStatusMessage = () => {
-    if (projectStatus === 'completed') return '🎉 Project Completed!';
-    if (percentage === 100) return '✅ All tasks completed!';
-    if (percentage >= 75) return '🚀 Almost there!';
-    if (percentage >= 50) return '💪 Halfway done!';
-    if (percentage > 0) return '✨ Getting started!';
-    return '📋 Ready to begin';
+    if (projectStatus === 'completed') return 'Project Completed!';
+    if (percentage === 100) return 'All tasks completed!';
+    if (percentage >= 75) return 'Almost there!';
+    if (percentage >= 50) return 'Halfway done!';
+    if (percentage > 0) return 'Getting started!';
+    return 'Ready to begin';
   };
 
   return (

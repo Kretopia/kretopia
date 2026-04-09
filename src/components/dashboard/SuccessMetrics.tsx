@@ -268,7 +268,7 @@ export function SuccessMetrics() {
             <div className="space-y-1">
               <p className="text-sm font-medium">Week 1 Targets</p>
               <ul className="text-xs text-muted-foreground space-y-1">
-                <li>• Activation Rate: 60%+ ✨</li>
+                <li>• Activation Rate: 60%+</li>
                 <li>• DAU: 30%+ of users active daily</li>
                 <li>• Match Rate: 20%+ swipes → matches</li>
                 <li>• D1 Retention: 50%+ come back next day</li>

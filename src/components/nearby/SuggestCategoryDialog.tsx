@@ -16,13 +16,13 @@ interface SuggestCategoryDialogProps {
 }
 
 const LOCATION_TYPES = [
-  { value: 'studio', label: '🎙️ Studio' },
-  { value: 'creative_space', label: '🎨 Creative Space' },
-  { value: 'shoot_spot', label: '📸 Shoot Spot' },
-  { value: 'venue', label: '🎤 Venue' },
-  { value: 'music_store', label: '🎵 Music Store' },
-  { value: 'art_supply', label: '🎨 Art Supply' },
-  { value: 'rental_house', label: '🏠 Rental House' },
+  { value: 'studio', label: '🎙Studio' },
+  { value: 'creative_space', label: 'Creative Space' },
+  { value: 'shoot_spot', label: 'Shoot Spot' },
+  { value: 'venue', label: 'Venue' },
+  { value: 'music_store', label: 'Music Store' },
+  { value: 'art_supply', label: 'Art Supply' },
+  { value: 'rental_house', label: 'Rental House' },
   { value: 'photo_lab', label: '📷 Photo Lab' },
 ];
 
@@ -47,7 +47,7 @@ export function SuggestCategoryDialog({ open, onOpenChange }: SuggestCategoryDia
           description: description.trim() || null,
         });
       if (error) throw error;
-      toast({ title: "Suggestion submitted! 💡", description: "We'll review it and add it to the atlas." });
+      toast({ title: "Suggestion submitted!", description: "We'll review it and add it to the atlas." });
       setName('');
       setLocationType('');
       setDescription('');

@@ -81,7 +81,7 @@ export const AIAutomation = ({ projectId, projectTitle, projectDescription, onUp
       if (error) throw error;
 
       toast({
-        title: "Task added! ✨",
+        title: "Task added!",
         description: "AI-suggested task has been added to your project",
       });
       

@@ -105,7 +105,7 @@ export function FeedbackTab() {
     const newStatus = action === "fix_it" || action === "implement" ? "in_progress" : "reviewed";
     const { error } = await supabase.from("feedback").update({ action_taken: action, status: newStatus }).eq("id", id);
     if (!error) {
-      const label = action === "fix_it" ? "Marked for fixing 🔧" : action === "implement" ? "Marked for implementation 🚀" : "Acknowledged ✓";
+      const label = action === "fix_it" ? "Marked for fixing" : action === "implement" ? "Marked for implementation" : "Acknowledged ✓";
       toast({ title: label });
       setItems(prev => prev.map(i => i.id === id ? { ...i, action_taken: action, status: newStatus } : i));
       if (selectedItem?.id === id) setSelectedItem(prev => prev ? { ...prev, action_taken: action, status: newStatus } : null);
@@ -171,26 +171,26 @@ export function FeedbackTab() {
                       <Badge className={`text-xs ${stat.color}`}>{stat.label}</Badge>
                       {item.action_taken && (
                         <Badge variant="outline" className="text-xs">
-                          {item.action_taken === "fix_it" ? "🔧 Fix" : item.action_taken === "implement" ? "🚀 Implement" : "✓ Ack"}
+                          {item.action_taken === "fix_it" ? "Fix" : item.action_taken === "implement" ? "Implement" : "✓ Ack"}
                         </Badge>
                       )}
                     </div>
                     <p className="text-sm line-clamp-2">{summary}</p>
                     <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                       <span>{new Date(item.created_at).toLocaleDateString()}</span>
-                      {item.page_url && <span>📍 {item.page_url}</span>}
+                      {item.page_url && <span>{item.page_url}</span>}
                     </div>
                   </div>
 
                   <div className="flex gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
                     {item.category === "bug" && item.action_taken !== "fix_it" && (
                       <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={() => setActionTaken(item.id, "fix_it")}>
-                        🔧 Fix
+                        Fix
                       </Button>
                     )}
                     {item.category === "feature" && item.action_taken !== "implement" && (
                       <Button size="sm" className="h-8 text-xs" onClick={() => setActionTaken(item.id, "implement")}>
-                        🚀 Implement
+                        Implement
                       </Button>
                     )}
                     <DropdownMenu>
@@ -280,10 +280,10 @@ export function FeedbackTab() {
                 <h3 className="text-sm font-semibold mb-2">Take Action</h3>
                 <div className="flex gap-2 flex-wrap">
                   <Button size="sm" variant={selectedItem.action_taken === "fix_it" ? "default" : "outline"} onClick={() => setActionTaken(selectedItem.id, "fix_it")} disabled={saving}>
-                    🔧 Fix This Bug
+                    Fix This Bug
                   </Button>
                   <Button size="sm" variant={selectedItem.action_taken === "implement" ? "default" : "outline"} onClick={() => setActionTaken(selectedItem.id, "implement")} disabled={saving}>
-                    🚀 Implement Feature
+                    Implement Feature
                   </Button>
                   <Button size="sm" variant={selectedItem.action_taken === "acknowledge" ? "default" : "outline"} onClick={() => setActionTaken(selectedItem.id, "acknowledge")} disabled={saving}>
                     ✓ Acknowledge

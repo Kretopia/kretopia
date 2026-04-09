@@ -165,7 +165,7 @@ Respond ONLY with valid JSON (no markdown, no code blocks):
       onBriefGenerated?.(safeBrief);
 
       toast({
-        title: "Brief generated! ✨",
+        title: "Brief generated!",
         description: "Your professional project brief is ready",
       });
     } catch (error: any) {
@@ -390,7 +390,7 @@ ${brief.communication_plan}
                 <ul className="space-y-1">
                   {brief.success_metrics.map((metric, i) => (
                     <li key={i} className="text-sm text-muted-foreground flex items-center gap-2">
-                      <span className="text-indigo-500">📊</span>
+                      <span className="text-indigo-500"></span>
                       {metric}
                     </li>
                   ))}

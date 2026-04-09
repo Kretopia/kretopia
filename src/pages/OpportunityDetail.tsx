@@ -62,7 +62,7 @@ const OpportunityDetail = () => {
         .eq('id', opportunity.id);
       if (error) throw error;
       setOpportunity({ ...opportunity, status: newStatus });
-      const labels: Record<string, string> = { active: "Reopened ✅", closed: "Closed 🔒", paused: "Paused ⏸️", filled: "Marked as Filled 🎉" };
+      const labels: Record<string, string> = { active: "Reopened", closed: "Closed", paused: "Paused", filled: "Marked as Filled" };
       toast({ title: labels[newStatus] || "Updated", description: `Gig is now ${newStatus}` });
     } catch (err: any) {
       toast({ title: "Failed", description: err.message, variant: "destructive" });
@@ -99,7 +99,7 @@ const OpportunityDetail = () => {
         .select('id')
         .single();
       if (error) throw error;
-      toast({ title: "Duplicated! 📋", description: "Opening your new copy..." });
+      toast({ title: "Duplicated!", description: "Opening your new copy..." });
       navigate(`/opportunity/${data.id}`);
     } catch (err: any) {
       toast({ title: "Failed", description: err.message, variant: "destructive" });
@@ -203,7 +203,7 @@ const OpportunityDetail = () => {
 
   const handleShare = async () => {
     const url = `https://www.thrivein.io/opportunity/${id}`;
-    const shareText = `🔥 ${opportunity?.title} — ${opportunity?.type === 'barter' ? 'Barter exchange' : opportunity?.type} gig on ThriveIN!\n\nApply now 👇\n${url}`;
+    const shareText = `${opportunity?.title} — ${opportunity?.type === 'barter' ? 'Barter exchange' : opportunity?.type} gig on ThriveIN!\n\nApply now 👇\n${url}`;
     
     if (navigator.share) {
       try {
@@ -214,7 +214,7 @@ const OpportunityDetail = () => {
     
     navigator.clipboard.writeText(shareText);
     toast({
-      title: "Link Copied! 📋",
+      title: "Link Copied!",
       description: "Share text copied — paste it anywhere!",
     });
   };
@@ -262,7 +262,7 @@ const OpportunityDetail = () => {
       if (!error) {
         setIsSaved(true);
         toast({
-          title: "Saved! 🔖",
+          title: "Saved!",
           description: "Opportunity added to your bookmarks",
         });
       }
@@ -383,7 +383,7 @@ const OpportunityDetail = () => {
             </Button>
             <SocialShareButtons
               url={`/opportunity/${opportunity.id}`}
-              title={`🔥 ${opportunity.title} — ${opportunity.type} gig on ThriveIN`}
+              title={`${opportunity.title} — ${opportunity.type} gig on ThriveIN`}
               description={opportunity.description?.slice(0, 100)}
             />
           </div>
@@ -393,9 +393,9 @@ const OpportunityDetail = () => {
         {opportunity.status !== 'active' && (
           <div className="mb-4 rounded-lg bg-muted p-4 text-center">
             <Badge variant="secondary">
-              {opportunity.status === 'closed' && '🔒 Campaign Ended'}
-              {opportunity.status === 'paused' && '⏸️ Paused'}
-              {opportunity.status === 'filled' && '🎉 Position Filled'}
+              {opportunity.status === 'closed' && 'Campaign Ended'}
+              {opportunity.status === 'paused' && 'Paused'}
+              {opportunity.status === 'filled' && 'Position Filled'}
               {!['closed', 'paused', 'filled'].includes(opportunity.status) && opportunity.status}
             </Badge>
             {isOwner && (

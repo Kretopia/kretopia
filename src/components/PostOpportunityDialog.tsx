@@ -26,12 +26,12 @@ interface PostOpportunityDialogProps {
 }
 
 const GIG_TYPES = [
-  { value: "barter", label: "🔄 Barter / Trade", description: "Offer something in exchange for content", icon: ArrowRightLeft },
-  { value: "job", label: "💼 Paid Gig", description: "Pay a creator for their work", icon: Briefcase },
-  { value: "collab", label: "🤝 Collaboration", description: "Work together on a creative project", icon: Handshake },
-  { value: "gig", label: "⚡ Quick Gig", description: "One-off task or performance", icon: Zap },
-  { value: "project", label: "🎯 Project-Based", description: "Longer-term creative project", icon: Target },
-  { value: "internship", label: "🎓 Internship", description: "Learning opportunity for emerging creatives", icon: GraduationCap },
+  { value: "barter", label: "Barter / Trade", description: "Offer something in exchange for content", icon: ArrowRightLeft },
+  { value: "job", label: "Paid Gig", description: "Pay a creator for their work", icon: Briefcase },
+  { value: "collab", label: "Collaboration", description: "Work together on a creative project", icon: Handshake },
+  { value: "gig", label: "Quick Gig", description: "One-off task or performance", icon: Zap },
+  { value: "project", label: "Project-Based", description: "Longer-term creative project", icon: Target },
+  { value: "internship", label: "Internship", description: "Learning opportunity for emerging creatives", icon: GraduationCap },
 ];
 
 const BARTER_OFFERING_EXAMPLES = [
@@ -200,7 +200,7 @@ export const PostOpportunityDialog = ({
       // Build compensation string for barter
       let compensation = formData.compensation;
       if (formData.type === "barter" && formData.barter_offering && !compensation) {
-        compensation = `🔄 ${formData.barter_offering}`;
+        compensation = formData.barter_offering;
       }
 
       // Build deliverables string
@@ -241,7 +241,7 @@ export const PostOpportunityDialog = ({
         analytics.opportunityCreate(newOpportunity.id);
       }
 
-      toast({ title: "Gig Posted! 🎉", description: "Your gig is now live on ThriveIN." });
+      toast({ title: "Gig Posted!", description: "Your gig is now live on ThriveIN." });
 
       // Reset
       setFormData({
@@ -459,7 +459,7 @@ export const PostOpportunityDialog = ({
               {isPaid && (
                 <div className="space-y-2 p-3 rounded-xl border-2 border-dashed border-green-300 bg-green-500/5">
                   <Label htmlFor="compensation" className="flex items-center gap-1.5 text-sm font-semibold text-green-700 dark:text-green-300">
-                    💰 Budget / Compensation *
+                    Budget / Compensation *
                   </Label>
                   <Input
                     id="compensation"
@@ -475,7 +475,7 @@ export const PostOpportunityDialog = ({
               {isCollab && (
                 <div className="space-y-2 p-3 rounded-xl border-2 border-dashed border-blue-300 bg-blue-500/5">
                   <Label className="flex items-center gap-1.5 text-sm font-semibold text-blue-700 dark:text-blue-300">
-                    🤝 Collaboration Details
+                    Collaboration Details
                   </Label>
                   <Input
                     placeholder="What do you bring to the table? e.g., Studio time, beats, location"
@@ -591,7 +591,7 @@ export const PostOpportunityDialog = ({
                     </div>
                   )}
                   {!imageFile && (
-                    <p className="text-[10px] text-muted-foreground text-center">No image? We'll generate one with AI ✨</p>
+                    <p className="text-[10px] text-muted-foreground text-center">No image? We'll generate one with AI</p>
                   )}
                 </div>
               </div>
@@ -600,7 +600,7 @@ export const PostOpportunityDialog = ({
                 {loading ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Posting...</>
                 ) : (
-                  isBarter ? "Post Barter Gig 🔄" : isPaid ? "Post Paid Gig 💼" : isCollab ? "Post Collaboration 🤝" : "Post Gig"
+                  isBarter ? "Post Barter Gig" : isPaid ? "Post Paid Gig" : isCollab ? "Post Collaboration" : "Post Gig"
                 )}
               </Button>
             </>

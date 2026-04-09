@@ -315,7 +315,7 @@ export const OpportunitiesFeed = () => {
           )}
           {locationFilter !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              📍 {locationFilter}
+              {locationFilter}
               <X className="h-3 w-3 cursor-pointer" onClick={() => setLocationFilter("all")} />
             </Badge>
           )}

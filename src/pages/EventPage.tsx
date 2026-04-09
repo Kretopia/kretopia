@@ -18,10 +18,10 @@ import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";
 
 const CATEGORY_LABELS: Record<string, string> = {
-  music: '🎵 Music', film: '🎬 Film', photo: '📸 Photo', art: '🎨 Art',
-  podcast: '🎙️ Podcast', workshop: '📚 Workshop', networking: '🤝 Networking',
-  content: '📱 Content', festival: '🎪 Festival', showcase: '🌟 Showcase',
-  general: '✨ Creative',
+  music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
+  podcast: '🎙Podcast', workshop: 'Workshop', networking: 'Networking',
+  content: 'Content', festival: 'Festival', showcase: 'Showcase',
+  general: 'Creative',
 };
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -112,7 +112,7 @@ const EventPage = () => {
         await supabase.from('jam_participants').insert({ jam_id: event.id, user_id: user.id, status: 'going' });
         setParticipation('going');
         setParticipantCount(prev => prev + 1);
-        toast({ title: "You're in! 🎉", description: "You've joined this event" });
+        toast({ title: "You're in!", description: "You've joined this event" });
       }
     } catch {
       toast({ title: "Error", description: "Failed to update", variant: "destructive" });
@@ -323,7 +323,7 @@ const EventPage = () => {
               </CardContent>
               {hasExternalTicket && (
                 <div className="px-5 pb-3">
-                  <p className="text-xs text-muted-foreground">🔗 Tickets via external platform</p>
+                  <p className="text-xs text-muted-foreground">Tickets via external platform</p>
                 </div>
               )}
             </Card>

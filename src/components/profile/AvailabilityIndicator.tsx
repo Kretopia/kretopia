@@ -49,7 +49,7 @@ export const AvailabilityIndicator = ({
           availability_note: editNote || null,
         })
         .eq("user_id", user.id);
-      toast({ title: "Availability updated! ✅" });
+      toast({ title: "Availability updated!" });
       onRefresh?.();
     } catch {
       toast({ title: "Failed to update", variant: "destructive" });

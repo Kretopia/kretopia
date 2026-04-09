@@ -141,7 +141,7 @@ const PostOpportunity = () => {
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Mail className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">Check your email! 📬</CardTitle>
+            <CardTitle className="text-2xl">Check your email! </CardTitle>
             <CardDescription className="text-base">
               We sent a verification link to <strong>{formData.email}</strong>. Click it to publish your opportunity and start receiving applications from top creatives.
             </CardDescription>

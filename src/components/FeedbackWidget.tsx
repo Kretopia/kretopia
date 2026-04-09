@@ -36,7 +36,7 @@ export function FeedbackWidget() {
     if (open && messages.length === 0) {
       setMessages([{
         role: "assistant",
-        content: "Hey! 👋 I'm here to hear your thoughts on ThriveIN. Got a bug to report, a feature idea, or just general feedback? Let me know!",
+        content: "Hey! I'm here to hear your thoughts on ThriveIN. Got a bug to report, a feature idea, or just general feedback? Let me know!",
       }]);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
@@ -78,7 +78,7 @@ export function FeedbackWidget() {
       }
       if (data?.saved) {
         setSaved(true);
-        toast({ title: "Feedback saved! 🙏", description: "Thanks for helping us improve." });
+        toast({ title: "Feedback saved!", description: "Thanks for helping us improve." });
       }
       if (data?.category) {
         setCategory(data.category);
@@ -110,10 +110,10 @@ export function FeedbackWidget() {
   };
 
   const categoryLabels: Record<string, string> = {
-    bug: "🐛 Bug",
-    feature: "💡 Feature",
-    ui: "🎨 UI/UX",
-    general: "💬 General",
+    bug: "Bug",
+    feature: "Feature",
+    ui: "UI/UX",
+    general: "General",
   };
 
   if (!user || dismissed) return null;

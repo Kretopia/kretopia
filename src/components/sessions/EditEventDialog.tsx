@@ -36,17 +36,17 @@ interface EditEventDialogProps {
 }
 
 const EVENT_CATEGORIES = [
-  { value: 'music', label: '🎵 Music Jam / Concert' },
-  { value: 'film', label: '🎬 Film Shoot / Screening' },
-  { value: 'photo', label: '📸 Photo Walk / Shoot' },
-  { value: 'art', label: '🎨 Art Collab / Exhibition' },
-  { value: 'podcast', label: '🎙️ Podcast / Live Recording' },
-  { value: 'content', label: '📱 Content Creation' },
-  { value: 'workshop', label: '📚 Workshop / Masterclass' },
-  { value: 'networking', label: '🤝 Networking / Meetup' },
-  { value: 'festival', label: '🎪 Festival / Fair' },
-  { value: 'showcase', label: '🌟 Showcase / Open Mic' },
-  { value: 'general', label: '✨ General Creative' },
+  { value: 'music', label: 'Music Jam / Concert' },
+  { value: 'film', label: 'Film Shoot / Screening' },
+  { value: 'photo', label: 'Photo Walk / Shoot' },
+  { value: 'art', label: 'Art Collab / Exhibition' },
+  { value: 'podcast', label: '🎙Podcast / Live Recording' },
+  { value: 'content', label: 'Content Creation' },
+  { value: 'workshop', label: 'Workshop / Masterclass' },
+  { value: 'networking', label: 'Networking / Meetup' },
+  { value: 'festival', label: 'Festival / Fair' },
+  { value: 'showcase', label: 'Showcase / Open Mic' },
+  { value: 'general', label: 'General Creative' },
 ];
 
 export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: EditEventDialogProps) => {
@@ -178,7 +178,7 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
         .eq('created_by', user.id);
 
       if (error) throw error;
-      toast({ title: "Event updated! ✅" });
+      toast({ title: "Event updated!" });
       onOpenChange(false);
       onUpdated?.();
     } catch (error: any) {
@@ -366,7 +366,7 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
               <Button type="button" size="sm" variant="outline" className="flex-1 text-xs"
                 onClick={async () => {
                   await supabase.from('creative_jams').update({ status: 'completed' } as any).eq('id', eventId).eq('created_by', user?.id || '');
-                  toast({ title: "Event marked complete ✅" });
+                  toast({ title: "Event marked complete" });
                   onUpdated?.();
                   onOpenChange(false);
                 }}>

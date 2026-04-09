@@ -9,14 +9,14 @@ import { formatDistanceToNow } from "date-fns";
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
-    case 'match': return '🎉';
-    case 'message': return '💬';
-    case 'project': return '📁';
-    case 'opportunity': return '💼';
-    case 'social': return '🔥';
-    case 'connection': return '🤝';
-    case 'reward': return '🏆';
-    default: return '🔔';
+    case 'match': return '';
+    case 'message': return '';
+    case 'project': return '';
+    case 'opportunity': return '';
+    case 'social': return '';
+    case 'connection': return '';
+    case 'reward': return '';
+    default: return '';
   }
 };
 

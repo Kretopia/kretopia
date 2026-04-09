@@ -93,7 +93,7 @@ export default function PurchaseSuccess() {
       }
 
       toast({
-        title: "Purchase Complete! 🎉",
+        title: "Purchase Complete!",
         description: listingType === 'digital' ? "Your files are ready to download" : "Your order has been placed",
       });
 

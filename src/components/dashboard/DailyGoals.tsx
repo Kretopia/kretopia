@@ -71,7 +71,7 @@ export function DailyGoals() {
         
         if (result.success) {
           toast({
-            title: "Daily Goal Complete! 🎯",
+            title: "Daily Goal Complete!",
             description: `${goal.title} - +${result.xpAwarded} XP earned!`,
           });
         }

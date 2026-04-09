@@ -36,7 +36,7 @@ export function useWishlist() {
       } else {
         await supabase.from("wishlists").insert({ user_id: user.id, product_id: productId });
         setWishlistIds(prev => new Set(prev).add(productId));
-        toast({ title: "Saved! ❤️", description: "Added to your saved listings" });
+        toast({ title: "Saved! ❤", description: "Added to your saved listings" });
       }
     } catch {
       toast({ title: "Error", variant: "destructive" });

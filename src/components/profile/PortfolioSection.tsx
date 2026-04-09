@@ -17,13 +17,13 @@ import { getMediaThumbnail, parseMediaUrl } from "@/lib/mediaUtils";
 
 // Platform color and icon mapping
 const PLATFORM_STYLES: Record<string, { bg: string; text: string; icon: string }> = {
-  spotify: { bg: 'bg-green-500', text: 'text-white', icon: '🎵' },
-  youtube: { bg: 'bg-red-500', text: 'text-white', icon: '▶️' },
-  vimeo: { bg: 'bg-blue-500', text: 'text-white', icon: '🎬' },
-  soundcloud: { bg: 'bg-orange-500', text: 'text-white', icon: '🔊' },
-  tiktok: { bg: 'bg-black', text: 'text-white', icon: '🎵' },
-  instagram: { bg: 'bg-gradient-to-r from-primary to-primary', text: 'text-white', icon: '📸' },
-  behance: { bg: 'bg-blue-600', text: 'text-white', icon: '🎨' },
+  spotify: { bg: 'bg-green-500', text: 'text-white', icon: '' },
+  youtube: { bg: 'bg-red-500', text: 'text-white', icon: '▶' },
+  vimeo: { bg: 'bg-blue-500', text: 'text-white', icon: '' },
+  soundcloud: { bg: 'bg-orange-500', text: 'text-white', icon: '' },
+  tiktok: { bg: 'bg-black', text: 'text-white', icon: '' },
+  instagram: { bg: 'bg-gradient-to-r from-primary to-primary', text: 'text-white', icon: '' },
+  behance: { bg: 'bg-blue-600', text: 'text-white', icon: '' },
 };
 
 interface PortfolioItem {
@@ -347,7 +347,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                         <p className="text-xs text-muted-foreground animate-fade-in">Analyzing link...</p>
                       )}
                       <p className="text-xs text-muted-foreground">
-                        💡 Tip: Streaming links embed better than direct uploads
+                        Tip: Streaming links embed better than direct uploads
                       </p>
                     </div>
 
@@ -629,7 +629,7 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                       <Badge 
                         className={`${PLATFORM_STYLES[mediaInfo.platform]?.bg || 'bg-black/60'} ${PLATFORM_STYLES[mediaInfo.platform]?.text || 'text-white'} text-xs border-0`}
                       >
-                        {PLATFORM_STYLES[mediaInfo.platform]?.icon || '🔗'} {mediaInfo.platform}
+                        {PLATFORM_STYLES[mediaInfo.platform]?.icon || ''} {mediaInfo.platform}
                       </Badge>
                     </div>
                   )}

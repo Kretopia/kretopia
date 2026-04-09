@@ -29,7 +29,7 @@ export function FirstActionPrompt({
             <Sparkles className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-lg mb-1">🎉 Welcome to ThriveIN!</h3>
+            <h3 className="font-semibold text-lg mb-1">Welcome to ThriveIN!</h3>
             <p className="text-sm text-muted-foreground">
               Your profile is set up. Now let's get you collaborating!
             </p>

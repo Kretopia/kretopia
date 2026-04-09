@@ -126,7 +126,7 @@ export const ProjectCreditsDialog = ({
       for (const assignment of otherAssignments) {
           await supabase.from("notifications").insert({
           user_id: assignment.userId,
-          title: "🎬 New Project Credit",
+          title: "New Project Credit",
           message: `You've been credited as "${assignment.role}" on "${projectTitle}". Confirm to add it to your profile.`,
           type: "project_credit",
           link: `/desk/${projectId}`,
@@ -139,7 +139,7 @@ export const ProjectCreditsDialog = ({
 
       setSubmitted(true);
       toast({
-        title: "Credits assigned! 🎬",
+        title: "Credits assigned!",
         description: `${validAssignments.length} credit${validAssignments.length > 1 ? "s" : ""} assigned. Collaborators will be notified to confirm.`,
       });
       onCreditsAssigned?.();
@@ -171,7 +171,7 @@ export const ProjectCreditsDialog = ({
 
         {submitted ? (
           <div className="text-center py-8">
-            <div className="text-4xl mb-3">🎬</div>
+            <div className="text-4xl mb-3"></div>
             <p className="font-semibold text-lg">Credits Assigned!</p>
             <p className="text-sm text-muted-foreground mt-1">
               Collaborators will be notified to confirm their roles.

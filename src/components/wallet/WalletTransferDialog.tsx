@@ -98,7 +98,7 @@ export function WalletTransferDialog({ open, onOpenChange, walletBalance, onTran
       if (data?.error) throw new Error(data.error);
 
       toast({
-        title: "Transfer Successful! 💸",
+        title: "Transfer Successful!",
         description: `$${Number(amount).toFixed(2)} ${currency} sent to ${data.recipientName}`,
       });
 

@@ -225,8 +225,8 @@ export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel, 
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Members</SelectItem>
-              <SelectItem value="og">🔥 OG Members</SelectItem>
-              <SelectItem value="beta">⚡ Beta Members</SelectItem>
+              <SelectItem value="og">OG Members</SelectItem>
+              <SelectItem value="beta">Beta Members</SelectItem>
               <SelectItem value="odos">🌿 ODOS Members</SelectItem>
               <SelectItem value="verified">✓ Verified</SelectItem>
             </SelectContent>

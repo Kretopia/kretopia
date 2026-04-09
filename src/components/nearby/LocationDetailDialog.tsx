@@ -35,13 +35,13 @@ interface Review {
 }
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string; emoji: string }> = {
-  studio: { icon: Music, color: 'text-purple-500', label: 'Studio', emoji: '🎙️' },
-  creative_space: { icon: Palette, color: 'text-emerald-500', label: 'Creative Space', emoji: '🎨' },
-  shoot_spot: { icon: Camera, color: 'text-rose-500', label: 'Shoot Spot', emoji: '📸' },
-  venue: { icon: Building2, color: 'text-blue-500', label: 'Venue', emoji: '🎤' },
-  music_store: { icon: Headphones, color: 'text-violet-500', label: 'Music Store', emoji: '🎵' },
-  art_supply: { icon: ShoppingBag, color: 'text-orange-500', label: 'Art Supply', emoji: '🎨' },
-  rental_house: { icon: Building2, color: 'text-teal-500', label: 'Rental House', emoji: '🏠' },
+  studio: { icon: Music, color: 'text-purple-500', label: 'Studio', emoji: '🎙' },
+  creative_space: { icon: Palette, color: 'text-emerald-500', label: 'Creative Space', emoji: '' },
+  shoot_spot: { icon: Camera, color: 'text-rose-500', label: 'Shoot Spot', emoji: '' },
+  venue: { icon: Building2, color: 'text-blue-500', label: 'Venue', emoji: '' },
+  music_store: { icon: Headphones, color: 'text-violet-500', label: 'Music Store', emoji: '' },
+  art_supply: { icon: ShoppingBag, color: 'text-orange-500', label: 'Art Supply', emoji: '' },
+  rental_house: { icon: Building2, color: 'text-teal-500', label: 'Rental House', emoji: '' },
   photo_lab: { icon: Camera, color: 'text-pink-500', label: 'Photo Lab', emoji: '📷' },
 };
 
@@ -132,7 +132,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
           .eq('location_id', location.id)
           .eq('user_id', user.id);
         if (error) throw error;
-        toast({ title: "Review updated ✨" });
+        toast({ title: "Review updated" });
       } else {
         const { error } = await supabase
           .from('location_reviews')
@@ -144,7 +144,7 @@ export function LocationDetailDialog({ location, open, onOpenChange, isBookmarke
             image_urls: reviewPhotos.length > 0 ? reviewPhotos : null,
           });
         if (error) throw error;
-        toast({ title: "Review submitted ⭐" });
+        toast({ title: "Review submitted" });
       }
       setHasReviewed(true);
       setShowReviewForm(false);

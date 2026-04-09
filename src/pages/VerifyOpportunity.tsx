@@ -64,7 +64,7 @@ const VerifyOpportunity = () => {
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle2 className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle className="text-2xl">You're live! 🎉</CardTitle>
+              <CardTitle className="text-2xl">You're live!</CardTitle>
               <CardDescription className="text-base">
                 Your opportunity is now live. Creatives can start applying immediately.
               </CardDescription>

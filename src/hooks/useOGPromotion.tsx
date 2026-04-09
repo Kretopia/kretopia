@@ -46,7 +46,7 @@ export const useOGPromotion = () => {
             console.error("Error activating OG promotion:", error);
           } else if (data?.success) {
             toast({
-              title: "🎉 OG Member Bonus Activated!",
+              title: "OG Member Bonus Activated!",
               description: "You've been upgraded to Creator Pro for 2 months as a thank you for being an OG member!",
               duration: 10000,
             });

@@ -30,11 +30,11 @@ interface SwipeCardProps {
 }
 
 const COLLAB_INTENT_LABELS: Record<string, string> = {
-  looking_to_hire: '💼 Looking to Hire',
-  available_for_hire: '🎯 Available for Hire',
-  open_to_trade: '🔄 Open to Trade',
-  seeking_collaborators: '🤝 Seeking Collaborators',
-  just_networking: '👋 Just Networking'
+  looking_to_hire: 'Looking to Hire',
+  available_for_hire: 'Available for Hire',
+  open_to_trade: 'Open to Trade',
+  seeking_collaborators: 'Seeking Collaborators',
+  just_networking: 'Just Networking'
 };
 
 export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
@@ -114,7 +114,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
                 variant="outline" 
                 className="bg-primary/30 text-primary-foreground border-primary/50 backdrop-blur-sm text-xs"
               >
-                ✨ Unclaimed
+                Unclaimed
               </Badge>
             </div>
           )}
@@ -132,9 +132,9 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
                   profile.badge === 'founder' && "bg-primary/20 text-purple-200 border-primary/50"
                 )}
               >
-                {profile.badge === 'og' ? '⭐ OG' : 
+                {profile.badge === 'og' ? 'OG' : 
                  profile.badge === 'odos' ? '🌿 ODOS' : 
-                 profile.badge === 'founder' ? '👑 Founder' : '🚀 Beta'}
+                 profile.badge === 'founder' ? '👑 Founder' : 'Beta'}
               </Badge>
             </div>
           )}

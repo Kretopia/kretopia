@@ -369,7 +369,7 @@ export function ClaimProfileDialog({ open, onOpenChange, profile, onSuccess }: C
                   <h3 className="font-semibold truncate">{profile.full_name}</h3>
                   <p className="text-sm text-muted-foreground truncate">{profile.role}</p>
                   <Badge variant="secondary" className="mt-1 text-xs bg-amber-500/20 text-amber-500">
-                    ✨ Unclaimed
+                    Unclaimed
                   </Badge>
                 </div>
               </div>

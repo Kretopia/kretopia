@@ -92,7 +92,7 @@ export function NewsletterPopup() {
 
         {submitted ? (
           <div className="text-center py-4">
-            <p className="text-primary font-semibold">Welcome aboard! 🎉</p>
+            <p className="text-primary font-semibold">Welcome aboard!</p>
             <p className="text-sm text-muted-foreground mt-1">Check your inbox soon.</p>
           </div>
         ) : (

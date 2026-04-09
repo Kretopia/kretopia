@@ -68,7 +68,7 @@ const ClaimGig = () => {
     if (error) {
       toast({ title: "Claim failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Gig claimed! 🎉", description: "You now own this listing. Share it to get applications!" });
+      toast({ title: "Gig claimed!", description: "You now own this listing. Share it to get applications!" });
       navigate(`/opportunity/${opportunity.id}`);
     }
     setClaiming(false);
@@ -109,7 +109,7 @@ const ClaimGig = () => {
       <div className="mx-auto max-w-2xl">
         {/* Hero */}
         <div className="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-6 mb-6 text-center">
-          <div className="text-4xl mb-3">🎯</div>
+          <div className="text-4xl mb-3"></div>
           <h1 className="text-2xl font-bold mb-2">
             {isClaimed ? "This Gig Has Been Claimed" : "Claim This Gig"}
           </h1>
@@ -132,12 +132,12 @@ const ClaimGig = () => {
 
           {opportunity.compensation && (
             <div className="mt-3 flex items-center gap-2 text-sm text-accent">
-              <span>💰</span> {opportunity.compensation}
+              <span></span> {opportunity.compensation}
             </div>
           )}
           {opportunity.location && (
             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-              <span>📍</span> {opportunity.location}
+              <span></span> {opportunity.location}
             </div>
           )}
 

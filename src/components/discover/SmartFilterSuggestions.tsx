@@ -51,7 +51,7 @@ export const SmartFilterSuggestions = ({
             filter: "remote",
             value: true,
             reason: "Most flexible for collaboration",
-            icon: "💼"
+            icon: ""
           });
         }
       }

@@ -39,19 +39,19 @@ interface SwipeFiltersProps {
 
 const COLLAB_INTENT_OPTIONS = [
   { value: 'all', label: 'Any Intent', icon: Target },
-  { value: 'looking_to_hire', label: 'Hiring', emoji: '💼' },
+  { value: 'looking_to_hire', label: 'Hiring', emoji: '' },
   { value: 'available_for_hire', label: 'Available', emoji: '✋' },
-  { value: 'open_to_trade', label: 'Open to Trade', emoji: '🔄' },
-  { value: 'seeking_collaborators', label: 'Seeking Collaborators', emoji: '🤝' },
-  { value: 'just_networking', label: 'Networking', emoji: '👋' },
+  { value: 'open_to_trade', label: 'Open to Trade', emoji: '' },
+  { value: 'seeking_collaborators', label: 'Seeking Collaborators', emoji: '' },
+  { value: 'just_networking', label: 'Networking', emoji: '' },
 ];
 
 const EXPERIENCE_OPTIONS = [
   { value: 'all', label: 'Any Level' },
   { value: 'beginner', label: 'Beginner (0-2 yrs)', emoji: '🌱' },
-  { value: 'intermediate', label: 'Intermediate (3-5 yrs)', emoji: '📈' },
-  { value: 'experienced', label: 'Experienced (5-10 yrs)', emoji: '⭐' },
-  { value: 'expert', label: 'Expert (10+ yrs)', emoji: '🏆' },
+  { value: 'intermediate', label: 'Intermediate (3-5 yrs)', emoji: '' },
+  { value: 'experienced', label: 'Experienced (5-10 yrs)', emoji: '' },
+  { value: 'expert', label: 'Expert (10+ yrs)', emoji: '' },
 ];
 
 const FOLLOWER_OPTIONS = [
@@ -96,26 +96,26 @@ const AVAILABILITY_OPTIONS = [
   { value: 'all', label: 'Any Availability' },
   { value: 'available_now', label: '🟢 Available Now' },
   { value: 'available_soon', label: '🟡 Available Soon' },
-  { value: 'open_to_offers', label: '💬 Open to Offers' },
+  { value: 'open_to_offers', label: 'Open to Offers' },
   { value: 'booked', label: '🔴 Currently Booked' },
 ];
 
 // Role categories for grouped display
 const ROLE_CATEGORIES: { label: string; roles: string[] }[] = [
   {
-    label: '🎵 Music & Audio',
+    label: 'Music & Audio',
     roles: ['Musician', 'DJ', 'Soca Artist', 'Rapper', 'Singer', 'Songwriter', 'Music Producer', 'Audio Engineer', 'Sound Designer', 'Composer', 'Mixing Engineer', 'Mastering Engineer', 'Music Manager', 'A&R'],
   },
   {
-    label: '🎬 Film & Video',
+    label: 'Film & Video',
     roles: ['Filmmaker', 'Videographer', 'Director', 'Cinematographer', 'Screenwriter', 'Video Editor', 'VFX Artist', 'Colorist', 'Camera Operator', 'Gaffer', 'Grip', 'Production Assistant', 'Casting Director', 'Stunt Coordinator'],
   },
   {
-    label: '🎨 Design & Visual Arts',
+    label: 'Design & Visual Arts',
     roles: ['Graphic Designer', 'Illustrator', 'Photographer', 'Animator', 'Motion Designer', '3D Artist', 'UI/UX Designer', 'Art Director', 'Creative Director', 'Set Designer', 'Muralist', 'Fine Artist', 'Concept Artist', 'Tattoo Artist'],
   },
   {
-    label: '📱 Digital & Content',
+    label: 'Digital & Content',
     roles: ['Content Creator', 'Influencer', 'Streamer', 'Podcaster', 'Blogger', 'YouTuber', 'TikToker', 'Social Media Manager', 'Community Manager', 'Copywriter', 'Technical Writer', 'Journalist', 'UGC Creator', 'Brand Ambassador', 'Newsletter Creator'],
   },
   {
@@ -123,11 +123,11 @@ const ROLE_CATEGORIES: { label: string; roles: string[] }[] = [
     roles: ['Fashion Designer', 'Stylist', 'Makeup Artist', 'Hair Stylist', 'Costume Designer', 'Wardrobe Stylist', 'Carnival/Mas Designer', 'Model', 'Fashion Photographer', 'Nail Technician', 'Jewelry Designer', 'Textile Designer', 'Fashion Illustrator', 'Wig Maker', 'Personal Shopper'],
   },
   {
-    label: '💼 Business & Tech',
+    label: 'Business & Tech',
     roles: ['Brand Strategist', 'Marketing Manager', 'PR Specialist', 'Talent Manager', 'Event Producer', 'Project Manager', 'Web Developer', 'App Developer', 'Product Designer', 'Data Analyst'],
   },
   {
-    label: '🎭 Performing Arts',
+    label: 'Performing Arts',
     roles: ['Actor', 'Voice Actor', 'Dancer', 'Choreographer', 'Stand-up Comedian', 'MC/Host', 'Stage Manager'],
   },
 ];
@@ -346,7 +346,7 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                   disabled={detectingLocation}
                 >
                   <Navigation className="h-4 w-4" />
-                  {detectingLocation ? 'Detecting...' : filters.nearMe ? '📍 Showing Near Me' : 'Near Me — Use my location'}
+                  {detectingLocation ? 'Detecting...' : filters.nearMe ? 'Showing Near Me' : 'Near Me — Use my location'}
                 </Button>
 
                 {!filters.nearMe && (
@@ -360,7 +360,7 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                         <SelectValue placeholder="Select Country" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">🌍 All Countries</SelectItem>
+                        <SelectItem value="all">All Countries</SelectItem>
                         {LOCATION_HIERARCHY.map(country => (
                           <SelectItem key={country.value} value={country.value}>
                             {country.flag} {country.label}
@@ -583,7 +583,7 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                     <Button variant="outline" size="sm" disabled className="text-xs">100K+</Button>
                   </div>
                   <div className="h-10 rounded-md border bg-muted/30 flex items-center px-3 text-sm text-muted-foreground">
-                    ⭐ Experience Level
+                    Experience Level
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Photography</Button>

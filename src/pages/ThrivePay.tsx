@@ -79,7 +79,7 @@ export default function ThrivePay() {
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       toast({
-        title: "Account Connected! 🎉",
+        title: "Account Connected!",
         description: "Your Stripe account has been successfully connected.",
       });
       navigate("/thrivepay", { replace: true });
@@ -94,7 +94,7 @@ export default function ThrivePay() {
         }).then(({ data }) => {
           if (data?.success) {
             toast({
-              title: "Wallet Topped Up! 💰",
+              title: "Wallet Topped Up!",
               description: `$${data.amount?.toFixed(2)} has been added to your wallet.`,
             });
           }
@@ -156,7 +156,7 @@ export default function ThrivePay() {
         if (data.status && data.status !== connectStatus) {
           setConnectStatus(data.status);
           if (data.status === "active") {
-            toast({ title: "Account Active! 🎉", description: "Your Stripe account is now fully verified." });
+            toast({ title: "Account Active!", description: "Your Stripe account is now fully verified." });
           }
         }
       }

@@ -91,7 +91,7 @@ export const ServicePackagesSection = ({ userId, isOwnProfile }: ServicePackages
         await supabase.from("service_packages").insert(payload);
       }
 
-      toast({ title: editingId ? "Package updated!" : "Package created! 📦" });
+      toast({ title: editingId ? "Package updated!" : "Package created!" });
       setDialogOpen(false);
       resetForm();
       fetchPackages();

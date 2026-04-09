@@ -22,13 +22,13 @@ interface AddCreativeLocationDialogProps {
 }
 
 const LOCATION_TYPES = [
-  { value: 'studio', label: '🎙️ Studio', desc: 'Recording, photo, or production studio' },
-  { value: 'creative_space', label: '🎨 Creative Space', desc: 'Coworking, workshop, or art space' },
-  { value: 'shoot_spot', label: '📸 Shoot Spot', desc: 'Mural walls, scenic locations, backdrops' },
-  { value: 'venue', label: '🎤 Venue', desc: 'Event venue, gallery, or performance space' },
-  { value: 'music_store', label: '🎵 Music Store', desc: 'Instruments, gear, and music equipment' },
-  { value: 'art_supply', label: '🎨 Art Supply', desc: 'Art materials, craft supplies, stationery' },
-  { value: 'rental_house', label: '🏠 Rental House', desc: 'Equipment rental, camera gear, lighting' },
+  { value: 'studio', label: '🎙Studio', desc: 'Recording, photo, or production studio' },
+  { value: 'creative_space', label: 'Creative Space', desc: 'Coworking, workshop, or art space' },
+  { value: 'shoot_spot', label: 'Shoot Spot', desc: 'Mural walls, scenic locations, backdrops' },
+  { value: 'venue', label: 'Venue', desc: 'Event venue, gallery, or performance space' },
+  { value: 'music_store', label: 'Music Store', desc: 'Instruments, gear, and music equipment' },
+  { value: 'art_supply', label: 'Art Supply', desc: 'Art materials, craft supplies, stationery' },
+  { value: 'rental_house', label: 'Rental House', desc: 'Equipment rental, camera gear, lighting' },
   { value: 'photo_lab', label: '📷 Photo Lab', desc: 'Film processing, printing, scanning' },
 ];
 
@@ -110,7 +110,7 @@ export function AddCreativeLocationDialog({
       
       if (error) throw error;
       
-      toast({ title: "Spot pinned! 📍", description: `${name} has been added to Nearby.` });
+      toast({ title: "Spot pinned!", description: `${name} has been added to Nearby.` });
       onCreated();
       onOpenChange(false);
       resetForm();

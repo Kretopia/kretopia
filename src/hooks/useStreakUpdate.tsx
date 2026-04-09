@@ -52,16 +52,16 @@ export function useStreakUpdate() {
             
             // Extra bonus for weekly milestones
             if (updatedProfile.streak_count % 7 === 0) {
-              streakMessage = `${updatedProfile.streak_count} day streak! +5 XP +25 daily +100 weekly bonus! 🎉`;
+              streakMessage = `${updatedProfile.streak_count} day streak! +5 XP +25 daily +100 weekly bonus!`;
             }
 
             toast({
-              title: "Streak Updated! 🔥",
+              title: "Streak Updated!",
               description: streakMessage,
             });
           } else if (loginResult.awarded) {
             toast({
-              title: "Daily Login! ⚡",
+              title: "Daily Login!",
               description: "+5 XP earned!",
             });
           }

@@ -159,8 +159,8 @@ export const ShareableProfileCard = ({
 
       const file = new File([blob], `thrivein-${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "profile"}.png`, { type: "image/png" });
       const shareText = mode === "invite"
-        ? `Join me on ThriveIN! 🚀\n${qrUrl}`
-        : `Check out my creative profile on ThriveIN! 🚀\n${qrUrl}`;
+        ? `Join me on ThriveIN! \n${qrUrl}`
+        : `Check out my creative profile on ThriveIN! \n${qrUrl}`;
 
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
@@ -244,7 +244,7 @@ export const ShareableProfileCard = ({
                 
                 {profile.location && (
                   <p className="text-white/50 text-[10px] mt-0.5 flex items-center gap-1">
-                    <span>📍</span> {profile.location}
+                    <span></span> {profile.location}
                   </p>
                 )}
                 

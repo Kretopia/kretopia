@@ -44,7 +44,7 @@ const DEMO_CARDS: ForYouCreator[] = [
     location: 'Bali, Indonesia',
     collab_intent: 'seeking_collaborators',
     match_score: 92,
-    match_reasons: ['📍 Based in Bali, Indonesia', '🎯 Complementary skill: Photographer', '🤝 Matching collaboration goals'],
+    match_reasons: ['Based in Bali, Indonesia', 'Complementary skill: Photographer', 'Matching collaboration goals'],
   },
   {
     user_id: 'demo-2',
@@ -55,7 +55,7 @@ const DEMO_CARDS: ForYouCreator[] = [
     location: 'Canggu, Bali',
     collab_intent: 'available_for_hire',
     match_score: 87,
-    match_reasons: ['📍 Based in Canggu, Bali', '🎯 Complementary skill: Videographer'],
+    match_reasons: ['Based in Canggu, Bali', 'Complementary skill: Videographer'],
   },
   {
     user_id: 'demo-3',
@@ -66,7 +66,7 @@ const DEMO_CARDS: ForYouCreator[] = [
     location: 'Ubud, Bali',
     collab_intent: 'looking_to_hire',
     match_score: 85,
-    match_reasons: ['📍 Based in Ubud, Bali', '💼 Looking to hire creators'],
+    match_reasons: ['Based in Ubud, Bali', 'Looking to hire creators'],
   },
   {
     user_id: 'demo-4',
@@ -113,7 +113,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
     if (demoMode) {
       setCurrentIndex(prev => prev + 1);
       if (direction === 'right') {
-        toast.success(`Demo: Interest sent to ${currentCreator.full_name}! 💫`);
+        toast.success(`Demo: Interest sent to ${currentCreator.full_name}!`);
       }
       resetSwipe();
       return;
@@ -158,7 +158,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         console.log('[ForYou] Checking if they swiped on us:', { theirSwipe, swipeCheckError });
 
         if (theirSwipe) {
-          console.log('[ForYou] 🎉 MUTUAL MATCH DETECTED!');
+          console.log('[ForYou] MUTUAL MATCH DETECTED!');
           
           // Track match creation
           analytics.match(currentCreator.user_id);
@@ -207,7 +207,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           await supabase.from('notifications').insert({
             user_id: currentCreator.user_id,
             type: 'match',
-            title: "It's a Match! 🎉",
+            title: "It's a Match!",
             message: `You and ${myProfile?.full_name || 'a creator'} both want to connect!`,
             link: `/messages?user=${user!.id}`,
           });
@@ -216,7 +216,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           await supabase.from('notifications').insert({
             user_id: user!.id,
             type: 'match',
-            title: "It's a Match! 🎉",
+            title: "It's a Match!",
             message: `You and ${currentCreator.full_name} both want to connect!`,
             link: `/messages?user=${currentCreator.user_id}`,
           });
@@ -229,7 +229,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             userId: currentCreator.user_id,
           });
           
-          toast.success(`It's a Match! 🎉`, { description: `You and ${currentCreator.full_name} both want to connect!` });
+          toast.success(`It's a Match!`, { description: `You and ${currentCreator.full_name} both want to connect!` });
         } else {
           console.log('[ForYou] No mutual swipe yet, creating pending connection');
           
@@ -244,7 +244,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             console.error('[ForYou] Error creating pending connection:', pendingError);
           }
           
-          toast.success(`Interest sent to ${currentCreator.full_name}! 💫`);
+          toast.success(`Interest sent to ${currentCreator.full_name}!`);
         }
       }
 
@@ -437,7 +437,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           const userLoc = currentProfile.location.toLowerCase().split(',')[0];
           if (candLoc.includes(userLoc)) {
             score += 10;
-            reasons.push(`📍 Based in ${candidate.location}`);
+            reasons.push(`Based in ${candidate.location}`);
           }
         }
 

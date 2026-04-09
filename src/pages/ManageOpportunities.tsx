@@ -31,8 +31,6 @@ interface PostedGig {
   type: string | null;
   applicant_count?: number;
 }
-  applicant_count?: number;
-}
 
 interface Application {
   id: string;

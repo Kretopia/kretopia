@@ -9,6 +9,7 @@ import { ConnectionInsightCard } from "./ConnectionInsightCard";
 import { EmptyState } from "@/components/ui/empty-state";
 
 export const SmartConnectionSuggestions = () => {
+  const navigate = useNavigate();
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -262,7 +263,7 @@ Return top 3 reasons why this user would benefit from expanding their network in
         description="Complete your profile to get personalized connection recommendations"
         action={{
           label: "Complete Profile",
-          onClick: () => window.location.href = '/onboarding'
+          onClick: () => navigate('/onboarding')
         }}
       />
     );

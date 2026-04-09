@@ -306,6 +306,11 @@ const ViewProfile = () => {
     );
   };
 
+  // If not authenticated, show public EPK
+  if (!authLoading && !user) {
+    return <CreatorEPK />;
+  }
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-background">

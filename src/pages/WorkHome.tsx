@@ -4,9 +4,9 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  FolderKanban, Briefcase, DollarSign, Target, ArrowRight, Plus,
-  Clock, TrendingUp, AlertCircle, CheckCircle2, Loader2,
-  Building2, Users, UserSearch, BarChart3, Star, Eye
+  FolderKanban, Briefcase, DollarSign, ArrowRight, Plus,
+  Clock, CheckCircle2, Loader2,
+  Building2, Users, UserSearch, Star
 } from "lucide-react";
 import { CrossModeNudge } from "@/components/CrossModeNudge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -293,7 +293,7 @@ const BrandWorkHome = () => {
   );
 };
 
-// ── Individual Creator Dashboard (existing) ──────────────────
+// ── Individual Creator Dashboard ──────────────────────────────
 const CreatorWorkHome = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -301,21 +301,36 @@ const CreatorWorkHome = () => {
   const [projects, setProjects] = useState<any[]>([]);
   const [gigs, setGigs] = useState<any[]>([]);
   const [showCreateProject, setShowCreateProject] = useState(false);
-  const [pipelineCount, setPipelineCount] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [pendingMilestones, setPendingMilestones] = useState(0);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const [projRes, gigsRes, leadsRes] = await Promise.all([
+      const [projRes, gigsRes, msRes] = await Promise.all([
         supabase.from("projects").select("*").order("updated_at", { ascending: false }).limit(20),
         // @ts-ignore – deep type instantiation
         supabase.from("opportunities").select("id, title, status, created_at, budget_range").eq("posted_by", user.id).order("created_at", { ascending: false }).limit(5),
-        supabase.from("leads").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("milestones").select("id", { count: "exact", head: true }).eq("status", "pending"),
       ]);
       setProjects(projRes.data || []);
       setGigs(gigsRes.data || []);
-      setPipelineCount(leadsRes.count || 0);
+      setPendingMilestones(msRes.count || 0);
+
+      // Build recent activity from projects
+      const allProjects = projRes.data || [];
+      const activity = allProjects
+        .slice(0, 5)
+        .map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          status: p.status,
+          time: p.updated_at,
+        }));
+      setRecentActivity(activity);
+
       setLoading(false);
     };
     load();
@@ -347,26 +362,28 @@ const CreatorWorkHome = () => {
               <FolderKanban className="h-5 w-5 text-[hsl(var(--mode-accent))]" />
               Creative HQ
             </h1>
-            <p className="text-sm text-muted-foreground">Your creative business command center</p>
+            <p className="text-sm text-muted-foreground">At a glance</p>
           </div>
           <CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />
         </div>
 
+        {/* At-a-glance stats */}
         <div className="grid grid-cols-3 gap-3">
           <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/desk/projects")}>
             <p className="text-2xl font-bold">{activeProjects.length}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Active Projects</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Active</p>
           </Card>
           <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
             <p className="text-2xl font-bold">{activeGigs.length}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Open Gigs</p>
           </Card>
-          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/sales")}>
-            <p className="text-2xl font-bold">{pipelineCount}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pipeline</p>
+          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/thrivepay")}>
+            <p className="text-2xl font-bold">{pendingMilestones}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pending</p>
           </Card>
         </div>
 
+        {/* Active Projects */}
         <Widget title="Active Projects" icon={FolderKanban} action={{ label: "All", path: "/desk/projects" }}>
           {activeProjects.length === 0 ? (
             <div className="text-center py-4">
@@ -378,7 +395,7 @@ const CreatorWorkHome = () => {
             </div>
           ) : (
             <div className="space-y-2">
-              {activeProjects.slice(0, 3).map((p) => (
+              {activeProjects.slice(0, 4).map((p) => (
                 <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all" onClick={() => navigate(`/desk/${p.id}`)}>
                   <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
                   <span className="text-sm font-medium truncate flex-1">{p.title}</span>
@@ -391,20 +408,7 @@ const CreatorWorkHome = () => {
           )}
         </Widget>
 
-        {completedProjects.length > 0 && (
-          <Widget title="Past Projects" icon={CheckCircle2} action={{ label: "All", path: "/desk/projects" }}>
-            <div className="space-y-2">
-              {completedProjects.slice(0, 3).map((p) => (
-                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all opacity-70" onClick={() => navigate(`/desk/${p.id}`)}>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="text-sm font-medium truncate flex-1">{p.title}</span>
-                  <Badge variant="secondary" className="text-[10px]">Completed</Badge>
-                </div>
-              ))}
-            </div>
-          </Widget>
-        )}
-
+        {/* Your Gigs */}
         <Widget title="Your Gigs" icon={Briefcase} action={{ label: "Manage", path: "/manage-opportunities" }}>
           {activeGigs.length === 0 ? (
             <div className="text-center py-4">
@@ -426,35 +430,40 @@ const CreatorWorkHome = () => {
           )}
         </Widget>
 
-        <Widget title="Pipeline" icon={Target} action={{ label: "View All", path: "/sales" }}>
-          <div className="flex items-center gap-3 p-2">
-            <TrendingUp className="h-5 w-5 text-[hsl(var(--mode-accent))]" />
-            <div>
-              <p className="text-sm font-medium">{pipelineCount} active lead{pipelineCount !== 1 ? "s" : ""}</p>
-              <p className="text-xs text-muted-foreground">Track outreach, proposals & conversions</p>
+        {/* Recent Activity */}
+        {recentActivity.length > 0 && (
+          <Widget title="Recent Activity" icon={Clock}>
+            <div className="space-y-2">
+              {recentActivity.map((a) => (
+                <div key={a.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all" onClick={() => navigate(`/desk/${a.id}`)}>
+                  <div className={cn(
+                    "h-2 w-2 rounded-full shrink-0",
+                    a.status === "active" ? "bg-success" : "bg-muted-foreground"
+                  )} />
+                  <span className="text-sm truncate flex-1">{a.title}</span>
+                  <span className="text-[10px] text-muted-foreground shrink-0">
+                    {formatDistanceToNow(new Date(a.time), { addSuffix: true })}
+                  </span>
+                </div>
+              ))}
             </div>
-            <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto" />
-          </div>
-        </Widget>
+          </Widget>
+        )}
 
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => setShowCreateProject(true)}>
-            <FolderKanban className="h-4 w-4" />
-            <span className="text-xs">New Workspace</span>
-          </Button>
-          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/post-opportunity")}>
-            <Briefcase className="h-4 w-4" />
-            <span className="text-xs">Post a Gig</span>
-          </Button>
-          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/thrivepay")}>
-            <DollarSign className="h-4 w-4" />
-            <span className="text-xs">ThrivePay</span>
-          </Button>
-          <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/accounting")}>
-            <TrendingUp className="h-4 w-4" />
-            <span className="text-xs">Earnings</span>
-          </Button>
-        </div>
+        {/* Completed Projects */}
+        {completedProjects.length > 0 && (
+          <Widget title="Past Projects" icon={CheckCircle2} action={{ label: "All", path: "/desk/projects" }}>
+            <div className="space-y-2">
+              {completedProjects.slice(0, 3).map((p) => (
+                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all opacity-70" onClick={() => navigate(`/desk/${p.id}`)}>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="text-sm font-medium truncate flex-1">{p.title}</span>
+                  <Badge variant="secondary" className="text-[10px]">Completed</Badge>
+                </div>
+              ))}
+            </div>
+          </Widget>
+        )}
       </div>
 
       <CreateProjectDialog

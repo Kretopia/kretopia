@@ -26,8 +26,11 @@ interface PostedGig {
   title: string;
   status: string;
   created_at: string;
-  budget_range: string | null;
   compensation: string | null;
+  location: string | null;
+  type: string | null;
+  applicant_count?: number;
+}
   applicant_count?: number;
 }
 

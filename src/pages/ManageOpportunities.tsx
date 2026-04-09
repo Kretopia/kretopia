@@ -27,8 +27,7 @@ interface PostedGig {
   status: string;
   created_at: string;
   budget_range: string | null;
-  location: string | null;
-  opportunity_type: string | null;
+  compensation: string | null;
   applicant_count?: number;
 }
 
@@ -76,9 +75,10 @@ const ManageOpportunities = () => {
     setLoading(true);
 
     const [gigsRes, appsRes] = await Promise.all([
+      // @ts-ignore – deep type instantiation
       supabase
         .from("opportunities")
-        .select("id, title, status, created_at, budget_range, location, opportunity_type")
+        .select("id, title, status, created_at, compensation, location, type")
         .eq("created_by", user.id)
         .order("created_at", { ascending: false }),
       supabase
@@ -311,9 +311,9 @@ const GigCard = ({
             </div>
 
             <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
-              {gig.budget_range && (
+              {(gig.compensation || gig.budget_range) && (
                 <span className="flex items-center gap-0.5">
-                  <DollarSign className="h-3 w-3" /> {gig.budget_range}
+                  <DollarSign className="h-3 w-3" /> {gig.compensation || gig.budget_range}
                 </span>
               )}
               {gig.location && (

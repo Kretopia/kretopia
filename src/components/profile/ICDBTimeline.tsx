@@ -688,7 +688,7 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
       {/* Header */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="text-lg font-semibold">Work</h3>
+          <h3 className="text-lg font-semibold">Credits</h3>
           <Badge variant="secondary" className="text-xs gap-1">
             {credits.length}
           </Badge>

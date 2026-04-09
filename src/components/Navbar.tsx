@@ -6,6 +6,7 @@ import {
   DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2,
   MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home
 } from "lucide-react";
+import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";

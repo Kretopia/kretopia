@@ -32,6 +32,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CompanyOnboarding = lazy(() => import("./pages/CompanyOnboarding"));
 const TalentFinder = lazy(() => import("./pages/TalentFinder"));
+const TalentManager = lazy(() => import("./pages/TalentManager"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
@@ -241,7 +242,7 @@ const AppContent = () => {
             <Route path="/challenges/:id" element={<Navigate to="/" replace />} />
             <Route path="/market" element={<Navigate to="/opportunities" replace />} />
             <Route path="/market/:listingId" element={<Navigate to="/opportunities" replace />} />
-            <Route path="/talent-manager" element={<ProtectedRoute><Circle /></ProtectedRoute>} />
+            <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
             <Route path="/checkin" element={<Navigate to="/" replace />} />
             
             {/* Public Browsable Routes */}

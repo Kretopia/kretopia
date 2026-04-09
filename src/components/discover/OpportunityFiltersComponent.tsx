@@ -27,6 +27,7 @@ interface OpportunityFiltersComponentProps {
 }
 
 export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium, userLevel }: OpportunityFiltersComponentProps) => {
+  const navigate = useNavigate();
   const clearFilters = () => {
     onFilterChange({
       search: '',
@@ -216,7 +217,7 @@ export const OpportunityFiltersComponent = ({ filters, onFilterChange, isPremium
       </div>
 
       {!isPremium && (
-        <Button variant="default" className="w-full" onClick={() => window.location.href = '/subscription'}>
+        <Button variant="default" className="w-full" onClick={() => navigate('/subscription')}>
           Unlock Premium Filters
         </Button>
       )}

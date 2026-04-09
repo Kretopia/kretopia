@@ -25,6 +25,7 @@ export const AIMatchRecommendations = ({
   socialStats,
   showLocked = false
 }: AIMatchRecommendationsProps) => {
+  const navigate = useNavigate();
   if (showLocked) {
     return (
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
@@ -50,7 +51,7 @@ export const AIMatchRecommendations = ({
             variant="default"
             size="sm"
             className="w-full gap-2"
-            onClick={() => window.location.href = '/subscription'}
+            onClick={() => navigate('/subscription')}
           >
             <Sparkles className="h-4 w-4" />
             Upgrade to See Insights

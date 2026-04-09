@@ -423,10 +423,14 @@ const CreatorWorkHome = () => {
           ) : (
             <div className="space-y-2">
               {activeGigs.slice(0, 3).map((g) => (
-                <div key={g.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all" onClick={() => navigate(`/opportunity/${g.id}`)}>
-                  <Briefcase className="h-3.5 w-3.5 text-[hsl(var(--mode-accent))] shrink-0" />
-                  <span className="text-sm font-medium truncate flex-1">{g.title}</span>
-                  <Badge variant="secondary" className="text-[10px]">{g.compensation || "Open"}</Badge>
+                <div key={g.id} className="flex flex-col gap-1 p-2.5 rounded-lg hover:bg-accent/30 cursor-pointer transition-all" onClick={() => navigate(`/opportunity/${g.id}`)}>
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-3.5 w-3.5 text-[hsl(var(--mode-accent))] shrink-0" />
+                    <span className="text-sm font-medium truncate">{g.title}</span>
+                  </div>
+                  {g.compensation && (
+                    <p className="text-[10px] text-muted-foreground truncate pl-5.5">{g.compensation}</p>
+                  )}
                 </div>
               ))}
             </div>

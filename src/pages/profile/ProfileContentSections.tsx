@@ -81,15 +81,7 @@ export const ProfileContentSections = ({
     switch (activeTab) {
       case "work":
         return (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-bold">Credits</h2>
-                <p className="text-xs text-muted-foreground">Your verified work history & creative portfolio</p>
-              </div>
-            </div>
-            <ICDBTimeline userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-          </div>
+          <ICDBTimeline userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
         );
 
       case "skills":

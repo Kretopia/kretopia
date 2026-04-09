@@ -877,21 +877,6 @@ export const UnifiedHome = () => {
         </motion.div>
         )}
 
-        {/* ── Guest Post CTA ── */}
-        {!user && (
-          <div className="mt-6">
-            <button onClick={() => setQuickPostType("gig")} className="w-full rounded-2xl border border-border bg-card p-4 hover:border-success/40 transition-all group text-left flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center shrink-0 group-hover:bg-success/15 transition-colors">
-                <PlusCircle className="h-6 w-6 text-success" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-foreground mb-0.5">Post a Gig or Hire Talent</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">Find verified creatives for your next project — casting, music, design & more</p>
-              </div>
-            </button>
-          </div>
-        )}
-
         {/* Footer */}
         <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground mt-10 pb-4">
           <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>

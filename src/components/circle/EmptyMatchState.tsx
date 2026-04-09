@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MessageCircle, RefreshCw } from "lucide-react";
 import { NetworkVisualization } from "./NetworkVisualization";

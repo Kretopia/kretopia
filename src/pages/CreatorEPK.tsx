@@ -625,7 +625,7 @@ const CreatorEPK = () => {
                         <div className="rounded-xl overflow-hidden border border-primary/10 hover:border-primary/30 transition-all h-[195px] flex flex-col relative group cursor-pointer"
                           onClick={() => {
                             const name = encodeURIComponent(decodeHtmlEntities(credit.project_name || credit.title || ''));
-                            window.location.href = `/production?name=${name}`;
+                            navigate(`/production?name=${name}`);
                           }}
                         >
                           {/* Thumbnail or gradient fallback */}
@@ -686,7 +686,7 @@ const CreatorEPK = () => {
                     )}
                     onClick={() => {
                       const name = encodeURIComponent(decodeHtmlEntities(credit.project_name || credit.title || ''));
-                      window.location.href = `/production?name=${name}`;
+                      navigate(`/production?name=${name}`);
                     }}
                   >
                     {/* Thumbnail */}

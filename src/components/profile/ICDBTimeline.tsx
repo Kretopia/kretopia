@@ -415,25 +415,16 @@ function CategoryRow({
                 )}
               </div>
 
-              {/* Owner actions */}
-              {isOwnProfile && (
-                <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
+              {/* Owner actions - always visible on mobile, hover on desktop */}
+              {isOwnProfile && !bulkSelectMode && (
+                <div className="absolute top-1.5 right-1.5 flex gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                   <Button
                     variant="secondary" size="icon"
-                    className="h-6 w-6 bg-black/60 text-white border-0 hover:bg-black/70"
+                    className="h-6 w-6 bg-black/60 text-white border-0 hover:bg-black/70 backdrop-blur-sm"
                     onClick={(e) => { e.stopPropagation(); onEdit(credit); }}
                   >
                     <Pencil className="h-3 w-3" />
                   </Button>
-                  {credit.verification_status !== 'verified' && credit.source !== 'verified' && (
-                    <Button
-                      variant="secondary" size="icon"
-                      className="h-6 w-6 bg-black/50 text-white border-0 backdrop-blur-sm hover:bg-black/70"
-                      onClick={(e) => { e.stopPropagation(); onEndorse(credit); }}
-                    >
-                      <UserPlus className="h-3 w-3" />
-                    </Button>
-                  )}
                   {credit.source !== 'verified' && (
                     <Button
                       variant="secondary" size="icon"
@@ -889,7 +880,10 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Category</Label>
-                <Select value={editForm.project_type} onValueChange={v => setEditForm(f => ({ ...f, project_type: v }))}>
+                <Select value={editForm.project_type} onValueChange={v => {
+                  const newSection = TYPE_TO_CATEGORY[v] || editForm.section_override;
+                  setEditForm(f => ({ ...f, project_type: v, section_override: newSection }));
+                }}>
                   <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select type..." /></SelectTrigger>
                   <SelectContent>
                     {EDIT_PROJECT_TYPES.map(g => (

@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   FolderKanban, Briefcase, DollarSign, ArrowRight, Plus,
   Clock, CheckCircle2, Loader2,
-  Building2, Users, UserSearch, Star
+  Building2, Users, UserSearch, Star, Wallet
 } from "lucide-react";
 import { CrossModeNudge } from "@/components/CrossModeNudge";
 import { Card, CardContent } from "@/components/ui/card";

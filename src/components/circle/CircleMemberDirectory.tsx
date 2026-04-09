@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, Crown, Shield, MessageSquare, User } from "lucide-react";
+import { Search, Crown, Shield, MessageSquare, User, Sparkles, Star, Gem, Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -27,10 +27,10 @@ const roleDisplay = (role: string) => {
   switch (role) {
     case "admin": return { icon: Crown, label: "Admin", className: "text-amber-500 bg-amber-500/10 border-amber-500/20" };
     case "moderator": return { icon: Shield, label: "Mod", className: "text-blue-500 bg-blue-500/10 border-blue-500/20" };
-    case "mentor": return { icon: null, label: "✨ Mentor", className: "text-primary bg-primary/10 border-primary/20" };
-    case "featured": return { icon: null, label: "⭐ Featured", className: "text-amber-600 bg-amber-500/10 border-amber-500/20" };
-    case "vip": return { icon: null, label: "💎 VIP", className: "text-sky-500 bg-sky-500/10 border-sky-500/20" };
-    case "og": return { icon: null, label: "🏆 OG", className: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" };
+    case "mentor": return { icon: Sparkles, label: "Mentor", className: "text-primary bg-primary/10 border-primary/20" };
+    case "featured": return { icon: Star, label: "Featured", className: "text-amber-600 bg-amber-500/10 border-amber-500/20" };
+    case "vip": return { icon: Gem, label: "VIP", className: "text-sky-500 bg-sky-500/10 border-sky-500/20" };
+    case "og": return { icon: Trophy, label: "OG", className: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" };
     default: return null;
   }
 };

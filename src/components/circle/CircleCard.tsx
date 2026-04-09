@@ -34,7 +34,7 @@ const isNew = (createdAt: string) => {
 };
 
 const getActivityLevel = (messageCount: number) => {
-  if (messageCount > 200) return { label: "🔥 Very Active", color: "text-orange-500" };
+  if (messageCount > 200) return { label: "Very Active", color: "text-orange-500" };
   if (messageCount > 50) return { label: "Active", color: "text-emerald-500" };
   return null;
 };

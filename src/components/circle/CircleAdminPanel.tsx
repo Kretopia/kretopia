@@ -69,7 +69,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
       .update({ welcome_message: msg } as any)
       .eq("id", circle.id);
     setSaving(false);
-    toast({ title: "Settings saved ✅" });
+    toast({ title: "Settings saved" });
   };
 
   const fetchData = async () => {

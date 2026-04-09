@@ -132,14 +132,14 @@ export const ConnectFeed = ({ onMatch }: ConnectFeedProps) => {
             {
               user_id: targetId,
               type: 'match',
-              title: "It's a Match! 🎉",
+              title: "It's a Match!",
               message: `You matched with ${currentProfile?.full_name || 'a creator'}!`,
               link: '/circle?tab=network'
             },
             {
               user_id: user.id,
               type: 'match',
-              title: "It's a Match! 🎉",
+              title: "It's a Match!",
               message: `You matched with ${targetProfile?.full_name || 'a creator'}!`,
               link: '/circle?tab=network'
             }
@@ -188,7 +188,7 @@ export const ConnectFeed = ({ onMatch }: ConnectFeedProps) => {
       
       if (result.isMatch && result.matchedUser && onMatch) {
         onMatch(result.matchedUser);
-        toast.success("It's a Match! 🎉", {
+        toast.success("It's a Match!", {
           description: `You and ${result.matchedUser.name} liked each other!`
         });
       } else if (direction === 'right') {

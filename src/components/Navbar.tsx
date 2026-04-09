@@ -121,17 +121,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/profile", icon: User, label: "Profile" },
       ];
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-      setSearchOpen(false);
-    }
-  };
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">

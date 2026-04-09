@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ interface BrowseCreatorsProps {
 }
 
 export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [creators, setCreators] = useState<BrowseCreator[]>([]);
   const [loading, setLoading] = useState(true);
@@ -500,7 +502,7 @@ export const BrowseCreators = ({ onMatch }: BrowseCreatorsProps) => {
                 <Button 
                   variant="outline" 
                   className="w-full gap-2 border-primary/50 text-primary hover:bg-primary/10"
-                  onClick={() => window.location.href = '/subscription'}
+                  onClick={() => navigate('/subscription')}
                 >
                   <Crown className="h-4 w-4" />
                   Upgrade to Pro for Advanced Filters

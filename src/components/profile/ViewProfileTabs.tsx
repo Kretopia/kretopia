@@ -15,7 +15,7 @@ import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { useAuth } from "@/hooks/useAuth";
 
 const VIEW_TABS = [
-  { id: "work", label: "Work", icon: Briefcase },
+  { id: "work", label: "Credits", icon: Briefcase },
   { id: "skills", label: "Skills", icon: Zap },
   { id: "reviews", label: "Reviews", icon: Star },
   { id: "more", label: "More", icon: Award },
@@ -78,8 +78,8 @@ export const ViewProfileTabs = ({
         return (
           <div>
             <div className="mb-4">
-              <h2 className="text-lg font-bold">Work</h2>
-              <p className="text-xs text-muted-foreground">Creative portfolio & verified credits</p>
+              <h2 className="text-lg font-bold">Credits</h2>
+              <p className="text-xs text-muted-foreground">Verified work history & creative portfolio</p>
             </div>
             <ICDBTimeline userId={userId} isOwnProfile={false} onRefresh={onRefresh} />
           </div>

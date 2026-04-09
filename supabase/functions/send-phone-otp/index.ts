@@ -41,7 +41,8 @@ Deno.serve(async (req) => {
 
     const TWILIO_SID = Deno.env.get("TWILIO_ACCOUNT_SID")!;
     const TWILIO_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN")!;
-    const TWILIO_PHONE = Deno.env.get("TWILIO_PHONE_NUMBER")!;
+    const TWILIO_PHONE_RAW = Deno.env.get("TWILIO_PHONE_NUMBER")!;
+    const TWILIO_PHONE = TWILIO_PHONE_RAW.replace(/[^\d+]/g, '');
 
     if (action === "send") {
       // Strip all non-digit chars except leading +

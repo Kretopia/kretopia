@@ -363,7 +363,7 @@ const CreatorWorkHome = () => {
         <meta name="description" content="Your creative business command center — projects, gigs, payments, and tools all in one place." />
       </Helmet>
 
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 space-y-4">
+      <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 space-y-4">
         <div className="mb-2 flex items-start justify-between">
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2">
@@ -416,15 +416,10 @@ const CreatorWorkHome = () => {
           )}
         </Widget>
 
-        {/* Your Gigs */}
-        <Widget title="Your Gigs" icon={Briefcase} action={{ label: "Manage", path: "/manage-opportunities" }}>
+        {/* Your Gigs - summary only, manage is on the Gigs tab */}
+        <Widget title="Your Gigs" icon={Briefcase}>
           {activeGigs.length === 0 ? (
-            <div className="text-center py-4">
-              <p className="text-sm text-muted-foreground mb-2">No open gig listings</p>
-              <Button size="sm" variant="outline" onClick={() => navigate("/post-opportunity")} className="gap-1">
-                <Plus className="h-3 w-3" /> Post a Gig
-              </Button>
-            </div>
+            <p className="text-sm text-muted-foreground text-center py-2">No open gig listings</p>
           ) : (
             <div className="space-y-2">
               {activeGigs.slice(0, 3).map((g) => (
@@ -436,6 +431,20 @@ const CreatorWorkHome = () => {
               ))}
             </div>
           )}
+        </Widget>
+
+        {/* ThrivePay Glance */}
+        <Widget title="ThrivePay" icon={Wallet} action={{ label: "Details", path: "/thrivepay" }}>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-2 rounded-lg bg-accent/20">
+              <p className="text-lg font-bold">${earnings.pending.toLocaleString()}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pending</p>
+            </div>
+            <div className="text-center p-2 rounded-lg bg-accent/20">
+              <p className="text-lg font-bold">${earnings.total.toLocaleString()}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Earned</p>
+            </div>
+          </div>
         </Widget>
 
         {/* Recent Activity */}

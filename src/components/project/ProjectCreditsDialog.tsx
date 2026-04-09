@@ -171,7 +171,7 @@ export const ProjectCreditsDialog = ({
 
         {submitted ? (
           <div className="text-center py-8">
-            <div className="text-4xl mb-3">🎬</div>
+            <div className="text-4xl mb-3"></div>
             <p className="font-semibold text-lg">Credits Assigned!</p>
             <p className="text-sm text-muted-foreground mt-1">
               Collaborators will be notified to confirm their roles.

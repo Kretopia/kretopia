@@ -50,7 +50,7 @@ export const TierProgressCard = ({ currentPoints }: TierProgressCardProps) => {
         {!nextTier && (
           <div className="text-center py-2">
             <Badge className="bg-amber-500/20 text-amber-600 border-amber-500/30">
-              🎉 Highest Tier Achieved!
+              Highest Tier Achieved!
             </Badge>
           </div>
         )}

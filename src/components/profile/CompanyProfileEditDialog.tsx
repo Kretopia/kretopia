@@ -206,7 +206,7 @@ const CompanyEditForm = memo(({
       <div className="flex gap-2 justify-end mt-4">
         <Button onClick={handleSave}>
           <CheckCircle2 className="mr-2 h-4 w-4" />
-          Save Changes {completion.percentage === 100 ? '🎉' : ''}
+          Save Changes {completion.percentage === 100 ? '' : ''}
         </Button>
       </div>
     </>

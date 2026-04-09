@@ -56,7 +56,7 @@ interface SessionDetailDialogProps {
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
-  podcast: '🎙️ Podcast', workshop: 'Workshop', networking: 'Networking',
+  podcast: '🎙Podcast', workshop: 'Workshop', networking: 'Networking',
   content: 'Content', festival: 'Festival', showcase: 'Showcase',
   general: 'Creative',
 };

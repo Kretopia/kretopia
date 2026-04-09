@@ -107,7 +107,7 @@ export const NearbySidebar = ({
     {(atlasFilter !== 'creators' && atlasFilter !== 'sessions') && (
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm">📍</span>
+          <span className="text-sm"></span>
           <h3 className="font-semibold text-sm">{locations.length} Spots</h3>
         </div>
         <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">

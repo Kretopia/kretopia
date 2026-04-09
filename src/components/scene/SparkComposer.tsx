@@ -105,8 +105,7 @@ export const SparkComposer = ({ userProfile, onPostCreated }: SparkComposerProps
               className="w-full rounded-xl bg-muted/50 px-3.5 py-2.5 text-sm text-muted-foreground cursor-pointer hover:bg-muted/80 transition-colors"
               onClick={() => setExpanded(true)}
             >
-              What's inspiring you? ✨
-            </div>
+              What's inspiring you?             </div>
           ) : (
             <div className="space-y-2">
               <Textarea

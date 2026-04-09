@@ -85,8 +85,7 @@ export const MatchCelebrationDialog = ({
           {/* Match Text */}
           <div className="space-y-2">
             <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              It's a Match! ⚡
-            </h2>
+              It's a Match!             </h2>
             <p className="text-muted-foreground">
               You and <span className="font-semibold text-foreground">{matchedUser.name}</span> are now connected!
             </p>

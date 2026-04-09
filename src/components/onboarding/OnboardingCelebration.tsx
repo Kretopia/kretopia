@@ -92,8 +92,7 @@ export function OnboardingCelebration({
           {/* Title */}
           <div>
             <h2 className="text-2xl font-bold mb-1">
-              Your profile is live! 🎉
-            </h2>
+              Your profile is live!             </h2>
             <p className="text-lg font-medium text-primary">
               Welcome, {userName?.split(" ")[0] || "Creator"}
             </p>

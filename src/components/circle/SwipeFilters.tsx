@@ -39,19 +39,19 @@ interface SwipeFiltersProps {
 
 const COLLAB_INTENT_OPTIONS = [
   { value: 'all', label: 'Any Intent', icon: Target },
-  { value: 'looking_to_hire', label: 'Hiring', emoji: '💼' },
+  { value: 'looking_to_hire', label: 'Hiring', emoji: '' },
   { value: 'available_for_hire', label: 'Available', emoji: '✋' },
-  { value: 'open_to_trade', label: 'Open to Trade', emoji: '🔄' },
-  { value: 'seeking_collaborators', label: 'Seeking Collaborators', emoji: '🤝' },
-  { value: 'just_networking', label: 'Networking', emoji: '👋' },
+  { value: 'open_to_trade', label: 'Open to Trade', emoji: '' },
+  { value: 'seeking_collaborators', label: 'Seeking Collaborators', emoji: '' },
+  { value: 'just_networking', label: 'Networking', emoji: '' },
 ];
 
 const EXPERIENCE_OPTIONS = [
   { value: 'all', label: 'Any Level' },
   { value: 'beginner', label: 'Beginner (0-2 yrs)', emoji: '🌱' },
-  { value: 'intermediate', label: 'Intermediate (3-5 yrs)', emoji: '📈' },
-  { value: 'experienced', label: 'Experienced (5-10 yrs)', emoji: '⭐' },
-  { value: 'expert', label: 'Expert (10+ yrs)', emoji: '🏆' },
+  { value: 'intermediate', label: 'Intermediate (3-5 yrs)', emoji: '' },
+  { value: 'experienced', label: 'Experienced (5-10 yrs)', emoji: '' },
+  { value: 'expert', label: 'Expert (10+ yrs)', emoji: '' },
 ];
 
 const FOLLOWER_OPTIONS = [
@@ -583,7 +583,7 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                     <Button variant="outline" size="sm" disabled className="text-xs">100K+</Button>
                   </div>
                   <div className="h-10 rounded-md border bg-muted/30 flex items-center px-3 text-sm text-muted-foreground">
-                    ⭐ Experience Level
+                    Experience Level
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Photography</Button>

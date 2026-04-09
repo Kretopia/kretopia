@@ -42,7 +42,7 @@ export const SessionListItem = ({ session, isSelected, onClick, formatDistance }
           <div className="relative">
             <Avatar className="h-10 w-10 border-2 border-dashed border-amber-500">
               <AvatarImage src={session.creator_avatar || undefined} />
-              <AvatarFallback className="bg-amber-500/10 text-amber-600 text-sm">🎯</AvatarFallback>
+              <AvatarFallback className="bg-amber-500/10 text-amber-600 text-sm"></AvatarFallback>
             </Avatar>
             <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center">
               {session.participant_count}

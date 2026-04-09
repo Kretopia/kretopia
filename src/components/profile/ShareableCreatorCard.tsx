@@ -264,7 +264,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
                 </div>
                 <div className="w-px h-6 bg-white/10" />
                 <div className="text-center">
-                  <p className="text-primary font-bold text-sm">🔥</p>
+                  <p className="text-primary font-bold text-sm"></p>
                   <p className="text-white/40 text-[9px]">CREATOR</p>
                 </div>
               </div>

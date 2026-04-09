@@ -105,7 +105,7 @@ export const useUndoSwipe = (userTier: string) => {
       setUndosRemaining(prev => prev - 1);
       
       toast({
-        title: "Swipe undone! ↩️",
+        title: "Swipe undone! ↩",
         description: "The card has been restored"
       });
 

@@ -36,7 +36,7 @@ export function FeedbackWidget() {
     if (open && messages.length === 0) {
       setMessages([{
         role: "assistant",
-        content: "Hey! 👋 I'm here to hear your thoughts on ThriveIN. Got a bug to report, a feature idea, or just general feedback? Let me know!",
+        content: "Hey! I'm here to hear your thoughts on ThriveIN. Got a bug to report, a feature idea, or just general feedback? Let me know!",
       }]);
       setTimeout(() => inputRef.current?.focus(), 100);
     }

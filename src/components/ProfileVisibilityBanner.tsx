@@ -29,7 +29,7 @@ export const ProfileVisibilityBanner = ({ isVisible, missingFields }: ProfileVis
     <Alert className="mb-4 border-orange-500/50 bg-orange-50 dark:bg-orange-950/30 animate-in slide-in-from-top shadow-md">
       <EyeOff className="h-5 w-5 text-orange-500" />
       <AlertTitle className="text-orange-900 dark:text-orange-100 font-bold flex items-center gap-2">
-        🔒 You're Hidden from Discovery
+        You're Hidden from Discovery
       </AlertTitle>
       <AlertDescription className="text-orange-800 dark:text-orange-200 space-y-3">
         <p className="text-sm">

@@ -18,16 +18,16 @@ import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
   { value: "all", label: "All", emoji: "🌐" },
-  { value: "music", label: "Music", emoji: "🎵" },
-  { value: "film", label: "Film", emoji: "🎬" },
-  { value: "design", label: "Design", emoji: "🎨" },
-  { value: "photo", label: "Photo", emoji: "📸" },
-  { value: "tech", label: "Tech", emoji: "💻" },
-  { value: "business", label: "Biz", emoji: "💰" },
-  { value: "collab", label: "Collabs", emoji: "🤝" },
-  { value: "podcast", label: "Podcast", emoji: "🎙️" },
-  { value: "writing", label: "Writers", emoji: "✍️" },
-  { value: "events", label: "Events", emoji: "🌍" },
+  { value: "music", label: "Music", emoji: "" },
+  { value: "film", label: "Film", emoji: "" },
+  { value: "design", label: "Design", emoji: "" },
+  { value: "photo", label: "Photo", emoji: "" },
+  { value: "tech", label: "Tech", emoji: "" },
+  { value: "business", label: "Biz", emoji: "" },
+  { value: "collab", label: "Collabs", emoji: "" },
+  { value: "podcast", label: "Podcast", emoji: "🎙" },
+  { value: "writing", label: "Writers", emoji: "✍" },
+  { value: "events", label: "Events", emoji: "" },
 ];
 
 const CirclesPage = () => {
@@ -62,7 +62,7 @@ const CirclesPage = () => {
 
       setCircles(roomsData.map(r => ({
         ...r,
-        icon_emoji: r.icon_emoji || "💬",
+        icon_emoji: r.icon_emoji || "",
         is_private: r.is_private || false,
         is_paid: r.is_paid || false,
         price_monthly: r.price_monthly || 0,

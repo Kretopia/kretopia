@@ -57,7 +57,7 @@ export const CircleActivityDigest = ({ className }: { className?: string }) => {
         circleStats.set(rid, {
           circleId: rid,
           circleName: room.title,
-          circleEmoji: room.icon_emoji || "💬",
+          circleEmoji: room.icon_emoji || "",
           newMessages: 0,
           newMembers: 0,
           upcomingEvents: 0,

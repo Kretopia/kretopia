@@ -137,7 +137,7 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
       }
 
       toast({
-        title: `🎉 Connected with ${unconnectedMatches.length} creators!`,
+        title: `Connected with ${unconnectedMatches.length} creators!`,
         description: "You'll be notified when they accept",
       });
     } catch (error) {

@@ -16,7 +16,7 @@ interface SuggestCategoryDialogProps {
 }
 
 const LOCATION_TYPES = [
-  { value: 'studio', label: '🎙️ Studio' },
+  { value: 'studio', label: '🎙Studio' },
   { value: 'creative_space', label: 'Creative Space' },
   { value: 'shoot_spot', label: 'Shoot Spot' },
   { value: 'venue', label: 'Venue' },

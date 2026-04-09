@@ -158,7 +158,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
         console.log('[ForYou] Checking if they swiped on us:', { theirSwipe, swipeCheckError });
 
         if (theirSwipe) {
-          console.log('[ForYou] 🎉 MUTUAL MATCH DETECTED!');
+          console.log('[ForYou] MUTUAL MATCH DETECTED!');
           
           // Track match creation
           analytics.match(currentCreator.user_id);
@@ -437,7 +437,7 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
           const userLoc = currentProfile.location.toLowerCase().split(',')[0];
           if (candLoc.includes(userLoc)) {
             score += 10;
-            reasons.push(`📍 Based in ${candidate.location}`);
+            reasons.push(`Based in ${candidate.location}`);
           }
         }
 

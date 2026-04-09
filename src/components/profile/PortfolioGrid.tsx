@@ -46,7 +46,7 @@ export const PortfolioGrid = ({ items, onItemClick }: PortfolioGridProps) => {
   if (items.length === 0) {
     return (
       <div className="text-center py-12 space-y-3">
-        <div className="text-6xl mb-4">🎨</div>
+        <div className="text-6xl mb-4"></div>
         <h3 className="text-xl font-semibold">No work to display yet</h3>
         <p className="text-muted-foreground">Portfolio items will appear here</p>
       </div>

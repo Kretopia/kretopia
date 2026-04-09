@@ -130,7 +130,7 @@ export const ProjectTemplatePicker = ({ projectId, currentUserId, onApplied }: P
           >
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="text-2xl">{template.icon || '📁'}</div>
+                <div className="text-2xl">{template.icon || ''}</div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-sm">{template.name}</h3>
                   <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{template.description}</p>
@@ -164,7 +164,7 @@ export const ProjectTemplatePicker = ({ projectId, currentUserId, onApplied }: P
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  <span className="text-xl">{selectedTemplate.icon || '📁'}</span>
+                  <span className="text-xl">{selectedTemplate.icon || ''}</span>
                   {selectedTemplate.name}
                 </DialogTitle>
                 <DialogDescription>{selectedTemplate.description}</DialogDescription>

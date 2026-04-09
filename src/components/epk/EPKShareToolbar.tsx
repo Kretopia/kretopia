@@ -13,8 +13,8 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId }: EPKShareTo
   const [copied, setCopied] = useState(false);
 
   const epkUrl = `https://thrivein.io/epk/${userId}`;
-  const shareText = `Check out my verified creative portfolio on ThriveIN 🎬\n\n${profileName} — ${profileRole}\n\n`;
-  const shortShareText = `Check out my verified creative portfolio on ThriveIN 🎬 ${profileName} — ${profileRole}`;
+  const shareText = `Check out my verified creative portfolio on ThriveIN \n\n${profileName} — ${profileRole}\n\n`;
+  const shortShareText = `Check out my verified creative portfolio on ThriveIN ${profileName} — ${profileRole}`;
 
   const handleNativeShare = async () => {
     if (navigator.share) {

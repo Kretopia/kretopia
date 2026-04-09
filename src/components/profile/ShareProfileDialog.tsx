@@ -260,7 +260,7 @@ ${profileUrl}`;
                 type="button"
                 className="bg-[hsl(142,70%,45%)] hover:bg-[hsl(142,70%,40%)] text-white"
               >
-                💬 WhatsApp
+                WhatsApp
               </Button>
               <Button
                 variant="outline"

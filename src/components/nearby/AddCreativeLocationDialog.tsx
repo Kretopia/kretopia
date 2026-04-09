@@ -22,7 +22,7 @@ interface AddCreativeLocationDialogProps {
 }
 
 const LOCATION_TYPES = [
-  { value: 'studio', label: '🎙️ Studio', desc: 'Recording, photo, or production studio' },
+  { value: 'studio', label: '🎙Studio', desc: 'Recording, photo, or production studio' },
   { value: 'creative_space', label: 'Creative Space', desc: 'Coworking, workshop, or art space' },
   { value: 'shoot_spot', label: 'Shoot Spot', desc: 'Mural walls, scenic locations, backdrops' },
   { value: 'venue', label: 'Venue', desc: 'Event venue, gallery, or performance space' },

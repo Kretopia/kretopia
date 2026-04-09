@@ -41,27 +41,27 @@ const GUIDE_SECTIONS: GuideSection[] = [
     route: "/profile",
     steps: [
       {
-        emoji: "📸",
+        emoji: "",
         title: "Add a profile photo",
         description: "Profiles with photos get 14x more views. Use a clear, professional headshot or creative portrait."
       },
       {
-        emoji: "✍️",
+        emoji: "✍",
         title: "Write your bio",
         description: "2-3 sentences about what you do and what you're looking for. Be specific — \"Music producer specializing in Afrobeats\" beats \"I make music.\""
       },
       {
-        emoji: "🎯",
+        emoji: "",
         title: "Add your skills",
         description: "Select skills that match your expertise. These power the matching algorithm — the more accurate, the better matches you get."
       },
       {
-        emoji: "🔗",
+        emoji: "",
         title: "Add portfolio links",
         description: "Link your best work — YouTube, SoundCloud, Behance, Instagram, personal website. Show, don't just tell."
       },
       {
-        emoji: "🏆",
+        emoji: "",
         title: "Add credits & awards",
         description: "Worked on a music video? Released an album? Won a competition? Credits build trust and credibility."
       }
@@ -83,17 +83,17 @@ const GUIDE_SECTIONS: GuideSection[] = [
         description: "Like Tinder but for creative collabs. Swipe right on people you'd want to work with, left to pass."
       },
       {
-        emoji: "🎯",
+        emoji: "",
         title: "Use filters",
         description: "Filter by skill, location, or availability to find exactly the type of collaborator you need."
       },
       {
-        emoji: "🤝",
+        emoji: "",
         title: "Match = mutual interest",
         description: "When both of you swipe right, it's a match! You can now message each other and start collaborating."
       },
       {
-        emoji: "💬",
+        emoji: "",
         title: "Break the ice",
         description: "Don't just say \"hey.\" Mention something specific from their profile — \"Love your Afrobeats production on [project]!\""
       }
@@ -115,17 +115,17 @@ const GUIDE_SECTIONS: GuideSection[] = [
         description: "Swipe through available gigs that match your skills — paid work, collaborations, or barter opportunities."
       },
       {
-        emoji: "📝",
+        emoji: "",
         title: "Apply with context",
         description: "When you apply, include a cover letter and relevant portfolio links. Show why YOU are the perfect fit."
       },
       {
-        emoji: "📢",
+        emoji: "",
         title: "Post your own gig",
         description: "Need a videographer? A vocalist? Post a gig with clear requirements and budget to attract the right talent."
       },
       {
-        emoji: "📊",
+        emoji: "",
         title: "Track applications",
         description: "Manage incoming applications, review portfolios, and connect with the best candidates."
       }
@@ -142,7 +142,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     route: "/messages",
     steps: [
       {
-        emoji: "💬",
+        emoji: "",
         title: "Start conversations",
         description: "After matching, send a thoughtful first message. Reference their work or shared interests."
       },
@@ -152,7 +152,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
         description: "Send files, links, and media directly in chat to discuss potential collaborations."
       },
       {
-        emoji: "🤝",
+        emoji: "",
         title: "Move to collaboration",
         description: "When you're ready to work together, create a project directly from your conversation."
       }
@@ -169,22 +169,22 @@ const GUIDE_SECTIONS: GuideSection[] = [
     route: "/desk",
     steps: [
       {
-        emoji: "🗂️",
+        emoji: "",
         title: "Create a project",
         description: "Set up a project with a title, description, timeline, and invite your collaborators."
       },
       {
-        emoji: "✅",
+        emoji: "",
         title: "Set milestones",
         description: "Break your project into milestones with deadlines. Stay organized and on track."
       },
       {
-        emoji: "📁",
+        emoji: "",
         title: "Share assets",
         description: "Upload and share files, designs, tracks, and documents. Keep everything in one place."
       },
       {
-        emoji: "💰",
+        emoji: "",
         title: "Use milestone payments",
         description: "For paid work, set up milestone payments through ThrivePay. Both parties are protected."
       }
@@ -201,17 +201,17 @@ const GUIDE_SECTIONS: GuideSection[] = [
     route: "/thrivepay",
     steps: [
       {
-        emoji: "🔒",
+        emoji: "",
         title: "Escrow protection",
         description: "Payments are held in escrow until milestones are completed and approved. No more getting ghosted after delivering work."
       },
       {
-        emoji: "📄",
+        emoji: "",
         title: "Automatic invoicing",
         description: "Professional invoices are generated automatically for every transaction. Great for taxes and records."
       },
       {
-        emoji: "💸",
+        emoji: "",
         title: "Multiple payout options",
         description: "Get paid via bank transfer, WiPay, or other supported methods. Fast and reliable."
       }
@@ -228,17 +228,17 @@ const GUIDE_SECTIONS: GuideSection[] = [
     route: "/profile",
     steps: [
       {
-        emoji: "🎬",
+        emoji: "",
         title: "Add project credits",
         description: "Every project you work on can be added as a credit — your role, the project name, and links to the work."
       },
       {
-        emoji: "✅",
+        emoji: "",
         title: "Get verified",
         description: "Collaborators can verify your credits, adding trust and credibility to your profile."
       },
       {
-        emoji: "⭐",
+        emoji: "",
         title: "Collect endorsements",
         description: "After working together, ask collaborators to endorse your skills. Social proof matters."
       }

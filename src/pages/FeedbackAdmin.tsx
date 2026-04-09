@@ -228,12 +228,12 @@ const FeedbackAdmin = () => {
                       <div className="flex gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
                         {item.category === "bug" && item.action_taken !== "fix_it" && (
                           <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={() => setActionTaken(item.id, "fix_it")}>
-                            🔧 Fix
+                            Fix
                           </Button>
                         )}
                         {item.category === "feature" && item.action_taken !== "implement" && (
                           <Button size="sm" className="h-8 text-xs" onClick={() => setActionTaken(item.id, "implement")}>
-                            🚀 Implement
+                            Implement
                           </Button>
                         )}
                         <DropdownMenu>
@@ -333,7 +333,7 @@ const FeedbackAdmin = () => {
                       onClick={() => setActionTaken(selectedItem.id, "fix_it")}
                       disabled={saving}
                     >
-                      🔧 Fix This Bug
+                      Fix This Bug
                     </Button>
                     <Button
                       size="sm"
@@ -341,7 +341,7 @@ const FeedbackAdmin = () => {
                       onClick={() => setActionTaken(selectedItem.id, "implement")}
                       disabled={saving}
                     >
-                      🚀 Implement Feature
+                      Implement Feature
                     </Button>
                     <Button
                       size="sm"

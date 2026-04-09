@@ -947,7 +947,7 @@ const Messages = () => {
       ) : (
         <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground bg-background">
           <div className="text-center space-y-2">
-            <div className="text-4xl mb-4">💬</div>
+            <div className="text-4xl mb-4"></div>
             <p className="text-xl font-semibold">Your Messages</p>
             <p className="text-sm">Send messages to creators you've connected with</p>
           </div>

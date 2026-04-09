@@ -1087,7 +1087,7 @@ export function PlatformConnectionCard({ onCreditsImported }: PlatformConnection
                                         <p className="font-medium truncate text-sm">{result.name}</p>
                                         {result.type && (
                                           <Badge variant="secondary" className="text-[10px] shrink-0">
-                                            {result.type === 'show' ? '🎙️ Podcast' : 
+                                            {result.type === 'show' ? '🎙Podcast' : 
                                              result.type === 'episode' ? 'Episode' : 'Artist'}
                                           </Badge>
                                         )}

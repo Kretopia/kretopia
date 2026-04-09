@@ -94,8 +94,7 @@ export const MatchActionSheet = ({ isOpen, onClose, matchedUser, currentUserId }
             </div>
           </div>
           <SheetTitle className="text-xl">
-            You matched with {matchedUser.full_name}! 🎉
-          </SheetTitle>
+            You matched with {matchedUser.full_name}!           </SheetTitle>
           <SheetDescription>
             {matchedUser.role && (
               <Badge variant="secondary" className="mt-2">{matchedUser.role}</Badge>

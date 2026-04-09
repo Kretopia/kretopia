@@ -90,7 +90,7 @@ export const ReviewPromptDialog = ({
 
         {submitted ? (
           <div className="text-center py-6">
-            <div className="text-4xl mb-2">⭐</div>
+            <div className="text-4xl mb-2"></div>
             <p className="font-medium">Thanks for your review!</p>
           </div>
         ) : (

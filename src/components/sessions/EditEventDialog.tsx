@@ -40,7 +40,7 @@ const EVENT_CATEGORIES = [
   { value: 'film', label: 'Film Shoot / Screening' },
   { value: 'photo', label: 'Photo Walk / Shoot' },
   { value: 'art', label: 'Art Collab / Exhibition' },
-  { value: 'podcast', label: '🎙️ Podcast / Live Recording' },
+  { value: 'podcast', label: '🎙Podcast / Live Recording' },
   { value: 'content', label: 'Content Creation' },
   { value: 'workshop', label: 'Workshop / Masterclass' },
   { value: 'networking', label: 'Networking / Meetup' },

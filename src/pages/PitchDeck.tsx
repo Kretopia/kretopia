@@ -128,10 +128,10 @@ const Slide4 = () => (
       </div>
       <div className="grid grid-cols-4 gap-8">
         {[
-          { title: "Connect", desc: "AI-powered matching + verified profiles", icon: "🔗", color: "from-primary/20 to-indigo-700/10" },
-          { title: "Collaborate", desc: "Project workspaces with milestones and deliverables", icon: "🤝", color: "from-fuchsia-500/20 to-fuchsia-600/10" },
-          { title: "Transact", desc: "Secure milestone-based escrow payments", icon: "💰", color: "from-green-500/20 to-green-600/10" },
-          { title: "Reputation", desc: "A portable, verified track record", icon: "⭐", color: "from-amber-500/20 to-amber-600/10" },
+          { title: "Connect", desc: "AI-powered matching + verified profiles", icon: "", color: "from-primary/20 to-indigo-700/10" },
+          { title: "Collaborate", desc: "Project workspaces with milestones and deliverables", icon: "", color: "from-fuchsia-500/20 to-fuchsia-600/10" },
+          { title: "Transact", desc: "Secure milestone-based escrow payments", icon: "", color: "from-green-500/20 to-green-600/10" },
+          { title: "Reputation", desc: "A portable, verified track record", icon: "", color: "from-amber-500/20 to-amber-600/10" },
         ].map((item, i) => (
           <div key={i} className={`p-10 rounded-3xl bg-gradient-to-b ${item.color} border border-white/10 flex flex-col items-center text-center space-y-6`}>
             <span className="text-[64px]">{item.icon}</span>
@@ -250,7 +250,7 @@ const Slide7 = () => (
         {[
           { phase: "Phase 1", region: "Trinidad & Tobago", desc: "High creative density. Deep founder network.", status: "active", emoji: "🇹🇹" },
           { phase: "Phase 2", region: "Bali", desc: "Global nomad capital. Existing media distribution.", status: "next", emoji: "🇮🇩" },
-          { phase: "Phase 3", region: "Global Creative Hubs", desc: "Caribbean → UK → US → Africa", status: "future", emoji: "🌍" },
+          { phase: "Phase 3", region: "Global Creative Hubs", desc: "Caribbean → UK → US → Africa", status: "future", emoji: "" },
         ].map((item, i) => (
           <div key={i} className={`p-10 rounded-3xl border ${item.status === 'active' ? 'border-primary/40 bg-primary/10' : 'border-white/10 bg-white/5'} space-y-6`}>
             <span className="text-[64px]">{item.emoji}</span>
@@ -286,10 +286,10 @@ const Slide8 = () => (
       </div>
       <div className="grid grid-cols-4 gap-8">
         {[
-          { title: "Transaction Fees", items: ["Free Tier: 15%", "Pro Tier: 8%"], icon: "📊" },
-          { title: "Subscription", items: ["Pro: $12/month", ""], icon: "💎" },
+          { title: "Transaction Fees", items: ["Free Tier: 15%", "Pro Tier: 8%"], icon: "" },
+          { title: "Subscription", items: ["Pro: $12/month", ""], icon: "" },
           { title: "Founder Circle", items: ["$199 Lifetime", ""], icon: "👑" },
-          { title: "Future Expansion", items: ["Financial tools", "Creator credit layer"], icon: "🚀" },
+          { title: "Future Expansion", items: ["Financial tools", "Creator credit layer"], icon: "" },
         ].map((item, i) => (
           <div key={i} className="p-8 rounded-3xl bg-white/5 border border-white/10 space-y-6">
             <span className="text-[48px]">{item.icon}</span>

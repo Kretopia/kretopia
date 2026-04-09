@@ -79,8 +79,7 @@ export function StreakCard({ streakCount, longestStreak, freezeCount, onUpdate }
               <TooltipHint content="Log in daily to maintain your streak! Use a streak freeze to protect your progress if you miss a day. Earn freezes through achievements and milestones." />
             </h3>
             <p className="text-sm text-muted-foreground">
-              Keep it going! 🔥
-            </p>
+              Keep it going!             </p>
           </div>
         </div>
       </div>

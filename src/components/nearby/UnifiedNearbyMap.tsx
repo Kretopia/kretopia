@@ -52,13 +52,13 @@ interface UnifiedNearbyMapProps {
 }
 
 const LOCATION_TYPE_EMOJI: Record<string, string> = {
-  studio: '🎙️',
-  creative_space: '🎨',
-  shoot_spot: '📸',
-  venue: '🎤',
-  music_store: '🎵',
+  studio: '🎙',
+  creative_space: '',
+  shoot_spot: '',
+  venue: '',
+  music_store: '',
   art_supply: '🛒',
-  rental_house: '🏠',
+  rental_house: '',
   photo_lab: '📷',
 };
 
@@ -189,7 +189,7 @@ export const UnifiedNearbyMap = ({
           <div class="relative h-10 w-10 rounded-full overflow-hidden border-[3px] border-dashed ${isSelected ? 'border-amber-400 shadow-lg shadow-amber-400/30' : 'border-amber-500'} bg-background flex items-center justify-center">
             ${session.creator_avatar 
               ? `<img src="${session.creator_avatar}" alt="${session.creator_name}" class="h-full w-full object-cover" />`
-              : `<div class="h-full w-full flex items-center justify-center bg-amber-500/10 text-amber-600 font-semibold text-xs">🎯</div>`
+              : `<div class="h-full w-full flex items-center justify-center bg-amber-500/10 text-amber-600 font-semibold text-xs"></div>`
             }
           </div>
           <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center shadow-sm">${session.participant_count}</div>
@@ -224,7 +224,7 @@ export const UnifiedNearbyMap = ({
       const el = document.createElement("div");
       el.className = "location-marker cursor-pointer";
       const isSelected = selectedItem?.type === 'location' && selectedItem?.id === loc.id;
-      const emoji = LOCATION_TYPE_EMOJI[loc.location_type] || '📍';
+      const emoji = LOCATION_TYPE_EMOJI[loc.location_type] || '';
       const colors = LOCATION_TYPE_COLORS[loc.location_type] || LOCATION_TYPE_COLORS.shoot_spot;
       
       el.innerHTML = `
@@ -310,7 +310,7 @@ export const UnifiedNearbyMap = ({
         </div>
         {locations.length > 0 && (
           <div className="flex items-center gap-2">
-            <div className="h-4 w-4 rounded-lg bg-muted border-2 border-primary/40 text-[8px] flex items-center justify-center">📍</div>
+            <div className="h-4 w-4 rounded-lg bg-muted border-2 border-primary/40 text-[8px] flex items-center justify-center"></div>
             <span className="text-foreground">Spots ({locations.length})</span>
           </div>
         )}
@@ -331,7 +331,7 @@ export const UnifiedNearbyMap = ({
         </div>
         {locations.length > 0 && (
           <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
-            📍 <span className="text-foreground">{locations.length} spots</span>
+            <span className="text-foreground">{locations.length} spots</span>
           </div>
         )}
       </div>

@@ -35,7 +35,7 @@ export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps)
   const baseUrl = "https://thrivein.io";
   const eventUrl = `${baseUrl}/event/${event.id}`;
 
-  const shareText = `🎨 Join me at "${event.title}" on ThriveIN!\n\n📅 ${new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}${event.venue_name ? `\n📍 ${event.venue_name}` : ''}\n\nSign up & join here:`;
+  const shareText = `Join me at "${event.title}" on ThriveIN!\n\n📅 ${new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}${event.venue_name ? `\n${event.venue_name}` : ''}\n\nSign up & join here:`;
 
   useEffect(() => {
     if (open && qrRef.current) {
@@ -171,7 +171,7 @@ export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps)
           {/* Pro Tips */}
           <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
             <p className="text-xs text-muted-foreground">
-              💡 <strong>Pro Tip:</strong> Share this link as your event's "entrance ticket" — 
+              <strong>Pro Tip:</strong> Share this link as your event's "entrance ticket" — 
               anyone who clicks will sign up for ThriveIN and automatically join your event!
             </p>
           </div>

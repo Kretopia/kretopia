@@ -74,7 +74,7 @@ export function StartProjectFromMatchDialog({
         id: "single-collab",
         title: "Single Collaboration",
         description: `${currentUserRole} + ${matchedUser.role} collaboration`,
-        icon: "🎵",
+        icon: "",
         suggestedBudget: "$500-2000",
         suggestedDuration: "2-4 weeks"
       });
@@ -82,7 +82,7 @@ export function StartProjectFromMatchDialog({
         id: "ep-project",
         title: "EP Project",
         description: "3-5 track EP production",
-        icon: "💿",
+        icon: "",
         suggestedBudget: "$2000-5000",
         suggestedDuration: "1-2 months"
       });
@@ -97,7 +97,7 @@ export function StartProjectFromMatchDialog({
         id: "music-video",
         title: "Music Video Production",
         description: "Full music video from concept to final edit",
-        icon: "🎬",
+        icon: "",
         suggestedBudget: "$1000-5000",
         suggestedDuration: "3-6 weeks"
       });
@@ -105,7 +105,7 @@ export function StartProjectFromMatchDialog({
         id: "short-film",
         title: "Short Film",
         description: "5-15 minute narrative or documentary",
-        icon: "🎥",
+        icon: "",
         suggestedBudget: "$3000-10000",
         suggestedDuration: "2-3 months"
       });
@@ -120,7 +120,7 @@ export function StartProjectFromMatchDialog({
         id: "web-app",
         title: "Web App Development",
         description: "Design + build web application",
-        icon: "💻",
+        icon: "",
         suggestedBudget: "$5000-15000",
         suggestedDuration: "1-3 months"
       });
@@ -128,7 +128,7 @@ export function StartProjectFromMatchDialog({
         id: "landing-page",
         title: "Landing Page",
         description: "High-converting marketing page",
-        icon: "🚀",
+        icon: "",
         suggestedBudget: "$1000-3000",
         suggestedDuration: "1-2 weeks"
       });
@@ -143,7 +143,7 @@ export function StartProjectFromMatchDialog({
         id: "content-campaign",
         title: "Content Campaign",
         description: "Multi-platform content series",
-        icon: "📸",
+        icon: "",
         suggestedBudget: "$2000-5000",
         suggestedDuration: "1 month"
       });
@@ -155,14 +155,14 @@ export function StartProjectFromMatchDialog({
         id: "quick-collab",
         title: "Quick Collaboration",
         description: "Short-term project together",
-        icon: "⚡",
+        icon: "",
         suggestedDuration: "1-2 weeks"
       });
       templates.push({
         id: "ongoing-partnership",
         title: "Ongoing Partnership",
         description: "Long-term collaboration",
-        icon: "🤝",
+        icon: "",
         suggestedDuration: "3+ months"
       });
     }
@@ -172,7 +172,7 @@ export function StartProjectFromMatchDialog({
       id: "custom",
       title: "Custom Project",
       description: "Define your own collaboration",
-      icon: "✨"
+      icon: ""
     });
 
     return templates;
@@ -441,7 +441,7 @@ export function StartProjectFromMatchDialog({
 
               <div className="p-4 bg-accent/50 rounded-lg border border-border">
                 <p className="text-sm text-muted-foreground">
-                  💡 <strong>Tip:</strong> You can add budget, deadlines, milestones, and tasks after creating the project.
+                  <strong>Tip:</strong> You can add budget, deadlines, milestones, and tasks after creating the project.
                 </p>
               </div>
             </div>

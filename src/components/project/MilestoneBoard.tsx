@@ -488,7 +488,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
                        </Badge>
                        {milestone.escrow_status === 'authorized' && (
                          <Badge variant="secondary" className="bg-purple-100 text-indigo-800">
-                           🔒 Escrow Secured
+                           Escrow Secured
                          </Badge>
                        )}
                        {milestone.escrow_status === 'captured' && (
@@ -539,7 +539,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
                              onClick={() => handleStripePayment(milestone, true)}
                              className="gap-2"
                            >
-                             🔒 Secure with Escrow
+                             Secure with Escrow
                            </Button>
                          )}
 
@@ -611,7 +611,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
                                onClick={() => handleStripePayment(milestone, true)}
                                className="gap-2"
                              >
-                               🔒 Pay with Escrow
+                               Pay with Escrow
                              </Button>
                              <Button
                                size="sm"

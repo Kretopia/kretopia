@@ -69,7 +69,7 @@ export function StartProjectDialog({
         id: "single-collab",
         title: "Single Collaboration",
         description: `${currentUserRole} + ${collaborator.role} collaboration`,
-        icon: "🎵",
+        icon: "",
         suggestedBudget: "$500-2000",
         suggestedDuration: "2-4 weeks"
       });
@@ -77,7 +77,7 @@ export function StartProjectDialog({
         id: "ep-project",
         title: "EP Project",
         description: "3-5 track EP production",
-        icon: "💿",
+        icon: "",
         suggestedBudget: "$2000-5000",
         suggestedDuration: "1-2 months"
       });
@@ -92,7 +92,7 @@ export function StartProjectDialog({
         id: "music-video",
         title: "Music Video Production",
         description: "Full music video from concept to final edit",
-        icon: "🎬",
+        icon: "",
         suggestedBudget: "$1000-5000",
         suggestedDuration: "3-6 weeks"
       });
@@ -100,7 +100,7 @@ export function StartProjectDialog({
         id: "short-film",
         title: "Short Film",
         description: "5-15 minute narrative or documentary",
-        icon: "🎥",
+        icon: "",
         suggestedBudget: "$3000-10000",
         suggestedDuration: "2-3 months"
       });
@@ -115,7 +115,7 @@ export function StartProjectDialog({
         id: "web-app",
         title: "Web App Development",
         description: "Design + build web application",
-        icon: "💻",
+        icon: "",
         suggestedBudget: "$5000-15000",
         suggestedDuration: "1-3 months"
       });
@@ -123,7 +123,7 @@ export function StartProjectDialog({
         id: "landing-page",
         title: "Landing Page",
         description: "High-converting marketing page",
-        icon: "🚀",
+        icon: "",
         suggestedBudget: "$1000-3000",
         suggestedDuration: "1-2 weeks"
       });
@@ -138,7 +138,7 @@ export function StartProjectDialog({
         id: "content-campaign",
         title: "Content Campaign",
         description: "Multi-platform content series",
-        icon: "📸",
+        icon: "",
         suggestedBudget: "$2000-5000",
         suggestedDuration: "1 month"
       });
@@ -150,14 +150,14 @@ export function StartProjectDialog({
         id: "quick-collab",
         title: "Quick Collaboration",
         description: "Short-term project together",
-        icon: "⚡",
+        icon: "",
         suggestedDuration: "1-2 weeks"
       });
       templates.push({
         id: "ongoing-partnership",
         title: "Ongoing Partnership",
         description: "Long-term collaboration",
-        icon: "🤝",
+        icon: "",
         suggestedDuration: "3+ months"
       });
     }
@@ -167,7 +167,7 @@ export function StartProjectDialog({
       id: "custom",
       title: "Custom Project",
       description: "Define your own collaboration",
-      icon: "✨"
+      icon: ""
     });
 
     return templates;
@@ -418,7 +418,7 @@ export function StartProjectDialog({
 
               <div className="p-4 bg-accent/50 rounded-lg border border-border">
                 <p className="text-sm text-muted-foreground">
-                  💡 <strong>Tip:</strong> You can add tasks, files, and chat with your collaborator once inside the project.
+                  <strong>Tip:</strong> You can add tasks, files, and chat with your collaborator once inside the project.
                 </p>
               </div>
             </div>

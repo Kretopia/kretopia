@@ -504,7 +504,7 @@ export function ProfileEditDialog({
           {/* Rate Card */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium flex items-center gap-2">
-              💰 Rate Card
+              Rate Card
               <Badge variant="secondary" className="text-[10px]">Visible on profile</Badge>
             </h3>
             <p className="text-xs text-muted-foreground -mt-2">Help brands & clients quickly assess budget fit</p>

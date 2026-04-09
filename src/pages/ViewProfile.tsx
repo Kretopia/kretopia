@@ -459,7 +459,7 @@ const ViewProfile = () => {
                         variant="secondary"
                         className="text-xs bg-amber-500/20 text-amber-500 border-amber-500/30"
                       >
-                        ✨ Unclaimed
+                        Unclaimed
                       </Badge>
                     )}
                     
@@ -504,12 +504,12 @@ const ViewProfile = () => {
                     )}
                     {profile.hourly_rate && (
                       <Badge variant="outline" className="gap-1">
-                        💰 ${profile.hourly_rate}/{profile.rate_currency || 'USD'}/hr
+                        ${profile.hourly_rate}/{profile.rate_currency || 'USD'}/hr
                       </Badge>
                     )}
                     {profile.project_rate && (
                       <Badge variant="outline" className="gap-1">
-                        📦 ${profile.project_rate}/{profile.rate_currency || 'USD'}/project
+                        ${profile.project_rate}/{profile.rate_currency || 'USD'}/project
                       </Badge>
                     )}
                     {!profile.hourly_rate && !profile.project_rate && profile.rate_range && (
@@ -518,7 +518,7 @@ const ViewProfile = () => {
                     {profile.avg_response_hours && profile.avg_response_hours > 0 && (
                       <Badge variant="outline" className="gap-1">
                         <Clock className="h-3 w-3" />
-                        ⚡ ~{profile.avg_response_hours < 1 ? '<1' : Math.round(profile.avg_response_hours)}hr response
+                        ~{profile.avg_response_hours < 1 ? '<1' : Math.round(profile.avg_response_hours)}hr response
                       </Badge>
                     )}
                   </div>

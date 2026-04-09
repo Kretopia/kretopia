@@ -938,7 +938,7 @@ export default function Onboarding() {
                       return (
                         <div key={circle.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card hover:border-primary/30 transition-all">
                           <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-lg">
-                            {circle.icon_emoji || '🎨'}
+                            {circle.icon_emoji || ''}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{circle.title}</p>
@@ -961,7 +961,7 @@ export default function Onboarding() {
                   </div>
                   {joinedCircleIds.size > 0 && (
                     <p className="text-[11px] text-primary font-medium text-center">
-                      🎉 {joinedCircleIds.size} circle{joinedCircleIds.size !== 1 ? 's' : ''} joined — you're already connected!
+                      {joinedCircleIds.size} circle{joinedCircleIds.size !== 1 ? 's' : ''} joined — you're already connected!
                     </p>
                   )}
                 </div>

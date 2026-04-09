@@ -64,8 +64,7 @@ export function FirstCollaborationPrompt({ onPostOpportunity }: FirstCollaborati
             <Sparkles className="h-8 w-8 text-primary-foreground" />
           </div>
           <DialogTitle className="text-center text-2xl">
-            Welcome to ThriveIN! 🎉
-          </DialogTitle>
+            Welcome to ThriveIN!           </DialogTitle>
           <DialogDescription className="text-center text-base">
             You're now part of the creative economy. Ready to make your first connection?
           </DialogDescription>

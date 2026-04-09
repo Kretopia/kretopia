@@ -23,21 +23,21 @@ import { CircleAdminPanel } from "@/components/circle/CircleAdminPanel";
 import { useNavigate } from "react-router-dom";
 
 const CIRCLE_CATEGORIES = [
-  { value: "general", label: "General", emoji: "💬" },
-  { value: "music", label: "Music", emoji: "🎵" },
-  { value: "film", label: "Film & Video", emoji: "🎬" },
-  { value: "design", label: "Design", emoji: "🎨" },
-  { value: "photo", label: "Photography", emoji: "📸" },
-  { value: "tech", label: "Creative Tech", emoji: "💻" },
-  { value: "business", label: "Creator Biz", emoji: "💰" },
-  { value: "collab", label: "Collabs", emoji: "🤝" },
-  { value: "feedback", label: "Feedback", emoji: "🎯" },
-  { value: "podcast", label: "Podcasters", emoji: "🎙️" },
-  { value: "writing", label: "Writers", emoji: "✍️" },
-  { value: "events", label: "Events & Culture", emoji: "🌍" },
+  { value: "general", label: "General", emoji: "" },
+  { value: "music", label: "Music", emoji: "" },
+  { value: "film", label: "Film & Video", emoji: "" },
+  { value: "design", label: "Design", emoji: "" },
+  { value: "photo", label: "Photography", emoji: "" },
+  { value: "tech", label: "Creative Tech", emoji: "" },
+  { value: "business", label: "Creator Biz", emoji: "" },
+  { value: "collab", label: "Collabs", emoji: "" },
+  { value: "feedback", label: "Feedback", emoji: "" },
+  { value: "podcast", label: "Podcasters", emoji: "🎙" },
+  { value: "writing", label: "Writers", emoji: "✍" },
+  { value: "events", label: "Events & Culture", emoji: "" },
 ];
 
-const REACTION_EMOJIS = ["🔥", "❤️", "🙌", "💯", "😂", "🎯"];
+const REACTION_EMOJIS = ["", "❤", "🙌", "💯", "😂", ""];
 
 export const CirclesTab = () => {
   const { user } = useAuth();
@@ -71,7 +71,7 @@ export const CirclesTab = () => {
 
       setCircles(roomsData.map(r => ({
         ...r,
-        icon_emoji: r.icon_emoji || "💬",
+        icon_emoji: r.icon_emoji || "",
         is_private: r.is_private || false,
         is_paid: r.is_paid || false,
         price_monthly: r.price_monthly || 0,
@@ -306,7 +306,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
     await supabase.from("spark_room_messages").insert({
       room_id: circle.id,
       user_id: user.id,
-      content: `👋 ${memberName} just joined the circle! Welcome aboard!`,
+      content: `${memberName} just joined the circle! Welcome aboard!`,
       message_type: "system",
     });
     // Send auto-welcome DM if the circle has one configured
@@ -392,7 +392,7 @@ const CircleDetail = ({ circle, onBack, onOpenFullPage }: { circle: CircleData; 
 
   const shareCircle = async () => {
     const url = `https://www.thrivein.io/circle?tab=circles&circle=${circle.invite_code || circle.id}`;
-    const shareText = `Join "${circle.title}" on ThriveIN — where creatives connect, collaborate, and grow together 🚀\n\n${url}`;
+    const shareText = `Join "${circle.title}" on ThriveIN — where creatives connect, collaborate, and grow together \n\n${url}`;
     try {
       await navigator.clipboard.writeText(shareText);
       setCopied(true);
@@ -598,7 +598,7 @@ export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: bo
         title: title.trim(),
         description: description.trim() || null,
         category,
-        icon_emoji: selectedCat?.emoji || "💬",
+        icon_emoji: selectedCat?.emoji || "",
         is_private: isPrivate || isPaid,
         is_paid: isPaid,
         price_monthly: isPaid ? parseFloat(price) || 0 : 0,
@@ -615,7 +615,7 @@ export const CreateCircleDialog = ({ open, onOpenChange, onCreated }: { open: bo
           circle_id: data.id,
           name: "general",
           channel_type: "text",
-          icon_emoji: "💬",
+          icon_emoji: "",
           position: 0,
           is_default: true,
           created_by: user.id,

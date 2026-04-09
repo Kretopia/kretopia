@@ -39,7 +39,7 @@ export function SeedLocationsDialog({ open, onOpenChange, userLocation, onSeeded
       if (data?.error) throw new Error(data.error);
 
       setResult({ count: data.count, locations: data.locations || [] });
-      toast({ title: `🎯 ${data.count} spots discovered!`, description: `AI found creative locations in ${city}` });
+      toast({ title: `${data.count} spots discovered!`, description: `AI found creative locations in ${city}` });
       onSeeded();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -94,12 +94,12 @@ export function SeedLocationsDialog({ open, onOpenChange, userLocation, onSeeded
           {result && (
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
               <p className="text-sm font-medium text-primary">
-                ✨ Found {result.count} creative spots!
+                Found {result.count} creative spots!
               </p>
               <div className="space-y-1 max-h-40 overflow-y-auto">
                 {result.locations.map((loc: any) => (
                   <div key={loc.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>📍</span>
+                    <span></span>
                     <span className="font-medium text-foreground">{loc.name}</span>
                     <span className="text-[10px] bg-muted px-1.5 rounded">{loc.location_type}</span>
                   </div>

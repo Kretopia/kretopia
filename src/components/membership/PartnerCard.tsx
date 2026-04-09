@@ -97,7 +97,7 @@ export const PartnerCard = ({
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-black/40 flex items-center justify-center backdrop-blur-sm">
               <div className="text-center">
                 <Badge variant="secondary" className="text-base px-4 py-2 bg-background/90 backdrop-blur-sm">
-                  🔒 Creator Pro Required
+                  Creator Pro Required
                 </Badge>
               </div>
             </div>
@@ -157,7 +157,7 @@ export const PartnerCard = ({
                 </div>
               )}
             </div>
-            <div className="absolute -right-6 -bottom-6 text-6xl opacity-5">💰</div>
+            <div className="absolute -right-6 -bottom-6 text-6xl opacity-5"></div>
           </div>
         )}
 

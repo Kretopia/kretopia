@@ -130,9 +130,9 @@ export function EmailSetupWizard({ onComplete }: { onComplete?: () => void }) {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
-                { emoji: "✉️", title: "Your brand", desc: "Emails come from your address" },
-                { emoji: "📈", title: "Better delivery", desc: "Higher inbox placement rates" },
-                { emoji: "🔒", title: "Secure", desc: "We never see your Google password" },
+                { emoji: "✉", title: "Your brand", desc: "Emails come from your address" },
+                { emoji: "", title: "Better delivery", desc: "Higher inbox placement rates" },
+                { emoji: "", title: "Secure", desc: "We never see your Google password" },
               ].map((item) => (
                 <div key={item.title} className="p-3 rounded-lg bg-muted/50 text-center">
                   <span className="text-xl">{item.emoji}</span>

@@ -179,7 +179,7 @@ export const WaitlistForm = () => {
             Thanks for applying! We'll manually review your profile and email you within <strong>24 hours</strong> if approved.
           </p>
           <p className="text-sm text-muted-foreground mt-4">
-            💡 <strong>Tip:</strong> Having an active social media presence or portfolio helps!
+            <strong>Tip:</strong> Having an active social media presence or portfolio helps!
           </p>
         </div>
       );

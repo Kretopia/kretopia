@@ -185,12 +185,12 @@ export function FeedbackTab() {
                   <div className="flex gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
                     {item.category === "bug" && item.action_taken !== "fix_it" && (
                       <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={() => setActionTaken(item.id, "fix_it")}>
-                        🔧 Fix
+                        Fix
                       </Button>
                     )}
                     {item.category === "feature" && item.action_taken !== "implement" && (
                       <Button size="sm" className="h-8 text-xs" onClick={() => setActionTaken(item.id, "implement")}>
-                        🚀 Implement
+                        Implement
                       </Button>
                     )}
                     <DropdownMenu>
@@ -280,10 +280,10 @@ export function FeedbackTab() {
                 <h3 className="text-sm font-semibold mb-2">Take Action</h3>
                 <div className="flex gap-2 flex-wrap">
                   <Button size="sm" variant={selectedItem.action_taken === "fix_it" ? "default" : "outline"} onClick={() => setActionTaken(selectedItem.id, "fix_it")} disabled={saving}>
-                    🔧 Fix This Bug
+                    Fix This Bug
                   </Button>
                   <Button size="sm" variant={selectedItem.action_taken === "implement" ? "default" : "outline"} onClick={() => setActionTaken(selectedItem.id, "implement")} disabled={saving}>
-                    🚀 Implement Feature
+                    Implement Feature
                   </Button>
                   <Button size="sm" variant={selectedItem.action_taken === "acknowledge" ? "default" : "outline"} onClick={() => setActionTaken(selectedItem.id, "acknowledge")} disabled={saving}>
                     ✓ Acknowledge

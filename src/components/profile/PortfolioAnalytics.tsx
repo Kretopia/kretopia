@@ -78,10 +78,10 @@ export const PortfolioAnalytics = ({ userId }: PortfolioAnalyticsProps) => {
 
   const getMediaTypeIcon = (type: string) => {
     switch (type) {
-      case 'video': return '🎥';
-      case 'image': return '🖼️';
-      case 'audio': return '🎵';
-      default: return '📄';
+      case 'video': return '';
+      case 'image': return '';
+      case 'audio': return '';
+      default: return '';
     }
   };
 

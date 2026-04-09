@@ -312,9 +312,9 @@ const GigCard = ({
             </div>
 
             <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
-              {(gig.compensation || gig.budget_range) && (
+              {gig.compensation && (
                 <span className="flex items-center gap-0.5">
-                  <DollarSign className="h-3 w-3" /> {gig.compensation || gig.budget_range}
+                  <DollarSign className="h-3 w-3" /> {gig.compensation}
                 </span>
               )}
               {gig.location && (

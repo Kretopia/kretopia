@@ -297,46 +297,11 @@ export const UnifiedHome = () => {
           </div>
 
           {/* Auth search */}
-          <div ref={!user ? undefined : wrapperRef} className="relative mb-4">
-            <form onSubmit={handleSubmit}>
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input
-                  ref={user ? inputRef : undefined}
-                  type="text"
-                  value={query}
-                  onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
-                  onFocus={() => setShowSuggestions(true)}
-                  placeholder="Search creators, productions, gigs..."
-                  className="w-full h-11 rounded-xl border border-border bg-card pl-11 pr-4 text-sm text-foreground focus:outline-none focus:border-primary transition-all placeholder:text-muted-foreground/50"
-                />
-              </div>
-            </form>
-            {showSuggestions && (query.trim().length >= 2 || suggestions.length > 0) && (
-              <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-border bg-popover shadow-xl z-50 overflow-hidden">
-                {loading && <div className="px-4 py-3 text-sm text-muted-foreground animate-pulse">Searching...</div>}
-                {!loading && suggestions.length === 0 && query.trim().length >= 2 && (
-                  <div className="px-4 py-3 text-sm text-muted-foreground">
-                    <Sparkles className="inline h-3.5 w-3.5 mr-1.5 text-primary" /> Press Enter for deep search
-                  </div>
-                )}
-                {suggestions.map((s, i) => (
-                  <button key={`${s.type}-${s.id}-${i}`} onClick={() => handleSuggestionClick(s)} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left">
-                    {s.type === "creator" ? (
-                      <Avatar className="h-8 w-8"><AvatarImage src={s.avatar || ""} /><AvatarFallback className="text-xs bg-primary/10 text-primary">{(s.title || "?")[0]}</AvatarFallback></Avatar>
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center"><Database className="h-3.5 w-3.5 text-primary" /></div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{s.title}</p>
-                      {s.subtitle && <p className="text-xs text-muted-foreground truncate">{s.subtitle}</p>}
-                    </div>
-                    <Badge variant="outline" className={`text-[10px] shrink-0 ${typeColor[s.type]}`}>{typeLabel[s.type]}</Badge>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <UnifiedSearchDropdown
+            variant="inline"
+            className="mb-4"
+            placeholder="Search creators, productions, gigs..."
+          />
 
           {/* Quick stats */}
           <div className="grid grid-cols-3 gap-2.5 mb-4">

@@ -3,7 +3,6 @@ import { Helmet } from "react-helmet-async";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +10,7 @@ import {
   Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
   Database, MapPin, Building2, CalendarDays, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
-  TrendingUp, X,
+  TrendingUp, X, Play, Star,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -39,6 +38,23 @@ const TYPE_TO_CATEGORY: Record<string, string> = {
   fashion_collection: "fashion", editorial_shoot: "fashion", runway: "fashion", beauty_campaign: "fashion",
 };
 
+// Cinematic placeholder gradients by category
+const CATEGORY_GRADIENTS: Record<string, string> = {
+  film_tv: "from-slate-900 via-blue-950 to-slate-800",
+  music: "from-purple-950 via-violet-900 to-indigo-950",
+  performing: "from-rose-950 via-red-900 to-pink-950",
+  events: "from-amber-950 via-orange-900 to-yellow-950",
+  digital: "from-cyan-950 via-teal-900 to-emerald-950",
+  commercial: "from-zinc-900 via-neutral-800 to-stone-900",
+  art: "from-fuchsia-950 via-pink-900 to-purple-950",
+  fashion: "from-rose-900 via-pink-800 to-fuchsia-900",
+};
+
+const CATEGORY_ICONS: Record<string, typeof Film> = {
+  film_tv: Film, music: Music, performing: Theater, events: Camera,
+  digital: Tv, commercial: Building2, art: Palette, fashion: Sparkles,
+};
+
 interface ICDBProject {
   id: string;
   title: string;
@@ -49,6 +65,7 @@ interface ICDBProject {
   platform: string | null;
   location: string | null;
   client_brand: string | null;
+  cover_image_url: string | null;
   external_url: string | null;
   metadata: any;
   contributor_count: number;
@@ -85,6 +102,9 @@ interface UserCredit {
   client_brand: string | null;
   user_id: string;
   endorsement_count: number;
+  thumbnail_url: string | null;
+  primary_media_url: string | null;
+  credit_category: string | null;
 }
 
 interface ProfileInfo {
@@ -119,6 +139,7 @@ const CreditDatabase = () => {
   const [claiming, setClaiming] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [trendingProjects, setTrendingProjects] = useState<ICDBProject[]>([]);
+  const [recentCredits, setRecentCredits] = useState<UserCredit[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -135,16 +156,25 @@ const CreditDatabase = () => {
     });
   }, []);
 
-  // Fetch trending/recent on mount
+  // Fetch trending on mount
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await supabase
-          .from('icdb_projects')
-          .select('*, icdb_project_roles(id, role_title, person_name, is_claimed, claimed_by)')
-          .order('created_at', { ascending: false })
-          .limit(12);
-        setTrendingProjects((data || []) as ICDBProject[]);
+        const [projectsRes, creditsRes] = await Promise.all([
+          supabase
+            .from('icdb_projects')
+            .select('*, icdb_project_roles(id, role_title, person_name, is_claimed, claimed_by)')
+            .order('created_at', { ascending: false })
+            .limit(12),
+          supabase
+            .from('credits')
+            .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category')
+            .not('thumbnail_url', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(20),
+        ]);
+        setTrendingProjects((projectsRes.data || []) as ICDBProject[]);
+        setRecentCredits((creditsRes.data || []) as UserCredit[]);
       } catch (e) {
         console.error(e);
       } finally {
@@ -164,7 +194,6 @@ const CreditDatabase = () => {
     }
     setLoading(true);
     try {
-      // Fetch projects via edge function
       const { data, error } = await supabase.functions.invoke('search-icdb', {
         body: { query: debouncedSearch, category: category !== 'all' ? category : undefined },
       });
@@ -174,10 +203,9 @@ const CreditDatabase = () => {
       setWebResults(data?.webResults || []);
       setProjectCount(data?.total || 0);
 
-      // Also fetch creator credits matching search
       let creditQuery = supabase
         .from('credits')
-        .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count')
+        .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category')
         .or(`project_name.ilike.%${debouncedSearch}%,role.ilike.%${debouncedSearch}%,client_brand.ilike.%${debouncedSearch}%`)
         .order('year', { ascending: false, nullsFirst: false })
         .limit(20);
@@ -249,6 +277,8 @@ const CreditDatabase = () => {
   const formatType = (type: string) =>
     type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
+  const getCategoryForType = (type: string) => TYPE_TO_CATEGORY[type] || 'digital';
+
   const hasResults = icdbProjects.length > 0 || aiSuggestions.length > 0 || userCredits.length > 0 || webResults.length > 0;
 
   return (
@@ -278,7 +308,6 @@ const CreditDatabase = () => {
               </div>
             )}
 
-            {/* Search bar */}
             <div className="relative max-w-xl mx-auto">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground" />
               <Input
@@ -289,7 +318,6 @@ const CreditDatabase = () => {
                 )}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                autoFocus={false}
               />
               {search && (
                 <button
@@ -301,7 +329,6 @@ const CreditDatabase = () => {
               )}
             </div>
 
-            {/* Category chips */}
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-3 justify-center">
               {CATEGORY_GROUPS.map(g => {
                 const Icon = g.icon;
@@ -327,7 +354,6 @@ const CreditDatabase = () => {
         </div>
 
         <div className="container mx-auto px-4">
-          {/* Search results */}
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <Loader2 className="h-7 w-7 animate-spin text-primary" />
@@ -336,7 +362,7 @@ const CreditDatabase = () => {
           ) : isSearching ? (
             hasResults ? (
               <div className="py-4 space-y-6">
-                {/* Projects section */}
+                {/* Projects — poster grid */}
                 {(icdbProjects.length > 0 || aiSuggestions.length > 0) && (
                   <section>
                     <div className="flex items-center gap-2 mb-3">
@@ -344,111 +370,85 @@ const CreditDatabase = () => {
                       <h2 className="text-sm font-semibold">Projects</h2>
                       <span className="text-[11px] text-muted-foreground">({icdbProjects.length + aiSuggestions.length})</span>
                     </div>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {icdbProjects.map(project => (
-                        <ProjectCard
+                        <PosterCard
                           key={project.id}
-                          project={project}
-                          currentUserId={currentUserId}
-                          onClaim={(role) => setClaimDialog({ project, role })}
-                          onNavigate={() => navigate(`/credits/project/${project.id}`)}
+                          title={project.title}
+                          type={project.type}
+                          year={project.year}
+                          imageUrl={project.cover_image_url}
+                          isVerified={project.is_verified}
+                          roleCount={project.icdb_project_roles?.length || 0}
+                          claimedCount={project.icdb_project_roles?.filter(r => r.is_claimed).length || 0}
+                          clientBrand={project.client_brand}
+                          onClick={() => navigate(`/credits/project/${project.id}`)}
                           formatType={formatType}
+                          getCategoryForType={getCategoryForType}
                         />
                       ))}
                       {aiSuggestions.map((s, i) => (
-                        <AISuggestionCard key={`ai-${i}`} suggestion={s} formatType={formatType} />
+                        <PosterCard
+                          key={`ai-${i}`}
+                          title={s.title}
+                          type={s.type}
+                          year={s.year}
+                          isAI
+                          clientBrand={s.client_brand}
+                          formatType={formatType}
+                          getCategoryForType={getCategoryForType}
+                        />
                       ))}
                     </div>
                   </section>
                 )}
 
-                {/* People section */}
+                {/* Creators */}
                 {userCredits.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-3">
                       <Users className="h-4 w-4 text-primary" />
                       <h2 className="text-sm font-semibold">Creators</h2>
-                      <span className="text-[11px] text-muted-foreground">({userCredits.length})</span>
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {userCredits.map(credit => {
                         const profile = profiles.get(credit.user_id);
                         return (
-                          <Card
+                          <CreditPosterCard
                             key={credit.id}
-                            className="overflow-hidden cursor-pointer hover:bg-muted/30 transition-colors border-border/50"
+                            credit={credit}
+                            profile={profile}
                             onClick={() => navigate(`/profile/${credit.user_id}`)}
-                          >
-                            <CardContent className="p-3 flex items-center gap-3">
-                              <Avatar className="h-9 w-9 shrink-0">
-                                <AvatarImage src={profile?.avatar_url || ''} />
-                                <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                                  {profile?.full_name?.[0] || '?'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">{profile?.full_name || 'Unknown'}</p>
-                                <p className="text-[11px] text-muted-foreground truncate">
-                                  {credit.role} on <span className="font-medium text-foreground/80">{credit.project_name}</span>
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                {credit.year && <span className="text-[10px] text-muted-foreground">{credit.year}</span>}
-                                {credit.verification_status === 'verified' && (
-                                  <ShieldCheck className="h-3.5 w-3.5 text-green-500" />
-                                )}
-                              </div>
-                            </CardContent>
-                          </Card>
+                            formatType={formatType}
+                            getCategoryForType={getCategoryForType}
+                          />
                         );
                       })}
                     </div>
                   </section>
                 )}
 
-                {/* Web discovered results */}
+                {/* Web discovered */}
                 {webResults.length > 0 && (
                   <section>
                     <div className="flex items-center gap-2 mb-3">
                       <Globe className="h-4 w-4 text-primary" />
                       <h2 className="text-sm font-semibold">Discovered on the Web</h2>
-                      <span className="text-[11px] text-muted-foreground">({webResults.length})</span>
                     </div>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {webResults.map((result, i) => (
-                        <Card
+                        <PosterCard
                           key={`web-${i}`}
-                          className="overflow-hidden hover:bg-muted/30 transition-colors border-border/50 cursor-pointer"
+                          title={result.title}
+                          type={result.type || 'project'}
+                          year={result.year}
+                          imageUrl={result.image_url}
+                          platform={result.platform}
                           onClick={() => result.url && window.open(result.url, '_blank')}
-                        >
-                          <CardContent className="p-3 flex items-center gap-3">
-                            {result.image_url ? (
-                              <img
-                                src={result.image_url}
-                                alt={result.title}
-                                className="h-12 w-12 rounded object-cover shrink-0 bg-muted"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                              />
-                            ) : (
-                              <div className="h-12 w-12 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                                <Globe className="h-5 w-5 text-primary/60" />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{result.title}</p>
-                              {result.description && (
-                                <p className="text-[11px] text-muted-foreground line-clamp-2">{result.description}</p>
-                              )}
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                {result.platform && (
-                                  <Badge variant="secondary" className="text-[9px] h-3.5 font-normal">{result.platform}</Badge>
-                                )}
-                                {result.year && <span className="text-[10px] text-muted-foreground">{result.year}</span>}
-                              </div>
-                            </div>
-                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          </CardContent>
-                        </Card>
+                          formatType={formatType}
+                          getCategoryForType={getCategoryForType}
+                          isExternal
+                        />
                       ))}
                     </div>
                   </section>
@@ -462,36 +462,64 @@ const CreditDatabase = () => {
               </div>
             )
           ) : (
-            /* Browse mode — show trending */
-            <div className="py-5">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <h2 className="text-sm font-semibold">Recently Added</h2>
-              </div>
-              {initialLoading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              ) : trendingProjects.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {trendingProjects.map(project => (
-                    <ProjectCard
-                      key={project.id}
-                      project={project}
-                      currentUserId={currentUserId}
-                      onClaim={(role) => setClaimDialog({ project, role })}
-                      onNavigate={() => navigate(`/credits/project/${project.id}`)}
-                      formatType={formatType}
-                      compact
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Database className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">Start searching to discover creative projects</p>
-                </div>
+            /* Browse mode */
+            <div className="py-5 space-y-8">
+              {/* Visual credits with art */}
+              {recentCredits.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Star className="h-4 w-4 text-primary" />
+                    <h2 className="text-sm font-semibold">Featured Work</h2>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                    {recentCredits.slice(0, 12).map(credit => (
+                      <FeaturedCreditCard
+                        key={credit.id}
+                        credit={credit}
+                        onClick={() => navigate(`/profile/${credit.user_id}`)}
+                        getCategoryForType={getCategoryForType}
+                      />
+                    ))}
+                  </div>
+                </section>
               )}
+
+              {/* Recently added projects */}
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <h2 className="text-sm font-semibold">Recently Added</h2>
+                </div>
+                {initialLoading ? (
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : trendingProjects.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {trendingProjects.map(project => (
+                      <PosterCard
+                        key={project.id}
+                        title={project.title}
+                        type={project.type}
+                        year={project.year}
+                        imageUrl={project.cover_image_url}
+                        isVerified={project.is_verified}
+                        roleCount={project.icdb_project_roles?.length || 0}
+                        claimedCount={project.icdb_project_roles?.filter(r => r.is_claimed).length || 0}
+                        clientBrand={project.client_brand}
+                        onClick={() => navigate(`/credits/project/${project.id}`)}
+                        formatType={formatType}
+                        getCategoryForType={getCategoryForType}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Database className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground">Start searching to discover creative projects</p>
+                  </div>
+                )}
+              </section>
             </div>
           )}
         </div>
@@ -536,127 +564,243 @@ const CreditDatabase = () => {
   );
 };
 
-/* ─── Sub-components ─── */
+/* ─── Poster Card (2:3 aspect ratio with cinematic placeholder) ─── */
 
-function ProjectCard({ project, currentUserId, onClaim, onNavigate, formatType, compact }: {
-  project: ICDBProject;
-  currentUserId: string | null;
-  onClaim: (role: any) => void;
-  onNavigate: () => void;
+function PosterCard({
+  title, type, year, imageUrl, isVerified, roleCount, claimedCount,
+  clientBrand, isAI, isExternal, platform, onClick, formatType, getCategoryForType,
+}: {
+  title: string;
+  type: string;
+  year?: number | null;
+  imageUrl?: string | null;
+  isVerified?: boolean;
+  roleCount?: number;
+  claimedCount?: number;
+  clientBrand?: string | null;
+  isAI?: boolean;
+  isExternal?: boolean;
+  platform?: string;
+  onClick?: () => void;
   formatType: (t: string) => string;
-  compact?: boolean;
+  getCategoryForType: (t: string) => string;
 }) {
-  const roleCount = project.icdb_project_roles?.length || 0;
-  const claimedCount = project.icdb_project_roles?.filter(r => r.is_claimed).length || 0;
+  const cat = getCategoryForType(type);
+  const gradient = CATEGORY_GRADIENTS[cat] || CATEGORY_GRADIENTS.digital;
+  const CatIcon = CATEGORY_ICONS[cat] || Globe;
 
   return (
-    <Card
-      className="overflow-hidden hover:bg-muted/30 transition-colors cursor-pointer border-border/50"
-      onClick={onNavigate}
+    <button
+      onClick={onClick}
+      className="group text-left rounded-xl overflow-hidden transition-all hover:ring-2 hover:ring-primary/40 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-primary/40"
     >
-      <CardContent className={compact ? "p-3" : "p-4"}>
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-0.5">
-              <h3 className={cn("font-semibold truncate", compact ? "text-xs" : "text-sm")}>{project.title}</h3>
-              {project.is_verified && (
-                <ShieldCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-              )}
+      {/* Poster artwork */}
+      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={title}
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        ) : (
+          <div className={cn("absolute inset-0 bg-gradient-to-br", gradient)}>
+            <div className="absolute inset-0 flex items-center justify-center opacity-10">
+              <CatIcon className="h-20 w-20" />
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground flex-wrap">
-              <Badge variant="secondary" className="text-[10px] h-4 font-normal">{formatType(project.type)}</Badge>
-              {project.year && <span>{project.year}</span>}
-              {project.client_brand && (
-                <span className="flex items-center gap-0.5">
-                  <Building2 className="h-2.5 w-2.5" /> {project.client_brand}
-                </span>
-              )}
-              {project.location && !compact && (
-                <span className="flex items-center gap-0.5">
-                  <MapPin className="h-2.5 w-2.5" /> {project.location}
-                </span>
-              )}
+            {/* Title overlay for placeholder */}
+            <div className="absolute inset-0 flex items-end p-3">
+              <p className="text-white/60 text-[10px] font-medium uppercase tracking-wider line-clamp-2">
+                {formatType(type)}
+              </p>
             </div>
           </div>
-          {roleCount > 0 && (
-            <div className="flex items-center gap-1 shrink-0">
-              <Users className="h-3 w-3 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">{claimedCount}/{roleCount}</span>
-            </div>
+        )}
+
+        {/* Gradient overlay on bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+        {/* Badges */}
+        <div className="absolute top-2 left-2 flex gap-1">
+          {isVerified && (
+            <span className="bg-blue-500/90 text-white rounded-full p-0.5">
+              <ShieldCheck className="h-2.5 w-2.5" />
+            </span>
           )}
-        </div>
-
-        {!compact && project.description && (
-          <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-2">{project.description}</p>
-        )}
-
-        {/* Inline roles — show up to 3 */}
-        {!compact && project.icdb_project_roles && project.icdb_project_roles.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {project.icdb_project_roles.slice(0, 3).map(role => (
-              <button
-                key={role.id}
-                className={cn(
-                  "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] transition-colors",
-                  role.is_claimed
-                    ? "bg-green-500/10 text-green-600"
-                    : "bg-muted hover:bg-primary/10 hover:text-primary"
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!role.is_claimed && currentUserId) onClaim(role);
-                }}
-              >
-                {role.person_name || 'Unknown'} — {role.role_title}
-                {role.is_claimed && <ShieldCheck className="h-2.5 w-2.5" />}
-                {!role.is_claimed && currentUserId && <UserPlus className="h-2.5 w-2.5" />}
-              </button>
-            ))}
-            {project.icdb_project_roles.length > 3 && (
-              <span className="text-[10px] text-muted-foreground px-2 py-0.5">
-                +{project.icdb_project_roles.length - 3} more
-              </span>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function AISuggestionCard({ suggestion, formatType }: { suggestion: AISuggestion; formatType: (t: string) => string }) {
-  return (
-    <Card className="overflow-hidden border-dashed border-primary/20 bg-primary/[0.02]">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-2 mb-1">
-          <h3 className="font-semibold text-sm truncate">{suggestion.title}</h3>
-          <Badge variant="outline" className="text-[9px] h-4 gap-0.5 border-primary/30 text-primary shrink-0">
-            <Sparkles className="h-2 w-2" /> AI
-          </Badge>
-        </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground flex-wrap">
-          <Badge variant="secondary" className="text-[10px] h-4 font-normal">{formatType(suggestion.type)}</Badge>
-          {suggestion.year && <span>{suggestion.year}</span>}
-          {suggestion.client_brand && (
-            <span className="flex items-center gap-0.5">
-              <Building2 className="h-2.5 w-2.5" /> {suggestion.client_brand}
+          {isAI && (
+            <span className="bg-primary/90 text-primary-foreground rounded-full px-1.5 py-0.5 text-[8px] font-semibold flex items-center gap-0.5">
+              <Sparkles className="h-2 w-2" /> AI
+            </span>
+          )}
+          {isExternal && (
+            <span className="bg-white/20 backdrop-blur-sm text-white rounded-full p-0.5">
+              <ExternalLink className="h-2.5 w-2.5" />
             </span>
           )}
         </div>
-        {suggestion.description && (
-          <p className="text-[11px] text-muted-foreground mt-1.5 line-clamp-2">{suggestion.description}</p>
-        )}
-        {suggestion.contributors && suggestion.contributors.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {suggestion.contributors.slice(0, 4).map((c, j) => (
-              <span key={j} className="inline-flex items-center px-2 py-0.5 rounded-full bg-muted text-[10px]">
-                {c.name} — {c.role}
-              </span>
-            ))}
+
+        {/* Role count */}
+        {roleCount != null && roleCount > 0 && (
+          <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white rounded-full px-1.5 py-0.5 text-[9px] flex items-center gap-0.5">
+            <Users className="h-2.5 w-2.5" />
+            {claimedCount}/{roleCount}
           </div>
         )}
-      </CardContent>
-    </Card>
+
+        {/* Bottom text overlay */}
+        <div className="absolute bottom-0 inset-x-0 p-2.5">
+          <h3 className="text-white font-semibold text-xs leading-tight line-clamp-2 mb-0.5 drop-shadow-md">
+            {title}
+          </h3>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge className="bg-white/15 text-white/90 border-0 text-[9px] h-4 font-normal backdrop-blur-sm">
+              {formatType(type)}
+            </Badge>
+            {year && <span className="text-white/70 text-[10px]">{year}</span>}
+            {platform && <span className="text-white/60 text-[9px]">{platform}</span>}
+          </div>
+          {clientBrand && (
+            <p className="text-white/50 text-[9px] mt-0.5 flex items-center gap-0.5 truncate">
+              <Building2 className="h-2 w-2" /> {clientBrand}
+            </p>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+/* ─── Credit Poster Card (creator work with thumbnail) ─── */
+
+function CreditPosterCard({
+  credit, profile, onClick, formatType, getCategoryForType,
+}: {
+  credit: UserCredit;
+  profile?: ProfileInfo;
+  onClick: () => void;
+  formatType: (t: string) => string;
+  getCategoryForType: (t: string) => string;
+}) {
+  const cat = getCategoryForType(credit.credit_category || 'digital');
+  const gradient = CATEGORY_GRADIENTS[cat] || CATEGORY_GRADIENTS.digital;
+  const CatIcon = CATEGORY_ICONS[cat] || Globe;
+
+  return (
+    <button
+      onClick={onClick}
+      className="group text-left rounded-xl overflow-hidden transition-all hover:ring-2 hover:ring-primary/40 hover:scale-[1.02] focus:outline-none"
+    >
+      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl">
+        {credit.thumbnail_url ? (
+          <img
+            src={credit.thumbnail_url}
+            alt={credit.project_name}
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        ) : (
+          <div className={cn("absolute inset-0 bg-gradient-to-br", gradient)}>
+            <div className="absolute inset-0 flex items-center justify-center opacity-10">
+              <CatIcon className="h-20 w-20" />
+            </div>
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+        {/* Verified badge */}
+        {credit.verification_status === 'verified' && (
+          <div className="absolute top-2 left-2">
+            <span className="bg-green-500/90 text-white rounded-full p-0.5">
+              <ShieldCheck className="h-2.5 w-2.5" />
+            </span>
+          </div>
+        )}
+
+        {/* Has media indicator */}
+        {credit.primary_media_url && (
+          <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white rounded-full p-1">
+            <Play className="h-2.5 w-2.5" />
+          </div>
+        )}
+
+        {/* Bottom text */}
+        <div className="absolute bottom-0 inset-x-0 p-2.5">
+          <h3 className="text-white font-semibold text-xs leading-tight line-clamp-2 mb-0.5 drop-shadow-md">
+            {credit.project_name}
+          </h3>
+          <p className="text-white/70 text-[10px] truncate">{credit.role}</p>
+          {profile && (
+            <div className="flex items-center gap-1 mt-1">
+              <Avatar className="h-4 w-4 border border-white/30">
+                <AvatarImage src={profile.avatar_url || ''} />
+                <AvatarFallback className="text-[6px] bg-white/20 text-white">
+                  {profile.full_name?.[0] || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-white/60 text-[9px] truncate">{profile.full_name}</span>
+            </div>
+          )}
+          {credit.year && <span className="text-white/50 text-[9px]">{credit.year}</span>}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+/* ─── Featured Credit Card (horizontal scroll, Netflix-style) ─── */
+
+function FeaturedCreditCard({
+  credit, onClick, getCategoryForType,
+}: {
+  credit: UserCredit;
+  onClick: () => void;
+  getCategoryForType: (t: string) => string;
+}) {
+  const cat = getCategoryForType(credit.credit_category || 'digital');
+  const gradient = CATEGORY_GRADIENTS[cat] || CATEGORY_GRADIENTS.digital;
+  const CatIcon = CATEGORY_ICONS[cat] || Globe;
+
+  return (
+    <button
+      onClick={onClick}
+      className="shrink-0 w-[130px] text-left group"
+    >
+      <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-1.5 transition-all group-hover:ring-2 group-hover:ring-primary/40 group-hover:scale-[1.02]">
+        {credit.thumbnail_url ? (
+          <img
+            src={credit.thumbnail_url}
+            alt={credit.project_name}
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className={cn("absolute inset-0 bg-gradient-to-br", gradient)}>
+            <div className="absolute inset-0 flex items-center justify-center opacity-10">
+              <CatIcon className="h-14 w-14" />
+            </div>
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
+        {credit.primary_media_url && (
+          <div className="absolute top-1.5 right-1.5 bg-black/50 backdrop-blur-sm text-white rounded-full p-0.5">
+            <Play className="h-2 w-2" />
+          </div>
+        )}
+        {credit.verification_status === 'verified' && (
+          <div className="absolute top-1.5 left-1.5">
+            <span className="bg-green-500/90 text-white rounded-full p-0.5">
+              <ShieldCheck className="h-2 w-2" />
+            </span>
+          </div>
+        )}
+      </div>
+      <h4 className="text-[11px] font-medium leading-tight line-clamp-2 text-foreground">
+        {credit.project_name}
+      </h4>
+      <p className="text-[10px] text-muted-foreground truncate">{credit.role}</p>
+    </button>
   );
 }
 

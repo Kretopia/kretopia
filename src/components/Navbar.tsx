@@ -368,19 +368,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
       {/* Mobile search bar — slides open */}
       {searchOpen && user && !isLandingPage && (
         <div className="sm:hidden border-t border-border/50 px-3 py-2 bg-background">
-          <form onSubmit={(e) => { handleSearchSubmit(e); setSearchOpen(false); }}>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search creators, credits, gigs..."
-                autoFocus
-                className="w-full h-10 rounded-xl border border-border bg-muted/40 pl-9 pr-3 text-sm text-foreground focus:outline-none focus:border-primary/50 transition-all placeholder:text-muted-foreground/50"
-              />
-            </div>
-          </form>
+          <UnifiedSearchDropdown
+            variant="inline"
+            autoFocus
+            onOpenChange={(isOpen) => { if (!isOpen) setSearchOpen(false); }}
+          />
         </div>
       )}
     </nav>

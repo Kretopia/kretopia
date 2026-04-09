@@ -76,13 +76,7 @@ export const ViewProfileTabs = ({
     switch (activeTab) {
       case "work":
         return (
-          <div>
-            <div className="mb-4">
-              <h2 className="text-lg font-bold">Credits</h2>
-              <p className="text-xs text-muted-foreground">Verified work history & creative portfolio</p>
-            </div>
-            <ICDBTimeline userId={userId} isOwnProfile={false} onRefresh={onRefresh} />
-          </div>
+          <ICDBTimeline userId={userId} isOwnProfile={false} onRefresh={onRefresh} />
         );
 
       case "skills":

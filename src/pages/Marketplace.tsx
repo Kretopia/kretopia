@@ -36,6 +36,7 @@ const CATEGORY_CARDS = [
 ];
 
 const Marketplace = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -168,7 +169,7 @@ const Marketplace = () => {
                 </div>
                 <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
                   {featuredProducts.map(p => (
-                    <div key={p.id} className="shrink-0 w-[160px] group cursor-pointer" onClick={() => window.location.href = `/market/${p.id}`}>
+                    <div key={p.id} className="shrink-0 w-[160px] group cursor-pointer" onClick={() => navigate(`/market/${p.id}`)}>
                       <div className="aspect-[4/3] rounded-lg overflow-hidden mb-2 border border-border/30">
                         <img src={p.preview_urls[0]} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                       </div>

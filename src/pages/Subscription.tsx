@@ -306,7 +306,7 @@ export default function Subscription() {
                 Join the founding members. Lifetime Enterprise access with exclusive perks.
               </CardDescription>
               <div className="mt-3">
-                <span className="text-4xl font-bold">$199</span>
+                <span className="text-4xl font-bold">$499</span>
                 <span className="text-muted-foreground ml-2">one-time payment</span>
               </div>
             </CardHeader>
@@ -351,7 +351,7 @@ export default function Subscription() {
                   {loading === "founder" ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>
                   ) : (
-                    "Claim Your Spot — $199"
+                    "Claim Your Spot — $499"
                   )}
                 </Button>
               )}

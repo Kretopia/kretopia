@@ -185,57 +185,11 @@ export const UnifiedHome = () => {
             </div>
 
             {/* Search bar */}
-            <div ref={wrapperRef} className="relative max-w-xl mx-auto mb-5">
-              <form onSubmit={handleSubmit}>
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={query}
-                    onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
-                    onFocus={() => setShowSuggestions(true)}
-                    placeholder="Search creators, productions, gigs..."
-                    className="w-full h-12 sm:h-14 rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm pl-12 pr-14 text-sm text-foreground shadow-lg focus:outline-none focus:border-primary focus:shadow-[var(--shadow-glow)] transition-all placeholder:text-muted-foreground/50"
-                  />
-                  <button type="submit" className="absolute right-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-md">
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </form>
-
-              {/* Suggestions dropdown */}
-              {showSuggestions && (query.trim().length >= 2 || suggestions.length > 0) && (
-                <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-border bg-popover shadow-xl z-[100] overflow-y-auto max-h-[60vh] backdrop-blur-lg">
-                  {loading && <div className="px-4 py-3 text-sm text-muted-foreground animate-pulse">Searching...</div>}
-                  {!loading && suggestions.length === 0 && query.trim().length >= 2 && (
-                    <div className="px-4 py-3 text-sm text-muted-foreground">
-                      <Sparkles className="inline h-3.5 w-3.5 mr-1.5 text-primary" />
-                      Press Enter for AI-powered deep search
-                    </div>
-                  )}
-                  {suggestions.map((s, i) => (
-                    <button key={`${s.type}-${s.id}-${i}`} onClick={() => handleSuggestionClick(s)} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left">
-                      {s.type === "creator" || s.avatar ? (
-                        <Avatar className="h-8 w-8"><AvatarImage src={s.avatar || ""} /><AvatarFallback className="text-xs bg-primary/10 text-primary">{(s.title || "?")[0]}</AvatarFallback></Avatar>
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center"><Database className="h-3.5 w-3.5 text-primary" /></div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{s.title}</p>
-                        {s.subtitle && <p className="text-xs text-muted-foreground truncate">{s.subtitle}</p>}
-                      </div>
-                      <Badge variant="outline" className={`text-[10px] shrink-0 ${typeColor[s.type]}`}>{typeLabel[s.type]}</Badge>
-                    </button>
-                  ))}
-                  {query.trim().length >= 2 && suggestions.length > 0 && (
-                    <button onClick={handleSubmit as any} className="w-full px-4 py-3 text-sm text-primary font-medium hover:bg-muted/50 transition-colors border-t border-border flex items-center gap-2">
-                      <Sparkles className="h-4 w-4" /> Deep search for "{query}"
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
+            <UnifiedSearchDropdown
+              variant="hero"
+              className="max-w-xl mx-auto mb-5"
+              placeholder="Search creators, productions, gigs..."
+            />
 
             {/* Quick chips */}
             <div className="flex items-center justify-center gap-2 flex-wrap mb-6">

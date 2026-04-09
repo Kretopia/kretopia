@@ -130,18 +130,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
         {/* ═══ PERSISTENT SEARCH BAR ═══ */}
         {user && !isLandingPage && (
-          <form onSubmit={handleSearchSubmit} className="hidden sm:flex flex-1 max-w-sm mx-4">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search creators, credits, gigs..."
-                className="w-full h-9 rounded-xl border border-border bg-muted/40 pl-9 pr-3 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:bg-card transition-all placeholder:text-muted-foreground/50"
-              />
-            </div>
-          </form>
+          <UnifiedSearchDropdown
+            variant="navbar"
+            className="hidden sm:block flex-1 max-w-sm mx-4"
+          />
         )}
 
         {/* Desktop Navigation - Mode Aware */}

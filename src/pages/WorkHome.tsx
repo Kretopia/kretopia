@@ -4,9 +4,9 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  FolderKanban, Briefcase, DollarSign, Target, ArrowRight, Plus,
-  Clock, TrendingUp, AlertCircle, CheckCircle2, Loader2,
-  Building2, Users, UserSearch, BarChart3, Star, Eye
+  FolderKanban, Briefcase, DollarSign, ArrowRight, Plus,
+  Clock, CheckCircle2, Loader2,
+  Building2, Users, UserSearch, Star
 } from "lucide-react";
 import { CrossModeNudge } from "@/components/CrossModeNudge";
 import { Card, CardContent } from "@/components/ui/card";

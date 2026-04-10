@@ -15,6 +15,7 @@ interface SearchResult {
   bio?: string;
   credits?: { project: string; role: string }[];
   platform?: string;
+  is_claimed?: boolean;
 }
 
 interface UnifiedSearchDropdownProps {

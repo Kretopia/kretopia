@@ -451,12 +451,34 @@ export function UnifiedSearchDropdown({
                         <p className="text-[11px] text-muted-foreground truncate">{r.subtitle}</p>
                       )}
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={cn("text-[9px] shrink-0", meta.color)}
-                    >
-                      {meta.label}
-                    </Badge>
+                    {r.type === "creator" && r.is_claimed === false ? (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Badge variant="outline" className="text-[9px] text-amber-500 border-amber-500/30 bg-amber-500/10">
+                          Unclaimed
+                        </Badge>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpen(false);
+                            setQuery("");
+                            onOpenChange?.(false);
+                            navigate(`/profile/${r.id}?showClaim=true`);
+                          }}
+                          className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+                        >
+                          <UserCheck className="h-2.5 w-2.5" />
+                          Claim
+                        </button>
+                      </div>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className={cn("text-[9px] shrink-0", meta.color)}
+                      >
+                        {meta.label}
+                      </Badge>
+                    )}
                   </button>
                 );
               })}

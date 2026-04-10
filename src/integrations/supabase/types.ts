@@ -1339,6 +1339,45 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_templates: {
+        Row: {
+          contract_type: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_public: boolean
+          terms_template: Json
+          title: string
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          contract_type?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          terms_template?: Json
+          title: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          contract_type?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          terms_template?: Json
+          title?: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
       creative_assets: {
         Row: {
           created_at: string
@@ -5831,6 +5870,105 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_contracts: {
+        Row: {
+          blockchain_network: string | null
+          blockchain_tx_hash: string | null
+          blockchain_verified_at: string | null
+          contract_hash: string | null
+          contract_type: string
+          created_at: string
+          created_by: string
+          currency: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          party_a_ip: string | null
+          party_a_signed_at: string | null
+          party_a_user_id: string
+          party_b_ip: string | null
+          party_b_signed_at: string | null
+          party_b_user_id: string | null
+          project_id: string
+          signed_pdf_url: string | null
+          status: string
+          template_id: string | null
+          terms: Json
+          title: string
+          total_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          blockchain_network?: string | null
+          blockchain_tx_hash?: string | null
+          blockchain_verified_at?: string | null
+          contract_hash?: string | null
+          contract_type?: string
+          created_at?: string
+          created_by: string
+          currency?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          party_a_ip?: string | null
+          party_a_signed_at?: string | null
+          party_a_user_id: string
+          party_b_ip?: string | null
+          party_b_signed_at?: string | null
+          party_b_user_id?: string | null
+          project_id: string
+          signed_pdf_url?: string | null
+          status?: string
+          template_id?: string | null
+          terms?: Json
+          title: string
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          blockchain_network?: string | null
+          blockchain_tx_hash?: string | null
+          blockchain_verified_at?: string | null
+          contract_hash?: string | null
+          contract_type?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          party_a_ip?: string | null
+          party_a_signed_at?: string | null
+          party_a_user_id?: string
+          party_b_ip?: string | null
+          party_b_signed_at?: string | null
+          party_b_user_id?: string | null
+          project_id?: string
+          signed_pdf_url?: string | null
+          status?: string
+          template_id?: string | null
+          terms?: Json
+          title?: string
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_contracts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_contracts_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contract_templates"
             referencedColumns: ["id"]
           },
         ]

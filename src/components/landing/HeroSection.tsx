@@ -446,6 +446,33 @@ export const HeroSection = () => {
           </div>
         </div>
 
+        {/* ═══════ EARLY ACCESS ADVANTAGE ═══════ */}
+        <div className="mt-6 rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/5 via-card to-accent/5 p-6 text-center">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+            <Zap className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-base font-bold text-foreground mb-2">Be Early. Get the Advantage.</h3>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed mb-4">
+            We're building the future of creative work — and early users win.
+          </p>
+          <div className="grid grid-cols-2 gap-2.5 max-w-sm mx-auto mb-5">
+            {[
+              { icon: Star, text: "Priority visibility" },
+              { icon: Briefcase, text: "First access to gigs" },
+              { icon: Sparkles, text: "Early feature access" },
+              { icon: TrendingUp, text: "Grow before the crowd" },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 text-left">
+                <item.icon className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="text-[10px] font-medium text-foreground">{item.text}</span>
+              </div>
+            ))}
+          </div>
+          <Link to="/auth" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-7 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-lg">
+            Join Early — Build Your Profile <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
         {/* Footer links */}
         <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-muted-foreground mt-10 pb-4">
           <Link to="/about" className="hover:text-foreground transition-colors">About</Link>

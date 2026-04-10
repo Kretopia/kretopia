@@ -381,21 +381,43 @@ export function UnifiedSearchDropdown({
                   </div>
                 </button>
 
-                {/* "Not you?" prompt */}
-                <div className="px-4 pb-2">
-                  <p className="text-[10px] text-muted-foreground/60">
-                    Not who you're looking for?{" "}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setHighlightedCreator(null);
-                        inputRef.current?.focus();
-                      }}
-                      className="text-primary/70 hover:text-primary underline underline-offset-2"
-                    >
-                      See all results
-                    </button>
-                  </p>
+                {/* Unclaimed claim action or "Not you?" prompt */}
+                <div className="px-4 pb-2 flex items-center justify-between">
+                  {highlightedCreator.is_claimed === false ? (
+                    <>
+                      <p className="text-[10px] text-muted-foreground/60">
+                        Is this you? Verify your identity to claim.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpen(false);
+                          setQuery("");
+                          onOpenChange?.(false);
+                          navigate(`/profile/${highlightedCreator.id}?showClaim=true`);
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 transition-colors shrink-0"
+                      >
+                        <UserCheck className="h-3 w-3" />
+                        Claim
+                      </button>
+                    </>
+                  ) : (
+                    <p className="text-[10px] text-muted-foreground/60">
+                      Not who you're looking for?{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHighlightedCreator(null);
+                          inputRef.current?.focus();
+                        }}
+                        className="text-primary/70 hover:text-primary underline underline-offset-2"
+                      >
+                        See all results
+                      </button>
+                    </p>
+                  )}
                 </div>
               </div>
             )}

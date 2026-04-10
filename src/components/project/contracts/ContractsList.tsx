@@ -83,7 +83,7 @@ export function ContractsList({ projectId, currentUserId, collaborators }: Contr
             Create, sign, and verify project agreements
           </p>
         </div>
-        <Button onClick={() => setView("create")} size="sm" className="gap-1.5">
+        <Button onClick={() => { setView("create"); import("@/lib/analytics").then(({ analytics }) => analytics.featureUsed("contract_builder_opened", { project_id: projectId })); }} size="sm" className="gap-1.5">
           <Plus className="h-4 w-4" />
           New Contract
         </Button>

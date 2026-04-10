@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban } from "lucide-react";
+import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban, Shield, Zap, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -378,14 +378,19 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          {/* CTA card */}
+          {/* Differentiator card */}
           <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-card p-5 flex flex-col justify-between">
             <div>
-              <Sparkles className="h-6 w-6 text-primary mb-3" />
-              <h3 className="text-sm font-bold text-foreground mb-2">Your career deserves a verified record</h3>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Join ThriveIN to claim your credits, build your verified professional identity, and get discovered by brands and collaborators.
+              <Shield className="h-6 w-6 text-primary mb-3" />
+              <h3 className="text-sm font-bold text-foreground mb-2">Not just another portfolio</h3>
+              <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+                Most platforms show what you <span className="italic">say</span> you've done. ThriveIN helps prove what you've <span className="font-semibold text-foreground">actually</span> done.
               </p>
+              <div className="space-y-2 text-[10px] text-muted-foreground">
+                <p className="flex items-center gap-1.5"><Search className="h-3 w-3 text-primary shrink-0" /> Search your name</p>
+                <p className="flex items-center gap-1.5"><Database className="h-3 w-3 text-primary shrink-0" /> Claim your work</p>
+                <p className="flex items-center gap-1.5"><Verified className="h-3 w-3 text-primary shrink-0" /> Build your verified profile</p>
+              </div>
             </div>
             <Link to="/auth" className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
               Claim Your Credits <ArrowRight className="h-3.5 w-3.5" />

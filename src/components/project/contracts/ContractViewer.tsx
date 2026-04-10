@@ -83,6 +83,9 @@ export function ContractViewer({ contractId, currentUserId, onBack }: ContractVi
     },
     onSuccess: () => {
       toast({ title: "Contract signed ✍️", description: "Your signature has been recorded." });
+      import("@/lib/analytics").then(({ analytics }) => {
+        analytics.featureUsed("contract_signed", { contract_id: contractId });
+      });
       queryClient.invalidateQueries({ queryKey: ["contract", contractId] });
     },
     onError: (err: any) => {

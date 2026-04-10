@@ -81,6 +81,9 @@ export function ContractBuilder({ projectId, currentUserId, collaborators, onBac
     },
     onSuccess: () => {
       toast({ title: "Contract created", description: "Your contract has been created successfully." });
+      import("@/lib/analytics").then(({ analytics }) => {
+        analytics.featureUsed("contract_created", { project_id: projectId, contract_type: contractType });
+      });
       onBack();
     },
     onError: (err: any) => {

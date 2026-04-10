@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Sparkles, Database, Briefcase, User, ArrowRight, Loader2, X } from "lucide-react";
+import { Search, Sparkles, Database, Briefcase, User, ArrowRight, Loader2, X, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ interface SearchResult {
   bio?: string;
   credits?: { project: string; role: string }[];
   platform?: string;
+  is_claimed?: boolean;
 }
 
 interface UnifiedSearchDropdownProps {
@@ -96,10 +97,10 @@ export function UnifiedSearchDropdown({
       const [profiles, credits, opps] = await Promise.all([
         supabase
           .from("profiles")
-          .select("user_id, full_name, avatar_url, role, bio, location")
+          .select("user_id, full_name, avatar_url, role, bio, location, is_claimed")
           .or(`full_name.ilike.${likeQ},role.ilike.${likeQ}`)
-          .eq("onboarding_completed", true)
-          .limit(5),
+          .or("onboarding_completed.eq.true,is_claimed.eq.false")
+          .limit(8),
         supabase
           .from("credits")
           .select("id, project_name, role, year, project_type, thumbnail_url")
@@ -126,6 +127,7 @@ export function UnifiedSearchDropdown({
           subtitle: [p.role, p.location].filter(Boolean).join(" · "),
           avatar: p.avatar_url,
           bio: p.bio || undefined,
+          is_claimed: p.is_claimed !== false, // treat null as claimed
         };
         dbResults.push(creator);
       }
@@ -338,9 +340,15 @@ export function UnifiedSearchDropdown({
                         <p className="text-sm font-bold text-foreground truncate">
                           {highlightedCreator.title}
                         </p>
-                        <Badge variant="outline" className="text-[9px] text-primary border-primary/30 shrink-0">
-                          Creator
-                        </Badge>
+                        {highlightedCreator.is_claimed === false ? (
+                          <Badge variant="outline" className="text-[9px] text-amber-500 border-amber-500/30 bg-amber-500/10 shrink-0">
+                            Unclaimed
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[9px] text-primary border-primary/30 shrink-0">
+                            Creator
+                          </Badge>
+                        )}
                       </div>
                       {highlightedCreator.subtitle && (
                         <p className="text-xs text-muted-foreground mt-0.5">{highlightedCreator.subtitle}</p>
@@ -373,21 +381,43 @@ export function UnifiedSearchDropdown({
                   </div>
                 </button>
 
-                {/* "Not you?" prompt */}
-                <div className="px-4 pb-2">
-                  <p className="text-[10px] text-muted-foreground/60">
-                    Not who you're looking for?{" "}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setHighlightedCreator(null);
-                        inputRef.current?.focus();
-                      }}
-                      className="text-primary/70 hover:text-primary underline underline-offset-2"
-                    >
-                      See all results
-                    </button>
-                  </p>
+                {/* Unclaimed claim action or "Not you?" prompt */}
+                <div className="px-4 pb-2 flex items-center justify-between">
+                  {highlightedCreator.is_claimed === false ? (
+                    <>
+                      <p className="text-[10px] text-muted-foreground/60">
+                        Is this you? Verify your identity to claim.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpen(false);
+                          setQuery("");
+                          onOpenChange?.(false);
+                          navigate(`/profile/${highlightedCreator.id}?showClaim=true`);
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 transition-colors shrink-0"
+                      >
+                        <UserCheck className="h-3 w-3" />
+                        Claim
+                      </button>
+                    </>
+                  ) : (
+                    <p className="text-[10px] text-muted-foreground/60">
+                      Not who you're looking for?{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHighlightedCreator(null);
+                          inputRef.current?.focus();
+                        }}
+                        className="text-primary/70 hover:text-primary underline underline-offset-2"
+                      >
+                        See all results
+                      </button>
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -421,12 +451,34 @@ export function UnifiedSearchDropdown({
                         <p className="text-[11px] text-muted-foreground truncate">{r.subtitle}</p>
                       )}
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={cn("text-[9px] shrink-0", meta.color)}
-                    >
-                      {meta.label}
-                    </Badge>
+                    {r.type === "creator" && r.is_claimed === false ? (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Badge variant="outline" className="text-[9px] text-amber-500 border-amber-500/30 bg-amber-500/10">
+                          Unclaimed
+                        </Badge>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpen(false);
+                            setQuery("");
+                            onOpenChange?.(false);
+                            navigate(`/profile/${r.id}?showClaim=true`);
+                          }}
+                          className="inline-flex items-center gap-0.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+                        >
+                          <UserCheck className="h-2.5 w-2.5" />
+                          Claim
+                        </button>
+                      </div>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className={cn("text-[9px] shrink-0", meta.color)}
+                      >
+                        {meta.label}
+                      </Badge>
+                    )}
                   </button>
                 );
               })}

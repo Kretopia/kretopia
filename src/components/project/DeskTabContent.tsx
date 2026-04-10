@@ -90,6 +90,10 @@ export const DeskTabContent = memo(({
           <CreativeBoard projectId={projectId} currentUserId={currentUserId} />
         )}
 
+        {activeTab === "contracts" && (
+          <ContractsList projectId={projectId} currentUserId={currentUserId} collaborators={collaborators} />
+        )}
+
         {activeTab === "scope" && (
           <ScopeGuardian
             projectId={projectId}

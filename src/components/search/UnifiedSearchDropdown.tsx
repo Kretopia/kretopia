@@ -99,8 +99,8 @@ export function UnifiedSearchDropdown({
           .from("profiles")
           .select("user_id, full_name, avatar_url, role, bio, location, is_claimed")
           .or(`full_name.ilike.${likeQ},role.ilike.${likeQ}`)
-          .eq("onboarding_completed", true)
-          .limit(5),
+          .or("onboarding_completed.eq.true,is_claimed.eq.false")
+          .limit(8),
         supabase
           .from("credits")
           .select("id, project_name, role, year, project_type, thumbnail_url")

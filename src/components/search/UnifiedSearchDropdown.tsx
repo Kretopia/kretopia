@@ -97,7 +97,7 @@ export function UnifiedSearchDropdown({
       const [profiles, credits, opps] = await Promise.all([
         supabase
           .from("profiles")
-          .select("user_id, full_name, avatar_url, role, bio, location")
+          .select("user_id, full_name, avatar_url, role, bio, location, is_claimed")
           .or(`full_name.ilike.${likeQ},role.ilike.${likeQ}`)
           .eq("onboarding_completed", true)
           .limit(5),

@@ -12,6 +12,7 @@ import { CreativeAssetLibrary } from "@/components/project/CreativeAssetLibrary"
 import { ProjectTemplatePicker } from "@/components/project/ProjectTemplatePicker";
 import { CreativeBoard } from "@/components/project/CreativeBoard";
 import { ScopeGuardian } from "@/components/project/ScopeGuardian";
+import { ContractsList } from "@/components/project/contracts/ContractsList";
 import { UsageLimitBanner } from "@/components/project/ProGate";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { cn } from "@/lib/utils";
@@ -87,6 +88,10 @@ export const DeskTabContent = memo(({
 
         {activeTab === "board" && (
           <CreativeBoard projectId={projectId} currentUserId={currentUserId} />
+        )}
+
+        {activeTab === "contracts" && (
+          <ContractsList projectId={projectId} currentUserId={currentUserId} collaborators={collaborators} />
         )}
 
         {activeTab === "scope" && (

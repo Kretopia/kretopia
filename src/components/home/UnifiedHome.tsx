@@ -159,39 +159,43 @@ export const UnifiedHome = () => {
           </div>
 
           <div className="relative container mx-auto max-w-5xl px-4 sm:px-6 pt-8 sm:pt-14 pb-6">
-            {/* Rotating headline */}
-            <div className="text-center mb-5">
+            {/* Conversion-first hero */}
+            <div className="text-center mb-5 sm:mb-6">
               <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary/80 mb-3">The Creative OS</p>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.1] mb-3">
-                You're a{" "}
-                <span className="relative inline-block min-w-[120px]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.05] mb-3">
+                Get Discovered. Get Booked.
+                <br />
+                <span className="text-primary">Get Paid.</span>
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
+                The all-in-one platform where{" "}
+                <span className="text-primary font-semibold inline-block min-w-[110px]">
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={heroRoleIdx}
-                      initial={{ y: 20, opacity: 0, filter: "blur(4px)" }}
+                      initial={{ y: 16, opacity: 0, filter: "blur(4px)" }}
                       animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                      exit={{ y: -20, opacity: 0, filter: "blur(4px)" }}
-                      transition={{ duration: 0.35 }}
-                      className="text-primary"
+                      exit={{ y: -16, opacity: 0, filter: "blur(4px)" }}
+                      transition={{ duration: 0.3 }}
+                      className="inline-block"
                     >
-                      {HERO_ROLES[heroRoleIdx]}
+                      {HERO_ROLES[heroRoleIdx]}s
                     </motion.span>
                   </AnimatePresence>
-                </span>
-              </h1>
-              <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
-                The professional platform where creatives verify their work, find collaborators, and get hired.
+                </span>{" "}
+                build verified credits, connect with collaborators, and unlock real opportunities.
+              </p>
+              <p className="text-xs text-muted-foreground/80 mt-3">
+                Free to join · Early creators get priority access to gigs, collaborations, and features.
               </p>
             </div>
 
-            {/* Search bar */}
             <UnifiedSearchDropdown
               variant="hero"
               className="max-w-xl mx-auto mb-5"
               placeholder="Search creators, productions, gigs..."
             />
 
-            {/* Quick chips */}
             <div className="flex items-center justify-center gap-2 flex-wrap mb-6">
               {["Film", "Music", "Photography", "Design", "Theater", "Dance"].map(tag => (
                 <button key={tag} onClick={() => navigate(`/search?q=${tag}`)} className="text-[11px] px-3.5 py-1.5 rounded-full bg-card/60 backdrop-blur-sm border border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-card transition-all font-medium">
@@ -200,22 +204,20 @@ export const UnifiedHome = () => {
               ))}
             </div>
 
-            {/* Primary CTA */}
             <div className="flex justify-center mb-5">
               <Link
                 to="/auth"
                 className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-7 py-3 text-sm font-bold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl hover:shadow-primary/20 active:scale-[0.98]"
               >
-                Join Free — Build Your Profile <ArrowRight className="h-4 w-4" />
+                Create Your Profile <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
 
-            {/* How it works — prominent */}
             <div className="grid grid-cols-3 gap-2 mb-5">
               {[
                 { icon: Database, title: "Claim Credits", desc: "Build your verified work history", step: "1" },
                 { icon: Globe, title: "Get Discovered", desc: "Show up in industry searches", step: "2" },
-                { icon: Briefcase, title: "Get Hired", desc: "Land gigs & collaborations", step: "3" },
+                { icon: Briefcase, title: "Get Paid", desc: "Land gigs & collaborations", step: "3" },
               ].map((s, i) => (
                 <motion.div
                   key={s.title}
@@ -232,7 +234,14 @@ export const UnifiedHome = () => {
               ))}
             </div>
 
-            {/* Social proof stats */}
+            <div className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm p-4 sm:p-5 mb-5 text-left max-w-2xl mx-auto">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80 mb-2">Not just another portfolio</p>
+              <h2 className="text-base sm:text-lg font-bold text-foreground mb-2">Most platforms show what you say you’ve done. ThriveIN helps prove what you’ve actually done.</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Search your name. Claim your work. Build a verified creative profile that compounds trust over time.
+              </p>
+            </div>
+
             <div className="flex items-center justify-center gap-6 sm:gap-8 mb-2">
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.creators.toLocaleString()}+</p>
@@ -241,12 +250,12 @@ export const UnifiedHome = () => {
               <div className="w-px h-8 bg-border" />
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.credits.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Credits Claimed</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Credits</p>
               </div>
               <div className="w-px h-8 bg-border" />
               <div className="text-center">
-                <p className="text-xl sm:text-2xl font-extrabold text-foreground">62+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Connections</p>
+                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.gigs.toLocaleString()}+</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Live Gigs</p>
               </div>
             </div>
           </div>

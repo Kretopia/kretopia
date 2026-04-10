@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban } from "lucide-react";
+import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban, Shield, Zap, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -157,33 +157,37 @@ export const HeroSection = () => {
 
       <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 pt-6 pb-16">
         
-        {/* ═══════ HERO — Identity-first ═══════ */}
+        {/* ═══════ HERO — Conversion-first ═══════ */}
         <div className="text-center pt-6 sm:pt-10 pb-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary mb-4">
-            The creative industry's home
+            The Creative OS™
           </p>
 
           <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-2 leading-[1.15]">
-            You're a{" "}
-            <span className="text-primary inline-block min-w-[120px] sm:min-w-[180px] transition-all duration-500">
-              {roles[roleIdx]}
-            </span>
-            <br />
-            <span className="text-muted-foreground">Your work should speak for itself.</span>
+            Get Discovered. Get Booked.{" "}
+            <br className="hidden sm:block" />
+            <span className="text-primary">Get Paid.</span>
           </h1>
 
-          <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mt-3 mb-6 leading-relaxed">
-            Build your verified creative record. Get discovered by brands. 
-            Land gigs. Get paid — all in one place.
+          <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mt-3 leading-relaxed">
+            The all-in-one platform where{" "}
+            <span className="text-primary font-semibold inline-block min-w-[90px] sm:min-w-[130px] transition-all duration-500">
+              {roles[roleIdx]}s
+            </span>{" "}
+            build verified credits, connect with collaborators, and unlock real opportunities.
+          </p>
+
+          <p className="text-xs text-muted-foreground/70 mt-2 mb-5">
+            Free to join · Early creators get priority access to gigs & features
           </p>
 
           {/* Dual CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
             <Link to="/auth" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-7 py-3.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-lg">
-              Claim Your Credits — Free <ArrowRight className="h-4 w-4" />
+              Create Your Profile <ArrowRight className="h-4 w-4" />
             </Link>
             <Link to="/gigs" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-7 py-3.5 text-sm font-semibold text-foreground hover:border-primary/40 transition-all">
-              <Briefcase className="h-4 w-4 text-success" /> Browse Gigs
+              <Briefcase className="h-4 w-4 text-success" /> Browse Opportunities
             </Link>
           </div>
 
@@ -374,14 +378,19 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          {/* CTA card */}
+          {/* Differentiator card */}
           <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-card p-5 flex flex-col justify-between">
             <div>
-              <Sparkles className="h-6 w-6 text-primary mb-3" />
-              <h3 className="text-sm font-bold text-foreground mb-2">Your career deserves a verified record</h3>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Join ThriveIN to claim your credits, build your verified professional identity, and get discovered by brands and collaborators.
+              <Shield className="h-6 w-6 text-primary mb-3" />
+              <h3 className="text-sm font-bold text-foreground mb-2">Not just another portfolio</h3>
+              <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+                Most platforms show what you <span className="italic">say</span> you've done. ThriveIN helps prove what you've <span className="font-semibold text-foreground">actually</span> done.
               </p>
+              <div className="space-y-2 text-[10px] text-muted-foreground">
+                <p className="flex items-center gap-1.5"><Search className="h-3 w-3 text-primary shrink-0" /> Search your name</p>
+                <p className="flex items-center gap-1.5"><Database className="h-3 w-3 text-primary shrink-0" /> Claim your work</p>
+                <p className="flex items-center gap-1.5"><Verified className="h-3 w-3 text-primary shrink-0" /> Build your verified profile</p>
+              </div>
             </div>
             <Link to="/auth" className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
               Claim Your Credits <ArrowRight className="h-3.5 w-3.5" />
@@ -435,6 +444,33 @@ export const HeroSection = () => {
               </Link>
             </div>
           </div>
+        </div>
+
+        {/* ═══════ EARLY ACCESS ADVANTAGE ═══════ */}
+        <div className="mt-6 rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/5 via-card to-accent/5 p-6 text-center">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+            <Zap className="h-5 w-5 text-primary" />
+          </div>
+          <h3 className="text-base font-bold text-foreground mb-2">Be Early. Get the Advantage.</h3>
+          <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed mb-4">
+            We're building the future of creative work — and early users win.
+          </p>
+          <div className="grid grid-cols-2 gap-2.5 max-w-sm mx-auto mb-5">
+            {[
+              { icon: Star, text: "Priority visibility" },
+              { icon: Briefcase, text: "First access to gigs" },
+              { icon: Sparkles, text: "Early feature access" },
+              { icon: TrendingUp, text: "Grow before the crowd" },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 text-left">
+                <item.icon className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="text-[10px] font-medium text-foreground">{item.text}</span>
+              </div>
+            ))}
+          </div>
+          <Link to="/auth" className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-7 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-lg">
+            Join Early — Build Your Profile <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
 
         {/* Footer links */}

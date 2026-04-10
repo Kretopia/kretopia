@@ -127,6 +127,7 @@ export function UnifiedSearchDropdown({
           subtitle: [p.role, p.location].filter(Boolean).join(" · "),
           avatar: p.avatar_url,
           bio: p.bio || undefined,
+          is_claimed: p.is_claimed !== false, // treat null as claimed
         };
         dbResults.push(creator);
       }

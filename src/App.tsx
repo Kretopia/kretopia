@@ -54,6 +54,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
+const About = lazy(() => import("./pages/About"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
 
 const Search = lazy(() => import("./pages/Search"));
@@ -280,6 +281,7 @@ const AppContent = () => {
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+            <Route path="/about" element={<About />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             
             {/* Partner Pages — redirected */}

@@ -340,9 +340,15 @@ export function UnifiedSearchDropdown({
                         <p className="text-sm font-bold text-foreground truncate">
                           {highlightedCreator.title}
                         </p>
-                        <Badge variant="outline" className="text-[9px] text-primary border-primary/30 shrink-0">
-                          Creator
-                        </Badge>
+                        {highlightedCreator.is_claimed === false ? (
+                          <Badge variant="outline" className="text-[9px] text-amber-500 border-amber-500/30 bg-amber-500/10 shrink-0">
+                            Unclaimed
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[9px] text-primary border-primary/30 shrink-0">
+                            Creator
+                          </Badge>
+                        )}
                       </div>
                       {highlightedCreator.subtitle && (
                         <p className="text-xs text-muted-foreground mt-0.5">{highlightedCreator.subtitle}</p>

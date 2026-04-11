@@ -129,7 +129,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         <BrandLogo size="md" showBeta linkToHome />
 
         {/* ═══ PERSISTENT SEARCH BAR ═══ */}
-        {user && !isLandingPage && (
+        {!isLandingPage && (
           <UnifiedSearchDropdown
             variant="navbar"
             className="hidden sm:block flex-1 max-w-sm mx-4"
@@ -185,18 +185,22 @@ const Navbar = memo(({ user }: NavbarProps) => {
         )}
 
         <div className="flex items-center gap-1 sm:gap-3">
-          {user && !isLandingPage && (
+          {!isLandingPage && (
             <div className="flex items-center gap-0.5">
               {/* Mobile search toggle */}
               <Button variant="ghost" size="icon" className="h-9 w-9 sm:hidden" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
                 <Search className="h-5 w-5" />
               </Button>
-              <Link to="/messages" aria-label="Messages">
-                <Button variant="ghost" size="icon" className="h-9 w-9 relative">
-                  <MessageCircle className="h-5 w-5" />
-                </Button>
-              </Link>
-              <NotificationCenter />
+              {user && (
+                <>
+                  <Link to="/messages" aria-label="Messages">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 relative">
+                      <MessageCircle className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                  <NotificationCenter />
+                </>
+              )}
             </div>
           )}
           
@@ -361,12 +365,21 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <Button variant="gradient" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-4">Get Started</Button>
               </Link>
             </>
+          ) : !user && !isLandingPage ? (
+            <>
+              <Link to="/auth">
+                <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4">Sign In</Button>
+              </Link>
+              <Link to="/auth">
+                <Button variant="gradient" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-4">Get Started</Button>
+              </Link>
+            </>
           ) : null}
         </div>
       </div>
       
       {/* Mobile search bar — slides open */}
-      {searchOpen && user && !isLandingPage && (
+      {searchOpen && !isLandingPage && (
         <div className="sm:hidden border-t border-border/50 px-3 py-2 bg-background">
           <UnifiedSearchDropdown
             variant="inline"

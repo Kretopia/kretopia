@@ -694,28 +694,34 @@ export const UnifiedHome = () => {
           className="rounded-2xl overflow-hidden relative"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-accent/80" />
-          <div className="relative p-6 sm:p-8">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center shrink-0">
-                <Star className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-base sm:text-lg font-bold text-white mb-1">
-                  {user ? "Upgrade to Pro" : "Your career deserves a verified record"}
-                </h3>
-                <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-4">
-                  {user
-                    ? "Unlock AI matching, unlimited discovery, and the embeddable credits widget."
-                    : "Join ThriveIN to claim your credits, build your verified identity, and get discovered by the industry."}
-                </p>
-                <Link
-                  to={user ? "/subscription" : "/auth"}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white text-primary px-5 py-2.5 text-xs font-bold hover:bg-white/90 transition-colors shadow-md"
-                >
-                  {user ? "View Plans" : "Get Started — Free"} <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
+          <div className="relative p-6 sm:p-8 text-center">
+            <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center mx-auto mb-3">
+              <Zap className="h-6 w-6 text-white" />
             </div>
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
+              {user ? "Upgrade to Pro" : "Become a Founding Member"}
+            </h3>
+            <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-1 max-w-md mx-auto">
+              {user
+                ? "Unlock AI matching, unlimited discovery, and the embeddable credits widget."
+                : "Early creators get priority visibility, first access to gigs, and help shape the platform."}
+            </p>
+            {!user && (
+              <p className="text-[10px] text-white/50 mb-4">
+                Free forever for early members · No credit card required
+              </p>
+            )}
+            <Link
+              to={user ? "/subscription" : "/auth"}
+              className="inline-flex items-center gap-2 rounded-xl bg-white text-primary px-6 py-3 text-sm font-bold hover:bg-white/90 transition-colors shadow-md"
+            >
+              {user ? "View Plans" : "Join Now — It's Free"} <ArrowRight className="h-4 w-4" />
+            </Link>
+            {!user && (
+              <p className="text-[10px] text-white/40 mt-3">
+                Built by creatives, for creatives
+              </p>
+            )}
           </div>
         </motion.div>
         )}

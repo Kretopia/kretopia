@@ -22,13 +22,13 @@ const Magazine = () => {
         <meta property="og:description" content="Read stories, interviews and features from creatives shaping the industry." />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="ThriveIN" />
-        <meta property="og:image" content="https://thrivein.io/og-image.png" />
+        <meta property="og:image" content="https://www.thrivein.io/og-image.png" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@thrivein_io" />
         <meta name="twitter:title" content="Creative Industry Magazine | ThriveIN" />
         <meta name="twitter:description" content="Read stories, interviews and features from creatives shaping the industry." />
-        <meta name="twitter:image" content="https://thrivein.io/og-image.png" />
+        <meta name="twitter:image" content="https://www.thrivein.io/og-image.png" />
 
         <script type="application/ld+json">
           {JSON.stringify({

@@ -267,41 +267,73 @@ Return up to 8 most relevant REAL results.`;
     }
 
     const aiData = await aiResponse.json();
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+    const message = aiData.choices?.[0]?.message;
+    const toolCall = message?.tool_calls?.[0];
 
-    let results: any[] = [];
+    let rawResults: any[] = [];
+
+    // Try tool_calls first
     if (toolCall?.function?.arguments) {
       try {
         const parsed = JSON.parse(toolCall.function.arguments);
-        const seen = new Set<string>();
-        const platformCounts = new Map<string, number>();
-
-        results = (parsed.results || [])
-          .filter((result: any) => result?.title && result?.type)
-          .map((result: any) => ({
-            ...result,
-            _source: hasWebData ? 'web_verified' : 'ai_knowledge',
-          }))
-          .sort((a: any, b: any) => scoreResult(b, trimmedQuery, creatorQuery) - scoreResult(a, trimmedQuery, creatorQuery))
-          .filter((result: any) => {
-            const dedupeKey = `${normalizeText(result.title)}|${normalizeText(result.platform)}|${(result.url || '').toLowerCase()}`;
-            if (seen.has(dedupeKey)) return false;
-            seen.add(dedupeKey);
-
-            if (creatorQuery) {
-              const platformKey = normalizeText(result.platform) || 'unknown';
-              const count = platformCounts.get(platformKey) || 0;
-              if (count >= 2) return false;
-              platformCounts.set(platformKey, count + 1);
-            }
-
-            return true;
-          })
-          .slice(0, 8);
+        rawResults = parsed.results || [];
+        console.log(`AI tool_call returned ${rawResults.length} results`);
       } catch (parseErr) {
-        console.error('Failed to parse AI results', parseErr);
+        console.error('Failed to parse tool_call arguments', parseErr);
       }
     }
+
+    // Fallback: parse from message content if tool_calls empty
+    if (rawResults.length === 0 && message?.content) {
+      try {
+        const content = message.content;
+        // Try to extract JSON array from content
+        const jsonMatch = content.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          rawResults = JSON.parse(jsonMatch[0]);
+          console.log(`AI content fallback returned ${rawResults.length} results`);
+        } else {
+          const objMatch = content.match(/\{[\s\S]*"results"\s*:\s*\[[\s\S]*\]\s*\}/);
+          if (objMatch) {
+            const parsed = JSON.parse(objMatch[0]);
+            rawResults = parsed.results || [];
+            console.log(`AI content obj fallback returned ${rawResults.length} results`);
+          }
+        }
+      } catch (contentErr) {
+        console.error('Failed to parse AI content fallback', contentErr);
+      }
+    }
+
+    if (rawResults.length === 0) {
+      console.warn('AI returned 0 results. Tool call present:', !!toolCall, 'Content length:', (message?.content || '').length);
+    }
+
+    const seen = new Set<string>();
+    const platformCounts = new Map<string, number>();
+
+    const results = rawResults
+      .filter((result: any) => result?.title && result?.type)
+      .map((result: any) => ({
+        ...result,
+        _source: hasWebData ? 'web_verified' : 'ai_knowledge',
+      }))
+      .sort((a: any, b: any) => scoreResult(b, trimmedQuery, creatorQuery) - scoreResult(a, trimmedQuery, creatorQuery))
+      .filter((result: any) => {
+        const dedupeKey = `${normalizeText(result.title)}|${normalizeText(result.platform)}|${(result.url || '').toLowerCase()}`;
+        if (seen.has(dedupeKey)) return false;
+        seen.add(dedupeKey);
+
+        if (creatorQuery) {
+          const platformKey = normalizeText(result.platform) || 'unknown';
+          const count = platformCounts.get(platformKey) || 0;
+          if (count >= 2) return false;
+          platformCounts.set(platformKey, count + 1);
+        }
+
+        return true;
+      })
+      .slice(0, 8);
 
     return new Response(JSON.stringify({ results, source: hasWebData ? 'web' : 'ai' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -1,52 +1,116 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, Sparkles, Loader2, ImagePlus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { CurrencySelector } from "@/components/CurrencySelector";
+import { SUPPORTED_CURRENCIES } from "@/hooks/useCurrencyConversion";
 
 const CATEGORIES = [
   "music", "design", "video", "photography", "fashion", "art", "writing", "development", "coaching", "consulting", "other"
 ];
 
 interface Tier {
+  id?: string;
   tier_name: string;
   price: string;
+  price_max: string;
+  currency: string;
   delivery_days: string;
   deliverables: string[];
+  is_range: boolean;
+}
+
+interface EditService {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  service_format: string | null;
+  cover_image_url: string | null;
+  tiers: {
+    id: string;
+    tier_name: string;
+    price: number;
+    price_max: number | null;
+    currency: string;
+    deliverables: string[];
+    delivery_days: number | null;
+    tier_order: number;
+  }[];
 }
 
 interface CreateServiceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: () => void;
+  editService?: EditService | null;
 }
 
-export const CreateServiceDialog = ({ open, onOpenChange, onCreated }: CreateServiceDialogProps) => {
+export const CreateServiceDialog = ({ open, onOpenChange, onCreated, editService }: CreateServiceDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [serviceFormat, setServiceFormat] = useState("virtual");
+  const [coverImage, setCoverImage] = useState("");
   const [tiers, setTiers] = useState<Tier[]>([
-    { tier_name: "Standard", price: "", delivery_days: "", deliverables: [""] },
+    { tier_name: "Standard", price: "", price_max: "", currency: "USD", delivery_days: "", deliverables: [""], is_range: false },
   ]);
+
+  const isEditing = !!editService;
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editService && open) {
+      setTitle(editService.title);
+      setDescription(editService.description || "");
+      setCategory(editService.category || "");
+      setServiceFormat(editService.service_format || "virtual");
+      setCoverImage(editService.cover_image_url || "");
+      setTiers(
+        editService.tiers.length > 0
+          ? editService.tiers.map(t => ({
+              id: t.id,
+              tier_name: t.tier_name,
+              price: t.price.toString(),
+              price_max: t.price_max?.toString() || "",
+              currency: t.currency || "USD",
+              delivery_days: t.delivery_days?.toString() || "",
+              deliverables: t.deliverables.length > 0 ? t.deliverables : [""],
+              is_range: !!t.price_max && t.price_max > 0,
+            }))
+          : [{ tier_name: "Standard", price: "", price_max: "", currency: "USD", delivery_days: "", deliverables: [""], is_range: false }]
+      );
+    } else if (!editService && open) {
+      resetForm();
+    }
+  }, [editService, open]);
+
+  const resetForm = () => {
+    setTitle(""); setDescription(""); setCategory(""); setServiceFormat("virtual"); setCoverImage("");
+    setTiers([{ tier_name: "Standard", price: "", price_max: "", currency: "USD", delivery_days: "", deliverables: [""], is_range: false }]);
+  };
 
   const addTier = () => {
     if (tiers.length >= 3) return;
     const names = ["Basic", "Standard", "Premium"];
     const nextName = names.find(n => !tiers.some(t => t.tier_name === n)) || `Tier ${tiers.length + 1}`;
-    setTiers([...tiers, { tier_name: nextName, price: "", delivery_days: "", deliverables: [""] }]);
+    const currency = tiers[0]?.currency || "USD";
+    setTiers([...tiers, { tier_name: nextName, price: "", price_max: "", currency, delivery_days: "", deliverables: [""], is_range: false }]);
   };
 
   const removeTier = (index: number) => {
@@ -56,6 +120,10 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated }: CreateSer
 
   const updateTier = (index: number, field: keyof Tier, value: any) => {
     setTiers(tiers.map((t, i) => i === index ? { ...t, [field]: value } : t));
+  };
+
+  const updateAllCurrencies = (currency: string) => {
+    setTiers(tiers.map(t => ({ ...t, currency })));
   };
 
   const addDeliverable = (tierIndex: number) => {
@@ -76,9 +144,27 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated }: CreateSer
     setTiers(updated);
   };
 
+  const handleImageUpload = async (file: File) => {
+    if (!user) return;
+    setImageUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `services/${user.id}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('media').upload(path, file);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path);
+      setCoverImage(publicUrl);
+      toast({ title: "Image uploaded!" });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const handleAIEnhance = async () => {
     if (!title && !description) {
-      toast({ title: "Add some details first", description: "Enter a title or description for AI to enhance.", variant: "destructive" });
+      toast({ title: "Add some details first", variant: "destructive" });
       return;
     }
     setAiLoading(true);
@@ -89,10 +175,9 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated }: CreateSer
       if (error) throw error;
       if (data?.title) setTitle(data.title);
       if (data?.description) setDescription(data.description);
-      toast({ title: "Enhanced!", description: "AI improved your title and description." });
-    } catch (err) {
-      console.error('AI enhance error:', err);
-      toast({ title: "AI unavailable", description: "Could not enhance right now. Try again later.", variant: "destructive" });
+      toast({ title: "Enhanced!", description: "AI improved your listing." });
+    } catch {
+      toast({ title: "AI unavailable", variant: "destructive" });
     } finally {
       setAiLoading(false);
     }
@@ -111,58 +196,116 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated }: CreateSer
 
     setSaving(true);
     try {
-      const { data: service, error } = await supabase
-        .from('creator_services')
-        .insert({
-          user_id: user.id,
-          title: title.trim(),
-          description: description.trim() || null,
-          category: category || null,
-          service_format: serviceFormat,
-        })
-        .select()
-        .single();
+      const servicePayload = {
+        user_id: user.id,
+        title: title.trim(),
+        description: description.trim() || null,
+        category: category || null,
+        service_format: serviceFormat,
+        cover_image_url: coverImage || null,
+      };
 
-      if (error) throw error;
+      let serviceId: string;
 
-      // Insert tiers
+      if (isEditing && editService) {
+        const { error } = await supabase
+          .from('creator_services')
+          .update(servicePayload)
+          .eq('id', editService.id);
+        if (error) throw error;
+        serviceId = editService.id;
+
+        // Delete old tiers and re-insert
+        await supabase.from('service_tiers').delete().eq('service_id', serviceId);
+      } else {
+        const { data: service, error } = await supabase
+          .from('creator_services')
+          .insert(servicePayload)
+          .select()
+          .single();
+        if (error) throw error;
+        serviceId = service.id;
+      }
+
       const tierInserts = validTiers.map((t, i) => ({
-        service_id: service.id,
+        service_id: serviceId,
         tier_name: t.tier_name,
         price: parseFloat(t.price),
+        price_max: t.is_range && t.price_max ? parseFloat(t.price_max) : null,
+        currency: t.currency,
         delivery_days: t.delivery_days ? parseInt(t.delivery_days) : null,
         deliverables: t.deliverables.filter(d => d.trim()),
         tier_order: i,
       }));
 
-      const { error: tierError } = await supabase
-        .from('service_tiers')
-        .insert(tierInserts);
-
+      const { error: tierError } = await supabase.from('service_tiers').insert(tierInserts);
       if (tierError) throw tierError;
 
-      toast({ title: "Service created!", description: "Your service is now live on your profile." });
+      toast({ title: isEditing ? "Service updated!" : "Service created!" });
       onOpenChange(false);
       onCreated();
-      // Reset form
-      setTitle(""); setDescription(""); setCategory("");
-      setTiers([{ tier_name: "Standard", price: "", delivery_days: "", deliverables: [""] }]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Save service error:', err);
-      toast({ title: "Error", description: "Failed to create service.", variant: "destructive" });
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setSaving(false);
     }
   };
 
+  const currSymbol = SUPPORTED_CURRENCIES.find(c => c.code === (tiers[0]?.currency || "USD"))?.symbol || "$";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Service</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit" : "Create"} Service</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Cover Image */}
+          <div>
+            <Label className="text-xs">Cover Image</Label>
+            {coverImage ? (
+              <div className="relative mt-1 rounded-lg overflow-hidden aspect-[16/9] bg-muted">
+                <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2 h-7 w-7 p-0"
+                  onClick={() => setCoverImage("")}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={imageUploading}
+                className="mt-1 w-full aspect-[16/9] rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-1.5 bg-muted/30"
+              >
+                {imageUploading ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                ) : (
+                  <>
+                    <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Upload image</span>
+                  </>
+                )}
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) handleImageUpload(file);
+                e.target.value = "";
+              }}
+            />
+          </div>
+
           {/* AI Enhance */}
           <Button
             variant="outline"
@@ -177,22 +320,22 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated }: CreateSer
 
           {/* Title */}
           <div>
-            <Label>Title *</Label>
+            <Label className="text-xs">Title *</Label>
             <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Professional Music Production" />
           </div>
 
           {/* Description */}
           <div>
-            <Label>Description</Label>
+            <Label className="text-xs">Description</Label>
             <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe what you offer..." rows={3} />
           </div>
 
-          {/* Category & Format */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Category, Format, Currency */}
+          <div className="grid grid-cols-3 gap-2">
             <div>
-              <Label>Category</Label>
+              <Label className="text-xs">Category</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className="h-9"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map(c => (
                     <SelectItem key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</SelectItem>
@@ -201,9 +344,9 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated }: CreateSer
               </Select>
             </div>
             <div>
-              <Label>Format</Label>
+              <Label className="text-xs">Format</Label>
               <Select value={serviceFormat} onValueChange={setServiceFormat}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="virtual">Virtual</SelectItem>
                   <SelectItem value="in_person">In Person</SelectItem>
@@ -211,12 +354,16 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated }: CreateSer
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label className="text-xs">Currency</Label>
+              <CurrencySelector value={tiers[0]?.currency || "USD"} onChange={updateAllCurrencies} compact />
+            </div>
           </div>
 
           {/* Tiers */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label>Pricing Tiers</Label>
+              <Label className="text-xs font-semibold">Pricing Tiers</Label>
               {tiers.length < 3 && (
                 <Button variant="ghost" size="sm" onClick={addTier} className="h-7 text-xs gap-1">
                   <Plus className="h-3 w-3" /> Add Tier
@@ -240,35 +387,55 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated }: CreateSer
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs">Price ($) *</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={tier.price}
-                        onChange={e => updateTier(ti, 'price', e.target.value)}
-                        placeholder="0.00"
-                        className="h-8"
-                      />
+                  {/* Price row */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <Label className="text-[10px]">{tier.is_range ? "From" : "Price"} ({currSymbol}) *</Label>
+                        <Input
+                          type="number" min="0" step="0.01"
+                          value={tier.price}
+                          onChange={e => updateTier(ti, 'price', e.target.value)}
+                          placeholder="0.00"
+                          className="h-8"
+                        />
+                      </div>
+                      {tier.is_range && (
+                        <div className="flex-1">
+                          <Label className="text-[10px]">To ({currSymbol})</Label>
+                          <Input
+                            type="number" min="0" step="0.01"
+                            value={tier.price_max}
+                            onChange={e => updateTier(ti, 'price_max', e.target.value)}
+                            placeholder="0.00"
+                            className="h-8"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <Label className="text-[10px]">Delivery (days)</Label>
+                        <Input
+                          type="number" min="1"
+                          value={tier.delivery_days}
+                          onChange={e => updateTier(ti, 'delivery_days', e.target.value)}
+                          placeholder="e.g. 7"
+                          className="h-8"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <Label className="text-xs">Delivery (days)</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={tier.delivery_days}
-                        onChange={e => updateTier(ti, 'delivery_days', e.target.value)}
-                        placeholder="e.g. 7"
-                        className="h-8"
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={tier.is_range}
+                        onCheckedChange={v => updateTier(ti, 'is_range', v)}
+                        className="scale-75"
                       />
+                      <span className="text-[10px] text-muted-foreground">Price range</span>
                     </div>
                   </div>
 
                   {/* Deliverables */}
                   <div>
-                    <Label className="text-xs">What's Included</Label>
+                    <Label className="text-[10px]">What's Included</Label>
                     {tier.deliverables.map((d, di) => (
                       <div key={di} className="flex gap-1 mt-1">
                         <Input
@@ -296,7 +463,7 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated }: CreateSer
           {/* Save */}
           <Button onClick={handleSave} disabled={saving} className="w-full">
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Create Service
+            {isEditing ? "Update" : "Create"} Service
           </Button>
         </div>
       </DialogContent>

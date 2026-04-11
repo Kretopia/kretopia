@@ -304,27 +304,7 @@ const MyAnalytics = () => {
               {/* Invite Card Component */}
               <InviteCard />
 
-              {/* Referral Rewards Info */}
-              <Card className="bg-gradient-to-br from-accent/10 to-primary/10 border-accent/20">
-                <CardHeader>
-                  <CardTitle className="text-lg">Referral Rewards</CardTitle>
-                  <CardDescription>Earn XP for every friend who joins</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
-                    <span className="text-sm">Per accepted invite</span>
-                    <span className="font-bold text-primary">+50 XP</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
-                    <span className="text-sm">5 accepted invites bonus</span>
-                    <span className="font-bold text-primary">+100 XP</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
-                    <span className="text-sm">10 accepted invites bonus</span>
-                    <span className="font-bold text-primary">+250 XP</span>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Creative Circle info is now built into the InviteCard above */}
             </TabsContent>
 
             {/* Portfolio Tab */}

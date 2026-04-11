@@ -2,15 +2,19 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNetworkStats } from "@/hooks/useNetworkStats";
+import { useReferralNetwork } from "@/hooks/useReferralNetwork";
+import { getReferralsToNextTier } from "@/lib/referralEngine";
 import { NetworkReachStats } from "./NetworkReachStats";
 import { NetworkHealthScore } from "./NetworkHealthScore";
 import { IndustryMap } from "./IndustryMap";
 import { PathFinder } from "./PathFinder";
 import { DegreeExplorerDrawer } from "./DegreeExplorerDrawer";
-import { Users, Sparkles, UserPlus, Compass, Search, Gift, Trophy, Flame, Star } from "lucide-react";
+import { Users, Sparkles, UserPlus, Compass, Search, Gift, Trophy, Flame, Star, ArrowRight, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 interface ConnectionProfile {
   user_id: string;
@@ -284,26 +288,8 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
       {/* Network Health Score */}
       <NetworkHealthScore compact className="mb-4" />
 
-      {/* Gamified Invite CTA */}
-      <Card className="p-4 mb-4 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 border-primary/20">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 rounded-full bg-primary/20">
-            <Gift className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex-1">
-            <p className="font-semibold text-sm">Invite & Earn Points</p>
-            <p className="text-xs text-muted-foreground">+200 TP per friend who joins</p>
-          </div>
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold">
-            <Star className="h-3 w-3" />
-            200 XP
-          </div>
-        </div>
-        <Button onClick={onInvite} className="gap-2 w-full" size="default">
-          <UserPlus className="h-4 w-4" />
-          Invite Creators
-        </Button>
-      </Card>
+      {/* Creative Circle CTA */}
+      <CreativeCircleCTA onInvite={onInvite} />
 
       {/* Direct Connections + Quick Actions */}
       <Card className="p-3 mb-4 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">

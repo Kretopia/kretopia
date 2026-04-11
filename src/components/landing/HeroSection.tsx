@@ -41,31 +41,8 @@ interface ActiveGig {
   created_at: string | null;
 }
 
-/** Animated ticker showing "recently claimed" profiles — creates FOMO */
-const RecentClaimsTicker = ({ creators }: { creators: FeaturedCreator[] }) => {
-  const [visibleIdx, setVisibleIdx] = useState(0);
-  const names = creators.length > 0
-    ? creators.map(c => c.full_name)
-    : ["Kwame A.", "Lebo M.", "Temi O.", "Nia K.", "Sanele D."];
 
-  useEffect(() => {
-    const t = setInterval(() => setVisibleIdx(i => (i + 1) % names.length), 3000);
-    return () => clearInterval(t);
-  }, [names.length]);
 
-  const timesAgo = ["2 min ago", "5 min ago", "12 min ago", "18 min ago", "23 min ago", "31 min ago", "45 min ago", "1 hr ago"];
-
-  return (
-    <div className="flex items-center justify-center gap-2 mt-3 h-5 overflow-hidden">
-      <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
-      <p className="text-[10px] text-muted-foreground transition-all duration-500">
-        <span className="font-semibold text-foreground">{names[visibleIdx]}</span>
-        {" "}claimed their credits{" "}
-        <span className="text-primary">{timesAgo[visibleIdx % timesAgo.length]}</span>
-      </p>
-    </div>
-  );
-};
 
 export const HeroSection = () => {
   const navigate = useNavigate();

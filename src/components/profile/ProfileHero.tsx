@@ -196,6 +196,8 @@ export const ProfileHero = ({
               {!isOwnProfile && !degreeLoading && degree && degree > 0 && (
                 <DegreeBadge degree={degree} size="sm" />
               )}
+
+              <CreativeCircleBadge userId={profile.user_id} />
             </div>
 
             {/* Role */}

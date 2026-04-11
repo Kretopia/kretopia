@@ -77,6 +77,8 @@ project_id = "kwmcocsitwssrtzkdojh"
     verify_jwt = false
   [functions.search-icdb]
     verify_jwt = false
+  [functions.universal-search]
+    verify_jwt = false
   [functions.seed-communities]
     verify_jwt = true
   [functions.seed-icdb]

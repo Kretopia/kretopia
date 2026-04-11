@@ -80,6 +80,11 @@ export const ViewProfileTabs = ({
           <ICDBTimeline userId={userId} isOwnProfile={false} onRefresh={onRefresh} />
         );
 
+      case "hire":
+        return (
+          <WorkWithMeSection userId={userId} isOwner={false} creatorName={profile?.full_name} />
+        );
+
       case "skills":
         return (
           <div className="space-y-6">

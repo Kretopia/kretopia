@@ -184,7 +184,7 @@ export const ProfileContentSections = ({
               )}
             </div>
 
-            </div>
+            {/* Embeddable Credits Widget */}
             <div>
               <EmbeddableCreditsWidget
                 userId={profile.user_id}

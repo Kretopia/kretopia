@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban, Shield, Zap, Star } from "lucide-react";
+import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban, Shield, Zap, Star, AlertCircle, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";

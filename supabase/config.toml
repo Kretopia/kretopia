@@ -73,6 +73,8 @@ project_id = "kwmcocsitwssrtzkdojh"
     verify_jwt = true
   [functions.purchase-digital-product]
     verify_jwt = true
+  [functions.search-credits-web]
+    verify_jwt = false
   [functions.search-icdb]
     verify_jwt = false
   [functions.seed-communities]

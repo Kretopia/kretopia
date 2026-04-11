@@ -185,18 +185,22 @@ const Navbar = memo(({ user }: NavbarProps) => {
         )}
 
         <div className="flex items-center gap-1 sm:gap-3">
-          {user && !isLandingPage && (
+          {!isLandingPage && (
             <div className="flex items-center gap-0.5">
               {/* Mobile search toggle */}
               <Button variant="ghost" size="icon" className="h-9 w-9 sm:hidden" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
                 <Search className="h-5 w-5" />
               </Button>
-              <Link to="/messages" aria-label="Messages">
-                <Button variant="ghost" size="icon" className="h-9 w-9 relative">
-                  <MessageCircle className="h-5 w-5" />
-                </Button>
-              </Link>
-              <NotificationCenter />
+              {user && (
+                <>
+                  <Link to="/messages" aria-label="Messages">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 relative">
+                      <MessageCircle className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                  <NotificationCenter />
+                </>
+              )}
             </div>
           )}
           

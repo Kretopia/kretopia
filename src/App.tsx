@@ -84,6 +84,7 @@ const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
+const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

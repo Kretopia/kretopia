@@ -524,13 +524,21 @@ export function UnifiedSearchDropdown({
                 );
               })}
 
-            {/* Empty state */}
+            {/* Loading — searching web */}
+            {loading && results.length === 0 && (
+              <div className="px-4 py-4 flex flex-col items-center gap-1.5 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Searching across the creative universe...</span>
+              </div>
+            )}
+
+            {/* Empty state — after all searches complete */}
             {!loading && results.length === 0 && query.trim().length >= 2 && (
               <div className="px-4 py-4 text-center">
                 <Sparkles className="h-5 w-5 text-primary/50 mx-auto mb-1.5" />
-                <p className="text-sm text-muted-foreground">No results yet</p>
+                <p className="text-sm text-muted-foreground">No results found</p>
                 <p className="text-xs text-muted-foreground/60 mt-0.5">
-                  Press Enter for an AI-powered deep search
+                  Try a different name or project
                 </p>
               </div>
             )}

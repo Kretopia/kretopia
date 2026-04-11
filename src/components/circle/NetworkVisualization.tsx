@@ -351,9 +351,9 @@ export const NetworkVisualization = ({ onInvite }: NetworkVisualizationProps) =>
               <p className="text-[11px] text-muted-foreground">Your inner creative circle</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={onInvite} className="gap-1 text-xs h-8">
-            <UserPlus className="h-3.5 w-3.5" />
-            Grow
+          <Button variant="ghost" size="sm" onClick={() => navigate("/creative-circle")} className="gap-1 text-xs h-8">
+            <ArrowRight className="h-3.5 w-3.5" />
+            Circle
           </Button>
         </div>
       </Card>

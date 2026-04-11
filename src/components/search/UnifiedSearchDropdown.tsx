@@ -139,9 +139,12 @@ export function UnifiedSearchDropdown({
           .limit(3),
       ]);
 
-      // Always fire web search in parallel (don't wait for DB count)
+      // Always fire web search in parallel with a 8s timeout
+      const webWithTimeout = (promise: Promise<any>) =>
+        Promise.race([promise, new Promise((resolve) => setTimeout(() => resolve({ data: null }), 8000))]);
+
       const webPromise = q.length >= 2
-        ? supabase.functions.invoke("search-credits-web", { body: { query: q } }).catch(() => ({ data: null }))
+        ? webWithTimeout(supabase.functions.invoke("search-credits-web", { body: { query: q } }).catch(() => ({ data: null })))
         : Promise.resolve({ data: null });
 
       // Wait for DB results first (fast)

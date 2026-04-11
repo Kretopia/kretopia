@@ -195,17 +195,6 @@ export const UnifiedHome = () => {
                 placeholder="Search creators, productions, gigs..."
               />
             </div>
-
-
-            <div className="flex justify-center mb-5">
-              <Link
-                to="/auth"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-7 py-3 text-sm font-bold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl hover:shadow-primary/20 active:scale-[0.98]"
-              >
-                Create Your Profile <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-
             <div className="grid grid-cols-3 gap-2 mb-5">
               {[
                 { icon: Database, title: "Claim Credits", desc: "Build your verified work history", step: "1" },

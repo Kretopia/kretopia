@@ -190,11 +190,15 @@ export const UnifiedHome = () => {
               </p>
             </div>
 
-            <UnifiedSearchDropdown
-              variant="hero"
-              className="max-w-xl mx-auto mb-5"
-              placeholder="Search creators, productions, gigs..."
-            />
+            <div className="max-w-xl mx-auto mb-5">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-2 text-center">
+                Already have work? Search your name
+              </p>
+              <UnifiedSearchDropdown
+                variant="hero"
+                placeholder="Search creators, productions, gigs..."
+              />
+            </div>
 
 
             <div className="flex justify-center mb-5">

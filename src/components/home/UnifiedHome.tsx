@@ -250,7 +250,10 @@ export const UnifiedHome = () => {
         </div>
       )}
 
-      {/* ═══════════ LIVE ACTIVITY TICKER ═══════════ */}
+      {/* ═══════════ BEFORE/AFTER DIFFERENTIATION ═══════════ */}
+      {!user && <BeforeAfterSection />}
+
+
       {activityMsg && !user && (
         <div className="border-y border-border/50 bg-muted/30">
           <div className="container mx-auto max-w-5xl px-4">

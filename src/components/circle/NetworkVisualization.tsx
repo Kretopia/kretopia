@@ -71,7 +71,7 @@ const CreativeCircleCTA = ({ onInvite }: { onInvite: () => void }) => {
   );
 };
 
-
+interface NetworkVisualizationProps {
   onInvite: () => void;
 }
 

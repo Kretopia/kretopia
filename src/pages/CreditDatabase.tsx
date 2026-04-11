@@ -128,6 +128,34 @@ const CreditDatabase = () => {
   const [search, setSearch] = useState("");
   const [submittedSearch, setSubmittedSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);
+  const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
+  const [userCredits, setUserCredits] = useState<UserCredit[]>([]);
+  const [webResults, setWebResults] = useState<WebResult[]>([]);
+  const [profiles, setProfiles] = useState<Map<string, ProfileInfo>>(new Map());
+  const [loading, setLoading] = useState(false);
+  const [projectCount, setProjectCount] = useState(0);
+  const [claimDialog, setClaimDialog] = useState<{ project: ICDBProject; role: ICDBProject['icdb_project_roles'] extends (infer T)[] | undefined ? T : never } | null>(null);
+  const [claiming, setClaiming] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [trendingProjects, setTrendingProjects] = useState<ICDBProject[]>([]);
+  const [recentCredits, setRecentCredits] = useState<UserCredit[]>([]);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const isSearching = debouncedSearch.length >= 2;
+
+  // Only debounce the submitted search for page-level results
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(submittedSearch), 400);
+    return () => clearTimeout(t);
+  }, [submittedSearch]);
+
+  const handleSearchSubmit = useCallback((q: string) => {
+    setSearch(q);
+    setSubmittedSearch(q);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {

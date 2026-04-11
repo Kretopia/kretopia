@@ -23,6 +23,10 @@ interface UnifiedSearchDropdownProps {
   variant?: "hero" | "navbar" | "inline";
   /** Placeholder text */
   placeholder?: string;
+  /** Controlled value */
+  value?: string;
+  /** Controlled change handler */
+  onValueChange?: (value: string) => void;
   /** Auto-focus on mount */
   autoFocus?: boolean;
   /** Called when dropdown opens/closes */
@@ -31,6 +35,8 @@ interface UnifiedSearchDropdownProps {
   className?: string;
   /** Called when user selects something — if not provided, navigates by default */
   onSelect?: (result: SearchResult) => void;
+  /** Called when the user submits a typed query */
+  onQuerySubmit?: (query: string) => void;
 }
 
 const TYPE_META = {
@@ -43,13 +49,16 @@ const TYPE_META = {
 export function UnifiedSearchDropdown({
   variant = "navbar",
   placeholder = "Search creators, productions, gigs...",
+  value,
+  onValueChange,
   autoFocus = false,
   onOpenChange,
   className,
   onSelect,
+  onQuerySubmit,
 }: UnifiedSearchDropdownProps) {
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
+  const [internalQuery, setInternalQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -57,6 +66,15 @@ export function UnifiedSearchDropdown({
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const query = value ?? internalQuery;
+
+  const setQuery = useCallback((nextValue: string) => {
+    if (value === undefined) {
+      setInternalQuery(nextValue);
+    }
+
+    onValueChange?.(nextValue);
+  }, [onValueChange, value]);
 
   // Close on outside click
   useEffect(() => {
@@ -229,8 +247,14 @@ export function UnifiedSearchDropdown({
     e.preventDefault();
     if (query.trim()) {
       setOpen(false);
-      setQuery("");
       onOpenChange?.(false);
+
+      if (onQuerySubmit) {
+        onQuerySubmit(query.trim());
+        return;
+      }
+
+      setQuery("");
       navigate(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   };

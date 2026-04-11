@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
   Database, MapPin, Building2, CalendarDays, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
-  TrendingUp, X, Play, Star,
+  TrendingUp, Play, Star,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -308,26 +308,14 @@ const CreditDatabase = () => {
               </div>
             )}
 
-            <div className="relative max-w-xl mx-auto">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-muted-foreground" />
-              <Input
-                placeholder="Search projects, creators, labels, studios..."
-                className={cn(
-                  "pl-10 pr-10 border-border/60 bg-card shadow-sm",
-                  isSearching ? "h-10" : "h-12 text-base"
-                )}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20 transition-colors"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              )}
-            </div>
+            <UnifiedSearchDropdown
+              variant={isSearching ? "inline" : "hero"}
+              value={search}
+              onValueChange={setSearch}
+              onQuerySubmit={setSearch}
+              placeholder="Search projects, creators, labels, studios..."
+              className="max-w-xl mx-auto"
+            />
 
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-3 justify-center">
               {CATEGORY_GROUPS.map(g => {

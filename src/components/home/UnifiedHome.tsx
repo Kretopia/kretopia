@@ -13,6 +13,9 @@ import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
+import { VisualProofCard } from "@/components/landing/VisualProofCard";
+import { BeforeAfterSection } from "@/components/landing/BeforeAfterSection";
+import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];

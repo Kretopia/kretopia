@@ -36,23 +36,25 @@ serve(async (req) => {
     }
 
     // Step 1: Extract structured data
-    const systemPrompt = `You are a casting/gig data extractor AND copywriter. Extract structured gig details from the provided text or image. 
+    const systemPrompt = `You are a casting/gig data extractor AND copywriter. Extract structured gig details from the provided text or image. Read EVERY detail carefully — especially compensation, what they're offering, and what they're looking for.
 
 IMPORTANT: For the "description" field, don't just copy the raw text — rewrite it as a polished, professional gig listing. Make it compelling, well-structured, and clear. Include key details like what the role involves, who they're looking for, and what makes this opportunity exciting. Use proper formatting with line breaks.
 
-Return ONLY valid JSON with these fields:
+CRITICAL: Pay close attention to what is being OFFERED (products, payment, fees, exposure, etc.) and what is being REQUESTED (skills, content type, deliverables). For barter/collab gigs, the compensation field should describe what the creator receives (e.g. "Free products + collaboration fee"). Never leave compensation null if ANY form of payment, product, or exchange is mentioned.
+
+Respond with a JSON object containing these fields:
 - title: string (clean, professional title — capitalize properly)
 - type: string (one of: "job", "barter", "collab", "gig", "internship")
 - description: string (POLISHED, professional description — rewritten from the raw post)
-- compensation: string or null (pay info if mentioned)
+- compensation: string or null (ALL forms of payment/exchange: money, products, exposure, fees — be specific about what's offered)
 - location: string or null
 - requirements: string or null (formatted clearly)
 - skills: string[] (relevant skills, 3-8 items)
 - deliverables: string or null
 - duration: string or null
 - tags: string[] (relevant tags like genre, industry, 3-6 items)
-- barter_offering: string or null (what they offer in exchange, for barter type)
-- barter_requesting: string or null (what they need, for barter type)
+- barter_offering: string or null (what the brand/poster offers in exchange — products, payment, etc.)
+- barter_requesting: string or null (what they need from the creator)
 - platform_requirements: string[] or null (instagram, tiktok, youtube if mentioned)
 - min_followers: number or null
 - cover_image_prompt: string (a detailed prompt to generate a professional cover image for this gig listing — describe the visual style, colors, and mood that match the gig type. Keep it clean and professional, no text in image.)

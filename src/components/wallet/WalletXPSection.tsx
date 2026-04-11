@@ -278,7 +278,7 @@ export function WalletXPSection() {
             { label: "Post Work", xp: "+30" },
             { label: "Get Reviewed", xp: "+150" },
             { label: "Project Done", xp: "+500" },
-            { label: "Invite Accepted", xp: "+200" },
+            { label: "Invite Accepted", xp: "+50 + Tier" },
           ].map(item => (
             <div key={item.label} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
               <span className="text-muted-foreground">{item.label}</span>

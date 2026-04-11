@@ -15,7 +15,7 @@ import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 
 
-const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director"];
+const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
 
 // Simulated live activity for social proof
 const ACTIVITY_TEMPLATES = [
@@ -196,13 +196,6 @@ export const UnifiedHome = () => {
               placeholder="Search creators, productions, gigs..."
             />
 
-            <div className="flex items-center justify-center gap-2 flex-wrap mb-6">
-              {["Film", "Music", "Photography", "Design", "Theater", "Dance"].map(tag => (
-                <button key={tag} onClick={() => navigate(`/search?q=${tag}`)} className="text-[11px] px-3.5 py-1.5 rounded-full bg-card/60 backdrop-blur-sm border border-border/50 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-card transition-all font-medium">
-                  {tag}
-                </button>
-              ))}
-            </div>
 
             <div className="flex justify-center mb-5">
               <Link

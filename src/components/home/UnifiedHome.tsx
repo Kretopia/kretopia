@@ -13,7 +13,7 @@ import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
-import { VisualProofCard } from "@/components/landing/VisualProofCard";
+import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { BeforeAfterSection } from "@/components/landing/BeforeAfterSection";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 
@@ -198,9 +198,9 @@ export const UnifiedHome = () => {
                 placeholder="Search creators, productions, gigs..."
               />
             </div>
-            {/* Visual proof card */}
+            {/* Discover Creatives — real profiles under search */}
             <div className="mb-6">
-              <VisualProofCard />
+              <DiscoverCreativesRow />
             </div>
 
             {/* 3-Step Visual Process */}

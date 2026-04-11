@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban, Shield, Zap, Star, AlertCircle, Clock } from "lucide-react";
+import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban, Shield, Zap, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -41,31 +41,8 @@ interface ActiveGig {
   created_at: string | null;
 }
 
-/** Animated ticker showing "recently claimed" profiles — creates FOMO */
-const RecentClaimsTicker = ({ creators }: { creators: FeaturedCreator[] }) => {
-  const [visibleIdx, setVisibleIdx] = useState(0);
-  const names = creators.length > 0
-    ? creators.map(c => c.full_name)
-    : ["Kwame A.", "Lebo M.", "Temi O.", "Nia K.", "Sanele D."];
 
-  useEffect(() => {
-    const t = setInterval(() => setVisibleIdx(i => (i + 1) % names.length), 3000);
-    return () => clearInterval(t);
-  }, [names.length]);
 
-  const timesAgo = ["2 min ago", "5 min ago", "12 min ago", "18 min ago", "23 min ago", "31 min ago", "45 min ago", "1 hr ago"];
-
-  return (
-    <div className="flex items-center justify-center gap-2 mt-3 h-5 overflow-hidden">
-      <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
-      <p className="text-[10px] text-muted-foreground transition-all duration-500">
-        <span className="font-semibold text-foreground">{names[visibleIdx]}</span>
-        {" "}claimed their credits{" "}
-        <span className="text-primary">{timesAgo[visibleIdx % timesAgo.length]}</span>
-      </p>
-    </div>
-  );
-};
 
 export const HeroSection = () => {
   const navigate = useNavigate();
@@ -225,7 +202,7 @@ export const HeroSection = () => {
         {/* ═══════ HOW IT WORKS — 3-step value prop ═══════ */}
         <div className="grid grid-cols-3 gap-3 my-6">
         {[
-            { step: "1", icon: Database, title: "Search & Claim", desc: "Your credits may already exist — search your name and claim them before they go unclaimed" },
+            { step: "1", icon: Database, title: "Claim Credits", desc: "Add your work to the verified creative ledger — like IMDb, but for every industry" },
             { step: "2", icon: Users, title: "Get Discovered", desc: "Brands and collaborators find you by your verified track record, not just a portfolio" },
             { step: "3", icon: DollarSign, title: "Get Paid", desc: "Land gigs, send invoices, and manage projects — all from one creative HQ" },
           ].map((s) => (
@@ -239,23 +216,11 @@ export const HeroSection = () => {
           ))}
         </div>
 
-        {/* ═══════ FOMO CREDIT CLAIM ═══════ */}
+        {/* ═══════ SEARCH BAR ═══════ */}
         <div className="mb-6">
-          {/* Urgency banner */}
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-            </span>
-            <p className="text-[11px] font-semibold text-foreground">
-              Your work history may already be in our database
-            </p>
-          </div>
-          <p className="text-center text-[10px] text-muted-foreground mb-3">
-            <AlertCircle className="inline h-3 w-3 mr-1 text-destructive" />
-            <span className="text-destructive font-semibold">{stats.credits > 50 ? stats.credits.toLocaleString() : '1,200'}+ unclaimed credits</span> — search your name before someone else claims your work
+          <p className="text-center text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-3">
+            Search the creative economy
           </p>
-
           <div ref={wrapperRef} className="relative max-w-xl mx-auto">
             <form onSubmit={handleSubmit}>
               <div className="relative">
@@ -266,8 +231,8 @@ export const HeroSection = () => {
                   value={query}
                   onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
                   onFocus={() => setShowSuggestions(true)}
-                  placeholder="Search your name to find your credits..."
-                  className="w-full h-13 rounded-2xl border border-primary/30 bg-card pl-12 pr-14 text-sm text-foreground shadow-lg focus:outline-none focus:border-primary focus:shadow-[var(--shadow-glow)] transition-all placeholder:text-muted-foreground/50 animate-[pulse_3s_ease-in-out_1]"
+                  placeholder="Try 'Beyoncé', 'Squid Game', 'Photographer in Lagos'..."
+                  className="w-full h-13 rounded-2xl border border-border bg-card pl-12 pr-14 text-sm text-foreground shadow-lg focus:outline-none focus:border-primary focus:shadow-[var(--shadow-glow)] transition-all placeholder:text-muted-foreground/50"
                 />
                 <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors">
                   <Search className="h-4 w-4" />
@@ -307,9 +272,6 @@ export const HeroSection = () => {
               </div>
             )}
           </div>
-
-          {/* Recently claimed ticker */}
-          <RecentClaimsTicker creators={featuredCreators} />
         </div>
 
         {/* ═══════ SOCIAL PROOF GRID ═══════ */}

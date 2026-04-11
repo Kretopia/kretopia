@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, Zap, ShoppingBag, Code } from "lucide-react";
+import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, Zap, DollarSign, Code } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
@@ -15,7 +15,7 @@ import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
 import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
-import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
+import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
 import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -32,6 +32,7 @@ interface ProfileContentSectionsProps {
 
 const PROFILE_TABS = [
   { id: "work", label: "Credits", icon: Briefcase },
+  { id: "hire", label: "Work With Me", icon: DollarSign },
   { id: "skills", label: "Skills", icon: Zap },
   { id: "reviews", label: "Reviews", icon: Star },
   { id: "more", label: "More", icon: Award },
@@ -82,6 +83,11 @@ export const ProfileContentSections = ({
       case "work":
         return (
           <ICDBTimeline userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
+        );
+
+      case "hire":
+        return (
+          <WorkWithMeSection userId={profile.user_id} isOwner={true} creatorName={profile.full_name} />
         );
 
       case "skills":
@@ -176,11 +182,6 @@ export const ProfileContentSections = ({
                   <IndustryStatsSection stats={industryStats} isOwnProfile={true} onRefresh={onRefresh} />
                 </div>
               )}
-            </div>
-
-            {/* Shop */}
-            <div>
-              <DigitalProductsSection userId={profile.user_id} isOwner={true} />
             </div>
 
             {/* Embeddable Credits Widget */}

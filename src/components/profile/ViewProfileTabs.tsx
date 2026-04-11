@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Briefcase, Star, Award, Zap, Handshake, ShoppingBag } from "lucide-react";
+import { Briefcase, Star, Award, Zap, Handshake, DollarSign } from "lucide-react";
 import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { SkillsSection } from "@/components/profile/SkillsSection";
 import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
-import { DigitalProductsSection } from "@/components/profile/DigitalProductsSection";
+import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const VIEW_TABS = [
   { id: "work", label: "Credits", icon: Briefcase },
+  { id: "hire", label: "Work With Me", icon: DollarSign },
   { id: "skills", label: "Skills", icon: Zap },
   { id: "reviews", label: "Reviews", icon: Star },
   { id: "more", label: "More", icon: Award },
@@ -77,6 +78,11 @@ export const ViewProfileTabs = ({
       case "work":
         return (
           <ICDBTimeline userId={userId} isOwnProfile={false} onRefresh={onRefresh} />
+        );
+
+      case "hire":
+        return (
+          <WorkWithMeSection userId={userId} isOwner={false} creatorName={profile?.full_name} />
         );
 
       case "skills":
@@ -149,9 +155,6 @@ export const ViewProfileTabs = ({
                 </div>
               </div>
             </div>
-
-            {/* Shop */}
-            <DigitalProductsSection userId={userId} isOwner={false} />
           </div>
         );
 

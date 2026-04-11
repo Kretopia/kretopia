@@ -44,7 +44,7 @@ CRITICAL: Pay close attention to what is being OFFERED (products, payment, fees,
 
 Respond with a JSON object containing these fields:
 - title: string (clean, professional title — capitalize properly)
-- type: string (one of: "job", "barter", "collab", "gig", "internship")
+- type: string (one of: "job", "barter", "collab" — use "job" for paid gigs/freelance work, "barter" for product/service exchanges, "collab" for creative collaborations)
 - description: string (POLISHED, professional description — rewritten from the raw post)
 - compensation: string or null (ALL forms of payment/exchange: money, products, exposure, fees — be specific about what's offered)
 - location: string or null
@@ -127,6 +127,15 @@ Be thorough but concise. If info isn't available, use null.`;
         throw new Error("Could not parse AI response as JSON");
       }
     }
+    // Normalize type to allowed values
+    const typeMap: Record<string, string> = { gig: "job", internship: "job", freelance: "job", paid: "job" };
+    if (extracted.type && typeMap[extracted.type]) {
+      extracted.type = typeMap[extracted.type];
+    }
+    if (!["job", "collab", "barter"].includes(extracted.type)) {
+      extracted.type = "job";
+    }
+
     const coverImagePrompt = extracted.cover_image_prompt;
     delete extracted.cover_image_prompt;
 

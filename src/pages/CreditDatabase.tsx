@@ -143,7 +143,8 @@ const CreditDatabase = () => {
   const navigate = useNavigate();
 
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const isSearching = debouncedSearch.length >= 2;
+  const isSearchActive = search.trim().length >= 2;
+  const isResultsSearching = debouncedSearch.length >= 3;
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 250);

@@ -7096,6 +7096,7 @@ export type Database = {
           delivery_days: number | null
           id: string
           price: number
+          price_max: number | null
           service_id: string
           tier_name: string
           tier_order: number | null
@@ -7107,6 +7108,7 @@ export type Database = {
           delivery_days?: number | null
           id?: string
           price?: number
+          price_max?: number | null
           service_id: string
           tier_name?: string
           tier_order?: number | null
@@ -7118,6 +7120,7 @@ export type Database = {
           delivery_days?: number | null
           id?: string
           price?: number
+          price_max?: number | null
           service_id?: string
           tier_name?: string
           tier_order?: number | null

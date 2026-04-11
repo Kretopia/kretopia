@@ -246,6 +246,7 @@ const AppContent = () => {
             <Route path="/market" element={<Navigate to="/opportunities" replace />} />
             <Route path="/market/:listingId" element={<Navigate to="/opportunities" replace />} />
             <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
+            <Route path="/creative-circle" element={<ProtectedRoute><CreativeCircle /></ProtectedRoute>} />
             <Route path="/checkin" element={<Navigate to="/" replace />} />
             
             {/* Public Browsable Routes */}

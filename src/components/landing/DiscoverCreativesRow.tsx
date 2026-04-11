@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Verified, ArrowRight, MapPin } from "lucide-react";
+import { Verified, ArrowRight, Sparkles } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Creator {
@@ -9,13 +10,12 @@ interface Creator {
   full_name: string;
   avatar_url: string | null;
   role: string | null;
-  location: string | null;
   verification_tier: string | null;
 }
 
 /**
- * Horizontal scroll of real creator profiles shown under the search bar.
- * Replaces the old single-featured-profile card with browsable social proof.
+ * Horizontal scroll of real creator profiles — matches the authenticated
+ * home "Discover Creators" row style (round avatars, gradient glow, verified badges).
  */
 export const DiscoverCreativesRow = () => {
   const [creators, setCreators] = useState<Creator[]>([]);
@@ -25,7 +25,7 @@ export const DiscoverCreativesRow = () => {
     const load = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("user_id, full_name, avatar_url, role, location, verification_tier")
+        .select("user_id, full_name, avatar_url, role, verification_tier")
         .eq("onboarding_completed", true)
         .not("avatar_url", "is", null)
         .not("full_name", "is", null)
@@ -40,9 +40,12 @@ export const DiscoverCreativesRow = () => {
 
   if (creators.length < 2) {
     return (
-      <div className="flex gap-3 overflow-x-auto pb-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="shrink-0 w-[110px] h-[130px] rounded-xl bg-muted animate-pulse" />
+      <div className="flex gap-3 overflow-x-auto pb-3 -mx-1 px-1">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="shrink-0 flex flex-col items-center gap-2 w-[72px]">
+            <div className="h-14 w-14 rounded-full bg-muted animate-pulse" />
+            <div className="h-2 w-12 rounded bg-muted animate-pulse" />
+          </div>
         ))}
       </div>
     );
@@ -50,46 +53,50 @@ export const DiscoverCreativesRow = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2.5">
-        <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/70 font-semibold">
-          Discover Creatives
-        </p>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-accent" />
+          Discover Creators
+        </h2>
         <button
           onClick={() => navigate("/search")}
-          className="text-[10px] text-primary hover:underline flex items-center gap-0.5"
+          className="text-xs text-primary font-medium flex items-center gap-1 hover:underline"
         >
-          View all <ArrowRight className="h-2.5 w-2.5" />
+          Explore <ArrowRight className="h-3 w-3" />
         </button>
       </div>
 
-      <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-thin -mx-1 px-1">
-        {creators.map((c) => (
-          <button
+      <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x">
+        {creators.map((c, i) => (
+          <motion.button
             key={c.user_id}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.04 }}
             onClick={() => navigate(`/profile/${c.user_id}`)}
-            className="shrink-0 flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border bg-card hover:border-primary/40 transition-all w-[100px] group"
+            className="shrink-0 group snap-start"
           >
-            <Avatar className="h-12 w-12 border-2 border-primary/15 group-hover:border-primary/40 transition-colors">
-              <AvatarImage src={c.avatar_url || ""} alt={c.full_name} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-                {c.full_name?.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-center min-w-0 w-full">
-              <div className="flex items-center justify-center gap-0.5">
-                <p className="text-[11px] font-semibold text-foreground truncate">{c.full_name}</p>
+            <div className="flex flex-col items-center gap-2 w-[72px]">
+              <div className="relative">
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
+                <Avatar className="relative h-14 w-14 border-2 border-border group-hover:border-primary/50 transition-colors shadow-sm">
+                  <AvatarImage src={c.avatar_url || ""} alt={c.full_name} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
+                    {(c.full_name || "?")[0]}
+                  </AvatarFallback>
+                </Avatar>
                 {c.verification_tier && c.verification_tier !== "none" && (
-                  <Verified className="h-3 w-3 text-primary shrink-0" />
+                  <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center border-2 border-background">
+                    <Verified className="h-2.5 w-2.5 text-primary-foreground" />
+                  </div>
                 )}
               </div>
-              <p className="text-[9px] text-muted-foreground truncate">{c.role || "Creative"}</p>
-              {c.location && (
-                <p className="text-[8px] text-muted-foreground/60 truncate flex items-center justify-center gap-0.5 mt-0.5">
-                  <MapPin className="h-2 w-2" /> {c.location}
-                </p>
-              )}
+              <div className="text-center min-w-0 w-full">
+                <p className="text-[10px] font-semibold text-foreground truncate">{c.full_name}</p>
+                <p className="text-[8px] text-muted-foreground truncate">{c.role || "Creative"}</p>
+              </div>
             </div>
-          </button>
+          </motion.button>
         ))}
       </div>
     </div>

@@ -202,7 +202,7 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated, editService
     }
   };
 
-
+  const handleAIEnhance = async () => {
     if (!title && !description) {
       toast({ title: "Add some details first", variant: "destructive" });
       return;

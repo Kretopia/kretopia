@@ -60,6 +60,9 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated, editService
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [aiImageGenerating, setAiImageGenerating] = useState(false);
+  const [aiImagePrompt, setAiImagePrompt] = useState("");
+  const [showAiImageInput, setShowAiImageInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");

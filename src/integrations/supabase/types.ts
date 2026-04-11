@@ -1680,6 +1680,57 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_services: {
+        Row: {
+          category: string | null
+          cover_image_url: string | null
+          created_at: string
+          delivery_time: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          sample_urls: string[] | null
+          service_format: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          delivery_time?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          sample_urls?: string[] | null
+          service_format?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          delivery_time?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          sample_urls?: string[] | null
+          service_format?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       credit_ai_verifications: {
         Row: {
           ai_summary: string | null
@@ -1958,6 +2009,45 @@ export type Database = {
           verified_by_user_id?: string | null
           view_count?: number | null
           year?: number | null
+        }
+        Relationships: []
+      }
+      custom_project_requests: {
+        Row: {
+          budget_range: string | null
+          created_at: string
+          creator_id: string
+          description: string
+          id: string
+          project_type: string | null
+          requester_id: string
+          status: string
+          timeline: string | null
+          updated_at: string
+        }
+        Insert: {
+          budget_range?: string | null
+          created_at?: string
+          creator_id: string
+          description: string
+          id?: string
+          project_type?: string | null
+          requester_id: string
+          status?: string
+          timeline?: string | null
+          updated_at?: string
+        }
+        Update: {
+          budget_range?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string
+          id?: string
+          project_type?: string | null
+          requester_id?: string
+          status?: string
+          timeline?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -6995,6 +7085,50 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      service_tiers: {
+        Row: {
+          created_at: string
+          currency: string
+          deliverables: string[] | null
+          delivery_days: number | null
+          id: string
+          price: number
+          service_id: string
+          tier_name: string
+          tier_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          deliverables?: string[] | null
+          delivery_days?: number | null
+          id?: string
+          price?: number
+          service_id: string
+          tier_name?: string
+          tier_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          deliverables?: string[] | null
+          delivery_days?: number | null
+          id?: string
+          price?: number
+          service_id?: string
+          tier_name?: string
+          tier_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_tiers_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "creator_services"
+            referencedColumns: ["id"]
           },
         ]
       }

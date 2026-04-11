@@ -83,7 +83,7 @@ ${personalLink}`;
         <DialogHeader>
           <DialogTitle>Share Your Invite Link</DialogTitle>
           <DialogDescription>
-            Share your personal link to invite creatives and earn +200 XP per signup
+            Invite creatives to grow your Creative Circle and unlock tier rewards
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 mt-4">

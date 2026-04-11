@@ -74,7 +74,7 @@ export const UnifiedHome = () => {
       const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs, articlesRes, eventsRes] = await Promise.all([
         supabase.from("credits").select("id, project_name, role, verification_status, credit_category, thumbnail_url, primary_media_url, url, project_type, user_id, year").not("thumbnail_url", "is", null).order("created_at", { ascending: false }).limit(8),
         supabase.from("profiles").select("user_id, full_name, avatar_url, role, verification_tier").eq("onboarding_completed", true).not("avatar_url", "is", null).order("created_at", { ascending: false }).limit(10),
-        supabase.from("opportunities").select("id, title, type, location, created_at").eq("status", "active").order("created_at", { ascending: false }).limit(4),
+        supabase.from("opportunities").select("id, title, type, location, created_at").eq("status", "active").order("created_at", { ascending: false }).limit(3),
         supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
         supabase.from("credits").select("id", { count: "exact", head: true }),
         supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "active"),

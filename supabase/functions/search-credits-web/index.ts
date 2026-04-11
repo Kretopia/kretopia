@@ -104,8 +104,8 @@ serve(async (req) => {
       try {
         // Single optimized search query — NO scraping for speed
         const searchQuery = creatorQuery
-          ? `"${trimmedQuery}" creator artist portfolio profile`
-          : `"${trimmedQuery}" film song album event production`;
+          ? `"${trimmedQuery}" site:instagram.com OR site:linkedin.com OR site:spotify.com OR site:youtube.com OR site:imdb.com`
+          : `"${trimmedQuery}" credits OR production OR album OR film OR event`;
 
         const res = await fetch('https://api.firecrawl.dev/v1/search', {
           method: 'POST',

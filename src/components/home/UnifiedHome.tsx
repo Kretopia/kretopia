@@ -299,6 +299,9 @@ export const UnifiedHome = () => {
           </div>
 
           {/* Auth search */}
+          <p className="text-[11px] text-muted-foreground/70 mb-1.5">
+            Already have work? Search your name
+          </p>
           <UnifiedSearchDropdown
             variant="inline"
             className="mb-4"

@@ -6593,6 +6593,42 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_chain: {
+        Row: {
+          chain_root_id: string | null
+          depth: number
+          has_completed_onboarding: boolean
+          has_pro_subscription: boolean
+          id: string
+          is_active: boolean
+          referred_at: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          chain_root_id?: string | null
+          depth?: number
+          has_completed_onboarding?: boolean
+          has_pro_subscription?: boolean
+          id?: string
+          is_active?: boolean
+          referred_at?: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          chain_root_id?: string | null
+          depth?: number
+          has_completed_onboarding?: boolean
+          has_pro_subscription?: boolean
+          id?: string
+          is_active?: boolean
+          referred_at?: string
+          referred_id?: string
+          referrer_id?: string
+        }
+        Relationships: []
+      }
       referral_commissions: {
         Row: {
           commission_amount: number
@@ -6645,6 +6681,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      referral_network: {
+        Row: {
+          active_referral_count: number
+          commission_earned: number
+          commission_paid: number
+          commission_rate: number
+          created_at: string
+          fee_discount_percent: number
+          free_pro_months_earned: number
+          free_pro_months_used: number
+          id: string
+          longest_chain: number
+          network_tier: Database["public"]["Enums"]["network_tier"]
+          referral_count: number
+          status_bonus_points: number
+          total_network_size: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_referral_count?: number
+          commission_earned?: number
+          commission_paid?: number
+          commission_rate?: number
+          created_at?: string
+          fee_discount_percent?: number
+          free_pro_months_earned?: number
+          free_pro_months_used?: number
+          id?: string
+          longest_chain?: number
+          network_tier?: Database["public"]["Enums"]["network_tier"]
+          referral_count?: number
+          status_bonus_points?: number
+          total_network_size?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_referral_count?: number
+          commission_earned?: number
+          commission_paid?: number
+          commission_rate?: number
+          created_at?: string
+          fee_discount_percent?: number
+          free_pro_months_earned?: number
+          free_pro_months_used?: number
+          id?: string
+          longest_chain?: number
+          network_tier?: Database["public"]["Enums"]["network_tier"]
+          referral_count?: number
+          status_bonus_points?: number
+          total_network_size?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       review_requests: {
         Row: {
@@ -9622,6 +9715,10 @@ export type Database = {
         Returns: number
       }
       calculate_level: { Args: { xp: number }; Returns: number }
+      calculate_network_tier: {
+        Args: { ref_count: number }
+        Returns: Database["public"]["Enums"]["network_tier"]
+      }
       check_storage_available: {
         Args: { file_size_param: number; user_id_param: string }
         Returns: boolean
@@ -9914,6 +10011,10 @@ export type Database = {
         Returns: undefined
       }
       is_profile_owner: { Args: { _profile_user_id: string }; Returns: boolean }
+      record_referral: {
+        Args: { p_referred_id: string; p_referrer_id: string }
+        Returns: undefined
+      }
       send_opportunity_alerts: {
         Args: { opportunity_id_param: string }
         Returns: undefined
@@ -9942,6 +10043,14 @@ export type Database = {
       account_type: "individual" | "company"
       app_role: "admin" | "moderator" | "user" | "writer"
       location_precision: "exact" | "approximate" | "area_only"
+      network_tier:
+        | "none"
+        | "spark"
+        | "connector"
+        | "socialite"
+        | "networker"
+        | "mogul"
+        | "icon"
       user_badge: "og" | "beta" | "official" | "founder" | "odos"
     }
     CompositeTypes: {
@@ -10073,6 +10182,15 @@ export const Constants = {
       account_type: ["individual", "company"],
       app_role: ["admin", "moderator", "user", "writer"],
       location_precision: ["exact", "approximate", "area_only"],
+      network_tier: [
+        "none",
+        "spark",
+        "connector",
+        "socialite",
+        "networker",
+        "mogul",
+        "icon",
+      ],
       user_badge: ["og", "beta", "official", "founder", "odos"],
     },
   },

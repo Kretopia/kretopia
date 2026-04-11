@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy, CheckCircle2, Gift, QrCode, Users, Link2, ChevronRight, TrendingUp, Zap } from "lucide-react";
+import { Copy, CheckCircle2, Gift, QrCode, Users, Link2, ChevronRight, TrendingUp, Zap, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { QRCodeSVG } from "qrcode.react";
@@ -11,6 +11,7 @@ import { useReferralNetwork } from "@/hooks/useReferralNetwork";
 import { getReferralsToNextTier, getProRewardText, getAllNetworkTiers, type NetworkTierMeta } from "@/lib/referralEngine";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
+import { useNavigate } from "react-router-dom";
 
 interface InviteCode {
   id: string;
@@ -22,6 +23,7 @@ interface InviteCode {
 
 export const InviteCard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [inviteCodes, setInviteCodes] = useState<InviteCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);

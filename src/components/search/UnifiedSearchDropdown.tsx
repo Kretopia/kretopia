@@ -430,10 +430,10 @@ export function UnifiedSearchDropdown({
                   </div>
                 </button>
 
-                {/* Unclaimed claim action or "Not you?" prompt */}
-                <div className="px-4 pb-2 flex items-center justify-between">
-                  {highlightedCreator.is_claimed === false ? (
-                    <>
+                {/* Claim action + "Not you?" — always visible */}
+                <div className="px-4 pb-2 space-y-1.5">
+                  {highlightedCreator.is_claimed === false && (
+                    <div className="flex items-center justify-between">
                       <p className="text-[10px] text-muted-foreground/60">
                         Is this you? Verify your identity to claim.
                       </p>
@@ -451,29 +451,72 @@ export function UnifiedSearchDropdown({
                         <UserCheck className="h-3 w-3" />
                         Claim
                       </button>
-                    </>
-                  ) : (
-                    <p className="text-[10px] text-muted-foreground/60">
-                      Not who you're looking for?{" "}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setHighlightedCreator(null);
-                          inputRef.current?.focus();
-                        }}
-                        className="text-primary/70 hover:text-primary underline underline-offset-2"
-                      >
-                        See all results
-                      </button>
-                    </p>
+                    </div>
                   )}
+                  <p className="text-[10px] text-muted-foreground/60">
+                    Not who you're looking for?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHighlightedCreator(null);
+                        inputRef.current?.focus();
+                      }}
+                      className="text-primary/70 hover:text-primary underline underline-offset-2"
+                    >
+                      See all results
+                    </button>
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* Rest of results */}
+            {/* Other potential creator matches */}
+            {highlightedCreator && (() => {
+              const otherCreators = results.filter(
+                (r) => r.type === "creator" && r.id !== highlightedCreator.id
+              );
+              if (otherCreators.length === 0) return null;
+              return (
+                <div className="border-b border-border">
+                  <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                    Other potential matches
+                  </p>
+                  {otherCreators.slice(0, 3).map((r, i) => (
+                    <button
+                      key={`alt-${r.id}-${i}`}
+                      onClick={() => handleSelect(r)}
+                      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors text-left"
+                    >
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarImage src={r.avatar || ""} />
+                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          {(r.title || "?")[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
+                        {r.subtitle && (
+                          <p className="text-[11px] text-muted-foreground truncate">{r.subtitle}</p>
+                        )}
+                      </div>
+                      {r.is_claimed === false ? (
+                        <Badge variant="outline" className="text-[9px] text-amber-500 border-amber-500/30 bg-amber-500/10 shrink-0">
+                          Unclaimed
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] text-primary border-primary/30 shrink-0">
+                          Creator
+                        </Badge>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
+
+            {/* Rest of results (non-creator when highlighted, or all) */}
             {results
-              .filter((r) => !highlightedCreator || r.id !== highlightedCreator.id)
+              .filter((r) => !highlightedCreator || (r.id !== highlightedCreator.id && r.type !== "creator"))
               .map((r, i) => {
                 const meta = TYPE_META[r.type];
                 return (

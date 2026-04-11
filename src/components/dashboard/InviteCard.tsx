@@ -232,6 +232,16 @@ export const InviteCard = () => {
 
         {/* Tier Breakdown */}
         {showTiers && <TierProgressionList currentTier={network.tier.tier} referralCount={network.referralCount} />}
+
+        {/* Link to full page */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full text-xs text-primary gap-1"
+          onClick={() => navigate("/creative-circle")}
+        >
+          See all rewards & tiers <ArrowRight className="h-3 w-3" />
+        </Button>
       </CardContent>
     </Card>
   );

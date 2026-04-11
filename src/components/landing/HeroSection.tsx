@@ -224,8 +224,8 @@ export const HeroSection = () => {
 
         {/* ═══════ HOW IT WORKS — 3-step value prop ═══════ */}
         <div className="grid grid-cols-3 gap-3 my-6">
-          {[
-            { step: "1", icon: Database, title: "Claim Credits", desc: "Add your work to the verified creative ledger — like IMDb, but for every industry" },
+        {[
+            { step: "1", icon: Database, title: "Search & Claim", desc: "Your credits may already exist — search your name and claim them before they go unclaimed" },
             { step: "2", icon: Users, title: "Get Discovered", desc: "Brands and collaborators find you by your verified track record, not just a portfolio" },
             { step: "3", icon: DollarSign, title: "Get Paid", desc: "Land gigs, send invoices, and manage projects — all from one creative HQ" },
           ].map((s) => (

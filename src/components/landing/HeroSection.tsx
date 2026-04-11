@@ -252,8 +252,8 @@ export const HeroSection = () => {
             </p>
           </div>
           <p className="text-center text-[10px] text-muted-foreground mb-3">
-            <AlertCircle className="inline h-3 w-3 mr-1 text-amber-500" />
-            <span className="text-amber-500 font-semibold">{stats.credits > 50 ? stats.credits.toLocaleString() : '1,200'}+ unclaimed credits</span> — search your name before someone else claims your work
+            <AlertCircle className="inline h-3 w-3 mr-1 text-destructive" />
+            <span className="text-destructive font-semibold">{stats.credits > 50 ? stats.credits.toLocaleString() : '1,200'}+ unclaimed credits</span> — search your name before someone else claims your work
           </p>
 
           <div ref={wrapperRef} className="relative max-w-xl mx-auto">

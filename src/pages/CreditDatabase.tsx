@@ -200,14 +200,19 @@ const CreditDatabase = () => {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('search-icdb', {
+      // Run edge function search and direct DB credit search in parallel
+      const edgeFnPromise = supabase.functions.invoke('search-icdb', {
         body: { query: debouncedSearch, category: category !== 'all' ? category : undefined },
+      }).then(({ data, error }) => {
+        if (error) {
+          console.warn('search-icdb edge function failed, using DB fallback:', error);
+          return null;
+        }
+        return data;
+      }).catch((err) => {
+        console.warn('search-icdb invocation error:', err);
+        return null;
       });
-      if (error) throw error;
-      setIcdbProjects(data?.projects || []);
-      setAiSuggestions(data?.suggestions || []);
-      setWebResults(data?.webResults || []);
-      setProjectCount(data?.total || 0);
 
       let creditQuery = supabase
         .from('credits')
@@ -223,8 +228,17 @@ const CreditDatabase = () => {
         }
       }
 
-      const { data: creditData } = await creditQuery;
-      const userIds = [...new Set((creditData || []).map(c => c.user_id))];
+      const [edgeData, creditResult] = await Promise.all([edgeFnPromise, creditQuery]);
+
+      // Set edge function results (projects, AI suggestions, web results)
+      setIcdbProjects(edgeData?.projects || []);
+      setAiSuggestions(edgeData?.suggestions || []);
+      setWebResults(edgeData?.webResults || []);
+      setProjectCount(edgeData?.total || 0);
+
+      // Set direct DB credit results
+      const creditData = creditResult.data || [];
+      const userIds = [...new Set(creditData.map(c => c.user_id))];
       if (userIds.length > 0) {
         const { data: profileData } = await supabase
           .from('profiles')
@@ -234,7 +248,7 @@ const CreditDatabase = () => {
         profileData?.forEach((p: any) => map.set(p.user_id, p));
         setProfiles(map);
       }
-      setUserCredits((creditData || []) as UserCredit[]);
+      setUserCredits(creditData as UserCredit[]);
     } catch (err) {
       console.error('Error searching:', err);
     } finally {

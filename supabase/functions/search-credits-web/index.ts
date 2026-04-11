@@ -205,44 +205,10 @@ Return up to 8 most relevant REAL results.`;
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: systemPrompt + '\n\nRespond with a JSON object: { "results": [...] }' },
           { role: 'user', content: searchPrompt },
         ],
-        tools: [{
-          type: 'function',
-          function: {
-            name: 'return_credits',
-            description: 'Return structured credit search results',
-            parameters: {
-              type: 'object',
-              properties: {
-                results: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      title: { type: 'string' },
-                      type: { type: 'string' },
-                      role_suggestion: { anyOf: [{ type: 'string' }, { type: 'null' }] },
-                      year: { anyOf: [{ type: 'number' }, { type: 'null' }] },
-                      platform: { anyOf: [{ type: 'string' }, { type: 'null' }] },
-                      description: { anyOf: [{ type: 'string' }, { type: 'null' }] },
-                      url: { anyOf: [{ type: 'string' }, { type: 'null' }] },
-                      image_url: { anyOf: [{ type: 'string' }, { type: 'null' }] },
-                      location: { anyOf: [{ type: 'string' }, { type: 'null' }] },
-                      client_brand: { anyOf: [{ type: 'string' }, { type: 'null' }] },
-                    },
-                    required: ['title', 'type'],
-                    additionalProperties: false,
-                  }
-                }
-              },
-              required: ['results'],
-              additionalProperties: false,
-            }
-          }
-        }],
-        tool_choice: { type: 'function', function: { name: 'return_credits' } },
+        response_format: { type: 'json_object' },
       }),
     });
 
@@ -267,41 +233,30 @@ Return up to 8 most relevant REAL results.`;
     }
 
     const aiData = await aiResponse.json();
-    const message = aiData.choices?.[0]?.message;
-    const toolCall = message?.tool_calls?.[0];
+    const content = aiData.choices?.[0]?.message?.content || '';
 
     let rawResults: any[] = [];
 
-    // Try tool_calls first
-    if (toolCall?.function?.arguments) {
+    if (content) {
       try {
-        const parsed = JSON.parse(toolCall.function.arguments);
-        rawResults = parsed.results || [];
-        console.log(`AI tool_call returned ${rawResults.length} results`);
-      } catch (parseErr) {
-        console.error('Failed to parse tool_call arguments', parseErr);
-      }
-    }
-
-    // Fallback: parse from message content if tool_calls empty
-    if (rawResults.length === 0 && message?.content) {
-      try {
-        const content = message.content;
-        // Try to extract JSON array from content
-        const jsonMatch = content.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          rawResults = JSON.parse(jsonMatch[0]);
-          console.log(`AI content fallback returned ${rawResults.length} results`);
-        } else {
-          const objMatch = content.match(/\{[\s\S]*"results"\s*:\s*\[[\s\S]*\]\s*\}/);
-          if (objMatch) {
-            const parsed = JSON.parse(objMatch[0]);
-            rawResults = parsed.results || [];
-            console.log(`AI content obj fallback returned ${rawResults.length} results`);
-          }
+        // Try direct JSON parse first
+        const parsed = JSON.parse(content);
+        rawResults = Array.isArray(parsed) ? parsed : (parsed.results || []);
+        console.log(`AI JSON returned ${rawResults.length} results`);
+      } catch {
+        // Try extracting JSON from markdown fences
+        try {
+          const cleaned = content
+            .replace(/^```json\s*/im, '')
+            .replace(/^```\s*/im, '')
+            .replace(/```\s*$/im, '')
+            .trim();
+          const parsed = JSON.parse(cleaned);
+          rawResults = Array.isArray(parsed) ? parsed : (parsed.results || []);
+          console.log(`AI cleaned JSON returned ${rawResults.length} results`);
+        } catch (e2) {
+          console.error('Failed to parse AI response:', e2, 'Content preview:', content.slice(0, 200));
         }
-      } catch (contentErr) {
-        console.error('Failed to parse AI content fallback', contentErr);
       }
     }
 

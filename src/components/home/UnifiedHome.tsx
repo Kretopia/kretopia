@@ -161,21 +161,20 @@ export const UnifiedHome = () => {
           <div className="relative container mx-auto max-w-5xl px-4 sm:px-6 pt-8 sm:pt-14 pb-6">
             {/* Conversion-first hero */}
             <div className="text-center mb-5 sm:mb-6">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary/80 mb-3">The Creative OS</p>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.05] mb-3">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.05] mb-4">
                 Get Discovered. Get Booked.
                 <br />
                 <span className="text-primary">Get Paid.</span>
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
-                The all-in-one platform where{" "}
-                <span className="text-primary font-semibold inline-block min-w-[110px]">
+              <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+                Where{" "}
+                <span className="text-primary font-semibold inline-block min-w-[100px]">
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={heroRoleIdx}
-                      initial={{ y: 16, opacity: 0, filter: "blur(4px)" }}
+                      initial={{ y: 14, opacity: 0, filter: "blur(4px)" }}
                       animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                      exit={{ y: -16, opacity: 0, filter: "blur(4px)" }}
+                      exit={{ y: -14, opacity: 0, filter: "blur(4px)" }}
                       transition={{ duration: 0.3 }}
                       className="inline-block"
                     >
@@ -183,15 +182,12 @@ export const UnifiedHome = () => {
                     </motion.span>
                   </AnimatePresence>
                 </span>{" "}
-                build verified credits, connect with collaborators, and unlock real opportunities.
-              </p>
-              <p className="text-xs text-muted-foreground/80 mt-3">
-                Free to join · Early creators get priority access to gigs, collaborations, and features.
+                build verified credits and get booked.
               </p>
             </div>
 
             <div className="max-w-xl mx-auto mb-5">
-              <p className="text-xs sm:text-sm text-muted-foreground mb-2 text-center">
+              <p className="text-[11px] sm:text-xs text-muted-foreground/70 mb-1.5 text-center">
                 Already have work? Search your name
               </p>
               <UnifiedSearchDropdown

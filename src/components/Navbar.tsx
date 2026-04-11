@@ -365,6 +365,15 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <Button variant="gradient" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-4">Get Started</Button>
               </Link>
             </>
+          ) : !user && !isLandingPage ? (
+            <>
+              <Link to="/auth">
+                <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4">Sign In</Button>
+              </Link>
+              <Link to="/auth">
+                <Button variant="gradient" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-4">Get Started</Button>
+              </Link>
+            </>
           ) : null}
         </div>
       </div>

@@ -129,7 +129,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         <BrandLogo size="md" showBeta linkToHome />
 
         {/* ═══ PERSISTENT SEARCH BAR ═══ */}
-        {user && !isLandingPage && (
+        {!isLandingPage && (
           <UnifiedSearchDropdown
             variant="navbar"
             className="hidden sm:block flex-1 max-w-sm mx-4"

@@ -379,7 +379,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
       </div>
       
       {/* Mobile search bar — slides open */}
-      {searchOpen && user && !isLandingPage && (
+      {searchOpen && !isLandingPage && (
         <div className="sm:hidden border-t border-border/50 px-3 py-2 bg-background">
           <UnifiedSearchDropdown
             variant="inline"

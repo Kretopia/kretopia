@@ -740,6 +740,8 @@ export const UnifiedHome = () => {
         <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />
       </div>
     </div>
+      {/* Sticky mobile CTA */}
+      <StickyMobileCTA />
   );
 };
 

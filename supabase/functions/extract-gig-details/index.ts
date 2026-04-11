@@ -87,35 +87,7 @@ Be thorough but concise. If info isn't available, use null.`;
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages,
-        tools: [{
-          type: "function",
-          function: {
-            name: "extract_gig",
-            description: "Extract structured gig/casting details with polished copy",
-            parameters: {
-              type: "object",
-              properties: {
-                title: { type: "string" },
-                type: { type: "string", enum: ["job", "barter", "collab", "gig", "internship"] },
-                description: { type: "string" },
-                compensation: { type: ["string", "null"] },
-                location: { type: ["string", "null"] },
-                requirements: { type: ["string", "null"] },
-                skills: { type: "array", items: { type: "string" } },
-                deliverables: { type: ["string", "null"] },
-                duration: { type: ["string", "null"] },
-                tags: { type: "array", items: { type: "string" } },
-                barter_offering: { type: ["string", "null"] },
-                barter_requesting: { type: ["string", "null"] },
-                platform_requirements: { type: ["array", "null"], items: { type: "string" } },
-                min_followers: { type: ["number", "null"] },
-                cover_image_prompt: { type: "string" },
-              },
-              required: ["title", "type", "description", "skills", "tags", "cover_image_prompt"],
-            },
-          },
-        }],
-        tool_choice: { type: "function", function: { name: "extract_gig" } },
+        response_format: { type: "json_object" },
       }),
     });
 
@@ -131,13 +103,28 @@ Be thorough but concise. If info isn't available, use null.`;
     }
 
     const aiData = await aiResponse.json();
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+    const rawContent = aiData.choices?.[0]?.message?.content;
     
-    if (!toolCall) {
-      throw new Error("AI did not return structured data");
+    if (!rawContent) {
+      console.error("AI returned no content:", JSON.stringify(aiData));
+      throw new Error("AI did not return any content");
     }
 
-    const extracted = JSON.parse(toolCall.function.arguments);
+    console.log("AI raw response:", rawContent.substring(0, 500));
+
+    let extracted: any;
+    try {
+      extracted = JSON.parse(rawContent);
+    } catch (parseErr) {
+      // Try extracting JSON from markdown code blocks
+      const jsonMatch = rawContent.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        extracted = JSON.parse(jsonMatch[1].trim());
+      } else {
+        console.error("Failed to parse AI response:", rawContent);
+        throw new Error("Could not parse AI response as JSON");
+      }
+    }
     const coverImagePrompt = extracted.cover_image_prompt;
     delete extracted.cover_image_prompt;
 

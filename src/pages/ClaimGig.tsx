@@ -115,8 +115,8 @@ const ClaimGig = () => {
           </h1>
           <p className="text-muted-foreground">
             {isClaimed
-              ? "Someone has already taken ownership of this listing."
-              : "Someone spotted your gig and listed it on ThriveIN. Claim it to manage applications and find the right talent."}
+              ? "This listing has already been claimed by its owner."
+              : "Your gig was listed on ThriveIN so creatives can discover and apply. Claim it to manage applicants, message talent, and fill the role faster."}
           </p>
         </div>
 

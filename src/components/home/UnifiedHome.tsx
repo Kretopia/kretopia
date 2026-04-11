@@ -213,24 +213,22 @@ export const UnifiedHome = () => {
                   { step: "1", icon: Search, title: "Search Your Name", desc: "Find credits you're already connected to" },
                   { step: "2", icon: Database, title: "Claim & Verify", desc: "AI + peer endorsements verify your work" },
                   { step: "3", icon: Briefcase, title: "Get Booked", desc: "Brands discover and hire you directly" },
-              ].map((s, i) => (
-                <motion.div
-                  key={s.title}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + i * 0.1 }}
-                  className="rounded-2xl bg-card border border-border/60 p-3 text-center relative overflow-hidden"
-                >
-                  <span className="absolute top-1.5 left-2 text-[10px] font-extrabold text-primary/20">{s.step}</span>
-                  <s.icon className="h-5 w-5 text-primary mx-auto mb-1.5" />
-                  <p className="text-[11px] font-bold text-foreground mb-0.5">{s.title}</p>
-                  <p className="text-[9px] text-muted-foreground leading-relaxed">{s.desc}</p>
-                </motion.div>
-              ))}
+                ].map((s, i) => (
+                  <motion.div
+                    key={s.title}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 + i * 0.1 }}
+                    className="rounded-2xl bg-card border border-border/60 p-3 text-center relative overflow-hidden"
+                  >
+                    <span className="absolute top-1.5 left-2 text-[10px] font-extrabold text-primary/20">{s.step}</span>
+                    <s.icon className="h-5 w-5 text-primary mx-auto mb-1.5" />
+                    <p className="text-[11px] font-bold text-foreground mb-0.5">{s.title}</p>
+                    <p className="text-[9px] text-muted-foreground leading-relaxed">{s.desc}</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-
-            <div className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm p-4 sm:p-5 mb-5 text-left max-w-2xl mx-auto">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80 mb-2">Not just another portfolio</p>
               <h2 className="text-base sm:text-lg font-bold text-foreground mb-2">Most platforms show what you say you’ve done. ThriveIN helps prove what you’ve actually done.</h2>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 Search your name. Claim your work. Build a verified creative profile that compounds trust over time.

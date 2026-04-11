@@ -13,6 +13,9 @@ import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
+import { VisualProofCard } from "@/components/landing/VisualProofCard";
+import { BeforeAfterSection } from "@/components/landing/BeforeAfterSection";
+import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -195,33 +198,36 @@ export const UnifiedHome = () => {
                 placeholder="Search creators, productions, gigs..."
               />
             </div>
-            <div className="grid grid-cols-3 gap-2 mb-5">
-              {[
-                { icon: Database, title: "Claim Credits", desc: "Build your verified work history", step: "1" },
-                { icon: Globe, title: "Get Discovered", desc: "Show up in industry searches", step: "2" },
-                { icon: Briefcase, title: "Get Paid", desc: "Land gigs & collaborations", step: "3" },
-              ].map((s, i) => (
-                <motion.div
-                  key={s.title}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + i * 0.1 }}
-                  className="rounded-2xl bg-card border border-border/60 p-3 text-center relative overflow-hidden"
-                >
-                  <span className="absolute top-1.5 left-2 text-[10px] font-extrabold text-primary/20">{s.step}</span>
-                  <s.icon className="h-5 w-5 text-primary mx-auto mb-1.5" />
-                  <p className="text-[11px] font-bold text-foreground mb-0.5">{s.title}</p>
-                  <p className="text-[9px] text-muted-foreground leading-relaxed">{s.desc}</p>
-                </motion.div>
-              ))}
+            {/* Visual proof card */}
+            <div className="mb-6">
+              <VisualProofCard />
             </div>
 
-            <div className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm p-4 sm:p-5 mb-5 text-left max-w-2xl mx-auto">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80 mb-2">Not just another portfolio</p>
-              <h2 className="text-base sm:text-lg font-bold text-foreground mb-2">Most platforms show what you say you’ve done. ThriveIN helps prove what you’ve actually done.</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                Search your name. Claim your work. Build a verified creative profile that compounds trust over time.
+            {/* 3-Step Visual Process */}
+            <div className="mb-5">
+              <p className="text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-semibold mb-3">
+                How it works
               </p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { step: "1", icon: Search, title: "Search Your Name", desc: "Find credits you're already connected to" },
+                  { step: "2", icon: Database, title: "Claim & Verify", desc: "AI + peer endorsements verify your work" },
+                  { step: "3", icon: Briefcase, title: "Get Booked", desc: "Brands discover and hire you directly" },
+                ].map((s, i) => (
+                  <motion.div
+                    key={s.title}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 + i * 0.1 }}
+                    className="rounded-2xl bg-card border border-border/60 p-3 text-center relative overflow-hidden"
+                  >
+                    <span className="absolute top-1.5 left-2 text-[10px] font-extrabold text-primary/20">{s.step}</span>
+                    <s.icon className="h-5 w-5 text-primary mx-auto mb-1.5" />
+                    <p className="text-[11px] font-bold text-foreground mb-0.5">{s.title}</p>
+                    <p className="text-[9px] text-muted-foreground leading-relaxed">{s.desc}</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
             <div className="flex items-center justify-center gap-6 sm:gap-8 mb-2">
@@ -244,7 +250,10 @@ export const UnifiedHome = () => {
         </div>
       )}
 
-      {/* ═══════════ LIVE ACTIVITY TICKER ═══════════ */}
+      {/* ═══════════ BEFORE/AFTER DIFFERENTIATION ═══════════ */}
+      {!user && <BeforeAfterSection />}
+
+
       {activityMsg && !user && (
         <div className="border-y border-border/50 bg-muted/30">
           <div className="container mx-auto max-w-5xl px-4">
@@ -685,28 +694,34 @@ export const UnifiedHome = () => {
           className="rounded-2xl overflow-hidden relative"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-accent/80" />
-          <div className="relative p-6 sm:p-8">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center shrink-0">
-                <Star className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-base sm:text-lg font-bold text-white mb-1">
-                  {user ? "Upgrade to Pro" : "Your career deserves a verified record"}
-                </h3>
-                <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-4">
-                  {user
-                    ? "Unlock AI matching, unlimited discovery, and the embeddable credits widget."
-                    : "Join ThriveIN to claim your credits, build your verified identity, and get discovered by the industry."}
-                </p>
-                <Link
-                  to={user ? "/subscription" : "/auth"}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white text-primary px-5 py-2.5 text-xs font-bold hover:bg-white/90 transition-colors shadow-md"
-                >
-                  {user ? "View Plans" : "Get Started — Free"} <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
+          <div className="relative p-6 sm:p-8 text-center">
+            <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center mx-auto mb-3">
+              <Zap className="h-6 w-6 text-white" />
             </div>
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
+              {user ? "Upgrade to Pro" : "Become a Founding Member"}
+            </h3>
+            <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-1 max-w-md mx-auto">
+              {user
+                ? "Unlock AI matching, unlimited discovery, and the embeddable credits widget."
+                : "Early creators get priority visibility, first access to gigs, and help shape the platform."}
+            </p>
+            {!user && (
+              <p className="text-[10px] text-white/50 mb-4">
+                Free forever for early members · No credit card required
+              </p>
+            )}
+            <Link
+              to={user ? "/subscription" : "/auth"}
+              className="inline-flex items-center gap-2 rounded-xl bg-white text-primary px-6 py-3 text-sm font-bold hover:bg-white/90 transition-colors shadow-md"
+            >
+              {user ? "View Plans" : "Join Now — It's Free"} <ArrowRight className="h-4 w-4" />
+            </Link>
+            {!user && (
+              <p className="text-[10px] text-white/40 mt-3">
+                Built by creatives, for creatives
+              </p>
+            )}
           </div>
         </motion.div>
         )}
@@ -724,6 +739,8 @@ export const UnifiedHome = () => {
 
         <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />
       </div>
+      {/* Sticky mobile CTA */}
+      <StickyMobileCTA />
     </div>
   );
 };

@@ -156,12 +156,7 @@ export const ViewProfileTabs = ({
               </div>
             </div>
 
-            {/* Shop */}
-            <DigitalProductsSection userId={userId} isOwner={false} />
-          </div>
-        );
-
-      default:
+            {/* Press & Awards */}
         return null;
     }
   };

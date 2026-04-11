@@ -126,6 +126,7 @@ interface WebResult {
 
 const CreditDatabase = () => {
   const [search, setSearch] = useState("");
+  const [submittedSearch, setSubmittedSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);
@@ -145,10 +146,16 @@ const CreditDatabase = () => {
 
   const isSearching = debouncedSearch.length >= 2;
 
+  // Only debounce the submitted search for page-level results
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 400);
+    const t = setTimeout(() => setDebouncedSearch(submittedSearch), 400);
     return () => clearTimeout(t);
-  }, [search]);
+  }, [submittedSearch]);
+
+  const handleSearchSubmit = useCallback((q: string) => {
+    setSearch(q);
+    setSubmittedSearch(q);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -312,7 +319,7 @@ const CreditDatabase = () => {
               variant={isSearching ? "inline" : "hero"}
               value={search}
               onValueChange={setSearch}
-              onQuerySubmit={setSearch}
+              onQuerySubmit={handleSearchSubmit}
               placeholder="Search projects, creators, labels, studios..."
               className="max-w-xl mx-auto"
             />

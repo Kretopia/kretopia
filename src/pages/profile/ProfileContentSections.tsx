@@ -184,12 +184,7 @@ export const ProfileContentSections = ({
               )}
             </div>
 
-            {/* Shop */}
-            <div>
-              <DigitalProductsSection userId={profile.user_id} isOwner={true} />
             </div>
-
-            {/* Embeddable Credits Widget */}
             <div>
               <EmbeddableCreditsWidget
                 userId={profile.user_id}

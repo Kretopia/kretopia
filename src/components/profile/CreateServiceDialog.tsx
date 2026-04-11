@@ -164,8 +164,45 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated, editService
       setImageUploading(false);
     }
   };
+  const handleAiImageGenerate = async () => {
+    if (!user) return;
+    const prompt = aiImagePrompt.trim() || `A professional, modern cover image for a ${category || 'creative'} service called "${title || 'Creative Service'}". Clean, polished, visually appealing for a portfolio.`;
+    setAiImageGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-content', {
+        body: {
+          type: 'image',
+          messages: [{ role: 'user', content: `Generate a professional service cover image: ${prompt}. Make it visually striking, modern, and suitable as a banner image. No text in the image.` }],
+        },
+      });
+      if (error) throw error;
+      const imageUrl = data?.images?.[0]?.image_url?.url;
+      if (!imageUrl) throw new Error("No image generated");
+      const resp = await fetch(imageUrl);
+      const blob = await resp.blob();
+      const path = `services/${user.id}-ai-${Date.now()}.png`;
+      const { error: uploadErr } = await supabase.storage.from('media').upload(path, blob, { contentType: 'image/png' });
+      if (uploadErr) throw uploadErr;
+      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path);
+      setCoverImage(publicUrl);
+      setShowAiImageInput(false);
+      setAiImagePrompt("");
+      toast({ title: "AI image generated!", description: "Cover image created and saved." });
+    } catch (err: any) {
+      const msg = err?.message || "Failed to generate image";
+      if (msg.includes("429") || msg.includes("rate")) {
+        toast({ title: "Too many requests", description: "Please wait and try again.", variant: "destructive" });
+      } else if (msg.includes("402")) {
+        toast({ title: "Credits needed", description: "AI credits exhausted.", variant: "destructive" });
+      } else {
+        toast({ title: "Generation failed", description: msg, variant: "destructive" });
+      }
+    } finally {
+      setAiImageGenerating(false);
+    }
+  };
 
-  const handleAIEnhance = async () => {
+
     if (!title && !description) {
       toast({ title: "Add some details first", variant: "destructive" });
       return;

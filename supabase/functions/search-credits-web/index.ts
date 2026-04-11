@@ -102,72 +102,49 @@ serve(async (req) => {
 
     if (FIRECRAWL_API_KEY) {
       try {
-        const searchQueries = isUrl(trimmedQuery)
-          ? [trimmedQuery]
-          : creatorQuery
-            ? [
-                `"${trimmedQuery}" site:instagram.com OR site:tiktok.com OR site:youtube.com OR site:linkedin.com OR site:spotify.com OR site:music.apple.com OR site:soundcloud.com`,
-                `"${trimmedQuery}" creator OR artist OR influencer OR photographer OR filmmaker OR videographer OR makeup OR stylist OR model OR podcaster`,
-                `"${trimmedQuery}" channel OR profile OR portfolio OR official`,
-              ]
-            : [
-                `"${trimmedQuery}" site:imdb.com OR site:youtube.com OR site:spotify.com OR site:eventbrite.com OR site:instagram.com`,
-                `"${trimmedQuery}" poster OR cover OR flyer OR trailer OR lineup OR campaign`,
-                `"${trimmedQuery}" film OR song OR album OR event OR festival OR podcast OR show OR production`,
-              ];
+        // Single optimized search query — NO scraping for speed
+        const searchQuery = creatorQuery
+          ? `"${trimmedQuery}" creator artist portfolio profile`
+          : `"${trimmedQuery}" film song album event production`;
 
-        const searchPromises = searchQueries.map(async (searchQuery) => {
-          try {
-            const res = await fetch('https://api.firecrawl.dev/v1/search', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                query: searchQuery,
-                limit: 8,
-                scrapeOptions: { formats: ['markdown'] },
-              }),
-            });
-
-            if (!res.ok) {
-              console.error('Firecrawl search error:', res.status, await res.text());
-              return [];
-            }
-
-            const data = await res.json();
-            return data.data || [];
-          } catch (err) {
-            console.error('Firecrawl search failed:', err);
-            return [];
-          }
+        const res = await fetch('https://api.firecrawl.dev/v1/search', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: searchQuery,
+            limit: 10,
+            // No scrapeOptions — just use search snippets for speed
+          }),
         });
 
-        const allResults = await Promise.all(searchPromises);
-        const flatResults = allResults.flat();
+        if (res.ok) {
+          const data = await res.json();
+          const flatResults = data.data || [];
 
-        for (const result of flatResults) {
-          const imageUrl = extractImageUrl(result);
-          const snippet = [
-            result.title ? `Title: ${result.title}` : '',
-            result.url ? `URL: ${result.url}` : '',
-            imageUrl ? `Image: ${imageUrl}` : '',
-            result.description ? `Description: ${result.description}` : '',
-            result.markdown ? `Content: ${result.markdown.slice(0, 1500)}` : '',
-          ].filter(Boolean).join('\n');
+          for (const result of flatResults) {
+            const imageUrl = extractImageUrl(result);
+            const snippet = [
+              result.title ? `Title: ${result.title}` : '',
+              result.url ? `URL: ${result.url}` : '',
+              imageUrl ? `Image: ${imageUrl}` : '',
+              result.description ? `Description: ${result.description}` : '',
+            ].filter(Boolean).join('\n');
 
-          if (snippet.length > 20) {
-            webSnippets.push(snippet);
+            if (snippet.length > 20) {
+              webSnippets.push(snippet);
+            }
           }
         }
 
-        console.log(`Firecrawl found ${webSnippets.length} real web results for "${trimmedQuery}"`);
+        console.log(`Firecrawl found ${webSnippets.length} results for "${trimmedQuery}"`);
       } catch (fcErr) {
-        console.error('Firecrawl overall error:', fcErr);
+        console.error('Firecrawl error:', fcErr);
       }
     } else {
-      console.warn('FIRECRAWL_API_KEY not configured — falling back to AI-only search');
+      console.warn('FIRECRAWL_API_KEY not configured');
     }
 
     const hasWebData = webSnippets.length > 0;
@@ -226,7 +203,7 @@ Return up to 8 most relevant REAL results.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-flash-lite',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: searchPrompt },

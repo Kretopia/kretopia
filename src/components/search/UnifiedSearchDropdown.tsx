@@ -118,8 +118,8 @@ export function UnifiedSearchDropdown({
     try {
       const likeQ = `%${q}%`;
 
-      // Phase 1: Fast DB search
-      const [profiles, credits, opps] = await Promise.all([
+      // Run DB search AND web search in parallel — web/AI results come first if DB is empty
+      const dbPromise = Promise.all([
         supabase
           .from("profiles")
           .select("user_id, full_name, avatar_url, role, bio, location, is_claimed")
@@ -139,25 +139,32 @@ export function UnifiedSearchDropdown({
           .limit(3),
       ]);
 
+      // Always fire web search in parallel with a 8s timeout
+      const webWithTimeout = (promise: Promise<any>) =>
+        Promise.race([promise, new Promise((resolve) => setTimeout(() => resolve({ data: null }), 8000))]);
+
+      const webPromise = q.length >= 2
+        ? webWithTimeout(supabase.functions.invoke("search-credits-web", { body: { query: q } }).catch(() => ({ data: null })))
+        : Promise.resolve({ data: null });
+
+      // Wait for DB results first (fast)
+      const [profiles, credits, opps] = await dbPromise;
       if (controller.signal.aborted) return;
 
       const dbResults: SearchResult[] = [];
 
-      // Creators with bio preview
       for (const p of profiles.data || []) {
-        const creator: SearchResult = {
+        dbResults.push({
           type: "creator",
           id: p.user_id,
           title: p.full_name || "Creator",
           subtitle: [p.role, p.location].filter(Boolean).join(" · "),
           avatar: p.avatar_url,
           bio: p.bio || undefined,
-          is_claimed: p.is_claimed !== false, // treat null as claimed
-        };
-        dbResults.push(creator);
+          is_claimed: p.is_claimed !== false,
+        });
       }
 
-      // Credits
       for (const c of credits.data || []) {
         dbResults.push({
           type: "credit",
@@ -168,7 +175,6 @@ export function UnifiedSearchDropdown({
         });
       }
 
-      // Gigs
       for (const o of opps.data || []) {
         dbResults.push({
           type: "gig",
@@ -178,10 +184,12 @@ export function UnifiedSearchDropdown({
         });
       }
 
-      // Highlight first creator for AI bio display
+      // Show DB results immediately (even if empty — loading stays true for web)
+      setResults(dbResults);
+
+      // Highlight first creator
       const firstCreator = dbResults.find((r) => r.type === "creator");
       if (firstCreator) {
-        // Load their credits for the card
         const { data: creatorCredits } = await supabase
           .from("credits")
           .select("project_name, role")
@@ -198,31 +206,33 @@ export function UnifiedSearchDropdown({
         }
       }
 
-      setResults(dbResults);
-      setLoading(false);
+      // If no DB results, keep loading indicator until web results arrive
+      if (dbResults.length > 0) {
+        setLoading(false);
+      }
 
-      // Phase 2: Web search if limited DB results (non-blocking, appends silently)
-      if (dbResults.length < 3 && q.length >= 3) {
-        try {
-          const { data: webData } = await supabase.functions.invoke("search-credits-web", {
-            body: { query: q },
-          });
-          if (controller.signal.aborted) return;
+      // Now await web results (already in flight)
+      const webResponse = await webPromise;
+      if (controller.signal.aborted) return;
 
-          const webResults: SearchResult[] = (webData?.results || []).slice(0, 5).map((r: any, i: number) => ({
-            type: "web" as const,
-            id: `web-${i}`,
-            title: r.title,
-            subtitle: [r.type, r.year, r.platform].filter(Boolean).join(" · "),
-            avatar: r.image_url || null,
-            platform: r.platform,
-          }));
+      const webResults: SearchResult[] = (webResponse?.data?.results || []).slice(0, 8).map((r: any, i: number) => ({
+        type: "web" as const,
+        id: `web-${i}`,
+        title: r.title,
+        subtitle: [r.type, r.year, r.platform].filter(Boolean).join(" · "),
+        avatar: r.image_url || null,
+        platform: r.platform,
+      }));
 
-          setResults((prev) => [...prev, ...webResults]);
-        } catch {
-          // Web search is supplementary
+      if (webResults.length > 0) {
+        setResults((prev) => [...prev, ...webResults]);
+        // If this was the highlighted creator from web, set it
+        if (!firstCreator && webResults.length > 0) {
+          // Web results are supplementary, no highlight needed
         }
       }
+
+      setLoading(false);
     } catch (err) {
       if (!controller.signal.aborted) {
         console.error("Search error:", err);
@@ -514,13 +524,21 @@ export function UnifiedSearchDropdown({
                 );
               })}
 
-            {/* Empty state */}
+            {/* Loading — searching web */}
+            {loading && results.length === 0 && (
+              <div className="px-4 py-4 flex flex-col items-center gap-1.5 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Searching across the creative universe...</span>
+              </div>
+            )}
+
+            {/* Empty state — after all searches complete */}
             {!loading && results.length === 0 && query.trim().length >= 2 && (
               <div className="px-4 py-4 text-center">
                 <Sparkles className="h-5 w-5 text-primary/50 mx-auto mb-1.5" />
-                <p className="text-sm text-muted-foreground">No results yet</p>
+                <p className="text-sm text-muted-foreground">No results found</p>
                 <p className="text-xs text-muted-foreground/60 mt-0.5">
-                  Press Enter for an AI-powered deep search
+                  Try a different name or project
                 </p>
               </div>
             )}

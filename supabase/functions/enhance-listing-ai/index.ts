@@ -14,20 +14,30 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("AI not configured");
 
-    const { title, description, category, type } = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      const text = await req.text();
+      body = text ? JSON.parse(text) : {};
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid request body" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    const systemPrompt = `You are a creative business copywriter for a professional creative platform. 
+    const { title, description, category, type } = body as {
+      title?: string; description?: string; category?: string; type?: string;
+    };
+
+    const systemPrompt = `You are a creative business copywriter for a professional creative platform.
 Your job is to enhance service/product listings to be more compelling, clear, and conversion-focused.
-Keep the tone professional but approachable. Be concise.
-Return a JSON object with "title" and "description" fields.
-The title should be under 60 characters. The description should be 2-3 sentences max.`;
+Keep the tone professional but approachable. Be concise.`;
 
     const userPrompt = `Enhance this ${type || 'service'} listing:
 Title: ${title || '(none provided)'}
 Description: ${description || '(none provided)'}
 Category: ${category || 'general'}
 
-Return improved title and description as JSON.`;
+Return the result using the enhance_listing function.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -36,7 +46,7 @@ Return improved title and description as JSON.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -64,6 +74,8 @@ Return improved title and description as JSON.`;
     });
 
     if (!response.ok) {
+      const errText = await response.text();
+      console.error("AI gateway response:", response.status, errText);
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limited. Try again in a moment." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -79,13 +91,29 @@ Return improved title and description as JSON.`;
 
     const data = await response.json();
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    
+
     let result = { title: title || "", description: description || "" };
     if (toolCall?.function?.arguments) {
       try {
         result = JSON.parse(toolCall.function.arguments);
       } catch {
-        // fallback to original
+        // Try extracting from content as fallback
+        const content = data.choices?.[0]?.message?.content;
+        if (content) {
+          const jsonMatch = content.match(/\{[\s\S]*"title"[\s\S]*"description"[\s\S]*\}/);
+          if (jsonMatch) {
+            try { result = JSON.parse(jsonMatch[0]); } catch { /* keep original */ }
+          }
+        }
+      }
+    } else {
+      // No tool call — try parsing content directly
+      const content = data.choices?.[0]?.message?.content;
+      if (content) {
+        const jsonMatch = content.match(/\{[\s\S]*"title"[\s\S]*"description"[\s\S]*\}/);
+        if (jsonMatch) {
+          try { result = JSON.parse(jsonMatch[0]); } catch { /* keep original */ }
+        }
       }
     }
 

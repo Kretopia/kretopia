@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Sparkles, Loader2, ImagePlus, X } from "lucide-react";
+import { Plus, Trash2, Sparkles, Loader2, ImagePlus, X, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -60,6 +60,9 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated, editService
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [aiImageGenerating, setAiImageGenerating] = useState(false);
+  const [aiImagePrompt, setAiImagePrompt] = useState("");
+  const [showAiImageInput, setShowAiImageInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
@@ -102,6 +105,7 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated, editService
 
   const resetForm = () => {
     setTitle(""); setDescription(""); setCategory(""); setServiceFormat("virtual"); setCoverImage("");
+    setShowAiImageInput(false); setAiImagePrompt("");
     setTiers([{ tier_name: "Standard", price: "", price_max: "", currency: "USD", delivery_days: "", deliverables: [""], is_range: false }]);
   };
 
@@ -159,6 +163,43 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated, editService
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     } finally {
       setImageUploading(false);
+    }
+  };
+  const handleAiImageGenerate = async () => {
+    if (!user) return;
+    const prompt = aiImagePrompt.trim() || `A professional, modern cover image for a ${category || 'creative'} service called "${title || 'Creative Service'}". Clean, polished, visually appealing for a portfolio.`;
+    setAiImageGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-content', {
+        body: {
+          type: 'image',
+          messages: [{ role: 'user', content: `Generate a professional service cover image: ${prompt}. Make it visually striking, modern, and suitable as a banner image. No text in the image.` }],
+        },
+      });
+      if (error) throw error;
+      const imageUrl = data?.images?.[0]?.image_url?.url;
+      if (!imageUrl) throw new Error("No image generated");
+      const resp = await fetch(imageUrl);
+      const blob = await resp.blob();
+      const path = `services/${user.id}-ai-${Date.now()}.png`;
+      const { error: uploadErr } = await supabase.storage.from('media').upload(path, blob, { contentType: 'image/png' });
+      if (uploadErr) throw uploadErr;
+      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path);
+      setCoverImage(publicUrl);
+      setShowAiImageInput(false);
+      setAiImagePrompt("");
+      toast({ title: "AI image generated!", description: "Cover image created and saved." });
+    } catch (err: any) {
+      const msg = err?.message || "Failed to generate image";
+      if (msg.includes("429") || msg.includes("rate")) {
+        toast({ title: "Too many requests", description: "Please wait and try again.", variant: "destructive" });
+      } else if (msg.includes("402")) {
+        toast({ title: "Credits needed", description: "AI credits exhausted.", variant: "destructive" });
+      } else {
+        toast({ title: "Generation failed", description: msg, variant: "destructive" });
+      }
+    } finally {
+      setAiImageGenerating(false);
     }
   };
 
@@ -278,20 +319,71 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated, editService
                 </Button>
               </div>
             ) : (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={imageUploading}
-                className="mt-1 w-full aspect-[16/9] rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-1.5 bg-muted/30"
-              >
-                {imageUploading ? (
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="mt-1 space-y-2">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={imageUploading || aiImageGenerating}
+                  className="w-full aspect-[16/9] rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-1.5 bg-muted/30"
+                >
+                  {imageUploading ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  ) : (
+                    <>
+                      <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Upload image</span>
+                    </>
+                  )}
+                </button>
+                {showAiImageInput ? (
+                  <div className="space-y-2 p-3 rounded-lg border bg-muted/20">
+                    <Label className="text-xs">Describe the image you want</Label>
+                    <Input
+                      placeholder={`e.g. A vibrant ${category || 'creative'} service banner`}
+                      value={aiImagePrompt}
+                      onChange={e => setAiImagePrompt(e.target.value)}
+                      disabled={aiImageGenerating}
+                    />
+                    <p className="text-[10px] text-muted-foreground">Leave empty to auto-generate based on your service details.</p>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => { setShowAiImageInput(false); setAiImagePrompt(""); }}
+                        disabled={aiImageGenerating}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="sm"
+                        className="flex-1 gap-1.5"
+                        onClick={handleAiImageGenerate}
+                        disabled={aiImageGenerating}
+                      >
+                        {aiImageGenerating ? (
+                          <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating...</>
+                        ) : (
+                          <><Wand2 className="h-3.5 w-3.5" /> Generate</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
-                  <>
-                    <ImagePlus className="h-6 w-6 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Upload image</span>
-                  </>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-2 text-xs"
+                    onClick={() => setShowAiImageInput(true)}
+                    disabled={aiImageGenerating}
+                  >
+                    <Wand2 className="h-3.5 w-3.5 text-primary" /> Generate with AI
+                  </Button>
                 )}
-              </button>
+              </div>
             )}
             <input
               ref={fileInputRef}

@@ -126,8 +126,6 @@ interface WebResult {
 
 const CreditDatabase = () => {
   const [search, setSearch] = useState("");
-  const [submittedSearch, setSubmittedSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [icdbProjects, setIcdbProjects] = useState<ICDBProject[]>([]);
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
@@ -144,17 +142,11 @@ const CreditDatabase = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
 
+  const debouncedSearch = useMemo(() => search.trim(), [search]);
   const isSearching = debouncedSearch.length >= 2;
-
-  // Only debounce the submitted search for page-level results
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(submittedSearch), 400);
-    return () => clearTimeout(t);
-  }, [submittedSearch]);
 
   const handleSearchSubmit = useCallback((q: string) => {
     setSearch(q);
-    setSubmittedSearch(q);
   }, []);
 
   useEffect(() => {

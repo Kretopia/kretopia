@@ -229,11 +229,6 @@ export const UnifiedHome = () => {
                 ))}
               </div>
             </div>
-              <h2 className="text-base sm:text-lg font-bold text-foreground mb-2">Most platforms show what you say you’ve done. ThriveIN helps prove what you’ve actually done.</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                Search your name. Claim your work. Build a verified creative profile that compounds trust over time.
-              </p>
-            </div>
 
             <div className="flex items-center justify-center gap-6 sm:gap-8 mb-2">
               <div className="text-center">

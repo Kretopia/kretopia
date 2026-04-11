@@ -84,6 +84,7 @@ const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
+const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -245,6 +246,7 @@ const AppContent = () => {
             <Route path="/market" element={<Navigate to="/opportunities" replace />} />
             <Route path="/market/:listingId" element={<Navigate to="/opportunities" replace />} />
             <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
+            <Route path="/creative-circle" element={<ProtectedRoute><CreativeCircle /></ProtectedRoute>} />
             <Route path="/checkin" element={<Navigate to="/" replace />} />
             
             {/* Public Browsable Routes */}

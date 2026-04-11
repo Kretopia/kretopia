@@ -190,11 +190,12 @@ const CreditDatabase = () => {
 
   // Search
   const fetchResults = useCallback(async () => {
-    if (!isSearching) {
+    if (!isResultsSearching) {
       setIcdbProjects([]);
       setAiSuggestions([]);
       setUserCredits([]);
       setWebResults([]);
+      setProjectCount(0);
       return;
     }
     setLoading(true);
@@ -239,7 +240,7 @@ const CreditDatabase = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, category, isSearching]);
+  }, [debouncedSearch, category, isResultsSearching]);
 
   useEffect(() => {
     fetchResults();
@@ -297,12 +298,12 @@ const CreditDatabase = () => {
         {/* Search Hero */}
         <div className={cn(
           "transition-all duration-300",
-          isSearching
+          isSearchActive
             ? "border-b bg-background py-4"
             : "bg-gradient-to-b from-primary/8 to-background py-8 md:py-12"
         )}>
           <div className="container mx-auto px-4">
-            {!isSearching && (
+            {!isSearchActive && (
               <div className="text-center mb-5">
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
                   ThriveCredits™
@@ -314,7 +315,7 @@ const CreditDatabase = () => {
             )}
 
             <UnifiedSearchDropdown
-              variant={isSearching ? "inline" : "hero"}
+              variant={isSearchActive ? "inline" : "hero"}
               value={search}
               onValueChange={setSearch}
               onQuerySubmit={handleSearchSubmit}
@@ -352,7 +353,7 @@ const CreditDatabase = () => {
               <Loader2 className="h-7 w-7 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">Searching the creative record...</p>
             </div>
-          ) : isSearching ? (
+          ) : isResultsSearching ? (
             hasResults ? (
               <div className="py-4 space-y-6">
                 {/* Projects — poster grid */}

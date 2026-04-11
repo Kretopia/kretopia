@@ -181,12 +181,9 @@ export const HeroSection = () => {
             Free to join · Early creators get priority access to gigs & features
           </p>
 
-          {/* Dual CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
-            <Link to="/auth" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-7 py-3.5 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-all shadow-lg">
-              Create Your Profile <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link to="/gigs" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-7 py-3.5 text-sm font-semibold text-foreground hover:border-primary/40 transition-all">
+          {/* Browse CTA — Create Profile removed to prioritize search-first flow */}
+          <div className="flex items-center justify-center mb-6">
+            <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-7 py-3.5 text-sm font-semibold text-foreground hover:border-primary/40 transition-all">
               <Briefcase className="h-4 w-4 text-success" /> Browse Opportunities
             </Link>
           </div>

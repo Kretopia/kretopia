@@ -192,8 +192,9 @@ export function UnifiedSearchDropdown({
       }
 
       setResults(dbResults);
+      setLoading(false);
 
-      // Phase 2: Web search if limited DB results
+      // Phase 2: Web search if limited DB results (non-blocking, appends silently)
       if (dbResults.length < 3 && q.length >= 3) {
         try {
           const { data: webData } = await supabase.functions.invoke("search-credits-web", {
@@ -219,9 +220,8 @@ export function UnifiedSearchDropdown({
       if (!controller.signal.aborted) {
         console.error("Search error:", err);
         setResults([]);
+        setLoading(false);
       }
-    } finally {
-      if (!controller.signal.aborted) setLoading(false);
     }
   }, []);
 

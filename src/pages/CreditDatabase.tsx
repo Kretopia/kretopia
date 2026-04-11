@@ -142,8 +142,13 @@ const CreditDatabase = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
 
-  const debouncedSearch = useMemo(() => search.trim(), [search]);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const isSearching = debouncedSearch.length >= 2;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 250);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
   const handleSearchSubmit = useCallback((q: string) => {
     setSearch(q);

@@ -25,10 +25,10 @@ interface SEOProps {
 }
 
 export const SEO = ({
-  title = "ThriveIN - Swipe to Find Your Next Creative Collaborator",
-  description = "Stop scrolling Facebook groups. ThriveIN uses AI to match verified creatives — videographers, photographers, musicians, designers — based on your portfolio and style.",
+  title = "ThriveIN — The Creative OS™ | Verified Credits, Gigs & Payments",
+  description = "Your verified creative history — search your name, claim your credits, get discovered and get paid. The all-in-one platform for creatives who mean business.",
   type = "website",
-  image = "https://thrivein.io/og-image.png",
+  image = "https://www.thrivein.io/og-image.png",
   url,
   profile
 }: SEOProps) => {

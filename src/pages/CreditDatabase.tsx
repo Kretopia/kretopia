@@ -319,7 +319,7 @@ const CreditDatabase = () => {
               variant={isSearching ? "inline" : "hero"}
               value={search}
               onValueChange={setSearch}
-              onQuerySubmit={setSearch}
+              onQuerySubmit={handleSearchSubmit}
               placeholder="Search projects, creators, labels, studios..."
               className="max-w-xl mx-auto"
             />

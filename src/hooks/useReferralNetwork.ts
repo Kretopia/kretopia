@@ -45,14 +45,15 @@ export function useReferralNetwork(): ReferralNetworkData {
           .eq("user_id", user.id)
           .maybeSingle();
 
-        // Also count accepted invites as referrals (legacy system)
-        const { count: inviteCount } = await supabase
+        // Sum total people invited via invite codes (current_uses)
+        const { data: inviteData } = await supabase
           .from("invites")
-          .select("*", { count: "exact", head: true })
+          .select("current_uses")
           .eq("inviter_id", user.id)
           .gt("current_uses", 0);
 
-        const totalReferrals = (networkData?.referral_count || 0) + (inviteCount || 0);
+        const inviteTotal = (inviteData || []).reduce((sum, inv) => sum + (inv.current_uses || 0), 0);
+        const totalReferrals = (networkData?.referral_count || 0) + inviteTotal;
         const tier = getNetworkTier(totalReferrals);
 
         setData({

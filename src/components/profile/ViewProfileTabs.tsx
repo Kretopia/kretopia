@@ -155,8 +155,10 @@ export const ViewProfileTabs = ({
                 </div>
               </div>
             </div>
+          </div>
+        );
 
-            {/* Press & Awards */}
+      default:
         return null;
     }
   };

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2,
-  MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home
+  MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus
 } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { cn } from "@/lib/utils";
@@ -285,6 +285,21 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       )}
                     </>
                   )}
+
+                  <Separator className="my-3" />
+
+                  {/* Creative Circle CTA */}
+                  <Button
+                    variant="ghost"
+                    className="justify-start gap-3 h-12 w-full bg-gradient-to-r from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 border border-primary/10"
+                    onClick={() => handleNavigation("/creative-circle")}
+                  >
+                    <UserPlus className="h-5 w-5 text-primary" />
+                    <div className="flex flex-col items-start">
+                      <span className="font-semibold text-sm">Creative Circle</span>
+                      <span className="text-[10px] text-muted-foreground">Invite creatives, earn rewards</span>
+                    </div>
+                  </Button>
 
                   <Separator className="my-3" />
 

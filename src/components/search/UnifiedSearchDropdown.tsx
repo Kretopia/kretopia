@@ -105,7 +105,7 @@ export function UnifiedSearchDropdown({
 
     const timer = setTimeout(() => doSearch(trimmedQuery), 350);
     return () => clearTimeout(timer);
-  }, [query, doSearch, onOpenChange]);
+  }, [query]);
 
   const doSearch = useCallback(async (q: string) => {
     abortRef.current?.abort();

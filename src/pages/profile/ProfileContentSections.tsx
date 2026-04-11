@@ -85,6 +85,11 @@ export const ProfileContentSections = ({
           <ICDBTimeline userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
         );
 
+      case "hire":
+        return (
+          <WorkWithMeSection userId={profile.user_id} isOwner={true} creatorName={profile.full_name} />
+        );
+
       case "skills":
         return (
           <SkillsSection

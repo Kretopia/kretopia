@@ -105,6 +105,7 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated, editService
 
   const resetForm = () => {
     setTitle(""); setDescription(""); setCategory(""); setServiceFormat("virtual"); setCoverImage("");
+    setShowAiImageInput(false); setAiImagePrompt("");
     setTiers([{ tier_name: "Standard", price: "", price_max: "", currency: "USD", delivery_days: "", deliverables: [""], is_range: false }]);
   };
 

@@ -318,20 +318,71 @@ export const CreateServiceDialog = ({ open, onOpenChange, onCreated, editService
                 </Button>
               </div>
             ) : (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={imageUploading}
-                className="mt-1 w-full aspect-[16/9] rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-1.5 bg-muted/30"
-              >
-                {imageUploading ? (
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="mt-1 space-y-2">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={imageUploading || aiImageGenerating}
+                  className="w-full aspect-[16/9] rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-1.5 bg-muted/30"
+                >
+                  {imageUploading ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  ) : (
+                    <>
+                      <ImagePlus className="h-6 w-6 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Upload image</span>
+                    </>
+                  )}
+                </button>
+                {showAiImageInput ? (
+                  <div className="space-y-2 p-3 rounded-lg border bg-muted/20">
+                    <Label className="text-xs">Describe the image you want</Label>
+                    <Input
+                      placeholder={`e.g. A vibrant ${category || 'creative'} service banner`}
+                      value={aiImagePrompt}
+                      onChange={e => setAiImagePrompt(e.target.value)}
+                      disabled={aiImageGenerating}
+                    />
+                    <p className="text-[10px] text-muted-foreground">Leave empty to auto-generate based on your service details.</p>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => { setShowAiImageInput(false); setAiImagePrompt(""); }}
+                        disabled={aiImageGenerating}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="default"
+                        size="sm"
+                        className="flex-1 gap-1.5"
+                        onClick={handleAiImageGenerate}
+                        disabled={aiImageGenerating}
+                      >
+                        {aiImageGenerating ? (
+                          <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating...</>
+                        ) : (
+                          <><Wand2 className="h-3.5 w-3.5" /> Generate</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
-                  <>
-                    <ImagePlus className="h-6 w-6 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Upload image</span>
-                  </>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-2 text-xs"
+                    onClick={() => setShowAiImageInput(true)}
+                    disabled={aiImageGenerating}
+                  >
+                    <Wand2 className="h-3.5 w-3.5 text-primary" /> Generate with AI
+                  </Button>
                 )}
-              </button>
+              </div>
             )}
             <input
               ref={fileInputRef}

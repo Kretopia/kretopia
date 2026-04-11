@@ -90,13 +90,20 @@ export function UnifiedSearchDropdown({
 
   // Debounced search
   useEffect(() => {
-    if (query.trim().length < 2) {
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery.length < 2) {
+      setOpen(false);
+      onOpenChange?.(false);
       setResults([]);
       setHighlightedCreator(null);
       return;
     }
 
-    const timer = setTimeout(() => doSearch(query.trim()), 350);
+    setOpen(true);
+    onOpenChange?.(true);
+
+    const timer = setTimeout(() => doSearch(trimmedQuery), 350);
     return () => clearTimeout(timer);
   }, [query]);
 

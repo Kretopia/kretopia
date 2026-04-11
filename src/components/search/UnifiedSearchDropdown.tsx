@@ -354,11 +354,19 @@ export function UnifiedSearchDropdown({
           )}
         >
           <div className="overflow-y-auto max-h-[inherit]">
-            {/* Loading state */}
+            {/* Loading state — single unified indicator */}
             {loading && results.length === 0 && (
-              <div className="px-4 py-4 flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Searching across the creative universe...
+              <div className="px-4 py-6 flex flex-col items-center gap-3">
+                <div className="relative">
+                  <div className="h-10 w-10 rounded-full border-2 border-primary/20 flex items-center justify-center">
+                    <Search className="h-4 w-4 text-primary animate-pulse" />
+                  </div>
+                  <Loader2 className="h-10 w-10 animate-spin text-primary/60 absolute inset-0" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-foreground">Searching the creative universe</p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">Checking creators, credits, gigs & the web...</p>
+                </div>
               </div>
             )}
 
@@ -524,11 +532,11 @@ export function UnifiedSearchDropdown({
                 );
               })}
 
-            {/* Loading — searching web */}
-            {loading && results.length === 0 && (
-              <div className="px-4 py-4 flex flex-col items-center gap-1.5 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Searching across the creative universe...</span>
+            {/* Background web search indicator — only when we have some DB results but web still loading */}
+            {loading && results.length > 0 && (
+              <div className="px-4 py-2 flex items-center justify-center gap-2 text-xs text-muted-foreground/60 border-t border-border/50">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>Checking more sources...</span>
               </div>
             )}
 

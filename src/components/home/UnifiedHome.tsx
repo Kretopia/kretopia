@@ -198,11 +198,21 @@ export const UnifiedHome = () => {
                 placeholder="Search creators, productions, gigs..."
               />
             </div>
-            <div className="grid grid-cols-3 gap-2 mb-5">
-              {[
-                { icon: Database, title: "Claim Credits", desc: "Build your verified work history", step: "1" },
-                { icon: Globe, title: "Get Discovered", desc: "Show up in industry searches", step: "2" },
-                { icon: Briefcase, title: "Get Paid", desc: "Land gigs & collaborations", step: "3" },
+            {/* Visual proof card */}
+            <div className="mb-6">
+              <VisualProofCard />
+            </div>
+
+            {/* 3-Step Visual Process */}
+            <div className="mb-5">
+              <p className="text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-semibold mb-3">
+                How it works
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { step: "1", icon: Search, title: "Search Your Name", desc: "Find credits you're already connected to" },
+                  { step: "2", icon: Database, title: "Claim & Verify", desc: "AI + peer endorsements verify your work" },
+                  { step: "3", icon: Briefcase, title: "Get Booked", desc: "Brands discover and hire you directly" },
               ].map((s, i) => (
                 <motion.div
                   key={s.title}

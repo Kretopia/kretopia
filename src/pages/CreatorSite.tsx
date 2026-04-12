@@ -157,6 +157,9 @@ const CreatorSite = () => {
         description={data.profile.bio?.slice(0, 160) || `${data.profile.full_name}'s professional site powered by ThriveIN`}
       />
       {template === 'bold-electric' && <BoldElectricTemplate data={data} />}
+      {template === 'minimal-editorial' && <MinimalEditorialTemplate data={data} />}
+      {template === 'portfolio-mosaic' && <PortfolioMosaicTemplate data={data} />}
+      {!['bold-electric', 'minimal-editorial', 'portfolio-mosaic'].includes(template) && <BoldElectricTemplate data={data} />}
     </>
   );
 };

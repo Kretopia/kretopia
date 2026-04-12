@@ -15,6 +15,7 @@ import { VerificationTab } from "@/components/admin/VerificationTab";
 import { UnclaimedProfilesTab } from "@/components/admin/UnclaimedProfilesTab";
 import { OutreachTab } from "@/components/admin/OutreachTab";
 import { FeedbackTab } from "@/components/admin/FeedbackTab";
+import { DripCampaignTab } from "@/components/admin/DripCampaignTab";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 

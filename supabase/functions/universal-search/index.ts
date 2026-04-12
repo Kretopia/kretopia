@@ -248,10 +248,10 @@ serve(async (req) => {
                 content: `You are structuring search results for a creative industry search engine. You MUST ONLY use the grounded web results provided. Never invent facts, followers, collaborations, counts, credits, or biographies.
 
 Rules:
-1. If the results clearly point to one person/project, build a knowledge_card.
-2. If the query is ambiguous or points to multiple identities, set knowledge_card to null.
-3. alternative_matches must only include distinct identities directly evidenced in the provided results.
-4. Keep related_searches short and practical.
+1. If the results clearly point to ONE specific person/project, build a knowledge_card for the MOST prominent match AND still populate alternative_matches with any other distinct identities found.
+2. If the query is ambiguous or points to multiple identities, set knowledge_card to the most prominent one and put ALL OTHER distinct identities in alternative_matches.
+3. CRITICAL: alternative_matches should contain EVERY distinct person/entity found in the results that is NOT the knowledge_card subject. Even if there's only one main match, look for other people with similar names or handles. Always try to find at least 1-2 alternatives.
+4. Keep related_searches short and practical. Include name variations to help users find the right person.
 5. Do not output visual_results; those are handled separately.
 
 Return JSON only in this shape:

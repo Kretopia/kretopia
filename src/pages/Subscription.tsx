@@ -23,7 +23,7 @@ const FOUNDER_FEATURES = [
   "Only 10% platform fees (vs 20% free / 15% Pro)",
   "Free & discounted event access",
   "Premium Partner Membership (when launched)",
-  "All Enterprise features included forever",
+  "All Creator Pro features included forever",
   "Priority support & early feature access",
   "All AI tools & analytics unlocked",
   "Founding member recognition",
@@ -344,8 +344,8 @@ export default function Subscription() {
                 <span className="text-4xl font-bold">$499</span>
                 <span className="text-muted-foreground ml-2">one-time payment</span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                That's less than 9 months of Enterprise — yours forever
+               <p className="text-xs text-muted-foreground mt-1">
+                That's less than 9 months of Creator Pro — yours forever
               </p>
             </CardHeader>
 

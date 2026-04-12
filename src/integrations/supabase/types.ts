@@ -7453,6 +7453,45 @@ export type Database = {
           },
         ]
       }
+      site_analytics: {
+        Row: {
+          country: string | null
+          created_at: string
+          device_type: string | null
+          event_target: string | null
+          event_type: string
+          id: string
+          page_path: string | null
+          referrer: string | null
+          user_id: string
+          visitor_id: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_target?: string | null
+          event_type?: string
+          id?: string
+          page_path?: string | null
+          referrer?: string | null
+          user_id: string
+          visitor_id?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_target?: string | null
+          event_type?: string
+          id?: string
+          page_path?: string | null
+          referrer?: string | null
+          user_id?: string
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
       skill_endorsement_requests: {
         Row: {
           completed_at: string | null

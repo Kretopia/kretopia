@@ -401,7 +401,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <UnifiedSearchDropdown
             variant="inline"
             autoFocus
-            onOpenChange={(isOpen) => { if (!isOpen) setSearchOpen(false); }}
+            onQuerySubmit={(q) => {
+              setSearchOpen(false);
+              navigate(`/search?q=${encodeURIComponent(q)}`);
+            }}
           />
         </div>
       )}

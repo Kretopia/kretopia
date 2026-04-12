@@ -363,20 +363,23 @@ export function UnifiedSearchDropdown({
               onClick={handleClear}
               className={cn(
                 "absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors",
-                isHero ? "right-14" : "right-2.5"
+                isHero ? "right-14" : "right-8"
               )}
             >
               <X className="h-3.5 w-3.5" />
             </button>
           )}
-          {isHero && (
-            <button
-              type="submit"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-md"
-            >
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          )}
+          <button
+            type="submit"
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 flex items-center justify-center transition-colors",
+              isHero
+                ? "right-2.5 h-9 w-9 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                : "right-1.5 h-7 w-7 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted/80"
+            )}
+          >
+            {isHero ? <ArrowRight className="h-4 w-4" /> : <ArrowRight className="h-3.5 w-3.5" />}
+          </button>
         </div>
       </form>
 
@@ -410,7 +413,16 @@ export function UnifiedSearchDropdown({
             {/* ═══ KNOWLEDGE CARD (from AI) ═══ */}
             {knowledgeCard && !highlightedCreator && (
               <div className="border-b border-border bg-gradient-to-b from-primary/5 to-transparent">
-                <div className="px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    setQuery("");
+                    onOpenChange?.(false);
+                    navigate(`/search?q=${encodeURIComponent(knowledgeCard.name)}`);
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors"
+                >
                   <div className="flex items-start gap-3">
                     {knowledgeCard.image_url ? (
                       <Avatar className="h-11 w-11 shrink-0 ring-2 ring-primary/20">
@@ -448,25 +460,26 @@ export function UnifiedSearchDropdown({
                       )}
                     </div>
                   </div>
-                  {knowledgeCard.claim_prompt && (
-                    <div className="mt-2 flex items-center justify-between">
-                      <p className="text-[10px] text-muted-foreground/60">{knowledgeCard.claim_prompt}</p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setOpen(false);
-                          setQuery("");
-                          onOpenChange?.(false);
-                          navigate(`/search?q=${encodeURIComponent(knowledgeCard.name)}`);
-                        }}
-                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-opacity shrink-0"
-                      >
-                        <UserCheck className="h-3 w-3" />
-                        Claim
-                      </button>
-                    </div>
-                  )}
-                </div>
+                </button>
+                {knowledgeCard.claim_prompt && (
+                  <div className="px-4 pb-2 flex items-center justify-between">
+                    <p className="text-[10px] text-muted-foreground/60">{knowledgeCard.claim_prompt}</p>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpen(false);
+                        setQuery("");
+                        onOpenChange?.(false);
+                        navigate(`/search?q=${encodeURIComponent(knowledgeCard.name)}`);
+                      }}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-opacity shrink-0"
+                    >
+                      <UserCheck className="h-3 w-3" />
+                      Claim
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

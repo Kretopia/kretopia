@@ -128,13 +128,14 @@ export const CREATOR_PRO_FEATURES: string[] = [
   "🌐 Creator Site — your own landing page/website",
   "✏️ Site section editor — reorder, show/hide, custom text",
   "🎨 3 premium templates to choose from",
+  "🔗 Free yourname.thrivein.app subdomain",
   "📊 Site visitor analytics (coming soon)",
-  "🔗 Custom domain support (coming soon)",
 ];
 
 export const ENTERPRISE_FEATURES: Record<AccountType, string[]> = {
   individual: [
-    "Everything in Pro, plus:",
+    "Everything in Creator Pro, plus:",
+    "🔗 Custom domain support (yourdomain.com)",
     "📊 Campaign analytics (open/click tracking)",
     "⏰ Scheduled email sends",
     "🤖 Priority AI processing",
@@ -144,6 +145,7 @@ export const ENTERPRISE_FEATURES: Record<AccountType, string[]> = {
   ],
   company: [
     "Everything in Brand Pro, plus:",
+    "🔗 Custom domain support (yourdomain.com)",
     "📊 Campaign analytics (open/click tracking)",
     "⏰ Scheduled email sends",
     "🤖 Priority AI processing",

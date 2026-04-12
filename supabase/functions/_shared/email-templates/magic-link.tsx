@@ -35,12 +35,12 @@ export const MagicLinkEmail = ({
           alt="ThriveIN"
           style={{ marginBottom: '24px' }}
         />
-        <Heading style={h1}>Your login link ✨</Heading>
+        <Heading style={h1}>Your login link</Heading>
         <Text style={text}>
-          Tap below to jump right into ThriveIN. This link expires shortly, so don't wait too long!
+          Tap below to sign in to ThriveIN. This link expires shortly, so don't wait too long.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Log In
+          Sign In
         </Button>
         <Text style={footer}>
           Didn't request this? You can safely ignore this email.
@@ -67,7 +67,7 @@ const text = {
   margin: '0 0 24px',
 }
 const button = {
-  backgroundColor: '#9b59e6',
+  backgroundColor: '#4338CA',
   color: '#ffffff',
   fontSize: '15px',
   fontWeight: '600' as const,

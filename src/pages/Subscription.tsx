@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Check, Loader2, Sparkles, Zap, Crown, Building2, User, Briefcase, Globe } from "lucide-react";
 import { 
   SUBSCRIPTION_PRODUCTS, BRAND_SUBSCRIPTION_PRODUCTS,
-  PRO_FEATURES, FREE_FEATURES, ENTERPRISE_FEATURES, CREATOR_PRO_FEATURES,
+  PRO_FEATURES, FREE_FEATURES, CREATOR_PRO_FEATURES,
   type AccountType, type BillingInterval, hasProAccess, isBrandTier,
   getYearlySavings, getEffectiveMonthlyPrice,
 } from "@/lib/subscriptionConfig";

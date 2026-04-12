@@ -12,7 +12,7 @@ const TRINIDAD_CONTENT = {
 };
 
 const DEFAULT_CONTENT = {
-  badge: "Free to Join · Pro from $15/mo",
+  badge: "Free to Join · Pro from $29/mo",
   heading: "Ready to Level Up?",
   subheading:
     "Build verified credits, land real gigs, send invoices, and run your creative business — one platform replaces nine apps.",

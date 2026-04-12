@@ -75,7 +75,7 @@ export const ComparisonTableSection = () => {
             </div>
             <div className="text-right">
               <span className="font-bold text-primary text-base sm:text-lg">Free</span>
-              <span className="block text-[10px] text-muted-foreground">Pro from $15/mo</span>
+              <span className="block text-[10px] text-muted-foreground">Pro from $29/mo</span>
             </div>
           </div>
         </div>

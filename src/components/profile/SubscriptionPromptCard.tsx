@@ -32,7 +32,7 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
             <Sparkles className="h-6 w-6 text-primary-foreground" />
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-lg mb-1">Go Pro — $15/mo</h3>
+            <h3 className="font-bold text-lg mb-1">Go Pro — $29/mo</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Unlimited tools, verified badge, and full business suite. Try free for 7 days.
             </p>

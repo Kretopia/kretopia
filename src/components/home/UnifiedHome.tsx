@@ -655,7 +655,7 @@ export const UnifiedHome = () => {
               <Zap className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
-              {user ? "Go Pro — from $15/mo" : "Become a Founding Member"}
+              {user ? "Go Pro — from $29/mo" : "Become a Founding Member"}
             </h3>
             <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-1 max-w-md mx-auto">
               {user
@@ -664,7 +664,7 @@ export const UnifiedHome = () => {
             </p>
             {!user && (
               <p className="text-[10px] text-white/50 mb-4">
-                Free forever · Pro from $15/mo · Save 17% annually
+                Free forever · Pro from $29/mo · Save 17% annually
               </p>
             )}
             <Link

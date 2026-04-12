@@ -5,39 +5,33 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// ── All creative platforms we recognize and boost ──
 const CREATOR_PLATFORM_PATTERNS = [
-  // Music
+  /open\.spotify\.com\/artist/i,
   /spotify\.com\/artist/i,
   /music\.apple\.com\/.*\/artist/i,
   /soundcloud\.com\/[^/]+\/?$/i,
   /bandcamp\.com/i,
-  /tidal\.com\/.*artist/i,
   /audiomack\.com\/[^/]+/i,
   /deezer\.com\/.*artist/i,
+  /tidal\.com\/.*artist/i,
   /genius\.com\/artists\//i,
   /allmusic\.com\/artist/i,
   /discogs\.com\/artist/i,
   /musicbrainz\.org\/artist/i,
-  // Film/TV
   /imdb\.com\/name\//i,
   /letterboxd\.com\/[^/]+/i,
   /themoviedb\.org\/person/i,
   /vimeo\.com\/[^/]+\/?$/i,
   /backstage\.com\/[^/]+/i,
-  // Visual/Design
   /behance\.net\/[^/]+/i,
   /dribbble\.com\/[^/]+/i,
   /artstation\.com\/[^/]+/i,
   /deviantart\.com\/[^/]+/i,
   /500px\.com\/[^/]+/i,
   /flickr\.com\/(photos|people)\/[^/]+/i,
-  // Fashion/Beauty
   /models\.com\//i,
-  /thefashionmodeldir/i,
   /fashionunited\./i,
   /wwd\.com/i,
-  // Social/Influencer
   /instagram\.com\/[^/]+\/?$/i,
   /tiktok\.com\/@/i,
   /youtube\.com\/(?:@|channel\/|c\/|user\/)/i,
@@ -46,35 +40,45 @@ const CREATOR_PLATFORM_PATTERNS = [
   /linkedin\.com\/in\//i,
   /threads\.net\/@/i,
   /pinterest\.com\/[^/]+/i,
-  /snapchat\.com\/add\//i,
   /facebook\.com\/[^/]+\/?$/i,
-  // Gaming/Streaming
   /twitch\.tv\/[^/]+/i,
   /kick\.com\/[^/]+/i,
-  // Writing/Publishing
   /medium\.com\/@?[^/]+/i,
   /substack\.com/i,
   /wattpad\.com\/user\//i,
-  /amazon\.com\/.*\/e\//i,
   /goodreads\.com\/author/i,
-  // Podcasting
   /podcasts\.apple\.com/i,
   /podchaser\.com\/creators/i,
-  // Events/Live
   /eventbrite\.com\/o\//i,
   /songkick\.com\/artists/i,
   /bandsintown\.com\/[^/]+/i,
   /ra\.co\/dj\//i,
-  // Freelance/Services
   /fiverr\.com\/[^/]+/i,
   /upwork\.com\/freelancers/i,
-  // Industry databases
   /muso\.ai/i,
-  /allmusic\.com/i,
   /famousbirthdays\.com/i,
   /wikidata\.org/i,
-  /musicbrainz\.org/i,
 ];
+
+const HIGH_PRIORITY_PLATFORM_PATTERNS = [
+  /open\.spotify\.com\/artist/i,
+  /music\.apple\.com\/.*\/artist/i,
+  /soundcloud\.com\/[^/]+\/?$/i,
+  /imdb\.com\/name\//i,
+  /youtube\.com\/(?:@|channel\/|c\/|user\/)/i,
+  /instagram\.com\/[^/]+\/?$/i,
+  /behance\.net\/[^/]+/i,
+  /dribbble\.com\/[^/]+/i,
+  /muso\.ai/i,
+];
+
+type FirecrawlResult = {
+  url?: string;
+  title?: string;
+  description?: string;
+  markdown?: string;
+  metadata?: Record<string, any>;
+};
 
 function normalizeText(value: string | null | undefined) {
   return (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
@@ -87,24 +91,107 @@ function isUrl(value: string) {
 function looksLikeCreatorQuery(query: string) {
   const trimmed = query.trim();
   if (isUrl(trimmed)) return false;
+
   const tokenCount = trimmed.split(/\s+/).filter(Boolean).length;
   const handleLike = /^[A-Za-z0-9._@-]{2,40}$/.test(trimmed);
-  const personNameLike = /^[A-Za-z][A-Za-z''\-]+(?:\s+[A-Za-z][A-Za-z''\-]+){0,3}$/.test(trimmed);
+  const personNameLike = /^[A-Za-z][A-Za-z'’\-]+(?:\s+[A-Za-z][A-Za-z'’\-]+){0,3}$/.test(trimmed);
   const projectKeyword = /\b(film|movie|song|album|ep|festival|event|show|campaign|documentary|podcast|series|tour|runway|editorial|production)\b/i.test(trimmed);
+
   return handleLike || personNameLike || (!projectKeyword && tokenCount <= 3);
 }
 
-function extractImageUrl(result: any): string | null {
+function extractImageUrl(result: FirecrawlResult): string | null {
   const metadata = result?.metadata || {};
   const ogImage = metadata?.og?.image || metadata?.ogImage || metadata?.image || metadata?.twitter?.image;
-  if (typeof ogImage === 'string' && ogImage.startsWith('http')) return ogImage;
+  if (typeof ogImage === 'string' && ogImage.startsWith('http')) {
+    return ogImage;
+  }
+
   const markdown = result?.markdown || '';
   const match = markdown.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/i);
   return match?.[1] || null;
 }
 
-function isCreatorPlatformUrl(url: string): boolean {
-  return CREATOR_PLATFORM_PATTERNS.some(p => p.test(url));
+function stripMarkdown(value: string) {
+  return value
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/!\[[^\]]*\]\((.*?)\)/g, ' ')
+    .replace(/\[[^\]]*\]\((.*?)\)/g, ' ')
+    .replace(/[>#*_`~-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function truncateText(value: string, max = 700) {
+  if (value.length <= max) return value;
+  return `${value.slice(0, max).trim()}…`;
+}
+
+function extractPageExcerpt(markdown: string | undefined) {
+  if (!markdown) return '';
+  const cleaned = stripMarkdown(markdown);
+  return truncateText(cleaned, 900);
+}
+
+function isCreatorPlatformUrl(url: string) {
+  return CREATOR_PLATFORM_PATTERNS.some((pattern) => pattern.test(url));
+}
+
+function isHighPriorityPlatformUrl(url: string) {
+  return HIGH_PRIORITY_PLATFORM_PATTERNS.some((pattern) => pattern.test(url));
+}
+
+function isLikelyProfileUrl(url: string) {
+  const lower = url.toLowerCase();
+  if (!isCreatorPlatformUrl(lower)) return false;
+  if (/(\/video\/|\/reel\/|\/p\/|watch\?|\/status\/|\/posts\/)/i.test(lower)) return false;
+  return true;
+}
+
+function detectPlatformFromUrl(url: string) {
+  const lower = url.toLowerCase();
+  if (lower.includes('spotify.com')) return 'Spotify';
+  if (lower.includes('music.apple.com')) return 'Apple Music';
+  if (lower.includes('soundcloud.com')) return 'SoundCloud';
+  if (lower.includes('bandcamp.com')) return 'Bandcamp';
+  if (lower.includes('audiomack.com')) return 'Audiomack';
+  if (lower.includes('youtube.com')) return 'YouTube';
+  if (lower.includes('instagram.com')) return 'Instagram';
+  if (lower.includes('tiktok.com')) return 'TikTok';
+  if (lower.includes('imdb.com')) return 'IMDb';
+  if (lower.includes('behance.net')) return 'Behance';
+  if (lower.includes('dribbble.com')) return 'Dribbble';
+  if (lower.includes('muso.ai')) return 'Muso';
+  if (lower.includes('linkedin.com')) return 'LinkedIn';
+  if (lower.includes('vimeo.com')) return 'Vimeo';
+  if (lower.includes('eventbrite.com')) return 'Eventbrite';
+  return null;
+}
+
+function scoreSearchCandidate(result: FirecrawlResult, query: string, creatorQuery: boolean) {
+  const q = normalizeText(query);
+  const title = normalizeText(result?.title);
+  const description = normalizeText(result?.description);
+  const url = (result?.url || '').toLowerCase();
+
+  let score = 0;
+
+  if (title === q) score += 140;
+  else if (title.startsWith(q)) score += 90;
+  else if (title.includes(q)) score += 60;
+
+  if (description.includes(q)) score += 18;
+  if (url.includes(q.replace(/\s+/g, ''))) score += 35;
+  if (isHighPriorityPlatformUrl(url)) score += 70;
+  else if (isCreatorPlatformUrl(url)) score += 35;
+  if (isLikelyProfileUrl(url)) score += 35;
+  if (/(producer|artist|musician|creator|designer|director|filmmaker|model|photographer|podcaster|dj)/i.test(result?.description || '')) score += 18;
+  if (/(monthly listeners|followers|subscribers|credits|official)/i.test(result?.description || '')) score += 15;
+  if (result?.title && /topic|playlist|track|song/i.test(result.title)) score -= 10;
+
+  if (!creatorQuery && isCreatorPlatformUrl(url)) score -= 10;
+
+  return score;
 }
 
 function scoreResult(result: any, query: string, creatorQuery: boolean) {
@@ -112,6 +199,7 @@ function scoreResult(result: any, query: string, creatorQuery: boolean) {
   const title = normalizeText(result?.title);
   const description = normalizeText(result?.description);
   const url = (result?.url || '').toLowerCase();
+  const platform = normalizeText(result?.platform);
 
   let score = 0;
   if (title === q) score += 120;
@@ -121,43 +209,44 @@ function scoreResult(result: any, query: string, creatorQuery: boolean) {
   if (result?.image_url) score += 10;
 
   if (creatorQuery) {
-    // Big boost for any recognized creative platform profile
-    if (isCreatorPlatformUrl(url)) score += 40;
+    if (isHighPriorityPlatformUrl(url)) score += 50;
+    else if (isCreatorPlatformUrl(url)) score += 35;
     if (/(profile|channel|creator|artist|official|bio|portfolio)/i.test(`${description} ${url}`)) score += 20;
-    // Slight penalty for individual songs/tracks (prefer artist profiles)
-    if (/(single|album|ep|track)\b/i.test(normalizeText(result?.type))) score -= 5;
+    if (/(monthly listeners|followers|subscribers|credits)/i.test(description)) score += 18;
+    if (/(single|album|ep|track)/i.test(platform + ' ' + normalizeText(result?.type))) score -= 5;
   }
 
   return score;
 }
 
-/**
- * Build Firecrawl search queries.
- * Strategy: 3 complementary queries that together cover music, film, visual,
- * social, fashion, events, freelance, and general web presence.
- * Each query is kept short so Firecrawl's search engine returns diverse hits.
- */
-function buildSearchQueries(name: string, isCreator: boolean): string[] {
+function buildSearchQueries(name: string, isCreator: boolean) {
+  const exact = `"${name}"`;
+
   if (!isCreator) {
     return [
-      `"${name}" credits production album film project`,
-      `${name} creative portfolio event`,
+      `${exact} credits production album film project`,
+      `${exact} creative portfolio event`,
+      `${exact} review press interview`,
     ];
   }
 
   return [
-    // Query 1: Music + Audio platforms (Spotify, Apple Music, SoundCloud, Bandcamp, Genius, etc.)
-    `${name} Spotify OR "Apple Music" OR SoundCloud OR Bandcamp OR Audiomack`,
-    // Query 2: Visual + Film + Social (IMDb, YouTube, Instagram, Behance, TikTok, Vimeo)
-    `${name} IMDb OR YouTube OR Instagram OR Behance OR TikTok OR Vimeo`,
-    // Query 3: Professional + Events + Fashion + Freelance (LinkedIn, Eventbrite, Dribbble, Fiverr, Models.com)
-    `${name} LinkedIn OR Eventbrite OR Dribbble OR Fiverr OR "Models.com" OR Twitch`,
-    // Query 4: Broad creative catch-all (catches personal sites, press, niche platforms)
-    `"${name}" producer OR musician OR artist OR filmmaker OR designer OR creator OR influencer OR model`,
+    `${exact} site:open.spotify.com/artist`,
+    `${exact} site:music.apple.com artist`,
+    `${exact} site:soundcloud.com`,
+    `${exact} site:youtube.com channel`,
+    `${exact} site:instagram.com`,
+    `${exact} site:imdb.com/name`,
+    `${exact} site:behance.net`,
+    `${exact} site:dribbble.com`,
+    `${exact} site:muso.ai`,
+    `${exact} producer artist creator official`,
+    `${exact} worked with artist producer`,
+    `${exact} portfolio bio credits interview`,
   ];
 }
 
-async function firecrawlSearch(apiKey: string, query: string, limit: number): Promise<any[]> {
+async function firecrawlSearch(apiKey: string, query: string, limit: number): Promise<FirecrawlResult[]> {
   try {
     const res = await fetch('https://api.firecrawl.dev/v1/search', {
       method: 'POST',
@@ -167,14 +256,39 @@ async function firecrawlSearch(apiKey: string, query: string, limit: number): Pr
       },
       body: JSON.stringify({ query, limit }),
     });
-    if (res.ok) {
-      const data = await res.json();
-      return data.data || [];
+
+    if (!res.ok) {
+      console.warn(`Firecrawl query failed (${res.status}):`, query.substring(0, 80));
+      return [];
     }
-    console.warn(`Firecrawl query failed (${res.status}):`, query.substring(0, 60));
-    return [];
+
+    const data = await res.json();
+    return Array.isArray(data?.data) ? data.data : [];
   } catch {
     return [];
+  }
+}
+
+async function firecrawlScrape(apiKey: string, url: string): Promise<string> {
+  try {
+    const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url,
+        formats: ['markdown'],
+        onlyMainContent: true,
+      }),
+    });
+
+    if (!res.ok) return '';
+    const data = await res.json();
+    return data?.data?.markdown || data?.markdown || '';
+  } catch {
+    return '';
   }
 }
 
@@ -189,11 +303,13 @@ serve(async (req) => {
 
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: 'AI service not configured' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const { query, creator_name } = await req.json();
+
     if (!query || query.length < 2) {
       return new Response(JSON.stringify({ results: [] }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -204,36 +320,58 @@ serve(async (req) => {
     const creatorQuery = looksLikeCreatorQuery(trimmedQuery) || Boolean(creator_name);
     let webSnippets: string[] = [];
 
-    // ── Firecrawl: Multi-query parallel search across creative platforms ──
     if (FIRECRAWL_API_KEY) {
       try {
         const queries = buildSearchQueries(trimmedQuery, creatorQuery);
-        
-        // Fire all queries in parallel
-        const allResults = await Promise.all(
-          queries.map(q => firecrawlSearch(FIRECRAWL_API_KEY, q, 10))
-        );
+        const queryResults = await Promise.all(queries.map((q) => firecrawlSearch(FIRECRAWL_API_KEY, q, 5)));
 
-        // Deduplicate by URL
-        const seenUrls = new Set<string>();
-        for (const batch of allResults) {
+        const uniqueResults = new Map<string, FirecrawlResult>();
+        for (const batch of queryResults) {
           for (const result of batch) {
             const url = (result.url || '').toLowerCase();
-            if (seenUrls.has(url)) continue;
-            seenUrls.add(url);
-
-            const imageUrl = extractImageUrl(result);
-            const snippet = [
-              result.title ? `Title: ${result.title}` : '',
-              result.url ? `URL: ${result.url}` : '',
-              imageUrl ? `Image: ${imageUrl}` : '',
-              result.description ? `Description: ${result.description}` : '',
-            ].filter(Boolean).join('\n');
-            if (snippet.length > 20) webSnippets.push(snippet);
+            if (!url || uniqueResults.has(url)) continue;
+            uniqueResults.set(url, result);
           }
         }
 
-        console.log(`Firecrawl found ${webSnippets.length} unique results across ${queries.length} queries for "${trimmedQuery}"`);
+        const rankedResults = Array.from(uniqueResults.values())
+          .sort((a, b) => scoreSearchCandidate(b, trimmedQuery, creatorQuery) - scoreSearchCandidate(a, trimmedQuery, creatorQuery));
+
+        const scrapeTargets = rankedResults
+          .filter((result) => isLikelyProfileUrl(result.url || ''))
+          .slice(0, 8);
+
+        const scrapedEntries = await Promise.all(
+          scrapeTargets.map(async (result) => {
+            const url = result.url || '';
+            const markdown = await firecrawlScrape(FIRECRAWL_API_KEY, url);
+            return [url.toLowerCase(), extractPageExcerpt(markdown)] as const;
+          })
+        );
+
+        const scrapedByUrl = new Map<string, string>(scrapedEntries.filter((entry) => entry[1]));
+
+        for (const result of rankedResults.slice(0, 28)) {
+          const url = result.url || '';
+          const imageUrl = extractImageUrl(result);
+          const pageExcerpt = scrapedByUrl.get(url.toLowerCase()) || extractPageExcerpt(result.markdown);
+          const platformHint = detectPlatformFromUrl(url);
+
+          const snippet = [
+            result.title ? `Title: ${result.title}` : '',
+            platformHint ? `PlatformHint: ${platformHint}` : '',
+            url ? `URL: ${url}` : '',
+            imageUrl ? `Image: ${imageUrl}` : '',
+            result.description ? `Description: ${result.description}` : '',
+            pageExcerpt ? `PageExcerpt: ${pageExcerpt}` : '',
+          ].filter(Boolean).join('\n');
+
+          if (snippet.length > 30) {
+            webSnippets.push(snippet);
+          }
+        }
+
+        console.log(`Firecrawl found ${rankedResults.length} unique results across ${queries.length} queries and scraped ${scrapeTargets.length} pages for "${trimmedQuery}"`);
       } catch (fcErr) {
         console.error('Firecrawl error:', fcErr);
       }
@@ -241,10 +379,9 @@ serve(async (req) => {
       console.warn('FIRECRAWL_API_KEY not configured');
     }
 
-    // ── AI synthesis ──
     const hasWebData = webSnippets.length > 0;
     const webContext = hasWebData
-      ? `\n\nHere are REAL web search results from across the creative industry. ONLY return information explicitly supported by these results. Prioritize profile/channel pages, then flagship works, then diverse platforms.\n\nIMPORTANT: If the results reference MULTIPLE DIFFERENT people/entities with the same or similar name, include ALL of them as separate results with distinct types/descriptions so the user can identify the right one.\n\n${webSnippets.slice(0, 20).join('\n---\n')}`
+      ? `\n\nHere are REAL web search results and page excerpts from creative platforms and the broader web. ONLY return information explicitly supported by these results. Prioritize official profile/channel pages, major creative databases, then flagship works, then broader web evidence.\n\nIMPORTANT: If the results reference MULTIPLE DIFFERENT people/entities with the same or similar name, include ALL of them as separate results with distinct types/descriptions so the user can identify the right one.\n\n${webSnippets.slice(0, 22).join('\n---\n')}`
       : '';
 
     const searchPrompt = creator_name
@@ -254,31 +391,31 @@ serve(async (req) => {
         : `Find creative projects/works matching "${trimmedQuery}".${webContext}`;
 
     const systemPrompt = hasWebData
-      ? `You are a creative industry database covering music, film, fashion, design, events, podcasts, streaming, and all creator economy platforms. You MUST ONLY extract and structure information from the provided web search results. Do NOT fabricate, hallucinate, or guess.
+      ? `You are a creative industry discovery engine. You MUST ONLY extract and structure information from the provided search results and page excerpts. Do NOT fabricate, hallucinate, or guess.
 
 Each result should have:
 - "title": exact name as found in results
 - "type": one of: film, tv, short_film, documentary, music_video, web_series, album, single, ep, concert, festival, live_event, fashion_show, exhibition, podcast, audiobook, youtube_series, brand_campaign, theatre, musical, dance, comedy, spoken_word, opera, photography, animation, art_exhibition, commercial, runway, editorial_shoot, workshop, conference, carnival, pageant, awards_show, ugc_campaign, livestream, online_course, voiceover, influencer_campaign, mural, graphic_design, fashion_collection, beauty_campaign, styling, talent_management, booking, label_release, publishing, curation, tour, choreography, backup_dancer, dj_set, mc_hosting, soca, dancehall, afrobeats, gospel_concert, corporate, beauty, makeup, creator_profile, music_producer, artist_profile, streamer, model, photographer, podcaster
 - "role_suggestion": person's role IF clearly stated, otherwise null
 - "year": year if found, otherwise null
-- "platform": source platform (Spotify, Apple Music, SoundCloud, Bandcamp, IMDb, YouTube, Instagram, TikTok, Behance, Dribbble, LinkedIn, Vimeo, Twitch, Pinterest, Medium, Eventbrite, Fiverr, etc.)
-- "description": one-line description from the ACTUAL web content
+- "platform": source platform (Spotify, Apple Music, SoundCloud, IMDb, YouTube, Instagram, TikTok, Behance, Dribbble, LinkedIn, Vimeo, Eventbrite, Muso, etc.)
+- "description": one-line grounded description from the ACTUAL source content
 - "url": actual URL from the search result
-- "image_url": any real image URL found (og:image, profile photo, album cover, thumbnail). Return null if none.
+- "image_url": any real image URL found, otherwise null
 - "location": location if mentioned
 - "client_brand": brand/studio/label if mentioned
-- "monthly_listeners": number if mentioned (e.g. Spotify monthly listeners)
-- "follower_count": follower/subscriber count if mentioned
+- "monthly_listeners": number if explicitly mentioned
+- "follower_count": follower/subscriber count if explicitly mentioned
 
 If the query is for a creator, prioritize:
-1. Profile pages across ALL platforms found
-2. Most notable works/credits
-3. Platform diversity (don't return 5 results from the same site)
+1. Official or profile pages on major creative databases
+2. Strong evidence of identity like credits, collaborators, listeners, followers
+3. Diverse platforms rather than duplicates from the same site
 
 Return fewer results rather than made-up ones. Return up to 12 results.`
-      : `You are a creative industry search engine covering all creative fields. Return structured results for REAL creative work only.
+      : `You are a creative industry search engine. Return structured results for REAL creative work only. If uncertain, return fewer results.
 
-Each result should have: "title", "type", "role_suggestion", "year", "platform", "description", "url", "image_url", "location", "client_brand"
+Each result should have: "title", "type", "role_suggestion", "year", "platform", "description", "url", "image_url", "location", "client_brand".
 
 Return up to 8 most relevant REAL results.`;
 
@@ -291,7 +428,7 @@ Return up to 8 most relevant REAL results.`;
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: systemPrompt + '\n\nRespond with a JSON object: { "results": [...] }' },
+          { role: 'system', content: `${systemPrompt}\n\nRespond with a JSON object: { "results": [...] }` },
           { role: 'user', content: searchPrompt },
         ],
         response_format: { type: 'json_object' },
@@ -302,12 +439,14 @@ Return up to 8 most relevant REAL results.`;
       const status = aiResponse.status;
       if (status === 429) {
         return new Response(JSON.stringify({ error: 'Rate limited, please try again shortly' }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (status === 402) {
         return new Response(JSON.stringify({ error: 'AI credits exhausted' }), {
-          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       console.error('AI structuring error:', status, await aiResponse.text());
@@ -327,11 +466,16 @@ Return up to 8 most relevant REAL results.`;
         console.log(`AI returned ${rawResults.length} results`);
       } catch {
         try {
-          const cleaned = content.replace(/^```json\s*/im, '').replace(/^```\s*/im, '').replace(/```\s*$/im, '').trim();
+          const cleaned = content
+            .replace(/^```json\s*/im, '')
+            .replace(/^```\s*/im, '')
+            .replace(/```\s*$/im, '')
+            .trim();
           const parsed = JSON.parse(cleaned);
           rawResults = Array.isArray(parsed) ? parsed : (parsed.results || []);
+          console.log(`AI cleaned JSON returned ${rawResults.length} results`);
         } catch (e2) {
-          console.error('Failed to parse AI response:', e2, 'Preview:', content.slice(0, 200));
+          console.error('Failed to parse AI response:', e2, 'Content preview:', content.slice(0, 200));
         }
       }
     }
@@ -340,27 +484,31 @@ Return up to 8 most relevant REAL results.`;
       console.warn('AI returned 0 results. Content length:', content.length);
     }
 
-    // ── Deduplicate & score ──
     const seen = new Set<string>();
     const platformCounts = new Map<string, number>();
 
     const results = rawResults
-      .filter((r: any) => r?.title && r?.type)
-      .map((r: any) => ({ ...r, _source: hasWebData ? 'web_verified' : 'ai_knowledge' }))
+      .filter((result: any) => result?.title && result?.type)
+      .map((result: any) => ({
+        ...result,
+        _source: hasWebData ? 'web_verified' : 'ai_knowledge',
+      }))
       .sort((a: any, b: any) => scoreResult(b, trimmedQuery, creatorQuery) - scoreResult(a, trimmedQuery, creatorQuery))
-      .filter((r: any) => {
-        const key = `${normalizeText(r.title)}|${normalizeText(r.platform)}|${(r.url || '').toLowerCase()}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
+      .filter((result: any) => {
+        const dedupeKey = `${normalizeText(result.title)}|${normalizeText(result.platform)}|${(result.url || '').toLowerCase()}`;
+        if (seen.has(dedupeKey)) return false;
+        seen.add(dedupeKey);
+
         if (creatorQuery) {
-          const pk = normalizeText(r.platform) || 'unknown';
-          const c = platformCounts.get(pk) || 0;
-          if (c >= 3) return false; // Allow up to 3 per platform (was 2)
-          platformCounts.set(pk, c + 1);
+          const platformKey = normalizeText(result.platform) || 'unknown';
+          const count = platformCounts.get(platformKey) || 0;
+          if (count >= 3) return false;
+          platformCounts.set(platformKey, count + 1);
         }
+
         return true;
       })
-      .slice(0, 12); // Return up to 12 (was 8)
+      .slice(0, 12);
 
     return new Response(JSON.stringify({ results, source: hasWebData ? 'web' : 'ai' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -369,7 +517,8 @@ Return up to 8 most relevant REAL results.`;
     console.error('Error in search-credits-web:', error);
     const msg = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: msg }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

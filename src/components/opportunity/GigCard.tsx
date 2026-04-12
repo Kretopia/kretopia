@@ -30,6 +30,7 @@ export interface GigOpportunity {
   min_followers?: number | null;
   is_priority?: boolean;
   priority_expires_at?: string | null;
+  scouted_by?: string | null;
 }
 
 export interface GigCreatorProfile {

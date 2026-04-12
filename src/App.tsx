@@ -86,6 +86,7 @@ const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
 const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
 const CreatorSite = lazy(() => import("./pages/CreatorSite"));
+const CreatorSiteByUsername = lazy(() => import("./pages/CreatorSiteByUsername"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -333,6 +334,9 @@ const AppContent = () => {
             <Route path="/spark" element={<Navigate to="/" replace />} />
             <Route path="/cre8" element={<Navigate to="/" replace />} />
             <Route path="/marketplace" element={<Navigate to="/opportunities" replace />} />
+            
+            {/* Vanity URL for creator sites — must be before catch-all */}
+            <Route path="/:username" element={<CreatorSiteByUsername />} />
             
             {/* 404 - Catch all: redirect to main app */}
             <Route path="*" element={<CatchAllRedirect />} />

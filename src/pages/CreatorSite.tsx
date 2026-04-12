@@ -57,7 +57,7 @@ const CreatorSite = () => {
       if (error || !profile) { setNotFound(true); setLoading(false); return; }
 
       // Check if site is enabled and user has pro access
-      const proTiers = ['pro', 'creator_pro', 'enterprise', 'founder', 'thriver'];
+      const proTiers = ['creator_pro', 'enterprise', 'founder'];
       const hasPro = proTiers.includes(profile.subscription_tier || '');
       
       if (!profile.site_enabled || !hasPro) {

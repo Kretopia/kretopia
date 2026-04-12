@@ -131,7 +131,7 @@ export function OnboardingCelebration({
                 </div>
                 <Button size="sm" onClick={handleUpgrade} className="w-full gap-1.5 text-xs h-8">
                   <Sparkles className="h-3 w-3" />
-                  Unlock Creator Site — from $15/mo
+                  Unlock Creator Site — from $29/mo
                 </Button>
               </div>
             </div>

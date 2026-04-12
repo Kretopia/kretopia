@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { hasProAccess } from "@/lib/subscriptionConfig";
+import { hasCreatorProAccess } from "@/lib/subscriptionConfig";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { CreatorSiteSectionEditor, SiteSection } from "./CreatorSiteSectionEditor";
@@ -38,7 +38,7 @@ const TEMPLATES = [
 
 export const CreatorSiteSettings = () => {
   const { user, subscriptionInfo } = useAuth();
-  const isPro = hasProAccess(subscriptionInfo.tier as any);
+  const isPro = hasCreatorProAccess(subscriptionInfo.tier as any);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -125,7 +125,7 @@ export const CreatorSiteSettings = () => {
           <Globe className="h-5 w-5" />
           Creator Site
           {isPro ? (
-            <Badge variant="secondary" className="text-xs">Pro</Badge>
+            <Badge variant="secondary" className="text-xs">Creator Pro</Badge>
           ) : (
             <Badge className="text-xs bg-primary">Upgrade</Badge>
           )}
@@ -220,12 +220,12 @@ export const CreatorSiteSettings = () => {
               <div>
                 <p className="text-sm font-medium">Turn your profile into a website</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Pro members get a beautiful, standalone landing page that works as their professional website — powered by your existing ThriveIN profile data. Perfect for link-in-bio and sharing with clients.
+                  Creator Pro members get a beautiful, standalone landing page that works as their professional website — powered by your existing ThriveIN profile data. Perfect for link-in-bio and sharing with clients.
                 </p>
               </div>
             </div>
             <Button onClick={() => navigate('/subscription')} className="w-full" size="sm">
-              Upgrade to Pro
+              Upgrade to Creator Pro
             </Button>
           </div>
         )}

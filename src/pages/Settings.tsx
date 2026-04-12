@@ -679,6 +679,9 @@ const Settings = () => {
             </CardContent>
           </Card>
 
+          {/* Creator Site */}
+          <CreatorSiteSettings />
+
           {/* Privacy Settings */}
           <Card>
             <CardHeader>

@@ -220,12 +220,12 @@ export const CreatorSiteSettings = () => {
               <div>
                 <p className="text-sm font-medium">Turn your profile into a website</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Creator Pro members get a beautiful, standalone landing page that works as their professional website — powered by your existing ThriveIN profile data. Perfect for link-in-bio and sharing with clients.
+                  Pro members get a beautiful, standalone landing page that works as their professional website — powered by your existing ThriveIN profile data. Perfect for link-in-bio and sharing with clients.
                 </p>
               </div>
             </div>
             <Button onClick={() => navigate('/subscription')} className="w-full" size="sm">
-              Upgrade to Creator Pro
+              Upgrade to Pro
             </Button>
           </div>
         )}

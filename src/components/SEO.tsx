@@ -25,8 +25,8 @@ interface SEOProps {
 }
 
 export const SEO = ({
-  title = "ThriveIN — The Creative OS™ | Verified Credits, Gigs & Payments",
-  description = "Your verified creative history — search your name, claim your credits, get discovered and get paid. The all-in-one platform for creatives who mean business.",
+  title = "ThriveIN — Search Your Name. Claim Your Credits. Get Paid.",
+  description = "Search your name, claim your verified credits, and get discovered by brands. ThriveIN is the professional platform where creatives build their career record and get paid.",
   type = "website",
   image = "https://www.thrivein.io/og-image.png",
   url,

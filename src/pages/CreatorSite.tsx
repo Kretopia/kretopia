@@ -6,6 +6,7 @@ import { BoldElectricTemplate } from "@/components/creator-site/BoldElectricTemp
 import { MinimalEditorialTemplate } from "@/components/creator-site/MinimalEditorialTemplate";
 import { PortfolioMosaicTemplate } from "@/components/creator-site/PortfolioMosaicTemplate";
 import { Loader2 } from "lucide-react";
+import { useSiteViewTracker } from "@/hooks/useSiteAnalytics";
 
 export interface CreatorSiteData {
   profile: {
@@ -42,6 +43,8 @@ const CreatorSite = () => {
   const [data, setData] = useState<CreatorSiteData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+
+  useSiteViewTracker(!loading && !notFound && data ? data.profile.user_id : undefined);
 
   useEffect(() => {
     const fetchSiteData = async () => {

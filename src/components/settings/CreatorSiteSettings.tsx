@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles, Wand2, Loader2 } from "lucide-react";
+import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles, Wand2, Loader2, Eye, PenLine } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { CreatorSiteSectionEditor, SiteSection } from "./CreatorSiteSectionEditor";
 import { SiteSetupWizard } from "@/components/creator-site/SiteSetupWizard";
+import { SitePreviewPanel } from "@/components/creator-site/SitePreviewPanel";
+import { SiteAnalyticsDashboard } from "@/components/creator-site/SiteAnalyticsDashboard";
 
 const TEMPLATES = [
   {
@@ -57,6 +59,8 @@ export const CreatorSiteSettings = () => {
   const [usernameInput, setUsernameInput] = useState('');
   const [savingUsername, setSavingUsername] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewKey, setPreviewKey] = useState(0);
 
   const siteUrl = username 
     ? `${window.location.origin}/${username}` 
@@ -303,11 +307,27 @@ export const CreatorSiteSettings = () => {
                     </div>
                   </div>
 
-                  {/* Re-run wizard */}
-                  <Button variant="outline" size="sm" className="w-full" onClick={() => setShowWizard(true)}>
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    Re-run Setup Wizard
-                  </Button>
+                  {/* Preview & Wizard buttons */}
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={showPreview ? "default" : "outline"} 
+                      size="sm" 
+                      className="flex-1" 
+                      onClick={() => { setShowPreview(!showPreview); setPreviewKey(k => k + 1); }}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      {showPreview ? "Hide Preview" : "Live Preview"}
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowWizard(true)}>
+                      <Wand2 className="h-4 w-4 mr-2" />
+                      Setup Wizard
+                    </Button>
+                  </div>
+
+                  {/* Live Preview */}
+                  {showPreview && (
+                    <SitePreviewPanel siteUrl={siteUrl} className="h-[500px]" />
+                  )}
 
                   {/* Section Editor */}
                   <CreatorSiteSectionEditor
@@ -315,6 +335,9 @@ export const CreatorSiteSettings = () => {
                     initialHeadline={siteHeadline}
                     initialBio={siteBio}
                   />
+
+                  {/* Analytics */}
+                  <SiteAnalyticsDashboard />
                 </div>
               )}
             </>

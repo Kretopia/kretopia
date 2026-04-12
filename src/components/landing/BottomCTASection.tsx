@@ -12,11 +12,11 @@ const TRINIDAD_CONTENT = {
 };
 
 const DEFAULT_CONTENT = {
-  badge: "Free to Join",
+  badge: "Free to Join · Pro from $15/mo",
   heading: "Ready to Level Up?",
   subheading:
-    "Build your verified profile, get AI-matched with collaborators, manage projects, and grow your creative business — all in one place.",
-  tagline: "Free to start · Pro when you're ready · No credit card required",
+    "Build verified credits, land real gigs, send invoices, and run your creative business — one platform replaces nine apps.",
+  tagline: "Free forever · 7-day Pro trial · Save 17% annually",
   isTT: false,
 };
 

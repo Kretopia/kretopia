@@ -3,10 +3,10 @@ import { ShieldCheck, Briefcase, DollarSign, Store, Zap } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 
 const FEATURES = [
-  { icon: ShieldCheck, label: "AI-Powered Matching", desc: "Find your perfect collaborator in seconds" },
-  { icon: Briefcase, label: "Project Workspaces", desc: "Manage briefs, assets & milestones together" },
-  { icon: DollarSign, label: "Built-in Invoicing", desc: "Get paid faster with integrated payments" },
-  { icon: Store, label: "Creative Marketplace", desc: "Sell beats, presets, templates & more" },
+  { icon: ShieldCheck, label: "Verified Credits", desc: "Build an IMDb-style record for your entire career" },
+  { icon: Briefcase, label: "Real Gigs & Collabs", desc: "Get matched with paid opportunities & collaborators" },
+  { icon: DollarSign, label: "Invoicing & Payments", desc: "Send invoices, track expenses, and get paid on time" },
+  { icon: Store, label: "Creator Sites", desc: "Your own landing page at yourname.thrivein.app" },
 ];
 
 export const AuthBrandingPanel = () => (
@@ -21,13 +21,13 @@ export const AuthBrandingPanel = () => (
       </div>
       
       <h2 className="text-3xl xl:text-4xl font-bold leading-tight mb-4">
-        Your Creative Career,{" "}
+        Get Discovered. Get Booked.{" "}
         <span className="text-primary">
-          One Platform.
+          Get Paid.
         </span>
       </h2>
       <p className="text-muted-foreground mb-10 max-w-md leading-relaxed">
-        Match with collaborators, manage projects, send invoices, and sell your work — all in one place.
+        The all-in-one platform where creatives build verified credits, land real gigs, and run their business — no more juggling 9 different apps.
       </p>
       
       <div className="space-y-3">
@@ -52,7 +52,7 @@ export const AuthBrandingPanel = () => (
       <div className="mt-6">
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Zap className="h-3 w-3 text-accent" />
-          60-second setup · No credit card · 1-month Pro free
+          60-second setup · No credit card · 7-day Pro trial included
         </p>
       </div>
     </div>

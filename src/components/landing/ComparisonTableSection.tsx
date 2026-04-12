@@ -73,7 +73,10 @@ export const ComparisonTableSection = () => {
               <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
               <span className="font-bold text-sm sm:text-base">All included — one platform</span>
             </div>
-            <span className="font-bold text-primary text-base sm:text-lg">Free</span>
+            <div className="text-right">
+              <span className="font-bold text-primary text-base sm:text-lg">Free</span>
+              <span className="block text-[10px] text-muted-foreground">Pro from $15/mo</span>
+            </div>
           </div>
         </div>
 
@@ -85,7 +88,7 @@ export const ComparisonTableSection = () => {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </Link>
-          <p className="mt-3 text-xs text-muted-foreground/70">No credit card · Upgrade when you're ready</p>
+          <p className="mt-3 text-xs text-muted-foreground/70">No credit card · 7-day Pro trial · Save 17% annually</p>
         </div>
       </div>
     </section>

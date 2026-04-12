@@ -16,6 +16,7 @@ import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { BeforeAfterSection } from "@/components/landing/BeforeAfterSection";
+import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 
 
@@ -254,6 +255,8 @@ export const UnifiedHome = () => {
       {/* ═══════════ BEFORE/AFTER DIFFERENTIATION ═══════════ */}
       {!user && <BeforeAfterSection />}
 
+      {/* ═══════════ PRICING PREVIEW ═══════════ */}
+      {!user && <PricingPreviewSection />}
 
       {activityMsg && !user && (
         <div className="border-y border-border/50 bg-muted/30">
@@ -652,23 +655,23 @@ export const UnifiedHome = () => {
               <Zap className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
-              {user ? "Upgrade to Pro" : "Become a Founding Member"}
+              {user ? "Go Pro — from $15/mo" : "Become a Founding Member"}
             </h3>
             <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-1 max-w-md mx-auto">
               {user
-                ? "Unlock AI matching, unlimited discovery, and the embeddable credits widget."
+                ? "Unlimited AI tools, verified badge, full invoicing & expense suite. 7-day free trial."
                 : "Early creators get priority visibility, first access to gigs, and help shape the platform."}
             </p>
             {!user && (
               <p className="text-[10px] text-white/50 mb-4">
-                Free forever for early members · No credit card required
+                Free forever · Pro from $15/mo · Save 17% annually
               </p>
             )}
             <Link
               to={user ? "/subscription" : "/auth"}
               className="inline-flex items-center gap-2 rounded-xl bg-white text-primary px-6 py-3 text-sm font-bold hover:bg-white/90 transition-colors shadow-md"
             >
-              {user ? "View Plans" : "Join Now — It's Free"} <ArrowRight className="h-4 w-4" />
+              {user ? "Start 7-Day Trial" : "Join Now — It's Free"} <ArrowRight className="h-4 w-4" />
             </Link>
             {!user && (
               <p className="text-[10px] text-white/40 mt-3">

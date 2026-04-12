@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 import { versionPlugin } from "./plugins/version-plugin";
 import { magazineSharePagesPlugin } from "./plugins/magazine-share-pages";
+import { profileSharePagesPlugin } from "./plugins/profile-share-pages";
 
 const { hash: buildHash, plugin: versionJsonPlugin } = versionPlugin();
 
@@ -103,6 +104,11 @@ export default defineConfig(({ mode }) => {
       }),
       versionJsonPlugin,
       magazineSharePagesPlugin({
+        projectUrl: env.VITE_SUPABASE_URL,
+        publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        siteUrl: "https://www.thrivein.io",
+      }),
+      profileSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
         siteUrl: "https://www.thrivein.io",

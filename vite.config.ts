@@ -114,6 +114,11 @@ export default defineConfig(({ mode }) => {
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
         siteUrl: "https://www.thrivein.io",
       }),
+      gigSharePagesPlugin({
+        projectUrl: env.VITE_SUPABASE_URL,
+        publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        siteUrl: "https://www.thrivein.io",
+      }),
     ].filter(Boolean),
     resolve: {
       alias: {

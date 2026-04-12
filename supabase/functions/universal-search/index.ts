@@ -253,6 +253,7 @@ Rules:
 3. CRITICAL: alternative_matches should contain EVERY distinct person/entity found in the results that is NOT the knowledge_card subject. Even if there's only one main match, look for other people with similar names or handles. Always try to find at least 1-2 alternatives.
 4. Keep related_searches short and practical. Include name variations to help users find the right person.
 5. Do not output visual_results; those are handled separately.
+6. CRITICAL: Always include image_url fields when an Image URL is available in the web results. This is essential for visual identification.
 
 Return JSON only in this shape:
 {
@@ -260,6 +261,7 @@ Return JSON only in this shape:
     "type": "person" | "production" | "brand" | "event" | "podcast" | "channel" | "concept",
     "name": "Official name",
     "description": "1-2 sentence grounded summary",
+    "image_url": "Profile/avatar image URL from the results or null",
     "known_for": ["Work 1", "Work 2"],
     "industry": "Music | Film | Content Creation | Fashion | Mixed | etc",
     "key_credits": [
@@ -275,6 +277,7 @@ Return JSON only in this shape:
     {
       "name": "Full Name or identity label",
       "description": "One-line grounded summary",
+      "image_url": "Profile/avatar image URL from the results or null",
       "industry": "Industry",
       "location": "Location if stated",
       "known_for": ["Known item 1", "Known item 2"]

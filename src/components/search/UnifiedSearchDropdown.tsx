@@ -23,6 +23,7 @@ interface KnowledgeCard {
   type: string;
   name: string;
   description: string;
+  image_url?: string | null;
   known_for?: string[];
   industry?: string;
   platforms?: string[];
@@ -33,6 +34,7 @@ interface KnowledgeCard {
 interface AlternativeMatch {
   name: string;
   description: string;
+  image_url?: string | null;
   industry?: string;
   location?: string;
   known_for?: string[];
@@ -397,9 +399,18 @@ export function UnifiedSearchDropdown({
               <div className="border-b border-border bg-gradient-to-b from-primary/5 to-transparent">
                 <div className="px-4 py-3">
                   <div className="flex items-start gap-3">
-                    <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-2 ring-primary/20">
-                      <Globe className="h-5 w-5 text-primary" />
-                    </div>
+                    {knowledgeCard.image_url ? (
+                      <Avatar className="h-11 w-11 shrink-0 ring-2 ring-primary/20">
+                        <AvatarImage src={knowledgeCard.image_url} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                          {(knowledgeCard.name || "?")[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-2 ring-primary/20">
+                        <Globe className="h-5 w-5 text-primary" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-bold text-foreground truncate">{knowledgeCard.name}</p>
@@ -557,9 +568,18 @@ export function UnifiedSearchDropdown({
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors text-left"
                   >
-                    <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                      <Sparkles className="h-3.5 w-3.5 text-accent" />
-                    </div>
+                    {alt.image_url ? (
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarImage src={alt.image_url} />
+                        <AvatarFallback className="text-xs bg-accent/10 text-accent">
+                          {(alt.name || "?")[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                        <Sparkles className="h-3.5 w-3.5 text-accent" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{alt.name}</p>
                       <p className="text-[11px] text-muted-foreground truncate">

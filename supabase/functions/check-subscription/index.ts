@@ -20,6 +20,8 @@ const PRODUCT_TIER_MAP: Record<string, string> = {
   'prod_UDoSA9g7yHRm3X': 'brand_pro',
   // Creator Enterprise
   'prod_U5VmCaKx7g2lbw': 'enterprise',
+  // Creator Pro (premium site builder tier)
+  'prod_UKARjeRiOcTS46': 'creator_pro',
   // Creator Pro (current + legacy)
   'prod_TWc5tpvPKjy8hG': 'pro',
   'prod_TA5c8GtL6ioS2h': 'pro',
@@ -136,7 +138,7 @@ serve(async (req) => {
 
     // Determine the highest tier from all active subscriptions
     const tierPriority: Record<string, number> = {
-      'brand_enterprise': 6, 'enterprise': 5, 'brand_pro': 4, 'pro': 3, 'free': 0,
+      'brand_enterprise': 6, 'enterprise': 5, 'creator_pro': 4, 'brand_pro': 3.5, 'pro': 3, 'free': 0,
     };
     
     let bestTier = 'free';

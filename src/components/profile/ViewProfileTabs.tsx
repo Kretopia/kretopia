@@ -13,6 +13,36 @@ import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+
+/** Wrapper that shows an empty state when the creator has no services */
+const HireTabContent = ({ userId, creatorName }: { userId: string; creatorName?: string }) => {
+  const [hasContent, setHasContent] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const check = async () => {
+      const { count } = await supabase
+        .from('creator_services')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_active', true);
+      setHasContent((count ?? 0) > 0);
+    };
+    check();
+  }, [userId]);
+
+  if (hasContent === null) return <div className="text-center py-8 text-muted-foreground text-sm">Loading...</div>;
+  if (!hasContent) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <DollarSign className="h-10 w-10 mx-auto mb-3 opacity-30" />
+        <p className="text-sm">{creatorName?.split(' ')[0] || 'This creator'} hasn't listed any services yet</p>
+      </div>
+    );
+  }
+
+  return <WorkWithMeSection userId={userId} isOwner={false} creatorName={creatorName} />;
+};
 
 const VIEW_TABS = [
   { id: "work", label: "Credits", icon: Briefcase },

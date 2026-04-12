@@ -38,22 +38,26 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
   const [profileCardOpen, setProfileCardOpen] = useState(false);
   const [inviteCardOpen, setInviteCardOpen] = useState(false);
   const [siteEnabled, setSiteEnabled] = useState(false);
+  const [siteUsername, setSiteUsername] = useState<string | null>(null);
   const { toast } = useToast();
   const { user, subscriptionInfo } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
   const isOwner = user?.id === profile.user_id;
 
-  const siteUrl = `https://www.thrivein.io/site/${profile.user_id}`;
+  const siteUrl = siteUsername 
+    ? `${window.location.origin}/${siteUsername}`
+    : `${window.location.origin}/site/${profile.user_id}`;
 
   useEffect(() => {
     if (!open || !isOwner || !isPro) return;
     supabase
       .from('profiles')
-      .select('site_enabled')
+      .select('site_enabled, username')
       .eq('user_id', profile.user_id)
       .maybeSingle()
       .then(({ data }) => {
         setSiteEnabled(data?.site_enabled || false);
+        setSiteUsername((data as any)?.username || null);
       });
   }, [open, profile.user_id, isOwner, isPro]);
 

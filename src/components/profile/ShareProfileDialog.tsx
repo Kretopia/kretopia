@@ -2,10 +2,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Share2, Copy, Check, Image, UserPlus } from "lucide-react";
-import { useState } from "react";
+import { Share2, Copy, Check, Image, UserPlus, Globe, ExternalLink } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ShareableProfileCard } from "./ShareableProfileCard";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 interface ShareProfileDialogProps {
   profile: {
@@ -31,9 +34,28 @@ interface ShareProfileDialogProps {
 export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenChange }: ShareProfileDialogProps) => {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
+  const [copiedSiteUrl, setCopiedSiteUrl] = useState(false);
   const [profileCardOpen, setProfileCardOpen] = useState(false);
   const [inviteCardOpen, setInviteCardOpen] = useState(false);
+  const [siteEnabled, setSiteEnabled] = useState(false);
   const { toast } = useToast();
+  const { user, subscriptionInfo } = useAuth();
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
+  const isOwner = user?.id === profile.user_id;
+
+  const siteUrl = `https://www.thrivein.io/site/${profile.user_id}`;
+
+  useEffect(() => {
+    if (!open || !isOwner || !isPro) return;
+    supabase
+      .from('profiles')
+      .select('site_enabled')
+      .eq('user_id', profile.user_id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setSiteEnabled(data?.site_enabled || false);
+      });
+  }, [open, profile.user_id, isOwner, isPro]);
 
   const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
   const shareableUrl = `https://www.thrivein.io/share/profile/${profile.user_id}/`;
@@ -179,7 +201,40 @@ ${shareableUrl}`;
             </div>
           </div>
 
-          {/* Profile URL */}
+          {/* Creator Site URL - shown for Pro users with site enabled */}
+          {isOwner && isPro && siteEnabled && (
+            <div className="space-y-2 p-3 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-primary" />
+                <Label className="font-semibold text-sm">Your Creator Site</Label>
+              </div>
+              <p className="text-xs text-muted-foreground">Share this as your link-in-bio — it's your standalone portfolio website</p>
+              <div className="flex gap-2">
+                <Input
+                  value={siteUrl}
+                  readOnly
+                  className="font-mono text-xs"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    navigator.clipboard.writeText(siteUrl);
+                    setCopiedSiteUrl(true);
+                    toast({ title: "Creator Site link copied!" });
+                    setTimeout(() => setCopiedSiteUrl(false), 2000);
+                  }}
+                >
+                  {copiedSiteUrl ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+                <Button variant="outline" size="icon" asChild>
+                  <a href={siteUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="profile-url">Your Profile Link</Label>
             <div className="flex gap-2">

@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { CreatorSiteSectionEditor, SiteSection } from "./CreatorSiteSectionEditor";
 
 const TEMPLATES = [
   {
@@ -46,6 +47,9 @@ export const CreatorSiteSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [siteSections, setSiteSections] = useState<SiteSection[]>([]);
+  const [siteHeadline, setSiteHeadline] = useState('');
+  const [siteBio, setSiteBio] = useState('');
 
   const siteUrl = user ? `${window.location.origin}/site/${user.id}` : '';
 
@@ -53,13 +57,16 @@ export const CreatorSiteSettings = () => {
     if (!user) return;
     supabase
       .from('profiles')
-      .select('site_enabled, site_template')
+      .select('site_enabled, site_template, site_sections, site_headline, site_bio')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
           setSiteEnabled(data.site_enabled || false);
           setSelectedTemplate(data.site_template || 'bold-electric');
+          setSiteSections((data.site_sections as any) || []);
+          setSiteHeadline(data.site_headline || '');
+          setSiteBio(data.site_bio || '');
         }
         setLoading(false);
       });
@@ -196,6 +203,13 @@ export const CreatorSiteSettings = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* Section Editor */}
+                <CreatorSiteSectionEditor
+                  initialSections={siteSections}
+                  initialHeadline={siteHeadline}
+                  initialBio={siteBio}
+                />
               </div>
             )}
           </>

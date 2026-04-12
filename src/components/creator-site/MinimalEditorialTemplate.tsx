@@ -7,6 +7,14 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
   const [showInquiry, setShowInquiry] = useState(false);
   const firstName = profile.full_name?.split(' ')[0] || 'Creator';
 
+  const sections = Array.isArray(profile.site_sections) ? profile.site_sections : [];
+  const isSectionVisible = (id: string) => {
+    const section = sections.find((s: any) => s.id === id);
+    return section ? section.visible !== false : true;
+  };
+  const displayHeadline = profile.site_headline || profile.role || 'Creative Professional';
+  const displayBio = profile.site_bio || profile.bio || `${firstName} brings a refined approach to every project.`;
+
   const allTestimonials = [
     ...endorsements.filter(e => e.testimonial).map(e => ({
       text: e.testimonial,
@@ -46,11 +54,11 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
       {/* Hero */}
       <section className="px-6 md:px-16 py-16 md:py-28 max-w-5xl">
         <h1 className="text-5xl md:text-[5.5rem] font-light leading-[1.05] tracking-tight mb-8">
-          {profile.role || 'Creative Professional'}
+          {displayHeadline}
         </h1>
         <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-start">
-          <p className="text-lg md:text-xl text-[#555] leading-relaxed font-light" style={{ fontFamily: "'Inter', sans-serif" }}>
-            {profile.bio?.slice(0, 250) || `${firstName} brings a refined approach to every project.`}
+          <p className="text-lg md:text-xl text-[#555] leading-relaxed font-light whitespace-pre-line" style={{ fontFamily: "'Inter', sans-serif" }}>
+            {displayBio}
           </p>
           <div className="space-y-4">
             {profile.location && (
@@ -95,7 +103,7 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
       )}
 
       {/* Services */}
-      {services.length > 0 && (
+      {isSectionVisible('services') && services.length > 0 && (
         <section id="services" className="px-6 md:px-16 py-16 md:py-24 border-t border-[#e5e3df]">
           <div className="max-w-5xl">
             <h2 className="text-3xl md:text-4xl font-light mb-12 md:mb-20">Services</h2>
@@ -136,7 +144,7 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
       )}
 
       {/* Credits / Portfolio */}
-      {credits.length > 0 && (
+      {isSectionVisible('credits') && credits.length > 0 && (
         <section id="work" className="px-6 md:px-16 py-16 md:py-24 border-t border-[#e5e3df]">
           <div className="max-w-5xl">
             <h2 className="text-3xl md:text-4xl font-light mb-12 md:mb-20">Selected Work</h2>
@@ -167,7 +175,7 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
       )}
 
       {/* Testimonials */}
-      {allTestimonials.length > 0 && (
+      {isSectionVisible('testimonials') && allTestimonials.length > 0 && (
         <section className="px-6 md:px-16 py-16 md:py-24 bg-[#f0eeea]">
           <div className="max-w-3xl">
             {allTestimonials.slice(0, 3).map((t, i) => (

@@ -20,6 +20,14 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
   const [showInquiry, setShowInquiry] = useState(false);
 
   const firstName = profile.full_name?.split(' ')[0] || 'Creator';
+  const sections = Array.isArray(profile.site_sections) ? profile.site_sections : [];
+  const isSectionVisible = (id: string) => {
+    const section = sections.find((s: any) => s.id === id);
+    return section ? section.visible !== false : true;
+  };
+  const displayHeadline = profile.site_headline || profile.role || 'Creative Professional';
+  const displayBio = profile.site_bio || profile.bio || `${firstName} is a creative professional ready to bring your vision to life.`;
+
   const allTestimonials = [
     ...endorsements.filter(e => e.testimonial).map(e => ({
       text: e.testimonial,
@@ -57,10 +65,10 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
       <section className="px-6 md:px-16 py-12 md:py-20 grid md:grid-cols-2 gap-8 md:gap-12 items-center">
         <div className="space-y-6">
           <h1 className="text-5xl md:text-8xl font-bold leading-[0.9] tracking-tighter uppercase">
-            {profile.role || 'Creative Professional'}
+            {displayHeadline}
           </h1>
-          <p className="text-lg md:text-xl text-zinc-400 max-w-[45ch] leading-relaxed">
-            {profile.bio?.slice(0, 200) || `${firstName} is a creative professional ready to bring your vision to life.`}
+          <p className="text-lg md:text-xl text-zinc-400 max-w-[45ch] leading-relaxed whitespace-pre-line">
+            {displayBio}
           </p>
           <div className="flex flex-wrap gap-3">
             <button
@@ -103,7 +111,7 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
       </section>
 
       {/* Services */}
-      {services.length > 0 && (
+      {isSectionVisible('services') && services.length > 0 && (
         <section id="services" className="px-6 md:px-16 py-12 md:py-20">
           <h2 className="text-xs uppercase tracking-[0.5em] text-[#00ffff] mb-10 md:mb-16">Available Services</h2>
           <div className="grid md:grid-cols-3 gap-4 md:gap-6">
@@ -136,7 +144,7 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
       )}
 
       {/* Credits / Work */}
-      {credits.length > 0 && (
+      {isSectionVisible('credits') && credits.length > 0 && (
         <section id="work" className="px-6 md:px-16 py-12 md:py-20">
           <h2 className="text-xs uppercase tracking-[0.5em] text-[#ff00ff] mb-10 md:mb-16">Featured Work</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
@@ -172,7 +180,7 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
       )}
 
       {/* Testimonials */}
-      {allTestimonials.length > 0 && (
+      {isSectionVisible('testimonials') && allTestimonials.length > 0 && (
         <section className="px-6 md:px-16 py-12 md:py-20 bg-[#0f0f12]">
           <h2 className="text-xs uppercase tracking-[0.5em] text-[#00ffff] mb-10 md:mb-16">What People Say</h2>
           <div className="grid md:grid-cols-2 gap-4 md:gap-6 max-w-4xl">

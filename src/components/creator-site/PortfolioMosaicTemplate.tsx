@@ -18,6 +18,14 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
   const [showInquiry, setShowInquiry] = useState(false);
   const firstName = profile.full_name?.split(' ')[0] || 'Creator';
 
+  const sections = Array.isArray(profile.site_sections) ? profile.site_sections : [];
+  const isSectionVisible = (id: string) => {
+    const section = sections.find((s: any) => s.id === id);
+    return section ? section.visible !== false : true;
+  };
+  const displayHeadline = profile.site_headline || profile.role || `Hi, I'm ${firstName}`;
+  const displayBio = profile.site_bio || profile.bio || `${firstName} creates compelling work across multiple disciplines.`;
+
   const allTestimonials = [
     ...endorsements.filter(e => e.testimonial).map(e => ({
       text: e.testimonial,
@@ -66,10 +74,10 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
               {profile.location || 'Creative Professional'}
             </div>
             <h1 className="text-4xl md:text-6xl font-bold leading-[1.1] mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-              {profile.role || `Hi, I'm ${firstName}`}
+              {displayHeadline}
             </h1>
-            <p className="text-base md:text-lg text-zinc-500 leading-relaxed max-w-lg mb-8">
-              {profile.bio?.slice(0, 220) || `${firstName} creates compelling work across multiple disciplines.`}
+            <p className="text-base md:text-lg text-zinc-500 leading-relaxed max-w-lg mb-8 whitespace-pre-line">
+              {displayBio}
             </p>
             <div className="flex flex-wrap gap-3">
               <button
@@ -104,7 +112,7 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
       </section>
 
       {/* Portfolio Masonry */}
-      {credits.length > 0 && (
+      {isSectionVisible('credits') && credits.length > 0 && (
         <section id="work" className="px-5 md:px-10 py-12 md:py-20 bg-zinc-50">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold mb-10" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -144,7 +152,7 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
       )}
 
       {/* Services */}
-      {services.length > 0 && (
+      {isSectionVisible('services') && services.length > 0 && (
         <section id="services" className="px-5 md:px-10 py-12 md:py-20">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold mb-10" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -180,7 +188,7 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
       )}
 
       {/* Testimonials */}
-      {allTestimonials.length > 0 && (
+      {isSectionVisible('testimonials') && allTestimonials.length > 0 && (
         <section className="px-5 md:px-10 py-12 md:py-20 bg-[#111] text-white">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold mb-12" style={{ fontFamily: "'Playfair Display', serif" }}>

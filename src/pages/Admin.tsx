@@ -15,6 +15,7 @@ import { VerificationTab } from "@/components/admin/VerificationTab";
 import { UnclaimedProfilesTab } from "@/components/admin/UnclaimedProfilesTab";
 import { OutreachTab } from "@/components/admin/OutreachTab";
 import { FeedbackTab } from "@/components/admin/FeedbackTab";
+import { DripCampaignTab } from "@/components/admin/DripCampaignTab";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -278,9 +279,9 @@ export default function Admin() {
             <ShieldCheck className="h-4 w-4" />
             <span>Verify</span>
           </TabsTrigger>
-          <TabsTrigger value="email" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5" onClick={() => navigate("/sales")}>
+          <TabsTrigger value="drip" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Mail className="h-4 w-4" />
-            <span>Email</span>
+            <span>Drip</span>
           </TabsTrigger>
           <TabsTrigger value="system" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Settings className="h-4 w-4" />
@@ -306,6 +307,10 @@ export default function Admin() {
 
         <TabsContent value="verifications" className="mt-4 sm:mt-6">
           <VerificationTab />
+        </TabsContent>
+
+        <TabsContent value="drip" className="mt-4 sm:mt-6">
+          <DripCampaignTab />
         </TabsContent>
 
         <TabsContent value="system" className="mt-4 sm:mt-6">

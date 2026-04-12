@@ -61,8 +61,8 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
       });
   }, [open, profile.user_id, isOwner, isPro]);
 
-  const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
-  const shareableUrl = `https://www.thrivein.io/share/profile/${profile.user_id}/`;
+  const profileUrl = `${window.location.origin}/profile/${profile.user_id}`;
+  const shareableUrl = `${window.location.origin}/share/profile/${profile.user_id}/`;
   
   const shareText = `${profile.full_name} | ${profile.role} — Verified Creative Portfolio on ThriveIN
 

@@ -124,6 +124,7 @@ export const ViewProfileTabs = ({
             )}
           </div>
         );
+      }
 
       case "reviews":
         return reviews.length > 0 ? (

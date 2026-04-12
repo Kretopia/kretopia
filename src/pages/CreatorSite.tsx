@@ -6,6 +6,7 @@ import { BoldElectricTemplate } from "@/components/creator-site/BoldElectricTemp
 import { MinimalEditorialTemplate } from "@/components/creator-site/MinimalEditorialTemplate";
 import { PortfolioMosaicTemplate } from "@/components/creator-site/PortfolioMosaicTemplate";
 import { Loader2 } from "lucide-react";
+import { useSiteViewTracker } from "@/hooks/useSiteAnalytics";
 
 export interface CreatorSiteData {
   profile: {
@@ -151,6 +152,7 @@ const CreatorSite = () => {
     );
   }
 
+  useSiteViewTracker(data?.profile?.user_id);
   const template = data.profile.site_template || 'bold-electric';
 
   return (

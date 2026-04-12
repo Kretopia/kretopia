@@ -5,10 +5,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Loader2, Sparkles, Zap, Crown, Building2, User, Briefcase } from "lucide-react";
+import { Check, Loader2, Sparkles, Zap, Crown, Building2, User, Briefcase, Globe } from "lucide-react";
 import { 
   SUBSCRIPTION_PRODUCTS, BRAND_SUBSCRIPTION_PRODUCTS,
-  PRO_FEATURES, FREE_FEATURES, ENTERPRISE_FEATURES, 
+  PRO_FEATURES, FREE_FEATURES, ENTERPRISE_FEATURES, CREATOR_PRO_FEATURES,
   type AccountType, hasProAccess, isBrandTier
 } from "@/lib/subscriptionConfig";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,6 +48,16 @@ function getCreatorTiers() {
       popular: true,
       description: "For serious creators",
       features: PRO_FEATURES.individual,
+    },
+    {
+      name: SUBSCRIPTION_PRODUCTS.creator_pro.name,
+      tier: SUBSCRIPTION_PRODUCTS.creator_pro.tier,
+      price: `$${SUBSCRIPTION_PRODUCTS.creator_pro.price}`,
+      priceId: SUBSCRIPTION_PRODUCTS.creator_pro.priceId,
+      productId: SUBSCRIPTION_PRODUCTS.creator_pro.productId,
+      icon: Globe,
+      description: "Pro + your own creator website",
+      features: CREATOR_PRO_FEATURES,
     },
     {
       name: SUBSCRIPTION_PRODUCTS.enterprise.name,
@@ -366,7 +376,7 @@ export default function Subscription() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
         {tiers.map((tier) => {
           const Icon = tier.icon;
           const isCurrentTier = tier.tier === currentTier;
@@ -378,7 +388,9 @@ export default function Subscription() {
               key={tier.tier}
               className={`relative ${
                 tier.popular
-                  ? "border-primary shadow-lg scale-105"
+                  ? "border-primary shadow-lg scale-[1.03]"
+                  : tier.tier === "creator_pro"
+                  ? "border-primary/70 shadow-md"
                   : tier.tier === "enterprise" || tier.tier === "brand_enterprise"
                   ? "border-primary/50 shadow-md"
                   : isCurrentTier
@@ -389,6 +401,11 @@ export default function Subscription() {
               {tier.popular && !isCurrentTier && (
                 <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2`}>
                   {isBrand ? "Best for Hiring" : "Most Popular"}
+                </Badge>
+              )}
+              {tier.tier === "creator_pro" && !isCurrentTier && (
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
+                  🌐 Website Builder
                 </Badge>
               )}
               {(tier.tier === "enterprise" || tier.tier === "brand_enterprise") && !isCurrentTier && (
@@ -405,7 +422,7 @@ export default function Subscription() {
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
                   <Icon className={`h-8 w-8 ${
-                    tier.tier === 'pro' || tier.tier === 'brand_pro' ? 'text-primary' : 
+                    tier.tier === 'pro' || tier.tier === 'brand_pro' || tier.tier === 'creator_pro' ? 'text-primary' : 
                     tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-primary' : 
                     'text-muted-foreground'
                   }`} />

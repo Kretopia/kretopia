@@ -8,7 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DripAnalyticsPanel } from "./DripAnalyticsPanel";
 import {
   Upload, Send, Loader2, FolderPlus, Play, Pause, BarChart3, Mail, Users, CheckCircle, XCircle, Clock
 } from "lucide-react";
@@ -252,8 +254,18 @@ export const DripCampaignTab = () => {
   const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
 
   return (
-    <div className="space-y-6">
-      {/* Overview Stats */}
+    <Tabs defaultValue="manage" className="space-y-4">
+      <TabsList className="w-full">
+        <TabsTrigger value="manage" className="flex-1">Manage</TabsTrigger>
+        <TabsTrigger value="analytics" className="flex-1">📊 Analytics</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="analytics">
+        <DripAnalyticsPanel />
+      </TabsContent>
+
+      <TabsContent value="manage">
+      <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card className="p-3">
           <div className="flex items-center gap-2 mb-1"><Users className="h-4 w-4 text-primary" /><span className="text-[10px] uppercase tracking-wider text-muted-foreground">Segments</span></div>
@@ -450,5 +462,7 @@ export const DripCampaignTab = () => {
         </Card>
       )}
     </div>
+    </TabsContent>
+    </Tabs>
   );
 };

@@ -338,6 +338,82 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // --- Action: Get campaign analytics ---
+    if (action === 'get_campaign_analytics') {
+      // Overall totals across all campaigns
+      const { count: totalSent } = await supabaseAdmin
+        .from('drip_campaign_sends')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'sent');
+
+      const { count: totalFailed } = await supabaseAdmin
+        .from('drip_campaign_sends')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'failed');
+
+      const { count: totalPending } = await supabaseAdmin
+        .from('drip_campaign_sends')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
+      // Per-campaign breakdown
+      const { data: allCampaigns } = await supabaseAdmin
+        .from('drip_campaigns')
+        .select('id, subject, status, total_contacts, sent_count, failed_count, daily_limit, created_at, last_batch_at, email_segments(name)')
+        .order('created_at', { ascending: false });
+
+      // Recent failed sends with error details (last 50)
+      const { data: recentFails } = await supabaseAdmin
+        .from('drip_campaign_sends')
+        .select('id, status, error_message, sent_at, email_contacts(email, name), drip_campaigns(subject)')
+        .eq('status', 'failed')
+        .order('sent_at', { ascending: false })
+        .limit(50);
+
+      // Recent successful sends (last 50)
+      const { data: recentSent } = await supabaseAdmin
+        .from('drip_campaign_sends')
+        .select('id, sent_at, email_contacts(email, name), drip_campaigns(subject)')
+        .eq('status', 'sent')
+        .order('sent_at', { ascending: false })
+        .limit(50);
+
+      // Daily send volume (last 14 days)
+      const fourteenDaysAgo = new Date();
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+      
+      const { data: recentActivity } = await supabaseAdmin
+        .from('drip_campaign_sends')
+        .select('sent_at, status')
+        .not('sent_at', 'is', null)
+        .gte('sent_at', fourteenDaysAgo.toISOString())
+        .order('sent_at', { ascending: true });
+
+      // Group by day
+      const dailyStats: Record<string, { sent: number; failed: number }> = {};
+      recentActivity?.forEach((s: any) => {
+        const day = s.sent_at.split('T')[0];
+        if (!dailyStats[day]) dailyStats[day] = { sent: 0, failed: 0 };
+        if (s.status === 'sent') dailyStats[day].sent++;
+        else if (s.status === 'failed') dailyStats[day].failed++;
+      });
+
+      return new Response(JSON.stringify({
+        totals: {
+          sent: totalSent || 0,
+          failed: totalFailed || 0,
+          pending: totalPending || 0,
+          total: (totalSent || 0) + (totalFailed || 0) + (totalPending || 0),
+        },
+        campaigns: allCampaigns || [],
+        recentFails: recentFails || [],
+        recentSent: recentSent || [],
+        dailyStats,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
     });

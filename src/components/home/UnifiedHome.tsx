@@ -16,6 +16,7 @@ import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { BeforeAfterSection } from "@/components/landing/BeforeAfterSection";
+import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 
 

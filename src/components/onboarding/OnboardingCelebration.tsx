@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Share2, ArrowRight, Shield, Zap, Users, Star } from "lucide-react";
+import { ArrowRight, Share2, Shield, Users, Briefcase } from "lucide-react";
 import Confetti from "react-dom-confetti";
 import { useNavigate } from "react-router-dom";
 
@@ -47,9 +47,9 @@ export function OnboardingCelebration({
 
   const handleContinue = () => {
     onOpenChange(false);
-    const pendingEventJoin = sessionStorage.getItem('pending_event_join');
+    const pendingEventJoin = sessionStorage.getItem("pending_event_join");
     if (pendingEventJoin) {
-      sessionStorage.removeItem('pending_event_join');
+      sessionStorage.removeItem("pending_event_join");
       navigate(`/event/${pendingEventJoin}`);
     } else if (pendingConnect) {
       navigate(`/profile/${pendingConnect}?from=match`);
@@ -63,21 +63,21 @@ export function OnboardingCelebration({
     navigate("/profile?share=true");
   };
 
+  const firstName = userName?.split(" ")[0] || "Creator";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md p-0 border-none overflow-hidden max-h-[90dvh] overflow-y-auto">
         {/* Gradient header */}
         <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/70 pt-12 pb-8 px-8 text-center overflow-hidden">
-          {/* Decorative circles */}
           <div className="absolute top-[-20px] left-[-20px] w-40 h-40 rounded-full bg-white/5" />
           <div className="absolute bottom-[-30px] right-[-20px] w-48 h-48 rounded-full bg-white/5" />
-          
-          {/* Confetti sources */}
+
+          {/* Confetti */}
           <div className="absolute top-0 left-1/4 z-50"><Confetti active={showConfetti} config={confettiConfig} /></div>
           <div className="absolute top-0 left-1/2 z-50"><Confetti active={showConfetti} config={confettiConfig} /></div>
           <div className="absolute top-0 left-3/4 z-50"><Confetti active={showConfetti} config={confettiConfig} /></div>
 
-          {/* Badge */}
           <div className="relative inline-flex mb-4">
             <div className="w-20 h-20 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center shadow-2xl border border-white/20">
               <Shield className="h-10 w-10 text-white" />
@@ -87,34 +87,38 @@ export function OnboardingCelebration({
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-white mb-1">You're in!</h2>
+          <h2 className="text-2xl font-bold text-white mb-1">Welcome, {firstName}!</h2>
           <p className="text-white/80 text-sm">
-            Welcome to ThriveIN, {userName?.split(" ")[0] || "Creator"}
+            Your professional profile is live on ThriveIN
           </p>
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-5">
-          {/* Stats row */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-3 rounded-xl bg-primary/5 border border-primary/10">
-              <Zap className="h-5 w-5 text-primary mx-auto mb-1" />
-              <p className="text-lg font-bold text-primary">100</p>
-              <p className="text-[10px] text-muted-foreground">XP Earned</p>
+          {/* What's next cards */}
+          <div className="space-y-2.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">What's next</p>
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Briefcase className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Browse gigs & opportunities</p>
+                <p className="text-xs text-muted-foreground">Find work that matches your skills</p>
+              </div>
             </div>
-            <div className="text-center p-3 rounded-xl bg-primary/5 border border-primary/10">
-              <Star className="h-5 w-5 text-primary mx-auto mb-1" />
-              <p className="text-lg font-bold text-primary">5</p>
-              <p className="text-[10px] text-muted-foreground">Invite Codes</p>
-            </div>
-            <div className="text-center p-3 rounded-xl bg-primary/5 border border-primary/10">
-              <Shield className="h-5 w-5 text-primary mx-auto mb-1" />
-              <p className="text-lg font-bold text-primary">Pro</p>
-              <p className="text-[10px] text-muted-foreground">1 Month Free</p>
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Users className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Connect with creatives</p>
+                <p className="text-xs text-muted-foreground">Your AI-enriched profile is working in the background</p>
+              </div>
             </div>
           </div>
 
-          {/* Badge card */}
+          {/* Beta badge */}
           <div className="bg-gradient-to-r from-primary/8 to-accent/5 border border-primary/15 rounded-xl p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -122,7 +126,7 @@ export function OnboardingCelebration({
               </div>
               <div>
                 <p className="font-semibold text-sm">Beta Pioneer Badge</p>
-                <p className="text-xs text-muted-foreground">Permanently on your profile as one of our earliest members</p>
+                <p className="text-xs text-muted-foreground">Permanently on your profile as an early member</p>
               </div>
             </div>
           </div>

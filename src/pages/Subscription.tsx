@@ -420,7 +420,7 @@ export default function Subscription() {
                   ? "border-primary shadow-lg scale-[1.03]"
                   : tier.tier === "creator_pro"
                   ? "border-primary/70 shadow-md"
-                  : tier.tier === "enterprise" || tier.tier === "brand_enterprise"
+                  : tier.tier === "brand_enterprise"
                   ? "border-primary/50 shadow-md"
                   : isCurrentTier
                   ? "border-success"
@@ -434,12 +434,7 @@ export default function Subscription() {
               )}
               {tier.tier === "creator_pro" && !isCurrentTier && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
-                  🌐 Website Builder
-                </Badge>
-              )}
-              {(tier.tier === "enterprise" || tier.tier === "brand_enterprise") && !isCurrentTier && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
-                  {isBrand ? "Full Suite" : "Custom Domain"}
+                  {isBrand ? "Full Suite" : "🔗 Custom Domain"}
                 </Badge>
               )}
               {isCurrentTier && (

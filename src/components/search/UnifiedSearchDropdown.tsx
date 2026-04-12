@@ -152,10 +152,10 @@ export function UnifiedSearchDropdown({
           .limit(3),
       ]);
 
-      // Universal search in parallel (includes web + AI knowledge card) with 10s timeout
+      // Universal search in parallel (includes web + AI knowledge card) with 20s timeout
       const universalPromise = Promise.race([
         supabase.functions.invoke("universal-search", { body: { query: q } }).catch(() => ({ data: null })),
-        new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 10000)),
+        new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 20000)),
       ]);
 
       // Show DB results first (fast)

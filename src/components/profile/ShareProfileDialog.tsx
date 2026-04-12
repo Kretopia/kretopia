@@ -2,10 +2,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Share2, Copy, Check, Image, UserPlus } from "lucide-react";
-import { useState } from "react";
+import { Share2, Copy, Check, Image, UserPlus, Globe, ExternalLink } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ShareableProfileCard } from "./ShareableProfileCard";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { hasProAccess } from "@/lib/subscriptionConfig";
 
 interface ShareProfileDialogProps {
   profile: {
@@ -31,9 +34,28 @@ interface ShareProfileDialogProps {
 export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenChange }: ShareProfileDialogProps) => {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
+  const [copiedSiteUrl, setCopiedSiteUrl] = useState(false);
   const [profileCardOpen, setProfileCardOpen] = useState(false);
   const [inviteCardOpen, setInviteCardOpen] = useState(false);
+  const [siteEnabled, setSiteEnabled] = useState(false);
   const { toast } = useToast();
+  const { user, subscriptionInfo } = useAuth();
+  const isPro = hasProAccess(subscriptionInfo.tier as any);
+  const isOwner = user?.id === profile.user_id;
+
+  const siteUrl = `https://www.thrivein.io/site/${profile.user_id}`;
+
+  useEffect(() => {
+    if (!open || !isOwner || !isPro) return;
+    supabase
+      .from('profiles')
+      .select('site_enabled')
+      .eq('user_id', profile.user_id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setSiteEnabled(data?.site_enabled || false);
+      });
+  }, [open, profile.user_id, isOwner, isPro]);
 
   const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
   const shareableUrl = `https://www.thrivein.io/share/profile/${profile.user_id}/`;

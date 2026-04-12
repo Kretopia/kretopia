@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { CreatorSiteSettings } from "@/components/settings/CreatorSiteSettings";
 
 interface NotificationPreferences {
   email_matches: boolean;

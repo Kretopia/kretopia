@@ -376,7 +376,7 @@ export default function Subscription() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
         {tiers.map((tier) => {
           const Icon = tier.icon;
           const isCurrentTier = tier.tier === currentTier;
@@ -388,7 +388,9 @@ export default function Subscription() {
               key={tier.tier}
               className={`relative ${
                 tier.popular
-                  ? "border-primary shadow-lg scale-105"
+                  ? "border-primary shadow-lg scale-[1.03]"
+                  : tier.tier === "creator_pro"
+                  ? "border-primary/70 shadow-md"
                   : tier.tier === "enterprise" || tier.tier === "brand_enterprise"
                   ? "border-primary/50 shadow-md"
                   : isCurrentTier

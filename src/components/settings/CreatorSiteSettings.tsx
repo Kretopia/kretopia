@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles, Wand2, Loader2 } from "lucide-react";
+import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles, Wand2, Loader2, Eye, PenLine } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { CreatorSiteSectionEditor, SiteSection } from "./CreatorSiteSectionEditor";
 import { SiteSetupWizard } from "@/components/creator-site/SiteSetupWizard";
+import { SitePreviewPanel } from "@/components/creator-site/SitePreviewPanel";
+import { SiteAnalyticsDashboard } from "@/components/creator-site/SiteAnalyticsDashboard";
 
 const TEMPLATES = [
   {

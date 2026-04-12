@@ -154,7 +154,6 @@ const CreatorSite = () => {
     );
   }
 
-  useSiteViewTracker(data?.profile?.user_id);
   const template = data.profile.site_template || 'bold-electric';
 
   return (

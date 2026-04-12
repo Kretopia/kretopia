@@ -153,11 +153,12 @@ export const LEGACY_PRODUCT_MAPPING = {
   'prod_TAoZwx40t99jYc': 'pro',
 } as const;
 
-export type SubscriptionTier = 'free' | 'pro' | 'enterprise' | 'founder' | 'brand_pro' | 'brand_enterprise';
+export type SubscriptionTier = 'free' | 'pro' | 'creator_pro' | 'enterprise' | 'founder' | 'brand_pro' | 'brand_enterprise';
 
 export function mapProductIdToTier(productId: string): SubscriptionTier {
   if (productId === SUBSCRIPTION_PRODUCTS.founder.productId) return 'founder';
   if (productId === SUBSCRIPTION_PRODUCTS.enterprise.productId) return 'enterprise';
+  if (productId === SUBSCRIPTION_PRODUCTS.creator_pro.productId) return 'creator_pro';
   if (productId === SUBSCRIPTION_PRODUCTS.pro.productId) return 'pro';
   if (productId === BRAND_SUBSCRIPTION_PRODUCTS.pro.productId) return 'brand_pro';
   if (productId === BRAND_SUBSCRIPTION_PRODUCTS.enterprise.productId) return 'brand_enterprise';
@@ -172,6 +173,7 @@ export function getTierDisplayName(tier: SubscriptionTier): string {
     case 'brand_enterprise': return 'Brand Enterprise';
     case 'enterprise': return 'Enterprise';
     case 'brand_pro': return 'Brand Pro';
+    case 'creator_pro': return 'Creator Pro';
     case 'pro': return 'Pro';
     case 'free':
     default: return 'Spark';
@@ -182,6 +184,7 @@ export function getTierPrice(tier: SubscriptionTier): number {
   switch (tier) {
     case 'founder': return SUBSCRIPTION_PRODUCTS.founder.price;
     case 'enterprise': return SUBSCRIPTION_PRODUCTS.enterprise.price;
+    case 'creator_pro': return SUBSCRIPTION_PRODUCTS.creator_pro.price;
     case 'pro': return SUBSCRIPTION_PRODUCTS.pro.price;
     case 'brand_enterprise': return BRAND_SUBSCRIPTION_PRODUCTS.enterprise.price;
     case 'brand_pro': return BRAND_SUBSCRIPTION_PRODUCTS.pro.price;
@@ -190,9 +193,14 @@ export function getTierPrice(tier: SubscriptionTier): number {
   }
 }
 
-/** Check if tier has Pro-level access (pro, enterprise, founder, or brand equivalents) */
+/** Check if tier has Pro-level access (pro, creator_pro, enterprise, founder, or brand equivalents) */
 export function hasProAccess(tier: SubscriptionTier): boolean {
-  return tier === 'pro' || tier === 'enterprise' || tier === 'founder' || tier === 'brand_pro' || tier === 'brand_enterprise';
+  return tier === 'pro' || tier === 'creator_pro' || tier === 'enterprise' || tier === 'founder' || tier === 'brand_pro' || tier === 'brand_enterprise';
+}
+
+/** Check if tier has Creator Pro-level access (creator_pro, enterprise, founder) */
+export function hasCreatorProAccess(tier: SubscriptionTier): boolean {
+  return tier === 'creator_pro' || tier === 'enterprise' || tier === 'founder';
 }
 
 /** Check if tier has Enterprise-level access */

@@ -44,6 +44,8 @@ const CreatorSite = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  useSiteViewTracker(!loading && !notFound && data ? data.profile.user_id : undefined);
+
   useEffect(() => {
     const fetchSiteData = async () => {
       if (!userId) { setNotFound(true); setLoading(false); return; }

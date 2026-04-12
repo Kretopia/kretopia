@@ -203,6 +203,13 @@ export const CreatorSiteSettings = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* Section Editor */}
+                <CreatorSiteSectionEditor
+                  initialSections={siteSections}
+                  initialHeadline={siteHeadline}
+                  initialBio={siteBio}
+                />
               </div>
             )}
           </>

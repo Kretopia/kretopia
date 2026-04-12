@@ -6,6 +6,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import { versionPlugin } from "./plugins/version-plugin";
 import { magazineSharePagesPlugin } from "./plugins/magazine-share-pages";
 import { profileSharePagesPlugin } from "./plugins/profile-share-pages";
+import { gigSharePagesPlugin } from "./plugins/gig-share-pages";
 
 const { hash: buildHash, plugin: versionJsonPlugin } = versionPlugin();
 

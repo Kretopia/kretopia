@@ -462,5 +462,7 @@ export const DripCampaignTab = () => {
         </Card>
       )}
     </div>
+    </TabsContent>
+    </Tabs>
   );
 };

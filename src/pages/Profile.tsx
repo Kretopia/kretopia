@@ -26,6 +26,8 @@ import { ProfileDashboardDrawer } from "@/components/profile/ProfileDashboardDra
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
 import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
 import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
+import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
+import { checkProfileCompletion } from "@/lib/profileCompletion";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -399,6 +401,16 @@ const ProfileContent = () => {
           }
         />
 
+
+        {/* Profile Completion — only show if not 100% */}
+        {profile && (() => {
+          const completion = checkProfileCompletion(profile, (portfolioItems?.length || 0) + (credits?.length || 0));
+          return completion.percentage < 100 ? (
+            <div className="mt-4">
+              <ProfileCompletionProgress completion={completion} />
+            </div>
+          ) : null;
+        })()}
 
         {/* Content Sections — immediately after hero, Instagram-style */}
         <div className="mt-4">

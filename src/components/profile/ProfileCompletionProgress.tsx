@@ -83,7 +83,7 @@ export const ProfileCompletionProgress = ({
         <div className="mt-3 p-2 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-900">
           <p className="text-sm text-green-800 dark:text-green-200 flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4" />
-            <span>Earned 50 XP for completing your profile!</span>
+            <span>Profile complete! You're now visible in discovery.</span>
           </p>
         </div>
       )}

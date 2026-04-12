@@ -353,6 +353,9 @@ export const UnifiedHome = () => {
             ) : null;
           })()}
 
+          {/* Circle Recommendations for new users */}
+          <CircleRecommendations className="mb-4" />
+
           {/* Push Notification Prompt */}
           <PushNotificationPrompt trigger="default" className="mb-4" />
         </div>

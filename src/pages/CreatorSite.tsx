@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
 import { BoldElectricTemplate } from "@/components/creator-site/BoldElectricTemplate";
+import { MinimalEditorialTemplate } from "@/components/creator-site/MinimalEditorialTemplate";
+import { PortfolioMosaicTemplate } from "@/components/creator-site/PortfolioMosaicTemplate";
 import { Loader2 } from "lucide-react";
 
 export interface CreatorSiteData {
@@ -155,6 +157,9 @@ const CreatorSite = () => {
         description={data.profile.bio?.slice(0, 160) || `${data.profile.full_name}'s professional site powered by ThriveIN`}
       />
       {template === 'bold-electric' && <BoldElectricTemplate data={data} />}
+      {template === 'minimal-editorial' && <MinimalEditorialTemplate data={data} />}
+      {template === 'portfolio-mosaic' && <PortfolioMosaicTemplate data={data} />}
+      {!['bold-electric', 'minimal-editorial', 'portfolio-mosaic'].includes(template) && <BoldElectricTemplate data={data} />}
     </>
   );
 };

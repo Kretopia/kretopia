@@ -59,6 +59,8 @@ export const CreatorSiteSettings = () => {
   const [usernameInput, setUsernameInput] = useState('');
   const [savingUsername, setSavingUsername] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewKey, setPreviewKey] = useState(0);
 
   const siteUrl = username 
     ? `${window.location.origin}/${username}` 

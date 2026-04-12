@@ -44,7 +44,7 @@ export const ProfileDashboardDrawer = ({
     awards?.length || 0,
     pressLinks?.length || 0
   );
-  const isPro = userTier === 'pro' || userTier === 'enterprise' || userTier === 'founder';
+  const isPro = userTier === 'pro' || userTier === 'creator_pro' || userTier === 'founder';
 
   return (
     <Sheet>

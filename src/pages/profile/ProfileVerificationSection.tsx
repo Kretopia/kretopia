@@ -32,7 +32,7 @@ export const ProfileVerificationSection = ({
       <div className="mb-4">
         <WhoViewedProfile 
           userId={profile.user_id} 
-          isPro={userTier === 'pro' || userTier === 'enterprise' || userTier === 'founder'} 
+          isPro={userTier === 'pro' || userTier === 'creator_pro' || userTier === 'founder'} 
         />
       </div>
 

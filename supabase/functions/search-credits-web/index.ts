@@ -363,15 +363,17 @@ serve(async (req) => {
 
         for (const result of rankedResults.slice(0, 28)) {
           const url = result.url || '';
-          const imageUrl = extractImageUrl(result);
-          const pageExcerpt = scrapedByUrl.get(url.toLowerCase()) || extractPageExcerpt(result.markdown);
+          const searchImageUrl = extractImageUrl(result);
+          const scraped = scrapedByUrl.get(url.toLowerCase());
+          const pageExcerpt = scraped?.excerpt || extractPageExcerpt(result.markdown);
+          const bestImageUrl = searchImageUrl || scraped?.image_url || null;
           const platformHint = detectPlatformFromUrl(url);
 
           const snippet = [
             result.title ? `Title: ${result.title}` : '',
             platformHint ? `PlatformHint: ${platformHint}` : '',
             url ? `URL: ${url}` : '',
-            imageUrl ? `Image: ${imageUrl}` : '',
+            bestImageUrl ? `Image: ${bestImageUrl}` : '',
             result.description ? `Description: ${result.description}` : '',
             pageExcerpt ? `PageExcerpt: ${pageExcerpt}` : '',
           ].filter(Boolean).join('\n');

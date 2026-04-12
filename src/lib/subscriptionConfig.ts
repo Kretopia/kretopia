@@ -13,6 +13,14 @@ export const SUBSCRIPTION_PRODUCTS = {
     priceId: "price_1SZYrBJvOS7zG18hDW2eE4NG",
     productId: "prod_TWc5tpvPKjy8hG",
   },
+  creator_pro: {
+    name: "Creator Pro",
+    tier: "creator_pro" as const,
+    price: 24,
+    trialDays: 7,
+    priceId: "price_1TLW6iJvOS7zG18hyl8LpXqw",
+    productId: "prod_UKARjeRiOcTS46",
+  },
   enterprise: {
     name: "Enterprise",
     tier: "enterprise" as const,

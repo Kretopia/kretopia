@@ -279,9 +279,9 @@ export default function Admin() {
             <ShieldCheck className="h-4 w-4" />
             <span>Verify</span>
           </TabsTrigger>
-          <TabsTrigger value="email" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5" onClick={() => navigate("/sales")}>
+          <TabsTrigger value="drip" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Mail className="h-4 w-4" />
-            <span>Email</span>
+            <span>Drip</span>
           </TabsTrigger>
           <TabsTrigger value="system" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Settings className="h-4 w-4" />

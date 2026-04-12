@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Sparkles, Database, Briefcase, User, ArrowRight, Loader2, X, UserCheck } from "lucide-react";
+import { Search, Sparkles, Database, Briefcase, User, ArrowRight, Loader2, X, UserCheck, Globe, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -16,26 +16,37 @@ interface SearchResult {
   credits?: { project: string; role: string }[];
   platform?: string;
   is_claimed?: boolean;
+  url?: string;
+}
+
+interface KnowledgeCard {
+  type: string;
+  name: string;
+  description: string;
+  known_for?: string[];
+  industry?: string;
+  platforms?: string[];
+  social_links?: Record<string, string>;
+  claim_prompt?: string;
+}
+
+interface AlternativeMatch {
+  name: string;
+  description: string;
+  industry?: string;
+  location?: string;
+  known_for?: string[];
 }
 
 interface UnifiedSearchDropdownProps {
-  /** Visual variant */
   variant?: "hero" | "navbar" | "inline";
-  /** Placeholder text */
   placeholder?: string;
-  /** Controlled value */
   value?: string;
-  /** Controlled change handler */
   onValueChange?: (value: string) => void;
-  /** Auto-focus on mount */
   autoFocus?: boolean;
-  /** Called when dropdown opens/closes */
   onOpenChange?: (open: boolean) => void;
-  /** Extra class for the wrapper */
   className?: string;
-  /** Called when user selects something — if not provided, navigates by default */
   onSelect?: (result: SearchResult) => void;
-  /** Called when the user submits a typed query */
   onQuerySubmit?: (query: string) => void;
 }
 
@@ -61,18 +72,18 @@ export function UnifiedSearchDropdown({
   const [internalQuery, setInternalQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [webLoading, setWebLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [highlightedCreator, setHighlightedCreator] = useState<SearchResult | null>(null);
+  const [knowledgeCard, setKnowledgeCard] = useState<KnowledgeCard | null>(null);
+  const [alternativeMatches, setAlternativeMatches] = useState<AlternativeMatch[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const query = value ?? internalQuery;
 
   const setQuery = useCallback((nextValue: string) => {
-    if (value === undefined) {
-      setInternalQuery(nextValue);
-    }
-
+    if (value === undefined) setInternalQuery(nextValue);
     onValueChange?.(nextValue);
   }, [onValueChange, value]);
 
@@ -91,18 +102,17 @@ export function UnifiedSearchDropdown({
   // Debounced search
   useEffect(() => {
     const trimmedQuery = query.trim();
-
     if (trimmedQuery.length < 2) {
       setOpen(false);
       onOpenChange?.(false);
       setResults([]);
       setHighlightedCreator(null);
+      setKnowledgeCard(null);
+      setAlternativeMatches([]);
       return;
     }
-
     setOpen(true);
     onOpenChange?.(true);
-
     const timer = setTimeout(() => doSearch(trimmedQuery), 350);
     return () => clearTimeout(timer);
   }, [query]);
@@ -113,12 +123,15 @@ export function UnifiedSearchDropdown({
     abortRef.current = controller;
 
     setLoading(true);
+    setWebLoading(true);
     setHighlightedCreator(null);
+    setKnowledgeCard(null);
+    setAlternativeMatches([]);
 
     try {
       const likeQ = `%${q}%`;
 
-      // Run DB search AND web search in parallel — web/AI results come first if DB is empty
+      // Fast DB queries for instant results
       const dbPromise = Promise.all([
         supabase
           .from("profiles")
@@ -139,15 +152,13 @@ export function UnifiedSearchDropdown({
           .limit(3),
       ]);
 
-      // Always fire web search in parallel with a 8s timeout
-      const webWithTimeout = (promise: Promise<any>) =>
-        Promise.race([promise, new Promise((resolve) => setTimeout(() => resolve({ data: null }), 8000))]);
+      // Universal search in parallel (includes web + AI knowledge card) with 10s timeout
+      const universalPromise = Promise.race([
+        supabase.functions.invoke("universal-search", { body: { query: q } }).catch(() => ({ data: null })),
+        new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 10000)),
+      ]);
 
-      const webPromise = q.length >= 2
-        ? webWithTimeout(supabase.functions.invoke("search-credits-web", { body: { query: q } }).catch(() => ({ data: null })))
-        : Promise.resolve({ data: null });
-
-      // Wait for DB results first (fast)
+      // Show DB results first (fast)
       const [profiles, credits, opps] = await dbPromise;
       if (controller.signal.aborted) return;
 
@@ -184,8 +195,8 @@ export function UnifiedSearchDropdown({
         });
       }
 
-      // Show DB results immediately (even if empty — loading stays true for web)
       setResults(dbResults);
+      setLoading(false);
 
       // Highlight first creator
       const firstCreator = dbResults.find((r) => r.type === "creator");
@@ -206,38 +217,44 @@ export function UnifiedSearchDropdown({
         }
       }
 
-      // If no DB results, keep loading indicator until web results arrive
-      if (dbResults.length > 0) {
-        setLoading(false);
-      }
-
-      // Now await web results (already in flight)
-      const webResponse = await webPromise;
+      // Now await universal search (web + AI)
+      const universalResponse = await universalPromise;
       if (controller.signal.aborted) return;
 
-      const webResults: SearchResult[] = (webResponse?.data?.results || []).slice(0, 8).map((r: any, i: number) => ({
-        type: "web" as const,
-        id: `web-${i}`,
-        title: r.title,
-        subtitle: [r.type, r.year, r.platform].filter(Boolean).join(" · "),
-        avatar: r.image_url || null,
-        platform: r.platform,
-      }));
+      const uData = universalResponse?.data;
 
-      if (webResults.length > 0) {
-        setResults((prev) => [...prev, ...webResults]);
-        // If this was the highlighted creator from web, set it
-        if (!firstCreator && webResults.length > 0) {
-          // Web results are supplementary, no highlight needed
+      if (uData) {
+        // Extract knowledge card & alternatives
+        if (uData.external?.knowledge_card) {
+          setKnowledgeCard(uData.external.knowledge_card);
+        }
+        if (Array.isArray(uData.external?.alternative_matches) && uData.external.alternative_matches.length > 0) {
+          setAlternativeMatches(uData.external.alternative_matches);
+        }
+
+        // Add web visual results
+        const visualResults: SearchResult[] = (uData.external?.visual_results || []).slice(0, 6).map((r: any, i: number) => ({
+          type: "web" as const,
+          id: `web-${i}`,
+          title: r.title,
+          subtitle: [r.subtitle, r.year, r.platform].filter(Boolean).join(" · "),
+          avatar: r.image_url || null,
+          platform: r.platform,
+          url: r.url,
+        }));
+
+        if (visualResults.length > 0) {
+          setResults((prev) => [...prev, ...visualResults]);
         }
       }
 
-      setLoading(false);
+      setWebLoading(false);
     } catch (err) {
       if (!controller.signal.aborted) {
         console.error("Search error:", err);
         setResults([]);
         setLoading(false);
+        setWebLoading(false);
       }
     }
   }, []);
@@ -247,6 +264,8 @@ export function UnifiedSearchDropdown({
     setQuery("");
     setResults([]);
     setHighlightedCreator(null);
+    setKnowledgeCard(null);
+    setAlternativeMatches([]);
     onOpenChange?.(false);
 
     if (onSelect) {
@@ -257,6 +276,7 @@ export function UnifiedSearchDropdown({
     if (r.type === "creator") navigate(`/profile/${r.id}`);
     else if (r.type === "gig") navigate(`/opportunity/${r.id}`);
     else if (r.type === "credit") navigate(`/production?name=${encodeURIComponent(r.title)}`);
+    else if (r.url) window.open(r.url, "_blank");
     else navigate(`/search?q=${encodeURIComponent(r.title)}`);
   };
 
@@ -265,12 +285,10 @@ export function UnifiedSearchDropdown({
     if (query.trim()) {
       setOpen(false);
       onOpenChange?.(false);
-
       if (onQuerySubmit) {
         onQuerySubmit(query.trim());
         return;
       }
-
       setQuery("");
       navigate(`/search?q=${encodeURIComponent(query.trim())}`);
     }
@@ -280,6 +298,8 @@ export function UnifiedSearchDropdown({
     setQuery("");
     setResults([]);
     setHighlightedCreator(null);
+    setKnowledgeCard(null);
+    setAlternativeMatches([]);
     inputRef.current?.focus();
   };
 
@@ -354,7 +374,7 @@ export function UnifiedSearchDropdown({
           )}
         >
           <div className="overflow-y-auto max-h-[inherit]">
-            {/* Loading state — single unified indicator */}
+            {/* Loading state */}
             {loading && results.length === 0 && (
               <div className="px-4 py-6 flex flex-col items-center gap-3">
                 <div className="relative">
@@ -370,7 +390,61 @@ export function UnifiedSearchDropdown({
               </div>
             )}
 
-            {/* Highlighted creator card with AI bio */}
+            {/* ═══ KNOWLEDGE CARD (from AI) ═══ */}
+            {knowledgeCard && !highlightedCreator && (
+              <div className="border-b border-border bg-gradient-to-b from-primary/5 to-transparent">
+                <div className="px-4 py-3">
+                  <div className="flex items-start gap-3">
+                    <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-2 ring-primary/20">
+                      <Globe className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-foreground truncate">{knowledgeCard.name}</p>
+                        <Badge variant="outline" className="text-[9px] text-primary border-primary/30 shrink-0">
+                          {knowledgeCard.industry || knowledgeCard.type}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{knowledgeCard.description}</p>
+                      {knowledgeCard.known_for && knowledgeCard.known_for.length > 0 && (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {knowledgeCard.known_for.slice(0, 3).map((item, i) => (
+                            <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/8 text-primary/80 border border-primary/10">
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {knowledgeCard.platforms && knowledgeCard.platforms.length > 0 && (
+                        <p className="text-[10px] text-muted-foreground/60 mt-1">
+                          Found on: {knowledgeCard.platforms.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {knowledgeCard.claim_prompt && (
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-[10px] text-muted-foreground/60">{knowledgeCard.claim_prompt}</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOpen(false);
+                          setQuery("");
+                          onOpenChange?.(false);
+                          navigate(`/search?q=${encodeURIComponent(knowledgeCard.name)}`);
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-opacity shrink-0"
+                      >
+                        <UserCheck className="h-3 w-3" />
+                        Claim
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Highlighted creator card (from DB) */}
             {highlightedCreator && (
               <div className="border-b border-border">
                 <button
@@ -407,15 +481,10 @@ export function UnifiedSearchDropdown({
                           "{highlightedCreator.bio}"
                         </p>
                       )}
-
-                      {/* Credits preview */}
                       {highlightedCreator.credits && highlightedCreator.credits.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {highlightedCreator.credits.slice(0, 3).map((c, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-primary/8 text-primary/80 border border-primary/10"
-                            >
+                            <span key={i} className="inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-primary/8 text-primary/80 border border-primary/10">
                               {c.project} — {c.role}
                             </span>
                           ))}
@@ -430,7 +499,6 @@ export function UnifiedSearchDropdown({
                   </div>
                 </button>
 
-                {/* Claim action + "Not you?" — always visible */}
                 <div className="px-4 pb-2 space-y-1.5">
                   {highlightedCreator.is_claimed === false && (
                     <div className="flex items-center justify-between">
@@ -470,7 +538,41 @@ export function UnifiedSearchDropdown({
               </div>
             )}
 
-            {/* Other potential creator matches */}
+            {/* ═══ ALTERNATIVE MATCHES from AI ═══ */}
+            {alternativeMatches.length > 0 && (
+              <div className="border-b border-border">
+                <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  {highlightedCreator || knowledgeCard ? "Other people with this name" : "People found on the web"}
+                </p>
+                {alternativeMatches.slice(0, 4).map((alt, i) => (
+                  <button
+                    key={`alt-match-${i}`}
+                    onClick={() => {
+                      setOpen(false);
+                      setQuery("");
+                      onOpenChange?.(false);
+                      navigate(`/search?q=${encodeURIComponent(alt.name)}`);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors text-left"
+                  >
+                    <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                      <Sparkles className="h-3.5 w-3.5 text-accent" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{alt.name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {[alt.industry, alt.location].filter(Boolean).join(" · ") || alt.description}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] text-accent border-accent/30 shrink-0">
+                      Web
+                    </Badge>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Other DB creator matches */}
             {highlightedCreator && (() => {
               const otherCreators = results.filter(
                 (r) => r.type === "creator" && r.id !== highlightedCreator.id
@@ -514,7 +616,7 @@ export function UnifiedSearchDropdown({
               );
             })()}
 
-            {/* Rest of results (non-creator when highlighted, or all) */}
+            {/* Rest of results (credits, gigs, web discoveries) */}
             {results
               .filter((r) => !highlightedCreator || (r.id !== highlightedCreator.id && r.type !== "creator"))
               .map((r, i) => {
@@ -543,7 +645,9 @@ export function UnifiedSearchDropdown({
                         <p className="text-[11px] text-muted-foreground truncate">{r.subtitle}</p>
                       )}
                     </div>
-                    {r.type === "creator" && r.is_claimed === false ? (
+                    {r.type === "web" && r.url ? (
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+                    ) : r.type === "creator" && r.is_claimed === false ? (
                       <div className="flex items-center gap-1.5 shrink-0">
                         <Badge variant="outline" className="text-[9px] text-amber-500 border-amber-500/30 bg-amber-500/10">
                           Unclaimed
@@ -575,16 +679,16 @@ export function UnifiedSearchDropdown({
                 );
               })}
 
-            {/* Background web search indicator — only when we have some DB results but web still loading */}
-            {loading && results.length > 0 && (
+            {/* Background web search indicator */}
+            {webLoading && results.length > 0 && (
               <div className="px-4 py-2 flex items-center justify-center gap-2 text-xs text-muted-foreground/60 border-t border-border/50">
                 <Loader2 className="h-3 w-3 animate-spin" />
-                <span>Checking more sources...</span>
+                <span>Checking the web for more matches...</span>
               </div>
             )}
 
-            {/* Empty state — after all searches complete */}
-            {!loading && results.length === 0 && query.trim().length >= 2 && (
+            {/* Empty state */}
+            {!loading && !webLoading && results.length === 0 && !knowledgeCard && query.trim().length >= 2 && (
               <div className="px-4 py-4 text-center">
                 <Sparkles className="h-5 w-5 text-primary/50 mx-auto mb-1.5" />
                 <p className="text-sm text-muted-foreground">No results found</p>
@@ -595,7 +699,7 @@ export function UnifiedSearchDropdown({
             )}
 
             {/* Deep search footer */}
-            {results.length > 0 && (
+            {(results.length > 0 || knowledgeCard) && (
               <button
                 onClick={handleSubmit as any}
                 className="w-full px-4 py-2.5 text-sm text-primary font-medium hover:bg-muted/50 transition-colors border-t border-border flex items-center justify-center gap-2"

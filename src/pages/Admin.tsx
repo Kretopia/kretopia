@@ -7,6 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search, Megaphone, MessageSquare, Mail } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { VerificationTab } from "@/components/admin/VerificationTab";
 import { UnclaimedProfilesTab } from "@/components/admin/UnclaimedProfilesTab";
@@ -56,6 +59,10 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [broadcastSubject, setBroadcastSubject] = useState('');
+  const [broadcastBody, setBroadcastBody] = useState('');
+  const [broadcastCta, setBroadcastCta] = useState('Check It Out →');
+  const [broadcastCtaUrl, setBroadcastCtaUrl] = useState('https://www.thrivein.io');
   const [importingOdos, setImportingOdos] = useState(false);
   const [odosResults, setOdosResults] = useState<OdosImportResult[] | null>(null);
   const [odosSummary, setOdosSummary] = useState<OdosImportSummary | null>(null);
@@ -122,9 +129,20 @@ export default function Admin() {
   };
 
   const sendBroadcastEmail = async () => {
+    if (!broadcastSubject.trim() || !broadcastBody.trim()) {
+      toast({ title: "Missing fields", description: "Subject and body are required", variant: "destructive" });
+      return;
+    }
     setSendingBroadcast(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-broadcast-email');
+      const { data, error } = await supabase.functions.invoke('send-broadcast-email', {
+        body: {
+          subject: broadcastSubject,
+          body: broadcastBody,
+          ctaText: broadcastCta,
+          ctaUrl: broadcastCtaUrl,
+        }
+      });
       
       if (error) throw error;
       
@@ -132,6 +150,8 @@ export default function Admin() {
         title: "Broadcast Sent!",
         description: `Successfully sent to ${data?.sent || 0} users. ${data?.failed || 0} failed.`,
       });
+      setBroadcastSubject('');
+      setBroadcastBody('');
     } catch (error: any) {
       toast({
         title: "Error",
@@ -567,24 +587,63 @@ export default function Admin() {
                   Broadcast Email
                 </CardTitle>
                 <CardDescription>
-                  Send platform updates or announcements to all users
+                  Compose and send a custom email to all users
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="broadcast-subject">Subject Line</Label>
+                  <Input
+                    id="broadcast-subject"
+                    placeholder="e.g. 🚀 New Features on ThriveIN"
+                    value={broadcastSubject}
+                    onChange={(e) => setBroadcastSubject(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="broadcast-body">Email Body</Label>
+                  <Textarea
+                    id="broadcast-body"
+                    placeholder="Write your message here. Use line breaks for paragraphs. Each user will be greeted by name automatically."
+                    value={broadcastBody}
+                    onChange={(e) => setBroadcastBody(e.target.value)}
+                    rows={6}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="broadcast-cta">Button Text</Label>
+                    <Input
+                      id="broadcast-cta"
+                      placeholder="Check It Out →"
+                      value={broadcastCta}
+                      onChange={(e) => setBroadcastCta(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="broadcast-cta-url">Button URL</Label>
+                    <Input
+                      id="broadcast-cta-url"
+                      placeholder="https://www.thrivein.io"
+                      value={broadcastCtaUrl}
+                      onChange={(e) => setBroadcastCtaUrl(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <Button 
                   onClick={sendBroadcastEmail} 
-                  disabled={sendingBroadcast}
+                  disabled={sendingBroadcast || !broadcastSubject.trim() || !broadcastBody.trim()}
                   className="w-full sm:w-auto"
                 >
                   {sendingBroadcast ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Sending...
+                      Sending to all users...
                     </>
                   ) : (
                     <>
                       <Send className="h-4 w-4 mr-2" />
-                      Send Broadcast to All Users
+                      Send Broadcast
                     </>
                   )}
                 </Button>

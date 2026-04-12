@@ -2,32 +2,45 @@
 // Keep this in sync with Stripe products
 
 export type AccountType = 'individual' | 'company';
+export type BillingInterval = 'monthly' | 'yearly';
 
 // Creator/Individual subscription products
 export const SUBSCRIPTION_PRODUCTS = {
   pro: {
     name: "Pro",
     tier: "pro" as const,
-    price: 12,
+    price: 15,
+    yearlyPrice: 144, // $12/mo effective — save $36/yr
     trialDays: 7,
-    priceId: "price_1SZYrBJvOS7zG18hDW2eE4NG",
-    productId: "prod_TWc5tpvPKjy8hG",
+    priceId: "price_1TLWQiJvOS7zG18hywKD2r8W",
+    yearlyPriceId: "price_1TLWPoJvOS7zG18h6T6MOSbE",
+    productId: "prod_UKAmTywyqyLhMk",
+    yearlyProductId: "prod_UKAlwpY8dS3Doc",
+    legacyProductIds: ["prod_TWc5tpvPKjy8hG"],
   },
   creator_pro: {
     name: "Creator Pro",
     tier: "creator_pro" as const,
-    price: 24,
+    price: 29,
+    yearlyPrice: 278, // ~$23.17/mo effective — save $70/yr
     trialDays: 7,
-    priceId: "price_1TLW6iJvOS7zG18hyl8LpXqw",
-    productId: "prod_UKARjeRiOcTS46",
+    priceId: "price_1TLWQjJvOS7zG18h7aQBNmo8",
+    yearlyPriceId: "price_1TLWQ6JvOS7zG18hjaiygUxE",
+    productId: "prod_UKAmxFRvNL3ez3",
+    yearlyProductId: "prod_UKAlBEJxMen4Xr",
+    legacyProductIds: ["prod_UKARjeRiOcTS46"],
   },
   enterprise: {
     name: "Enterprise",
     tier: "enterprise" as const,
-    price: 49,
+    price: 59,
+    yearlyPrice: 566, // ~$47.17/mo effective — save $142/yr
     trialDays: 7,
-    priceId: "price_1T7KklJvOS7zG18hwEl7vYNw",
-    productId: "prod_U5VmCaKx7g2lbw",
+    priceId: "price_1TLWQkJvOS7zG18hSN9qmxyW",
+    yearlyPriceId: "price_1TLWQRJvOS7zG18hLQJW4YIB",
+    productId: "prod_UKAmUMW9FUQLZD",
+    yearlyProductId: "prod_UKAl8dxTE4ZidO",
+    legacyProductIds: ["prod_U5VmCaKx7g2lbw"],
   },
   founder: {
     name: "Founder Circle ⭕",
@@ -45,18 +58,26 @@ export const BRAND_SUBSCRIPTION_PRODUCTS = {
   pro: {
     name: "Brand Pro",
     tier: "brand_pro" as const,
-    price: 49,
+    price: 59,
+    yearlyPrice: 566, // ~$47.17/mo effective — save $142/yr
     trialDays: 7,
-    priceId: "price_1TFMpuJvOS7zG18hJm3HyPIv",
-    productId: "prod_UDoSA9g7yHRm3X",
+    priceId: "price_1TLWQlJvOS7zG18hb5QeNh8k",
+    yearlyPriceId: "price_1TLWQbJvOS7zG18hgPTf5C0g",
+    productId: "prod_UKAmkngXKhLPdB",
+    yearlyProductId: "prod_UKAmubvs5yP0o2",
+    legacyProductIds: ["prod_UDoSA9g7yHRm3X"],
   },
   enterprise: {
     name: "Brand Enterprise",
     tier: "brand_enterprise" as const,
-    price: 99,
+    price: 129,
+    yearlyPrice: 1238, // ~$103.17/mo effective — save $310/yr
     trialDays: 7,
-    priceId: "price_1TFMqeJvOS7zG18h09O4TJId",
-    productId: "prod_UDoT2jPlIxVnLp",
+    priceId: "price_1TLWQmJvOS7zG18h4AVxAVKx",
+    yearlyPriceId: "price_1TLWQcJvOS7zG18hD1oVzrrJ",
+    productId: "prod_UKAmQMESnSKqwB",
+    yearlyProductId: "prod_UKAmq7dJi4lkBd",
+    legacyProductIds: ["prod_UDoT2jPlIxVnLp"],
   },
 } as const;
 
@@ -157,24 +178,41 @@ export const ENTERPRISE_FEATURES: Record<AccountType, string[]> = {
   ],
 };
 
-export const LEGACY_PRODUCT_MAPPING = {
+export const LEGACY_PRODUCT_MAPPING: Record<string, string> = {
+  // Old Pro products
+  'prod_TWc5tpvPKjy8hG': 'pro',
   'prod_TA5c8GtL6ioS2h': 'pro',
   'prod_TA5ihoppNqeijE': 'pro',
   'prod_TAoY7TiQaFLU00': 'pro',
   'prod_TAoZwx40t99jYc': 'pro',
-} as const;
+  // Old Creator Pro
+  'prod_UKARjeRiOcTS46': 'creator_pro',
+  // Old Enterprise
+  'prod_U5VmCaKx7g2lbw': 'enterprise',
+  // Old Brand tiers
+  'prod_UDoSA9g7yHRm3X': 'brand_pro',
+  'prod_UDoT2jPlIxVnLp': 'brand_enterprise',
+  // Old price-based IDs
+  'price_1SZYrBJvOS7zG18hDW2eE4NG': 'pro',
+  'price_1TLW6iJvOS7zG18hyl8LpXqw': 'creator_pro',
+  'price_1T7KklJvOS7zG18hwEl7vYNw': 'enterprise',
+  'price_1TFMpuJvOS7zG18hJm3HyPIv': 'brand_pro',
+  'price_1TFMqeJvOS7zG18h09O4TJId': 'brand_enterprise',
+};
 
 export type SubscriptionTier = 'free' | 'pro' | 'creator_pro' | 'enterprise' | 'founder' | 'brand_pro' | 'brand_enterprise';
 
 export function mapProductIdToTier(productId: string): SubscriptionTier {
+  // Current products (monthly + yearly)
   if (productId === SUBSCRIPTION_PRODUCTS.founder.productId) return 'founder';
-  if (productId === SUBSCRIPTION_PRODUCTS.enterprise.productId) return 'enterprise';
-  if (productId === SUBSCRIPTION_PRODUCTS.creator_pro.productId) return 'creator_pro';
-  if (productId === SUBSCRIPTION_PRODUCTS.pro.productId) return 'pro';
-  if (productId === BRAND_SUBSCRIPTION_PRODUCTS.pro.productId) return 'brand_pro';
-  if (productId === BRAND_SUBSCRIPTION_PRODUCTS.enterprise.productId) return 'brand_enterprise';
-  const legacyTier = LEGACY_PRODUCT_MAPPING[productId as keyof typeof LEGACY_PRODUCT_MAPPING];
-  if (legacyTier) return legacyTier;
+  if (productId === SUBSCRIPTION_PRODUCTS.enterprise.productId || productId === SUBSCRIPTION_PRODUCTS.enterprise.yearlyProductId) return 'enterprise';
+  if (productId === SUBSCRIPTION_PRODUCTS.creator_pro.productId || productId === SUBSCRIPTION_PRODUCTS.creator_pro.yearlyProductId) return 'creator_pro';
+  if (productId === SUBSCRIPTION_PRODUCTS.pro.productId || productId === SUBSCRIPTION_PRODUCTS.pro.yearlyProductId) return 'pro';
+  if (productId === BRAND_SUBSCRIPTION_PRODUCTS.pro.productId || productId === BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyProductId) return 'brand_pro';
+  if (productId === BRAND_SUBSCRIPTION_PRODUCTS.enterprise.productId || productId === BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyProductId) return 'brand_enterprise';
+  // Legacy
+  const legacyTier = LEGACY_PRODUCT_MAPPING[productId];
+  if (legacyTier) return legacyTier as SubscriptionTier;
   return 'free';
 }
 
@@ -191,7 +229,19 @@ export function getTierDisplayName(tier: SubscriptionTier): string {
   }
 }
 
-export function getTierPrice(tier: SubscriptionTier): number {
+export function getTierPrice(tier: SubscriptionTier, interval: BillingInterval = 'monthly'): number {
+  if (interval === 'yearly') {
+    switch (tier) {
+      case 'founder': return SUBSCRIPTION_PRODUCTS.founder.price;
+      case 'enterprise': return SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice;
+      case 'creator_pro': return SUBSCRIPTION_PRODUCTS.creator_pro.yearlyPrice;
+      case 'pro': return SUBSCRIPTION_PRODUCTS.pro.yearlyPrice;
+      case 'brand_enterprise': return BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice;
+      case 'brand_pro': return BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyPrice;
+      case 'free':
+      default: return 0;
+    }
+  }
   switch (tier) {
     case 'founder': return SUBSCRIPTION_PRODUCTS.founder.price;
     case 'enterprise': return SUBSCRIPTION_PRODUCTS.enterprise.price;
@@ -222,4 +272,22 @@ export function hasEnterpriseAccess(tier: SubscriptionTier): boolean {
 /** Check if tier is a brand-specific subscription */
 export function isBrandTier(tier: SubscriptionTier): boolean {
   return tier === 'brand_pro' || tier === 'brand_enterprise';
+}
+
+/** Get the yearly savings amount for a tier */
+export function getYearlySavings(tier: SubscriptionTier): number {
+  switch (tier) {
+    case 'pro': return (SUBSCRIPTION_PRODUCTS.pro.price * 12) - SUBSCRIPTION_PRODUCTS.pro.yearlyPrice;
+    case 'creator_pro': return (SUBSCRIPTION_PRODUCTS.creator_pro.price * 12) - SUBSCRIPTION_PRODUCTS.creator_pro.yearlyPrice;
+    case 'enterprise': return (SUBSCRIPTION_PRODUCTS.enterprise.price * 12) - SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice;
+    case 'brand_pro': return (BRAND_SUBSCRIPTION_PRODUCTS.pro.price * 12) - BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyPrice;
+    case 'brand_enterprise': return (BRAND_SUBSCRIPTION_PRODUCTS.enterprise.price * 12) - BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice;
+    default: return 0;
+  }
+}
+
+/** Get the effective monthly price when billed yearly */
+export function getEffectiveMonthlyPrice(tier: SubscriptionTier): number {
+  const yearlyPrice = getTierPrice(tier, 'yearly');
+  return yearlyPrice > 0 ? Math.round((yearlyPrice / 12) * 100) / 100 : 0;
 }

@@ -276,7 +276,7 @@ Return up to 8 most relevant REAL results.`;
     }
 
     if (rawResults.length === 0) {
-      console.warn('AI returned 0 results. Tool call present:', !!toolCall, 'Content length:', (message?.content || '').length);
+      console.warn('AI returned 0 results. Content length:', content.length);
     }
 
     const seen = new Set<string>();

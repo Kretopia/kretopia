@@ -16,12 +16,12 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
 
   const proFeatures = [
     "Unlimited swipes & matches",
-    "Unlimited AI tools & insights",
-    "Unlimited workspace features",
+    "Unlimited AI briefs & templates",
+    "Full P&L dashboard & reports",
     "Profile verification badge",
-    "Unlimited portfolio items",
+    "Unlimited invoicing & expense tracking",
     "Advanced search filters",
-    "Unlimited expense tracking & invoicing",
+    "Save 17% with annual billing",
   ];
 
   return (
@@ -32,9 +32,9 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
             <Sparkles className="h-6 w-6 text-primary-foreground" />
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-lg mb-1">Unlock Pro Features</h3>
+            <h3 className="font-bold text-lg mb-1">Go Pro — $15/mo</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Get serious about your creative career with unlimited access
+              Unlimited tools, verified badge, and full business suite. Try free for 7 days.
             </p>
             <ul className="space-y-2 mb-4">
               {proFeatures.map((feature, i) => (

@@ -31,8 +31,8 @@ export function GuestBanner() {
             <Sparkles className="h-5 w-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold">Get the full ThriveIN experience</p>
-            <p className="text-[11px] text-muted-foreground">Sign up to match, post, and build your creative career</p>
+            <p className="text-sm font-semibold">Claim your credits, land real gigs</p>
+            <p className="text-[11px] text-muted-foreground">Free to start · 7-day Pro trial when you upgrade</p>
           </div>
           <Button
             size="sm"

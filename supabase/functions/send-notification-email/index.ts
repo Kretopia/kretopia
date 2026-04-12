@@ -69,298 +69,232 @@ interface EmailRequest {
 const generateEmailContent = (type: string, data: any, unsubscribeToken?: string) => {
   const baseUrl = 'https://thrivein.io';
   const unsubscribeUrl = unsubscribeToken ? `${baseUrl}/unsubscribe?token=${unsubscribeToken}` : `${baseUrl}/notification-settings`;
-  const unsubscribeFooter = `<p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #8B5CF6;">Unsubscribe</a> or manage your <a href="${baseUrl}/notification-settings" style="color: #8B5CF6;">notification preferences</a>.</p>`;
+  const unsubscribeFooter = `<p style="color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #E5E7EB; padding-top: 15px;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #4338CA;">Unsubscribe</a> or manage your <a href="${baseUrl}/notification-settings" style="color: #4338CA;">notification preferences</a>.</p>`;
   
+  const emailWrapper = (content: string) => `
+    <div style="font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #ffffff;">
+      <div style="padding: 32px 28px 0;">
+        <img src="https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png" width="48" height="48" alt="ThriveIN" style="margin-bottom: 24px;" />
+      </div>
+      ${content}
+      <div style="padding: 20px 28px; text-align: center;">
+        <p style="color: #9CA3AF; font-size: 12px; margin: 0;">Verified Credits · Real Gigs · Get Paid</p>
+        <p style="color: #9CA3AF; font-size: 12px; margin: 5px 0 0 0;">© ThriveIN</p>
+      </div>
+      <div style="padding: 0 28px 20px;">
+        ${unsubscribeFooter}
+      </div>
+    </div>
+  `;
+
   switch (type) {
     case 'welcome':
       return {
-        subject: "Welcome to ThriveIN – Your Step-by-Step Guide 🎉",
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
-            <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Welcome to ThriveIN 🎉</h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">${data.userName}, you're officially in.</p>
+        subject: "Welcome to ThriveIN — Here's How to Get Started",
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">Welcome, ${data.userName}</h1>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 24px;">You're now part of the professional creative network. Here's how to make the most of ThriveIN.</p>
+            
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+              <tr><td style="padding: 12px 0; border-bottom: 1px solid #F3F4F6;">
+                <p style="margin: 0 0 4px; color: #0a0a0f; font-weight: 600; font-size: 14px;">1. Complete Your Profile</p>
+                <p style="margin: 0; color: #606068; font-size: 13px;">Add your bio, skills, and portfolio. Complete profiles get 5x more visibility.</p>
+              </td></tr>
+              <tr><td style="padding: 12px 0; border-bottom: 1px solid #F3F4F6;">
+                <p style="margin: 0 0 4px; color: #0a0a0f; font-weight: 600; font-size: 14px;">2. Claim Your Credits</p>
+                <p style="margin: 0; color: #606068; font-size: 13px;">Search your name and verify the work you've done. Build your professional record.</p>
+              </td></tr>
+              <tr><td style="padding: 12px 0; border-bottom: 1px solid #F3F4F6;">
+                <p style="margin: 0 0 4px; color: #0a0a0f; font-weight: 600; font-size: 14px;">3. Browse Gigs or Post Your Own</p>
+                <p style="margin: 0; color: #606068; font-size: 13px;">Find paid work, barter opportunities, or post gigs to attract talent.</p>
+              </td></tr>
+              <tr><td style="padding: 12px 0;">
+                <p style="margin: 0 0 4px; color: #0a0a0f; font-weight: 600; font-size: 14px;">4. Match & Collaborate</p>
+                <p style="margin: 0; color: #606068; font-size: 13px;">Connect with creators who complement your skills. Message, plan, and get paid.</p>
+              </td></tr>
+            </table>
+
+            <div style="text-align: center; margin: 24px 0 8px;">
+              <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Get Started</a>
             </div>
-            <div style="padding: 30px; background: #ffffff;">
-              <p style="color: #333; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Here's exactly how to get the most out of ThriveIN — step by step.</p>
-              
-              <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start;">
-                <div style="flex-shrink: 0; width: 40px; height: 40px; background: #F5F3FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">📸</div>
-                <div>
-                  <p style="margin: 0 0 4px; color: #111; font-weight: 600; font-size: 15px;">Step 1: Complete Your Profile</p>
-                  <p style="margin: 0; color: #6B7280; font-size: 14px; line-height: 1.5;">Add a photo, bio, skills, and portfolio links. Complete profiles get <strong>5x more matches</strong>.</p>
-                </div>
-              </div>
-
-              <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start;">
-                <div style="flex-shrink: 0; width: 40px; height: 40px; background: #EFF6FF; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">👆</div>
-                <div>
-                  <p style="margin: 0 0 4px; color: #111; font-weight: 600; font-size: 15px;">Step 2: Start Matching in Circle</p>
-                  <p style="margin: 0; color: #6B7280; font-size: 14px; line-height: 1.5;">Swipe right on creators you'd want to work with. Mutual swipe = match!</p>
-                </div>
-              </div>
-
-              <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start;">
-                <div style="flex-shrink: 0; width: 40px; height: 40px; background: #FFF7ED; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🔍</div>
-                <div>
-                  <p style="margin: 0 0 4px; color: #111; font-weight: 600; font-size: 15px;">Step 3: Browse or Post Gigs</p>
-                  <p style="margin: 0; color: #6B7280; font-size: 14px; line-height: 1.5;">Find paid work or post your own gigs to attract talent.</p>
-                </div>
-              </div>
-
-              <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start;">
-                <div style="flex-shrink: 0; width: 40px; height: 40px; background: #F0FDF4; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">💬</div>
-                <div>
-                  <p style="margin: 0 0 4px; color: #111; font-weight: 600; font-size: 15px;">Step 4: Message & Collaborate</p>
-                  <p style="margin: 0; color: #6B7280; font-size: 14px; line-height: 1.5;">Chat, share files, and create projects together with milestones.</p>
-                </div>
-              </div>
-
-              <div style="display: flex; gap: 16px; margin-bottom: 28px; align-items: flex-start;">
-                <div style="flex-shrink: 0; width: 40px; height: 40px; background: #ECFDF5; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">💰</div>
-                <div>
-                  <p style="margin: 0 0 4px; color: #111; font-weight: 600; font-size: 15px;">Step 5: Get Paid with ThrivePay</p>
-                  <p style="margin: 0; color: #6B7280; font-size: 14px; line-height: 1.5;">Secure escrow payments protect both sides. No more getting ghosted.</p>
-                </div>
-              </div>
-
-              <div style="text-align: center; margin: 25px 0 10px;">
-                <a href="${baseUrl}/guide" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Read the Full Guide</a>
-              </div>
-              <div style="text-align: center; margin: 15px 0 0;">
-                <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 28px; background: #ffffff; color: #8B5CF6; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 2px solid #8B5CF6;">Start Matching Now →</a>
-              </div>
-              
-              <p style="color: #6B7280; font-size: 14px; text-align: center; margin-top: 30px;">Questions? Just reply to this email – we're here to help.</p>
-            </div>
-            <div style="padding: 20px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">
-              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">Connect, Collaborate & Create</p>
-              <p style="color: #9CA3AF; font-size: 12px; margin: 5px 0 0 0;">© ThriveIN</p>
-            </div>
-            ${unsubscribeFooter}
+            <p style="color: #9CA3AF; font-size: 13px; text-align: center; margin-top: 20px;">Questions? Just reply to this email.</p>
           </div>
-        `
+        `)
       };
     
     case 'opportunity':
       return {
-        subject: `New Opportunity: ${data.opportunityTitle} 🚀`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">New Opportunity Just Posted! 🚀</h1>
-            <p>Hi ${data.userName},</p>
-            <p>A new opportunity that matches your profile has just been posted:</p>
-            <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h2 style="margin: 0 0 10px 0;">${data.opportunityTitle}</h2>
+        subject: `New Gig: ${data.opportunityTitle}`,
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">New gig posted</h1>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName}, a gig matching your profile just went live:</p>
+            <div style="background: #F5F3FF; padding: 20px; border-radius: 12px; margin: 0 0 24px; border-left: 4px solid #4338CA;">
+              <p style="margin: 0; color: #0a0a0f; font-weight: 600; font-size: 16px;">${data.opportunityTitle}</p>
             </div>
-            <a href="${data.opportunityUrl}" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">View Opportunity</a>
-            <p style="color: #666; margin-top: 30px;">Don't miss out on this chance!<br>The ThriveIN Team</p>
+            <a href="${data.opportunityUrl}" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">View Gig</a>
           </div>
-        `
+        `)
       };
     
     case 'match':
       return {
-        subject: "It's a Match! You Connected with " + (data.matchName || "a Creator") + " 💫",
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
-            <div style="background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 32px;">It's a Match! 💫</h1>
+        subject: "It's a Match — " + (data.matchName || "A creator") + " wants to connect",
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px; text-align: center;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">It's a Match</h1>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">You and <strong style="color: #4338CA;">${data.matchName}</strong> both want to connect. Start a conversation and see where it goes.</p>
+            <div style="background: #F5F3FF; padding: 20px; margin: 0 0 24px; border-radius: 12px;">
+              <p style="margin: 0; color: #3730A3; font-size: 15px;">Great collaborations start with a simple hello.</p>
             </div>
-            <div style="padding: 30px; background: #ffffff; text-align: center;">
-              <p style="color: #333; font-size: 18px; margin-bottom: 10px;">Hey ${data.userName},</p>
-              <p style="color: #6B7280; font-size: 16px; line-height: 1.6;">You and <strong style="color: #8B5CF6;">${data.matchName}</strong> both want to connect!</p>
-              <div style="background: #F5F3FF; padding: 25px; margin: 25px 0; border-radius: 12px;">
-                <p style="margin: 0; color: #5B21B6; font-size: 16px;">This could be the start of something amazing. Don't keep them waiting – start the conversation now!</p>
-              </div>
-              <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Say Hello</a>
-            </div>
-            <div style="padding: 20px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">
-              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">Great collaborations start with a simple hello.</p>
-            </div>
-            ${unsubscribeFooter}
+            <a href="${baseUrl}/messages" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Say Hello</a>
           </div>
-        `
+        `)
       };
     
     case 're-engagement':
       return {
-        subject: "We miss you at ThriveIN! 🌟",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">We Miss You! 🌟</h1>
-            <p>Hi ${data.userName},</p>
-            <p>It's been a while since we've seen you! There's a lot happening in the ThriveIN community:</p>
-            <ul>
-              <li>New creatives waiting to connect</li>
-              <li>Potential collaborators for your projects</li>
-              <li>Projects looking for talent like you</li>
-            </ul>
-            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Explore Now</a>
-            <p style="color: #666; margin-top: 30px;">We'd love to see you back!<br>The ThriveIN Team</p>
-            ${unsubscribeFooter}
+        subject: "Your creative network misses you",
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">Been a while, ${data.userName}</h1>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">While you were away, new creatives joined, gigs were posted, and people have been viewing your profile. Don't let opportunities slip by.</p>
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">See What's New</a>
           </div>
-        `
+        `)
       };
     
     case 'application':
       return {
-        subject: `Application Update: ${data.projectName}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">Application Status Update</h1>
-            <p>Hi ${data.userName},</p>
-            <p>Your application for "${data.projectName}" has been updated to: <strong>${data.applicationStatus}</strong></p>
-            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">View Details</a>
-            <p style="color: #666; margin-top: 30px;">Best of luck!<br>The ThriveIN Team</p>
-            ${unsubscribeFooter}
+        subject: `Update on ${data.projectName}`,
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">Application update</h1>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName}, your application for <strong>"${data.projectName}"</strong> has moved to: <strong style="color: #4338CA;">${data.applicationStatus}</strong></p>
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">View Details</a>
           </div>
-        `
+        `)
       };
     
     case 'weekly-digest':
       const opportunitiesList = data.opportunities?.map((opp: any) => `
-        <div style="background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 8px;">
-          <h3 style="margin: 0 0 8px 0; color: #333;">${opp.title}</h3>
-          <p style="margin: 5px 0; color: #666;"><strong>Type:</strong> ${opp.type}</p>
-          <p style="margin: 5px 0; color: #666;"><strong>Compensation:</strong> ${opp.compensation}</p>
-          <a href="${opp.url}" style="color: #8B5CF6; text-decoration: none;">View Details →</a>
-        </div>
+        <tr><td style="padding: 12px 0; border-bottom: 1px solid #F3F4F6;">
+          <p style="margin: 0 0 4px; color: #0a0a0f; font-weight: 600; font-size: 14px;">${opp.title}</p>
+          <p style="margin: 0; color: #606068; font-size: 13px;">${opp.type} · ${opp.compensation}</p>
+          <a href="${opp.url}" style="color: #4338CA; font-size: 13px; text-decoration: none;">View →</a>
+        </td></tr>
       `).join('') || '';
       
       return {
-        subject: `Your Weekly ThriveIN Update 🌟`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">Your Weekly ThriveIN Update</h1>
-            <p>Hi ${data.userName},</p>
-            <p>Here's what's been happening this week:</p>
-            ${opportunitiesList || '<p>Check out new creators to match with!</p>'}
-            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Start Matching</a>
-            <p style="color: #666; margin-top: 30px;">Keep creating!<br>The ThriveIN Team</p>
-            ${unsubscribeFooter}
+        subject: `Your weekly roundup`,
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">This week on ThriveIN</h1>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName}, here's what's been happening:</p>
+            ${opportunitiesList ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">${opportunitiesList}</table>` : '<p style="color: #606068; font-size: 14px;">Check out new creators and gigs this week.</p>'}
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Explore</a>
           </div>
-        `
+        `)
       };
     
     case 'activity-digest':
       const activityItems = [];
       if (data.matches && data.matches > 0) {
-        activityItems.push(`<li><strong>${data.matches}</strong> new ${data.matches === 1 ? 'match' : 'matches'} 💫</li>`);
+        activityItems.push(`<li style="margin-bottom: 8px;"><strong>${data.matches}</strong> new ${data.matches === 1 ? 'match' : 'matches'}</li>`);
       }
       if (data.messages && data.messages > 0) {
-        activityItems.push(`<li><strong>${data.messages}</strong> unread ${data.messages === 1 ? 'message' : 'messages'} 💬</li>`);
+        activityItems.push(`<li style="margin-bottom: 8px;"><strong>${data.messages}</strong> unread ${data.messages === 1 ? 'message' : 'messages'}</li>`);
       }
       if (data.connections && data.connections > 0) {
-        activityItems.push(`<li><strong>${data.connections}</strong> new ${data.connections === 1 ? 'connection' : 'connections'} 🤝</li>`);
+        activityItems.push(`<li style="margin-bottom: 8px;"><strong>${data.connections}</strong> new ${data.connections === 1 ? 'connection' : 'connections'}</li>`);
       }
       if (data.opportunityNotifications && data.opportunityNotifications > 0) {
-        activityItems.push(`<li><strong>${data.opportunityNotifications}</strong> opportunity ${data.opportunityNotifications === 1 ? 'update' : 'updates'} 🚀</li>`);
+        activityItems.push(`<li style="margin-bottom: 8px;"><strong>${data.opportunityNotifications}</strong> gig ${data.opportunityNotifications === 1 ? 'update' : 'updates'}</li>`);
       }
       
       return {
-        subject: `You have ${data.totalUnread} unread notifications! 🔔`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">You've Been Missed! 🌟</h1>
-            <p>Hi ${data.userName},</p>
-            <p>A lot has been happening while you were away! Here's what you missed:</p>
-            <ul style="line-height: 1.8; margin: 20px 0;">
+        subject: `${data.totalUnread} things waiting for you`,
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">You've got activity</h1>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName}, here's what you missed:</p>
+            <ul style="line-height: 1.8; margin: 0 0 24px; color: #0a0a0f; font-size: 15px; padding-left: 20px;">
               ${activityItems.join('')}
             </ul>
-            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Check Your Notifications</a>
-            <p style="color: #666; margin-top: 30px;">Don't miss out on connections!<br>The ThriveIN Team</p>
-            ${unsubscribeFooter}
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Catch Up</a>
           </div>
-        `
+        `)
       };
     
     case 'streak-warning':
       const freezeMessage = data.hasFreezes 
-        ? `Good news - you have <strong>${data.freezesAvailable} streak ${data.freezesAvailable === 1 ? 'freeze' : 'freezes'}</strong> available that will automatically protect your streak if you can't visit today.`
-        : `You don't have any streak freezes available, so your streak will reset if you don't visit today.`;
+        ? `You have <strong>${data.freezesAvailable} streak ${data.freezesAvailable === 1 ? 'freeze' : 'freezes'}</strong> available to protect your streak automatically.`
+        : `You don't have any streak freezes — your streak will reset if you don't visit today.`;
       
       return {
-        subject: `🔥 Your ${data.streakCount}-day streak is about to break!`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">Don't Break Your Streak! 🔥</h1>
-            <p>Hi ${data.userName},</p>
-            <p>You've maintained an impressive <strong>${data.streakCount}-day streak</strong>, but it's about to break!</p>
-            <p>${freezeMessage}</p>
-            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Visit ThriveIN Now</a>
-            <p style="color: #666; margin-top: 30px;">Keep the momentum going!<br>The ThriveIN Team</p>
-            ${unsubscribeFooter}
+        subject: `Your ${data.streakCount}-day streak is at risk`,
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">Don't lose your streak</h1>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName}, you've built a <strong>${data.streakCount}-day streak</strong>. ${freezeMessage}</p>
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Keep It Going</a>
           </div>
-        `
+        `)
       };
     
     case 'swipe':
       return {
-        subject: "💫 Someone's Interested in You!",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">Someone's Interested! 💫</h1>
-            <p>Hi ${data.userName},</p>
-            ${data.swiperAvatar ? `<div style="text-align: center; margin: 20px 0;"><img src="${data.swiperAvatar}" alt="Profile" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;"></div>` : ''}
-            <p><strong>${data.swiperName}</strong> (${data.swiperRole}) wants to connect with you on ThriveIN!</p>
-            <p>Check out their profile and swipe right to match and start collaborating together.</p>
-            <a href="${baseUrl}/circle" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">See Who's Interested</a>
-            <p style="color: #666; margin-top: 30px;">Don't miss out on new connections!<br>The ThriveIN Team</p>
-            ${unsubscribeFooter}
+        subject: "Someone's interested in working with you",
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px; text-align: center;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">Someone's interested</h1>
+            ${data.swiperAvatar ? `<img src="${data.swiperAvatar}" alt="Profile" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; margin-bottom: 16px;">` : ''}
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;"><strong style="color: #0a0a0f;">${data.swiperName}</strong> (${data.swiperRole}) wants to connect. Swipe right to match.</p>
+            <a href="${baseUrl}/circle" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">See Who</a>
           </div>
-        `
+        `)
       };
     
     case 'onboarding-reminder':
       return {
-        subject: "You're 2 Minutes Away from Your First Match 🎯",
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
-            <div style="background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); padding: 35px 30px; text-align: center; border-radius: 12px 12px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">You're Almost There!</h1>
+        subject: "Finish your profile — it takes 2 minutes",
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">You're almost there</h1>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName || 'there'}, ${data.stepMessage || "you started setting up your ThriveIN profile but haven't finished yet."}</p>
+            <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px; margin: 0 0 24px; border-radius: 0 8px 8px 0;">
+              <p style="margin: 0; color: #92400E; font-size: 14px;">Complete profiles get <strong>5x more visibility</strong>. Creatives are searching for talent like you right now.</p>
             </div>
-            <div style="padding: 30px; background: #ffffff;">
-              <p style="color: #333; font-size: 16px; line-height: 1.6;">Hey ${data.userName || 'there'},</p>
-              <p style="color: #6B7280; font-size: 16px; line-height: 1.6;">${data.stepMessage || "You started setting up your ThriveIN profile, but haven't finished yet."}</p>
-              <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 20px; margin: 25px 0; border-radius: 0 8px 8px 0;">
-                <p style="margin: 0; color: #92400E; font-weight: 600;">⚡ Did you know?</p>
-                <p style="margin: 10px 0 0 0; color: #78350F;">Complete profiles get 5x more matches. Creatives are actively looking for talent like you right now.</p>
-              </div>
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="${data.onboardingUrl || baseUrl + '/onboarding'}" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Complete Profile (2 min)</a>
-              </div>
-              <p style="color: #9CA3AF; font-size: 14px; text-align: center;">Your next collaboration is waiting.</p>
-            </div>
-            <div style="padding: 20px 30px; background: #F9FAFB; border-radius: 0 0 12px 12px; text-align: center;">
-              <p style="color: #9CA3AF; font-size: 12px; margin: 0;">© ThriveIN – Connect, Collaborate & Create</p>
-            </div>
-            ${unsubscribeFooter}
+            <a href="${data.onboardingUrl || baseUrl + '/onboarding'}" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Complete Profile</a>
           </div>
-        `
+        `)
       };
     
     case 'general':
       return {
         subject: data.notificationTitle || "Update from ThriveIN",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">${data.notificationTitle || "Platform Update"} 🎉</h1>
-            <p>Hi ${data.userName || 'there'},</p>
-            <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p style="margin: 0; color: #333; white-space: pre-wrap;">${data.notificationMessage || "We have an important update for you."}</p>
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">${data.notificationTitle || "Platform Update"}</h1>
+            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName || 'there'},</p>
+            <div style="background: #F5F3FF; padding: 20px; border-radius: 12px; margin: 0 0 24px;">
+              <p style="margin: 0; color: #0a0a0f; white-space: pre-wrap; font-size: 15px;">${data.notificationMessage || "We have an important update for you."}</p>
             </div>
-            ${data.actionUrl ? `<a href="${data.actionUrl}" style="display: inline-block; padding: 12px 24px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0;">Learn More</a>` : ''}
-            <p style="color: #666; margin-top: 30px;">Best regards,<br>The ThriveIN Team</p>
-            ${unsubscribeFooter}
+            ${data.actionUrl ? `<a href="${data.actionUrl}" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Learn More</a>` : ''}
           </div>
-        `
+        `)
       };
     
     default:
       return {
         subject: "Notification from ThriveIN",
-        html: "<p>You have a new notification.</p>"
+        html: emailWrapper(`
+          <div style="padding: 0 28px 28px;">
+            <p style="font-size: 15px; color: #606068;">You have a new notification.</p>
+            <a href="${baseUrl}" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">View</a>
+          </div>
+        `)
       };
   }
 };

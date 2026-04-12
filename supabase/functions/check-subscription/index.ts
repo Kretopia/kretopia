@@ -12,7 +12,9 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-// Product ID to tier mapping — includes current, yearly, and legacy products
+// Product ID to tier mapping — consolidated 3-tier structure
+// Pro ($29/mo) = website builder included
+// Creator Pro ($59/mo) = custom domain, analytics, white-glove
 const PRODUCT_TIER_MAP: Record<string, string> = {
   // Brand Enterprise (current monthly + yearly + legacy)
   'prod_UKAmQMESnSKqwB': 'brand_enterprise',
@@ -22,15 +24,15 @@ const PRODUCT_TIER_MAP: Record<string, string> = {
   'prod_UKAmkngXKhLPdB': 'brand_pro',
   'prod_UKAmubvs5yP0o2': 'brand_pro',
   'prod_UDoSA9g7yHRm3X': 'brand_pro',
-  // Creator Enterprise (current monthly + yearly + legacy)
-  'prod_UKAmUMW9FUQLZD': 'enterprise',
-  'prod_UKAl8dxTE4ZidO': 'enterprise',
-  'prod_U5VmCaKx7g2lbw': 'enterprise',
-  // Creator Pro (current monthly + yearly + legacy)
-  'prod_UKAmxFRvNL3ez3': 'creator_pro',
-  'prod_UKAlBEJxMen4Xr': 'creator_pro',
-  'prod_UKARjeRiOcTS46': 'creator_pro',
-  // Creator Pro (current monthly + yearly + legacy)
+  // Creator Pro ($59/mo — formerly "Enterprise")
+  'prod_UKAmUMW9FUQLZD': 'creator_pro',
+  'prod_UKAl8dxTE4ZidO': 'creator_pro',
+  'prod_U5VmCaKx7g2lbw': 'creator_pro',
+  // Pro ($29/mo — formerly "Creator Pro")
+  'prod_UKAmxFRvNL3ez3': 'pro',
+  'prod_UKAlBEJxMen4Xr': 'pro',
+  'prod_UKARjeRiOcTS46': 'pro',
+  // Legacy $15 Pro products → grandfathered as Pro
   'prod_UKAmTywyqyLhMk': 'pro',
   'prod_UKAlwpY8dS3Doc': 'pro',
   'prod_TWc5tpvPKjy8hG': 'pro',
@@ -89,9 +91,9 @@ serve(async (req) => {
     if (customers.data.length === 0) {
       logStep("No customer found");
       const isComplimentary = profileData?.subscription_status === 'active' && 
-        ['pro', 'creator_pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
+        ['pro', 'creator_pro', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       const isManualTrial = profileData?.subscription_status === 'trialing' && 
-        ['pro', 'creator_pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
+        ['pro', 'creator_pro', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       
       if (isComplimentary || isManualTrial) {
         logStep("Complimentary/trial profile detected, skipping downgrade");
@@ -114,7 +116,7 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Check all active and trialing subscriptions (user may have both creator + brand)
+    // Check all active and trialing subscriptions
     const [activeSubs, trialingSubs] = await Promise.all([
       stripe.subscriptions.list({ customer: customerId, status: "active", limit: 10 }),
       stripe.subscriptions.list({ customer: customerId, status: "trialing", limit: 10 }),
@@ -125,9 +127,9 @@ serve(async (req) => {
     if (allSubs.length === 0) {
       logStep("No active subscription found");
       const isComplimentaryNoSub = profileData?.subscription_status === 'active' && 
-        ['pro', 'creator_pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
+        ['pro', 'creator_pro', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       const isManualTrialNoSub = profileData?.subscription_status === 'trialing' && 
-        ['pro', 'creator_pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
+        ['pro', 'creator_pro', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       
       if (isComplimentaryNoSub || isManualTrialNoSub) {
         return new Response(JSON.stringify({
@@ -148,7 +150,7 @@ serve(async (req) => {
 
     // Determine the highest tier from all active subscriptions
     const tierPriority: Record<string, number> = {
-      'brand_enterprise': 6, 'enterprise': 5, 'creator_pro': 4, 'brand_pro': 3.5, 'pro': 3, 'free': 0,
+      'brand_enterprise': 6, 'creator_pro': 5, 'brand_pro': 3.5, 'pro': 3, 'free': 0,
     };
     
     let bestTier = 'free';
@@ -159,8 +161,12 @@ serve(async (req) => {
     for (const sub of allSubs) {
       const productId = sub.items.data[0].price.product as string;
       const subTier = PRODUCT_TIER_MAP[productId] || 'free';
-      if ((tierPriority[subTier] || 0) > (tierPriority[bestTier] || 0)) {
-        bestTier = subTier;
+      
+      // Migrate legacy "enterprise" tier to "creator_pro"
+      const effectiveTier = subTier === 'enterprise' ? 'creator_pro' : subTier;
+      
+      if ((tierPriority[effectiveTier] || 0) > (tierPriority[bestTier] || 0)) {
+        bestTier = effectiveTier;
         bestProductId = productId;
         bestStatus = sub.status;
         try {

@@ -42,7 +42,7 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
 
 ${profile.bio ? profile.bio.slice(0, 100) + (profile.bio.length > 100 ? '...' : '') : ''}
 
-${profileUrl}`;
+${shareableUrl}`;
 
   const handleNativeShare = async () => {
     if (navigator.share) {

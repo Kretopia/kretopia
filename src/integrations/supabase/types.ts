@@ -5692,6 +5692,8 @@ export type Database = {
           review_share_token: string | null
           role: string
           section_order: Json | null
+          site_enabled: boolean | null
+          site_template: string | null
           social_verified: boolean | null
           soundcloud_url: string | null
           spotify_listeners: number | null
@@ -5837,6 +5839,8 @@ export type Database = {
           review_share_token?: string | null
           role: string
           section_order?: Json | null
+          site_enabled?: boolean | null
+          site_template?: string | null
           social_verified?: boolean | null
           soundcloud_url?: string | null
           spotify_listeners?: number | null
@@ -5982,6 +5986,8 @@ export type Database = {
           review_share_token?: string | null
           role?: string
           section_order?: Json | null
+          site_enabled?: boolean | null
+          site_template?: string | null
           social_verified?: boolean | null
           soundcloud_url?: string | null
           spotify_listeners?: number | null

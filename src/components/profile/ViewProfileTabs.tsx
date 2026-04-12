@@ -82,15 +82,23 @@ export const ViewProfileTabs = ({
 
       case "hire":
         return (
-          <WorkWithMeSection userId={userId} isOwner={false} creatorName={profile?.full_name} />
-        ) || (
-          <div className="text-center py-8 text-muted-foreground">
-            <DollarSign className="h-10 w-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">{profile?.full_name?.split(' ')[0] || 'This creator'} hasn't listed any services yet</p>
-          </div>
+          <HireTabContent userId={userId} creatorName={profile?.full_name} />
         );
 
-      case "skills":
+      case "skills": {
+        const proSkills = Array.isArray(profile.professional_skills) ? profile.professional_skills : [];
+        const pasSkills = Array.isArray(profile.passion_skills) ? profile.passion_skills : [];
+        const hasSkills = proSkills.length > 0 || pasSkills.length > 0;
+        
+        if (!hasSkills) {
+          return (
+            <div className="text-center py-8 text-muted-foreground">
+              <Zap className="h-10 w-10 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">No skills listed yet</p>
+            </div>
+          );
+        }
+        
         return (
           <div className="space-y-6">
             <SkillsSection

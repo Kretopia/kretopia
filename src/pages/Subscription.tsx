@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Check, Loader2, Sparkles, Zap, Crown, Building2, User, Briefcase, Globe } from "lucide-react";
 import { 
   SUBSCRIPTION_PRODUCTS, BRAND_SUBSCRIPTION_PRODUCTS,
-  PRO_FEATURES, FREE_FEATURES, ENTERPRISE_FEATURES, CREATOR_PRO_FEATURES,
+  PRO_FEATURES, FREE_FEATURES, CREATOR_PRO_FEATURES,
   type AccountType, type BillingInterval, hasProAccess, isBrandTier,
   getYearlySavings, getEffectiveMonthlyPrice,
 } from "@/lib/subscriptionConfig";
@@ -23,7 +23,7 @@ const FOUNDER_FEATURES = [
   "Only 10% platform fees (vs 20% free / 15% Pro)",
   "Free & discounted event access",
   "Premium Partner Membership (when launched)",
-  "All Enterprise features included forever",
+  "All Creator Pro features included forever",
   "Priority support & early feature access",
   "All AI tools & analytics unlocked",
   "Founding member recognition",
@@ -52,7 +52,7 @@ function getCreatorTiers(interval: BillingInterval) {
       productId: isYearly ? SUBSCRIPTION_PRODUCTS.pro.yearlyProductId : SUBSCRIPTION_PRODUCTS.pro.productId,
       icon: Sparkles,
       popular: true,
-      description: "For serious creators",
+      description: "For serious creators — includes your own website",
       features: PRO_FEATURES.individual,
       savings: isYearly ? getYearlySavings('pro') : 0,
     },
@@ -64,21 +64,9 @@ function getCreatorTiers(interval: BillingInterval) {
       priceId: isYearly ? SUBSCRIPTION_PRODUCTS.creator_pro.yearlyPriceId : SUBSCRIPTION_PRODUCTS.creator_pro.priceId,
       productId: isYearly ? SUBSCRIPTION_PRODUCTS.creator_pro.yearlyProductId : SUBSCRIPTION_PRODUCTS.creator_pro.productId,
       icon: Globe,
-      description: "Pro + your own creator website",
-      features: CREATOR_PRO_FEATURES,
-      savings: isYearly ? getYearlySavings('creator_pro') : 0,
-    },
-    {
-      name: SUBSCRIPTION_PRODUCTS.enterprise.name,
-      tier: SUBSCRIPTION_PRODUCTS.enterprise.tier,
-      price: isYearly ? SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice : SUBSCRIPTION_PRODUCTS.enterprise.price,
-      displayPrice: isYearly ? `$${getEffectiveMonthlyPrice('enterprise')}` : `$${SUBSCRIPTION_PRODUCTS.enterprise.price}`,
-      priceId: isYearly ? SUBSCRIPTION_PRODUCTS.enterprise.yearlyPriceId : SUBSCRIPTION_PRODUCTS.enterprise.priceId,
-      productId: isYearly ? SUBSCRIPTION_PRODUCTS.enterprise.yearlyProductId : SUBSCRIPTION_PRODUCTS.enterprise.productId,
-      icon: Building2,
       description: "For power users & agencies",
-      features: ENTERPRISE_FEATURES.individual,
-      savings: isYearly ? getYearlySavings('enterprise') : 0,
+      features: CREATOR_PRO_FEATURES.individual,
+      savings: isYearly ? getYearlySavings('creator_pro') : 0,
     },
   ];
 }
@@ -119,7 +107,7 @@ function getBrandTiers(interval: BillingInterval) {
       productId: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyProductId : BRAND_SUBSCRIPTION_PRODUCTS.enterprise.productId,
       icon: Building2,
       description: "For agencies & large teams",
-      features: ENTERPRISE_FEATURES.company,
+      features: CREATOR_PRO_FEATURES.company,
       savings: isYearly ? getYearlySavings('brand_enterprise') : 0,
     },
   ];
@@ -356,8 +344,8 @@ export default function Subscription() {
                 <span className="text-4xl font-bold">$499</span>
                 <span className="text-muted-foreground ml-2">one-time payment</span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                That's less than 9 months of Enterprise — yours forever
+               <p className="text-xs text-muted-foreground mt-1">
+                That's less than 9 months of Creator Pro — yours forever
               </p>
             </CardHeader>
 
@@ -416,7 +404,7 @@ export default function Subscription() {
         </div>
       )}
 
-      <div className={`grid gap-5 max-w-6xl mx-auto ${viewMode === 'brand' ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-4'}`}>
+      <div className={`grid gap-5 max-w-5xl mx-auto ${viewMode === 'brand' ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
         {tiers.map((tier) => {
           const Icon = tier.icon;
           const isCurrentTier = tier.tier === currentTier;
@@ -432,7 +420,7 @@ export default function Subscription() {
                   ? "border-primary shadow-lg scale-[1.03]"
                   : tier.tier === "creator_pro"
                   ? "border-primary/70 shadow-md"
-                  : tier.tier === "enterprise" || tier.tier === "brand_enterprise"
+                  : tier.tier === "brand_enterprise"
                   ? "border-primary/50 shadow-md"
                   : isCurrentTier
                   ? "border-success"
@@ -446,12 +434,7 @@ export default function Subscription() {
               )}
               {tier.tier === "creator_pro" && !isCurrentTier && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
-                  🌐 Website Builder
-                </Badge>
-              )}
-              {(tier.tier === "enterprise" || tier.tier === "brand_enterprise") && !isCurrentTier && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
-                  {isBrand ? "Full Suite" : "Custom Domain"}
+                  {isBrand ? "Full Suite" : "🔗 Custom Domain"}
                 </Badge>
               )}
               {isCurrentTier && (
@@ -463,8 +446,7 @@ export default function Subscription() {
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
                   <Icon className={`h-8 w-8 ${
-                    tier.tier === 'pro' || tier.tier === 'brand_pro' || tier.tier === 'creator_pro' ? 'text-primary' : 
-                    tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-primary' : 
+                    tier.tier === 'pro' || tier.tier === 'brand_pro' || tier.tier === 'creator_pro' || tier.tier === 'brand_enterprise' ? 'text-primary' : 
                     'text-muted-foreground'
                   }`} />
                   <div className="text-right">
@@ -506,7 +488,7 @@ export default function Subscription() {
                 ) : (
                   <Button
                     className={`w-full ${
-                      tier.tier === 'enterprise' || tier.tier === 'brand_enterprise'
+                      tier.tier === 'creator_pro' || tier.tier === 'brand_enterprise'
                         ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
                         : isBrand && tier.popular
                         ? 'bg-success hover:bg-success/90 text-success-foreground'
@@ -514,7 +496,7 @@ export default function Subscription() {
                     }`}
                     onClick={() => handleSubscribe(tier.priceId, tier.tier)}
                     disabled={isLoading || tier.tier === "free"}
-                    variant={tier.popular ? "default" : (tier.tier === "enterprise" || tier.tier === "brand_enterprise") ? "default" : "outline"}
+                    variant={tier.popular ? "default" : (tier.tier === "creator_pro" || tier.tier === "brand_enterprise") ? "default" : "outline"}
                   >
                     {isLoading ? (
                       <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>

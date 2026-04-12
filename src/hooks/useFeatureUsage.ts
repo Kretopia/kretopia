@@ -15,7 +15,7 @@ import { hasProAccess } from "@/lib/subscriptionConfig";
  */
 export function useFeatureUsage(feature: FreeTierFeature) {
   const { user, subscriptionInfo } = useAuth();
-  const tier = (subscriptionInfo.tier || 'free') as 'free' | 'pro' | 'enterprise' | 'founder';
+  const tier = (subscriptionInfo.tier || 'free') as 'free' | 'pro' | 'creator_pro' | 'founder';
   const isPro = hasProAccess(tier);
   const [usage, setUsage] = useState(0);
   const [bonusUses, setBonusUses] = useState(0);

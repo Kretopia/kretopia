@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, ArrowRight, Crown } from "lucide-react";
+import { Check, ArrowRight, Crown } from "lucide-react";
 
 const TIERS = [
   {
@@ -20,14 +20,14 @@ const TIERS = [
   },
   {
     name: "Pro",
-    price: "$15",
+    price: "$29",
     period: "/mo",
     popular: true,
     features: [
       "Unlimited swipes & matches",
       "Unlimited AI briefs & templates",
       "Full P&L dashboard & reports",
-      "Unlimited invoicing & expenses",
+      "Your own creator website",
       "Profile verification badge",
     ],
     cta: "Start 7-Day Trial",
@@ -35,15 +35,15 @@ const TIERS = [
   },
   {
     name: "Creator Pro",
-    price: "$29",
+    price: "$59",
     period: "/mo",
     popular: false,
     features: [
       "Everything in Pro, plus:",
-      "Your own creator website",
-      "yourname.thrivein.app domain",
-      "3 premium site templates",
-      "Section editor & customization",
+      "Custom domain (yourdomain.com)",
+      "Campaign analytics",
+      "Scheduled email sends",
+      "Dedicated account manager",
     ],
     cta: "Start 7-Day Trial",
     ctaLink: "/auth",
@@ -117,7 +117,7 @@ export const PricingPreviewSection = () => {
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
           >
             <Crown className="h-3.5 w-3.5" />
-            View all plans including Enterprise & Brand tiers
+            View all plans including Brand tiers & Founder Circle
             <ArrowRight className="h-3 w-3" />
           </Link>
         </div>

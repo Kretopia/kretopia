@@ -4,38 +4,33 @@
 export type AccountType = 'individual' | 'company';
 export type BillingInterval = 'monthly' | 'yearly';
 
-// Creator/Individual subscription products
+// Creator/Individual subscription products — 3 tiers: Spark (free), Pro ($29), Creator Pro ($59)
 export const SUBSCRIPTION_PRODUCTS = {
   pro: {
     name: "Pro",
     tier: "pro" as const,
-    price: 15,
-    yearlyPrice: 144, // $12/mo effective — save $36/yr
-    trialDays: 7,
-    priceId: "price_1TLWQiJvOS7zG18hywKD2r8W",
-    yearlyPriceId: "price_1TLWPoJvOS7zG18h6T6MOSbE",
-    productId: "prod_UKAmTywyqyLhMk",
-    yearlyProductId: "prod_UKAlwpY8dS3Doc",
-    legacyProductIds: ["prod_TWc5tpvPKjy8hG"],
-  },
-  creator_pro: {
-    name: "Creator Pro",
-    tier: "creator_pro" as const,
     price: 29,
     yearlyPrice: 278, // ~$23.17/mo effective — save $70/yr
     trialDays: 7,
+    // These are the Stripe products formerly labeled "Creator Pro" at $29
     priceId: "price_1TLWQjJvOS7zG18h7aQBNmo8",
     yearlyPriceId: "price_1TLWQ6JvOS7zG18hjaiygUxE",
     productId: "prod_UKAmxFRvNL3ez3",
     yearlyProductId: "prod_UKAlBEJxMen4Xr",
-    legacyProductIds: ["prod_UKARjeRiOcTS46"],
+    legacyProductIds: [
+      "prod_UKARjeRiOcTS46",  // old creator_pro legacy
+      "prod_UKAmTywyqyLhMk",  // old $15 pro monthly
+      "prod_UKAlwpY8dS3Doc",  // old $15 pro yearly
+      "prod_TWc5tpvPKjy8hG",  // very old pro
+    ],
   },
-  enterprise: {
-    name: "Enterprise",
-    tier: "enterprise" as const,
+  creator_pro: {
+    name: "Creator Pro",
+    tier: "creator_pro" as const,
     price: 59,
     yearlyPrice: 566, // ~$47.17/mo effective — save $142/yr
     trialDays: 7,
+    // These are the Stripe products formerly labeled "Enterprise" at $59
     priceId: "price_1TLWQkJvOS7zG18hSN9qmxyW",
     yearlyPriceId: "price_1TLWQRJvOS7zG18hLQJW4YIB",
     productId: "prod_UKAmUMW9FUQLZD",
@@ -119,6 +114,9 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
     "📊 Unlimited Expense Tracking & Invoicing",
     "📊 Full P&L Dashboard & Reports",
     "🔓 Unlimited Workspace Tools",
+    "🌐 Creator Site — your own landing page/website",
+    "🎨 3 premium site templates",
+    "🔗 Free yourname.thrivein.app subdomain",
     "AI match explanations",
     "Profile verification badge",
     "Advanced search filters",
@@ -144,19 +142,12 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
   ],
 };
 
-export const CREATOR_PRO_FEATURES: string[] = [
-  "Everything in Pro, plus:",
-  "🌐 Creator Site — your own landing page/website",
-  "✏️ Site section editor — reorder, show/hide, custom text",
-  "🎨 3 premium templates to choose from",
-  "🔗 Free yourname.thrivein.app subdomain",
-  "📊 Site visitor analytics (coming soon)",
-];
-
-export const ENTERPRISE_FEATURES: Record<AccountType, string[]> = {
+export const CREATOR_PRO_FEATURES: Record<AccountType, string[]> = {
   individual: [
-    "Everything in Creator Pro, plus:",
+    "Everything in Pro, plus:",
     "🔗 Custom domain support (yourdomain.com)",
+    "✏️ Advanced site section editor & customization",
+    "📊 Site visitor analytics",
     "📊 Campaign analytics (open/click tracking)",
     "⏰ Scheduled email sends",
     "🤖 Priority AI processing",
@@ -179,33 +170,34 @@ export const ENTERPRISE_FEATURES: Record<AccountType, string[]> = {
 };
 
 export const LEGACY_PRODUCT_MAPPING: Record<string, string> = {
-  // Old Pro products
+  // Old $15 Pro products → now map to "pro" (grandfathered with full Pro access)
   'prod_TWc5tpvPKjy8hG': 'pro',
   'prod_TA5c8GtL6ioS2h': 'pro',
   'prod_TA5ihoppNqeijE': 'pro',
   'prod_TAoY7TiQaFLU00': 'pro',
   'prod_TAoZwx40t99jYc': 'pro',
-  // Old Creator Pro
-  'prod_UKARjeRiOcTS46': 'creator_pro',
-  // Old Enterprise
-  'prod_U5VmCaKx7g2lbw': 'enterprise',
+  'prod_UKAmTywyqyLhMk': 'pro', // old $15 pro monthly
+  'prod_UKAlwpY8dS3Doc': 'pro', // old $15 pro yearly
+  // Old Creator Pro ($29) → now "pro"
+  'prod_UKARjeRiOcTS46': 'pro',
+  // Old Enterprise ($59) → now "creator_pro"
+  'prod_U5VmCaKx7g2lbw': 'creator_pro',
   // Old Brand tiers
   'prod_UDoSA9g7yHRm3X': 'brand_pro',
   'prod_UDoT2jPlIxVnLp': 'brand_enterprise',
   // Old price-based IDs
   'price_1SZYrBJvOS7zG18hDW2eE4NG': 'pro',
-  'price_1TLW6iJvOS7zG18hyl8LpXqw': 'creator_pro',
-  'price_1T7KklJvOS7zG18hwEl7vYNw': 'enterprise',
+  'price_1TLW6iJvOS7zG18hyl8LpXqw': 'pro',
+  'price_1T7KklJvOS7zG18hwEl7vYNw': 'creator_pro',
   'price_1TFMpuJvOS7zG18hJm3HyPIv': 'brand_pro',
   'price_1TFMqeJvOS7zG18h09O4TJId': 'brand_enterprise',
 };
 
-export type SubscriptionTier = 'free' | 'pro' | 'creator_pro' | 'enterprise' | 'founder' | 'brand_pro' | 'brand_enterprise';
+export type SubscriptionTier = 'free' | 'pro' | 'creator_pro' | 'founder' | 'brand_pro' | 'brand_enterprise';
 
 export function mapProductIdToTier(productId: string): SubscriptionTier {
   // Current products (monthly + yearly)
   if (productId === SUBSCRIPTION_PRODUCTS.founder.productId) return 'founder';
-  if (productId === SUBSCRIPTION_PRODUCTS.enterprise.productId || productId === SUBSCRIPTION_PRODUCTS.enterprise.yearlyProductId) return 'enterprise';
   if (productId === SUBSCRIPTION_PRODUCTS.creator_pro.productId || productId === SUBSCRIPTION_PRODUCTS.creator_pro.yearlyProductId) return 'creator_pro';
   if (productId === SUBSCRIPTION_PRODUCTS.pro.productId || productId === SUBSCRIPTION_PRODUCTS.pro.yearlyProductId) return 'pro';
   if (productId === BRAND_SUBSCRIPTION_PRODUCTS.pro.productId || productId === BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyProductId) return 'brand_pro';
@@ -220,7 +212,6 @@ export function getTierDisplayName(tier: SubscriptionTier): string {
   switch (tier) {
     case 'founder': return 'Founder Circle ⭕';
     case 'brand_enterprise': return 'Brand Enterprise';
-    case 'enterprise': return 'Enterprise';
     case 'brand_pro': return 'Brand Pro';
     case 'creator_pro': return 'Creator Pro';
     case 'pro': return 'Pro';
@@ -233,7 +224,6 @@ export function getTierPrice(tier: SubscriptionTier, interval: BillingInterval =
   if (interval === 'yearly') {
     switch (tier) {
       case 'founder': return SUBSCRIPTION_PRODUCTS.founder.price;
-      case 'enterprise': return SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice;
       case 'creator_pro': return SUBSCRIPTION_PRODUCTS.creator_pro.yearlyPrice;
       case 'pro': return SUBSCRIPTION_PRODUCTS.pro.yearlyPrice;
       case 'brand_enterprise': return BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice;
@@ -244,7 +234,6 @@ export function getTierPrice(tier: SubscriptionTier, interval: BillingInterval =
   }
   switch (tier) {
     case 'founder': return SUBSCRIPTION_PRODUCTS.founder.price;
-    case 'enterprise': return SUBSCRIPTION_PRODUCTS.enterprise.price;
     case 'creator_pro': return SUBSCRIPTION_PRODUCTS.creator_pro.price;
     case 'pro': return SUBSCRIPTION_PRODUCTS.pro.price;
     case 'brand_enterprise': return BRAND_SUBSCRIPTION_PRODUCTS.enterprise.price;
@@ -254,19 +243,14 @@ export function getTierPrice(tier: SubscriptionTier, interval: BillingInterval =
   }
 }
 
-/** Check if tier has Pro-level access (pro, creator_pro, enterprise, founder, or brand equivalents) */
+/** Check if tier has Pro-level access (pro, creator_pro, founder, or brand equivalents) */
 export function hasProAccess(tier: SubscriptionTier): boolean {
-  return tier === 'pro' || tier === 'creator_pro' || tier === 'enterprise' || tier === 'founder' || tier === 'brand_pro' || tier === 'brand_enterprise';
+  return tier === 'pro' || tier === 'creator_pro' || tier === 'founder' || tier === 'brand_pro' || tier === 'brand_enterprise';
 }
 
-/** Check if tier has Creator Pro-level access (creator_pro, enterprise, founder) */
+/** Check if tier has Creator Pro-level access (creator_pro, founder) */
 export function hasCreatorProAccess(tier: SubscriptionTier): boolean {
-  return tier === 'creator_pro' || tier === 'enterprise' || tier === 'founder';
-}
-
-/** Check if tier has Enterprise-level access */
-export function hasEnterpriseAccess(tier: SubscriptionTier): boolean {
-  return tier === 'enterprise' || tier === 'founder' || tier === 'brand_enterprise';
+  return tier === 'creator_pro' || tier === 'founder';
 }
 
 /** Check if tier is a brand-specific subscription */
@@ -279,7 +263,6 @@ export function getYearlySavings(tier: SubscriptionTier): number {
   switch (tier) {
     case 'pro': return (SUBSCRIPTION_PRODUCTS.pro.price * 12) - SUBSCRIPTION_PRODUCTS.pro.yearlyPrice;
     case 'creator_pro': return (SUBSCRIPTION_PRODUCTS.creator_pro.price * 12) - SUBSCRIPTION_PRODUCTS.creator_pro.yearlyPrice;
-    case 'enterprise': return (SUBSCRIPTION_PRODUCTS.enterprise.price * 12) - SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice;
     case 'brand_pro': return (BRAND_SUBSCRIPTION_PRODUCTS.pro.price * 12) - BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyPrice;
     case 'brand_enterprise': return (BRAND_SUBSCRIPTION_PRODUCTS.enterprise.price * 12) - BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice;
     default: return 0;

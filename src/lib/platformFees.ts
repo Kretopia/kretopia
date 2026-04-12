@@ -2,10 +2,10 @@
 // Talent receives 100% of their quoted rate
 export const PLATFORM_FEES = {
   free: 0.20,             // 20% service fee for free brands
-  pro: 0.15,              // 15% for Pro brands (creator pro)
+  pro: 0.15,              // 15% for Pro
+  creator_pro: 0.10,      // 10% for Creator Pro
   brand_pro: 0.15,        // 15% for Brand Pro
   brand_enterprise: 0.10, // 10% for Brand Enterprise
-  enterprise: 0.10,       // 10% for Enterprise
   founder: 0.10,          // 10% for Founder Circle brands
 } as const;
 
@@ -17,11 +17,13 @@ export type SubscriptionTier = keyof typeof PLATFORM_FEES;
 export const getPlatformFeePercentage = (tier: string | null): number => {
   if (!tier || tier === 'free') return PLATFORM_FEES.free;
   if (tier === 'founder') return PLATFORM_FEES.founder;
+  if (tier === 'creator_pro') return PLATFORM_FEES.creator_pro;
   if (tier === 'pro') return PLATFORM_FEES.pro;
   if (tier === 'brand_pro') return PLATFORM_FEES.brand_pro;
   if (tier === 'brand_enterprise') return PLATFORM_FEES.brand_enterprise;
   if (tier === 'studio') return PLATFORM_FEES.pro;
-  if (tier === 'enterprise') return PLATFORM_FEES.enterprise;
+  // Legacy: old "enterprise" tier maps to creator_pro
+  if (tier === 'enterprise') return PLATFORM_FEES.creator_pro;
   return PLATFORM_FEES.free;
 };
 

@@ -5,10 +5,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Loader2, Sparkles, Zap, Crown, Building2, User, Briefcase } from "lucide-react";
+import { Check, Loader2, Sparkles, Zap, Crown, Building2, User, Briefcase, Globe } from "lucide-react";
 import { 
   SUBSCRIPTION_PRODUCTS, BRAND_SUBSCRIPTION_PRODUCTS,
-  PRO_FEATURES, FREE_FEATURES, ENTERPRISE_FEATURES, 
+  PRO_FEATURES, FREE_FEATURES, ENTERPRISE_FEATURES, CREATOR_PRO_FEATURES,
   type AccountType, hasProAccess, isBrandTier
 } from "@/lib/subscriptionConfig";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,6 +48,16 @@ function getCreatorTiers() {
       popular: true,
       description: "For serious creators",
       features: PRO_FEATURES.individual,
+    },
+    {
+      name: SUBSCRIPTION_PRODUCTS.creator_pro.name,
+      tier: SUBSCRIPTION_PRODUCTS.creator_pro.tier,
+      price: `$${SUBSCRIPTION_PRODUCTS.creator_pro.price}`,
+      priceId: SUBSCRIPTION_PRODUCTS.creator_pro.priceId,
+      productId: SUBSCRIPTION_PRODUCTS.creator_pro.productId,
+      icon: Globe,
+      description: "Pro + your own creator website",
+      features: CREATOR_PRO_FEATURES,
     },
     {
       name: SUBSCRIPTION_PRODUCTS.enterprise.name,

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Share2, Shield, Users, Briefcase } from "lucide-react";
+import { ArrowRight, Share2, Shield, Users, Briefcase, Globe, Sparkles } from "lucide-react";
 import Confetti from "react-dom-confetti";
 import { useNavigate } from "react-router-dom";
 
@@ -63,6 +63,11 @@ export function OnboardingCelebration({
     navigate("/profile?share=true");
   };
 
+  const handleUpgrade = () => {
+    onOpenChange(false);
+    navigate("/subscription");
+  };
+
   const firstName = userName?.split(" ")[0] || "Creator";
 
   return (
@@ -95,6 +100,43 @@ export function OnboardingCelebration({
 
         {/* Content */}
         <div className="p-6 space-y-5">
+          {/* Creator Site Preview — upsell */}
+          <div className="relative overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/3 p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shrink-0 shadow-md">
+                <Globe className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-semibold">Your Creator Website</p>
+                  <span className="text-[10px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">PRO</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Turn your profile into a beautiful, standalone website — perfect for link-in-bio. Get your own yourname.thrivein.app URL.
+                </p>
+                {/* Mini preview */}
+                <div className="relative rounded-lg overflow-hidden border border-border/50 bg-gradient-to-br from-[#0a0a0c] to-[#1a1a2e] p-3 mb-3">
+                  <div className="space-y-2">
+                    <div className="w-8 h-8 rounded-full bg-white/10" />
+                    <div className="h-2 w-24 rounded bg-white/20" />
+                    <div className="h-1.5 w-32 rounded bg-white/10" />
+                    <div className="flex gap-1.5 mt-2">
+                      <div className="h-6 w-16 rounded bg-[#ff00ff]/30" />
+                      <div className="h-6 w-16 rounded bg-white/10" />
+                    </div>
+                  </div>
+                  <div className="absolute top-1.5 right-1.5 text-[8px] text-white/40 font-mono">
+                    {firstName.toLowerCase()}.thrivein.app
+                  </div>
+                </div>
+                <Button size="sm" onClick={handleUpgrade} className="w-full gap-1.5 text-xs h-8">
+                  <Sparkles className="h-3 w-3" />
+                  Unlock Creator Site — from $15/mo
+                </Button>
+              </div>
+            </div>
+          </div>
+
           {/* What's next cards */}
           <div className="space-y-2.5">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">What's next</p>

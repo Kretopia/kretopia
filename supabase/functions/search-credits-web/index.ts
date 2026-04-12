@@ -219,8 +219,22 @@ function scoreResult(result: any, query: string, creatorQuery: boolean) {
   return score;
 }
 
+function generateFuzzyVariants(name: string): string[] {
+  const variants = new Set<string>([name]);
+  const lower = name.toLowerCase();
+  const swaps: [string, string][] = [['i', 'y'], ['y', 'i'], ['z', 's'], ['s', 'z'], ['c', 'k'], ['k', 'c']];
+  for (const [from, to] of swaps) {
+    if (lower.includes(from)) {
+      variants.add(name.replace(new RegExp(from, 'gi'), to));
+    }
+  }
+  return Array.from(variants);
+}
+
 function buildSearchQueries(name: string, isCreator: boolean) {
+  const variants = generateFuzzyVariants(name);
   const exact = `"${name}"`;
+  const allExacts = variants.map(v => `"${v}"`).join(' OR ');
 
   if (!isCreator) {
     return [
@@ -231,16 +245,16 @@ function buildSearchQueries(name: string, isCreator: boolean) {
   }
 
   return [
-    `${exact} site:open.spotify.com/artist`,
-    `${exact} site:music.apple.com artist`,
-    `${exact} site:soundcloud.com`,
-    `${exact} site:youtube.com channel`,
-    `${exact} site:instagram.com`,
-    `${exact} site:imdb.com/name`,
-    `${exact} site:behance.net`,
-    `${exact} site:dribbble.com`,
-    `${exact} site:muso.ai`,
-    `${exact} producer artist creator official`,
+    `(${allExacts}) site:open.spotify.com/artist`,
+    `(${allExacts}) site:music.apple.com artist`,
+    `(${allExacts}) site:soundcloud.com`,
+    `(${allExacts}) site:youtube.com channel`,
+    `(${allExacts}) site:instagram.com`,
+    `(${allExacts}) site:imdb.com/name`,
+    `(${allExacts}) site:behance.net`,
+    `(${allExacts}) site:dribbble.com`,
+    `(${allExacts}) site:muso.ai`,
+    `(${allExacts}) producer artist creator official`,
     `${exact} worked with artist producer`,
     `${exact} portfolio bio credits interview`,
   ];

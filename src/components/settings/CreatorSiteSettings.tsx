@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { CreatorSiteSectionEditor, SiteSection } from "./CreatorSiteSectionEditor";
 
 const TEMPLATES = [
   {

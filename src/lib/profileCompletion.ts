@@ -78,4 +78,4 @@ export const getDiscoveryMissingFields = (profile: Profile, portfolioCount: numb
   return missing;
 };
 
-export const PROFILE_COMPLETION_XP = 50;
+export const PROFILE_COMPLETION_BONUS = 50;

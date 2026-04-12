@@ -133,12 +133,25 @@ export function UnifiedSearchDropdown({
     try {
       const likeQ = `%${q}%`;
 
+      // Generate fuzzy variants (swap common letter pairs: i/y, z/s, etc.)
+      const fuzzyVariants = new Set<string>([q]);
+      const swaps: [string, string][] = [['i', 'y'], ['y', 'i'], ['z', 's'], ['s', 'z'], ['c', 'k'], ['k', 'c'], ['ph', 'f'], ['f', 'ph']];
+      for (const [from, to] of swaps) {
+        if (q.toLowerCase().includes(from)) {
+          fuzzyVariants.add(q.toLowerCase().replace(new RegExp(from, 'gi'), to));
+        }
+      }
+      
+      const fuzzyFilters = Array.from(fuzzyVariants)
+        .map(v => `full_name.ilike.%${v}%,role.ilike.%${v}%`)
+        .join(',');
+
       // Fast DB queries for instant results
       const dbPromise = Promise.all([
         supabase
           .from("profiles")
           .select("user_id, full_name, avatar_url, role, bio, location, is_claimed")
-          .or(`full_name.ilike.${likeQ},role.ilike.${likeQ}`)
+          .or(fuzzyFilters)
           .or("onboarding_completed.eq.true,is_claimed.eq.false")
           .limit(8),
         supabase

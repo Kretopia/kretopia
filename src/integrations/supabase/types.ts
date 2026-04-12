@@ -5725,6 +5725,7 @@ export type Database = {
           twitter_url: string | null
           updated_at: string | null
           user_id: string
+          username: string | null
           verification_breakdown: Json | null
           verification_notes: string | null
           verification_score: number | null
@@ -5875,6 +5876,7 @@ export type Database = {
           twitter_url?: string | null
           updated_at?: string | null
           user_id: string
+          username?: string | null
           verification_breakdown?: Json | null
           verification_notes?: string | null
           verification_score?: number | null
@@ -6025,6 +6027,7 @@ export type Database = {
           twitter_url?: string | null
           updated_at?: string | null
           user_id?: string
+          username?: string | null
           verification_breakdown?: Json | null
           verification_notes?: string | null
           verification_score?: number | null

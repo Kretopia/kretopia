@@ -446,8 +446,7 @@ export default function Subscription() {
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
                   <Icon className={`h-8 w-8 ${
-                    tier.tier === 'pro' || tier.tier === 'brand_pro' || tier.tier === 'creator_pro' ? 'text-primary' : 
-                    tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-primary' : 
+                    tier.tier === 'pro' || tier.tier === 'brand_pro' || tier.tier === 'creator_pro' || tier.tier === 'brand_enterprise' ? 'text-primary' : 
                     'text-muted-foreground'
                   }`} />
                   <div className="text-right">
@@ -489,7 +488,7 @@ export default function Subscription() {
                 ) : (
                   <Button
                     className={`w-full ${
-                      tier.tier === 'enterprise' || tier.tier === 'brand_enterprise'
+                      tier.tier === 'creator_pro' || tier.tier === 'brand_enterprise'
                         ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
                         : isBrand && tier.popular
                         ? 'bg-success hover:bg-success/90 text-success-foreground'
@@ -497,7 +496,7 @@ export default function Subscription() {
                     }`}
                     onClick={() => handleSubscribe(tier.priceId, tier.tier)}
                     disabled={isLoading || tier.tier === "free"}
-                    variant={tier.popular ? "default" : (tier.tier === "enterprise" || tier.tier === "brand_enterprise") ? "default" : "outline"}
+                    variant={tier.popular ? "default" : (tier.tier === "creator_pro" || tier.tier === "brand_enterprise") ? "default" : "outline"}
                   >
                     {isLoading ? (
                       <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Loading...</>

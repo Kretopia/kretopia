@@ -2335,6 +2335,107 @@ export type Database = {
         }
         Relationships: []
       }
+      drip_campaign_sends: {
+        Row: {
+          campaign_id: string
+          contact_id: string
+          error_message: string | null
+          id: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          campaign_id: string
+          contact_id: string
+          error_message?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          campaign_id?: string
+          contact_id?: string
+          error_message?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drip_campaign_sends_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "drip_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drip_campaign_sends_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "email_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drip_campaigns: {
+        Row: {
+          body: string
+          created_at: string
+          cta_text: string
+          cta_url: string
+          daily_limit: number
+          failed_count: number
+          id: string
+          last_batch_at: string | null
+          segment_id: string | null
+          sent_count: number
+          status: string
+          subject: string
+          total_contacts: number
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          cta_text?: string
+          cta_url?: string
+          daily_limit?: number
+          failed_count?: number
+          id?: string
+          last_batch_at?: string | null
+          segment_id?: string | null
+          sent_count?: number
+          status?: string
+          subject: string
+          total_contacts?: number
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          cta_text?: string
+          cta_url?: string
+          daily_limit?: number
+          failed_count?: number
+          id?: string
+          last_batch_at?: string | null
+          segment_id?: string | null
+          sent_count?: number
+          status?: string
+          subject?: string
+          total_contacts?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drip_campaigns_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "email_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_campaigns: {
         Row: {
           body: string
@@ -2386,6 +2487,68 @@ export type Database = {
           total_recipients?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      email_contacts: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          segment_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+          segment_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          segment_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_contacts_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "email_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_segments: {
+        Row: {
+          contact_count: number
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          contact_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          contact_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }

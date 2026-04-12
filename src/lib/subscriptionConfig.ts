@@ -123,6 +123,15 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
   ],
 };
 
+export const CREATOR_PRO_FEATURES: string[] = [
+  "Everything in Pro, plus:",
+  "🌐 Creator Site — your own landing page/website",
+  "✏️ Site section editor — reorder, show/hide, custom text",
+  "🎨 3 premium templates to choose from",
+  "📊 Site visitor analytics (coming soon)",
+  "🔗 Custom domain support (coming soon)",
+];
+
 export const ENTERPRISE_FEATURES: Record<AccountType, string[]> = {
   individual: [
     "Everything in Pro, plus:",

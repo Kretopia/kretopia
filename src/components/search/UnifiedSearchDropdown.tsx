@@ -568,9 +568,18 @@ export function UnifiedSearchDropdown({
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors text-left"
                   >
-                    <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                      <Sparkles className="h-3.5 w-3.5 text-accent" />
-                    </div>
+                    {alt.image_url ? (
+                      <Avatar className="h-8 w-8 shrink-0">
+                        <AvatarImage src={alt.image_url} />
+                        <AvatarFallback className="text-xs bg-accent/10 text-accent">
+                          {(alt.name || "?")[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                        <Sparkles className="h-3.5 w-3.5 text-accent" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{alt.name}</p>
                       <p className="text-[11px] text-muted-foreground truncate">

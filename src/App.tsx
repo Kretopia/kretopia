@@ -192,7 +192,7 @@ const AppContent = () => {
       <PageViewTracker />
       {showNavbar && <Navbar user={user} />}
       {showBottomNav && <BottomNav />}
-      {user && !isPublicEPK && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
+      {user && !isPublicEPK && !isCreatorSite && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
       {user && !isAuthPage && <OnboardingTour />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />

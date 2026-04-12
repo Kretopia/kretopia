@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { useFeatureUsage } from "@/hooks/useFeatureUsage";
 import { type FreeTierFeature, getFeatureDisplayName } from "@/lib/subscriptionLimits";
 import { useAuth } from "@/hooks/useAuth";
-import { hasEnterpriseAccess } from "@/lib/subscriptionConfig";
+import { hasCreatorProAccess } from "@/lib/subscriptionConfig";
 
 interface FreeTierGateProps {
   feature: FreeTierFeature;
@@ -22,7 +22,7 @@ export function FreeTierGate({ feature, featureLabel, description, children }: F
   const navigate = useNavigate();
   const { usage, cap, remaining, canUse, isPro } = useFeatureUsage(feature);
   const { subscriptionInfo } = useAuth();
-  const isEnterprise = hasEnterpriseAccess(subscriptionInfo.tier as any);
+  const isEnterprise = hasCreatorProAccess(subscriptionInfo.tier as any);
 
   // Enterprise/Founder users with unlimited (-1) see content directly
   if (cap === -1) return <>{children}</>;

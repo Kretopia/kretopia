@@ -50,7 +50,7 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
         </h1>
         <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-start">
           <p className="text-lg md:text-xl text-[#555] leading-relaxed font-light" style={{ fontFamily: "'Inter', sans-serif" }}>
-            {profile.bio?.slice(0, 250) || `${firstName} brings a refined approach to every project.`}
+            {profile.bio || `${firstName} brings a refined approach to every project.`}
           </p>
           <div className="space-y-4">
             {profile.location && (

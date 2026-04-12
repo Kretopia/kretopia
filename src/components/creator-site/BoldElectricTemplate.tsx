@@ -59,8 +59,8 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
           <h1 className="text-5xl md:text-8xl font-bold leading-[0.9] tracking-tighter uppercase">
             {profile.role || 'Creative Professional'}
           </h1>
-          <p className="text-lg md:text-xl text-zinc-400 max-w-[45ch] leading-relaxed">
-            {profile.bio?.slice(0, 200) || `${firstName} is a creative professional ready to bring your vision to life.`}
+          <p className="text-lg md:text-xl text-zinc-400 max-w-[45ch] leading-relaxed whitespace-pre-line">
+            {profile.bio || `${firstName} is a creative professional ready to bring your vision to life.`}
           </p>
           <div className="flex flex-wrap gap-3">
             <button

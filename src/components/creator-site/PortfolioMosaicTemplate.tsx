@@ -69,7 +69,7 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
               {profile.role || `Hi, I'm ${firstName}`}
             </h1>
             <p className="text-base md:text-lg text-zinc-500 leading-relaxed max-w-lg mb-8">
-              {profile.bio?.slice(0, 220) || `${firstName} creates compelling work across multiple disciplines.`}
+              {profile.bio || `${firstName} creates compelling work across multiple disciplines.`}
             </p>
             <div className="flex flex-wrap gap-3">
               <button

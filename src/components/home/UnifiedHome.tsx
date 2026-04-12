@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
+import { CircleRecommendations } from "@/components/circle/CircleRecommendations";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { BeforeAfterSection } from "@/components/landing/BeforeAfterSection";
@@ -351,6 +352,9 @@ export const UnifiedHome = () => {
               </div>
             ) : null;
           })()}
+
+          {/* Circle Recommendations for new users */}
+          <CircleRecommendations className="mb-4" />
 
           {/* Push Notification Prompt */}
           <PushNotificationPrompt trigger="default" className="mb-4" />

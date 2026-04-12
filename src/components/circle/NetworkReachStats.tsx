@@ -48,9 +48,9 @@ export function NetworkReachStats({ stats, loading, className, onDegreeClick }: 
       sublabel: "Friends of friends",
       count: stats.degree2,
       icon: Link2,
-      color: "text-accent-foreground",
-      bgColor: "bg-accent/10",
-      borderColor: "border-accent/20"
+      color: "text-secondary-foreground",
+      bgColor: "bg-secondary/60",
+      borderColor: "border-secondary/40"
     },
     {
       degree: 3,

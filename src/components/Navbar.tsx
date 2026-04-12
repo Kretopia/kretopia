@@ -320,7 +320,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           variant="secondary"
                           className={cn(
                             "text-[10px] uppercase tracking-wider",
-                            isPro ? "bg-accent/10 text-accent-foreground" : "bg-muted text-muted-foreground"
+                            isPro ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
                           )}
                         >
                           {tierName}

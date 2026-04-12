@@ -29,9 +29,6 @@ const GIG_TYPES = [
   { value: "barter", label: "Barter / Trade", description: "Offer something in exchange for content", icon: ArrowRightLeft },
   { value: "job", label: "Paid Gig", description: "Pay a creator for their work", icon: Briefcase },
   { value: "collab", label: "Collaboration", description: "Work together on a creative project", icon: Handshake },
-  { value: "gig", label: "Quick Gig", description: "One-off task or performance", icon: Zap },
-  { value: "project", label: "Project-Based", description: "Longer-term creative project", icon: Target },
-  { value: "internship", label: "Internship", description: "Learning opportunity for emerging creatives", icon: GraduationCap },
 ];
 
 const BARTER_OFFERING_EXAMPLES = [

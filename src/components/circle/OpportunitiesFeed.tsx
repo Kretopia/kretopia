@@ -76,7 +76,7 @@ export const OpportunitiesFeed = () => {
   const [compensationFilter, setCompensationFilter] = useState("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const activeFilterCount = [selectedSkill !== "all", locationFilter !== "all", compensationFilter !== "all"].filter(Boolean).length;
+  const activeFilterCount = [activeFilter !== "all", selectedSkill !== "all", locationFilter !== "all", compensationFilter !== "all"].filter(Boolean).length;
 
   const fetchOpportunities = useCallback(async () => {
     setLoading(true);
@@ -215,6 +215,24 @@ export const OpportunitiesFeed = () => {
               </SheetTitle>
             </SheetHeader>
             <div className="space-y-5 py-4">
+              {/* Type Filter */}
+              <div>
+                <label className="text-sm font-medium flex items-center gap-1.5 mb-2">
+                  <Briefcase className="h-3.5 w-3.5 text-primary" />
+                  Type
+                </label>
+                <Select value={activeFilter} onValueChange={setActiveFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Types" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TYPE_FILTERS.map(filter => (
+                      <SelectItem key={filter.value} value={filter.value}>{filter.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Skill Filter */}
               <div>
                 <label className="text-sm font-medium flex items-center gap-1.5 mb-2">
@@ -282,6 +300,7 @@ export const OpportunitiesFeed = () => {
                   variant="outline"
                   className="flex-1"
                   onClick={() => {
+                    setActiveFilter("all");
                     setSelectedSkill("all");
                     setLocationFilter("all");
                     setCompensationFilter("all");
@@ -299,8 +318,14 @@ export const OpportunitiesFeed = () => {
       </div>
 
       {/* Active filter badges */}
-      {(searchQuery || selectedSkill !== "all" || locationFilter !== "all" || compensationFilter !== "all") && (
+      {(searchQuery || activeFilter !== "all" || selectedSkill !== "all" || locationFilter !== "all" || compensationFilter !== "all") && (
         <div className="flex gap-2 flex-wrap">
+          {activeFilter !== "all" && (
+            <Badge variant="secondary" className="gap-1">
+              {TYPE_FILTERS.find(f => f.value === activeFilter)?.label || activeFilter}
+              <X className="h-3 w-3 cursor-pointer" onClick={() => setActiveFilter("all")} />
+            </Badge>
+          )}
           {searchQuery && (
             <Badge variant="secondary" className="gap-1">
               Search: {searchQuery}
@@ -328,25 +353,6 @@ export const OpportunitiesFeed = () => {
         </div>
       )}
 
-      {/* Type Filters */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-        {TYPE_FILTERS.map(filter => {
-          const isActive = activeFilter === filter.value;
-          return (
-            <button
-              key={filter.value}
-              onClick={() => setActiveFilter(filter.value)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${
-                isActive
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
-              }`}
-            >
-              {filter.label}
-            </button>
-          );
-        })}
-      </div>
 
       {/* Loading */}
       {loading && (

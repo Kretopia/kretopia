@@ -36,12 +36,13 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
   const { toast } = useToast();
 
   const profileUrl = `https://www.thrivein.io/profile/${profile.user_id}`;
+  const shareableUrl = `https://www.thrivein.io/share/profile/${profile.user_id}/`;
   
   const shareText = `${profile.full_name} | ${profile.role} — Verified Creative Portfolio on ThriveIN
 
 ${profile.bio ? profile.bio.slice(0, 100) + (profile.bio.length > 100 ? '...' : '') : ''}
 
-${profileUrl}`;
+${shareableUrl}`;
 
   const handleNativeShare = async () => {
     if (navigator.share) {
@@ -49,7 +50,7 @@ ${profileUrl}`;
         await navigator.share({
           title: `${profile.full_name} — Creative Portfolio`,
           text: shareText,
-          url: profileUrl,
+          url: shareableUrl,
         });
         toast({
           title: "Shared successfully",
@@ -57,13 +58,11 @@ ${profileUrl}`;
         });
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
-          // Fallback to clipboard
-          await copyToClipboard(profileUrl, 'url');
+          await copyToClipboard(shareableUrl, 'url');
         }
       }
     } else {
-      // Desktop fallback
-      await copyToClipboard(profileUrl, 'url');
+      await copyToClipboard(shareableUrl, 'url');
     }
   };
 
@@ -75,10 +74,10 @@ ${profileUrl}`;
         shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
         break;
       case 'linkedin':
-        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(profileUrl)}`;
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareableUrl)}`;
         break;
       case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`;
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareableUrl)}`;
         break;
       case 'whatsapp':
         shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;

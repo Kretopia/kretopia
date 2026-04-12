@@ -265,13 +265,14 @@ export const OpportunitiesFeed = () => {
                   <SelectContent>
                     <SelectItem value="all">Any Location</SelectItem>
                     <SelectItem value="Remote">Remote</SelectItem>
+                    <SelectItem value="Bali">Bali</SelectItem>
+                    <SelectItem value="Trinidad">Trinidad</SelectItem>
                     <SelectItem value="New York">New York</SelectItem>
                     <SelectItem value="Los Angeles">Los Angeles</SelectItem>
                     <SelectItem value="London">London</SelectItem>
                     <SelectItem value="Lagos">Lagos</SelectItem>
                     <SelectItem value="Toronto">Toronto</SelectItem>
                     <SelectItem value="Kingston">Kingston</SelectItem>
-                    <SelectItem value="Trinidad">Trinidad</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -367,15 +368,29 @@ export const OpportunitiesFeed = () => {
 
       {/* Empty */}
       {!loading && opportunities.length === 0 && (
-        <div className="text-center py-10">
-          <Briefcase className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <h4 className="font-semibold mb-1">No gigs posted yet</h4>
-          <p className="text-sm text-muted-foreground mb-4">
-            Be the first to post a {activeFilter === "all" ? "gig or barter" : activeFilter}!
+        <div className="text-center py-14 px-6">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+            <Briefcase className="h-8 w-8 text-primary" />
+          </div>
+          <h4 className="text-lg font-bold mb-2">No gigs here yet</h4>
+          <p className="text-sm text-muted-foreground mb-1 max-w-xs mx-auto">
+            {activeFilter !== "all" || searchQuery
+              ? "Try adjusting your filters to see more results."
+              : "Be the first to post an opportunity — paid gig, barter, or collab."}
           </p>
-          <Button onClick={() => setPostDialogOpen(true)} variant="outline" className="gap-2">
-            <Plus className="h-4 w-4" /> Post a Gig
-          </Button>
+          <p className="text-xs text-muted-foreground/70 mb-6">
+            New gigs are posted daily by creatives worldwide.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <Button onClick={() => setPostDialogOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" /> Post a Gig
+            </Button>
+            {(activeFilter !== "all" || searchQuery || selectedSkill !== "all" || locationFilter !== "all") && (
+              <Button variant="outline" onClick={() => { setActiveFilter("all"); setSearchQuery(""); setSelectedSkill("all"); setLocationFilter("all"); setCompensationFilter("all"); }}>
+                Clear Filters
+              </Button>
+            )}
+          </div>
         </div>
       )}
 

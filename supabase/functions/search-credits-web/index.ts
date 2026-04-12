@@ -172,13 +172,13 @@ serve(async (req) => {
 
     const hasWebData = webSnippets.length > 0;
     const webContext = hasWebData
-      ? `\n\nHere are REAL web search results. ONLY return information explicitly supported by these results. If the query looks like a person/creator/handle, prioritize profile/channel pages and 1-3 flagship works rather than flooding the response with every song or duplicate catalog item. Prefer diversified results across platforms.\n\n${webSnippets.slice(0, 12).join('\n---\n')}`
+      ? `\n\nHere are REAL web search results. ONLY return information explicitly supported by these results. If the query looks like a person/creator/handle, prioritize profile/channel pages and 1-3 flagship works rather than flooding the response with every song or duplicate catalog item. Prefer diversified results across platforms.\n\nIMPORTANT: If the results reference MULTIPLE DIFFERENT people/entities with the same or similar name, include ALL of them as separate results with distinct types/descriptions so the user can identify the right one.\n\n${webSnippets.slice(0, 15).join('\n---\n')}`
       : '';
 
     const searchPrompt = creator_name
       ? `Find creative professional credits for "${trimmedQuery}" by or featuring "${creator_name}".${webContext}`
       : creatorQuery
-        ? `Find the best matching creator/profile/channel results and key works for "${trimmedQuery}".${webContext}`
+        ? `Find ALL matching creators/profiles/channels and their key works for "${trimmedQuery}". If there are multiple different people with this name, include each one as a separate result.${webContext}`
         : `Find creative projects/works matching "${trimmedQuery}".${webContext}`;
 
     const systemPrompt = hasWebData

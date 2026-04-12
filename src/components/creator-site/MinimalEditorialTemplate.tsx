@@ -103,7 +103,7 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
       )}
 
       {/* Services */}
-      {services.length > 0 && (
+      {isSectionVisible('services') && services.length > 0 && (
         <section id="services" className="px-6 md:px-16 py-16 md:py-24 border-t border-[#e5e3df]">
           <div className="max-w-5xl">
             <h2 className="text-3xl md:text-4xl font-light mb-12 md:mb-20">Services</h2>
@@ -144,7 +144,7 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
       )}
 
       {/* Credits / Portfolio */}
-      {credits.length > 0 && (
+      {isSectionVisible('credits') && credits.length > 0 && (
         <section id="work" className="px-6 md:px-16 py-16 md:py-24 border-t border-[#e5e3df]">
           <div className="max-w-5xl">
             <h2 className="text-3xl md:text-4xl font-light mb-12 md:mb-20">Selected Work</h2>
@@ -175,7 +175,7 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
       )}
 
       {/* Testimonials */}
-      {allTestimonials.length > 0 && (
+      {isSectionVisible('testimonials') && allTestimonials.length > 0 && (
         <section className="px-6 md:px-16 py-16 md:py-24 bg-[#f0eeea]">
           <div className="max-w-3xl">
             {allTestimonials.slice(0, 3).map((t, i) => (

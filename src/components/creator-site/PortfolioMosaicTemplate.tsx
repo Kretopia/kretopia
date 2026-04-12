@@ -112,7 +112,7 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
       </section>
 
       {/* Portfolio Masonry */}
-      {credits.length > 0 && (
+      {isSectionVisible('credits') && credits.length > 0 && (
         <section id="work" className="px-5 md:px-10 py-12 md:py-20 bg-zinc-50">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold mb-10" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -152,7 +152,7 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
       )}
 
       {/* Services */}
-      {services.length > 0 && (
+      {isSectionVisible('services') && services.length > 0 && (
         <section id="services" className="px-5 md:px-10 py-12 md:py-20">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold mb-10" style={{ fontFamily: "'Playfair Display', serif" }}>
@@ -188,7 +188,7 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
       )}
 
       {/* Testimonials */}
-      {allTestimonials.length > 0 && (
+      {isSectionVisible('testimonials') && allTestimonials.length > 0 && (
         <section className="px-5 md:px-10 py-12 md:py-20 bg-[#111] text-white">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold mb-12" style={{ fontFamily: "'Playfair Display', serif" }}>

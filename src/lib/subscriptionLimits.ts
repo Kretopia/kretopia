@@ -8,7 +8,7 @@
 
 import type { AccountType } from "./subscriptionConfig";
 
-export type SubscriptionTier = "free" | "pro" | "enterprise" | "founder" | "brand_pro" | "brand_enterprise";
+export type SubscriptionTier = "free" | "pro" | "creator_pro" | "enterprise" | "founder" | "brand_pro" | "brand_enterprise";
 
 export interface TierLimits {
   swipesPerDay: number; // -1 = unlimited
@@ -91,7 +91,7 @@ export function getMonthlyCapForFeature(
   tier: SubscriptionTier
 ): number {
   if (tier === "enterprise" || tier === "founder" || tier === "brand_enterprise") return ENTERPRISE_TIER_MONTHLY_CAPS[feature];
-  if (tier === "pro" || tier === "brand_pro") return PRO_TIER_MONTHLY_CAPS[feature];
+  if (tier === "pro" || tier === "creator_pro" || tier === "brand_pro") return PRO_TIER_MONTHLY_CAPS[feature];
   return FREE_TIER_MONTHLY_CAPS[feature];
 }
 
@@ -132,6 +132,24 @@ const INDIVIDUAL_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasScheduledSends: false,
   },
   pro: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: 3,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: false,
+    hasBrandedPage: false,
+    hasOpportunityAnalytics: false,
+    hasPriorityListing: false,
+    hasAITalentScout: false,
+    hasCampaignAnalytics: false,
+    hasScheduledSends: false,
+  },
+  creator_pro: {
     swipesPerDay: -1,
     maxPortfolioItems: -1,
     canUndoSwipe: true,
@@ -243,6 +261,24 @@ const COMPANY_LIMITS: Record<SubscriptionTier, TierLimits> = {
     hasScheduledSends: false,
   },
   pro: {
+    swipesPerDay: -1,
+    maxPortfolioItems: -1,
+    canUndoSwipe: true,
+    undoSwipesPerDay: 3,
+    canVerifyProfile: true,
+    hasAIMatchExplanations: true,
+    hasAdvancedFilters: true,
+    hasAdvancedProfile: true,
+    maxOpportunityPostings: -1,
+    hasApplicantTracking: true,
+    hasBrandedPage: true,
+    hasOpportunityAnalytics: true,
+    hasPriorityListing: true,
+    hasAITalentScout: true,
+    hasCampaignAnalytics: false,
+    hasScheduledSends: false,
+  },
+  creator_pro: {
     swipesPerDay: -1,
     maxPortfolioItems: -1,
     canUndoSwipe: true,
@@ -398,6 +434,7 @@ export const getTierDisplayName = (tier: SubscriptionTier): string => {
   const names: Record<SubscriptionTier, string> = {
     free: "Spark",
     pro: "Pro",
+    creator_pro: "Creator Pro",
     enterprise: "Enterprise",
     founder: "Founder Circle ⭕",
     brand_pro: "Brand Pro",

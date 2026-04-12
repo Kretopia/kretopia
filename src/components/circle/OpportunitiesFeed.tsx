@@ -38,6 +38,7 @@ interface Opportunity {
   barter_requesting: string | null;
   platform_requirements: string[] | null;
   min_followers: number | null;
+  scouted_by: string | null;
 }
 
 // Use shared GigCreatorProfile from GigCard

@@ -40,7 +40,7 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
   const [siteEnabled, setSiteEnabled] = useState(false);
   const { toast } = useToast();
   const { user, subscriptionInfo } = useAuth();
-  const isPro = hasProAccess(subscriptionInfo.tier as any);
+  const isPro = hasCreatorProAccess(subscriptionInfo.tier as any);
   const isOwner = user?.id === profile.user_id;
 
   const siteUrl = `https://www.thrivein.io/site/${profile.user_id}`;

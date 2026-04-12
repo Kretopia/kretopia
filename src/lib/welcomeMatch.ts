@@ -73,6 +73,7 @@ async function createBidirectionalConnection(userId1: string, userId2: string) {
     .single();
 
   if (founderProfile) {
+    // Send welcome notification
     await supabase.from('notifications').insert({
       user_id: userId1,
       title: "🎉 Welcome to ThriveIN!",
@@ -84,6 +85,15 @@ async function createBidirectionalConnection(userId1: string, userId2: string) {
       action_url: `/messages?user=${userId2}`,
       action_text: 'Send Message',
       image_url: founderProfile.avatar_url
+    });
+
+    // Send a personal welcome DM from Ethan
+    const welcomeMessage = `Hey! Welcome to ThriveIN 👋 I'm Ethan Auguste, the founder. I built this platform because I believe every creative deserves to be discovered and get paid for their work.\n\nA few things to get you started:\n• Search your name to claim your credits\n• Complete your profile so others can find you\n• Check out the opportunities board for gigs\n\nIf you need anything at all — I'm right here. Let's build something great together! 🚀`;
+
+    await supabase.from('messages').insert({
+      sender_id: userId2, // founder
+      receiver_id: userId1, // new user
+      content: welcomeMessage,
     });
   }
 }

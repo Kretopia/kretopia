@@ -152,10 +152,10 @@ export function UnifiedSearchDropdown({
           .limit(3),
       ]);
 
-      // Universal search in parallel (includes web + AI knowledge card) with 10s timeout
+      // Universal search in parallel (includes web + AI knowledge card) with 20s timeout
       const universalPromise = Promise.race([
         supabase.functions.invoke("universal-search", { body: { query: q } }).catch(() => ({ data: null })),
-        new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 10000)),
+        new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 20000)),
       ]);
 
       // Show DB results first (fast)
@@ -374,8 +374,8 @@ export function UnifiedSearchDropdown({
           )}
         >
           <div className="overflow-y-auto max-h-[inherit]">
-            {/* Loading state */}
-            {loading && results.length === 0 && (
+            {/* Loading state — show when either loading or webLoading with no results yet */}
+            {(loading || (webLoading && results.length === 0 && !knowledgeCard)) && (
               <div className="px-4 py-6 flex flex-col items-center gap-3">
                 <div className="relative">
                   <div className="h-10 w-10 rounded-full border-2 border-primary/20 flex items-center justify-center">
@@ -385,7 +385,9 @@ export function UnifiedSearchDropdown({
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-medium text-foreground">Searching the creative universe</p>
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">Checking creators, credits, gigs & the web...</p>
+                  <p className="text-xs text-muted-foreground/60 mt-0.5">
+                    {loading ? "Checking creators, credits, gigs & the web..." : "Scanning the web for matches..."}
+                  </p>
                 </div>
               </div>
             )}

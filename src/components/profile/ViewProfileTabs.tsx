@@ -83,6 +83,11 @@ export const ViewProfileTabs = ({
       case "hire":
         return (
           <WorkWithMeSection userId={userId} isOwner={false} creatorName={profile?.full_name} />
+        ) || (
+          <div className="text-center py-8 text-muted-foreground">
+            <DollarSign className="h-10 w-10 mx-auto mb-3 opacity-30" />
+            <p className="text-sm">{profile?.full_name?.split(' ')[0] || 'This creator'} hasn't listed any services yet</p>
+          </div>
         );
 
       case "skills":

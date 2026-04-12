@@ -102,42 +102,65 @@ serve(async (req) => {
 
     if (FIRECRAWL_API_KEY) {
       try {
-        // Single optimized search query — NO scraping for speed
-        const searchQuery = creatorQuery
+        // Two parallel searches: platform-specific + broad web for comprehensive coverage
+        const platformQuery = creatorQuery
           ? `"${trimmedQuery}" site:instagram.com OR site:linkedin.com OR site:spotify.com OR site:youtube.com OR site:imdb.com`
           : `"${trimmedQuery}" credits OR production OR album OR film OR event`;
+        
+        const broadQuery = creatorQuery
+          ? `"${trimmedQuery}" creator OR artist OR influencer OR producer OR musician OR filmmaker OR designer`
+          : `"${trimmedQuery}" creative project OR portfolio`;
 
-        const res = await fetch('https://api.firecrawl.dev/v1/search', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: searchQuery,
-            limit: 10,
-            // No scrapeOptions — just use search snippets for speed
-          }),
-        });
+        const [platformRes, broadRes] = await Promise.all([
+          fetch('https://api.firecrawl.dev/v1/search', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: platformQuery, limit: 10 }),
+          }).catch(() => null),
+          fetch('https://api.firecrawl.dev/v1/search', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: broadQuery, limit: 8 }),
+          }).catch(() => null),
+        ]);
 
-        if (res.ok) {
-          const data = await res.json();
-          const flatResults = data.data || [];
+        const allFlatResults: any[] = [];
+        const seenUrls = new Set<string>();
 
-          for (const result of flatResults) {
-            const imageUrl = extractImageUrl(result);
-            const snippet = [
-              result.title ? `Title: ${result.title}` : '',
-              result.url ? `URL: ${result.url}` : '',
-              imageUrl ? `Image: ${imageUrl}` : '',
-              result.description ? `Description: ${result.description}` : '',
-            ].filter(Boolean).join('\n');
-
-            if (snippet.length > 20) {
-              webSnippets.push(snippet);
+        for (const res of [platformRes, broadRes]) {
+          if (res && res.ok) {
+            const data = await res.json();
+            for (const result of (data.data || [])) {
+              const url = (result.url || '').toLowerCase();
+              if (!seenUrls.has(url)) {
+                seenUrls.add(url);
+                allFlatResults.push(result);
+              }
             }
           }
         }
+
+        for (const result of allFlatResults) {
+          const imageUrl = extractImageUrl(result);
+          const snippet = [
+            result.title ? `Title: ${result.title}` : '',
+            result.url ? `URL: ${result.url}` : '',
+            imageUrl ? `Image: ${imageUrl}` : '',
+            result.description ? `Description: ${result.description}` : '',
+          ].filter(Boolean).join('\n');
+
+          if (snippet.length > 20) {
+            webSnippets.push(snippet);
+          }
+        }
+
+        console.log(`Firecrawl found ${webSnippets.length} results for "${trimmedQuery}"`);
 
         console.log(`Firecrawl found ${webSnippets.length} results for "${trimmedQuery}"`);
       } catch (fcErr) {

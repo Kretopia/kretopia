@@ -307,11 +307,27 @@ export const CreatorSiteSettings = () => {
                     </div>
                   </div>
 
-                  {/* Re-run wizard */}
-                  <Button variant="outline" size="sm" className="w-full" onClick={() => setShowWizard(true)}>
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    Re-run Setup Wizard
-                  </Button>
+                  {/* Preview & Wizard buttons */}
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={showPreview ? "default" : "outline"} 
+                      size="sm" 
+                      className="flex-1" 
+                      onClick={() => { setShowPreview(!showPreview); setPreviewKey(k => k + 1); }}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      {showPreview ? "Hide Preview" : "Live Preview"}
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowWizard(true)}>
+                      <Wand2 className="h-4 w-4 mr-2" />
+                      Setup Wizard
+                    </Button>
+                  </div>
+
+                  {/* Live Preview */}
+                  {showPreview && (
+                    <SitePreviewPanel siteUrl={siteUrl} className="h-[500px]" />
+                  )}
 
                   {/* Section Editor */}
                   <CreatorSiteSectionEditor
@@ -319,6 +335,9 @@ export const CreatorSiteSettings = () => {
                     initialHeadline={siteHeadline}
                     initialBio={siteBio}
                   />
+
+                  {/* Analytics */}
+                  <SiteAnalyticsDashboard />
                 </div>
               )}
             </>

@@ -20,6 +20,14 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
   const [showInquiry, setShowInquiry] = useState(false);
 
   const firstName = profile.full_name?.split(' ')[0] || 'Creator';
+  const sections = Array.isArray(profile.site_sections) ? profile.site_sections : [];
+  const isSectionVisible = (id: string) => {
+    const section = sections.find((s: any) => s.id === id);
+    return section ? section.visible !== false : true;
+  };
+  const displayHeadline = profile.site_headline || profile.role || 'Creative Professional';
+  const displayBio = profile.site_bio || profile.bio || `${firstName} is a creative professional ready to bring your vision to life.`;
+
   const allTestimonials = [
     ...endorsements.filter(e => e.testimonial).map(e => ({
       text: e.testimonial,

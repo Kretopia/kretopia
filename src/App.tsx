@@ -216,6 +216,7 @@ const AppContent = () => {
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}
             <Route path="/profile/:userId" element={<ViewProfile />} />
             <Route path="/epk/:userId" element={<CreatorEPK />} />
+            <Route path="/site/:userId" element={<CreatorSite />} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/my-analytics" element={<Navigate to="/profile" replace />} />

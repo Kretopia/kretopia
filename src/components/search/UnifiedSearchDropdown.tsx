@@ -23,6 +23,7 @@ interface KnowledgeCard {
   type: string;
   name: string;
   description: string;
+  image_url?: string | null;
   known_for?: string[];
   industry?: string;
   platforms?: string[];
@@ -33,6 +34,7 @@ interface KnowledgeCard {
 interface AlternativeMatch {
   name: string;
   description: string;
+  image_url?: string | null;
   industry?: string;
   location?: string;
   known_for?: string[];

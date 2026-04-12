@@ -12,17 +12,27 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-// Product ID to tier mapping — includes both creator and brand products
+// Product ID to tier mapping — includes current, yearly, and legacy products
 const PRODUCT_TIER_MAP: Record<string, string> = {
-  // Brand Enterprise
+  // Brand Enterprise (current monthly + yearly + legacy)
+  'prod_UKAmQMESnSKqwB': 'brand_enterprise',
+  'prod_UKAmq7dJi4lkBd': 'brand_enterprise',
   'prod_UDoT2jPlIxVnLp': 'brand_enterprise',
-  // Brand Pro
+  // Brand Pro (current monthly + yearly + legacy)
+  'prod_UKAmkngXKhLPdB': 'brand_pro',
+  'prod_UKAmubvs5yP0o2': 'brand_pro',
   'prod_UDoSA9g7yHRm3X': 'brand_pro',
-  // Creator Enterprise
+  // Creator Enterprise (current monthly + yearly + legacy)
+  'prod_UKAmUMW9FUQLZD': 'enterprise',
+  'prod_UKAl8dxTE4ZidO': 'enterprise',
   'prod_U5VmCaKx7g2lbw': 'enterprise',
-  // Creator Pro (premium site builder tier)
+  // Creator Pro (current monthly + yearly + legacy)
+  'prod_UKAmxFRvNL3ez3': 'creator_pro',
+  'prod_UKAlBEJxMen4Xr': 'creator_pro',
   'prod_UKARjeRiOcTS46': 'creator_pro',
-  // Creator Pro (current + legacy)
+  // Creator Pro (current monthly + yearly + legacy)
+  'prod_UKAmTywyqyLhMk': 'pro',
+  'prod_UKAlwpY8dS3Doc': 'pro',
   'prod_TWc5tpvPKjy8hG': 'pro',
   'prod_TA5c8GtL6ioS2h': 'pro',
   'prod_TA5ihoppNqeijE': 'pro',
@@ -79,9 +89,9 @@ serve(async (req) => {
     if (customers.data.length === 0) {
       logStep("No customer found");
       const isComplimentary = profileData?.subscription_status === 'active' && 
-        ['pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
+        ['pro', 'creator_pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       const isManualTrial = profileData?.subscription_status === 'trialing' && 
-        ['pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
+        ['pro', 'creator_pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       
       if (isComplimentary || isManualTrial) {
         logStep("Complimentary/trial profile detected, skipping downgrade");
@@ -115,9 +125,9 @@ serve(async (req) => {
     if (allSubs.length === 0) {
       logStep("No active subscription found");
       const isComplimentaryNoSub = profileData?.subscription_status === 'active' && 
-        ['pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
+        ['pro', 'creator_pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       const isManualTrialNoSub = profileData?.subscription_status === 'trialing' && 
-        ['pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
+        ['pro', 'creator_pro', 'enterprise', 'brand_pro', 'brand_enterprise'].includes(profileData.subscription_tier);
       
       if (isComplimentaryNoSub || isManualTrialNoSub) {
         return new Response(JSON.stringify({

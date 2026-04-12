@@ -9,9 +9,12 @@ import { Check, Loader2, Sparkles, Zap, Crown, Building2, User, Briefcase, Globe
 import { 
   SUBSCRIPTION_PRODUCTS, BRAND_SUBSCRIPTION_PRODUCTS,
   PRO_FEATURES, FREE_FEATURES, ENTERPRISE_FEATURES, CREATOR_PRO_FEATURES,
-  type AccountType, hasProAccess, isBrandTier
+  type AccountType, type BillingInterval, hasProAccess, isBrandTier,
+  getYearlySavings, getEffectiveMonthlyPrice,
 } from "@/lib/subscriptionConfig";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const FOUNDER_FEATURES = [
   "Exclusive Founder Circle badge",
@@ -26,12 +29,14 @@ const FOUNDER_FEATURES = [
   "Founding member recognition",
 ];
 
-function getCreatorTiers() {
+function getCreatorTiers(interval: BillingInterval) {
+  const isYearly = interval === 'yearly';
   return [
     {
       name: "Spark",
-      tier: "free",
-      price: "$0",
+      tier: "free" as const,
+      price: 0,
+      displayPrice: "$0",
       priceId: null,
       productId: null,
       icon: Zap,
@@ -41,43 +46,51 @@ function getCreatorTiers() {
     {
       name: SUBSCRIPTION_PRODUCTS.pro.name,
       tier: SUBSCRIPTION_PRODUCTS.pro.tier,
-      price: `$${SUBSCRIPTION_PRODUCTS.pro.price}`,
-      priceId: SUBSCRIPTION_PRODUCTS.pro.priceId,
-      productId: SUBSCRIPTION_PRODUCTS.pro.productId,
+      price: isYearly ? SUBSCRIPTION_PRODUCTS.pro.yearlyPrice : SUBSCRIPTION_PRODUCTS.pro.price,
+      displayPrice: isYearly ? `$${getEffectiveMonthlyPrice('pro')}` : `$${SUBSCRIPTION_PRODUCTS.pro.price}`,
+      priceId: isYearly ? SUBSCRIPTION_PRODUCTS.pro.yearlyPriceId : SUBSCRIPTION_PRODUCTS.pro.priceId,
+      productId: isYearly ? SUBSCRIPTION_PRODUCTS.pro.yearlyProductId : SUBSCRIPTION_PRODUCTS.pro.productId,
       icon: Sparkles,
       popular: true,
       description: "For serious creators",
       features: PRO_FEATURES.individual,
+      savings: isYearly ? getYearlySavings('pro') : 0,
     },
     {
       name: SUBSCRIPTION_PRODUCTS.creator_pro.name,
       tier: SUBSCRIPTION_PRODUCTS.creator_pro.tier,
-      price: `$${SUBSCRIPTION_PRODUCTS.creator_pro.price}`,
-      priceId: SUBSCRIPTION_PRODUCTS.creator_pro.priceId,
-      productId: SUBSCRIPTION_PRODUCTS.creator_pro.productId,
+      price: isYearly ? SUBSCRIPTION_PRODUCTS.creator_pro.yearlyPrice : SUBSCRIPTION_PRODUCTS.creator_pro.price,
+      displayPrice: isYearly ? `$${getEffectiveMonthlyPrice('creator_pro')}` : `$${SUBSCRIPTION_PRODUCTS.creator_pro.price}`,
+      priceId: isYearly ? SUBSCRIPTION_PRODUCTS.creator_pro.yearlyPriceId : SUBSCRIPTION_PRODUCTS.creator_pro.priceId,
+      productId: isYearly ? SUBSCRIPTION_PRODUCTS.creator_pro.yearlyProductId : SUBSCRIPTION_PRODUCTS.creator_pro.productId,
       icon: Globe,
       description: "Pro + your own creator website",
       features: CREATOR_PRO_FEATURES,
+      savings: isYearly ? getYearlySavings('creator_pro') : 0,
     },
     {
       name: SUBSCRIPTION_PRODUCTS.enterprise.name,
       tier: SUBSCRIPTION_PRODUCTS.enterprise.tier,
-      price: `$${SUBSCRIPTION_PRODUCTS.enterprise.price}`,
-      priceId: SUBSCRIPTION_PRODUCTS.enterprise.priceId,
-      productId: SUBSCRIPTION_PRODUCTS.enterprise.productId,
+      price: isYearly ? SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice : SUBSCRIPTION_PRODUCTS.enterprise.price,
+      displayPrice: isYearly ? `$${getEffectiveMonthlyPrice('enterprise')}` : `$${SUBSCRIPTION_PRODUCTS.enterprise.price}`,
+      priceId: isYearly ? SUBSCRIPTION_PRODUCTS.enterprise.yearlyPriceId : SUBSCRIPTION_PRODUCTS.enterprise.priceId,
+      productId: isYearly ? SUBSCRIPTION_PRODUCTS.enterprise.yearlyProductId : SUBSCRIPTION_PRODUCTS.enterprise.productId,
       icon: Building2,
       description: "For power users & agencies",
       features: ENTERPRISE_FEATURES.individual,
+      savings: isYearly ? getYearlySavings('enterprise') : 0,
     },
   ];
 }
 
-function getBrandTiers() {
+function getBrandTiers(interval: BillingInterval) {
+  const isYearly = interval === 'yearly';
   return [
     {
       name: "Spark",
-      tier: "free",
-      price: "$0",
+      tier: "free" as const,
+      price: 0,
+      displayPrice: "$0",
       priceId: null,
       productId: null,
       icon: Zap,
@@ -87,23 +100,27 @@ function getBrandTiers() {
     {
       name: BRAND_SUBSCRIPTION_PRODUCTS.pro.name,
       tier: BRAND_SUBSCRIPTION_PRODUCTS.pro.tier,
-      price: `$${BRAND_SUBSCRIPTION_PRODUCTS.pro.price}`,
-      priceId: BRAND_SUBSCRIPTION_PRODUCTS.pro.priceId,
-      productId: BRAND_SUBSCRIPTION_PRODUCTS.pro.productId,
+      price: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyPrice : BRAND_SUBSCRIPTION_PRODUCTS.pro.price,
+      displayPrice: isYearly ? `$${getEffectiveMonthlyPrice('brand_pro')}` : `$${BRAND_SUBSCRIPTION_PRODUCTS.pro.price}`,
+      priceId: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyPriceId : BRAND_SUBSCRIPTION_PRODUCTS.pro.priceId,
+      productId: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.pro.yearlyProductId : BRAND_SUBSCRIPTION_PRODUCTS.pro.productId,
       icon: Sparkles,
       popular: true,
       description: "For brands & studios hiring talent",
       features: PRO_FEATURES.company,
+      savings: isYearly ? getYearlySavings('brand_pro') : 0,
     },
     {
       name: BRAND_SUBSCRIPTION_PRODUCTS.enterprise.name,
       tier: BRAND_SUBSCRIPTION_PRODUCTS.enterprise.tier,
-      price: `$${BRAND_SUBSCRIPTION_PRODUCTS.enterprise.price}`,
-      priceId: BRAND_SUBSCRIPTION_PRODUCTS.enterprise.priceId,
-      productId: BRAND_SUBSCRIPTION_PRODUCTS.enterprise.productId,
+      price: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyPrice : BRAND_SUBSCRIPTION_PRODUCTS.enterprise.price,
+      displayPrice: isYearly ? `$${getEffectiveMonthlyPrice('brand_enterprise')}` : `$${BRAND_SUBSCRIPTION_PRODUCTS.enterprise.price}`,
+      priceId: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyPriceId : BRAND_SUBSCRIPTION_PRODUCTS.enterprise.priceId,
+      productId: isYearly ? BRAND_SUBSCRIPTION_PRODUCTS.enterprise.yearlyProductId : BRAND_SUBSCRIPTION_PRODUCTS.enterprise.productId,
       icon: Building2,
       description: "For agencies & large teams",
       features: ENTERPRISE_FEATURES.company,
+      savings: isYearly ? getYearlySavings('brand_enterprise') : 0,
     },
   ];
 }
@@ -114,6 +131,7 @@ export default function Subscription() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>("none");
   const [accountType, setAccountType] = useState<AccountType>("individual");
   const [viewMode, setViewMode] = useState<"creator" | "brand">("creator");
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>("monthly");
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [founderSpotsTaken, setFounderSpotsTaken] = useState(0);
   const { toast } = useToast();
@@ -126,7 +144,6 @@ export default function Subscription() {
 
   useEffect(() => {
     if (!checkingSubscription) {
-      // Set default view based on account type
       if (accountType === "company") setViewMode("brand");
       const trackPaywall = async () => {
         const { analytics } = await import("@/lib/analytics");
@@ -239,7 +256,7 @@ export default function Subscription() {
     );
   }
 
-  const tiers = viewMode === "brand" ? getBrandTiers() : getCreatorTiers();
+  const tiers = viewMode === "brand" ? getBrandTiers(billingInterval) : getCreatorTiers(billingInterval);
   const founderSpotsRemaining = SUBSCRIPTION_PRODUCTS.founder.maxSpots - founderSpotsTaken;
   const isFounder = currentTier === 'founder';
   const hasPaidSub = currentTier !== "free" && (subscriptionStatus === "active" || subscriptionStatus === "trialing") && currentTier !== "founder";
@@ -267,6 +284,26 @@ export default function Subscription() {
             </TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {/* Billing interval toggle */}
+        <div className="flex items-center justify-center gap-3 mt-4">
+          <Label htmlFor="billing-toggle" className={`text-sm ${billingInterval === 'monthly' ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+            Monthly
+          </Label>
+          <Switch 
+            id="billing-toggle"
+            checked={billingInterval === 'yearly'}
+            onCheckedChange={(checked) => setBillingInterval(checked ? 'yearly' : 'monthly')}
+          />
+          <Label htmlFor="billing-toggle" className={`text-sm ${billingInterval === 'yearly' ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+            Yearly
+          </Label>
+          {billingInterval === 'yearly' && (
+            <Badge variant="secondary" className="bg-success/10 text-success border-success/20 text-xs">
+              Save up to 17%
+            </Badge>
+          )}
+        </div>
 
         <p className="text-sm text-primary font-medium mt-3">
           Start with a 7-day free trial — no commitment
@@ -319,6 +356,9 @@ export default function Subscription() {
                 <span className="text-4xl font-bold">$499</span>
                 <span className="text-muted-foreground ml-2">one-time payment</span>
               </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                That's less than 9 months of Enterprise — yours forever
+              </p>
             </CardHeader>
 
             <CardContent>
@@ -372,16 +412,17 @@ export default function Subscription() {
 
       {viewMode === "creator" && (
         <div className="text-center mb-8">
-          <p className="text-sm text-muted-foreground">— or choose a monthly plan —</p>
+          <p className="text-sm text-muted-foreground">— or choose a {billingInterval} plan —</p>
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
+      <div className={`grid gap-5 max-w-6xl mx-auto ${viewMode === 'brand' ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-4'}`}>
         {tiers.map((tier) => {
           const Icon = tier.icon;
           const isCurrentTier = tier.tier === currentTier;
           const isLoading = loading === tier.priceId;
           const isBrand = tier.tier.startsWith('brand_');
+          const savings = 'savings' in tier ? tier.savings : 0;
 
           return (
             <Card
@@ -410,7 +451,7 @@ export default function Subscription() {
               )}
               {(tier.tier === "enterprise" || tier.tier === "brand_enterprise") && !isCurrentTier && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
-                  {isBrand ? "Full Suite" : "Power User"}
+                  {isBrand ? "Full Suite" : "Custom Domain"}
                 </Badge>
               )}
               {isCurrentTier && (
@@ -427,12 +468,20 @@ export default function Subscription() {
                     'text-muted-foreground'
                   }`} />
                   <div className="text-right">
-                    <div className="text-3xl font-bold">{tier.price}</div>
+                    <div className="text-3xl font-bold">{tier.displayPrice}</div>
                     {tier.tier !== "free" && (
                       <div className="text-sm text-muted-foreground">/month</div>
                     )}
-                    {tier.tier !== "free" && !isCurrentTier && (
+                    {billingInterval === 'yearly' && tier.tier !== "free" && savings > 0 && (
+                      <div className="text-xs text-success font-semibold">Save ${savings}/yr</div>
+                    )}
+                    {billingInterval === 'monthly' && tier.tier !== "free" && !isCurrentTier && (
                       <div className="text-xs text-primary font-medium">7 days free</div>
+                    )}
+                    {billingInterval === 'yearly' && tier.tier !== "free" && (
+                      <div className="text-[10px] text-muted-foreground">
+                        ${tier.price}/yr billed annually
+                      </div>
                     )}
                   </div>
                 </div>
@@ -472,7 +521,7 @@ export default function Subscription() {
                     ) : tier.tier === "free" ? (
                       "Current Plan"
                     ) : (
-                      "Start 7-Day Free Trial"
+                      billingInterval === 'yearly' ? "Start Annual Plan" : "Start 7-Day Free Trial"
                     )}
                   </Button>
                 )}

@@ -40,9 +40,9 @@ export const SignupEmail = ({
           alt="ThriveIN"
           style={{ marginBottom: '24px' }}
         />
-        <Heading style={h1}>Welcome to ThriveIN 🎉</Heading>
+        <Heading style={h1}>Welcome to ThriveIN</Heading>
         <Text style={text}>
-          You're one step away from joining the creative community. Verify your email to unlock discovery, collaboration, and your creative career dashboard.
+          You're one step away from joining the professional creative network. Verify your email to unlock verified credits, real gigs, and your creative career dashboard.
         </Text>
         <Text style={text}>
           Confirm your email (
@@ -78,9 +78,9 @@ const text = {
   lineHeight: '1.6',
   margin: '0 0 24px',
 }
-const link = { color: '#9b59e6', textDecoration: 'underline' }
+const link = { color: '#4338CA', textDecoration: 'underline' }
 const button = {
-  backgroundColor: '#9b59e6',
+  backgroundColor: '#4338CA',
   color: '#ffffff',
   fontSize: '15px',
   fontWeight: '600' as const,

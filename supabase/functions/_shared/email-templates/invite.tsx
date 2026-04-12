@@ -28,7 +28,7 @@ export const InviteEmail = ({
 }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>You've been invited to ThriveIN 🎉</Preview>
+    <Preview>You've been invited to ThriveIN</Preview>
     <Body style={main}>
       <Container style={container}>
         <Img
@@ -38,13 +38,13 @@ export const InviteEmail = ({
           alt="ThriveIN"
           style={{ marginBottom: '24px' }}
         />
-        <Heading style={h1}>You're invited!</Heading>
+        <Heading style={h1}>You're invited</Heading>
         <Text style={text}>
           Someone on{' '}
           <Link href={siteUrl} style={link}>
             <strong>ThriveIN</strong>
           </Link>{' '}
-          thinks you'd be a great addition to the creative community. Accept the invite to set up your profile and start connecting.
+          thinks you'd be a great addition to the professional creative network. Accept the invite to claim your credits, set up your profile, and start getting booked.
         </Text>
         <Button style={button} href={confirmationUrl}>
           Accept Invitation
@@ -73,9 +73,9 @@ const text = {
   lineHeight: '1.6',
   margin: '0 0 24px',
 }
-const link = { color: '#9b59e6', textDecoration: 'underline' }
+const link = { color: '#4338CA', textDecoration: 'underline' }
 const button = {
-  backgroundColor: '#9b59e6',
+  backgroundColor: '#4338CA',
   color: '#ffffff',
   fontSize: '15px',
   fontWeight: '600' as const,

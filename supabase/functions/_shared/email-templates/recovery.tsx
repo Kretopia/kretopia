@@ -37,7 +37,7 @@ export const RecoveryEmail = ({
         />
         <Heading style={h1}>Reset your password</Heading>
         <Text style={text}>
-          We got your request to reset your ThriveIN password. Hit the button below to choose a new one — takes 30 seconds.
+          We received your request to reset your ThriveIN password. Tap below to choose a new one — takes 30 seconds.
         </Text>
         <Button style={button} href={confirmationUrl}>
           Reset Password
@@ -67,7 +67,7 @@ const text = {
   margin: '0 0 24px',
 }
 const button = {
-  backgroundColor: '#9b59e6',
+  backgroundColor: '#4338CA',
   color: '#ffffff',
   fontSize: '15px',
   fontWeight: '600' as const,

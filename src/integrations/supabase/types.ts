@@ -5692,7 +5692,10 @@ export type Database = {
           review_share_token: string | null
           role: string
           section_order: Json | null
+          site_bio: string | null
           site_enabled: boolean | null
+          site_headline: string | null
+          site_sections: Json | null
           site_template: string | null
           social_verified: boolean | null
           soundcloud_url: string | null
@@ -5839,7 +5842,10 @@ export type Database = {
           review_share_token?: string | null
           role: string
           section_order?: Json | null
+          site_bio?: string | null
           site_enabled?: boolean | null
+          site_headline?: string | null
+          site_sections?: Json | null
           site_template?: string | null
           social_verified?: boolean | null
           soundcloud_url?: string | null
@@ -5986,7 +5992,10 @@ export type Database = {
           review_share_token?: string | null
           role?: string
           section_order?: Json | null
+          site_bio?: string | null
           site_enabled?: boolean | null
+          site_headline?: string | null
+          site_sections?: Json | null
           site_template?: string | null
           social_verified?: boolean | null
           soundcloud_url?: string | null

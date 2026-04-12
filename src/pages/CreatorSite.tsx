@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
 import { BoldElectricTemplate } from "@/components/creator-site/BoldElectricTemplate";
+import { MinimalEditorialTemplate } from "@/components/creator-site/MinimalEditorialTemplate";
+import { PortfolioMosaicTemplate } from "@/components/creator-site/PortfolioMosaicTemplate";
 import { Loader2 } from "lucide-react";
 
 export interface CreatorSiteData {

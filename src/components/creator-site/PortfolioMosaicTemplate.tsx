@@ -18,6 +18,14 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
   const [showInquiry, setShowInquiry] = useState(false);
   const firstName = profile.full_name?.split(' ')[0] || 'Creator';
 
+  const sections = Array.isArray(profile.site_sections) ? profile.site_sections : [];
+  const isSectionVisible = (id: string) => {
+    const section = sections.find((s: any) => s.id === id);
+    return section ? section.visible !== false : true;
+  };
+  const displayHeadline = profile.site_headline || profile.role || `Hi, I'm ${firstName}`;
+  const displayBio = profile.site_bio || profile.bio || `${firstName} creates compelling work across multiple disciplines.`;
+
   const allTestimonials = [
     ...endorsements.filter(e => e.testimonial).map(e => ({
       text: e.testimonial,
@@ -66,10 +74,10 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
               {profile.location || 'Creative Professional'}
             </div>
             <h1 className="text-4xl md:text-6xl font-bold leading-[1.1] mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-              {profile.role || `Hi, I'm ${firstName}`}
+              {displayHeadline}
             </h1>
-            <p className="text-base md:text-lg text-zinc-500 leading-relaxed max-w-lg mb-8">
-              {profile.bio || `${firstName} creates compelling work across multiple disciplines.`}
+            <p className="text-base md:text-lg text-zinc-500 leading-relaxed max-w-lg mb-8 whitespace-pre-line">
+              {displayBio}
             </p>
             <div className="flex flex-wrap gap-3">
               <button

@@ -7,6 +7,14 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
   const [showInquiry, setShowInquiry] = useState(false);
   const firstName = profile.full_name?.split(' ')[0] || 'Creator';
 
+  const sections = Array.isArray(profile.site_sections) ? profile.site_sections : [];
+  const isSectionVisible = (id: string) => {
+    const section = sections.find((s: any) => s.id === id);
+    return section ? section.visible !== false : true;
+  };
+  const displayHeadline = profile.site_headline || profile.role || 'Creative Professional';
+  const displayBio = profile.site_bio || profile.bio || `${firstName} brings a refined approach to every project.`;
+
   const allTestimonials = [
     ...endorsements.filter(e => e.testimonial).map(e => ({
       text: e.testimonial,
@@ -46,11 +54,11 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
       {/* Hero */}
       <section className="px-6 md:px-16 py-16 md:py-28 max-w-5xl">
         <h1 className="text-5xl md:text-[5.5rem] font-light leading-[1.05] tracking-tight mb-8">
-          {profile.role || 'Creative Professional'}
+          {displayHeadline}
         </h1>
         <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-start">
-          <p className="text-lg md:text-xl text-[#555] leading-relaxed font-light" style={{ fontFamily: "'Inter', sans-serif" }}>
-            {profile.bio || `${firstName} brings a refined approach to every project.`}
+          <p className="text-lg md:text-xl text-[#555] leading-relaxed font-light whitespace-pre-line" style={{ fontFamily: "'Inter', sans-serif" }}>
+            {displayBio}
           </p>
           <div className="space-y-4">
             {profile.location && (

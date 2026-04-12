@@ -10,7 +10,7 @@ const CREATE_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/events", icon: CalendarDays, label: "Events" },
   { path: "/circle", icon: Sparkles, label: "Match" },
-  { path: "/circles", icon: Users, label: "Circles" },
+  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
 ];
 
 const WORK_ITEMS = [
@@ -62,7 +62,6 @@ const BottomNav = memo(() => {
     if (path === "/") return location.pathname === "/";
     if (path === "/events") return location.pathname === "/events";
     if (path === "/circle") return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
-    if (path === "/circles") return location.pathname === "/circles";
     if (path === "/opportunities") return location.pathname === "/opportunities" || location.pathname === "/opportunity-dashboard";
     if (path === "/desk") return location.pathname.startsWith("/desk");
     return location.pathname === path;

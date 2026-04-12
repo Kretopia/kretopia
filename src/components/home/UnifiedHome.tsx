@@ -255,6 +255,8 @@ export const UnifiedHome = () => {
       {/* ═══════════ BEFORE/AFTER DIFFERENTIATION ═══════════ */}
       {!user && <BeforeAfterSection />}
 
+      {/* ═══════════ PRICING PREVIEW ═══════════ */}
+      {!user && <PricingPreviewSection />}
 
       {activityMsg && !user && (
         <div className="border-y border-border/50 bg-muted/30">

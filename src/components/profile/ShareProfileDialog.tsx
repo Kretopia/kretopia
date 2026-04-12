@@ -201,7 +201,40 @@ ${shareableUrl}`;
             </div>
           </div>
 
-          {/* Profile URL */}
+          {/* Creator Site URL - shown for Pro users with site enabled */}
+          {isOwner && isPro && siteEnabled && (
+            <div className="space-y-2 p-3 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-primary" />
+                <Label className="font-semibold text-sm">Your Creator Site</Label>
+              </div>
+              <p className="text-xs text-muted-foreground">Share this as your link-in-bio — it's your standalone portfolio website</p>
+              <div className="flex gap-2">
+                <Input
+                  value={siteUrl}
+                  readOnly
+                  className="font-mono text-xs"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    navigator.clipboard.writeText(siteUrl);
+                    setCopiedSiteUrl(true);
+                    toast({ title: "Creator Site link copied!" });
+                    setTimeout(() => setCopiedSiteUrl(false), 2000);
+                  }}
+                >
+                  {copiedSiteUrl ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                </Button>
+                <Button variant="outline" size="icon" asChild>
+                  <a href={siteUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="profile-url">Your Profile Link</Label>
             <div className="flex gap-2">

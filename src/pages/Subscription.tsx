@@ -422,7 +422,7 @@ export default function Subscription() {
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
                   <Icon className={`h-8 w-8 ${
-                    tier.tier === 'pro' || tier.tier === 'brand_pro' ? 'text-primary' : 
+                    tier.tier === 'pro' || tier.tier === 'brand_pro' || tier.tier === 'creator_pro' ? 'text-primary' : 
                     tier.tier === 'enterprise' || tier.tier === 'brand_enterprise' ? 'text-primary' : 
                     'text-muted-foreground'
                   }`} />

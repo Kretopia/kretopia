@@ -38,6 +38,7 @@ interface Opportunity {
   barter_requesting: string | null;
   platform_requirements: string[] | null;
   min_followers: number | null;
+  scouted_by: string | null;
 }
 
 // Use shared GigCreatorProfile from GigCard
@@ -396,7 +397,8 @@ export const OpportunitiesFeed = () => {
 
       {/* Cards */}
       {!loading && opportunities.map((opp, index) => {
-        const creator = opp.created_by ? creators[opp.created_by] : null;
+        // Don't show scout's profile as the poster — show "Scouted for" label instead
+        const creator = opp.scouted_by ? null : (opp.created_by ? creators[opp.created_by] : null);
 
         return (
           <DiscoveryGate key={opp.id} totalItems={opportunities.length} freePreviewCount={4} index={index} itemLabel="gigs">

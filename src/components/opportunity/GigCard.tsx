@@ -5,7 +5,7 @@ import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
 import {
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock,
   DollarSign, Zap, Target, GraduationCap, AlertTriangle,
-  Gift, ArrowRight, Shield, User, Verified, Percent,
+  Gift, ArrowRight, Shield, User, Verified, Percent, Radar,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
@@ -30,6 +30,7 @@ export interface GigOpportunity {
   min_followers?: number | null;
   is_priority?: boolean;
   priority_expires_at?: string | null;
+  scouted_by?: string | null;
 }
 
 export interface GigCreatorProfile {
@@ -177,7 +178,14 @@ const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
 
         {/* Meta Row */}
         <div className="flex items-center gap-3 mt-2 text-[11px] text-[hsl(220,10%,45%)] overflow-x-auto">
-          {creator && (
+          {opp.scouted_by ? (
+            <span className="flex items-center gap-1 shrink-0">
+              <Radar className="h-3 w-3 text-primary" />
+              <span className="truncate max-w-[140px] text-primary/80 italic">
+                Scouted for {opp.title?.split(' ').slice(0, 3).join(' ')}
+              </span>
+            </span>
+          ) : creator && (
             <span className="flex items-center gap-1 shrink-0">
               {creator.avatar_url ? (
                 <Avatar className="h-4 w-4">

@@ -399,9 +399,18 @@ export function UnifiedSearchDropdown({
               <div className="border-b border-border bg-gradient-to-b from-primary/5 to-transparent">
                 <div className="px-4 py-3">
                   <div className="flex items-start gap-3">
-                    <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-2 ring-primary/20">
-                      <Globe className="h-5 w-5 text-primary" />
-                    </div>
+                    {knowledgeCard.image_url ? (
+                      <Avatar className="h-11 w-11 shrink-0 ring-2 ring-primary/20">
+                        <AvatarImage src={knowledgeCard.image_url} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                          {(knowledgeCard.name || "?")[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ring-2 ring-primary/20">
+                        <Globe className="h-5 w-5 text-primary" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-bold text-foreground truncate">{knowledgeCard.name}</p>

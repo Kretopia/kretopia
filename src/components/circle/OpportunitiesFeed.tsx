@@ -397,7 +397,8 @@ export const OpportunitiesFeed = () => {
 
       {/* Cards */}
       {!loading && opportunities.map((opp, index) => {
-        const creator = opp.created_by ? creators[opp.created_by] : null;
+        // Don't show scout's profile as the poster — show "Scouted for" label instead
+        const creator = opp.scouted_by ? null : (opp.created_by ? creators[opp.created_by] : null);
 
         return (
           <DiscoveryGate key={opp.id} totalItems={opportunities.length} freePreviewCount={4} index={index} itemLabel="gigs">

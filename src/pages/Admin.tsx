@@ -309,6 +309,10 @@ export default function Admin() {
           <VerificationTab />
         </TabsContent>
 
+        <TabsContent value="drip" className="mt-4 sm:mt-6">
+          <DripCampaignTab />
+        </TabsContent>
+
         <TabsContent value="system" className="mt-4 sm:mt-6">
           <div className="space-y-6">
             {/* ODOS Import Card */}

@@ -8,7 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DripAnalyticsPanel } from "./DripAnalyticsPanel";
 import {
   Upload, Send, Loader2, FolderPlus, Play, Pause, BarChart3, Mail, Users, CheckCircle, XCircle, Clock
 } from "lucide-react";

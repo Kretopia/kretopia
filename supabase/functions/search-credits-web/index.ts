@@ -269,7 +269,7 @@ async function firecrawlSearch(apiKey: string, query: string, limit: number): Pr
   }
 }
 
-async function firecrawlScrape(apiKey: string, url: string): Promise<string> {
+async function firecrawlScrape(apiKey: string, url: string): Promise<{ markdown: string; image_url: string | null }> {
   try {
     const res = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
@@ -284,11 +284,16 @@ async function firecrawlScrape(apiKey: string, url: string): Promise<string> {
       }),
     });
 
-    if (!res.ok) return '';
+    if (!res.ok) return { markdown: '', image_url: null };
     const data = await res.json();
-    return data?.data?.markdown || data?.markdown || '';
+    const scrapeData = data?.data || data || {};
+    const markdown = scrapeData?.markdown || '';
+    const metadata = scrapeData?.metadata || {};
+    const ogImage = metadata?.ogImage || metadata?.og?.image || metadata?.image || metadata?.twitter?.image;
+    const image_url = (typeof ogImage === 'string' && ogImage.startsWith('http')) ? ogImage : null;
+    return { markdown, image_url };
   } catch {
-    return '';
+    return { markdown: '', image_url: null };
   }
 }
 
@@ -344,12 +349,17 @@ serve(async (req) => {
         const scrapedEntries = await Promise.all(
           scrapeTargets.map(async (result) => {
             const url = result.url || '';
-            const markdown = await firecrawlScrape(FIRECRAWL_API_KEY, url);
-            return [url.toLowerCase(), extractPageExcerpt(markdown)] as const;
+            const scraped = await firecrawlScrape(FIRECRAWL_API_KEY, url);
+            return { url: url.toLowerCase(), excerpt: extractPageExcerpt(scraped.markdown), image_url: scraped.image_url };
           })
         );
 
-        const scrapedByUrl = new Map<string, string>(scrapedEntries.filter((entry) => entry[1]));
+        const scrapedByUrl = new Map<string, { excerpt: string; image_url: string | null }>();
+        for (const entry of scrapedEntries) {
+          if (entry.excerpt || entry.image_url) {
+            scrapedByUrl.set(entry.url, { excerpt: entry.excerpt, image_url: entry.image_url });
+          }
+        }
 
         for (const result of rankedResults.slice(0, 28)) {
           const url = result.url || '';

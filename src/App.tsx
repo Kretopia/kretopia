@@ -85,6 +85,7 @@ const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
 const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
+const CreatorSite = lazy(() => import("./pages/CreatorSite"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -165,6 +166,7 @@ const AppContent = () => {
   
   // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
   const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname);
+  const isCreatorSite = /^\/site\/[^/]+$/.test(location.pathname);
   const isPublicEvent = /^\/event\/[^/]+$/.test(location.pathname);
   const isAuthPage = location.pathname === '/auth';
   const isDeckPage = location.pathname === '/deck';
@@ -175,8 +177,8 @@ const AppContent = () => {
   const isPublicBrowse = publicBrowseRoutes.some(r => location.pathname.startsWith(r));
   
   // Show bottom nav for authenticated users OR guests on public browse routes (+ landing)
-  const showBottomNav = !isPublicEPK && !isAuthPage && !isDeckPage && !!user;
-  const showNavbar = !isPublicEPK && !isAuthPage && !isDeckPage;
+  const showBottomNav = !isPublicEPK && !isCreatorSite && !isAuthPage && !isDeckPage && !!user;
+  const showNavbar = !isPublicEPK && !isCreatorSite && !isAuthPage && !isDeckPage;
   const showGuestBanner = !user && (isPublicBrowse || isLandingPage) && !isAuthPage;
   
   // Don't add bottom padding when on individual project pages or desk list
@@ -190,7 +192,7 @@ const AppContent = () => {
       <PageViewTracker />
       {showNavbar && <Navbar user={user} />}
       {showBottomNav && <BottomNav />}
-      {user && !isPublicEPK && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
+      {user && !isPublicEPK && !isCreatorSite && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
       {user && !isAuthPage && <OnboardingTour />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />
@@ -214,6 +216,7 @@ const AppContent = () => {
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}
             <Route path="/profile/:userId" element={<ViewProfile />} />
             <Route path="/epk/:userId" element={<CreatorEPK />} />
+            <Route path="/site/:userId" element={<CreatorSite />} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/my-analytics" element={<Navigate to="/profile" replace />} />

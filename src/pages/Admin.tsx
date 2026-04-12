@@ -7,6 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search, Megaphone, MessageSquare, Mail } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { UsersTab } from "@/components/admin/UsersTab";
 import { VerificationTab } from "@/components/admin/VerificationTab";
 import { UnclaimedProfilesTab } from "@/components/admin/UnclaimedProfilesTab";
@@ -56,6 +59,10 @@ export default function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [broadcastSubject, setBroadcastSubject] = useState('');
+  const [broadcastBody, setBroadcastBody] = useState('');
+  const [broadcastCta, setBroadcastCta] = useState('Check It Out →');
+  const [broadcastCtaUrl, setBroadcastCtaUrl] = useState('https://www.thrivein.io');
   const [importingOdos, setImportingOdos] = useState(false);
   const [odosResults, setOdosResults] = useState<OdosImportResult[] | null>(null);
   const [odosSummary, setOdosSummary] = useState<OdosImportSummary | null>(null);
@@ -122,9 +129,20 @@ export default function Admin() {
   };
 
   const sendBroadcastEmail = async () => {
+    if (!broadcastSubject.trim() || !broadcastBody.trim()) {
+      toast({ title: "Missing fields", description: "Subject and body are required", variant: "destructive" });
+      return;
+    }
     setSendingBroadcast(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-broadcast-email');
+      const { data, error } = await supabase.functions.invoke('send-broadcast-email', {
+        body: {
+          subject: broadcastSubject,
+          body: broadcastBody,
+          ctaText: broadcastCta,
+          ctaUrl: broadcastCtaUrl,
+        }
+      });
       
       if (error) throw error;
       
@@ -132,6 +150,8 @@ export default function Admin() {
         title: "Broadcast Sent!",
         description: `Successfully sent to ${data?.sent || 0} users. ${data?.failed || 0} failed.`,
       });
+      setBroadcastSubject('');
+      setBroadcastBody('');
     } catch (error: any) {
       toast({
         title: "Error",

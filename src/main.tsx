@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/react";
 import App from "./App.tsx";
 import { initSWUpdateListener } from "./lib/sw-update";
 import { checkForNewVersion } from "./lib/version-check";
+import { setupGlobalErrorLogging } from "./lib/errorLogger";
 import "./i18n";
 import "./index.css";
 
@@ -32,6 +33,9 @@ initSWUpdateListener();
 // Nuclear cache-bust: compare embedded build hash vs server version.json
 // If stale, purge ALL caches + unregister SW + hard reload
 checkForNewVersion();
+
+// Log unhandled errors to the database for monitoring
+setupGlobalErrorLogging();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

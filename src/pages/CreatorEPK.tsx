@@ -269,10 +269,7 @@ const CreatorEPK = () => {
         
         setCredits(allCredits);
 
-        // Background: auto-enrich profile (press, awards, skills) via Firecrawl + AI
-        supabase.functions.invoke('enrich-creator-profile', {
-          body: { user_id: userId, scrape_website: true },
-        }).catch(e => console.log('Profile enrichment skipped:', e));
+        // Auto-enrichment removed — users control their own credits
 
       } catch (error) {
         console.error('Error fetching profile:', error);

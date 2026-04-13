@@ -18,9 +18,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PageTransition } from "@/components/PageTransition";
 import { LiveActivityTicker } from "@/components/scene/LiveActivityTicker";
+import { useTranslation } from "react-i18next";
 
 const Scene = () => {
   const location = useLocation();
+  const { t } = useTranslation();
   const isEventsRoute = location.pathname === "/events";
   const searchParams = new URLSearchParams(location.search);
   const tabParam = searchParams.get("tab");
@@ -52,7 +54,7 @@ const Scene = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Scene | ThriveIN</title>
+        <title>{t("scene.title")} | ThriveIN</title>
         <meta name="description" content="Your creative community hub — browse events, discover work, and join conversations." />
       </Helmet>
 
@@ -65,11 +67,11 @@ const Scene = () => {
             <div>
               <h1 className="text-xl font-bold flex items-center gap-2">
                 <Flame className="h-5 w-5 text-primary" />
-                Scene
+                {t("scene.title")}
               </h1>
-              <p className="text-xs text-muted-foreground">Events, inspiration & creative culture</p>
+              <p className="text-xs text-muted-foreground">{t("scene.subtitle")}</p>
             </div>
-            {user && <CrossModeNudge targetMode="work" label="Switch to Work →" targetPath="/desk" />}
+            {user && <CrossModeNudge targetMode="work" label={t("scene.switchToWork")} targetPath="/desk" />}
           </div>
 
           {/* Live Activity */}
@@ -88,8 +90,8 @@ const Scene = () => {
                 <Users className="h-4.5 w-4.5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">Find Your Match</p>
-                <p className="text-[11px] text-muted-foreground">Discover collaborators based on your skills & interests</p>
+                <p className="text-sm font-semibold text-foreground">{t("scene.findMatch")}</p>
+                <p className="text-[11px] text-muted-foreground">{t("scene.findMatchDesc")}</p>
               </div>
               <ArrowRight className="h-4 w-4 text-primary opacity-50 group-hover:opacity-100 transition-opacity shrink-0" />
             </Link>
@@ -105,19 +107,19 @@ const Scene = () => {
             <TabsList className="w-full mb-4 grid grid-cols-4 h-10 rounded-xl bg-muted/60 p-1">
               <TabsTrigger value="spark" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Flame className="h-3.5 w-3.5" />
-                Spark
+                {t("scene.spark")}
               </TabsTrigger>
               <TabsTrigger value="magazine" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <BookOpen className="h-3.5 w-3.5" />
-                Magazine
+                {t("scene.magazine")}
               </TabsTrigger>
               <TabsTrigger value="podcast" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <Headphones className="h-3.5 w-3.5" />
-                Podcast
+                {t("scene.podcast")}
               </TabsTrigger>
               <TabsTrigger value="events" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
                 <CalendarDays className="h-3.5 w-3.5" />
-                Events
+                {t("scene.events")}
               </TabsTrigger>
             </TabsList>
 

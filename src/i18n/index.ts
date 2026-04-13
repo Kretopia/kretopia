@@ -16,11 +16,12 @@ i18n
       es: { translation: es },
     },
     fallbackLng: 'en',
+    lng: 'en',
     interpolation: {
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      order: ['localStorage'],
       caches: ['localStorage'],
       lookupLocalStorage: 'thrivein_lang',
     },

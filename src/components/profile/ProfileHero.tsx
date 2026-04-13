@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Star, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, UserCheck, IdCard, Shield, Clock, Youtube, Instagram, Music, Twitter, Linkedin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { calculateStatus, type StatusResult } from "@/lib/statusEngine";
+import { calculateStatusFromCredits, type StatusResult } from "@/lib/statusEngine";
 import { AchievementBadges } from "./AchievementBadges";
 import { DegreeBadge, ConnectionPathDisplay } from "@/components/circle/DegreeBadge";
 import { useConnectionDegree } from "@/hooks/useNetworkStats";
@@ -66,10 +66,8 @@ export const ProfileHero = ({
   dashboardTrigger,
 }: ProfileHeroProps) => {
   const { user } = useAuth();
-  const statusResult = calculateStatus(creditsData);
-  const tierProgress = statusResult.pointsToNext 
-    ? Math.min(100, (statusResult.points / (statusResult.points + statusResult.pointsToNext)) * 100)
-    : 100;
+  const statusResult = calculateStatusFromCredits(creditsData);
+  const hasProgress = statusResult.progress.length > 0;
   const nextTierLabel = statusResult.nextTier 
     ? statusResult.nextTier.charAt(0).toUpperCase() + statusResult.nextTier.slice(1)
     : null;
@@ -278,9 +276,9 @@ export const ProfileHero = ({
                 </Badge>
               )}
             </div>
-            {statusResult.nextTier && statusResult.pointsToNext !== undefined && (
+            {statusResult.nextTier && hasProgress && (
               <span className="text-[10px] text-muted-foreground">
-                {statusResult.pointsToNext} pts to {nextTierLabel}
+                {statusResult.progress[0]?.needed - statusResult.progress[0]?.current} more {statusResult.progress[0]?.label.toLowerCase()} to {nextTierLabel}
               </span>
             )}
           </div>

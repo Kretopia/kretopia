@@ -6,7 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
-import { calculateStatus, getConnectionGate, getGateMessage, type StatusTier, type ConnectionGate } from "@/lib/statusEngine";
+import { calculateStatusFromCredits, getConnectionGate, getGateMessage, type StatusTier, type ConnectionGate } from "@/lib/statusEngine";
 
 export interface GateCheckResult {
   gate: ConnectionGate;
@@ -24,7 +24,7 @@ async function getUserTier(userId: string): Promise<StatusTier> {
     .select("verification_status")
     .eq("user_id", userId);
   
-  const status = calculateStatus(data || []);
+  const status = calculateStatusFromCredits(data || []);
   return status.tier;
 }
 

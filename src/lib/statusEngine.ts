@@ -71,10 +71,8 @@ interface TierMeta {
   ringClass: string;
   gradient: string;
   perks: string[];
-  // Minimum metrics to reach this tier (for progress display)
   targets: {
     verifiedCredits: number;
-    completedProjects: number;
     connections: number;
     reviewCount: number;
   };
@@ -88,7 +86,7 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     ringClass: "ring-2 ring-border",
     gradient: "from-muted-foreground/20 to-muted-foreground/5",
     perks: ["Basic profile", "Claim credits", "Join communities"],
-    targets: { verifiedCredits: 0, completedProjects: 0, connections: 0, reviewCount: 0 },
+    targets: { verifiedCredits: 0, connections: 0, reviewCount: 0 },
   },
   freelancer: {
     label: "Freelancer",
@@ -97,7 +95,7 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     ringClass: "ring-2 ring-[hsl(0,0%,75%)]",
     gradient: "from-[hsl(0,0%,75%)]/25 to-[hsl(0,0%,70%)]/5",
     perks: ["Basic visibility", "Connection requests", "Profile dashboard"],
-    targets: { verifiedCredits: 3, completedProjects: 1, connections: 5, reviewCount: 0 },
+    targets: { verifiedCredits: 3, connections: 5, reviewCount: 0 },
   },
   thriver: {
     label: "Thriver",
@@ -106,7 +104,7 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     ringClass: "ring-2 ring-primary",
     gradient: "from-primary/25 to-primary/5",
     perks: ["AI recommendations", "Limited boosts", "Priority in matching"],
-    targets: { verifiedCredits: 10, completedProjects: 3, connections: 15, reviewCount: 2 },
+    targets: { verifiedCredits: 8, connections: 15, reviewCount: 1 },
   },
   professional: {
     label: "Professional",
@@ -115,7 +113,7 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     ringClass: "ring-2 ring-accent",
     gradient: "from-accent/25 to-accent/5",
     perks: ["Advanced analytics", "Priority matching", "Profile-as-website"],
-    targets: { verifiedCredits: 25, completedProjects: 8, connections: 40, reviewCount: 5 },
+    targets: { verifiedCredits: 20, connections: 40, reviewCount: 3 },
   },
   celebrity: {
     label: "Celebrity",
@@ -124,7 +122,7 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     ringClass: "ring-2 ring-foreground",
     gradient: "from-foreground/20 to-foreground/5",
     perks: ["Featured placement", "Reduced platform fees", "Bulk messaging"],
-    targets: { verifiedCredits: 50, completedProjects: 20, connections: 100, reviewCount: 15 },
+    targets: { verifiedCredits: 35, connections: 80, reviewCount: 8 },
   },
   icon: {
     label: "Icon",
@@ -133,7 +131,7 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     ringClass: "ring-2 ring-primary shadow-glow",
     gradient: "from-primary/30 via-accent/15 to-primary/5",
     perks: ["VIP access", "Premium exposure", "Revenue share potential", "Full platform access"],
-    targets: { verifiedCredits: 100, completedProjects: 40, connections: 250, reviewCount: 30 },
+    targets: { verifiedCredits: 50, connections: 150, reviewCount: 15 },
   },
 };
 

@@ -35,7 +35,7 @@ import { SEO } from "@/components/SEO";
 import CreatorEPK from "./CreatorEPK";
 import { DegreeBadge } from "@/components/circle/DegreeBadge";
 import { useConnectionDegree } from "@/hooks/useNetworkStats";
-import { calculateStatus } from "@/lib/statusEngine";
+import { calculateStatusFromCredits } from "@/lib/statusEngine";
 import { checkConnectionGate, type GateCheckResult } from "@/lib/connectionGate";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ConnectionGateBanner } from "@/components/ConnectionGateBanner";
@@ -440,7 +440,7 @@ const ViewProfile = () => {
                     {/* ThriveStatus Badge */}
                     {credits.length > 0 && (
                       <StatusBadge 
-                        status={calculateStatus(credits)} 
+                        status={calculateStatusFromCredits(credits)} 
                         showSocialProof
                       />
                     )}

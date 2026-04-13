@@ -48,7 +48,7 @@ export function StatusBadge({ status, showPoints = false, showSocialProof = fals
           "text-muted-foreground",
           isSmall ? "text-[9px]" : "text-[10px]",
         )}>
-          {status.points}pts
+          {status.metrics.verifiedCredits} verified
         </span>
       )}
     </div>

@@ -19,7 +19,7 @@ import {
   Snowflake, Crown, Eye, Sparkles, Zap, Star, Gift, Search,
   Image, Briefcase, BarChart3, MessageSquare, FileText,
 } from "lucide-react";
-import { getTierByPoints } from "@/lib/tierSystem";
+// tierSystem removed — reputation is calculated from statusEngine
 
 interface SearchedUser {
   user_id: string;
@@ -230,7 +230,6 @@ export function WalletXPSection() {
     { id: "gift_xp", name: "Gift 100 TP", description: "Send 100 Thrive Points to another creator.", cost: 150, icon: <Gift className="h-5 w-5 text-green-400" />, action: async () => {}, available: true },
   ];
 
-  const tier = getTierByPoints(userXP);
   const nextLevelXP = (userLevel) * (userLevel) * 100;
   const progress = Math.min(100, (userXP / nextLevelXP) * 100);
 
@@ -249,10 +248,9 @@ export function WalletXPSection() {
             </div>
           </div>
           <div className="text-right">
-            <Badge className={`bg-gradient-to-r ${tier.color} text-white border-0`}>
-              {tier.icon} {tier.displayName}
+            <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
+              {userXP.toLocaleString()} TP
             </Badge>
-            <p className="text-xs text-muted-foreground mt-1">Level {userLevel}</p>
           </div>
         </div>
         <div className="space-y-1">

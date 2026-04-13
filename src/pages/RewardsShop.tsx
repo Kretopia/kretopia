@@ -21,7 +21,7 @@ import {
   ArrowLeft, Zap, Star, Palette, Gift, Search, UserPlus,
   Target, Unlock,
 } from "lucide-react";
-import { getTierByPoints } from "@/lib/tierSystem";
+// tierSystem removed — reputation is calculated from statusEngine
 
 interface ShopItem {
   id: string;
@@ -407,7 +407,7 @@ const RewardsShop = () => {
     { id: "upgrades", label: "Upgrades", icon: <Crown className="h-4 w-4" /> },
   ];
 
-  const tier = getTierByPoints(userXP);
+  // Tier display removed — status is reputation-based
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6 pb-24 sm:pb-6">
@@ -439,10 +439,9 @@ const RewardsShop = () => {
               </div>
             </div>
             <div className="text-right">
-              <Badge className={`bg-gradient-to-r ${tier.color} text-white border-0`}>
-                {tier.icon} {tier.displayName}
+              <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
+                {userXP.toLocaleString()} TP
               </Badge>
-              <p className="text-xs text-muted-foreground mt-1">Level {userLevel}</p>
             </div>
           </div>
         </Card>

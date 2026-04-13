@@ -5,7 +5,6 @@ import { Trophy, TrendingUp, Crown, Medal, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link, useNavigate } from "react-router-dom";
-import { getLevelData } from "@/lib/gamification";
 
 interface LeaderboardUser {
   id: string;
@@ -31,16 +30,13 @@ export function LeaderboardWidget() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Hardcoded owner email to filter from leaderboard
       const OWNER_EMAIL = 'thriveuae@gmail.com';
       let ownerUserId: string | null = null;
       
-      // If current user is the owner, use their ID for filtering
       if (user?.email === OWNER_EMAIL) {
         ownerUserId = user.id;
       }
       
-      // Get top 10 users (extra to account for potential filtering)
       const { data: users, error } = await supabase
         .from("profiles")
         .select("id, user_id, full_name, avatar_url, xp, level")
@@ -49,13 +45,11 @@ export function LeaderboardWidget() {
 
       if (error) throw error;
 
-      // Filter out platform owner if we know their ID, then take top 5
       const filteredUsers = (users || [])
         .filter(u => !ownerUserId || u.user_id !== ownerUserId)
         .slice(0, 5);
       setTopUsers(filteredUsers as LeaderboardUser[]);
 
-      // Get current user's rank (exclude owner from rankings)
       if (user && user.email !== OWNER_EMAIL) {
         const { data: allUsers } = await supabase
           .from("profiles")
@@ -79,14 +73,10 @@ export function LeaderboardWidget() {
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
-      case 1:
-        return <Crown className="h-5 w-5 text-yellow-500" />;
-      case 2:
-        return <Medal className="h-5 w-5 text-gray-400" />;
-      case 3:
-        return <Award className="h-5 w-5 text-amber-600" />;
-      default:
-        return null;
+      case 1: return <Crown className="h-5 w-5 text-yellow-500" />;
+      case 2: return <Medal className="h-5 w-5 text-gray-400" />;
+      case 3: return <Award className="h-5 w-5 text-amber-600" />;
+      default: return null;
     }
   };
 
@@ -121,40 +111,33 @@ export function LeaderboardWidget() {
       </div>
 
       <div className="space-y-3 mb-4">
-        {topUsers.slice(0, 3).map((user, index) => {
-          const levelData = getLevelData(user.level);
-          return (
-            <div
-              key={user.id}
-              onClick={() => navigate(`/profile/${user.user_id}`)}
-              className="flex items-center gap-3 p-3 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="flex-shrink-0">
-                  {getRankIcon(index + 1)}
-                </div>
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  {user.avatar_url ? (
-                    <AvatarImage src={user.avatar_url} alt={user.full_name} />
-                  ) : null}
-                  <AvatarFallback className="text-xs">
-                    {user.full_name?.charAt(0) || "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{user.full_name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Level {user.level} • {levelData.name}
-                  </p>
-                </div>
+        {topUsers.slice(0, 3).map((user, index) => (
+          <div
+            key={user.id}
+            onClick={() => navigate(`/profile/${user.user_id}`)}
+            className="flex items-center gap-3 p-3 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="flex-shrink-0">
+                {getRankIcon(index + 1)}
               </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-sm font-bold text-primary">{user.xp}</p>
-                <p className="text-xs text-muted-foreground">TP</p>
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                {user.avatar_url ? (
+                  <AvatarImage src={user.avatar_url} alt={user.full_name} />
+                ) : null}
+                <AvatarFallback className="text-xs">
+                  {user.full_name?.charAt(0) || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{user.full_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {user.xp || 0} reputation
+                </p>
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
 
       <Link to="/leaderboard">

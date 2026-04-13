@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle, Lock, TrendingUp } from "lucide-react";
-import { getLevelData, getXPForNextLevel } from "@/lib/gamification";
+import { type StatusTier, getAllTiers } from "@/lib/statusEngine";
 import { VerificationBadge } from "./VerificationBadge";
 
 interface VerificationProgressProps {
@@ -29,10 +29,10 @@ export function VerificationProgress({
   verificationScore,
   onRequestVerification,
 }: VerificationProgressProps) {
-  const currentLevelData = getLevelData(level);
-  const nextLevelData = getLevelData(level + 1);
-  const xpForNext = getXPForNextLevel(level);
-  const progress = (xp / xpForNext) * 100;
+  const allTiers = getAllTiers();
+  const currentTierIdx = Math.min(level, allTiers.length - 1);
+  const currentTierData = allTiers[currentTierIdx] || allTiers[0];
+  const progress = Math.min(100, (portfolioCount + creditsCount + awardsCount) * 5);
 
   // Calculate smart weighted score
   const portfolioPoints = Math.min(40, 
@@ -134,12 +134,12 @@ export function VerificationProgress({
         
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Progress to {nextLevelData.name}</span>
+            <span className="text-muted-foreground">Verification Progress</span>
             <span className="font-medium">{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
           <p className="text-xs text-muted-foreground">
-            {xpForNext - xp} XP needed for next level
+            Build your reputation with verified work
           </p>
         </div>
       </div>

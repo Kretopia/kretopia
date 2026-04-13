@@ -24,7 +24,7 @@ export interface NetworkTierMeta {
     freeProMonths: number | "lifetime";
     feeDiscount: number;        // % off platform fees
     commissionRate: number;     // % of referred users' transaction fees
-    statusBonusPoints: number;  // bonus ThriveStatus™ points
+    statusBonusPoints: number;  // bonus ThriveStatus points
   };
   perks: string[];
 }

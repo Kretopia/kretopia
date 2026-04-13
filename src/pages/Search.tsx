@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { calculateStatus } from "@/lib/statusEngine";
+import { calculateStatusFromCredits } from "@/lib/statusEngine";
 import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
@@ -109,7 +109,7 @@ async function enrichProfilesWithStatus(rawProfiles: ProfileResult[]): Promise<P
   return rawProfiles.map(p => {
     const creds = byUser.get(p.user_id);
     if (!creds) return p;
-    const status = calculateStatus(creds);
+    const status = calculateStatusFromCredits(creds);
     return { ...p, _socialProofLabel: status.socialProofLabel, _tier: status.tier } as any;
   });
 }

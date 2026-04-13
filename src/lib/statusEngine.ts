@@ -1,50 +1,65 @@
 /**
- * ThriveStatus™ — Skywards-Inspired Career Prestige System
+ * ThriveStatus — Unified Professional Reputation System
  * 
- * Calculates a creator's status tier based on verified credits.
- * Enterprise (Green) = 100pts, Peer (Purple) = 25pts, Identity/AI (Blue) = 5pts, Manual (Gray) = 1pt
+ * Status is calculated using a weighted formula:
+ * 50% → Verified Credits
+ * 20% → Completed Projects
+ * 20% → Network Strength (connections, invites, collaborations)
+ * 10% → Ratings / Reviews
  * 
- * Tier names are aspirational career-stage labels:
+ * Tier ladder (aspirational career-stage labels):
  * Hobbyist → Freelancer → Thriver → Professional → Celebrity → Icon
  * 
  * Directional gating:
  * - Same tier or higher → open connection/messaging
- * - Lower tier → request-only (filtered inbox, like Instagram verified DMs)
+ * - Lower tier → request-only (filtered inbox)
  */
 
 export type StatusTier = "hobbyist" | "freelancer" | "thriver" | "professional" | "celebrity" | "icon";
 
+export type NetworkRole = "spark" | "connector" | "builder" | "curator" | "influencer" | "power_circle";
+
+export interface StatusMetrics {
+  verifiedCredits: number;
+  totalCredits: number;
+  completedProjects: number;
+  connections: number;
+  acceptedInvites: number;
+  collaborations: number;
+  averageRating: number;
+  reviewCount: number;
+}
+
 export interface StatusResult {
   tier: StatusTier;
-  points: number;
   label: string;
   socialProofLabel: string | null;
   color: string;
   ringClass: string;
   gradient: string;
   nextTier?: StatusTier;
-  pointsToNext?: number;
   perks: string[];
-  tierIndex: number;          // 0–5, used for gate comparisons
+  tierIndex: number;
+  metrics: StatusMetrics;
+  progress: StatusProgress[];
+  networkRole: NetworkRole;
+  networkRoleLabel: string;
 }
 
-const VERIFICATION_POINTS: Record<string, number> = {
-  enterprise: 100,  // Company/brand verified (e.g. Netflix confirms credit)
-  peer: 25,         // Endorsed by a colleague on the platform
-  identity: 5,      // Identity-verified creator
-  ai: 5,            // AI cross-referenced and confirmed
-  verified: 5,      // Generic verified (AI or identity confirmed)
-  imported: 2,      // External source (IMDb, Spotify) — real but unclaimed
-  manual: 1,        // Self-claimed, no verification yet
-  pending: 0,
-  unverified: 0,
-};
+export interface StatusProgress {
+  label: string;
+  current: number;
+  needed: number;
+  category: "credits" | "projects" | "network" | "ratings";
+}
+
+// ─── Tier Thresholds (weighted score 0–100 scale) ──────────────────────
 
 const TIER_THRESHOLDS: { tier: StatusTier; min: number }[] = [
-  { tier: "icon", min: 1000 },
-  { tier: "celebrity", min: 500 },
-  { tier: "professional", min: 150 },
-  { tier: "thriver", min: 50 },
+  { tier: "icon", min: 90 },
+  { tier: "celebrity", min: 70 },
+  { tier: "professional", min: 45 },
+  { tier: "thriver", min: 25 },
   { tier: "freelancer", min: 10 },
   { tier: "hobbyist", min: 0 },
 ];
@@ -56,6 +71,13 @@ interface TierMeta {
   ringClass: string;
   gradient: string;
   perks: string[];
+  // Minimum metrics to reach this tier (for progress display)
+  targets: {
+    verifiedCredits: number;
+    completedProjects: number;
+    connections: number;
+    reviewCount: number;
+  };
 }
 
 const TIER_META: Record<StatusTier, TierMeta> = {
@@ -66,6 +88,7 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     ringClass: "ring-2 ring-border",
     gradient: "from-muted-foreground/20 to-muted-foreground/5",
     perks: ["Basic profile", "Claim credits", "Join communities"],
+    targets: { verifiedCredits: 0, completedProjects: 0, connections: 0, reviewCount: 0 },
   },
   freelancer: {
     label: "Freelancer",
@@ -73,7 +96,8 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     color: "text-[hsl(0,0%,70%)]",
     ringClass: "ring-2 ring-[hsl(0,0%,75%)]",
     gradient: "from-[hsl(0,0%,75%)]/25 to-[hsl(0,0%,70%)]/5",
-    perks: ["Profile dashboard", "Silver status ring", "Connection requests"],
+    perks: ["Basic visibility", "Connection requests", "Profile dashboard"],
+    targets: { verifiedCredits: 3, completedProjects: 1, connections: 5, reviewCount: 0 },
   },
   thriver: {
     label: "Thriver",
@@ -81,7 +105,8 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     color: "text-primary",
     ringClass: "ring-2 ring-primary",
     gradient: "from-primary/25 to-primary/5",
-    perks: ["AI match insights", "Indigo glow ring", "Priority in matching"],
+    perks: ["AI recommendations", "Limited boosts", "Priority in matching"],
+    targets: { verifiedCredits: 10, completedProjects: 3, connections: 15, reviewCount: 2 },
   },
   professional: {
     label: "Professional",
@@ -89,7 +114,8 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     color: "text-accent",
     ringClass: "ring-2 ring-accent",
     gradient: "from-accent/25 to-accent/5",
-    perks: ["Advanced analytics", "Gold animated ring", "AI-powered recommendations"],
+    perks: ["Advanced analytics", "Priority matching", "Profile-as-website"],
+    targets: { verifiedCredits: 25, completedProjects: 8, connections: 40, reviewCount: 5 },
   },
   celebrity: {
     label: "Celebrity",
@@ -97,7 +123,8 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     color: "text-foreground",
     ringClass: "ring-2 ring-foreground",
     gradient: "from-foreground/20 to-foreground/5",
-    perks: ["Bulk messaging", "Obsidian premium ring", "Priority support"],
+    perks: ["Featured placement", "Reduced platform fees", "Bulk messaging"],
+    targets: { verifiedCredits: 50, completedProjects: 20, connections: 100, reviewCount: 15 },
   },
   icon: {
     label: "Icon",
@@ -105,27 +132,82 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     color: "text-primary",
     ringClass: "ring-2 ring-primary shadow-glow",
     gradient: "from-primary/30 via-accent/15 to-primary/5",
-    perks: ["Embeddable verified card", "Diamond halo ring", "Full platform access", "Revenue perks"],
+    perks: ["VIP access", "Premium exposure", "Revenue share potential", "Full platform access"],
+    targets: { verifiedCredits: 100, completedProjects: 40, connections: 250, reviewCount: 30 },
   },
 };
 
-/** Ordered list from lowest to highest for index lookups */
 const TIER_ORDER: StatusTier[] = ["hobbyist", "freelancer", "thriver", "professional", "celebrity", "icon"];
 
 export function getTierIndex(tier: StatusTier): number {
   return TIER_ORDER.indexOf(tier);
 }
 
-export function calculateStatus(credits: { verification_status?: string | null }[]): StatusResult {
-  let points = 0;
-  for (const credit of credits) {
-    const status = (credit.verification_status || "manual").toLowerCase();
-    points += VERIFICATION_POINTS[status] ?? 1;
+// ─── Weighted Score Calculation ──────────────────────────────────────
+
+function calculateWeightedScore(metrics: StatusMetrics): number {
+  // Normalize each dimension to 0–100 then apply weights
+  // Credits: 50% weight — 100+ verified credits = max
+  const creditScore = Math.min(100, (metrics.verifiedCredits / 100) * 100);
+  
+  // Projects: 20% weight — 40+ completed = max
+  const projectScore = Math.min(100, (metrics.completedProjects / 40) * 100);
+  
+  // Network: 20% weight — composite of connections + invites + collaborations
+  const networkScore = Math.min(100, (
+    (metrics.connections / 250) * 40 +
+    (metrics.acceptedInvites / 50) * 30 +
+    (metrics.collaborations / 30) * 30
+  ));
+  
+  // Ratings: 10% weight — avg rating * review volume
+  const ratingScore = metrics.reviewCount > 0
+    ? Math.min(100, (metrics.averageRating / 5) * 60 + Math.min(40, (metrics.reviewCount / 30) * 40))
+    : 0;
+
+  return (
+    creditScore * 0.5 +
+    projectScore * 0.2 +
+    networkScore * 0.2 +
+    ratingScore * 0.1
+  );
+}
+
+// ─── Network Role Calculation ────────────────────────────────────────
+
+const NETWORK_ROLE_META: Record<NetworkRole, { label: string; minScore: number }> = {
+  power_circle: { label: "Power Circle", minScore: 80 },
+  influencer: { label: "Influencer", minScore: 60 },
+  curator: { label: "Curator", minScore: 40 },
+  builder: { label: "Builder", minScore: 25 },
+  connector: { label: "Connector", minScore: 10 },
+  spark: { label: "Spark", minScore: 0 },
+};
+
+function calculateNetworkRole(metrics: StatusMetrics): { role: NetworkRole; label: string } {
+  const networkScore = Math.min(100, (
+    (metrics.connections / 250) * 30 +
+    (metrics.acceptedInvites / 50) * 30 +
+    (metrics.collaborations / 30) * 40
+  ));
+
+  const roles: NetworkRole[] = ["power_circle", "influencer", "curator", "builder", "connector", "spark"];
+  for (const role of roles) {
+    if (networkScore >= NETWORK_ROLE_META[role].minScore) {
+      return { role, label: NETWORK_ROLE_META[role].label };
+    }
   }
+  return { role: "spark", label: "Spark" };
+}
+
+// ─── Main Calculate Function ─────────────────────────────────────────
+
+export function calculateStatus(metrics: StatusMetrics): StatusResult {
+  const weightedScore = calculateWeightedScore(metrics);
 
   let matchedTier: StatusTier = "hobbyist";
   for (const { tier, min } of TIER_THRESHOLDS) {
-    if (points >= min) {
+    if (weightedScore >= min) {
       matchedTier = tier;
       break;
     }
@@ -133,75 +215,116 @@ export function calculateStatus(credits: { verification_status?: string | null }
 
   const meta = TIER_META[matchedTier];
   const tierIndex = getTierIndex(matchedTier);
+  const nextTierData = tierIndex < TIER_ORDER.length - 1 ? TIER_ORDER[tierIndex + 1] : undefined;
+  const { role: networkRole, label: networkRoleLabel } = calculateNetworkRole(metrics);
 
-  // Find next tier
-  const currentIdx = TIER_THRESHOLDS.findIndex(t => t.tier === matchedTier);
-  const nextTierData = currentIdx > 0 ? TIER_THRESHOLDS[currentIdx - 1] : undefined;
+  // Build actionable progress items toward next tier
+  const progress: StatusProgress[] = [];
+  if (nextTierData) {
+    const nextMeta = TIER_META[nextTierData];
+    const t = nextMeta.targets;
+
+    if (metrics.verifiedCredits < t.verifiedCredits) {
+      progress.push({
+        label: "Verified Credits",
+        current: metrics.verifiedCredits,
+        needed: t.verifiedCredits,
+        category: "credits",
+      });
+    }
+    if (metrics.completedProjects < t.completedProjects) {
+      progress.push({
+        label: "Completed Projects",
+        current: metrics.completedProjects,
+        needed: t.completedProjects,
+        category: "projects",
+      });
+    }
+    if (metrics.connections < t.connections) {
+      progress.push({
+        label: "Connections",
+        current: metrics.connections,
+        needed: t.connections,
+        category: "network",
+      });
+    }
+    if (metrics.reviewCount < t.reviewCount && t.reviewCount > 0) {
+      progress.push({
+        label: "Reviews",
+        current: metrics.reviewCount,
+        needed: t.reviewCount,
+        category: "ratings",
+      });
+    }
+  }
 
   return {
     tier: matchedTier,
-    points,
     label: meta.label,
     socialProofLabel: meta.socialProofLabel,
     color: meta.color,
     ringClass: meta.ringClass,
     gradient: meta.gradient,
-    nextTier: nextTierData?.tier,
-    pointsToNext: nextTierData ? nextTierData.min - points : undefined,
+    nextTier: nextTierData,
     perks: meta.perks,
     tierIndex,
+    metrics,
+    progress: progress.slice(0, 3), // Top 3 most relevant
+    networkRole,
+    networkRoleLabel,
   };
+}
+
+/**
+ * Legacy compatibility: calculate from credits array only.
+ * Uses credit count as a rough proxy for full metrics.
+ */
+export function calculateStatusFromCredits(credits: { verification_status?: string | null }[]): StatusResult {
+  let verifiedCredits = 0;
+  for (const credit of credits) {
+    const status = (credit.verification_status || "manual").toLowerCase();
+    if (["enterprise", "peer", "verified", "ai", "identity"].includes(status)) {
+      verifiedCredits++;
+    }
+  }
+
+  return calculateStatus({
+    verifiedCredits,
+    totalCredits: credits.length,
+    completedProjects: 0,
+    connections: 0,
+    acceptedInvites: 0,
+    collaborations: 0,
+    averageRating: 0,
+    reviewCount: 0,
+  });
 }
 
 // ─── Directional Gate Logic ───────────────────────────────────────
 
 export type ConnectionGate = "open" | "request_only" | "blocked";
 
-/**
- * Determines whether `senderTier` can directly connect/message `recipientTier`.
- * 
- * Rules (Instagram-verified model):
- * - Same tier or higher → "open" (direct message/connect)
- * - Lower tier → "request_only" (goes to filtered inbox)
- * 
- * Note: "blocked" is reserved for future use (e.g. suspended accounts).
- */
 export function getConnectionGate(senderTier: StatusTier, recipientTier: StatusTier): ConnectionGate {
   const senderIdx = getTierIndex(senderTier);
   const recipientIdx = getTierIndex(recipientTier);
-
-  if (senderIdx >= recipientIdx) {
-    return "open";
-  }
+  if (senderIdx >= recipientIdx) return "open";
   return "request_only";
 }
 
-/**
- * Human-friendly explanation of why a connection is gated.
- */
 export function getGateMessage(senderTier: StatusTier, recipientTier: StatusTier): string | null {
   const gate = getConnectionGate(senderTier, recipientTier);
   if (gate === "open") return null;
-
   const recipientMeta = TIER_META[recipientTier];
-  return `${recipientMeta.label}-tier creators receive connection requests in a filtered inbox. Build your status by adding verified credits to unlock direct messaging.`;
+  return `${recipientMeta.label}-tier creators receive connection requests in a filtered inbox. Build your reputation by adding verified credits to unlock direct messaging.`;
 }
 
 /**
- * Get all tier definitions for display purposes (e.g. tier progression cards).
+ * Get all tier definitions for display purposes.
  */
 export function getAllTiers() {
-  return TIER_ORDER.map((tier, index) => {
-    const threshold = TIER_THRESHOLDS.find(t => t.tier === tier)!;
-    const nextThreshold = index < TIER_ORDER.length - 1
-      ? TIER_THRESHOLDS.find(t => t.tier === TIER_ORDER[index + 1])
-      : undefined;
-    return {
-      tier,
-      index,
-      min: threshold.min,
-      max: nextThreshold ? nextThreshold.min - 1 : null,
-      ...TIER_META[tier],
-    };
-  });
+  return TIER_ORDER.map((tier, index) => ({
+    tier,
+    index,
+    ...TIER_META[tier],
+  }));
 }

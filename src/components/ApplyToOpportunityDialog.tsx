@@ -114,14 +114,50 @@ export const ApplyToOpportunityDialog = ({
     const { analytics } = await import("@/lib/analytics");
     analytics.opportunityApply(opportunityId);
 
-    // Notify opportunity creator via push notification
-    const { data: opportunity } = await supabase
-      .from('opportunities')
-      .select('created_by, title')
-      .eq('id', opportunityId)
-      .single();
+    // Fetch opportunity details + applicant profile for emails
+    const [oppRes, profileRes] = await Promise.all([
+      supabase.from('opportunities').select('created_by, title').eq('id', opportunityId).single(),
+      supabase.from('profiles').select('full_name').eq('user_id', user.id).single(),
+    ]);
+    const opportunity = oppRes.data;
+    const applicantName = profileRes.data?.full_name || 'A creator';
+    const gigUrl = `${window.location.origin}/opportunity/${opportunityId}`;
 
+    // Send confirmation email to applicant
+    supabase.functions.invoke('send-transactional-email', {
+      body: {
+        templateName: 'application-confirmation',
+        recipientEmail: user.email,
+        idempotencyKey: `app-confirm-${opportunityId}-${user.id}`,
+        templateData: { applicantName, gigTitle: opportunityTitle, gigUrl },
+      },
+    }).catch(() => {});
+
+    // Notify opportunity creator via email + push
     if (opportunity?.created_by) {
+      // Get owner profile for email
+      const { data: ownerProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', opportunity.created_by)
+        .single();
+
+      // Get owner email from auth (via edge function isn't possible, so use profile)
+      // Send notification email to owner
+      supabase.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'new-applicant-notification',
+          recipientEmail: opportunity.created_by, // Will be resolved server-side
+          idempotencyKey: `app-notify-${opportunityId}-${user.id}`,
+          templateData: {
+            ownerName: ownerProfile?.full_name || 'Creator',
+            applicantName,
+            gigTitle: opportunity.title,
+            gigUrl,
+          },
+        },
+      }).catch(() => {});
+
       const { notifyOpportunity } = await import("@/lib/pushNotifications");
       await notifyOpportunity(
         opportunity.created_by,

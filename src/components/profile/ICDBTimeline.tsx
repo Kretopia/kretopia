@@ -362,7 +362,14 @@ function CategoryRow({
               {thumbnail ? (
                 <img src={thumbnail} alt={credit.project_name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
               ) : (
-                <div className={cn("absolute inset-0 bg-gradient-to-b", POSTER_GRADIENTS[gradientIdx])} />
+                <div className={cn("absolute inset-0 bg-gradient-to-b", POSTER_GRADIENTS[gradientIdx])}>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center">
+                    <Icon className="h-6 w-6 text-white/15 mb-1" />
+                    <h3 className="text-white/70 font-black text-[11px] leading-tight tracking-tight line-clamp-3 uppercase">
+                      {credit.project_name}
+                    </h3>
+                  </div>
+                </div>
               )}
 
               {/* Dark overlay */}

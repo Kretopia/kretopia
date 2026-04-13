@@ -1,5 +1,5 @@
 import { type StatusResult, getAllTiers, getTierIndex } from "@/lib/statusEngine";
-import { Shield, Zap, Award, Star, Crown, Sparkles, Lock, ChevronRight, Users, Briefcase, MessageCircle, TrendingUp } from "lucide-react";
+import { Shield, Zap, Award, Star, Crown, Sparkles, Lock, ChevronRight, Users, Briefcase, MessageCircle, TrendingUp, Trophy, Newspaper } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 
@@ -14,9 +14,8 @@ const TIER_ICONS = {
 
 const CATEGORY_ICONS = {
   credits: Award,
-  projects: Briefcase,
   network: Users,
-  ratings: Star,
+  accelerators: Trophy,
 };
 
 interface ThriveStatusCardProps {
@@ -36,7 +35,6 @@ export function ThriveStatusCard({ status, className }: ThriveStatusCardProps) {
         "bg-gradient-to-br",
         status.gradient,
       )}>
-        {/* Subtle pattern */}
         <div className="absolute inset-0 opacity-[0.02]" style={{
           backgroundImage: `repeating-linear-gradient(45deg, currentColor 0px, currentColor 1px, transparent 1px, transparent 10px)`,
         }} />
@@ -68,7 +66,7 @@ export function ThriveStatusCard({ status, className }: ThriveStatusCardProps) {
               ThriveStatus
             </p>
             <h3 className={cn("text-xl font-bold", status.color)}>
-              {status.label}
+              {status.combinedLabel}
             </h3>
             {status.socialProofLabel && (
               <span className={cn(
@@ -92,16 +90,22 @@ export function ThriveStatusCard({ status, className }: ThriveStatusCardProps) {
             {status.metrics.verifiedCredits > 0 && (
               <MetricChip icon={Award} label={`${status.metrics.verifiedCredits} Verified Credits`} />
             )}
-            {status.metrics.completedProjects > 0 && (
-              <MetricChip icon={Briefcase} label={`${status.metrics.completedProjects} Projects`} />
+            {status.metrics.endorsementCount > 0 && (
+              <MetricChip icon={Shield} label={`${status.metrics.endorsementCount} Endorsements`} />
             )}
-            {(status.metrics.connections + status.metrics.collaborations) > 0 && (
-              <MetricChip icon={Users} label={`${status.metrics.connections + status.metrics.collaborations} Collaborations`} />
+            {status.metrics.awardCount > 0 && (
+              <MetricChip icon={Trophy} label={`${status.metrics.awardCount} Awards`} />
+            )}
+            {status.metrics.pressCount > 0 && (
+              <MetricChip icon={Newspaper} label={`${status.metrics.pressCount} Press`} />
+            )}
+            {status.metrics.connections > 0 && (
+              <MetricChip icon={Users} label={`${status.metrics.connections} Connections`} />
             )}
             {status.metrics.reviewCount > 0 && (
               <MetricChip icon={MessageCircle} label={`${status.metrics.reviewCount} Reviews`} />
             )}
-            {status.metrics.verifiedCredits === 0 && status.metrics.completedProjects === 0 && (
+            {status.metrics.verifiedCredits === 0 && status.metrics.totalCredits === 0 && (
               <span className="text-[10px] text-muted-foreground italic">
                 Add verified work to build your reputation
               </span>
@@ -163,7 +167,7 @@ export function ThriveStatusCard({ status, className }: ThriveStatusCardProps) {
       {/* Tier Ladder */}
       <Card className="p-4 space-y-2">
         <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold">
-          Status Ladder
+          Career Ladder
         </p>
         <div className="space-y-0.5">
           {allTiers.map((tierData, idx) => {

@@ -105,8 +105,20 @@ Deno.serve(async (req) => {
         const errBody = await twilioRes.text();
         console.error("Twilio error:", errBody);
         const channelLabel = deliveryChannel === "whatsapp" ? "WhatsApp message" : "SMS";
+        
+        // Parse Twilio error for better user messaging
+        let userMessage = `Failed to send ${channelLabel}. Please check the phone number format (e.g. +1234567890).`;
+        try {
+          const twilioError = JSON.parse(errBody);
+          if (twilioError.code === 21408) {
+            userMessage = `SMS is not yet available for your region. Please try WhatsApp instead, or contact support.`;
+          } else if (twilioError.code === 21211) {
+            userMessage = `Invalid phone number. Please use international format (e.g. +1234567890).`;
+          }
+        } catch {}
+        
         return new Response(
-          JSON.stringify({ error: `Failed to send ${channelLabel}. Please check the phone number format (e.g. +1234567890).` }),
+          JSON.stringify({ error: userMessage }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }

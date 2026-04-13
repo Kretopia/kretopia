@@ -96,10 +96,10 @@ describe("Subscription Limits", () => {
 
   describe("getRemainingSwipes", () => {
     it("calculates remaining swipes for free tier", () => {
-      expect(getRemainingSwipes("free", 0)).toBe(30);
-      expect(getRemainingSwipes("free", 10)).toBe(20);
-      expect(getRemainingSwipes("free", 30)).toBe(0);
-      expect(getRemainingSwipes("free", 35)).toBe(0);
+      expect(getRemainingSwipes("free", 0)).toBe(20);
+      expect(getRemainingSwipes("free", 10)).toBe(10);
+      expect(getRemainingSwipes("free", 20)).toBe(0);
+      expect(getRemainingSwipes("free", 25)).toBe(0);
     });
 
     it("returns -1 (unlimited) for pro tier", () => {

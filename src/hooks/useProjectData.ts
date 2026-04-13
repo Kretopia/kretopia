@@ -122,6 +122,14 @@ export function useProjectData(projectId: string | undefined) {
           .single();
         if (projectError) throw projectError;
 
+        // Auto-accept any pending invitation for this project before checking access
+        await supabase
+          .from("project_collaborators")
+          .update({ status: "accepted" })
+          .eq("project_id", projectId)
+          .eq("user_id", user.id)
+          .eq("status", "pending");
+
         const { data: hasAccess } = await supabase.rpc("user_has_project_access", {
           project_id_param: projectId,
           user_id_param: user.id,

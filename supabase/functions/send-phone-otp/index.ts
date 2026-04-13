@@ -112,6 +112,8 @@ Deno.serve(async (req) => {
           const twilioError = JSON.parse(errBody);
           if (twilioError.code === 21408) {
             userMessage = `SMS is not yet available for your region. Please try WhatsApp instead, or contact support.`;
+          } else if (twilioError.code === 63007) {
+            userMessage = `WhatsApp is not yet configured for this number. Please try SMS instead, or contact support.`;
           } else if (twilioError.code === 21211) {
             userMessage = `Invalid phone number. Please use international format (e.g. +1234567890).`;
           }

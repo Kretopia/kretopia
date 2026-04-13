@@ -21,12 +21,11 @@ const HireTabContent = ({ userId, creatorName }: { userId: string; creatorName?:
 
   useEffect(() => {
     const check = async () => {
-      const { count } = await supabase
-        .from('creator_services')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('is_active', true);
-      setHasContent((count ?? 0) > 0);
+      const [servicesRes, productsRes] = await Promise.all([
+        supabase.from('creator_services').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_active', true),
+        supabase.from('digital_products').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_active', true),
+      ]);
+      setHasContent(((servicesRes.count ?? 0) + (productsRes.count ?? 0)) > 0);
     };
     check();
   }, [userId]);

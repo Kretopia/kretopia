@@ -282,12 +282,14 @@ export const ProfileHero = ({
               </span>
             )}
           </div>
-          <div className="h-1.5 rounded-full bg-border overflow-hidden">
-            <div 
-              className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-500 from-primary to-primary/70")}
-              style={{ width: `${tierProgress}%` }}
-            />
-          </div>
+          {statusResult.progress.length > 0 && (
+            <div className="h-1.5 rounded-full bg-border overflow-hidden">
+              <div 
+                className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-500 from-primary to-primary/70")}
+                style={{ width: `${Math.min(100, (statusResult.progress[0].current / statusResult.progress[0].needed) * 100)}%` }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Stats Grid */}

@@ -100,8 +100,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     } else {
       analytics.milestoneStatusChange(projectId, milestoneId, newStatus);
       if (newStatus === 'completed') {
-          toast({ title: "Milestone completed!" });
-        }
+        toast({ title: "Milestone completed!" });
       } else {
         toast({ title: "Milestone updated!" });
       }

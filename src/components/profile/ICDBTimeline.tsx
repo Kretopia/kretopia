@@ -250,8 +250,16 @@ function CategoryRow({
 
   const getCreditThumbnail = (credit: ICDBCredit): string | null => {
     if (credit.thumbnail_url) return credit.thumbnail_url;
-    if (credit.primary_media_url) return credit.primary_media_url;
+    if (credit.primary_media_url) {
+      // Check if it's a direct image or extractable URL
+      const extracted = extractThumbnailFromUrl(credit.primary_media_url);
+      if (extracted) return extracted;
+      // If it looks like an image URL, use it directly
+      if (/\.(jpg|jpeg|png|webp|gif)/i.test(credit.primary_media_url)) return credit.primary_media_url;
+    }
     if (credit.url) {
+      const extracted = extractThumbnailFromUrl(credit.url);
+      if (extracted) return extracted;
       const mediaInfo = parseMediaUrl(credit.url);
       if (mediaInfo?.thumbnailUrl) return mediaInfo.thumbnailUrl;
     }

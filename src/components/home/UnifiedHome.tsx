@@ -9,6 +9,7 @@ import { hasProAccess } from "@/lib/subscriptionConfig";
 import { QuickPostModal } from "@/components/QuickPostModal";
 import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";

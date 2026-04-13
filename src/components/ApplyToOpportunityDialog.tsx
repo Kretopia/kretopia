@@ -143,11 +143,11 @@ export const ApplyToOpportunityDialog = ({
         .single();
 
       // Get owner email from auth (via edge function isn't possible, so use profile)
-      // Send notification email to owner
+      // Send notification email to owner (resolved server-side via userId)
       supabase.functions.invoke('send-transactional-email', {
         body: {
           templateName: 'new-applicant-notification',
-          recipientEmail: opportunity.created_by, // Will be resolved server-side
+          recipientUserId: opportunity.created_by,
           idempotencyKey: `app-notify-${opportunityId}-${user.id}`,
           templateData: {
             ownerName: ownerProfile?.full_name || 'Creator',

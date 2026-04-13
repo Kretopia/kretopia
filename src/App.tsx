@@ -289,6 +289,7 @@ const AppContent = () => {
             <Route path="/community-guidelines" element={<CommunityGuidelines />} />
             <Route path="/about" element={<About />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/email-unsubscribe" element={<Suspense fallback={null}><EmailUnsubscribe /></Suspense>} />
             
             {/* Partner Pages — redirected */}
             <Route path="/partner-directory" element={<Navigate to="/" replace />} />

@@ -474,24 +474,53 @@ const CreditDatabase = () => {
             /* Browse mode */
             <div className="py-5 space-y-8">
               {/* Visual credits with art */}
-              {recentCredits.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Star className="h-4 w-4 text-primary" />
-                    <h2 className="text-sm font-semibold">Featured Work</h2>
-                  </div>
-                  <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-                    {recentCredits.slice(0, 12).map(credit => (
-                      <FeaturedCreditCard
-                        key={credit.id}
-                        credit={credit}
-                        onClick={() => navigate(`/profile/${credit.user_id}`)}
-                        getCategoryForType={getCategoryForType}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
+              {recentCredits.length > 0 && (() => {
+                const withArt = recentCredits.filter(c => resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
+                const withoutArt = recentCredits.filter(c => !resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
+                return (
+                  <>
+                    {withArt.length > 0 && (
+                      <section>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Star className="h-4 w-4 text-primary" />
+                          <h2 className="text-sm font-semibold">Featured Work</h2>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                          {withArt.slice(0, 16).map(credit => (
+                            <CreditPosterCard
+                              key={credit.id}
+                              credit={credit}
+                              onClick={() => navigate(`/profile/${credit.user_id}`)}
+                              formatType={formatType}
+                              getCategoryForType={getCategoryForType}
+                            />
+                          ))}
+                        </div>
+                      </section>
+                    )}
+
+                    {withoutArt.length > 0 && (
+                      <section>
+                        <div className="flex items-center gap-2 mb-3">
+                          <List className="h-4 w-4 text-muted-foreground" />
+                          <h2 className="text-sm font-semibold">More Credits</h2>
+                        </div>
+                        <div className="space-y-1">
+                          {withoutArt.map(credit => (
+                            <CompactCreditRow
+                              key={credit.id}
+                              credit={credit}
+                              onClick={() => navigate(`/profile/${credit.user_id}`)}
+                              formatType={formatType}
+                              getCategoryForType={getCategoryForType}
+                            />
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                  </>
+                );
+              })()}
 
               {/* Recently added projects */}
               <section>

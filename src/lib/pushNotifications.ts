@@ -120,12 +120,12 @@ export async function notifyOpportunity(userId: string, opportunityTitle: string
 /**
  * Send milestone notification
  */
-export async function notifyMilestone(userId: string, projectTitle: string, milestoneTitle: string) {
+export async function notifyMilestone(userId: string, projectTitle: string, milestoneTitle: string, projectId?: string) {
   await sendPushNotification({
     userId,
     title: "Milestone Update",
     body: `${milestoneTitle} in ${projectTitle}`,
     type: "milestone",
-    link: "/projects",
+    link: projectId ? `/desk/${projectId}` : "/projects",
   });
 }

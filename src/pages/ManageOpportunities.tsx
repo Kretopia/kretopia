@@ -66,6 +66,10 @@ const ManageOpportunities = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  const openApplicants = (opportunityId: string) => {
+    navigate(`/opportunity-dashboard?opportunity=${opportunityId}`);
+  };
+
   useEffect(() => {
     if (authLoading || !user) return;
     loadData();
@@ -138,7 +142,7 @@ const ManageOpportunities = () => {
               <Briefcase className="h-5 w-5 text-[hsl(var(--mode-accent))]" />
               Gig Manager
             </h1>
-            <p className="text-sm text-muted-foreground">Your listings & applications</p>
+            <p className="text-sm text-muted-foreground">Your listings and your own applications</p>
           </div>
           <Button size="sm" onClick={() => navigate("/post-opportunity")} className="gap-1.5">
             <Plus className="h-3.5 w-3.5" /> Post Gig
@@ -151,7 +155,7 @@ const ManageOpportunities = () => {
               <Send className="h-3.5 w-3.5" /> My Listings ({postedGigs.length})
             </TabsTrigger>
             <TabsTrigger value="applications" className="gap-1.5">
-              <Briefcase className="h-3.5 w-3.5" /> Applied ({applications.length})
+              <Briefcase className="h-3.5 w-3.5" /> My Applications ({applications.length})
             </TabsTrigger>
           </TabsList>
 
@@ -177,7 +181,7 @@ const ManageOpportunities = () => {
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">Active ({activeGigs.length})</p>
                     {activeGigs.map(gig => (
-                      <GigCard key={gig.id} gig={gig} onStatusChange={updateGigStatus} navigate={navigate} />
+                       <GigCard key={gig.id} gig={gig} onStatusChange={updateGigStatus} navigate={navigate} onOpenApplicants={openApplicants} />
                     ))}
                   </div>
                 )}
@@ -187,7 +191,7 @@ const ManageOpportunities = () => {
                   <div className="space-y-2 pt-2">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">Past ({inactiveGigs.length})</p>
                     {inactiveGigs.map(gig => (
-                      <GigCard key={gig.id} gig={gig} onStatusChange={updateGigStatus} navigate={navigate} />
+                       <GigCard key={gig.id} gig={gig} onStatusChange={updateGigStatus} navigate={navigate} onOpenApplicants={openApplicants} />
                     ))}
                   </div>
                 )}
@@ -263,6 +267,7 @@ const GigCard = ({
   gig: PostedGig;
   onStatusChange: (id: string, status: string) => void;
   navigate: (path: string) => void;
+  onOpenApplicants: (opportunityId: string) => void;
 }) => {
   const config = statusConfig[gig.status] || statusConfig.active;
   const StatusIcon = config.icon;
@@ -292,6 +297,11 @@ const GigCard = ({
                   <DropdownMenuItem onClick={() => navigate(`/opportunity/${gig.id}`)}>
                     <Eye className="h-3.5 w-3.5 mr-2" /> View
                   </DropdownMenuItem>
+                  {(gig.applicant_count || 0) > 0 && (
+                    <DropdownMenuItem onClick={() => onOpenApplicants(gig.id)}>
+                      <Users className="h-3.5 w-3.5 mr-2" /> View Applicants
+                    </DropdownMenuItem>
+                  )}
                   {(gig.status === "active" || gig.status === "open") && (
                     <DropdownMenuItem onClick={() => onStatusChange(gig.id, "paused")}>
                       <Pause className="h-3.5 w-3.5 mr-2" /> Pause
@@ -332,9 +342,9 @@ const GigCard = ({
                 variant="ghost"
                 size="sm"
                 className="h-6 mt-1.5 text-xs gap-1 text-[hsl(var(--mode-accent))] px-1.5"
-                onClick={() => navigate(`/opportunity/${gig.id}`)}
+                onClick={() => onOpenApplicants(gig.id)}
               >
-                <Users className="h-3 w-3" /> {gig.applicant_count} applicant{gig.applicant_count !== 1 ? "s" : ""}
+                <Users className="h-3 w-3" /> View {gig.applicant_count} applicant{gig.applicant_count !== 1 ? "s" : ""}
                 <ArrowRight className="h-3 w-3" />
               </Button>
             )}

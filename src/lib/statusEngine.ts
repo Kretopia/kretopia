@@ -1,14 +1,14 @@
 /**
  * ThriveStatus — Dual-Axis Professional Reputation System
  * 
- * AXIS 1: Career Tier (work-first)
- *   Base: Verified Credits (the core metric)
- *   Accelerators: Endorsements, Awards, Press, Reviews/Ratings
- *   → Pure work alone CAN reach Icon. Accelerators get you there faster.
+ * AXIS 1: Career Tier (work-first, hard-gated)
+ *   Base: Total Credits (1 credit = 1 distinct professional contribution)
+ *   Gates: Endorsements required from Thriver+, Awards/Press required for Celebrity/Icon
+ *   → Work volume drives progression. Industry recognition gates the top.
  * 
- * AXIS 2: Network Role (social influence)
+ * AXIS 2: Network Role (social influence, independent)
  *   Connections, accepted invites, collaborations
- *   → Independent of Career Tier. A Professional can be a Spark or Power Circle.
+ *   → A Professional can be a Spark or Power Circle.
  * 
  * Combined display: "Professional · Connector"
  */
@@ -26,7 +26,6 @@ export interface StatusMetrics {
   collaborations: number;
   averageRating: number;
   reviewCount: number;
-  // Accelerators
   endorsementCount: number;
   awardCount: number;
   pressCount: number;
@@ -35,7 +34,7 @@ export interface StatusMetrics {
 export interface StatusResult {
   tier: StatusTier;
   label: string;
-  combinedLabel: string; // "Professional · Connector"
+  combinedLabel: string;
   socialProofLabel: string | null;
   color: string;
   ringClass: string;
@@ -47,7 +46,6 @@ export interface StatusResult {
   progress: StatusProgress[];
   networkRole: NetworkRole;
   networkRoleLabel: string;
-  // Score breakdowns for transparency
   careerScore: number;
   networkScore: number;
 }
@@ -59,39 +57,142 @@ export interface StatusProgress {
   category: "credits" | "network" | "accelerators";
 }
 
+// ─── Tier Order & Index ──────────────────────────────────────────────
+
+const TIER_ORDER: StatusTier[] = ["hobbyist", "freelancer", "thriver", "professional", "celebrity", "icon"];
+
+export function getTierIndex(tier: StatusTier): number {
+  return TIER_ORDER.indexOf(tier);
+}
+
 // ─── Career Tier: Hard-Gated Thresholds ──────────────────────────────
 //
-// 1 Credit = 1 distinct professional contribution (project, role, work entry)
+// 1 Credit = 1 distinct professional contribution
 // Realistic pacing:
 //   - Active creator: ~2-4 credits/month → 24-48/year
-//   - Freelancer after 1 year: ~30 credits
-//   - Professional after 2-3 years: ~60-80 credits
-//   - Celebrity/Icon: requires INDUSTRY RECOGNITION, not just volume
+//   - Freelancer: ~5 credits (a few months of work)
+//   - Thriver: ~20 credits + peer validation (1 year active)
+//   - Professional: ~50 credits + solid endorsements (2-3 years)
+//   - Celebrity: 80+ credits + industry awards OR press (5+ years, recognized)
+//   - Icon: 120+ credits + awards AND press (decade+, industry leader)
 
 interface TierGate {
-  tier: StatusTier;
   credits: number;
   endorsements: number;
   awards: number;
   press: number;
-  // If true, awards OR press can satisfy (not both required)
-  awardsOrPress?: boolean;
+  awardsOrPress?: boolean; // true = awards OR press satisfies gate
 }
 
-const TIER_GATES: TierGate[] = [
-  // Icon: 120+ credits, 20 endorsements, 3 awards AND 5 press
-  { tier: "icon", credits: 120, endorsements: 20, awards: 3, press: 5 },
-  // Celebrity: 80+ credits, 10 endorsements, 2 awards OR 3 press
-  { tier: "celebrity", credits: 80, endorsements: 10, awards: 2, press: 3, awardsOrPress: true },
-  // Professional: 50+ credits, 5 endorsements
-  { tier: "professional", credits: 50, endorsements: 5, awards: 0, press: 0 },
-  // Thriver: 20+ credits, 2 endorsements
-  { tier: "thriver", credits: 20, endorsements: 2, awards: 0, press: 0 },
-  // Freelancer: 5+ credits
-  { tier: "freelancer", credits: 5, endorsements: 0, awards: 0, press: 0 },
-  // Hobbyist: everyone starts here
-  { tier: "hobbyist", credits: 0, endorsements: 0, awards: 0, press: 0 },
-];
+const TIER_GATE_MAP: Record<StatusTier, TierGate> = {
+  hobbyist:     { credits: 0,   endorsements: 0,  awards: 0, press: 0 },
+  freelancer:   { credits: 5,   endorsements: 0,  awards: 0, press: 0 },
+  thriver:      { credits: 20,  endorsements: 2,  awards: 0, press: 0 },
+  professional: { credits: 50,  endorsements: 5,  awards: 0, press: 0 },
+  celebrity:    { credits: 80,  endorsements: 10, awards: 2, press: 3, awardsOrPress: true },
+  icon:         { credits: 120, endorsements: 20, awards: 3, press: 5 },
+};
+
+interface TierMeta {
+  label: string;
+  socialProofLabel: string | null;
+  color: string;
+  ringClass: string;
+  gradient: string;
+  perks: string[];
+}
+
+const TIER_META: Record<StatusTier, TierMeta> = {
+  hobbyist: {
+    label: "Hobbyist",
+    socialProofLabel: null,
+    color: "text-muted-foreground",
+    ringClass: "ring-2 ring-border",
+    gradient: "from-muted-foreground/20 to-muted-foreground/5",
+    perks: ["Basic profile", "Claim credits", "Join communities"],
+  },
+  freelancer: {
+    label: "Freelancer",
+    socialProofLabel: "Active Creator",
+    color: "text-[hsl(0,0%,70%)]",
+    ringClass: "ring-2 ring-[hsl(0,0%,75%)]",
+    gradient: "from-[hsl(0,0%,75%)]/25 to-[hsl(0,0%,70%)]/5",
+    perks: ["Basic visibility", "Connection requests", "Profile dashboard"],
+  },
+  thriver: {
+    label: "Thriver",
+    socialProofLabel: "Rising Talent",
+    color: "text-primary",
+    ringClass: "ring-2 ring-primary",
+    gradient: "from-primary/25 to-primary/5",
+    perks: ["AI recommendations", "Limited boosts", "Priority in matching"],
+  },
+  professional: {
+    label: "Professional",
+    socialProofLabel: "Industry Pro",
+    color: "text-accent",
+    ringClass: "ring-2 ring-accent",
+    gradient: "from-accent/25 to-accent/5",
+    perks: ["Advanced analytics", "Priority matching", "Profile-as-website"],
+  },
+  celebrity: {
+    label: "Celebrity",
+    socialProofLabel: "Top 1% Creator",
+    color: "text-foreground",
+    ringClass: "ring-2 ring-foreground",
+    gradient: "from-foreground/20 to-foreground/5",
+    perks: ["Featured placement", "Reduced platform fees", "Bulk messaging"],
+  },
+  icon: {
+    label: "Icon",
+    socialProofLabel: "Industry Icon",
+    color: "text-primary",
+    ringClass: "ring-2 ring-primary shadow-glow",
+    gradient: "from-primary/30 via-accent/15 to-primary/5",
+    perks: ["VIP access", "Premium exposure", "Revenue share potential", "Full platform access"],
+  },
+};
+
+// ─── Career Tier Calculation (Hard-Gated) ────────────────────────────
+
+function meetsGate(metrics: StatusMetrics, gate: TierGate): boolean {
+  if (metrics.totalCredits < gate.credits) return false;
+  if (metrics.endorsementCount < gate.endorsements) return false;
+
+  // Awards/press gate
+  if (gate.awardsOrPress) {
+    // Need awards OR press (not both)
+    const hasAwards = metrics.awardCount >= gate.awards;
+    const hasPress = metrics.pressCount >= gate.press;
+    if (!hasAwards && !hasPress) return false;
+  } else {
+    if (metrics.awardCount < gate.awards) return false;
+    if (metrics.pressCount < gate.press) return false;
+  }
+
+  return true;
+}
+
+function calculateMatchedTier(metrics: StatusMetrics): StatusTier {
+  // Walk from highest to lowest, return first that passes all gates
+  for (let i = TIER_ORDER.length - 1; i >= 0; i--) {
+    const tier = TIER_ORDER[i];
+    if (meetsGate(metrics, TIER_GATE_MAP[tier])) {
+      return tier;
+    }
+  }
+  return "hobbyist";
+}
+
+/** Career score 0-100 for progress visualization (not used for tier gating) */
+function calculateCareerScore(metrics: StatusMetrics): number {
+  // Weighted combination for display purposes
+  const creditScore = Math.min(50, (metrics.totalCredits / 120) * 50);
+  const endorseScore = Math.min(20, (metrics.endorsementCount / 20) * 20);
+  const awardScore = Math.min(15, (metrics.awardCount / 3) * 15);
+  const pressScore = Math.min(15, (metrics.pressCount / 5) * 15);
+  return Math.min(100, creditScore + endorseScore + awardScore + pressScore);
+}
 
 // ─── Network Role Calculation (Independent Axis) ─────────────────────
 
@@ -114,7 +215,6 @@ function calculateNetworkScore(metrics: StatusMetrics): number {
 
 function calculateNetworkRole(metrics: StatusMetrics): { role: NetworkRole; label: string; score: number } {
   const score = calculateNetworkScore(metrics);
-
   const roles: NetworkRole[] = ["power_circle", "influencer", "curator", "builder", "connector", "spark"];
   for (const role of roles) {
     if (score >= NETWORK_ROLE_META[role].minScore) {
@@ -127,22 +227,14 @@ function calculateNetworkRole(metrics: StatusMetrics): { role: NetworkRole; labe
 // ─── Main Calculate Function ─────────────────────────────────────────
 
 export function calculateStatus(metrics: StatusMetrics): StatusResult {
+  const matchedTier = calculateMatchedTier(metrics);
   const careerScore = calculateCareerScore(metrics);
   const { role: networkRole, label: networkRoleLabel, score: networkScore } = calculateNetworkRole(metrics);
-
-  let matchedTier: StatusTier = "hobbyist";
-  for (const { tier, min } of TIER_THRESHOLDS) {
-    if (careerScore >= min) {
-      matchedTier = tier;
-      break;
-    }
-  }
 
   const meta = TIER_META[matchedTier];
   const tierIndex = getTierIndex(matchedTier);
   const nextTierData = tierIndex < TIER_ORDER.length - 1 ? TIER_ORDER[tierIndex + 1] : undefined;
 
-  // Combined label
   const combinedLabel = networkRole !== "spark"
     ? `${meta.label} · ${networkRoleLabel}`
     : meta.label;
@@ -150,22 +242,37 @@ export function calculateStatus(metrics: StatusMetrics): StatusResult {
   // Build progress items toward next career tier
   const progress: StatusProgress[] = [];
   if (nextTierData) {
-    const nextMeta = TIER_META[nextTierData];
-    const t = nextMeta.targets;
+    const nextGate = TIER_GATE_MAP[nextTierData];
 
-    if (metrics.verifiedCredits < t.verifiedCredits) {
+    if (metrics.totalCredits < nextGate.credits) {
       progress.push({
-        label: "Verified Credits",
-        current: metrics.verifiedCredits,
-        needed: t.verifiedCredits,
+        label: "Credits",
+        current: metrics.totalCredits,
+        needed: nextGate.credits,
         category: "credits",
       });
     }
-    if (metrics.endorsementCount < t.endorsements) {
+    if (nextGate.endorsements > 0 && metrics.endorsementCount < nextGate.endorsements) {
       progress.push({
         label: "Endorsements",
         current: metrics.endorsementCount,
-        needed: t.endorsements,
+        needed: nextGate.endorsements,
+        category: "accelerators",
+      });
+    }
+    if (nextGate.awards > 0 && metrics.awardCount < nextGate.awards) {
+      progress.push({
+        label: "Awards",
+        current: metrics.awardCount,
+        needed: nextGate.awards,
+        category: "accelerators",
+      });
+    }
+    if (nextGate.press > 0 && metrics.pressCount < nextGate.press) {
+      progress.push({
+        label: "Press",
+        current: metrics.pressCount,
+        needed: nextGate.press,
         category: "accelerators",
       });
     }
@@ -183,7 +290,7 @@ export function calculateStatus(metrics: StatusMetrics): StatusResult {
     perks: meta.perks,
     tierIndex,
     metrics,
-    progress: progress.slice(0, 3),
+    progress: progress.slice(0, 4),
     networkRole,
     networkRoleLabel,
     careerScore,
@@ -244,5 +351,6 @@ export function getAllTiers() {
     tier,
     index,
     ...TIER_META[tier],
+    gate: TIER_GATE_MAP[tier],
   }));
 }

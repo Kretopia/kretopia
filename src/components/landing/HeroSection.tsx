@@ -158,21 +158,21 @@ export const HeroSection = () => {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,hsl(var(--primary)/0.08),transparent_60%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_90%_90%,hsl(var(--accent)/0.04),transparent_50%)]" />
 
-      <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 pt-6 pb-16">
+      <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 pt-2 pb-16">
         
         {/* ═══════ HERO — Conversion-first ═══════ */}
-        <div className="text-center pt-6 sm:pt-10 pb-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary mb-4">
-            The Creative OS™
+        <div className="text-center pt-4 sm:pt-8 pb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-4">
+            The Creative OS
           </p>
 
-          <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-2 leading-[1.15]">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-2 leading-[1.15]">
             Get Discovered. Get Booked.{" "}
             <br className="hidden sm:block" />
             <span className="text-primary">Get Paid.</span>
           </h1>
 
-          <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mt-3 leading-relaxed">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto mt-3 leading-relaxed">
             The all-in-one platform where{" "}
             <span className="text-primary font-semibold inline-block min-w-[90px] sm:min-w-[130px] transition-all duration-500">
               {roles[roleIdx]}s
@@ -210,8 +210,8 @@ export const HeroSection = () => {
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2.5">
                 <s.icon className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-xs font-bold text-foreground mb-1">{s.title}</p>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground leading-relaxed">{s.desc}</p>
+              <p className="text-sm font-bold text-foreground mb-1">{s.title}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
             </div>
           ))}
         </div>
@@ -480,6 +480,10 @@ export const HeroSection = () => {
           <Link to="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
           <span className="text-border">·</span>
           <Link to="/auth" className="hover:text-foreground transition-colors">Register as Brand</Link>
+          <span className="text-border">·</span>
+          <Link to="/terms" className="hover:text-foreground transition-colors">Terms & Conditions</Link>
+          <span className="text-border">·</span>
+          <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
         </div>
       </div>
     </section>

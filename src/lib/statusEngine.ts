@@ -186,12 +186,11 @@ function calculateMatchedTier(metrics: StatusMetrics): StatusTier {
 
 /** Career score 0-100 for progress visualization (not used for tier gating) */
 function calculateCareerScore(metrics: StatusMetrics): number {
-  // Weighted combination for display purposes
-  const creditScore = Math.min(50, (metrics.totalCredits / 120) * 50);
-  const endorseScore = Math.min(20, (metrics.endorsementCount / 20) * 20);
+  const creditScore = Math.min(55, (metrics.totalCredits / 120) * 55);
+  const endorseBonus = Math.min(15, (metrics.endorsementCount / 15) * 15);
   const awardScore = Math.min(15, (metrics.awardCount / 3) * 15);
   const pressScore = Math.min(15, (metrics.pressCount / 5) * 15);
-  return Math.min(100, creditScore + endorseScore + awardScore + pressScore);
+  return Math.min(100, creditScore + endorseBonus + awardScore + pressScore);
 }
 
 // ─── Network Role Calculation (Independent Axis) ─────────────────────

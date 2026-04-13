@@ -20,6 +20,7 @@ import { ICDBCreditForm } from "./ICDBCreditForm";
 import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
 import { parseMediaUrl } from "@/lib/mediaUtils";
 import { MediaPlayerModal } from "./MediaPlayerModal";
+import { extractThumbnailFromUrl } from "@/lib/thumbnailExtractor";
 
 interface ICDBCredit {
   id: string;

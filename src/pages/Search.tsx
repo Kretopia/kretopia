@@ -278,7 +278,7 @@ const Search = () => {
                         <div className="flex items-center gap-2 mb-0.5">
                           <h3 className="font-bold text-base text-foreground">{kc.name}</h3>
                           <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
-                            <Sparkles className="h-2 w-2 mr-0.5" /> AI Knowledge
+                            <Database className="h-2 w-2 mr-0.5" /> Knowledge Base
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">{kc.industry}</p>

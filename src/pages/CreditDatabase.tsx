@@ -10,11 +10,12 @@ import {
   Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
   Database, MapPin, Building2, CalendarDays, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
-  TrendingUp, Play, Star,
+  TrendingUp, Play, Star, List,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },

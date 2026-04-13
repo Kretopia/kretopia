@@ -304,12 +304,12 @@ export const UnifiedHome = () => {
 
           {/* Auth search */}
           <p className="text-[11px] text-muted-foreground/70 mb-1.5">
-            Already have work? Search your name
+            {t("home.searchHint")}
           </p>
           <UnifiedSearchDropdown
             variant="inline"
             className="mb-4"
-            placeholder="Search creators, productions, gigs..."
+            placeholder={t("landing.searchPlaceholder")}
           />
 
           {/* Quick stats */}

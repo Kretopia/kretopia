@@ -252,14 +252,6 @@ export function calculateStatus(metrics: StatusMetrics): StatusResult {
         category: "credits",
       });
     }
-    if (nextGate.endorsements > 0 && metrics.endorsementCount < nextGate.endorsements) {
-      progress.push({
-        label: "Endorsements",
-        current: metrics.endorsementCount,
-        needed: nextGate.endorsements,
-        category: "accelerators",
-      });
-    }
     if (nextGate.awards > 0 && metrics.awardCount < nextGate.awards) {
       progress.push({
         label: "Awards",

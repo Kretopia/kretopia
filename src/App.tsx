@@ -181,8 +181,9 @@ const AppContent = () => {
   const isPublicBrowse = publicBrowseRoutes.some(r => location.pathname.startsWith(r));
   
   // Show bottom nav for authenticated users OR guests on public browse routes (+ landing)
-  const showBottomNav = !isPublicEPK && !isCreatorSite && !isAuthPage && !isDeckPage && !!user;
-  const showNavbar = !isPublicEPK && !isCreatorSite && !isAuthPage && !isDeckPage;
+  // Hide everything during onboarding so users focus on setup
+  const showBottomNav = !isPublicEPK && !isCreatorSite && !isAuthPage && !isOnboardingPage && !isDeckPage && !!user;
+  const showNavbar = !isPublicEPK && !isCreatorSite && !isAuthPage && !isOnboardingPage && !isDeckPage;
   const showGuestBanner = !user && (isPublicBrowse || isLandingPage) && !isAuthPage;
   
   // Don't add bottom padding when on individual project pages or desk list
@@ -196,7 +197,7 @@ const AppContent = () => {
       <PageViewTracker />
       {showNavbar && <Navbar user={user} />}
       {showBottomNav && <BottomNav />}
-      {user && !isPublicEPK && !isCreatorSite && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
+      {user && !isPublicEPK && !isCreatorSite && !isAuthPage && !isOnboardingPage && !isDeckPage && <ModeDiscoverySheet />}
       {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />

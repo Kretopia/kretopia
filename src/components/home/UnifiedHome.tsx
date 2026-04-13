@@ -9,6 +9,7 @@ import { hasProAccess } from "@/lib/subscriptionConfig";
 import { QuickPostModal } from "@/components/QuickPostModal";
 import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
@@ -32,6 +33,7 @@ const ACTIVITY_TEMPLATES = [
 
 export const UnifiedHome = () => {
   const { user, subscriptionInfo } = useAuth();
+  const { t } = useTranslation();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
   const navigate = useNavigate();
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
@@ -167,12 +169,12 @@ export const UnifiedHome = () => {
             {/* Conversion-first hero */}
             <div className="text-center mb-5 sm:mb-6">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.05] mb-4">
-                Get Discovered. Get Booked.
+                {t("landing.heroTitle1")}
                 <br />
-                <span className="text-primary">Get Paid.</span>
+                <span className="text-primary">{t("landing.heroTitle2")}</span>
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
-                Where{" "}
+                {t("landing.heroSubtitle1")}{" "}
                 <span className="text-primary font-semibold inline-block min-w-[100px]">
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -187,17 +189,17 @@ export const UnifiedHome = () => {
                     </motion.span>
                   </AnimatePresence>
                 </span>{" "}
-                build verified credits and get booked.
+                {t("landing.heroSubtitle2")}
               </p>
             </div>
 
             <div className="max-w-xl mx-auto mb-5">
               <p className="text-[11px] sm:text-xs text-muted-foreground/70 mb-1.5 text-center">
-                Already have work? Search your name
+                {t("landing.searchHint")}
               </p>
               <UnifiedSearchDropdown
                 variant="hero"
-                placeholder="Search creators, productions, gigs..."
+                placeholder={t("landing.searchPlaceholder")}
               />
             </div>
             {/* Discover Creatives — real profiles under search */}
@@ -208,13 +210,13 @@ export const UnifiedHome = () => {
             {/* 3-Step Visual Process */}
             <div className="mb-5">
               <p className="text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-semibold mb-3">
-                How it works
+                {t("landing.howItWorks")}
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { step: "1", icon: Search, title: "Search Your Name", desc: "Find credits you're already connected to" },
-                  { step: "2", icon: Database, title: "Claim & Verify", desc: "Peer endorsements & evidence verify your work" },
-                  { step: "3", icon: Briefcase, title: "Get Booked", desc: "Brands discover and hire you directly" },
+                  { step: "1", icon: Search, title: t("landing.step1Title"), desc: t("landing.step1Desc") },
+                  { step: "2", icon: Database, title: t("landing.step2Title"), desc: t("landing.step2Desc") },
+                  { step: "3", icon: Briefcase, title: t("landing.step3Title"), desc: t("landing.step3Desc") },
                 ].map((s, i) => (
                   <motion.div
                     key={s.title}
@@ -235,17 +237,17 @@ export const UnifiedHome = () => {
             <div className="flex items-center justify-center gap-6 sm:gap-8 mb-2">
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.creators.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Creators</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCreators")}</p>
               </div>
               <div className="w-px h-8 bg-border" />
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.credits.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Credits</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCredits")}</p>
               </div>
               <div className="w-px h-8 bg-border" />
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.gigs.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Live Gigs</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsGigs")}</p>
               </div>
             </div>
           </div>
@@ -302,20 +304,20 @@ export const UnifiedHome = () => {
 
           {/* Auth search */}
           <p className="text-[11px] text-muted-foreground/70 mb-1.5">
-            Already have work? Search your name
+            {t("home.searchHint")}
           </p>
           <UnifiedSearchDropdown
             variant="inline"
             className="mb-4"
-            placeholder="Search creators, productions, gigs..."
+            placeholder={t("landing.searchPlaceholder")}
           />
 
           {/* Quick stats */}
           <div className="grid grid-cols-3 gap-2.5 mb-4">
             {[
-              { label: "Credits", value: myCredits, to: "/profile", icon: Database, color: "text-primary" },
-              { label: "Connections", value: myConnections, to: "/circle", icon: Users, color: "text-accent" },
-              { label: "Live Gigs", value: stats.gigs, to: "/opportunities", icon: Briefcase, color: "text-success" },
+              { label: t("home.credits"), value: myCredits, to: "/profile", icon: Database, color: "text-primary" },
+              { label: t("home.connections"), value: myConnections, to: "/circle", icon: Users, color: "text-accent" },
+              { label: t("home.liveGigs"), value: stats.gigs, to: "/opportunities", icon: Briefcase, color: "text-success" },
             ].map(s => (
               <Link key={s.label} to={s.to} className="group relative overflow-hidden rounded-xl border border-border bg-card p-3 hover:border-primary/30 transition-all text-center">
                 <s.icon className={`h-3.5 w-3.5 ${s.color} mx-auto mb-1 opacity-60`} />
@@ -328,10 +330,10 @@ export const UnifiedHome = () => {
           {/* Quick actions */}
           <div className="grid grid-cols-4 gap-2 mb-5">
             {[
-              { icon: PlusCircle, label: "Post / Hire", action: () => setQuickPostType("gig"), color: "text-success" },
-              { icon: Database, label: "Credits", to: "/credits", color: "text-primary" },
-              { icon: CalendarDays, label: "Events", action: () => setQuickPostType("event"), color: "text-warning" },
-              { icon: Briefcase, label: "Desk", to: "/desk", color: "text-accent" },
+              { icon: PlusCircle, label: t("home.postHire"), action: () => setQuickPostType("gig"), color: "text-success" },
+              { icon: Database, label: t("home.credits"), to: "/credits", color: "text-primary" },
+              { icon: CalendarDays, label: t("home.events"), action: () => setQuickPostType("event"), color: "text-warning" },
+              { icon: Briefcase, label: t("home.desk"), to: "/desk", color: "text-accent" },
             ].map((a) => (
               <button
                 key={a.label}
@@ -370,10 +372,10 @@ export const UnifiedHome = () => {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              Trending Productions
+              {t("landing.trendingProductions")}
             </h2>
             <Link to="/credits" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-              View all <ArrowRight className="h-3 w-3" />
+              {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
@@ -400,7 +402,7 @@ export const UnifiedHome = () => {
                   <div className="absolute bottom-0 left-0 right-0 p-3">
                     <div className="flex items-center gap-1 mb-1">
                       <Verified className="h-3 w-3 text-primary" />
-                      <span className="text-[8px] font-bold text-primary uppercase tracking-widest">Verified</span>
+                      <span className="text-[8px] font-bold text-primary uppercase tracking-widest">{t("landing.verified")}</span>
                     </div>
                     <p className="text-xs font-bold text-foreground leading-tight line-clamp-2">{c.project_name}</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">{c.role}{c.year ? ` · ${c.year}` : ''}</p>
@@ -420,18 +422,18 @@ export const UnifiedHome = () => {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Zap className="h-4 w-4 text-warning" />
-              {user ? "Gigs For You" : "Open Gigs"}
+              {user ? t("landing.gigsForYou") : t("landing.openGigs")}
             </h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setQuickPostType("gig")}
                 className="text-[10px] font-semibold text-success flex items-center gap-1 hover:text-success/80 transition-colors"
               >
-                <PlusCircle className="h-3.5 w-3.5" /> Post
+                <PlusCircle className="h-3.5 w-3.5" /> {t("landing.postGig")}
               </button>
               <span className="text-border">·</span>
               <Link to="/opportunities" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                Browse <ArrowRight className="h-3 w-3" />
+                {t("landing.browse")} <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </div>
@@ -469,7 +471,7 @@ export const UnifiedHome = () => {
               className="w-full rounded-xl border border-dashed border-border hover:border-success/40 bg-card/50 p-4 text-center transition-all group"
             >
               <PlusCircle className="h-5 w-5 text-success/50 mx-auto mb-1.5 group-hover:text-success transition-colors" />
-              <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">Post a gig or hire talent</p>
+              <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{t("landing.postGigOrHire")}</p>
             </button>
           )}
         </section>
@@ -479,18 +481,18 @@ export const UnifiedHome = () => {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-warning" />
-              Upcoming Events
+              {t("landing.upcomingEvents")}
             </h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setQuickPostType("event")}
                 className="text-[10px] font-semibold text-warning flex items-center gap-1 hover:text-warning/80 transition-colors"
               >
-                <PlusCircle className="h-3.5 w-3.5" /> Create
+                <PlusCircle className="h-3.5 w-3.5" /> {t("landing.createEvent")}
               </button>
               <span className="text-border">·</span>
               <Link to="/scene" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                View all <ArrowRight className="h-3 w-3" />
+                {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </div>
@@ -548,7 +550,7 @@ export const UnifiedHome = () => {
               className="w-full rounded-xl border border-dashed border-border hover:border-warning/40 bg-card/50 p-4 text-center transition-all group"
             >
               <PlusCircle className="h-5 w-5 text-warning/50 mx-auto mb-1.5 group-hover:text-warning transition-colors" />
-              <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">Create a meetup or event</p>
+              <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{t("landing.createMeetup")}</p>
             </button>
           )}
         </section>
@@ -559,10 +561,10 @@ export const UnifiedHome = () => {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-primary" />
-                ThriveIN Magazine
+                {t("landing.magazine")}
               </h2>
               <Link to="/magazine" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                Read all <ArrowRight className="h-3 w-3" />
+                {t("landing.readAll")} <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
@@ -587,10 +589,10 @@ export const UnifiedHome = () => {
                       </div>
                     )}
                     <div className="p-3">
-                      <Badge variant="outline" className="text-[8px] mb-1.5">{a.category || "Article"}</Badge>
+                      <Badge variant="outline" className="text-[8px] mb-1.5">{a.category || t("common.article")}</Badge>
                       <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{a.title}</p>
                       {a.read_time_minutes && (
-                        <p className="text-[10px] text-muted-foreground mt-1">{a.read_time_minutes} min read</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{t("common.minRead", { count: a.read_time_minutes })}</p>
                       )}
                     </div>
                   </div>
@@ -605,7 +607,7 @@ export const UnifiedHome = () => {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Headphones className="h-4 w-4 text-accent" />
-              Podcast
+              {t("landing.podcast")}
             </h2>
           </div>
           <div
@@ -617,8 +619,8 @@ export const UnifiedHome = () => {
                 <Headphones className="h-7 w-7 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground mb-0.5">Discover A Thriver</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">Stories, insights & conversations with creatives shaping the industry</p>
+                <p className="text-sm font-bold text-foreground mb-0.5">{t("landing.podcastTitle")}</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{t("landing.podcastDesc")}</p>
               </div>
               <Play className="h-5 w-5 text-primary shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
             </div>
@@ -629,9 +631,9 @@ export const UnifiedHome = () => {
         {!user && (
           <div className="flex items-center justify-center gap-4 flex-wrap mb-6">
             {[
-              { icon: Shield, label: "Verified Identity" },
-              { icon: CheckCircle, label: "Escrow Protected" },
-              { icon: Star, label: "Peer Endorsed" },
+              { icon: Shield, label: t("landing.verifiedIdentity") },
+              { icon: CheckCircle, label: t("landing.escrowProtected") },
+              { icon: Star, label: t("landing.peerEndorsed") },
             ].map(b => (
               <div key={b.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <b.icon className="h-3.5 w-3.5 text-primary/60" />
@@ -655,27 +657,25 @@ export const UnifiedHome = () => {
               <Zap className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
-              {user ? "Go Pro — from $29/mo" : "Become a Founding Member"}
+              {user ? t("landing.goProTitle") : t("landing.foundingMemberTitle")}
             </h3>
             <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-1 max-w-md mx-auto">
-              {user
-                ? "Unlimited smart tools, verified badge, full invoicing & expense suite. 7-day free trial."
-                : "Early creators get priority visibility, first access to gigs, and help shape the platform."}
+              {user ? t("landing.goProDesc") : t("landing.foundingMemberDesc")}
             </p>
             {!user && (
               <p className="text-[10px] text-white/50 mb-4">
-                Free forever · Pro from $29/mo · Save 17% annually
+                {t("landing.pricingNote")}
               </p>
             )}
             <Link
               to={user ? "/subscription" : "/auth"}
               className="inline-flex items-center gap-2 rounded-xl bg-white text-primary px-6 py-3 text-sm font-bold hover:bg-white/90 transition-colors shadow-md"
             >
-              {user ? "Start 7-Day Trial" : "Join Now — It's Free"} <ArrowRight className="h-4 w-4" />
+              {user ? t("landing.startTrial") : t("landing.joinNow")} <ArrowRight className="h-4 w-4" />
             </Link>
             {!user && (
               <p className="text-[10px] text-white/40 mt-3">
-                Built by creatives, for creatives
+                {t("landing.builtByCreatives")}
               </p>
             )}
           </div>
@@ -684,13 +684,13 @@ export const UnifiedHome = () => {
 
         {/* Footer */}
         <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground mt-10 pb-4">
-          <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
+          <Link to="/about" className="hover:text-foreground transition-colors">{t("common.about")}</Link>
           <span className="text-border">·</span>
-          <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+          <Link to="/terms" className="hover:text-foreground transition-colors">{t("common.terms")}</Link>
           <span className="text-border">·</span>
-          <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+          <Link to="/privacy" className="hover:text-foreground transition-colors">{t("common.privacy")}</Link>
           <span className="text-border">·</span>
-          <Link to="/community-guidelines" className="hover:text-foreground transition-colors">Guidelines</Link>
+          <Link to="/community-guidelines" className="hover:text-foreground transition-colors">{t("footer.guidelines")}</Link>
         </div>
 
         <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />

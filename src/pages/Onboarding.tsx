@@ -262,8 +262,8 @@ export default function Onboarding() {
       return;
     }
     if (!role?.trim()) {
-      toast({ title: "Role is required", description: "What do you do professionally?", variant: "destructive" });
-      return;
+      // Role is optional — default to "Creator" if not set
+      setRole("Creator");
     }
 
     setLoading(true);
@@ -448,11 +448,11 @@ export default function Onboarding() {
               <div className="text-center space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
                   <Sparkles className="h-3 w-3" />
-                  AI-Powered Setup
+                  Quick Setup — Under 60 seconds
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight">Let's find your profile</h1>
+                <h1 className="text-2xl font-bold tracking-tight">Welcome! Let's set you up</h1>
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                  Enter your name and we'll search the web to build your professional profile automatically.
+                  We can auto-fill your profile from the web, or you can fill it in yourself.
                 </p>
               </div>
 
@@ -538,11 +538,18 @@ export default function Onboarding() {
                 </div>
               )}
 
-              {/* Skip link */}
+              {/* Manual setup — prominent alternative */}
               {!searching && (
-                <button onClick={handleSkipToManual} className="block w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
-                  Skip — I'll fill in my profile manually
-                </button>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+                  <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">or</span></div>
+                </div>
+              )}
+              {!searching && (
+                <Button variant="outline" onClick={handleSkipToManual} className="w-full h-11 gap-2">
+                  <Edit3 className="h-4 w-4" />
+                  Set up manually — it's quick
+                </Button>
               )}
             </div>
           )}
@@ -589,7 +596,7 @@ export default function Onboarding() {
 
                 {/* Role */}
                 <div>
-                  <Label className="text-xs text-muted-foreground">Role *</Label>
+                  <Label className="text-xs text-muted-foreground">Role</Label>
                   {showCustomRole || (!isRoleInOptions && role) ? (
                     <div className="space-y-1.5">
                       <Input value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Music Producer" className="h-10" />
@@ -690,9 +697,9 @@ export default function Onboarding() {
                 {/* Save */}
                 <Button onClick={handleSaveProfile} disabled={loading} className="w-full h-12 text-base gap-2" size="lg">
                   {loading ? (
-                    <><Loader2 className="h-5 w-5 animate-spin" /> Setting up your profile...</>
+                    <><Loader2 className="h-5 w-5 animate-spin" /> Saving...</>
                   ) : (
-                    <>Save & Continue <ArrowRight className="h-4 w-4" /></>
+                    <>Looks good — let's go! <ArrowRight className="h-4 w-4" /></>
                   )}
                 </Button>
 
@@ -721,11 +728,23 @@ export default function Onboarding() {
                 <p>Click the link in your email to verify and start exploring.</p>
                 <p className="mt-2 text-xs">Don't see it? Check your spam folder.</p>
               </div>
-              <Button variant="outline" onClick={handleResendVerification} disabled={resendingEmail} className="gap-2">
-                {resendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-                Resend Email
-              </Button>
-              <p className="text-sm text-muted-foreground">Already verified? This page will refresh automatically.</p>
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" onClick={handleResendVerification} disabled={resendingEmail} className="gap-2">
+                  {resendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                  Resend Email
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    setPendingConnectForCelebration(null);
+                    setShowCelebration(true);
+                  }}
+                  className="text-muted-foreground"
+                >
+                  Skip for now — I'll verify later
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">Already verified? This page will refresh automatically.</p>
             </div>
           )}
 

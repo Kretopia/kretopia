@@ -110,7 +110,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
     : mode === "create"
     ? [
         { path: "/", icon: Home, label: "Home" },
-        { path: "/scene", icon: Zap, label: "Scene" },
+        { path: "/events", icon: CalendarDays, label: "Events" },
         { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
       ]

@@ -309,7 +309,7 @@ Return ONLY the bio text, no quotes or labels.`,
       .eq('user_id', user_id);
     const deletedSet = new Set((deletedCredits || []).map((d: any) => `${d.project_name_lower}|${d.role_lower}`));
 
-    if (scrape_website && firecrawlKey && lovableKey && profile.full_name) {
+    if (!skip_credits && scrape_website && firecrawlKey && lovableKey && profile.full_name) {
       const creditSearchQueries = [
         `"${profile.full_name}" site:imdb.com`,
         `"${profile.full_name}" site:spotify.com OR site:music.apple.com OR site:soundcloud.com`,

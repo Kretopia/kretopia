@@ -53,6 +53,7 @@ const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const About = lazy(() => import("./pages/About"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
@@ -289,6 +290,7 @@ const AppContent = () => {
             <Route path="/community-guidelines" element={<CommunityGuidelines />} />
             <Route path="/about" element={<About />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/email-unsubscribe" element={<Suspense fallback={null}><EmailUnsubscribe /></Suspense>} />
             
             {/* Partner Pages — redirected */}
             <Route path="/partner-directory" element={<Navigate to="/" replace />} />

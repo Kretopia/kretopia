@@ -37,9 +37,9 @@ describe("Subscription Limits", () => {
   });
 
   describe("getTierLimits (account-type-aware)", () => {
-    it("company free tier allows 3 opportunity postings", () => {
+    it("company free tier allows 5 opportunity postings", () => {
       const limits = getTierLimits("free", "company");
-      expect(limits.maxOpportunityPostings).toBe(3);
+      expect(limits.maxOpportunityPostings).toBe(5);
     });
 
     it("company pro tier has unlimited opportunity postings", () => {

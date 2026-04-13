@@ -248,10 +248,9 @@ export function WalletXPSection() {
             </div>
           </div>
           <div className="text-right">
-            <Badge className={`bg-gradient-to-r ${tier.color} text-white border-0`}>
-              {tier.icon} {tier.displayName}
+            <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
+              {userXP.toLocaleString()} TP
             </Badge>
-            <p className="text-xs text-muted-foreground mt-1">Level {userLevel}</p>
           </div>
         </div>
         <div className="space-y-1">

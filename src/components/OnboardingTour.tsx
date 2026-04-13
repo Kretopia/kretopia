@@ -84,12 +84,6 @@ export const OnboardingTour = () => {
   };
 
   const handleNext = () => {
-    const step = tourSteps[currentStep];
-    
-    if (step.route) {
-      navigate(step.route);
-    }
-
     if (currentStep < tourSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {

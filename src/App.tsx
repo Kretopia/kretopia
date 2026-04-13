@@ -197,7 +197,7 @@ const AppContent = () => {
       {showNavbar && <Navbar user={user} />}
       {showBottomNav && <BottomNav />}
       {user && !isPublicEPK && !isCreatorSite && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
-      {user && !isAuthPage && <OnboardingTour />}
+      {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />
       {showGuestBanner && <GuestBanner />}

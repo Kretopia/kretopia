@@ -283,6 +283,8 @@ export function StartProjectFromMatchDialog({
           category: 'collaboration',
           priority: 'high',
           link: `/desk/${project.id}`,
+          action_url: `/desk/${project.id}`,
+          action_text: 'Open Project',
         });
 
         // Send email notification if we have their email

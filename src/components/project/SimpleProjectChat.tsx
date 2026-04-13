@@ -491,7 +491,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
               <div ref={messagesEndRef} />
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         {/* Reply Preview */}
         {replyTo && (

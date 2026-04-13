@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useState, useEffect, memo } from "react";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface NavbarProps {
   user?: SupabaseUser | null;
@@ -206,6 +207,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
             </div>
           )}
           
+          <LanguageSwitcher />
           <ThemeToggle />
           
           {user && !isLandingPage ? (

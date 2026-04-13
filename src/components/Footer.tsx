@@ -2,9 +2,12 @@ import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { Instagram } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { t } = useTranslation();
 
   return (
     <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -14,27 +17,27 @@ export const Footer = () => {
           <div className="space-y-3">
             <BrandLogo size="md" />
             <p className="text-sm text-muted-foreground">
-              The ultimate platform for creators to connect, collaborate, and thrive.
+              {t("footer.tagline")}
             </p>
           </div>
 
           {/* Product */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-sm">Product</h4>
+            <h4 className="font-semibold text-sm">{t("footer.product")}</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/subscription" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Pricing
+                  {t("footer.pricing")}
                 </Link>
               </li>
               <li>
                 <Link to="/partner-directory" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Partners
+                  {t("footer.partners")}
                 </Link>
               </li>
               <li>
                 <Link to="/partner-submit" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Become a Partner
+                  {t("footer.becomePartner")}
                 </Link>
               </li>
             </ul>
@@ -42,11 +45,11 @@ export const Footer = () => {
 
           {/* Company */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-sm">Company</h4>
+            <h4 className="font-semibold text-sm">{t("footer.company")}</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
-                  About
+                  {t("footer.about")}
                 </Link>
               </li>
               <li>
@@ -54,7 +57,7 @@ export const Footer = () => {
                   href="mailto:info@thrivein.io" 
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Contact Us
+                  {t("footer.contactUs")}
                 </a>
               </li>
               <li>
@@ -62,7 +65,7 @@ export const Footer = () => {
                   href="mailto:support@thrivein.io" 
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Support
+                  {t("footer.support")}
                 </a>
               </li>
             </ul>
@@ -70,21 +73,21 @@ export const Footer = () => {
 
           {/* Legal */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-sm">Legal</h4>
+            <h4 className="font-semibold text-sm">{t("footer.legal")}</h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Terms of Service
+                  {t("footer.terms")}
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Privacy Policy
+                  {t("footer.privacy")}
                 </Link>
               </li>
               <li>
                 <Link to="/community-guidelines" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Community Guidelines
+                  {t("footer.communityGuidelines")}
                 </Link>
               </li>
             </ul>
@@ -94,16 +97,19 @@ export const Footer = () => {
         <Separator className="my-6" />
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>© {currentYear} ThriveIN. All rights reserved.</p>
-          <a 
-            href="https://instagram.com/thrivein.io" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-          >
-            <Instagram className="h-4 w-4" />
-            Instagram
-          </a>
+          <p>© {currentYear} ThriveIN. {t("footer.allRightsReserved")}</p>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher variant="full" />
+            <a 
+              href="https://instagram.com/thrivein.io" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:text-foreground transition-colors"
+            >
+              <Instagram className="h-4 w-4" />
+              {t("footer.instagram")}
+            </a>
+          </div>
         </div>
       </div>
     </footer>

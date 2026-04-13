@@ -36,34 +36,44 @@ export interface TierLimits {
  * -1 = unlimited. These are per-calendar-month limits.
  */
 export const FREE_TIER_MONTHLY_CAPS = {
+  // Discovery
+  browseProfiles: 10,       // Profile browse/views per day-equivalent (monthly pool)
+  
   // Project workspace
-  approvalRequests: 2,
-  milestones: 5,
-  invoices: 5,
+  activeProjects: 1,        // Manually created projects (not from confirmed gigs)
+  milestones: 1,            // Per project milestone payments
+  contracts: 1,             // Contract generations per month
+  invoices: 2,              // Invoice generations per month
+  approvalRequests: 1,
   templateUses: 1,
-  aiBriefs: 3,
+  aiBriefs: 2,
   
   // Earnings (Accounting)
-  expenses: 10,
+  expenses: 5,
   
   // Opportunities — posting is free but limited
-  gigPosts: 3,            // Creator gig/event posts per month
-  opportunityPostings: 5, // Brand job postings per month
-  aiApplicantRankings: 2,
-  aiJobDescriptions: 2,
+  gigPosts: 3,              // Creator gig/event posts per month
+  gigApplications: 2,       // Applications to gigs per month
+  opportunityPostings: 5,   // Brand job postings per month
+  aiApplicantRankings: 1,
+  aiJobDescriptions: 1,
 
   // Work / Credits — claiming credits is FREE & UNLIMITED to drive network growth
   workCredits: -1,
 } as const;
 
 export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {
-  approvalRequests: -1,
+  browseProfiles: -1,
+  activeProjects: -1,
   milestones: -1,
+  contracts: -1,
   invoices: -1,
+  approvalRequests: -1,
   templateUses: -1,
   aiBriefs: -1,
   expenses: -1,
   gigPosts: -1,
+  gigApplications: -1,
   opportunityPostings: -1,
   aiApplicantRankings: -1,
   aiJobDescriptions: -1,
@@ -71,13 +81,17 @@ export const PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, 
 };
 
 export const CREATOR_PRO_TIER_MONTHLY_CAPS: Record<keyof typeof FREE_TIER_MONTHLY_CAPS, number> = {
-  approvalRequests: -1,
+  browseProfiles: -1,
+  activeProjects: -1,
   milestones: -1,
+  contracts: -1,
   invoices: -1,
+  approvalRequests: -1,
   templateUses: -1,
   aiBriefs: -1,
   expenses: -1,
   gigPosts: -1,
+  gigApplications: -1,
   opportunityPostings: -1,
   aiApplicantRankings: -1,
   aiJobDescriptions: -1,
@@ -97,13 +111,17 @@ export function getMonthlyCapForFeature(
 
 export function getFeatureDisplayName(feature: FreeTierFeature): string {
   const names: Record<FreeTierFeature, string> = {
-    approvalRequests: "approval requests",
-    milestones: "milestones",
+    browseProfiles: "profile views",
+    activeProjects: "active projects",
+    milestones: "milestone payments",
+    contracts: "contracts",
     invoices: "invoices",
+    approvalRequests: "approval requests",
     templateUses: "template uses",
     aiBriefs: "AI briefs",
     expenses: "expenses",
     gigPosts: "gig posts",
+    gigApplications: "gig applications",
     opportunityPostings: "job postings",
     aiApplicantRankings: "AI applicant rankings",
     aiJobDescriptions: "AI job descriptions",

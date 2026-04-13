@@ -33,7 +33,7 @@ async function aiExtract(prompt: string, systemPrompt: string, lovableKey: strin
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.2,
+      temperature: 0.1, // Low temperature to minimize fabrication
     }),
   });
   const data = await res.json();
@@ -93,25 +93,37 @@ Deno.serve(async (req) => {
       });
     }
 
+    // If no web data found, return empty profile — do NOT fabricate
+    if (!webContext || webContext.trim().length < 30) {
+      console.log(`[ai-autofill] No web data found for ${full_name}, returning empty profile`);
+      return new Response(JSON.stringify({ success: true, profile: {} }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Use AI to extract structured profile data
     const extracted = await aiExtract(
-      `Person: ${full_name || 'Unknown'}\nURL provided: ${url || 'None'}\nCurrent role hint: ${current_role || 'None'}\n\nWeb data:\n${webContext || 'No web data found'}`,
-      `You are a profile data extractor for a creative professional platform (musicians, filmmakers, designers, content creators, etc).
+      `Person: ${full_name || 'Unknown'}\nURL provided: ${url || 'None'}\nCurrent role hint: ${current_role || 'None'}\n\nWeb data:\n${webContext}`,
+      `You are a profile data extractor for a creative professional platform.
 
-From the web data, extract as much as you can about this person. Return a JSON object with these fields:
-- "role": Their primary creative role (e.g. "Music Producer", "Filmmaker", "Photographer", "Content Creator"). Use a specific role, not generic.
-- "bio": A concise 2-3 sentence professional bio in third person. Max 200 chars. No emojis, no buzzwords like "passionate" or "visionary".
-- "location": Their city/country if detectable (e.g. "London, UK", "Los Angeles", "Trinidad & Tobago")
-- "skills": Array of 5-8 professional skills relevant to their work (e.g. ["Music Production", "Songwriting", "Beat Making"])
-- "job_title": Their most specific job title
-- "industry": Their industry (e.g. "Music", "Film & TV", "Fashion", "Design")
-- "avatar_url": URL to their profile photo if found (from LinkedIn, website, etc). null if not found.
+From the web data, extract ONLY information that is EXPLICITLY stated in the provided text.
+
+Return a JSON object with these fields:
+- "role": Their primary creative role — ONLY if explicitly stated in the text
+- "bio": A concise 2-3 sentence professional bio based ONLY on facts from the text. Max 200 chars.
+- "location": Their city/country — ONLY if explicitly mentioned in the text
+- "skills": Array of 3-6 professional skills — ONLY skills explicitly mentioned or demonstrated in the text
+- "job_title": Their job title — ONLY if explicitly stated
+- "industry": Their industry — ONLY if clearly evident from the text
+- "avatar_url": URL to their profile photo if found in the HTML/page. null if not found.
 - "website": Their personal website URL if found. null if not found.
 
-Rules:
-- Only include data you are confident about from the web results
-- If uncertain about a field, set it to null
-- Do NOT fabricate information
+CRITICAL RULES:
+- ONLY include data that appears EXPLICITLY in the web results
+- If a field cannot be determined from the text, set it to null
+- Do NOT fabricate, guess, or infer information
+- Do NOT make up bios for people you can't find data about
+- If you're unsure about ANY field, set it to null
 - Return raw JSON only, no markdown fences`,
       lovableKey
     );
@@ -125,6 +137,19 @@ Rules:
       return new Response(JSON.stringify({ error: 'Failed to parse AI response' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
+    }
+
+    // Post-validation: strip any fields that look fabricated
+    // If bio doesn't reference anything from the web context, remove it
+    if (profile.bio && webContext.length > 30) {
+      const bioWords = profile.bio.toLowerCase().split(/\s+/).filter((w: string) => w.length > 4);
+      const contextLower = webContext.toLowerCase();
+      const matchingWords = bioWords.filter((w: string) => contextLower.includes(w));
+      // If less than 30% of significant words appear in source, bio is likely fabricated
+      if (bioWords.length > 0 && (matchingWords.length / bioWords.length) < 0.3) {
+        console.log(`[ai-autofill] Bio failed validation — removing likely fabricated bio`);
+        profile.bio = null;
+      }
     }
 
     console.log(`[ai-autofill] Profile extracted for ${full_name}:`, profile);

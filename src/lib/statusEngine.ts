@@ -230,14 +230,6 @@ export function calculateStatus(metrics: StatusMetrics): StatusResult {
         category: "credits",
       });
     }
-    if (metrics.completedProjects < t.completedProjects) {
-      progress.push({
-        label: "Completed Projects",
-        current: metrics.completedProjects,
-        needed: t.completedProjects,
-        category: "projects",
-      });
-    }
     if (metrics.connections < t.connections) {
       progress.push({
         label: "Connections",

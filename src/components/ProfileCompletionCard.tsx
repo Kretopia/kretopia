@@ -91,26 +91,20 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
                 </p>
                 {(expanded ? completion.missingFields : priorityMissing).map((field) => {
                   const Icon = fieldIcons[field] || Circle;
-                  return (
-                    <div 
-                      key={field} 
-                      className="flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-secondary/50 transition-colors group"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Circle className="h-4 w-4 text-muted-foreground" />
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{field}</span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                    return (
+                      <button 
+                        key={field}
                         onClick={() => navigate('/profile', { state: { section: fieldActions[field]?.section } })}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="w-full flex items-center justify-between gap-2 p-2.5 rounded-lg hover:bg-secondary/50 transition-colors group cursor-pointer text-left"
                       >
-                        Add →
-                      </Button>
-                    </div>
-                  );
+                        <div className="flex items-center gap-2">
+                          <Circle className="h-4 w-4 text-muted-foreground" />
+                          <Icon className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{field}</span>
+                        </div>
+                        <span className="text-xs text-primary font-medium">Add →</span>
+                      </button>
+                    );
                 })}
               </div>
             )}

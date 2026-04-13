@@ -33,6 +33,7 @@ const ACTIVITY_TEMPLATES = [
 
 export const UnifiedHome = () => {
   const { user, subscriptionInfo } = useAuth();
+  const { t } = useTranslation();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
   const navigate = useNavigate();
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);

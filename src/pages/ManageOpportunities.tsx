@@ -263,6 +263,7 @@ const GigCard = ({
   gig,
   onStatusChange,
   navigate,
+  onOpenApplicants,
 }: {
   gig: PostedGig;
   onStatusChange: (id: string, status: string) => void;

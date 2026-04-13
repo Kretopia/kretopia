@@ -170,7 +170,7 @@ export const useProfileData = () => {
           if (needsEnrichment) {
             localStorage.setItem(enrichCooldownKey, Date.now().toString());
             supabase.functions.invoke('enrich-creator-profile', {
-              body: { user_id: currentUserId, scrape_website: true },
+              body: { user_id: currentUserId, scrape_website: true, skip_credits: true },
             }).then(async () => {
               const [profileRefresh, awardsRefresh, pressRefresh] = await Promise.all([
                 supabase.from('profiles').select('*').eq('user_id', currentUserId!).maybeSingle(),

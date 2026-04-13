@@ -29,6 +29,8 @@ export async function sendPushNotification(params: SendPushNotificationParams) {
         message: body,
         type,
         link: link || null,
+        action_url: link || null,
+        action_text: type === 'match' ? 'Send Message' : type === 'message' ? 'View Message' : type === 'opportunity' ? 'View Applicants' : 'View',
         image_url: icon || null,
         priority: type === 'match' || type === 'message' ? 'high' : 'normal',
         category: type,
@@ -118,12 +120,12 @@ export async function notifyOpportunity(userId: string, opportunityTitle: string
 /**
  * Send milestone notification
  */
-export async function notifyMilestone(userId: string, projectTitle: string, milestoneTitle: string) {
+export async function notifyMilestone(userId: string, projectTitle: string, milestoneTitle: string, projectId?: string) {
   await sendPushNotification({
     userId,
     title: "Milestone Update",
     body: `${milestoneTitle} in ${projectTitle}`,
     type: "milestone",
-    link: "/projects",
+    link: projectId ? `/desk/${projectId}` : "/projects",
   });
 }

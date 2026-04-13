@@ -697,9 +697,9 @@ export default function Onboarding() {
                 {/* Save */}
                 <Button onClick={handleSaveProfile} disabled={loading} className="w-full h-12 text-base gap-2" size="lg">
                   {loading ? (
-                    <><Loader2 className="h-5 w-5 animate-spin" /> Setting up your profile...</>
+                    <><Loader2 className="h-5 w-5 animate-spin" /> Saving...</>
                   ) : (
-                    <>Save & Continue <ArrowRight className="h-4 w-4" /></>
+                    <>Looks good — let's go! <ArrowRight className="h-4 w-4" /></>
                   )}
                 </Button>
 

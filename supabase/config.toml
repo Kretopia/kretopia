@@ -129,3 +129,5 @@ project_id = "kwmcocsitwssrtzkdojh"
     verify_jwt = true
   [functions.verify-profile-claim]
     verify_jwt = true
+  [functions.process-email-queue]
+    verify_jwt = true

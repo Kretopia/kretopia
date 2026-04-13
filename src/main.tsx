@@ -34,6 +34,9 @@ initSWUpdateListener();
 // If stale, purge ALL caches + unregister SW + hard reload
 checkForNewVersion();
 
+// Log unhandled errors to the database for monitoring
+setupGlobalErrorLogging();
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>

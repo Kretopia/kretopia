@@ -69,12 +69,6 @@ const CreatorSite = () => {
         return;
       }
 
-      // If user has a username, redirect to the clean /:username URL
-      if ((profile as any).username) {
-        navigate(`/${(profile as any).username}`, { replace: true });
-        return;
-      }
-
       // Fetch all supporting data in parallel
       const [servicesRes, creditsRes, reviewsRes, endorsementsRes] = await Promise.all([
         supabase

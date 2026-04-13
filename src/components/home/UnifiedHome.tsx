@@ -171,7 +171,7 @@ export const UnifiedHome = () => {
                 <br />
                 <span className="text-primary">Get Paid.</span>
               </h1>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
                 Where{" "}
                 <span className="text-primary font-semibold inline-block min-w-[100px]">
                   <AnimatePresence mode="wait">
@@ -213,7 +213,7 @@ export const UnifiedHome = () => {
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { step: "1", icon: Search, title: "Search Your Name", desc: "Find credits you're already connected to" },
-                  { step: "2", icon: Database, title: "Claim & Verify", desc: "AI + peer endorsements verify your work" },
+                  { step: "2", icon: Database, title: "Claim & Verify", desc: "Peer endorsements & evidence verify your work" },
                   { step: "3", icon: Briefcase, title: "Get Booked", desc: "Brands discover and hire you directly" },
                 ].map((s, i) => (
                   <motion.div
@@ -225,8 +225,8 @@ export const UnifiedHome = () => {
                   >
                     <span className="absolute top-1.5 left-2 text-[10px] font-extrabold text-primary/20">{s.step}</span>
                     <s.icon className="h-5 w-5 text-primary mx-auto mb-1.5" />
-                    <p className="text-[11px] font-bold text-foreground mb-0.5">{s.title}</p>
-                    <p className="text-[9px] text-muted-foreground leading-relaxed">{s.desc}</p>
+                    <p className="text-xs font-bold text-foreground mb-0.5">{s.title}</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">{s.desc}</p>
                   </motion.div>
                 ))}
               </div>

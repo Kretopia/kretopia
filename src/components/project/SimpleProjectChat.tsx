@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -324,7 +324,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
           </div>
         )}
 
-        <ScrollArea className="flex-1">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-20">
               <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
@@ -491,7 +491,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
               <div ref={messagesEndRef} />
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         {/* Reply Preview */}
         {replyTo && (

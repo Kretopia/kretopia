@@ -174,10 +174,9 @@ const CreditDatabase = () => {
             .limit(12),
           supabase
             .from('credits')
-            .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category')
-            .not('thumbnail_url', 'is', null)
+            .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category, url')
             .order('created_at', { ascending: false })
-            .limit(20),
+            .limit(40),
         ]);
         setTrendingProjects((projectsRes.data || []) as ICDBProject[]);
         setRecentCredits((creditsRes.data || []) as UserCredit[]);

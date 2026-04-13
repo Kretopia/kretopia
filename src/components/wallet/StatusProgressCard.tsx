@@ -11,7 +11,14 @@ export function StatusProgressCard() {
   useEffect(() => {
     if (!user) return;
     const fetchData = async () => {
-      const [creditsRes, connectionsRes, endorsementsRes, reviewsRes] = await Promise.all([
+      const [
+        creditsRes,
+        connectionsRes,
+        endorsementsRes,
+        reviewsRes,
+        awardsRes,
+        pressRes,
+      ] = await Promise.all([
         supabase
           .from("credits")
           .select("verification_status")
@@ -27,10 +34,18 @@ export function StatusProgressCard() {
           .eq("requested_by", user.id)
           .eq("status", "accepted"),
         supabase
-          .from("company_reviews")
+          .from("reviews")
           .select("rating")
-          .eq("company_id", user.id)
-          .eq("status", "approved"),
+          .eq("profile_id", user.id)
+          .eq("status", "published"),
+        supabase
+          .from("awards")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
+        supabase
+          .from("press_links")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id),
       ]);
 
       const credits = creditsRes.data || [];
@@ -56,6 +71,9 @@ export function StatusProgressCard() {
         collaborations: 0,
         averageRating: avgRating,
         reviewCount: reviews.length,
+        endorsementCount: endorsementsRes.count || 0,
+        awardCount: awardsRes.count || 0,
+        pressCount: pressRes.count || 0,
       }));
     };
     fetchData();

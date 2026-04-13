@@ -402,7 +402,7 @@ export const UnifiedHome = () => {
                   <div className="absolute bottom-0 left-0 right-0 p-3">
                     <div className="flex items-center gap-1 mb-1">
                       <Verified className="h-3 w-3 text-primary" />
-                      <span className="text-[8px] font-bold text-primary uppercase tracking-widest">Verified</span>
+                      <span className="text-[8px] font-bold text-primary uppercase tracking-widest">{t("landing.verified")}</span>
                     </div>
                     <p className="text-xs font-bold text-foreground leading-tight line-clamp-2">{c.project_name}</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">{c.role}{c.year ? ` · ${c.year}` : ''}</p>

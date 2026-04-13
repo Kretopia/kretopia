@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/react";
 import App from "./App.tsx";
 import { initSWUpdateListener } from "./lib/sw-update";
 import { checkForNewVersion } from "./lib/version-check";
+import "./i18n";
 import "./index.css";
 
 // Initialize Sentry for error monitoring

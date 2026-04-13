@@ -75,7 +75,7 @@ export async function notifyMatch(user1Id: string, user2Id: string, user1Name: s
       title: "New Match! 🎉",
       body: `You matched with ${user2Name}`,
       type: "match",
-      link: "/circle?tab=network",
+      link: `/messages?user=${user2Id}`,
       data: { matchedUserId: user2Id },
     }),
     sendPushNotification({
@@ -83,7 +83,7 @@ export async function notifyMatch(user1Id: string, user2Id: string, user1Name: s
       title: "New Match! 🎉",
       body: `You matched with ${user1Name}`,
       type: "match",
-      link: "/circle?tab=network",
+      link: `/messages?user=${user1Id}`,
       data: { matchedUserId: user1Id },
     }),
   ]);
@@ -108,10 +108,10 @@ export async function notifyMessage(receiverId: string, senderName: string, mess
 export async function notifyOpportunity(userId: string, opportunityTitle: string, opportunityId: string) {
   await sendPushNotification({
     userId,
-    title: "New Opportunity Match!",
-    body: `Check out: ${opportunityTitle}`,
+    title: "New Application Received!",
+    body: `Someone applied to: ${opportunityTitle}`,
     type: "opportunity",
-    link: `/opportunity/${opportunityId}`,
+    link: `/opportunity-dashboard?opportunity=${opportunityId}`,
   });
 }
 

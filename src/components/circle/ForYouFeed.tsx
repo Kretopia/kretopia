@@ -210,6 +210,8 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             title: "It's a Match!",
             message: `You and ${myProfile?.full_name || 'a creator'} both want to connect!`,
             link: `/messages?user=${user!.id}`,
+            action_url: `/messages?user=${user!.id}`,
+            action_text: 'Send Message',
           });
 
           // Notify current user about the match
@@ -219,6 +221,8 @@ export const ForYouFeed = ({ onMatch }: ForYouFeedProps) => {
             title: "It's a Match!",
             message: `You and ${currentCreator.full_name} both want to connect!`,
             link: `/messages?user=${currentCreator.user_id}`,
+            action_url: `/messages?user=${currentCreator.user_id}`,
+            action_text: 'Send Message',
           });
 
           // Trigger the match celebration

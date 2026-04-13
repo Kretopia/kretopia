@@ -266,8 +266,8 @@ const ViewProfile = () => {
           message: `${user.user_metadata?.full_name || 'Someone'} wants to connect with you`,
           type: 'connection',
           link: `/profile/${user.id}`,
-          action_url: `/messages?user=${user.id}`,
-          action_text: 'View Request'
+          action_url: `/profile/${user.id}`,
+          action_text: 'View Profile'
         });
       }
     } catch (error) {

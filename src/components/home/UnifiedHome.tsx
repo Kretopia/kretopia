@@ -659,8 +659,8 @@ export const UnifiedHome = () => {
             </h3>
             <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-1 max-w-md mx-auto">
               {user
-                ? "Unlimited AI tools, verified badge, full invoicing & expense suite. 7-day free trial."
-                : "Early creators get priority visibility, first access to gigs, and help shape the platform."}
+662:                 ? "Unlimited smart tools, verified badge, full invoicing & expense suite. 7-day free trial."
+663:                 : "Early creators get priority visibility, first access to gigs, and help shape the platform."}
             </p>
             {!user && (
               <p className="text-[10px] text-white/50 mb-4">

@@ -10,11 +10,12 @@ import {
   Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
   Database, MapPin, Building2, CalendarDays, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
-  TrendingUp, Play, Star,
+  TrendingUp, Play, Star, List,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -105,6 +106,7 @@ interface UserCredit {
   thumbnail_url: string | null;
   primary_media_url: string | null;
   credit_category: string | null;
+  url?: string | null;
 }
 
 interface ProfileInfo {
@@ -173,10 +175,9 @@ const CreditDatabase = () => {
             .limit(12),
           supabase
             .from('credits')
-            .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category')
-            .not('thumbnail_url', 'is', null)
+            .select('id, project_name, role, year, verification_status, platform, location, client_brand, user_id, endorsement_count, thumbnail_url, primary_media_url, credit_category, url')
             .order('created_at', { ascending: false })
-            .limit(20),
+            .limit(40),
         ]);
         setTrendingProjects((projectsRes.data || []) as ICDBProject[]);
         setRecentCredits((creditsRes.data || []) as UserCredit[]);
@@ -473,24 +474,53 @@ const CreditDatabase = () => {
             /* Browse mode */
             <div className="py-5 space-y-8">
               {/* Visual credits with art */}
-              {recentCredits.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Star className="h-4 w-4 text-primary" />
-                    <h2 className="text-sm font-semibold">Featured Work</h2>
-                  </div>
-                  <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-                    {recentCredits.slice(0, 12).map(credit => (
-                      <FeaturedCreditCard
-                        key={credit.id}
-                        credit={credit}
-                        onClick={() => navigate(`/profile/${credit.user_id}`)}
-                        getCategoryForType={getCategoryForType}
-                      />
-                    ))}
-                  </div>
-                </section>
-              )}
+              {recentCredits.length > 0 && (() => {
+                const withArt = recentCredits.filter(c => resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
+                const withoutArt = recentCredits.filter(c => !resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
+                return (
+                  <>
+                    {withArt.length > 0 && (
+                      <section>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Star className="h-4 w-4 text-primary" />
+                          <h2 className="text-sm font-semibold">Featured Work</h2>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                          {withArt.slice(0, 16).map(credit => (
+                            <CreditPosterCard
+                              key={credit.id}
+                              credit={credit}
+                              onClick={() => navigate(`/profile/${credit.user_id}`)}
+                              formatType={formatType}
+                              getCategoryForType={getCategoryForType}
+                            />
+                          ))}
+                        </div>
+                      </section>
+                    )}
+
+                    {withoutArt.length > 0 && (
+                      <section>
+                        <div className="flex items-center gap-2 mb-3">
+                          <List className="h-4 w-4 text-muted-foreground" />
+                          <h2 className="text-sm font-semibold">More Credits</h2>
+                        </div>
+                        <div className="space-y-1">
+                          {withoutArt.map(credit => (
+                            <CompactCreditRow
+                              key={credit.id}
+                              credit={credit}
+                              onClick={() => navigate(`/profile/${credit.user_id}`)}
+                              formatType={formatType}
+                              getCategoryForType={getCategoryForType}
+                            />
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                  </>
+                );
+              })()}
 
               {/* Recently added projects */}
               <section>
@@ -693,6 +723,7 @@ function CreditPosterCard({
   const cat = getCategoryForType(credit.credit_category || 'digital');
   const gradient = CATEGORY_GRADIENTS[cat] || CATEGORY_GRADIENTS.digital;
   const CatIcon = CATEGORY_ICONS[cat] || Globe;
+  const resolvedThumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
 
   return (
     <button
@@ -700,9 +731,9 @@ function CreditPosterCard({
       className="group text-left rounded-xl overflow-hidden transition-all hover:ring-2 hover:ring-primary/40 hover:scale-[1.02] focus:outline-none"
     >
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl">
-        {credit.thumbnail_url ? (
+        {resolvedThumb ? (
           <img
-            src={credit.thumbnail_url}
+            src={resolvedThumb}
             alt={credit.project_name}
             className="absolute inset-0 w-full h-full object-cover"
             loading="lazy"
@@ -713,11 +744,18 @@ function CreditPosterCard({
             <div className="absolute inset-0 flex items-center justify-center opacity-10">
               <CatIcon className="h-20 w-20" />
             </div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+              <h3 className="text-white/80 font-black text-base leading-tight tracking-tight line-clamp-3 uppercase">
+                {credit.project_name}
+              </h3>
+              <p className="text-white/40 text-[9px] font-semibold uppercase tracking-[0.2em] mt-2">
+                {credit.role}
+              </p>
+            </div>
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-        {/* Verified badge */}
         {credit.verification_status === 'verified' && (
           <div className="absolute top-2 left-2">
             <span className="bg-green-500/90 text-white rounded-full p-0.5">
@@ -726,14 +764,12 @@ function CreditPosterCard({
           </div>
         )}
 
-        {/* Has media indicator */}
         {credit.primary_media_url && (
           <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white rounded-full p-1">
             <Play className="h-2.5 w-2.5" />
           </div>
         )}
 
-        {/* Bottom text */}
         <div className="absolute bottom-0 inset-x-0 p-2.5">
           <h3 className="text-white font-semibold text-xs leading-tight line-clamp-2 mb-0.5 drop-shadow-md">
             {credit.project_name}
@@ -757,57 +793,43 @@ function CreditPosterCard({
   );
 }
 
-/* ─── Featured Credit Card (horizontal scroll, Netflix-style) ─── */
+/* ─── Compact Credit Row (for credits without art) ─── */
 
-function FeaturedCreditCard({
-  credit, onClick, getCategoryForType,
+function CompactCreditRow({
+  credit, onClick, formatType, getCategoryForType,
 }: {
   credit: UserCredit;
   onClick: () => void;
+  formatType: (t: string) => string;
   getCategoryForType: (t: string) => string;
 }) {
   const cat = getCategoryForType(credit.credit_category || 'digital');
-  const gradient = CATEGORY_GRADIENTS[cat] || CATEGORY_GRADIENTS.digital;
   const CatIcon = CATEGORY_ICONS[cat] || Globe;
 
   return (
     <button
       onClick={onClick}
-      className="shrink-0 w-[130px] text-left group"
+      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/60 transition-colors text-left group"
     >
-      <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-1.5 transition-all group-hover:ring-2 group-hover:ring-primary/40 group-hover:scale-[1.02]">
-        {credit.thumbnail_url ? (
-          <img
-            src={credit.thumbnail_url}
-            alt={credit.project_name}
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className={cn("absolute inset-0 bg-gradient-to-br", gradient)}>
-            <div className="absolute inset-0 flex items-center justify-center opacity-10">
-              <CatIcon className="h-14 w-14" />
-            </div>
-          </div>
-        )}
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
-        {credit.primary_media_url && (
-          <div className="absolute top-1.5 right-1.5 bg-black/50 backdrop-blur-sm text-white rounded-full p-0.5">
-            <Play className="h-2 w-2" />
-          </div>
-        )}
-        {credit.verification_status === 'verified' && (
-          <div className="absolute top-1.5 left-1.5">
-            <span className="bg-green-500/90 text-white rounded-full p-0.5">
-              <ShieldCheck className="h-2 w-2" />
-            </span>
-          </div>
-        )}
+      <div className={cn(
+        "shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-br",
+        CATEGORY_GRADIENTS[cat] || CATEGORY_GRADIENTS.digital
+      )}>
+        <CatIcon className="h-4 w-4 text-white/70" />
       </div>
-      <h4 className="text-[11px] font-medium leading-tight line-clamp-2 text-foreground">
-        {credit.project_name}
-      </h4>
-      <p className="text-[10px] text-muted-foreground truncate">{credit.role}</p>
+      <div className="min-w-0 flex-1">
+        <h4 className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+          {credit.project_name}
+        </h4>
+        <p className="text-[11px] text-muted-foreground truncate">
+          {credit.role}
+          {credit.year ? ` · ${credit.year}` : ''}
+          {credit.platform ? ` · ${credit.platform}` : ''}
+        </p>
+      </div>
+      {credit.verification_status === 'verified' && (
+        <ShieldCheck className="h-3.5 w-3.5 text-green-500 shrink-0" />
+      )}
     </button>
   );
 }

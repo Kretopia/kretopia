@@ -20,6 +20,7 @@ import { ICDBCreditForm } from "./ICDBCreditForm";
 import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
 import { parseMediaUrl } from "@/lib/mediaUtils";
 import { MediaPlayerModal } from "./MediaPlayerModal";
+import { extractThumbnailFromUrl } from "@/lib/thumbnailExtractor";
 
 interface ICDBCredit {
   id: string;
@@ -250,8 +251,16 @@ function CategoryRow({
 
   const getCreditThumbnail = (credit: ICDBCredit): string | null => {
     if (credit.thumbnail_url) return credit.thumbnail_url;
-    if (credit.primary_media_url) return credit.primary_media_url;
+    if (credit.primary_media_url) {
+      // Check if it's a direct image or extractable URL
+      const extracted = extractThumbnailFromUrl(credit.primary_media_url);
+      if (extracted) return extracted;
+      // If it looks like an image URL, use it directly
+      if (/\.(jpg|jpeg|png|webp|gif)/i.test(credit.primary_media_url)) return credit.primary_media_url;
+    }
     if (credit.url) {
+      const extracted = extractThumbnailFromUrl(credit.url);
+      if (extracted) return extracted;
       const mediaInfo = parseMediaUrl(credit.url);
       if (mediaInfo?.thumbnailUrl) return mediaInfo.thumbnailUrl;
     }
@@ -353,7 +362,14 @@ function CategoryRow({
               {thumbnail ? (
                 <img src={thumbnail} alt={credit.project_name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
               ) : (
-                <div className={cn("absolute inset-0 bg-gradient-to-b", POSTER_GRADIENTS[gradientIdx])} />
+                <div className={cn("absolute inset-0 bg-gradient-to-b", POSTER_GRADIENTS[gradientIdx])}>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center">
+                    <Icon className="h-6 w-6 text-white/15 mb-1" />
+                    <h3 className="text-white/70 font-black text-[11px] leading-tight tracking-tight line-clamp-3 uppercase">
+                      {credit.project_name}
+                    </h3>
+                  </div>
+                </div>
               )}
 
               {/* Dark overlay */}

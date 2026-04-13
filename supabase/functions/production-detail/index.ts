@@ -12,13 +12,6 @@ serve(async (req) => {
   }
 
   try {
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!lovableApiKey) {
-      return new Response(JSON.stringify({ error: 'AI not configured' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const { project_name, existing_roles } = await req.json();
     if (!project_name || typeof project_name !== 'string') {
       return new Response(JSON.stringify({ error: 'project_name required' }), {
@@ -26,7 +19,7 @@ serve(async (req) => {
       });
     }
 
-    // Fetch actual credit data from DB
+    // Fetch actual credit data from DB — this is our ONLY source of truth
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -51,6 +44,7 @@ serve(async (req) => {
     const creditEntries = (dbCredits || []).map(c => ({
       role: c.role,
       person_name: profileMap.get(c.user_id) || 'Unknown User',
+      user_id: c.user_id,
     }));
 
     const dbYear = (dbCredits || []).find(c => c.year)?.year || null;
@@ -69,137 +63,67 @@ serve(async (req) => {
     const dbMediaUrl = allMediaUrls[0] || null;
     const dbThumbnail = (dbCredits || []).find(c => c.thumbnail_url)?.thumbnail_url || null;
 
-    const dbFactsBlock = `
-VERIFIED DATABASE FACTS (use these as ground truth, do NOT contradict):
-- Project name: "${project_name}"
-- Credited people with their roles: ${JSON.stringify(creditEntries)}
-- Year: ${dbYear || 'unknown'}
-- Platform: ${dbPlatform || 'unknown'}
-- Location: ${dbLocation || 'unknown'}
-- Client/Brand: ${dbClientBrand || 'unknown'}
-- Project type: ${dbProjectType || dbCategory || 'unknown'}
-- External URL: ${dbUrl || 'none'}
-- Description from DB: ${dbDescription || 'none'}
-- Number of people who claimed credits: ${creditEntries.length}
+    // ═══════════════════════════════════════════════════
+    // BUILD PRODUCTION DETAIL FROM DB FACTS ONLY — NO AI
+    // ═══════════════════════════════════════════════════
 
-IMPORTANT: The "role" field may be a job title (e.g., "Director", "Producer") OR a character/role name (e.g., "Conrad Chisholm" as a character in a film). Use context to determine which — if it looks like a person's name, it's likely a character the person played. The "person_name" field is their REAL name.
-`;
+    // Infer type from category/project_type
+    const typeMap: Record<string, string> = {
+      'music': 'Song', 'film': 'Film', 'tv': 'TV Show', 'music_video': 'Music Video',
+      'commercial': 'Commercial', 'events': 'Event', 'theatre': 'Theatre',
+      'podcast': 'Podcast', 'fashion': 'Fashion', 'photography': 'Photography',
+      'design': 'Design', 'gaming': 'Game',
+    };
+    const inferredType = typeMap[dbCategory || ''] || typeMap[dbProjectType || ''] || 'Project';
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a creative industry database engine. You must return production details based PRIMARILY on the verified database facts provided.
+    // Infer industry from category
+    const industryMap: Record<string, string> = {
+      'film': 'Film & TV', 'tv': 'Film & TV', 'music_video': 'Film & TV',
+      'music': 'Music', 'commercial': 'Advertising', 'fashion': 'Fashion',
+      'events': 'Events', 'theatre': 'Performing Arts', 'podcast': 'Media',
+      'photography': 'Photography', 'design': 'Design', 'gaming': 'Gaming',
+    };
+    const inferredIndustry = industryMap[dbCategory || ''] || 'Creative Industries';
 
-CRITICAL RULES:
-1. NEVER fabricate person names. Only use names from the credited people list in the database facts.
-2. For UNCLAIMED roles (roles not in the database), set "name" to null. Do NOT guess or invent names.
-3. Use the year, platform, location, client_brand from the database facts. Only fill in "unknown" fields if you are HIGHLY confident from widely-known public knowledge (e.g., a major Hollywood film).
-4. For the description: if the DB has one, use it exactly. Otherwise write a brief, honest description. For obscure productions, say "Limited details available" rather than inventing a plot.
-5. Include ALL credited roles from the database in appropriate departments. Then add common industry-standard roles with name=null.
-6. The "source" field should be "Platform Database" if most info is from DB facts, or "AI + Platform Database" if you supplemented with public knowledge.
-7. image_url should always be null (we handle this separately).
-8. If you don't recognize a production, be honest. Do NOT invent descriptions, cast lists, or other details.
+    // Group credited people by role into departments
+    const departmentMap: Record<string, Array<{ role: string; name: string | null }>> = {};
+    for (const entry of creditEntries) {
+      // Simple department inference from role
+      const role = entry.role || 'Unknown';
+      let dept = 'Credited';
+      const roleLower = role.toLowerCase();
+      if (/director|producer|writer|screenplay/i.test(roleLower)) dept = 'Production';
+      else if (/actor|actress|cast|performer/i.test(roleLower)) dept = 'Cast';
+      else if (/camera|cinematograph|dp|gaffer|grip/i.test(roleLower)) dept = 'Camera & Lighting';
+      else if (/editor|post|vfx|color/i.test(roleLower)) dept = 'Post-Production';
+      else if (/sound|audio|mix|master|engineer/i.test(roleLower)) dept = 'Sound & Music';
+      else if (/design|art|costume|makeup|hair|style/i.test(roleLower)) dept = 'Art & Design';
+      else if (/music|composer|songwriter|vocal|sing|beat|produc/i.test(roleLower)) dept = 'Music';
 
-Return JSON:
-{
-  "production": {
-    "name": "Project name exactly as given",
-    "type": "Song" | "Album" | "Film" | "TV Show" | "Music Video" | "Commercial" | "Event" | "Other",
-    "year": number or null,
-    "industry": "Music" | "Film" | "Film & TV" | "Fashion" | "Events" | "Advertising" | "Photography" | "Digital",
-    "description": "Brief factual description",
-    "platform": string or null,
-    "location": string or null,
-    "client_brand": string or null,
-    "external_url": string or null,
-    "image_url": null,
-    "media_url": null,
-    "departments": [
-      { "name": "Department", "roles": [{"role": "Role Title", "name": "Real Person Name or null"}] }
-    ],
-    "total_roles": number,
-    "source": "Platform Database" | "AI + Platform Database"
-  }
-}`
-          },
-          {
-            role: 'user',
-            content: `${dbFactsBlock}\n\nGenerate the production detail JSON for "${project_name}".`
-          }
-        ],
-        response_format: { type: 'json_object' },
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limited, please try again shortly.' }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: 'AI credits exhausted.' }), {
-          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      throw new Error(`AI request failed: ${aiResponse.status}`);
+      if (!departmentMap[dept]) departmentMap[dept] = [];
+      departmentMap[dept].push({ role, name: entry.person_name });
     }
 
-    const aiData = await aiResponse.json();
-    const content = aiData.choices?.[0]?.message?.content;
-    if (!content) throw new Error('No AI response content');
+    const departments = Object.entries(departmentMap).map(([name, roles]) => ({ name, roles }));
 
-    let parsed;
-    try {
-      let cleaned = content
-        .replace(/^```json\s*/im, "")
-        .replace(/^```\s*/im, "")
-        .replace(/```\s*$/im, "")
-        .trim();
-      parsed = JSON.parse(cleaned);
-    } catch {
-      throw new Error('Failed to parse AI response as JSON');
-    }
+    const production = {
+      name: project_name,
+      type: inferredType,
+      year: dbYear,
+      industry: inferredIndustry,
+      description: dbDescription || null, // Only use DB description, never AI-generated
+      platform: dbPlatform,
+      location: dbLocation,
+      client_brand: dbClientBrand,
+      external_url: dbUrl,
+      image_url: dbThumbnail,
+      media_url: dbMediaUrl,
+      departments,
+      total_roles: creditEntries.length,
+      source: 'Platform Database',
+    };
 
-    // Post-process: override AI fields with DB ground truth
-    if (parsed.production) {
-      const p = parsed.production;
-      p.name = project_name;
-      if (dbYear) p.year = dbYear;
-      if (dbPlatform && dbPlatform !== 'unknown') p.platform = dbPlatform;
-      if (dbLocation && dbLocation !== 'unknown') p.location = dbLocation;
-      if (dbClientBrand && dbClientBrand !== 'unknown') p.client_brand = dbClientBrand;
-      if (dbUrl) p.external_url = dbUrl;
-      if (dbThumbnail) p.image_url = dbThumbnail;
-      if (dbMediaUrl) p.media_url = dbMediaUrl;
-
-      // Validate: ensure all DB-credited people appear in departments
-      const aiRoleNames = new Set(
-        (p.departments || []).flatMap((d: any) => d.roles.map((r: any) => r.name?.toLowerCase()))
-      );
-      for (const entry of creditEntries) {
-        if (!aiRoleNames.has(entry.person_name.toLowerCase())) {
-          // AI missed a credited person — add them
-          const generalDept = p.departments?.find((d: any) => d.name === 'General' || d.name === 'Other');
-          if (generalDept) {
-            generalDept.roles.push({ role: entry.role, name: entry.person_name });
-          } else {
-            p.departments = p.departments || [];
-            p.departments.push({ name: 'Credited', roles: [{ role: entry.role, name: entry.person_name }] });
-          }
-        }
-      }
-    }
-
-    return new Response(JSON.stringify(parsed), {
+    return new Response(JSON.stringify({ production }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {

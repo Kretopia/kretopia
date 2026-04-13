@@ -42,11 +42,32 @@ async function aiExtract(prompt: string, systemPrompt: string, lovableKey: strin
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.2,
+      temperature: 0.1, // Lower temperature = less creative = fewer hallucinations
     }),
   });
   const data = await res.json();
   return data?.choices?.[0]?.message?.content || '';
+}
+
+/**
+ * Cross-validate extracted data against source text.
+ * Only keeps items whose key identifiers appear in the source.
+ */
+function validateAgainstSource(items: any[], sourceText: string, nameField: string): any[] {
+  if (!sourceText || !items.length) return items;
+  const sourceNormalized = sourceText.toLowerCase().replace(/\s+/g, ' ');
+  
+  return items.filter(item => {
+    const name = item[nameField];
+    if (!name || typeof name !== 'string') return false;
+    // The key identifier (award title, project name) must appear in the source
+    const nameNormalized = name.toLowerCase().replace(/\s+/g, ' ').trim();
+    // Check if at least the first 3 significant words appear in source
+    const words = nameNormalized.split(' ').filter(w => w.length > 2);
+    const matchingWords = words.filter(w => sourceNormalized.includes(w));
+    // Require at least 60% of significant words to match
+    return words.length > 0 && (matchingWords.length / words.length) >= 0.6;
+  });
 }
 
 Deno.serve(async (req) => {
@@ -93,6 +114,7 @@ Deno.serve(async (req) => {
 
     // ═══════════════════════════════════════════════════
     // 1. ENRICH EXISTING PRESS LINKS (missing metadata)
+    //    SAFE: Only fills in OG data from actual page scrapes
     // ═══════════════════════════════════════════════════
     if (firecrawlKey) {
       const incompletePressLinks = (pressRes.data || []).filter(
@@ -126,12 +148,13 @@ Deno.serve(async (req) => {
     }
 
     // ═══════════════════════════════════════════════════
-    // 2. DISCOVER PRESS & AWARDS FROM WEB SEARCH
+    // 2. DISCOVER PRESS FROM WEB SEARCH
+    //    SAFE: Only adds URLs that actually exist on the web
+    //    NO AI used here — just Firecrawl search results
     // ═══════════════════════════════════════════════════
     if (scrape_website && firecrawlKey && profile.full_name) {
       const socialFilter = /facebook\.com|instagram\.com|twitter\.com|x\.com|linkedin\.com|youtube\.com|tiktok\.com|spotify\.com/i;
 
-      // Search for press mentions
       try {
         const pressSearch = await firecrawlSearch(
           `"${profile.full_name}" interview OR feature OR profile OR press OR article`,
@@ -158,10 +181,13 @@ Deno.serve(async (req) => {
         console.error('Press search failed:', e);
       }
 
-      // Search for awards
+      // ═══════════════════════════════════════════════════
+      // AWARDS: Extract from web but CROSS-VALIDATE
+      // Only save awards whose title appears in the source text
+      // ═══════════════════════════════════════════════════
       try {
         const awardsSearch = await firecrawlSearch(
-          `"${profile.full_name}" award OR winner OR nominated OR nomination OR recognition OR honor`,
+          `"${profile.full_name}" award OR winner OR nominated OR nomination`,
           firecrawlKey, 6
         );
 
@@ -176,8 +202,10 @@ Deno.serve(async (req) => {
             `You extract award/recognition information from web search results for a specific creator.
 Return ONLY a JSON array of awards. Each award must have: "title" (award name), "organization" (granting body), "year" (number or null), "category" (e.g., "Film", "Music", "Design", null).
 Rules:
+- CRITICAL: Only include awards that are EXPLICITLY mentioned in the web results text
+- The award title MUST appear verbatim in the provided web data
 - Only include awards specifically given TO this person (not just mentioned alongside them)
-- Do NOT fabricate awards. If uncertain, skip.
+- Do NOT fabricate or infer awards. If uncertain, skip.
 - Return [] if no real awards found.
 - Return raw JSON array only, no markdown.`,
             lovableKey
@@ -186,7 +214,11 @@ Rules:
           try {
             const cleanJson = extracted.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
             const awards: any[] = JSON.parse(cleanJson);
-            for (const award of awards) {
+            // CROSS-VALIDATE: only keep awards whose title appears in the source snippets
+            const validatedAwards = validateAgainstSource(awards, snippets, 'title');
+            console.log(`[enrich] Awards: ${awards.length} extracted, ${validatedAwards.length} validated against source`);
+            
+            for (const award of validatedAwards) {
               if (!award.title || existingAwardTitles.has(award.title.toLowerCase())) continue;
               await supabase.from('awards').insert({
                 user_id,
@@ -209,43 +241,35 @@ Rules:
     }
 
     // ═══════════════════════════════════════════════════
-    // 3. AUTO-INFER SKILLS FROM CREDITS
+    // 3. AUTO-INFER SKILLS FROM CREDITS (DB-only, no AI needed)
+    //    SAFE: Derives skills directly from existing credit roles
     // ═══════════════════════════════════════════════════
     const currentSkills = Array.isArray(profile.professional_skills) ? profile.professional_skills : [];
-    if (lovableKey && credits.length >= 3 && currentSkills.length < 3) {
-      try {
-        const creditSummary = credits.slice(0, 30).map((c: any) =>
-          `${c.project_name} - ${c.role} (${c.credit_category || 'unknown'}, ${c.year || 'unknown'})`
-        ).join('\n');
-
-        const skillsRaw = await aiExtract(
-          `Creator: ${profile.full_name}\nCurrent role: ${profile.role || profile.job_title || 'Creative'}\nIndustry: ${profile.industry || 'Creative'}\n\nWork history:\n${creditSummary}`,
-          `Based on this creator's work history, infer their top professional skills.
-Return a JSON array of skill strings (5-8 skills max).
-Skills should be industry-specific and professional (e.g., "Cinematography", "Music Production", "Brand Strategy", "Event Curation").
-Do NOT include generic skills like "Communication" or "Teamwork".
-Return raw JSON array only, no markdown.`,
-          lovableKey
-        );
-
-        const cleanJson = skillsRaw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        const inferredSkills: string[] = JSON.parse(cleanJson);
-        if (inferredSkills.length > 0) {
-          const existingSet = new Set(currentSkills.map((s: any) => (typeof s === 'string' ? s : s?.skill || s?.name || '').toLowerCase()));
-          const newSkills = inferredSkills.filter(s => !existingSet.has(s.toLowerCase()));
-          if (newSkills.length > 0) {
-            const merged = [...currentSkills, ...newSkills.slice(0, 8 - currentSkills.length)];
-            await supabase.from('profiles').update({ professional_skills: merged }).eq('user_id', user_id);
-            results.skills_added = newSkills.length;
-          }
+    if (credits.length >= 3 && currentSkills.length < 3) {
+      // Extract skills directly from credit roles — no AI needed
+      const roleCounts: Record<string, number> = {};
+      credits.forEach((c: any) => {
+        if (c.role) roleCounts[c.role] = (roleCounts[c.role] || 0) + 1;
+      });
+      const topRoles = Object.entries(roleCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([role]) => role);
+      
+      if (topRoles.length > 0) {
+        const existingSet = new Set(currentSkills.map((s: any) => (typeof s === 'string' ? s : s?.skill || s?.name || '').toLowerCase()));
+        const newSkills = topRoles.filter(s => !existingSet.has(s.toLowerCase()));
+        if (newSkills.length > 0) {
+          const merged = [...currentSkills, ...newSkills.slice(0, 8 - currentSkills.length)];
+          await supabase.from('profiles').update({ professional_skills: merged }).eq('user_id', user_id);
+          results.skills_added = newSkills.length;
         }
-      } catch (e) {
-        console.error('Skills inference failed:', e);
       }
     }
 
     // ═══════════════════════════════════════════════════
     // 4. AUTO-GENERATE BIO IF MISSING
+    //    Uses AI but grounded in verified credit data only
     // ═══════════════════════════════════════════════════
     if (lovableKey && (!profile.bio || profile.bio.length < 20) && credits.length >= 2) {
       try {
@@ -254,9 +278,10 @@ Return raw JSON array only, no markdown.`,
         ).join(', ');
 
         const bio = await aiExtract(
-          `Name: ${profile.full_name}\nRole: ${profile.role || profile.job_title || 'Creative Professional'}\nIndustry: ${profile.industry || ''}\nLocation: ${profile.bio ? '' : 'unknown'}\nNotable work: ${topCredits}`,
+          `Name: ${profile.full_name}\nRole: ${profile.role || profile.job_title || 'Creative Professional'}\nIndustry: ${profile.industry || ''}\nVerified work: ${topCredits}`,
           `Write a concise, professional bio (2-3 sentences, max 200 chars) for this creative professional.
-Tone: Confident, third-person. Focus on their expertise and notable work.
+CRITICAL: Only mention projects and roles from the "Verified work" list. Do NOT add any projects, achievements, or details not in the provided data.
+Tone: Confident, third-person. Focus on their expertise.
 Do NOT use emojis. Do NOT use buzzwords like "passionate" or "visionary".
 Return ONLY the bio text, no quotes or labels.`,
           lovableKey
@@ -273,6 +298,7 @@ Return ONLY the bio text, no quotes or labels.`,
 
     // ═══════════════════════════════════════════════════
     // 5. DISCOVER CREDITS FROM WEB (IMDb, Spotify, etc.)
+    //    Uses AI to STRUCTURE web data, then CROSS-VALIDATES
     // ═══════════════════════════════════════════════════
     const existingCredits = new Set(credits.map((c: any) => `${c.project_name?.toLowerCase()}|${c.role?.toLowerCase()}`));
 
@@ -284,7 +310,6 @@ Return ONLY the bio text, no quotes or labels.`,
     const deletedSet = new Set((deletedCredits || []).map((d: any) => `${d.project_name_lower}|${d.role_lower}`));
 
     if (scrape_website && firecrawlKey && lovableKey && profile.full_name) {
-      // Search for credits on professional platforms
       const creditSearchQueries = [
         `"${profile.full_name}" site:imdb.com`,
         `"${profile.full_name}" site:spotify.com OR site:music.apple.com OR site:soundcloud.com`,
@@ -322,16 +347,17 @@ Return ONLY the bio text, no quotes or labels.`,
             `You extract professional credits/work history from web data for a creative professional.
 Return a JSON array of credits. Each credit:
 - "project_name": Name of the project/film/song/album/show/campaign (string, required)
-- "role": Their specific role (e.g. "Director", "Producer", "Songwriter", "Cinematographer") (string, required)
+- "role": Their specific role (string, required)
 - "year": Year (number or null)
 - "credit_category": One of: "film", "tv", "music", "music_video", "commercial", "fashion", "events", "theatre", "podcast", "photography", "design", "gaming", "other"
-- "platform": Source platform if known (e.g. "IMDb", "Spotify", "LinkedIn") or null
+- "platform": Source platform if known or null
 - "url": URL to the specific work if available, or null
 
-Rules:
-- Only include credits specifically FOR this person
-- Do NOT fabricate credits. Only use verifiable data from the web results.
-- Deduplicate: if same project+role appears multiple times, include only once
+CRITICAL RULES:
+- ONLY extract credits that are EXPLICITLY mentioned in the web data
+- The project name MUST appear verbatim in the provided text
+- Do NOT fabricate, guess, or infer credits not present in the data
+- If a credit seems plausible but isn't clearly stated, DO NOT include it
 - Max 20 credits
 - Return raw JSON array, no markdown`,
             lovableKey
@@ -339,20 +365,22 @@ Rules:
 
           const cleanJson = creditsRaw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
           const discoveredCredits: any[] = JSON.parse(cleanJson);
+          
+          // CROSS-VALIDATE: only keep credits whose project_name appears in the source
+          const validatedCredits = validateAgainstSource(discoveredCredits, allCreditSnippets, 'project_name');
+          console.log(`[enrich] Credits: ${discoveredCredits.length} extracted, ${validatedCredits.length} validated against source`);
+          
           let newCreditsCount = 0;
 
-          for (const c of discoveredCredits) {
+          for (const c of validatedCredits) {
             if (!c.project_name || !c.role) continue;
             const key = `${c.project_name.toLowerCase()}|${c.role.toLowerCase()}`;
             if (existingCredits.has(key)) continue;
-            // Skip credits the user previously deleted
             if (deletedSet.has(key)) {
               console.log(`[enrich] Skipping deleted credit: ${c.project_name}`);
               continue;
             }
 
-            // Use plain insert instead of broken upsert with functional onConflict
-            // Check for existing credit first
             const { data: existing } = await supabase.from('credits')
               .select('id')
               .eq('user_id', user_id)
@@ -372,7 +400,7 @@ Rules:
               credit_category: c.credit_category || null,
               platform: c.platform || null,
               url: c.url || null,
-              source: 'ai_discovered',
+              source: 'web_verified',  // Changed from 'ai_discovered' to reflect validation
               verification_status: 'unverified',
             });
             if (insertErr) console.log(`Credit insert skipped: ${c.project_name} - ${insertErr.message}`);
@@ -380,7 +408,7 @@ Rules:
             newCreditsCount++;
           }
           (results as any).new_credits = newCreditsCount;
-          console.log(`[enrich] Discovered ${newCreditsCount} new credits for ${profile.full_name}`);
+          console.log(`[enrich] Discovered ${newCreditsCount} new verified credits for ${profile.full_name}`);
         } catch (e) {
           console.error('Credit extraction failed:', e);
         }
@@ -388,16 +416,15 @@ Rules:
     }
 
     // ═══════════════════════════════════════════════════
-    // 6. AUTO-INFER JOB TITLE IF MISSING
+    // 6. AUTO-INFER JOB TITLE IF MISSING (DB-only, no AI)
     // ═══════════════════════════════════════════════════
-    if (lovableKey && !profile.job_title && credits.length >= 2) {
+    if (!profile.job_title && credits.length >= 2) {
       try {
         const roles = credits.slice(0, 20).map((c: any) => c.role).filter(Boolean);
         const roleCounts: Record<string, number> = {};
         roles.forEach((r: string) => { roleCounts[r] = (roleCounts[r] || 0) + 1; });
         const sorted = Object.entries(roleCounts).sort((a, b) => b[1] - a[1]);
         if (sorted.length > 0) {
-          // Use most frequent role as job title
           const topRole = sorted[0][0];
           await supabase.from('profiles').update({ job_title: topRole }).eq('user_id', user_id);
         }
@@ -407,7 +434,7 @@ Rules:
     }
 
     // ═══════════════════════════════════════════════════
-    // 7. AUTO-INFER INDUSTRY IF MISSING
+    // 7. AUTO-INFER INDUSTRY IF MISSING (DB-only, no AI)
     // ═══════════════════════════════════════════════════
     if (!profile.industry && credits.length >= 2) {
       const categories = credits.map((c: any) => c.credit_category).filter(Boolean);

@@ -134,14 +134,18 @@ export const ConnectFeed = ({ onMatch }: ConnectFeedProps) => {
               type: 'match',
               title: "It's a Match!",
               message: `You matched with ${currentProfile?.full_name || 'a creator'}!`,
-              link: '/circle?tab=network'
+              link: `/messages?user=${user.id}`,
+              action_url: `/messages?user=${user.id}`,
+              action_text: 'Send Message',
             },
             {
               user_id: user.id,
               type: 'match',
               title: "It's a Match!",
               message: `You matched with ${targetProfile?.full_name || 'a creator'}!`,
-              link: '/circle?tab=network'
+              link: `/messages?user=${targetId}`,
+              action_url: `/messages?user=${targetId}`,
+              action_text: 'Send Message',
             }
           ]);
 

@@ -41,31 +41,11 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending project invitation to ${email} for project ${projectTitle}`);
     console.log(`Project URL: ${projectUrl}`);
 
-    // If invitee is an existing user, also create an in-app notification
+    // If invitee is an existing user, skip creating a duplicate in-app notification
+    // The caller (StartProjectDialog/StartProjectFromMatchDialog) already creates one
+    // with the correct /desk/{projectId} link
     if (inviteeUserId) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      
-      // Use accept-invite flow for existing users too (they need to formally accept)
-      const acceptUrl = `/accept-invite/${projectId}?email=${encodeURIComponent(`user-${inviteeUserId}@platform.invite`)}`;
-      
-      console.log(`Creating in-app notification for user ${inviteeUserId}`);
-      const { error: notifError } = await supabase.from('notifications').insert({
-        user_id: inviteeUserId,
-        title: 'Project Invitation 🎯',
-        message: `${inviterName} invited you to collaborate on "${projectTitle}"`,
-        type: 'project',
-        link: acceptUrl,
-        action_url: acceptUrl,
-        action_text: 'Accept Invitation',
-        priority: 'high',
-        category: 'project'
-      });
-      
-      if (notifError) {
-        console.error('Error creating notification:', notifError);
-      } else {
-        console.log('In-app notification created successfully');
-      }
+      console.log(`Skipping duplicate in-app notification for user ${inviteeUserId} - caller handles it`);
     }
 
     // Try to send email, but don't fail if it doesn't work (domain may not be verified)

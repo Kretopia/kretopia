@@ -21,7 +21,7 @@ import {
   ArrowLeft, Zap, Star, Palette, Gift, Search, UserPlus,
   Target, Unlock,
 } from "lucide-react";
-import { getTierByPoints } from "@/lib/tierSystem";
+// tierSystem removed — reputation is calculated from statusEngine
 
 interface ShopItem {
   id: string;

@@ -6,7 +6,7 @@ import { Target, Users, MessageCircle, Briefcase, Check, Flame, CheckCircle2, Ci
 import { TooltipHint } from "@/components/ui/tooltip-hint";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { awardXP, hasReceivedXPToday } from "@/lib/xpSystem";
+// XP system removed — daily goals track completion only
 
 interface DailyGoal {
   id: string;
@@ -52,29 +52,20 @@ export function DailyGoals() {
         let activityType: any;
         switch (goal.id) {
           case 'login':
-            // Already handled by useStreakUpdate
+            // Goals now tracked for completion only, no XP awards
             return;
           case 'swipes':
-            activityType = 'DAILY_LOGIN'; // Use daily login as base XP
-            break;
           case 'post':
-            activityType = 'PORTFOLIO_ITEM_ADDED';
-            break;
           case 'connect':
-            activityType = 'CONNECTION_MADE';
             break;
           default:
             return;
         }
 
-        const result = await awardXP(user.id, activityType, goal.title);
-        
-        if (result.success) {
-          toast({
-            title: "Daily Goal Complete!",
-            description: `${goal.title} - +${result.xpAwarded} XP earned!`,
-          });
-        }
+        toast({
+          title: "Daily Goal Complete!",
+          description: `${goal.title} completed!`,
+        });
       }
     });
 

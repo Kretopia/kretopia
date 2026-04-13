@@ -19,7 +19,7 @@ import {
   Snowflake, Crown, Eye, Sparkles, Zap, Star, Gift, Search,
   Image, Briefcase, BarChart3, MessageSquare, FileText,
 } from "lucide-react";
-import { getTierByPoints } from "@/lib/tierSystem";
+// tierSystem removed — reputation is calculated from statusEngine
 
 interface SearchedUser {
   user_id: string;

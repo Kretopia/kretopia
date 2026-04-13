@@ -315,9 +315,9 @@ export const UnifiedHome = () => {
           {/* Quick stats */}
           <div className="grid grid-cols-3 gap-2.5 mb-4">
             {[
-              { label: "Credits", value: myCredits, to: "/profile", icon: Database, color: "text-primary" },
-              { label: "Connections", value: myConnections, to: "/circle", icon: Users, color: "text-accent" },
-              { label: "Live Gigs", value: stats.gigs, to: "/opportunities", icon: Briefcase, color: "text-success" },
+              { label: t("home.credits"), value: myCredits, to: "/profile", icon: Database, color: "text-primary" },
+              { label: t("home.connections"), value: myConnections, to: "/circle", icon: Users, color: "text-accent" },
+              { label: t("home.liveGigs"), value: stats.gigs, to: "/opportunities", icon: Briefcase, color: "text-success" },
             ].map(s => (
               <Link key={s.label} to={s.to} className="group relative overflow-hidden rounded-xl border border-border bg-card p-3 hover:border-primary/30 transition-all text-center">
                 <s.icon className={`h-3.5 w-3.5 ${s.color} mx-auto mb-1 opacity-60`} />
@@ -330,10 +330,10 @@ export const UnifiedHome = () => {
           {/* Quick actions */}
           <div className="grid grid-cols-4 gap-2 mb-5">
             {[
-              { icon: PlusCircle, label: "Post / Hire", action: () => setQuickPostType("gig"), color: "text-success" },
-              { icon: Database, label: "Credits", to: "/credits", color: "text-primary" },
-              { icon: CalendarDays, label: "Events", action: () => setQuickPostType("event"), color: "text-warning" },
-              { icon: Briefcase, label: "Desk", to: "/desk", color: "text-accent" },
+              { icon: PlusCircle, label: t("home.postHire"), action: () => setQuickPostType("gig"), color: "text-success" },
+              { icon: Database, label: t("home.credits"), to: "/credits", color: "text-primary" },
+              { icon: CalendarDays, label: t("home.events"), action: () => setQuickPostType("event"), color: "text-warning" },
+              { icon: Briefcase, label: t("home.desk"), to: "/desk", color: "text-accent" },
             ].map((a) => (
               <button
                 key={a.label}
@@ -372,10 +372,10 @@ export const UnifiedHome = () => {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              Trending Productions
+              {t("landing.trendingProductions")}
             </h2>
             <Link to="/credits" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-              View all <ArrowRight className="h-3 w-3" />
+              {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
@@ -422,18 +422,18 @@ export const UnifiedHome = () => {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Zap className="h-4 w-4 text-warning" />
-              {user ? "Gigs For You" : "Open Gigs"}
+              {user ? t("landing.gigsForYou") : t("landing.openGigs")}
             </h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setQuickPostType("gig")}
                 className="text-[10px] font-semibold text-success flex items-center gap-1 hover:text-success/80 transition-colors"
               >
-                <PlusCircle className="h-3.5 w-3.5" /> Post
+                <PlusCircle className="h-3.5 w-3.5" /> {t("landing.postGig")}
               </button>
               <span className="text-border">·</span>
               <Link to="/opportunities" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                Browse <ArrowRight className="h-3 w-3" />
+                {t("landing.browse")} <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </div>
@@ -471,7 +471,7 @@ export const UnifiedHome = () => {
               className="w-full rounded-xl border border-dashed border-border hover:border-success/40 bg-card/50 p-4 text-center transition-all group"
             >
               <PlusCircle className="h-5 w-5 text-success/50 mx-auto mb-1.5 group-hover:text-success transition-colors" />
-              <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">Post a gig or hire talent</p>
+              <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{t("landing.postGigOrHire")}</p>
             </button>
           )}
         </section>
@@ -481,18 +481,18 @@ export const UnifiedHome = () => {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-warning" />
-              Upcoming Events
+              {t("landing.upcomingEvents")}
             </h2>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setQuickPostType("event")}
                 className="text-[10px] font-semibold text-warning flex items-center gap-1 hover:text-warning/80 transition-colors"
               >
-                <PlusCircle className="h-3.5 w-3.5" /> Create
+                <PlusCircle className="h-3.5 w-3.5" /> {t("landing.createEvent")}
               </button>
               <span className="text-border">·</span>
               <Link to="/scene" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                View all <ArrowRight className="h-3 w-3" />
+                {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           </div>

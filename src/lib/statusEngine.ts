@@ -144,32 +144,32 @@ export function getTierIndex(tier: StatusTier): number {
 }
 
 // ─── Weighted Score Calculation ──────────────────────────────────────
+// 
+// Weight distribution:
+// 70% → Verified Credits (work history IS the reputation)
+// 25% → Network Strength (connections, invites, collaborations)
+//  5% → Ratings / Reviews (bonus signal, not gating)
 
 function calculateWeightedScore(metrics: StatusMetrics): number {
-  // Normalize each dimension to 0–100 then apply weights
-  // Credits: 50% weight — 100+ verified credits = max
-  const creditScore = Math.min(100, (metrics.verifiedCredits / 100) * 100);
+  // Credits: 70% weight — 50+ verified credits = max
+  const creditScore = Math.min(100, (metrics.verifiedCredits / 50) * 100);
   
-  // Projects: 20% weight — 40+ completed = max
-  const projectScore = Math.min(100, (metrics.completedProjects / 40) * 100);
-  
-  // Network: 20% weight — composite of connections + invites + collaborations
+  // Network: 25% weight — composite of connections + invites + collaborations
   const networkScore = Math.min(100, (
-    (metrics.connections / 250) * 40 +
-    (metrics.acceptedInvites / 50) * 30 +
-    (metrics.collaborations / 30) * 30
+    (metrics.connections / 150) * 40 +
+    (metrics.acceptedInvites / 30) * 30 +
+    (metrics.collaborations / 20) * 30
   ));
   
-  // Ratings: 10% weight — avg rating * review volume
+  // Ratings: 5% weight — light bonus, not a barrier
   const ratingScore = metrics.reviewCount > 0
-    ? Math.min(100, (metrics.averageRating / 5) * 60 + Math.min(40, (metrics.reviewCount / 30) * 40))
+    ? Math.min(100, (metrics.averageRating / 5) * 60 + Math.min(40, (metrics.reviewCount / 20) * 40))
     : 0;
 
   return (
-    creditScore * 0.5 +
-    projectScore * 0.2 +
-    networkScore * 0.2 +
-    ratingScore * 0.1
+    creditScore * 0.7 +
+    networkScore * 0.25 +
+    ratingScore * 0.05
   );
 }
 

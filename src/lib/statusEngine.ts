@@ -59,122 +59,39 @@ export interface StatusProgress {
   category: "credits" | "network" | "accelerators";
 }
 
-// ─── Career Tier Thresholds (credit-based score 0–100) ────────────────
+// ─── Career Tier: Hard-Gated Thresholds ──────────────────────────────
+//
+// 1 Credit = 1 distinct professional contribution (project, role, work entry)
+// Realistic pacing:
+//   - Active creator: ~2-4 credits/month → 24-48/year
+//   - Freelancer after 1 year: ~30 credits
+//   - Professional after 2-3 years: ~60-80 credits
+//   - Celebrity/Icon: requires INDUSTRY RECOGNITION, not just volume
 
-const TIER_THRESHOLDS: { tier: StatusTier; min: number }[] = [
-  { tier: "icon", min: 85 },
-  { tier: "celebrity", min: 65 },
-  { tier: "professional", min: 40 },
-  { tier: "thriver", min: 20 },
-  { tier: "freelancer", min: 8 },
-  { tier: "hobbyist", min: 0 },
+interface TierGate {
+  tier: StatusTier;
+  credits: number;
+  endorsements: number;
+  awards: number;
+  press: number;
+  // If true, awards OR press can satisfy (not both required)
+  awardsOrPress?: boolean;
+}
+
+const TIER_GATES: TierGate[] = [
+  // Icon: 120+ credits, 20 endorsements, 3 awards AND 5 press
+  { tier: "icon", credits: 120, endorsements: 20, awards: 3, press: 5 },
+  // Celebrity: 80+ credits, 10 endorsements, 2 awards OR 3 press
+  { tier: "celebrity", credits: 80, endorsements: 10, awards: 2, press: 3, awardsOrPress: true },
+  // Professional: 50+ credits, 5 endorsements
+  { tier: "professional", credits: 50, endorsements: 5, awards: 0, press: 0 },
+  // Thriver: 20+ credits, 2 endorsements
+  { tier: "thriver", credits: 20, endorsements: 2, awards: 0, press: 0 },
+  // Freelancer: 5+ credits
+  { tier: "freelancer", credits: 5, endorsements: 0, awards: 0, press: 0 },
+  // Hobbyist: everyone starts here
+  { tier: "hobbyist", credits: 0, endorsements: 0, awards: 0, press: 0 },
 ];
-
-interface TierMeta {
-  label: string;
-  socialProofLabel: string | null;
-  color: string;
-  ringClass: string;
-  gradient: string;
-  perks: string[];
-  targets: {
-    verifiedCredits: number;
-    endorsements: number;
-  };
-}
-
-const TIER_META: Record<StatusTier, TierMeta> = {
-  hobbyist: {
-    label: "Hobbyist",
-    socialProofLabel: null,
-    color: "text-muted-foreground",
-    ringClass: "ring-2 ring-border",
-    gradient: "from-muted-foreground/20 to-muted-foreground/5",
-    perks: ["Basic profile", "Claim credits", "Join communities"],
-    targets: { verifiedCredits: 0, endorsements: 0 },
-  },
-  freelancer: {
-    label: "Freelancer",
-    socialProofLabel: "Active Creator",
-    color: "text-[hsl(0,0%,70%)]",
-    ringClass: "ring-2 ring-[hsl(0,0%,75%)]",
-    gradient: "from-[hsl(0,0%,75%)]/25 to-[hsl(0,0%,70%)]/5",
-    perks: ["Basic visibility", "Connection requests", "Profile dashboard"],
-    targets: { verifiedCredits: 3, endorsements: 0 },
-  },
-  thriver: {
-    label: "Thriver",
-    socialProofLabel: "Rising Talent",
-    color: "text-primary",
-    ringClass: "ring-2 ring-primary",
-    gradient: "from-primary/25 to-primary/5",
-    perks: ["AI recommendations", "Limited boosts", "Priority in matching"],
-    targets: { verifiedCredits: 8, endorsements: 2 },
-  },
-  professional: {
-    label: "Professional",
-    socialProofLabel: "Industry Pro",
-    color: "text-accent",
-    ringClass: "ring-2 ring-accent",
-    gradient: "from-accent/25 to-accent/5",
-    perks: ["Advanced analytics", "Priority matching", "Profile-as-website"],
-    targets: { verifiedCredits: 20, endorsements: 5 },
-  },
-  celebrity: {
-    label: "Celebrity",
-    socialProofLabel: "Top 1% Creator",
-    color: "text-foreground",
-    ringClass: "ring-2 ring-foreground",
-    gradient: "from-foreground/20 to-foreground/5",
-    perks: ["Featured placement", "Reduced platform fees", "Bulk messaging"],
-    targets: { verifiedCredits: 40, endorsements: 10 },
-  },
-  icon: {
-    label: "Icon",
-    socialProofLabel: "Industry Icon",
-    color: "text-primary",
-    ringClass: "ring-2 ring-primary shadow-glow",
-    gradient: "from-primary/30 via-accent/15 to-primary/5",
-    perks: ["VIP access", "Premium exposure", "Revenue share potential", "Full platform access"],
-    targets: { verifiedCredits: 60, endorsements: 20 },
-  },
-};
-
-const TIER_ORDER: StatusTier[] = ["hobbyist", "freelancer", "thriver", "professional", "celebrity", "icon"];
-
-export function getTierIndex(tier: StatusTier): number {
-  return TIER_ORDER.indexOf(tier);
-}
-
-// ─── Career Score Calculation (Work-First) ───────────────────────────
-//
-// Base: Verified credits → scales to 100 at 60 credits
-// Accelerators add BONUS points (up to +30):
-//   Endorsements: up to +10
-//   Awards: up to +8
-//   Press: up to +7
-//   Reviews: up to +5
-//
-// This means: 60 verified credits with ZERO accelerators = score 100 = Icon
-// But 40 credits + good accelerators can also reach Icon
-
-function calculateCareerScore(metrics: StatusMetrics): number {
-  // Base: verified credits — the core metric
-  const creditBase = Math.min(100, (metrics.verifiedCredits / 60) * 100);
-
-  // Accelerator bonuses (scale smoothly, cap each one)
-  const endorsementBonus = Math.min(10, (metrics.endorsementCount / 15) * 10);
-  const awardBonus = Math.min(8, (metrics.awardCount / 5) * 8);
-  const pressBonus = Math.min(7, (metrics.pressCount / 5) * 7);
-  const reviewBonus = metrics.reviewCount > 0
-    ? Math.min(5, (metrics.averageRating / 5) * 2.5 + Math.min(2.5, (metrics.reviewCount / 10) * 2.5))
-    : 0;
-
-  const totalAccelerators = endorsementBonus + awardBonus + pressBonus + reviewBonus;
-
-  // Final score: base + accelerators, capped at 100
-  return Math.min(100, creditBase + totalAccelerators);
-}
 
 // ─── Network Role Calculation (Independent Axis) ─────────────────────
 

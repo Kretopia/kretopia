@@ -19,17 +19,10 @@ export function extractThumbnailFromUrl(url: string | null | undefined): string 
     // Vimeo thumbnails require API, but we can use the oEmbed endpoint via a proxy
     // For now, skip Vimeo — it needs an API call
 
-    // Spotify (album/track/playlist) — use i.scdn.co embed image
-    const spotifyMatch = url.match(
-      /open\.spotify\.com\/(track|album|playlist|artist)\/([a-zA-Z0-9]+)/
-    );
-    if (spotifyMatch) {
-      // Spotify embed cover — public, no API needed
-      return `https://embed-ssl.spotify.com/oembed/?url=${encodeURIComponent(url)}&format=json`;
-    }
-    // Note: Spotify oEmbed returns JSON with thumbnail_url — can't use as <img> src
-    // For now, Spotify thumbnails need to be fetched server-side and stored
-    // We skip Spotify direct image extraction
+    // Spotify — oEmbed returns JSON, not usable as direct img src
+    // Thumbnails for Spotify need to be fetched server-side and stored
+
+    // SoundCloud — no deterministic thumbnail
 
     // SoundCloud — no deterministic thumbnail
 

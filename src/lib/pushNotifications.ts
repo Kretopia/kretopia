@@ -108,10 +108,10 @@ export async function notifyMessage(receiverId: string, senderName: string, mess
 export async function notifyOpportunity(userId: string, opportunityTitle: string, opportunityId: string) {
   await sendPushNotification({
     userId,
-    title: "New Opportunity Match!",
-    body: `Check out: ${opportunityTitle}`,
+    title: "New Application Received!",
+    body: `Someone applied to: ${opportunityTitle}`,
     type: "opportunity",
-    link: `/opportunity/${opportunityId}`,
+    link: `/opportunity-dashboard?opportunity=${opportunityId}`,
   });
 }
 

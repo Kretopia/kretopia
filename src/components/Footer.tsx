@@ -3,7 +3,7 @@ import { Separator } from "@/components/ui/separator";
 import { Instagram } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -99,7 +99,7 @@ export const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
           <p>© {currentYear} ThriveIN. {t("footer.allRightsReserved")}</p>
           <div className="flex items-center gap-3">
-            <LanguageSwitcher variant="full" />
+            
             <a 
               href="https://instagram.com/thrivein.io" 
               target="_blank" 

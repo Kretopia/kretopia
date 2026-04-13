@@ -732,11 +732,11 @@ export function UnclaimedProfilesTab() {
                   <TabsContent value="enriched" className="space-y-4 mt-4">
                     <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
                       <div className="flex items-start gap-3">
-                        <Sparkles className="h-5 w-5 text-primary mt-0.5" />
+                        <Globe className="h-5 w-5 text-primary mt-0.5" />
                         <div>
-                          <h4 className="font-medium text-sm">AI-Powered Enrichment</h4>
+                          <h4 className="font-medium text-sm">Web Enrichment</h4>
                           <p className="text-xs text-muted-foreground mt-1">
-                            AI will search the web for each person and automatically fill in their bio, skills, credits, awards, and more.
+                            We'll search the web for each person and fill in their bio, skills, credits, awards, and more from verified sources.
                           </p>
                         </div>
                       </div>

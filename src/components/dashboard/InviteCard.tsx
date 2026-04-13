@@ -61,7 +61,7 @@ export const InviteCard = () => {
   const copyLink = async () => {
     if (!personalLink) return;
     try {
-      const inviteMessage = `Stop cold DMing strangers for collabs.\n\nThriveIN matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.\n\nI'm already on. Join me 👇\n${personalLink}`;
+      const inviteMessage = `Stop cold DMing strangers for collabs.\n\nThriveIN matches you with verified creatives who actually fit your style — portfolio-first, credits-verified.\n\nI'm already on. Join me 👇\n${personalLink}`;
       await navigator.clipboard.writeText(inviteMessage);
       setCopied(true);
       toast({ title: "Copied!", description: "Your personal invite link copied to clipboard" });

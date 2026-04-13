@@ -128,7 +128,7 @@ const Slide4 = () => (
       </div>
       <div className="grid grid-cols-4 gap-8">
         {[
-          { title: "Connect", desc: "AI-powered matching + verified profiles", icon: "", color: "from-primary/20 to-indigo-700/10" },
+          { title: "Connect", desc: "Smart matching + verified profiles", icon: "", color: "from-primary/20 to-indigo-700/10" },
           { title: "Collaborate", desc: "Project workspaces with milestones and deliverables", icon: "", color: "from-fuchsia-500/20 to-fuchsia-600/10" },
           { title: "Transact", desc: "Secure milestone-based escrow payments", icon: "", color: "from-green-500/20 to-green-600/10" },
           { title: "Reputation", desc: "A portable, verified track record", icon: "", color: "from-amber-500/20 to-amber-600/10" },

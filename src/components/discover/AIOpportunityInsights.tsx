@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Loader2, TrendingUp, Target, Lightbulb } from "lucide-react";
+import { Lightbulb, Loader2, TrendingUp, Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -89,8 +89,8 @@ Return as JSON:
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/5">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Sparkles className="h-5 w-5 text-primary" />
-          AI Application Assistant
+          <Lightbulb className="h-5 w-5 text-primary" />
+          Application Coach
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -112,8 +112,8 @@ Return as JSON:
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Get AI Insights
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  Get Insights
                 </>
               )}
             </Button>

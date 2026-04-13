@@ -36,7 +36,7 @@ const tourSteps: TourStep[] = [
   },
   {
     title: "Swipe & Match",
-    description: "Find your next collaborator with our AI-powered matching. Swipe right to connect, and start creating together.",
+    description: "Find your next collaborator with smart matching. Swipe right to connect, and start creating together.",
     icon: <Heart className="h-8 w-8 text-primary" />,
     action: "Try Matching",
     route: "/circle",

@@ -246,8 +246,8 @@ export const HeroSection = () => {
                 {loading && <div className="px-4 py-3 text-sm text-muted-foreground animate-pulse">Searching...</div>}
                 {!loading && suggestions.length === 0 && query.trim().length >= 2 && (
                   <div className="px-4 py-3 text-sm text-muted-foreground">
-                    <Sparkles className="inline h-3.5 w-3.5 mr-1.5 text-primary" />
-                    Press Enter for AI-powered deep search
+                    <Search className="inline h-3.5 w-3.5 mr-1.5 text-primary" />
+                    Press Enter for deep search
                   </div>
                 )}
                 {suggestions.map((s, i) => (

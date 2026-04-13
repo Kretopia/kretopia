@@ -176,7 +176,7 @@ export function ScopeGuardian({ projectId, project, milestones, onMilestonesGene
   };
 
   return (
-    <FreeTierGate feature="aiBriefs" featureLabel="AI Scope Guardian" description="Upgrade to Pro for AI-powered scope protection, milestone generation, and scope creep detection.">
+    <FreeTierGate feature="aiBriefs" featureLabel="Scope Guardian" description="Upgrade to Pro for scope protection, milestone generation, and scope creep detection.">
       <div className="space-y-4">
         {/* Hero header */}
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5">

@@ -106,6 +106,7 @@ interface UserCredit {
   thumbnail_url: string | null;
   primary_media_url: string | null;
   credit_category: string | null;
+  url?: string | null;
 }
 
 interface ProfileInfo {

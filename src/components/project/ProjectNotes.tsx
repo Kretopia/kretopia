@@ -24,6 +24,7 @@ interface ProjectNotesProps {
 export function ProjectNotes({ projectId }: ProjectNotesProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const isMobileView = useIsMobile();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);

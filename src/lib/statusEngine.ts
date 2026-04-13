@@ -78,19 +78,18 @@ export function getTierIndex(tier: StatusTier): number {
 
 interface TierGate {
   credits: number;
-  endorsements: number;
   awards: number;
   press: number;
-  awardsOrPress?: boolean; // true = awards OR press satisfies gate
+  awardsOrPress?: boolean;
 }
 
 const TIER_GATE_MAP: Record<StatusTier, TierGate> = {
-  hobbyist:     { credits: 0,   endorsements: 0,  awards: 0, press: 0 },
-  freelancer:   { credits: 5,   endorsements: 0,  awards: 0, press: 0 },
-  thriver:      { credits: 20,  endorsements: 2,  awards: 0, press: 0 },
-  professional: { credits: 50,  endorsements: 5,  awards: 0, press: 0 },
-  celebrity:    { credits: 80,  endorsements: 10, awards: 2, press: 3, awardsOrPress: true },
-  icon:         { credits: 120, endorsements: 20, awards: 3, press: 5 },
+  hobbyist:     { credits: 0,   awards: 0, press: 0 },
+  freelancer:   { credits: 5,   awards: 0, press: 0 },
+  thriver:      { credits: 20,  awards: 0, press: 0 },
+  professional: { credits: 50,  awards: 0, press: 0 },
+  celebrity:    { credits: 80,  awards: 2, press: 3, awardsOrPress: true },
+  icon:         { credits: 120, awards: 3, press: 5 },
 };
 
 interface TierMeta {

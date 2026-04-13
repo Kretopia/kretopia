@@ -301,30 +301,40 @@ export function ProfileEditDialog({
 
     setIsSaving(true);
     try {
+      const hourlyRate = formData.hourly_rate ? parseFloat(formData.hourly_rate) : null;
+      const projectRate = formData.project_rate ? parseFloat(formData.project_rate) : null;
+      
+      const updatePayload = {
+        full_name: formData.full_name || null,
+        role: formData.role || null,
+        location: formData.location || null,
+        bio: formData.bio || null,
+        website: formData.website || null,
+        instagram_url: formData.instagram_url || null,
+        twitter_url: formData.twitter_url || null,
+        linkedin_url: formData.linkedin_url || null,
+        youtube_url: formData.youtube_url || null,
+        tiktok_url: formData.tiktok_url || null,
+        spotify_url: formData.spotify_url || null,
+        behance_url: formData.behance_url || null,
+        imdb_url: formData.imdb_url || null,
+        soundcloud_url: formData.soundcloud_url || null,
+        hourly_rate: hourlyRate && !isNaN(hourlyRate) ? hourlyRate : null,
+        project_rate: projectRate && !isNaN(projectRate) ? projectRate : null,
+        rate_currency: formData.rate_currency || 'USD',
+      };
+
+      console.log('[ProfileEdit] Saving profile with user_id:', profile.user_id);
+      
       const { error } = await supabase
         .from("profiles")
-        .update({
-          full_name: formData.full_name || null,
-          role: formData.role || null,
-          location: formData.location || null,
-          bio: formData.bio || null,
-          website: formData.website || null,
-          instagram_url: formData.instagram_url || null,
-          twitter_url: formData.twitter_url || null,
-          linkedin_url: formData.linkedin_url || null,
-          youtube_url: formData.youtube_url || null,
-          tiktok_url: formData.tiktok_url || null,
-          spotify_url: formData.spotify_url || null,
-          behance_url: formData.behance_url || null,
-          imdb_url: formData.imdb_url || null,
-          soundcloud_url: formData.soundcloud_url || null,
-          hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
-          project_rate: formData.project_rate ? parseFloat(formData.project_rate) : null,
-          rate_currency: formData.rate_currency || 'USD',
-        } as any)
-        .eq("id", profile.id);
+        .update(updatePayload as any)
+        .eq("user_id", profile.user_id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('[ProfileEdit] Update error:', error);
+        throw error;
+      }
 
       const newCompletion = checkProfileCompletion({
         ...profile,

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Briefcase, MapPin, DollarSign, User, Users, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter, LayoutGrid, List, BarChart3 } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, User, Users, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter, LayoutGrid, List, BarChart3, ChevronDown, ChevronUp, ExternalLink, Clock } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
@@ -389,116 +390,13 @@ Return ONLY valid JSON array:
   };
 
   const renderApplicantCard = (applicant: Applicant) => (
-    <Card key={applicant.id} className="hover:shadow-lg transition-all">
-      <CardHeader>
-        <div className="flex items-start gap-3 sm:gap-4">
-          <Avatar className="h-12 w-12 sm:h-16 sm:w-16 shrink-0">
-            <AvatarImage src={applicant.avatar_url} />
-            <AvatarFallback>{applicant.full_name[0]}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-1">
-              <div className="min-w-0">
-                <CardTitle className="text-base sm:text-lg truncate">{applicant.full_name}</CardTitle>
-                <p className="text-sm text-muted-foreground">{applicant.role}</p>
-              </div>
-              <div className="flex gap-2 shrink-0">
-                {getMatchBadge(applicant.ai_match_score)}
-                <Badge variant={
-                  applicant.status === 'accepted' ? 'default' :
-                  applicant.status === 'rejected' ? 'destructive' :
-                  applicant.status === 'shortlisted' ? 'outline' : 'secondary'
-                } className={applicant.status === 'shortlisted' ? 'border-primary text-primary' : ''}>
-                  {applicant.status}
-                </Badge>
-              </div>
-            </div>
-            
-            {applicant.ai_match_score && (
-              <div className="mb-2 p-2 bg-muted/50 rounded-md">
-                <div className="flex items-center gap-2 mb-1">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">AI Match: {applicant.ai_match_score}%</span>
-                </div>
-                {applicant.match_reasons && (
-                  <ul className="text-xs text-muted-foreground space-y-1">
-                    {applicant.match_reasons.map((reason, i) => (
-                      <li key={i}>• {reason}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <div>
-            <p className="text-sm font-medium mb-1">Cover Letter</p>
-            <p className="text-sm text-muted-foreground line-clamp-3">{applicant.cover_letter}</p>
-          </div>
-          
-          {applicant.expected_rate && (
-            <div className="flex items-center gap-2 text-sm">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span>{applicant.expected_rate}</span>
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2 pt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs"
-              onClick={() => navigate(`/profile/${applicant.applicant_id}`)}
-            >
-              <Eye className="w-3 h-3 mr-1" />
-              Profile
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs"
-              onClick={() => navigate(`/messages?user=${applicant.applicant_id}`)}
-            >
-              <Mail className="w-3 h-3 mr-1" />
-              Message
-            </Button>
-            {(applicant.status === 'pending' || applicant.status === 'shortlisted') && (
-              <>
-                {applicant.status === 'pending' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-xs border-primary/30 text-primary hover:bg-primary/10"
-                    onClick={() => updateApplicationStatus(applicant.id, 'shortlisted')}
-                  >
-                    <Star className="w-3 h-3 mr-1" />
-                    Shortlist
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => updateApplicationStatus(applicant.id, 'accepted')}
-                >
-                  Accept
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="text-xs"
-                  onClick={() => updateApplicationStatus(applicant.id, 'rejected')}
-                >
-                  Reject
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <ApplicantCard
+      key={applicant.id}
+      applicant={applicant}
+      getMatchBadge={getMatchBadge}
+      onStatusChange={updateApplicationStatus}
+      navigate={navigate}
+    />
   );
 
   if (authLoading || loading) {
@@ -802,3 +700,202 @@ Return ONLY valid JSON array:
 };
 
 export default OpportunityDashboard;
+
+// ── Applicant Card with expandable cover letter ──
+const ApplicantCard = ({
+  applicant,
+  getMatchBadge,
+  onStatusChange,
+  navigate,
+}: {
+  applicant: Applicant;
+  getMatchBadge: (score?: number) => React.ReactNode;
+  onStatusChange: (id: string, status: string) => Promise<void>;
+  navigate: (path: string) => void;
+}) => {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <Card className="hover:shadow-lg transition-all">
+      <CardHeader>
+        <div className="flex items-start gap-3 sm:gap-4">
+          <Avatar
+            className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 cursor-pointer"
+            onClick={() => navigate(`/profile/${applicant.applicant_id}`)}
+          >
+            <AvatarImage src={applicant.avatar_url} />
+            <AvatarFallback>{applicant.full_name[0]}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-1">
+              <div className="min-w-0">
+                <CardTitle
+                  className="text-base sm:text-lg truncate cursor-pointer hover:underline"
+                  onClick={() => navigate(`/profile/${applicant.applicant_id}`)}
+                >
+                  {applicant.full_name}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">{applicant.role}</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <Clock className="h-3 w-3" />
+                  Applied {formatDistanceToNow(new Date(applicant.created_at), { addSuffix: true })}
+                </p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                {getMatchBadge(applicant.ai_match_score)}
+                <Badge variant={
+                  applicant.status === 'accepted' ? 'default' :
+                  applicant.status === 'rejected' ? 'destructive' :
+                  applicant.status === 'shortlisted' ? 'outline' : 'secondary'
+                } className={applicant.status === 'shortlisted' ? 'border-primary text-primary' : ''}>
+                  {applicant.status}
+                </Badge>
+              </div>
+            </div>
+
+            {applicant.ai_match_score && (
+              <div className="mb-2 p-2 bg-muted/50 rounded-md">
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">AI Match: {applicant.ai_match_score}%</span>
+                </div>
+                {applicant.match_reasons && (
+                  <ul className="text-xs text-muted-foreground space-y-1">
+                    {applicant.match_reasons.map((reason, i) => (
+                      <li key={i}>• {reason}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {/* Cover Letter — expandable */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-sm font-medium">Cover Letter</p>
+              {applicant.cover_letter && applicant.cover_letter.length > 200 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs gap-1 text-muted-foreground"
+                  onClick={() => setExpanded(!expanded)}
+                >
+                  {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  {expanded ? "Less" : "Read more"}
+                </Button>
+              )}
+            </div>
+            <p className={`text-sm text-muted-foreground whitespace-pre-line ${expanded ? '' : 'line-clamp-3'}`}>
+              {applicant.cover_letter || 'No cover letter provided.'}
+            </p>
+          </div>
+
+          {/* Portfolio Links */}
+          {applicant.portfolio_links && applicant.portfolio_links.length > 0 && (
+            <div>
+              <p className="text-sm font-medium mb-1">Portfolio</p>
+              <div className="flex flex-wrap gap-2">
+                {applicant.portfolio_links.map((link, i) => (
+                  <a
+                    key={i}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary hover:underline flex items-center gap-1"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    {new URL(link).hostname.replace('www.', '')}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Rate & Availability */}
+          <div className="flex flex-wrap gap-3 text-sm">
+            {applicant.expected_rate && (
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <DollarSign className="h-3.5 w-3.5" />
+                <span>{applicant.expected_rate}</span>
+              </div>
+            )}
+            {applicant.availability && (
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                <span>{applicant.availability}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Professional Skills */}
+          {applicant.professional_skills && applicant.professional_skills.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {applicant.professional_skills.slice(0, 6).map((skill, i) => (
+                <Badge key={i} variant="secondary" className="text-[10px]">{skill}</Badge>
+              ))}
+              {applicant.professional_skills.length > 6 && (
+                <Badge variant="secondary" className="text-[10px]">+{applicant.professional_skills.length - 6}</Badge>
+              )}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-border/50">
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs"
+              onClick={() => navigate(`/profile/${applicant.applicant_id}`)}
+            >
+              <Eye className="w-3 h-3 mr-1" />
+              Profile
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs"
+              onClick={() => navigate(`/messages?user=${applicant.applicant_id}`)}
+            >
+              <Mail className="w-3 h-3 mr-1" />
+              Message
+            </Button>
+            {(applicant.status === 'pending' || applicant.status === 'shortlisted') && (
+              <>
+                {applicant.status === 'pending' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={() => onStatusChange(applicant.id, 'shortlisted')}
+                  >
+                    <Star className="w-3 h-3 mr-1" />
+                    Shortlist
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => onStatusChange(applicant.id, 'accepted')}
+                >
+                  Accept
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="text-xs"
+                  onClick={() => onStatusChange(applicant.id, 'rejected')}
+                >
+                  Reject
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

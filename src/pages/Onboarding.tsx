@@ -728,11 +728,23 @@ export default function Onboarding() {
                 <p>Click the link in your email to verify and start exploring.</p>
                 <p className="mt-2 text-xs">Don't see it? Check your spam folder.</p>
               </div>
-              <Button variant="outline" onClick={handleResendVerification} disabled={resendingEmail} className="gap-2">
-                {resendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-                Resend Email
-              </Button>
-              <p className="text-sm text-muted-foreground">Already verified? This page will refresh automatically.</p>
+              <div className="flex flex-col gap-2">
+                <Button variant="outline" onClick={handleResendVerification} disabled={resendingEmail} className="gap-2">
+                  {resendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                  Resend Email
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    setPendingConnectForCelebration(null);
+                    setShowCelebration(true);
+                  }}
+                  className="text-muted-foreground"
+                >
+                  Skip for now — I'll verify later
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">Already verified? This page will refresh automatically.</p>
             </div>
           )}
 

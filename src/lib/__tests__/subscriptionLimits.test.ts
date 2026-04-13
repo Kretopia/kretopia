@@ -12,7 +12,7 @@ import {
 describe("Subscription Limits", () => {
   describe("TIER_LIMITS (backward compat - individual defaults)", () => {
     it("free tier has correct swipe limit", () => {
-      expect(TIER_LIMITS.free.swipesPerDay).toBe(30);
+      expect(TIER_LIMITS.free.swipesPerDay).toBe(20);
     });
 
     it("pro tier has unlimited swipes", () => {

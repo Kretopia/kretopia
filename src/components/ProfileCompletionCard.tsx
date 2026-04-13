@@ -7,6 +7,7 @@ import { ProfileCompletionStatus } from "@/lib/profileCompletion";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useTranslation } from "react-i18next";
 
 interface ProfileCompletionCardProps {
   completion: ProfileCompletionStatus;
@@ -38,6 +39,7 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(true);
   const { isComplete: onboardingDone } = useOnboarding();
+  const { t } = useTranslation();
 
   if (completion.percentage === 100) {
     return (
@@ -45,8 +47,8 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
         <div className="flex items-center gap-3">
           <CheckCircle2 className="h-8 w-8 text-primary" />
           <div className="flex-1">
-            <h3 className="text-lg font-semibold">Profile Complete!</h3>
-            <p className="text-sm text-muted-foreground">Your profile is fully optimized for discovery</p>
+            <h3 className="text-lg font-semibold">{t("profile.complete")}</h3>
+            <p className="text-sm text-muted-foreground">{t("profile.completeDesc")}</p>
           </div>
           <Badge variant="secondary" className="text-lg px-4 py-2">100%</Badge>
         </div>
@@ -54,17 +56,14 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
     );
   }
 
-  const priorityMissing = completion.missingFields.slice(0, 3);
-  const hasMore = completion.missingFields.length > 3;
-
   return (
     <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold">Complete Your Profile</h3>
+            <h3 className="text-lg font-semibold">{t("profile.completeYourProfile")}</h3>
             {completion.percentage >= 75 && (
-              <Badge variant="secondary" className="text-xs">Almost there!</Badge>
+              <Badge variant="secondary" className="text-xs">{t("profile.almostThere")}</Badge>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -87,9 +86,9 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
             {completion.missingFields.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm font-medium text-muted-foreground mb-3">
-                  Add these to boost your visibility:
+                  {t("profile.boostVisibility")}
                 </p>
-                {(expanded ? completion.missingFields : priorityMissing).map((field) => {
+                {completion.missingFields.map((field) => {
                   const Icon = fieldIcons[field] || Circle;
                     return (
                       <button 
@@ -102,7 +101,7 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
                           <Icon className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm">{field}</span>
                         </div>
-                        <span className="text-xs text-primary font-medium">Add →</span>
+                        <span className="text-xs text-primary font-medium">{t("profile.add")}</span>
                       </button>
                     );
                 })}
@@ -112,7 +111,7 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
             {completion.completedFields.length > 0 && (
               <div className="space-y-2 pt-3 border-t">
                 <p className="text-sm font-medium text-muted-foreground mb-2">
-                  ✓ Completed ({completion.completedFields.length})
+                  ✓ {t("profile.completed")} ({completion.completedFields.length})
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {completion.completedFields.map((field) => {
@@ -137,7 +136,7 @@ export const ProfileCompletionCard = ({ completion }: ProfileCompletionCardProps
           variant="default"
         >
           <Sparkles className="mr-2 h-4 w-4" />
-          Complete Profile (+50 XP)
+          {t("profile.completeProfile")} (+50 XP)
         </Button>
       </div>
     </Card>

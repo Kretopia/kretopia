@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, Flame, BookOpen, Headphones } from "lucide-react";
+import { CalendarDays, Flame, BookOpen, Headphones, Users, ArrowRight } from "lucide-react";
 import Events from "./Events";
 import { CrossModeNudge } from "@/components/CrossModeNudge";
 import { SparkWall } from "@/components/scene/SparkWall";
@@ -77,6 +77,23 @@ const Scene = () => {
 
           {/* Hero Carousel */}
           <SceneHero onNavigate={handleNavigate} />
+
+          {/* Match CTA */}
+          {user && (
+            <Link
+              to="/circle"
+              className="flex items-center gap-3 p-3 mb-4 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 hover:border-primary/40 transition-all group"
+            >
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Users className="h-4.5 w-4.5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">Find Your Match</p>
+                <p className="text-[11px] text-muted-foreground">Discover collaborators based on your skills & interests</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-primary opacity-50 group-hover:opacity-100 transition-opacity shrink-0" />
+            </Link>
+          )}
 
           {/* Content Previews */}
           {activeTab === "spark" && (

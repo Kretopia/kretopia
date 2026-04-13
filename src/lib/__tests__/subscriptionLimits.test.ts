@@ -12,7 +12,7 @@ import {
 describe("Subscription Limits", () => {
   describe("TIER_LIMITS (backward compat - individual defaults)", () => {
     it("free tier has correct swipe limit", () => {
-      expect(TIER_LIMITS.free.swipesPerDay).toBe(30);
+      expect(TIER_LIMITS.free.swipesPerDay).toBe(20);
     });
 
     it("pro tier has unlimited swipes", () => {
@@ -37,9 +37,9 @@ describe("Subscription Limits", () => {
   });
 
   describe("getTierLimits (account-type-aware)", () => {
-    it("company free tier allows 3 opportunity postings", () => {
+    it("company free tier allows 5 opportunity postings", () => {
       const limits = getTierLimits("free", "company");
-      expect(limits.maxOpportunityPostings).toBe(3);
+      expect(limits.maxOpportunityPostings).toBe(5);
     });
 
     it("company pro tier has unlimited opportunity postings", () => {
@@ -96,10 +96,10 @@ describe("Subscription Limits", () => {
 
   describe("getRemainingSwipes", () => {
     it("calculates remaining swipes for free tier", () => {
-      expect(getRemainingSwipes("free", 0)).toBe(30);
-      expect(getRemainingSwipes("free", 10)).toBe(20);
-      expect(getRemainingSwipes("free", 30)).toBe(0);
-      expect(getRemainingSwipes("free", 35)).toBe(0);
+      expect(getRemainingSwipes("free", 0)).toBe(20);
+      expect(getRemainingSwipes("free", 10)).toBe(10);
+      expect(getRemainingSwipes("free", 20)).toBe(0);
+      expect(getRemainingSwipes("free", 25)).toBe(0);
     });
 
     it("returns -1 (unlimited) for pro tier", () => {

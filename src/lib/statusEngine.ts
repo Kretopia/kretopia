@@ -155,8 +155,9 @@ const TIER_META: Record<StatusTier, TierMeta> = {
 // ─── Career Tier Calculation (Hard-Gated) ────────────────────────────
 
 function meetsGate(metrics: StatusMetrics, gate: TierGate): boolean {
-  if (metrics.totalCredits < gate.credits) return false;
-  if (metrics.endorsementCount < gate.endorsements) return false;
+  // Endorsements act as accelerators: each counts as +0.5 effective credits
+  const effectiveCredits = metrics.totalCredits + (metrics.endorsementCount * 0.5);
+  if (effectiveCredits < gate.credits) return false;
 
   // Awards/press gate
   if (gate.awardsOrPress) {

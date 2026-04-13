@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,7 +61,9 @@ const OpportunityDashboard = () => {
   const autoAnalyzedRef = useRef<Set<string>>(new Set());
   const { user, loading: authLoading, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
+  const requestedOpportunityId = searchParams.get('opportunity');
 
   useEffect(() => {
     console.log('[OpportunityDashboard] Auth state - loading:', authLoading, 'user:', user?.id);
@@ -126,9 +128,27 @@ const OpportunityDashboard = () => {
 
     setOpportunities(formatted);
     if (formatted.length > 0) {
-      setSelectedOppId(formatted[0].id);
+      const initialOpportunityId = formatted.some((opp) => opp.id === requestedOpportunityId)
+        ? requestedOpportunityId
+        : formatted[0].id;
+      setSelectedOppId(initialOpportunityId);
     }
     setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!requestedOpportunityId || opportunities.length === 0 || requestedOpportunityId === selectedOppId) {
+      return;
+    }
+
+    if (opportunities.some((opp) => opp.id === requestedOpportunityId)) {
+      setSelectedOppId(requestedOpportunityId);
+    }
+  }, [requestedOpportunityId, opportunities, selectedOppId]);
+
+  const handleOpportunityChange = (opportunityId: string) => {
+    setSelectedOppId(opportunityId);
+    setSearchParams({ opportunity: opportunityId }, { replace: true });
   };
 
   const fetchApplicants = async (opportunityId: string) => {
@@ -543,7 +563,7 @@ Return ONLY valid JSON array:
       </div>
 
       <div className="mb-6 flex flex-col sm:flex-row gap-2">
-        <Select value={selectedOppId || undefined} onValueChange={setSelectedOppId}>
+        <Select value={selectedOppId || undefined} onValueChange={handleOpportunityChange}>
           <SelectTrigger className="w-full md:w-96">
             <SelectValue placeholder="Select opportunity" />
           </SelectTrigger>

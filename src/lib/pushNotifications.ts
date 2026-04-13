@@ -75,7 +75,7 @@ export async function notifyMatch(user1Id: string, user2Id: string, user1Name: s
       title: "New Match! 🎉",
       body: `You matched with ${user2Name}`,
       type: "match",
-      link: "/circle?tab=network",
+      link: `/messages?user=${user2Id}`,
       data: { matchedUserId: user2Id },
     }),
     sendPushNotification({
@@ -83,7 +83,7 @@ export async function notifyMatch(user1Id: string, user2Id: string, user1Name: s
       title: "New Match! 🎉",
       body: `You matched with ${user1Name}`,
       type: "match",
-      link: "/circle?tab=network",
+      link: `/messages?user=${user1Id}`,
       data: { matchedUserId: user1Id },
     }),
   ]);

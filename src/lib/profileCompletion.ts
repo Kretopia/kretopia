@@ -25,7 +25,6 @@ export const checkProfileCompletion = (profile: Profile, portfolioCount: number 
       return (professionalSkills + passionSkills) >= 3;
     })() },
     { key: 'portfolio', label: 'Work Item (Portfolio or Credit)', value: portfolioCount >= 1 },
-    { key: 'website', label: 'Website or Social Link', value: profile.website || profile.linkedin_url || profile.instagram_url || profile.twitter_url },
   ];
 
   const completedFields = fields.filter(f => f.value).map(f => f.label);

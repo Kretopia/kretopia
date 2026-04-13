@@ -113,7 +113,8 @@ export default function Onboarding() {
                 platform: c.platform,
                 source: "claim",
               })));
-              setSelectedCredits(new Set(claimData.credits.map((_: any, i: number) => i)));
+              // Don't auto-select — let user choose which credits to claim
+              setSelectedCredits(new Set());
             }
             sessionStorage.removeItem("pending_claim_credits");
           } catch (e) { console.error("Parse pending credits:", e); }
@@ -200,11 +201,7 @@ export default function Onboarding() {
             source: "url_import",
           }));
           setDiscoveredCredits(prev => [...prev, ...newCredits]);
-          setSelectedCredits(prev => {
-            const next = new Set(prev);
-            newCredits.forEach((_: any, i: number) => next.add(discoveredCredits.length + i));
-            return next;
-          });
+          // Don't auto-select imported credits — user must opt-in
           foundAnything = true;
         }
       }
@@ -666,7 +663,7 @@ export default function Onboarding() {
                 {/* Discovered Credits */}
                 {discoveredCredits.length > 0 && (
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Discovered Work Credits ({selectedCredits.size} selected)</Label>
+                    <Label className="text-xs text-muted-foreground">We found these — tap to select yours ({selectedCredits.size} selected)</Label>
                     <div className="space-y-1.5 max-h-40 overflow-y-auto">
                       {discoveredCredits.map((credit, i) => (
                         <button

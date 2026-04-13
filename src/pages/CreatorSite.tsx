@@ -53,7 +53,7 @@ const CreatorSite = () => {
       // Fetch profile - check if site is enabled
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, location, avatar_url, cover_image_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, rate_range, site_template, site_enabled, site_headline, site_bio, site_sections, professional_skills, subscription_tier')
+        .select('user_id, full_name, role, bio, location, avatar_url, cover_image_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, rate_range, site_template, site_enabled, site_headline, site_bio, site_sections, professional_skills, subscription_tier, username')
         .eq('user_id', userId)
         .maybeSingle();
 

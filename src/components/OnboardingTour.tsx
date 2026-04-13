@@ -24,27 +24,25 @@ const tourSteps: TourStep[] = [
     title: "Build Your Profile",
     description: "Add your skills, credits, and portfolio. A complete profile gets you 5x more visibility to collaborators and clients.",
     icon: <User className="h-8 w-8 text-primary" />,
-    action: "Set Up Profile",
-    route: "/profile",
+    action: "Next",
   },
   {
     title: "Discover & Browse",
     description: "Search for creators, events, gigs, and opportunities. Use Explore mode to discover what's happening in the creative world.",
     icon: <Search className="h-8 w-8 text-primary" />,
-    action: "Start Exploring",
-    route: "/circle",
+    action: "Next",
   },
   {
     title: "Swipe & Match",
     description: "Find your next collaborator with smart matching. Swipe right to connect, and start creating together.",
     icon: <Heart className="h-8 w-8 text-primary" />,
-    action: "Try Matching",
-    route: "/circle",
+    action: "Next",
   },
   {
     title: "Message & Collaborate",
     description: "When you match, start a conversation. Use The Desk for project management, file sharing, and team coordination.",
     icon: <MessageSquare className="h-8 w-8 text-primary" />,
+    action: "Next",
   },
   {
     title: "You're Ready to Thrive!",
@@ -86,12 +84,6 @@ export const OnboardingTour = () => {
   };
 
   const handleNext = () => {
-    const step = tourSteps[currentStep];
-    
-    if (step.route) {
-      navigate(step.route);
-    }
-
     if (currentStep < tourSteps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {

@@ -172,6 +172,7 @@ const AppContent = () => {
   const isCreatorSite = /^\/site\/[^/]+$/.test(location.pathname);
   const isPublicEvent = /^\/event\/[^/]+$/.test(location.pathname);
   const isAuthPage = location.pathname === '/auth';
+  const isOnboardingPage = location.pathname === '/onboarding' || location.pathname === '/company-onboarding';
   const isDeckPage = location.pathname === '/deck';
   const isLandingPage = location.pathname === '/';
   
@@ -196,7 +197,7 @@ const AppContent = () => {
       {showNavbar && <Navbar user={user} />}
       {showBottomNav && <BottomNav />}
       {user && !isPublicEPK && !isCreatorSite && !isAuthPage && !isDeckPage && <ModeDiscoverySheet />}
-      {user && !isAuthPage && <OnboardingTour />}
+      {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />
       {showGuestBanner && <GuestBanner />}

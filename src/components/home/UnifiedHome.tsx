@@ -169,12 +169,12 @@ export const UnifiedHome = () => {
             {/* Conversion-first hero */}
             <div className="text-center mb-5 sm:mb-6">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.05] mb-4">
-                Get Discovered. Get Booked.
+                {t("landing.heroTitle1")}
                 <br />
-                <span className="text-primary">Get Paid.</span>
+                <span className="text-primary">{t("landing.heroTitle2")}</span>
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
-                Where{" "}
+                {t("landing.heroSubtitle1")}{" "}
                 <span className="text-primary font-semibold inline-block min-w-[100px]">
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -189,17 +189,17 @@ export const UnifiedHome = () => {
                     </motion.span>
                   </AnimatePresence>
                 </span>{" "}
-                build verified credits and get booked.
+                {t("landing.heroSubtitle2")}
               </p>
             </div>
 
             <div className="max-w-xl mx-auto mb-5">
               <p className="text-[11px] sm:text-xs text-muted-foreground/70 mb-1.5 text-center">
-                Already have work? Search your name
+                {t("landing.searchHint")}
               </p>
               <UnifiedSearchDropdown
                 variant="hero"
-                placeholder="Search creators, productions, gigs..."
+                placeholder={t("landing.searchPlaceholder")}
               />
             </div>
             {/* Discover Creatives — real profiles under search */}

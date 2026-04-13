@@ -262,8 +262,8 @@ export default function Onboarding() {
       return;
     }
     if (!role?.trim()) {
-      toast({ title: "Role is required", description: "What do you do professionally?", variant: "destructive" });
-      return;
+      // Role is optional — default to "Creator" if not set
+      setRole("Creator");
     }
 
     setLoading(true);
@@ -596,7 +596,7 @@ export default function Onboarding() {
 
                 {/* Role */}
                 <div>
-                  <Label className="text-xs text-muted-foreground">Role *</Label>
+                  <Label className="text-xs text-muted-foreground">Role</Label>
                   {showCustomRole || (!isRoleInOptions && role) ? (
                     <div className="space-y-1.5">
                       <Input value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Music Producer" className="h-10" />

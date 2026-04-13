@@ -701,6 +701,8 @@ Return ONLY valid JSON array:
 
 export default OpportunityDashboard;
 
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+
 // ── Applicant Card with expandable cover letter ──
 const ApplicantCard = ({
   applicant,
@@ -714,6 +716,34 @@ const ApplicantCard = ({
   navigate: (path: string) => void;
 }) => {
   const [expanded, setExpanded] = useState(false);
+
+  const handleMessage = async () => {
+    // Ensure a bidirectional connection exists so the conversation shows in inbox
+    try {
+      const userId = (await supabaseClient.auth.getUser()).data.user?.id;
+      if (userId) {
+        const { data: existing } = await supabaseClient
+          .from('connections')
+          .select('id')
+          .or(`and(user_id.eq.${userId},connected_user_id.eq.${applicant.applicant_id}),and(user_id.eq.${applicant.applicant_id},connected_user_id.eq.${userId})`)
+          .eq('status', 'accepted')
+          .maybeSingle();
+
+        if (!existing) {
+          await supabaseClient
+            .from('connections')
+            .upsert({
+              user_id: userId,
+              connected_user_id: applicant.applicant_id,
+              status: 'accepted',
+            }, { onConflict: 'user_id,connected_user_id' });
+        }
+      }
+    } catch (err) {
+      console.error('[ApplicantCard] Connection ensure failed:', err);
+    }
+    navigate(`/messages?user=${applicant.applicant_id}`);
+  };
 
   return (
     <Card className="hover:shadow-lg transition-all">
@@ -858,7 +888,7 @@ const ApplicantCard = ({
               size="sm"
               variant="outline"
               className="text-xs"
-              onClick={() => navigate(`/messages?user=${applicant.applicant_id}`)}
+              onClick={handleMessage}
             >
               <Mail className="w-3 h-3 mr-1" />
               Message

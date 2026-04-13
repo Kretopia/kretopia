@@ -210,13 +210,13 @@ export const UnifiedHome = () => {
             {/* 3-Step Visual Process */}
             <div className="mb-5">
               <p className="text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-semibold mb-3">
-                How it works
+                {t("landing.howItWorks")}
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { step: "1", icon: Search, title: "Search Your Name", desc: "Find credits you're already connected to" },
-                  { step: "2", icon: Database, title: "Claim & Verify", desc: "Peer endorsements & evidence verify your work" },
-                  { step: "3", icon: Briefcase, title: "Get Booked", desc: "Brands discover and hire you directly" },
+                  { step: "1", icon: Search, title: t("landing.step1Title"), desc: t("landing.step1Desc") },
+                  { step: "2", icon: Database, title: t("landing.step2Title"), desc: t("landing.step2Desc") },
+                  { step: "3", icon: Briefcase, title: t("landing.step3Title"), desc: t("landing.step3Desc") },
                 ].map((s, i) => (
                   <motion.div
                     key={s.title}
@@ -237,17 +237,17 @@ export const UnifiedHome = () => {
             <div className="flex items-center justify-center gap-6 sm:gap-8 mb-2">
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.creators.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Creators</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCreators")}</p>
               </div>
               <div className="w-px h-8 bg-border" />
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.credits.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Credits</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCredits")}</p>
               </div>
               <div className="w-px h-8 bg-border" />
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.gigs.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Live Gigs</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsGigs")}</p>
               </div>
             </div>
           </div>

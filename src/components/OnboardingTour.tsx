@@ -100,16 +100,10 @@ export const OnboardingTour = () => {
   const completeTour = async () => {
     setIsVisible(false);
     
-    if (userId) {
-      try {
-        await supabase
-          .from("profiles")
-          .update({ onboarding_completed: true })
-          .eq("user_id", userId);
-      } catch (error) {
-        console.error("Error completing onboarding:", error);
-      }
-    }
+    // NOTE: Do NOT mark onboarding_completed here.
+    // Only the main Onboarding page (handleSaveProfile) should do that
+    // after the user has actually filled in their name/role.
+    // This tour is just a UI walkthrough overlay.
   };
 
   const handleSkip = () => {

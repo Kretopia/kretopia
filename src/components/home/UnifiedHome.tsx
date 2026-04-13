@@ -561,10 +561,10 @@ export const UnifiedHome = () => {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-primary" />
-                ThriveIN Magazine
+                {t("landing.magazine")}
               </h2>
               <Link to="/magazine" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                Read all <ArrowRight className="h-3 w-3" />
+                {t("landing.readAll")} <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
@@ -589,10 +589,10 @@ export const UnifiedHome = () => {
                       </div>
                     )}
                     <div className="p-3">
-                      <Badge variant="outline" className="text-[8px] mb-1.5">{a.category || "Article"}</Badge>
+                      <Badge variant="outline" className="text-[8px] mb-1.5">{a.category || t("common.article")}</Badge>
                       <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{a.title}</p>
                       {a.read_time_minutes && (
-                        <p className="text-[10px] text-muted-foreground mt-1">{a.read_time_minutes} min read</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{t("common.minRead", { count: a.read_time_minutes })}</p>
                       )}
                     </div>
                   </div>
@@ -607,7 +607,7 @@ export const UnifiedHome = () => {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Headphones className="h-4 w-4 text-accent" />
-              Podcast
+              {t("landing.podcast")}
             </h2>
           </div>
           <div
@@ -619,8 +619,8 @@ export const UnifiedHome = () => {
                 <Headphones className="h-7 w-7 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground mb-0.5">Discover A Thriver</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">Stories, insights & conversations with creatives shaping the industry</p>
+                <p className="text-sm font-bold text-foreground mb-0.5">{t("landing.podcastTitle")}</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">{t("landing.podcastDesc")}</p>
               </div>
               <Play className="h-5 w-5 text-primary shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
             </div>
@@ -631,9 +631,9 @@ export const UnifiedHome = () => {
         {!user && (
           <div className="flex items-center justify-center gap-4 flex-wrap mb-6">
             {[
-              { icon: Shield, label: "Verified Identity" },
-              { icon: CheckCircle, label: "Escrow Protected" },
-              { icon: Star, label: "Peer Endorsed" },
+              { icon: Shield, label: t("landing.verifiedIdentity") },
+              { icon: CheckCircle, label: t("landing.escrowProtected") },
+              { icon: Star, label: t("landing.peerEndorsed") },
             ].map(b => (
               <div key={b.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <b.icon className="h-3.5 w-3.5 text-primary/60" />
@@ -657,27 +657,25 @@ export const UnifiedHome = () => {
               <Zap className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
-              {user ? "Go Pro — from $29/mo" : "Become a Founding Member"}
+              {user ? t("landing.goProTitle") : t("landing.foundingMemberTitle")}
             </h3>
             <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-1 max-w-md mx-auto">
-              {user
-                ? "Unlimited smart tools, verified badge, full invoicing & expense suite. 7-day free trial."
-                : "Early creators get priority visibility, first access to gigs, and help shape the platform."}
+              {user ? t("landing.goProDesc") : t("landing.foundingMemberDesc")}
             </p>
             {!user && (
               <p className="text-[10px] text-white/50 mb-4">
-                Free forever · Pro from $29/mo · Save 17% annually
+                {t("landing.pricingNote")}
               </p>
             )}
             <Link
               to={user ? "/subscription" : "/auth"}
               className="inline-flex items-center gap-2 rounded-xl bg-white text-primary px-6 py-3 text-sm font-bold hover:bg-white/90 transition-colors shadow-md"
             >
-              {user ? "Start 7-Day Trial" : "Join Now — It's Free"} <ArrowRight className="h-4 w-4" />
+              {user ? t("landing.startTrial") : t("landing.joinNow")} <ArrowRight className="h-4 w-4" />
             </Link>
             {!user && (
               <p className="text-[10px] text-white/40 mt-3">
-                Built by creatives, for creatives
+                {t("landing.builtByCreatives")}
               </p>
             )}
           </div>
@@ -686,13 +684,13 @@ export const UnifiedHome = () => {
 
         {/* Footer */}
         <div className="flex flex-wrap items-center justify-center gap-4 text-[10px] text-muted-foreground mt-10 pb-4">
-          <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
+          <Link to="/about" className="hover:text-foreground transition-colors">{t("common.about")}</Link>
           <span className="text-border">·</span>
-          <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+          <Link to="/terms" className="hover:text-foreground transition-colors">{t("common.terms")}</Link>
           <span className="text-border">·</span>
-          <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+          <Link to="/privacy" className="hover:text-foreground transition-colors">{t("common.privacy")}</Link>
           <span className="text-border">·</span>
-          <Link to="/community-guidelines" className="hover:text-foreground transition-colors">Guidelines</Link>
+          <Link to="/community-guidelines" className="hover:text-foreground transition-colors">{t("footer.guidelines")}</Link>
         </div>
 
         <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />

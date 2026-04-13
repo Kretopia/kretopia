@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
     const lovableKey = Deno.env.get('LOVABLE_API_KEY');
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    const { user_id, scrape_website } = await req.json();
+    const { user_id, scrape_website, skip_credits } = await req.json();
     if (!user_id) {
       return new Response(JSON.stringify({ error: 'user_id required' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }

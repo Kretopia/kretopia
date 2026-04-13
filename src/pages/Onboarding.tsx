@@ -448,11 +448,11 @@ export default function Onboarding() {
               <div className="text-center space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
                   <Sparkles className="h-3 w-3" />
-                  AI-Powered Setup
+                  Quick Setup — Under 60 seconds
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight">Let's find your profile</h1>
+                <h1 className="text-2xl font-bold tracking-tight">Welcome! Let's set you up</h1>
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                  Enter your name and we'll search the web to build your professional profile automatically.
+                  We can auto-fill your profile from the web, or you can fill it in yourself.
                 </p>
               </div>
 
@@ -538,11 +538,18 @@ export default function Onboarding() {
                 </div>
               )}
 
-              {/* Skip link */}
+              {/* Manual setup — prominent alternative */}
               {!searching && (
-                <button onClick={handleSkipToManual} className="block w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-1">
-                  Skip — I'll fill in my profile manually
-                </button>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+                  <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">or</span></div>
+                </div>
+              )}
+              {!searching && (
+                <Button variant="outline" onClick={handleSkipToManual} className="w-full h-11 gap-2">
+                  <Edit3 className="h-4 w-4" />
+                  Set up manually — it's quick
+                </Button>
               )}
             </div>
           )}

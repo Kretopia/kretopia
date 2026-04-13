@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Loader2, Plus, Zap } from "lucide-react";
+import { Loader2, Plus, Zap, ListChecks } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -100,8 +100,8 @@ export const AIAutomation = ({ projectId, projectTitle, projectDescription, onUp
     <Card className="p-4 bg-secondary/30">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <h3 className="font-semibold text-sm">AI Task Assistant</h3>
+          <ListChecks className="h-4 w-4 text-primary" />
+          <h3 className="font-semibold text-sm">Task Suggestions</h3>
         </div>
         <Button 
           size="sm" 
@@ -119,8 +119,8 @@ export const AIAutomation = ({ projectId, projectTitle, projectDescription, onUp
       
       {suggestions.length === 0 && !generating && (
         <div className="text-center py-8 text-muted-foreground text-sm">
-          <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
-          <p>Click the AI button to generate smart task suggestions</p>
+          <ListChecks className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p>Click the button to get smart task suggestions</p>
         </div>
       )}
 

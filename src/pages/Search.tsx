@@ -234,7 +234,7 @@ const Search = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
-      <SEO title={`Search${searchParams.get("q") ? ` "${searchParams.get("q")}"` : ""} — ThriveIN`} description="AI-powered search across the creative economy." />
+      <SEO title={`Search${searchParams.get("q") ? ` "${searchParams.get("q")}"` : ""} — ThriveIN`} description="Search creators, productions & opportunities across the creative economy." />
 
       <div className="container mx-auto max-w-3xl px-4 sm:px-6 py-6">
         {/* Search bar */}
@@ -278,7 +278,7 @@ const Search = () => {
                         <div className="flex items-center gap-2 mb-0.5">
                           <h3 className="font-bold text-base text-foreground">{kc.name}</h3>
                           <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
-                            <Sparkles className="h-2 w-2 mr-0.5" /> AI Knowledge
+                            <Database className="h-2 w-2 mr-0.5" /> Knowledge Base
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">{kc.industry}</p>
@@ -657,8 +657,8 @@ const Search = () => {
         {/* Empty state */}
         {!loading && !hasQuery && (
           <div className="text-center py-16">
-            <Sparkles className="h-12 w-12 mx-auto mb-4 text-primary/20" />
-            <p className="text-muted-foreground text-sm">AI-powered search across the creative economy</p>
+            <SearchIcon className="h-12 w-12 mx-auto mb-4 text-primary/20" />
+            <p className="text-muted-foreground text-sm">Search across the creative economy</p>
             <p className="text-muted-foreground/60 text-xs mt-1">Try searching for any creator, production, or brand</p>
           </div>
         )}

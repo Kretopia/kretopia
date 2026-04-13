@@ -216,7 +216,7 @@ export const SupportDialog = ({ open: controlledOpen, onOpenChange }: SupportDia
             )}
           </div>
           <DialogDescription>
-            Get instant help from our AI assistant. Complex issues will be escalated to our team.
+            Get instant help from our support assistant. Complex issues will be escalated to our team.
           </DialogDescription>
         </DialogHeader>
 

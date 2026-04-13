@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
@@ -102,8 +102,8 @@ Make it professional but approachable. Use language that appeals to creative pro
   const generatorContent = (
     <div className="space-y-3 p-4 rounded-lg border border-primary/20 bg-primary/5">
       <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-        <Sparkles className="h-4 w-4" />
-        AI Job Description Generator
+        <Wand2 className="h-4 w-4" />
+        Smart Brief Writer
       </div>
       <div className="space-y-2">
         <Label htmlFor="ai-brief" className="text-sm text-muted-foreground">
@@ -145,8 +145,8 @@ Make it professional but approachable. Use language that appeals to creative pro
   return (
     <FreeTierGate
       feature="aiJobDescriptions"
-      featureLabel="AI Job Description Generator"
-      description="Upgrade to Pro for unlimited AI-generated job descriptions."
+      featureLabel="Smart Brief Writer"
+      description="Upgrade to Pro for unlimited smart brief generation."
     >
       {generatorContent}
     </FreeTierGate>

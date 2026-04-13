@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, Users, TrendingUp, BarChart3, ArrowUpRight, ArrowDownRight, Clock, Sparkles } from "lucide-react";
+import { Eye, Users, TrendingUp, BarChart3, ArrowUpRight, ArrowDownRight, Clock, Lightbulb } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, ResponsiveContainer } from "recharts";
 import { ProGate } from "@/components/project/ProGate";
@@ -186,7 +186,7 @@ export function OpportunityAnalytics({ userId, isPro, opportunities, selectedOpp
         <FeatureLockedBanner
           feature="Full Analytics Dashboard"
           tier="pro"
-          description="Unlock detailed views, conversion rates, trend charts, and AI-powered insights for all your opportunities."
+          description="Unlock detailed views, conversion rates, trend charts, and performance insights for all your opportunities."
         />
       </div>
     );
@@ -264,7 +264,7 @@ export function OpportunityAnalytics({ userId, isPro, opportunities, selectedOpp
       {topInsight && (
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="flex items-start gap-3 py-4">
-            <Sparkles className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+            <Lightbulb className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <div>
               <p className="text-sm font-semibold text-primary mb-1">Insight</p>
               <p className="text-sm text-muted-foreground">{topInsight}</p>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Sparkles, Trash2, Loader2, Plus, MessageSquare, ChevronLeft } from "lucide-react";
+import { Send, MessageCircle, Trash2, Loader2, Plus, MessageSquare, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -231,12 +231,12 @@ const AIChatTab = () => {
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-6 py-8">
             <div className="p-4 rounded-full bg-gradient-to-br from-primary/20 to-primary/5">
-              <Sparkles className="h-8 w-8 text-primary" />
+              <MessageCircle className="h-8 w-8 text-primary" />
             </div>
             <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold">ThriveAI Assistant</h3>
+              <h3 className="text-lg font-semibold">ThriveIN Assistant</h3>
               <p className="text-sm text-muted-foreground max-w-md">
-                Your personal AI for pitches, pricing, outreach, contracts, and creative strategy. I know your profile and can give personalized advice.
+                Your personal helper for pitches, pricing, outreach, contracts, and creative strategy. Personalized to your profile.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">

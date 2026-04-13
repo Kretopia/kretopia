@@ -29,6 +29,8 @@ export async function sendPushNotification(params: SendPushNotificationParams) {
         message: body,
         type,
         link: link || null,
+        action_url: link || null,
+        action_text: type === 'match' ? 'Send Message' : type === 'message' ? 'View Message' : type === 'opportunity' ? 'View Applicants' : 'View',
         image_url: icon || null,
         priority: type === 'match' || type === 'message' ? 'high' : 'normal',
         category: type,

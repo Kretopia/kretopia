@@ -230,7 +230,6 @@ export function WalletXPSection() {
     { id: "gift_xp", name: "Gift 100 TP", description: "Send 100 Thrive Points to another creator.", cost: 150, icon: <Gift className="h-5 w-5 text-green-400" />, action: async () => {}, available: true },
   ];
 
-  const tier = getTierByPoints(userXP);
   const nextLevelXP = (userLevel) * (userLevel) * 100;
   const progress = Math.min(100, (userXP / nextLevelXP) * 100);
 

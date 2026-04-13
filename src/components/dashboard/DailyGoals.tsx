@@ -41,15 +41,6 @@ export function DailyGoals() {
       
       // If goal just became completed
       if (goal.completed && (!previousGoal || !previousGoal.completed)) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        // Check if XP was already awarded today for this goal
-        const alreadyAwarded = await hasReceivedXPToday(user.id, `daily_goal_${goal.id}`);
-        if (alreadyAwarded) return;
-
-        // Award XP based on goal type
-        let activityType: any;
         switch (goal.id) {
           case 'login':
             // Goals now tracked for completion only, no XP awards

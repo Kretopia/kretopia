@@ -407,7 +407,7 @@ const RewardsShop = () => {
     { id: "upgrades", label: "Upgrades", icon: <Crown className="h-4 w-4" /> },
   ];
 
-  const tier = getTierByPoints(userXP);
+  // Tier display removed — status is reputation-based
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6 pb-24 sm:pb-6">

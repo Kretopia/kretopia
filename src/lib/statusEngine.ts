@@ -78,19 +78,18 @@ export function getTierIndex(tier: StatusTier): number {
 
 interface TierGate {
   credits: number;
-  endorsements: number;
   awards: number;
   press: number;
-  awardsOrPress?: boolean; // true = awards OR press satisfies gate
+  awardsOrPress?: boolean;
 }
 
 const TIER_GATE_MAP: Record<StatusTier, TierGate> = {
-  hobbyist:     { credits: 0,   endorsements: 0,  awards: 0, press: 0 },
-  freelancer:   { credits: 5,   endorsements: 0,  awards: 0, press: 0 },
-  thriver:      { credits: 20,  endorsements: 2,  awards: 0, press: 0 },
-  professional: { credits: 50,  endorsements: 5,  awards: 0, press: 0 },
-  celebrity:    { credits: 80,  endorsements: 10, awards: 2, press: 3, awardsOrPress: true },
-  icon:         { credits: 120, endorsements: 20, awards: 3, press: 5 },
+  hobbyist:     { credits: 0,   awards: 0, press: 0 },
+  freelancer:   { credits: 5,   awards: 0, press: 0 },
+  thriver:      { credits: 20,  awards: 0, press: 0 },
+  professional: { credits: 50,  awards: 0, press: 0 },
+  celebrity:    { credits: 80,  awards: 2, press: 3, awardsOrPress: true },
+  icon:         { credits: 120, awards: 3, press: 5 },
 };
 
 interface TierMeta {
@@ -156,8 +155,9 @@ const TIER_META: Record<StatusTier, TierMeta> = {
 // ─── Career Tier Calculation (Hard-Gated) ────────────────────────────
 
 function meetsGate(metrics: StatusMetrics, gate: TierGate): boolean {
-  if (metrics.totalCredits < gate.credits) return false;
-  if (metrics.endorsementCount < gate.endorsements) return false;
+  // Endorsements act as accelerators: each counts as +0.5 effective credits
+  const effectiveCredits = metrics.totalCredits + (metrics.endorsementCount * 0.5);
+  if (effectiveCredits < gate.credits) return false;
 
   // Awards/press gate
   if (gate.awardsOrPress) {
@@ -186,12 +186,11 @@ function calculateMatchedTier(metrics: StatusMetrics): StatusTier {
 
 /** Career score 0-100 for progress visualization (not used for tier gating) */
 function calculateCareerScore(metrics: StatusMetrics): number {
-  // Weighted combination for display purposes
-  const creditScore = Math.min(50, (metrics.totalCredits / 120) * 50);
-  const endorseScore = Math.min(20, (metrics.endorsementCount / 20) * 20);
+  const creditScore = Math.min(55, (metrics.totalCredits / 120) * 55);
+  const endorseBonus = Math.min(15, (metrics.endorsementCount / 15) * 15);
   const awardScore = Math.min(15, (metrics.awardCount / 3) * 15);
   const pressScore = Math.min(15, (metrics.pressCount / 5) * 15);
-  return Math.min(100, creditScore + endorseScore + awardScore + pressScore);
+  return Math.min(100, creditScore + endorseBonus + awardScore + pressScore);
 }
 
 // ─── Network Role Calculation (Independent Axis) ─────────────────────
@@ -250,14 +249,6 @@ export function calculateStatus(metrics: StatusMetrics): StatusResult {
         current: metrics.totalCredits,
         needed: nextGate.credits,
         category: "credits",
-      });
-    }
-    if (nextGate.endorsements > 0 && metrics.endorsementCount < nextGate.endorsements) {
-      progress.push({
-        label: "Endorsements",
-        current: metrics.endorsementCount,
-        needed: nextGate.endorsements,
-        category: "accelerators",
       });
     }
     if (nextGate.awards > 0 && metrics.awardCount < nextGate.awards) {

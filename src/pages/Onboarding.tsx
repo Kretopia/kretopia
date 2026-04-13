@@ -144,6 +144,12 @@ export default function Onboarding() {
     setNotFound(false);
 
     try {
+      // Add timeout to prevent infinite hanging
+      const timeoutMs = 25000;
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Search timed out")), timeoutMs)
+      );
+
       // Parallel: AI autofill + import from URL if provided
       const promises: Promise<any>[] = [
         supabase.functions.invoke("ai-autofill-profile", {
@@ -159,7 +165,10 @@ export default function Onboarding() {
         );
       }
 
-      const results = await Promise.all(promises);
+      const results = await Promise.race([
+        Promise.all(promises),
+        timeoutPromise,
+      ]);
 
       const autofillData = results[0]?.data?.profile;
       const importData = results[1]?.data;

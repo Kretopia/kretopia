@@ -266,7 +266,7 @@ export const HeroSection = () => {
                 ))}
                 {query.trim().length >= 2 && suggestions.length > 0 && (
                   <button onClick={handleSubmit as any} className="w-full px-4 py-3 text-sm text-primary font-medium hover:bg-muted/50 transition-colors border-t border-border flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" /> Deep search for "{query}"
+                    <Search className="h-4 w-4" /> Deep search for "{query}"
                   </button>
                 )}
               </div>

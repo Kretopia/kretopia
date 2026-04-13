@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useState, useEffect, memo } from "react";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+
 
 interface NavbarProps {
   user?: SupabaseUser | null;
@@ -185,12 +185,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
           </div>
         )}
 
-        <div className="flex items-center gap-1 sm:gap-3">
+        <div className="flex items-center gap-1 sm:gap-3 ml-auto">
           {!isLandingPage && (
             <div className="flex items-center gap-0.5">
               {/* Mobile search toggle - only show for signed-in users */}
               {user && (
-                <Button variant="ghost" size="icon" className="h-9 w-9 sm:hidden" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
+                <Button variant="ghost" size="icon" className="h-9 w-9 sm:hidden shrink-0" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
                   <Search className="h-5 w-5" />
                 </Button>
               )}
@@ -207,8 +207,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
             </div>
           )}
           
-          <LanguageSwitcher />
-          <ThemeToggle />
+           <ThemeToggle />
           
           {user && !isLandingPage ? (
             <Sheet open={isOpen} onOpenChange={setIsOpen}>

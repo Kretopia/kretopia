@@ -76,9 +76,11 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const extractedThumb = extractThumbnailForStorage(newCredit.url || null, newCredit.primary_media_url || null);
       const { data: insertedData, error } = await supabase.from("credits").insert({
         user_id: user.id,
         ...newCredit,
+        thumbnail_url: newCredit.thumbnail_url || extractedThumb,
       }).select().single();
 
       if (error) throw error;

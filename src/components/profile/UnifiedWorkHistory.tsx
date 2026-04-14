@@ -229,6 +229,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const extractedThumb = extractThumbnailForStorage(newCredit.url || null);
       const { data: insertedData, error } = await supabase.from("credits").insert({
         user_id: user.id,
         project_name: newCredit.project_name,
@@ -238,6 +239,7 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
         url: newCredit.url || null,
         project_type: newCredit.project_type || null,
         credit_category: newCredit.project_type || null,
+        thumbnail_url: extractedThumb,
       }).select().single();
       if (error) throw error;
 

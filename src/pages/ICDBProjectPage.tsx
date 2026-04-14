@@ -108,6 +108,7 @@ const ICDBProjectPage = () => {
     setClaiming(role.id);
     try {
       await supabase.from("icdb_project_roles").update({ claimed_by: currentUserId, is_claimed: true }).eq("id", role.id);
+      const extractedThumb = extractThumbnailForStorage(project!.external_url || null);
       await supabase.from("credits").insert({
         user_id: currentUserId,
         project_name: project!.title,
@@ -119,6 +120,7 @@ const ICDBProjectPage = () => {
         project_type: project!.type,
         verification_status: "verified",
         url: project!.external_url,
+        thumbnail_url: extractedThumb,
       });
       toast.success("Credit claimed!");
       fetchProject();

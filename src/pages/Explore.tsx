@@ -41,7 +41,7 @@ const Explore = () => {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-6 pb-28">
           <h1 className="text-2xl font-extrabold text-foreground mb-1">Explore</h1>
-          <p className="text-sm text-muted-foreground mb-6">Discover what's happening in the creative world</p>
+          <p className="text-sm text-muted-foreground mb-6">Discover what's happening on the platform</p>
 
           {/* ── TRENDING CREDITS ── */}
           <section className="mb-10">

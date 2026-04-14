@@ -72,23 +72,162 @@ export const UnifiedHome = () => {
     return () => clearInterval(interval);
   }, [user]);
 
-  // Fetch public dashboard data
+  // Fetch public dashboard data + personalized data for auth users
   useEffect(() => {
     const fetchPublic = async () => {
+      // Get user profile for personalization if logged in
+      let myProfile: any = null;
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("role, professional_skills, passion_skills, location")
+          .eq("user_id", user.id)
+          .single();
+        myProfile = data;
+      }
+
+      // Build skill keywords for matching
+      const mySkills: string[] = [];
+      if (myProfile) {
+        if (Array.isArray(myProfile.professional_skills)) mySkills.push(...myProfile.professional_skills);
+        else if (myProfile.professional_skills) mySkills.push(...Object.keys(myProfile.professional_skills));
+        if (Array.isArray(myProfile.passion_skills)) mySkills.push(...myProfile.passion_skills);
+        else if (myProfile.passion_skills) mySkills.push(...Object.keys(myProfile.passion_skills));
+      }
+      const myRole = myProfile?.role || "";
+      const myLocation = myProfile?.location || "";
+
+      // Fetch credits — if auth, try to match by user's role/category first
+      let creditsQuery = supabase
+        .from("credits")
+        .select("id, project_name, role, verification_status, credit_category, thumbnail_url, primary_media_url, url, project_type, user_id, year")
+        .not("thumbnail_url", "is", null)
+        .order("created_at", { ascending: false });
+
+      // For auth users, exclude own credits and prioritize relevant categories
+      if (user) {
+        creditsQuery = creditsQuery.neq("user_id", user.id);
+      }
+
+      // Fetch gigs — for auth users, try to match skills in title/type
+      let gigsQuery = supabase
+        .from("opportunities")
+        .select("id, title, type, location, created_at, skills_required")
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      // Fetch creators — exclude self for auth users
+      let creatorsQuery = supabase
+        .from("profiles")
+        .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills")
+        .eq("onboarding_completed", true)
+        .not("avatar_url", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (user) {
+        creatorsQuery = creatorsQuery.neq("user_id", user.id);
+      }
+
       const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs, eventsRes] = await Promise.all([
-        supabase.from("credits").select("id, project_name, role, verification_status, credit_category, thumbnail_url, primary_media_url, url, project_type, user_id, year").not("thumbnail_url", "is", null).order("created_at", { ascending: false }).limit(8),
-        supabase.from("profiles").select("user_id, full_name, avatar_url, role, verification_tier").eq("onboarding_completed", true).not("avatar_url", "is", null).order("created_at", { ascending: false }).limit(10),
-        supabase.from("opportunities").select("id, title, type, location, created_at").eq("status", "active").order("created_at", { ascending: false }).limit(3),
+        creditsQuery.limit(20),
+        creatorsQuery,
+        gigsQuery,
         supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
         supabase.from("credits").select("id", { count: "exact", head: true }),
         supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "active"),
         supabase.from("creative_jams").select("id, title, start_time, venue_name, category, cover_image_url, created_by").eq("is_public", true).gte("start_time", new Date().toISOString()).order("start_time", { ascending: true }).limit(4),
       ]);
-      const credits = creditsRes.data || [];
+
+      // ── Personalize credits: score by relevance to user's role/skills ──
+      let credits = creditsRes.data || [];
+      if (user && mySkills.length > 0 && credits.length > 0) {
+        const skillsLower = mySkills.map(s => s.toLowerCase());
+        const roleLower = myRole.toLowerCase();
+        credits = credits
+          .map((c: any) => {
+            let relevance = 0;
+            const cRole = (c.role || "").toLowerCase();
+            const cCategory = (c.credit_category || "").toLowerCase();
+            const cProject = (c.project_name || "").toLowerCase();
+            // Role match
+            if (roleLower && (cRole.includes(roleLower) || cCategory.includes(roleLower))) relevance += 3;
+            // Skill match
+            skillsLower.forEach(sk => {
+              if (cRole.includes(sk) || cCategory.includes(sk) || cProject.includes(sk)) relevance += 2;
+            });
+            // Verified bonus
+            if (c.verification_status === "verified") relevance += 1;
+            return { ...c, _relevance: relevance };
+          })
+          .sort((a: any, b: any) => b._relevance - a._relevance)
+          .slice(0, 8);
+      } else {
+        credits = credits.slice(0, 8);
+      }
       setTrendingCredits(credits);
-      const creators = creatorsRes.data || [];
+
+      // ── Personalize gigs: score by skill match ──
+      let gigs = gigsRes.data || [];
+      if (user && mySkills.length > 0 && gigs.length > 0) {
+        const skillsLower = mySkills.map(s => s.toLowerCase());
+        const roleLower = myRole.toLowerCase();
+        gigs = gigs
+          .map((g: any) => {
+            let relevance = 0;
+            const title = (g.title || "").toLowerCase();
+            const type = (g.type || "").toLowerCase();
+            const required = Array.isArray(g.skills_required) ? g.skills_required.map((s: string) => s.toLowerCase()) : [];
+            // Direct skill match
+            skillsLower.forEach(sk => {
+              if (required.some((r: string) => r.includes(sk) || sk.includes(r))) relevance += 3;
+              if (title.includes(sk)) relevance += 2;
+            });
+            // Role match
+            if (roleLower && (title.includes(roleLower) || type.includes(roleLower))) relevance += 2;
+            // Location match
+            if (myLocation && g.location && g.location.toLowerCase().includes(myLocation.toLowerCase().split(",")[0].trim())) relevance += 1;
+            return { ...g, _relevance: relevance };
+          })
+          .sort((a: any, b: any) => b._relevance - a._relevance)
+          .slice(0, 3);
+      } else {
+        gigs = gigs.slice(0, 3);
+      }
+      setActiveGigs(gigs);
+
+      // ── Personalize creators: prioritize complementary roles + same location ──
+      let creators = creatorsRes.data || [];
+      if (user && creators.length > 0) {
+        const skillsLower = mySkills.map(s => s.toLowerCase());
+        const roleLower = myRole.toLowerCase();
+        const locationCity = myLocation.toLowerCase().split(",")[0].trim();
+        creators = creators
+          .map((c: any) => {
+            let relevance = 0;
+            const cRole = (c.role || "").toLowerCase();
+            const cLocation = (c.location || "").toLowerCase();
+            const cSkills = Array.isArray(c.professional_skills)
+              ? c.professional_skills.map((s: string) => s.toLowerCase())
+              : Object.keys(c.professional_skills || {}).map(s => s.toLowerCase());
+            // Complementary skills (they have skills I don't)
+            cSkills.forEach((cs: string) => {
+              if (!skillsLower.includes(cs)) relevance += 2; // complementary
+              if (skillsLower.includes(cs)) relevance += 1; // shared interest
+            });
+            // Same industry/role area
+            if (roleLower && cRole && cRole !== roleLower) relevance += 1; // different role = complementary
+            // Location match
+            if (locationCity && cLocation.includes(locationCity)) relevance += 3;
+            // Verified bonus
+            if (c.verification_tier === "verified" || c.verification_tier === "pro") relevance += 1;
+            return { ...c, _relevance: relevance };
+          })
+          .sort((a: any, b: any) => b._relevance - a._relevance)
+          .slice(0, 10);
+      }
       setFeaturedCreators(creators);
-      setActiveGigs(gigsRes.data || []);
+
       setUpcomingEvents(eventsRes.data || []);
       setStats({ creators: statsCreators.count || 0, credits: statsCredits.count || 0, gigs: statsGigs.count || 0 });
 
@@ -110,7 +249,7 @@ export const UnifiedHome = () => {
       }
     };
     fetchPublic();
-  }, []);
+  }, [user]);
 
   // Live activity ticker
   useEffect(() => {

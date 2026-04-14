@@ -2,7 +2,7 @@ import { AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FramedAvatar } from "@/components/ui/framed-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, UserCheck, IdCard, Shield, Clock, Youtube, Instagram, Music, Twitter, Linkedin } from "lucide-react";
+import { MapPin, Star, MessageCircle, Share2, Edit, Camera, Briefcase, QrCode, Sparkles, UserCheck, IdCard, Shield, Clock, Youtube, Instagram, Music, Twitter, Linkedin, FileDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { calculateStatusFromCredits, type StatusResult } from "@/lib/statusEngine";
 import { AchievementBadges } from "./AchievementBadges";
@@ -31,6 +31,7 @@ interface ProfileHeroProps {
   skills?: any[];
   onShowQR?: () => void;
   onCreatorCard?: () => void;
+  onEPKEditor?: () => void;
   onStartProject?: () => void;
   isFromMatch?: boolean;
   onRefresh?: () => void;
@@ -56,6 +57,7 @@ export const ProfileHero = ({
   skills = [],
   onShowQR,
   onCreatorCard,
+  onEPKEditor,
   onStartProject,
   isFromMatch,
   onRefresh,
@@ -364,10 +366,16 @@ export const ProfileHero = ({
                 <Edit className="h-3.5 w-3.5" />
                 Edit Profile
               </Button>
-              <Button variant="outline" size="sm" className="h-9" onClick={onShare}>
-                <Share2 className="h-3.5 w-3.5" />
-              </Button>
-              {dashboardTrigger}
+               <Button variant="outline" size="sm" className="h-9" onClick={onShare}>
+                 <Share2 className="h-3.5 w-3.5" />
+               </Button>
+               {onEPKEditor && (
+                 <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={onEPKEditor}>
+                   <FileDown className="h-3.5 w-3.5" />
+                   EPK
+                 </Button>
+               )}
+               {dashboardTrigger}
             </>
           ) : isUnclaimedProfile ? (
             <>

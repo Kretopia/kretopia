@@ -28,6 +28,7 @@ import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
 import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
+import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
 

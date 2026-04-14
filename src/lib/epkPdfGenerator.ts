@@ -476,7 +476,10 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...COLORS.white);
-    doc.text(`${profile.full_name} — EPK  •  thrivein.io/epk/${encodeURIComponent(profile.full_name?.toLowerCase().replace(/\s+/g, '-') || 'creator')}`, PAGE_W / 2, PAGE_H - 5, { align: 'center' });
+    const footerText = brandingOptions?.tagline 
+      ? `${profile.full_name} — ${brandingOptions.tagline}`
+      : `${profile.full_name} — EPK  •  thrivein.io/epk/${encodeURIComponent(profile.full_name?.toLowerCase().replace(/\s+/g, '-') || 'creator')}`;
+    doc.text(footerText, PAGE_W / 2, PAGE_H - 5, { align: 'center' });
     // Page number
     doc.setFontSize(7);
     doc.text(`${i} / ${pageCount}`, PAGE_W - MARGIN, PAGE_H - 5, { align: 'right' });

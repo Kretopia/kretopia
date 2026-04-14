@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { sendEventConfirmationEmail } from "@/utils/eventConfirmationEmail";
 import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
@@ -109,10 +110,22 @@ const EventPage = () => {
         setParticipantCount(prev => prev - 1);
         toast({ title: "Left event" });
       } else {
-        await supabase.from('jam_participants').insert({ jam_id: event.id, user_id: user.id, status: 'going' });
+        const { data: inserted } = await supabase.from('jam_participants').insert({ jam_id: event.id, user_id: user.id, status: 'going' }).select('id, check_in_token').single();
         setParticipation('going');
         setParticipantCount(prev => prev + 1);
         toast({ title: "You're in!", description: "You've joined this event" });
+        if (inserted) {
+          sendEventConfirmationEmail({
+            eventId: event.id,
+            eventTitle: event.title,
+            startTime: event.start_time,
+            endTime: event.end_time,
+            venueName: event.venue_name,
+            venueAddress: event.venue_address,
+            isTicketed: false,
+            participantId: inserted.id,
+          });
+        }
       }
     } catch {
       toast({ title: "Error", description: "Failed to update", variant: "destructive" });

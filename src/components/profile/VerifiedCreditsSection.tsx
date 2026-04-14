@@ -11,6 +11,7 @@ import {
   Megaphone, Briefcase,
 } from "lucide-react";
 import { CreditCoverPlaceholder } from "./CreditCoverPlaceholder";
+import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 import { cn } from "@/lib/utils";
 
 interface VerifiedCredit {
@@ -24,6 +25,9 @@ interface VerifiedCredit {
   metadata: any;
   verification_url: string;
   verified_at: string;
+  thumbnail_url?: string | null;
+  primary_media_url?: string | null;
+  url?: string | null;
 }
 
 interface VerifiedCreditsSectionProps {
@@ -190,7 +194,11 @@ function CreditCard({ credit, isOwnProfile, onDelete, isDeleting }: {
 }) {
   const Icon = CREDIT_TYPE_ICONS[credit.credit_type] || Film;
   const sourceColor = SOURCE_COLORS[credit.source] || 'bg-gray-500';
-  const thumbnailUrl = credit.metadata?.posterUrl || credit.metadata?.imageUrl || credit.metadata?.thumbUrl || credit.metadata?.thumbnailUrl;
+  const thumbnailUrl = resolveCreditThumbnail(
+    credit.thumbnail_url, 
+    credit.primary_media_url, 
+    credit.url
+  ) || credit.metadata?.posterUrl || credit.metadata?.imageUrl || credit.metadata?.thumbUrl || credit.metadata?.thumbnailUrl;
 
   return (
     <div className="flex-shrink-0 w-[160px] group/card">
@@ -314,6 +322,9 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
         metadata: c.metadata,
         verification_url: c.verification_url || c.url || '',
         verified_at: c.metadata?.verified_at || c.created_at,
+        thumbnail_url: c.thumbnail_url,
+        primary_media_url: c.primary_media_url,
+        url: c.url,
       }));
       setCredits(mapped);
     } catch (error) {

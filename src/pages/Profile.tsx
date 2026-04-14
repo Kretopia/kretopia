@@ -471,6 +471,72 @@ const ProfileContent = () => {
         onCropComplete={handleCropComplete}
         isUploadingAvatar={isUploadingAvatar}
       />
+
+      {/* EPK PDF Editor */}
+      {profile && (
+        <EPKPdfEditor
+          open={isEPKEditorOpen}
+          onClose={() => setIsEPKEditorOpen(false)}
+          userId={profile.user_id}
+          epkData={{
+            profile: {
+              full_name: profile.full_name,
+              role: profile.role,
+              job_title: profile.job_title,
+              bio: profile.bio,
+              location: profile.location,
+              avatar_url: profile.avatar_url,
+              website: profile.website,
+              calendly_url: profile.calendly_url,
+              linkedin_url: profile.linkedin_url,
+              instagram_url: profile.instagram_url,
+              twitter_url: profile.twitter_url,
+              youtube_url: profile.youtube_url,
+              spotify_url: profile.spotify_url,
+              behance_url: profile.behance_url,
+              imdb_url: profile.imdb_url,
+              soundcloud_url: profile.soundcloud_url,
+              average_rating: profile.average_rating,
+              total_reviews: profile.total_reviews,
+              professional_skills: profile.professional_skills,
+              passion_skills: profile.passion_skills,
+              collab_intent: profile.collab_intent,
+              rate_range: profile.rate_range,
+              cover_image_url: profile.cover_image_url,
+              verification_tier: profile.verification_tier,
+              verification_status: profile.verification_status,
+            },
+            credits: (credits || []).map((c: any) => ({
+              id: c.id,
+              project_name: c.project_name,
+              role: c.role,
+              year: c.year,
+              platform: c.platform,
+              isVerified: c.verification_status === 'verified',
+            })),
+            awards: (awards || []).map((a: any) => ({
+              title: a.title,
+              organization: a.organization,
+              year: a.year,
+            })),
+            pressLinks: (pressLinks || []).map((p: any) => ({
+              title: p.title,
+              publication: p.publication,
+              url: p.url,
+            })),
+            industryStats: (industryStats || []).map((s: any) => ({
+              title: s.title,
+              value: s.value,
+              issuer: s.issuer,
+            })),
+            reviews: (reviews || []).map((r: any) => ({
+              reviewer_name: r.reviewer_name || 'Verified Client',
+              rating: r.rating,
+              review_text: r.review_text,
+            })),
+          }}
+        />
+      )}
     </div>
   );
 };

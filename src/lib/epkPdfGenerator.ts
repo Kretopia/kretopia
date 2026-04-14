@@ -163,10 +163,10 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
     y += 6;
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...BRAND.primary);
+    doc.setTextColor(...COLORS.primary);
     doc.text(title.toUpperCase(), MARGIN, y);
     y += 2;
-    doc.setDrawColor(...BRAND.primary);
+    doc.setDrawColor(...COLORS.primary);
     doc.setLineWidth(0.5);
     doc.line(MARGIN, y, MARGIN + 30, y);
     y += 6;
@@ -177,11 +177,11 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
   // ============================================================
   
   // Dark header band
-  doc.setFillColor(...BRAND.dark);
+  doc.setFillColor(...COLORS.dark);
   doc.rect(0, 0, PAGE_W, 120, 'F');
 
   // Accent line
-  doc.setFillColor(...BRAND.primary);
+  doc.setFillColor(...COLORS.primary);
   doc.rect(0, 120, PAGE_W, 3, 'F');
 
   // Avatar (circular placeholder — draw a circle, try to embed image)
@@ -197,34 +197,34 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
     }
   }
   // Circle border around avatar
-  doc.setDrawColor(...BRAND.primary);
+  doc.setDrawColor(...COLORS.primary);
   doc.setLineWidth(1.5);
   doc.circle(avatarX, avatarY, avatarSize / 2);
 
   // Name
   doc.setFontSize(26);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(...BRAND.white);
+  doc.setTextColor(...COLORS.white);
   doc.text(profile.full_name || 'Creator', PAGE_W / 2, 78, { align: 'center' });
 
   // Title
   const displayRole = profile.job_title || profile.role || 'Creative Professional';
   doc.setFontSize(13);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(...BRAND.accent);
+  doc.setTextColor(...COLORS.accent);
   doc.text(displayRole, PAGE_W / 2, 88, { align: 'center' });
 
   // Location
   if (profile.location) {
     doc.setFontSize(10);
-    doc.setTextColor(...BRAND.muted);
+    doc.setTextColor(...COLORS.muted);
     doc.text(`📍 ${profile.location}`, PAGE_W / 2, 97, { align: 'center' });
   }
 
   // Verification badge
   if (profile.verification_tier || profile.verification_status === 'verified') {
     doc.setFontSize(9);
-    doc.setTextColor(...BRAND.accent);
+    doc.setTextColor(...COLORS.accent);
     const badge = profile.verification_tier === 'elite' ? '✦ Elite Verified' 
                 : profile.verification_tier === 'industry' ? '✦ Industry Verified' 
                 : '✓ Verified Creator';
@@ -253,7 +253,7 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
   if (statsRow.length > 0) {
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...BRAND.primary);
+    doc.setTextColor(...COLORS.primary);
     doc.text(statsRow.join('  •  '), PAGE_W / 2, y, { align: 'center' });
     y += 10;
   }
@@ -337,14 +337,14 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
       // Project name
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(...BRAND.dark);
+      doc.setTextColor(...COLORS.dark);
       doc.text(`${name}${verifiedTag}`, MARGIN, y);
       
       // Year on the right
       if (credit.year) {
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
-        doc.setTextColor(...BRAND.muted);
+        doc.setTextColor(...COLORS.muted);
         doc.text(String(credit.year), PAGE_W - MARGIN, y, { align: 'right' });
       }
       y += 5;
@@ -370,13 +370,13 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
       checkPageBreak(10);
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(...BRAND.dark);
+      doc.setTextColor(...COLORS.dark);
       doc.text(decodeHtml(press.title), MARGIN, y);
       y += 5;
       if (press.publication) {
         doc.setFontSize(9);
         doc.setFont("helvetica", "italic");
-        doc.setTextColor(...BRAND.muted);
+        doc.setTextColor(...COLORS.muted);
         doc.text(press.publication, MARGIN, y);
         y += 5;
       }
@@ -392,12 +392,12 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
       checkPageBreak(10);
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(...BRAND.dark);
+      doc.setTextColor(...COLORS.dark);
       doc.text(`🏆 ${award.title}`, MARGIN, y);
       y += 5;
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(...BRAND.muted);
+      doc.setTextColor(...COLORS.muted);
       doc.text(`${award.organization}${award.year ? ` • ${award.year}` : ''}`, MARGIN, y);
       y += 7;
     });
@@ -414,16 +414,16 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
       checkPageBreak(10);
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(...BRAND.primary);
+      doc.setTextColor(...COLORS.primary);
       doc.text(stat.value || '', MARGIN, y);
       const valueWidth = stat.value ? doc.getTextWidth(stat.value) + 3 : 0;
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(...BRAND.dark);
+      doc.setTextColor(...COLORS.dark);
       doc.text(stat.title, MARGIN + valueWidth, y);
       y += 5;
       if (stat.issuer) {
         doc.setFontSize(8);
-        doc.setTextColor(...BRAND.muted);
+        doc.setTextColor(...COLORS.muted);
         doc.text(stat.issuer, MARGIN, y);
         y += 4;
       }
@@ -443,12 +443,12 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
       // Stars
       const stars = '★'.repeat(Math.round(review.rating)) + '☆'.repeat(5 - Math.round(review.rating));
       doc.setFontSize(10);
-      doc.setTextColor(...BRAND.primary);
+      doc.setTextColor(...COLORS.primary);
       doc.text(stars, MARGIN, y);
       if (review.reviewer_name) {
         doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(...BRAND.dark);
+        doc.setTextColor(...COLORS.dark);
         doc.text(`— ${review.reviewer_name}`, MARGIN + doc.getTextWidth(stars) + 3, y);
       }
       y += 5;
@@ -471,11 +471,11 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     // Bottom accent line
-    doc.setFillColor(...BRAND.primary);
+    doc.setFillColor(...COLORS.primary);
     doc.rect(0, PAGE_H - 12, PAGE_W, 12, 'F');
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(...BRAND.white);
+    doc.setTextColor(...COLORS.white);
     doc.text(`${profile.full_name} — EPK  •  thrivein.io/epk/${encodeURIComponent(profile.full_name?.toLowerCase().replace(/\s+/g, '-') || 'creator')}`, PAGE_W / 2, PAGE_H - 5, { align: 'center' });
     // Page number
     doc.setFontSize(7);

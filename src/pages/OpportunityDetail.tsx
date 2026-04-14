@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit, Copy, Trash2, PauseCircle, PlayCircle, Loader2, MoreVertical } from "lucide-react";
+import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit, Copy, Trash2, PauseCircle, PlayCircle, Loader2, MoreVertical, Radar } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Helmet } from "react-helmet-async";
@@ -366,6 +366,23 @@ const OpportunityDetail = () => {
                     <DropdownMenuItem onClick={() => handleStatusChange('active')}>
                       <PlayCircle className="h-4 w-4 mr-2" /> Reopen Gig
                     </DropdownMenuItem>
+                  )}
+                  {opportunity.scouted_by === user?.id && (opportunity as any).claim_token && (opportunity as any).claim_status === 'unclaimed' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => {
+                        const claimUrl = `${window.location.origin}/claim-gig/${(opportunity as any).claim_token}`;
+                        const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
+                        if (navigator.share) {
+                          navigator.share({ title: "Claim your gig on ThriveIN", text: shareText, url: claimUrl }).catch(() => {});
+                        } else {
+                          navigator.clipboard.writeText(shareText);
+                          toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
+                        }
+                      }}>
+                        <Radar className="h-4 w-4 mr-2" /> Share Claim Link
+                      </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleDuplicate}>

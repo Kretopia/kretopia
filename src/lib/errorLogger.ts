@@ -48,10 +48,17 @@ export function setupGlobalErrorLogging() {
 
   window.addEventListener("unhandledrejection", (event) => {
     const reason = event.reason;
-    const errorMsg = reason instanceof Error ? reason : String(reason);
+    const errorMsg = reason instanceof Error 
+      ? reason 
+      : String(reason || 'Unknown rejection');
     logClientError(
       errorMsg,
-      "UnhandledPromiseRejection"
+      "UnhandledPromiseRejection",
+      { 
+        reasonType: typeof reason,
+        reasonConstructor: reason?.constructor?.name,
+        stack: reason?.stack?.slice(0, 2000),
+      }
     );
   });
 }

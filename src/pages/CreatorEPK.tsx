@@ -136,7 +136,7 @@ const CreatorEPK = () => {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setCurrentUserId(data.user?.id || null);
-    });
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {

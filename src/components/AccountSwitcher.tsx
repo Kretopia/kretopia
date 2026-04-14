@@ -48,7 +48,7 @@ export const AccountSwitcher = ({ currentAccountType, onSwitch, onManagerModeCha
       .maybeSingle()
       .then(({ data }) => {
         if (data?.is_manager_mode) setIsManagerMode(true);
-      });
+      }, () => {});
   }, [user?.id]);
 
   const toggleManagerMode = async (enabled: boolean) => {

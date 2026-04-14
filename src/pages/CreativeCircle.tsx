@@ -37,7 +37,7 @@ const CreativeCircle = () => {
         if (data?.[0]) {
           setPersonalLink(`https://www.thrivein.io/join/${data[0].invite_code}`);
         }
-      });
+      }, () => {});
   }, [user]);
 
   const copyLink = async () => {

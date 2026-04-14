@@ -138,15 +138,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (session?.user && event === 'SIGNED_IN') {
           // Defer subscription check to avoid calling Supabase inside callback
           const userId = session.user.id;
-          setTimeout(async () => {
-            checkSubscription(userId, true);
-            // Auto-attach pending credit claim after signup
-            processPendingClaim(userId);
-            // Auto-publish pending gig/event post after signup
-            const redirectPath = await processPendingPost(userId);
-            if (redirectPath) {
-              window.location.href = redirectPath;
-            }
+          setTimeout(() => {
+            checkSubscription(userId, true).catch(err => console.warn('[AuthContext] checkSubscription error:', err));
+            processPendingClaim(userId).catch(err => console.warn('[AuthContext] processPendingClaim error:', err));
+            processPendingPost(userId)
+              .then(redirectPath => {
+                if (redirectPath) window.location.href = redirectPath;
+              })
+              .catch(err => console.warn('[AuthContext] processPendingPost error:', err));
           }, 0);
         }
       }

@@ -48,15 +48,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("profiles")
-      .select("account_type, is_manager_mode")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data?.account_type) setAccountType(data.account_type);
-        if (data?.is_manager_mode) setIsManagerMode(true);
-      });
+    Promise.resolve(
+      supabase
+        .from("profiles")
+        .select("account_type, is_manager_mode")
+        .eq("user_id", user.id)
+        .maybeSingle()
+    ).then(({ data }) => {
+      if (data?.account_type) setAccountType(data.account_type);
+      if (data?.is_manager_mode) setIsManagerMode(true);
+    }).catch(err => console.warn('[Navbar] Error loading profile:', err));
   }, [user?.id]);
 
   const handleSignOut = async () => {

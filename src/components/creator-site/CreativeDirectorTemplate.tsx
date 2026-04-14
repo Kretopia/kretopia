@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useState } from "react";
 import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRequestDialog";
 
@@ -209,6 +210,9 @@ export const CreativeDirectorTemplate = ({ data }: { data: CreatorSiteData }) =>
       )}
 
       {/* Footer */}
+      {profile.site_custom_blocks?.length > 0 && (
+        <BlockRenderer blocks={profile.site_custom_blocks} theme="dark" accentColor="#b8a080" />
+      )}
       <footer className="px-8 md:px-16 py-8 border-t border-white/5 flex justify-between items-center text-[10px] text-[#444] uppercase tracking-[0.3em]">
         <span>© {new Date().getFullYear()} {profile.full_name}</span>
         <span>Powered by ThriveIN</span>

@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useState } from "react";
 import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRequestDialog";
 
@@ -231,6 +232,9 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
       )}
 
       {/* Contact Footer */}
+      {profile.site_custom_blocks?.length > 0 && (
+        <BlockRenderer blocks={profile.site_custom_blocks} theme="light" />
+      )}
       <footer id="contact" className="border-t border-zinc-100 px-5 md:px-10 py-12 md:py-20">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10">
           <div>

@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -155,9 +156,9 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
                 className="group relative overflow-hidden bg-zinc-900 cursor-pointer"
                 onClick={() => navigate(`/profile/${profile.user_id}`)}
               >
-                {credit.thumbnail_url || credit.primary_media_url ? (
+                {(() => { const thumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url); return thumb; })() ? (
                   <img
-                    src={credit.thumbnail_url || credit.primary_media_url}
+                    src={resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url)!}
                     alt={credit.project_name}
                     className="w-full aspect-[2/3] object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                     loading="lazy"

@@ -517,7 +517,7 @@ export const UnifiedHome = () => {
                   <PlusCircle className="h-3.5 w-3.5" /> {t("landing.createEvent")}
                 </button>
                 <span className="text-border">·</span>
-                <Link to="/scene" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                <Link to="/nearby" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
                   {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>

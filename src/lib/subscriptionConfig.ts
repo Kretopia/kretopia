@@ -4,10 +4,10 @@
 export type AccountType = 'individual' | 'company';
 export type BillingInterval = 'monthly' | 'yearly';
 
-// Creator/Individual subscription products — 3 tiers: Spark (free), Pro ($29), Creator Pro ($59)
+// Creator/Individual subscription products — 3 tiers: Spark (free), Creator ($29), Creator+ ($59)
 export const SUBSCRIPTION_PRODUCTS = {
   pro: {
-    name: "Pro",
+    name: "Creator",
     tier: "pro" as const,
     price: 29,
     yearlyPrice: 278, // ~$23.17/mo effective — save $70/yr
@@ -25,7 +25,7 @@ export const SUBSCRIPTION_PRODUCTS = {
     ],
   },
   creator_pro: {
-    name: "Creator Pro",
+    name: "Creator +",
     tier: "creator_pro" as const,
     price: 59,
     yearlyPrice: 566, // ~$47.17/mo effective — save $142/yr

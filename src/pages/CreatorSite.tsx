@@ -130,7 +130,7 @@ const CreatorSite = () => {
       }));
 
       setData({
-        profile,
+        profile: { ...profile, site_custom_blocks: (profile.site_custom_blocks as any) || [] },
         services: servicesWithTiers,
         credits: creditsRes.data || [],
         reviews: reviewsRes.data || [],

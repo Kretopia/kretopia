@@ -5,6 +5,12 @@ import { SEO } from "@/components/SEO";
 import { BoldElectricTemplate } from "@/components/creator-site/BoldElectricTemplate";
 import { MinimalEditorialTemplate } from "@/components/creator-site/MinimalEditorialTemplate";
 import { PortfolioMosaicTemplate } from "@/components/creator-site/PortfolioMosaicTemplate";
+import { CreativeDirectorTemplate } from "@/components/creator-site/CreativeDirectorTemplate";
+import { ArtistShowcaseTemplate } from "@/components/creator-site/ArtistShowcaseTemplate";
+import { ProducerTemplate } from "@/components/creator-site/ProducerTemplate";
+import { AgencyTemplate } from "@/components/creator-site/AgencyTemplate";
+import { MinimalCleanTemplate } from "@/components/creator-site/MinimalCleanTemplate";
+import { PhotographerTemplate } from "@/components/creator-site/PhotographerTemplate";
 import { Loader2 } from "lucide-react";
 import { useSiteViewTracker } from "@/hooks/useSiteAnalytics";
 
@@ -165,7 +171,13 @@ const CreatorSite = () => {
       {template === 'bold-electric' && <BoldElectricTemplate data={data} />}
       {template === 'minimal-editorial' && <MinimalEditorialTemplate data={data} />}
       {template === 'portfolio-mosaic' && <PortfolioMosaicTemplate data={data} />}
-      {!['bold-electric', 'minimal-editorial', 'portfolio-mosaic'].includes(template) && <BoldElectricTemplate data={data} />}
+      {template === 'creative-director' && <CreativeDirectorTemplate data={data} />}
+      {template === 'artist-showcase' && <ArtistShowcaseTemplate data={data} />}
+      {template === 'producer' && <ProducerTemplate data={data} />}
+      {template === 'agency' && <AgencyTemplate data={data} />}
+      {template === 'minimal-clean' && <MinimalCleanTemplate data={data} />}
+      {template === 'photographer' && <PhotographerTemplate data={data} />}
+      {!['bold-electric', 'minimal-editorial', 'portfolio-mosaic', 'creative-director', 'artist-showcase', 'producer', 'agency', 'minimal-clean', 'photographer'].includes(template) && <BoldElectricTemplate data={data} />}
     </>
   );
 };

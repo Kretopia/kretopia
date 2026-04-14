@@ -152,7 +152,7 @@ const Messages = () => {
             setCurrentUserRole(data.role);
             setCurrentUserName(data.full_name || 'You');
           }
-        });
+        }, () => {});
     }
   }, [user]);
 

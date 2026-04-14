@@ -45,7 +45,7 @@ const MagazineArticlePage = () => {
           .from("magazine_articles")
           .update({ view_count: (data.view_count || 0) + 1 })
           .eq("id", data.id)
-          .then();
+          .then(() => {}, () => {});
       }
       setLoading(false);
     };

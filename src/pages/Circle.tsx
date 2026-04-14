@@ -47,7 +47,7 @@ export default function Circle() {
       .maybeSingle()
       .then(({ data }) => {
         if (data?.account_type) setAccountType(data.account_type);
-      });
+      }, () => {});
   }, [user?.id]);
 
   const isPro = hasProAccess(subscriptionInfo.tier as any);

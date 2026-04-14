@@ -26,7 +26,7 @@ export function NewsletterPopup() {
         if (!data.user) {
           setOpen(true);
         }
-      });
+      }).catch(() => {});
     }, DELAY_MS);
 
     return () => clearTimeout(timer);

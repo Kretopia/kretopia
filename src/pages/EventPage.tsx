@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";
 import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
+import { EventComments } from "@/components/sessions/EventComments";
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
@@ -438,6 +439,21 @@ const EventPage = () => {
                     </p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Discussion */}
+          {isAuthenticated && (
+            <Card className="mb-6">
+              <CardContent className="p-0">
+                <h3 className="font-semibold px-5 pt-4 pb-2">Discussion</h3>
+                <EventComments 
+                  eventId={event.id} 
+                  isCreator={isCreator} 
+                  creatorId={event.created_by}
+                  eventTitle={event.title}
+                />
               </CardContent>
             </Card>
           )}

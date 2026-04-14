@@ -176,7 +176,7 @@ const EventPage = () => {
         description={event.description?.slice(0, 155) || `Join ${creator?.full_name || 'a creator'} for ${event.title} on ThriveIN`}
         type="article"
         image={event.cover_image_url || undefined}
-        url={`https://thrivein-new-beta.lovable.app/event/${eventId}`}
+        url={`https://thrivein.io/event/${eventId}`}
       />
       {/* JSON-LD Event Schema */}
       <Helmet>

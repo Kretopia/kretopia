@@ -90,6 +90,7 @@ const Explore = lazy(() => import("./pages/Explore"));
 const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
 const CreatorSite = lazy(() => import("./pages/CreatorSite"));
 const CreatorSiteByUsername = lazy(() => import("./pages/CreatorSiteByUsername"));
+const WebsiteBuilder = lazy(() => import("./pages/WebsiteBuilder"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -170,7 +171,7 @@ const AppContent = () => {
   
   // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
   const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname);
-  const isCreatorSite = /^\/site\/[^/]+$/.test(location.pathname);
+  const isCreatorSite = /^\/site\/[^/]+$/.test(location.pathname) || location.pathname === '/website-builder';
   const isPublicEvent = /^\/event\/[^/]+$/.test(location.pathname);
   const isAuthPage = location.pathname === '/auth';
   const isOnboardingPage = location.pathname === '/onboarding' || location.pathname === '/company-onboarding';
@@ -223,6 +224,7 @@ const AppContent = () => {
             <Route path="/profile/:userId" element={<ViewProfile />} />
             <Route path="/epk/:userId" element={<CreatorEPK />} />
             <Route path="/site/:userId" element={<CreatorSite />} />
+            <Route path="/website-builder" element={<ProtectedRoute><WebsiteBuilder /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/my-analytics" element={<Navigate to="/profile" replace />} />

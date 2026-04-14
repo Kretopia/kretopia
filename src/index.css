@@ -362,3 +362,9 @@ All colors MUST be HSL.
 .safe-right {
   padding-right: env(safe-area-inset-right, 0px);
 }
+
+/* Hide platform nav when on creator site (username route) */
+body.creator-site-active nav,
+body.creator-site-active [data-bottom-nav] {
+  display: none !important;
+}

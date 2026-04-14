@@ -349,7 +349,7 @@ export const CreatorSiteSettings = () => {
                     <Button
                       size="sm"
                       className="flex-1"
-                      onClick={() => setShowFullEditor(true)}
+                      onClick={() => navigate('/website-builder')}
                     >
                       <Maximize2 className="h-4 w-4 mr-2" />
                       Open Editor

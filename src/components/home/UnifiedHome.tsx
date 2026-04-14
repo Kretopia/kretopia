@@ -86,13 +86,16 @@ export const UnifiedHome = () => {
         myProfile = data;
       }
 
-      // Build skill keywords for matching
+      // Build skill keywords for matching (safely handle non-string entries)
       const mySkills: string[] = [];
       if (myProfile) {
-        if (Array.isArray(myProfile.professional_skills)) mySkills.push(...myProfile.professional_skills);
-        else if (myProfile.professional_skills) mySkills.push(...Object.keys(myProfile.professional_skills));
-        if (Array.isArray(myProfile.passion_skills)) mySkills.push(...myProfile.passion_skills);
-        else if (myProfile.passion_skills) mySkills.push(...Object.keys(myProfile.passion_skills));
+        const extractSkills = (skills: any) => {
+          if (Array.isArray(skills)) return skills.filter((s: any) => typeof s === 'string');
+          if (skills && typeof skills === 'object') return Object.keys(skills);
+          return [];
+        };
+        mySkills.push(...extractSkills(myProfile.professional_skills));
+        mySkills.push(...extractSkills(myProfile.passion_skills));
       }
       const myRole = myProfile?.role || "";
       const myLocation = myProfile?.location || "";
@@ -208,8 +211,8 @@ export const UnifiedHome = () => {
             const cRole = (c.role || "").toLowerCase();
             const cLocation = (c.location || "").toLowerCase();
             const cSkills = Array.isArray(c.professional_skills)
-              ? c.professional_skills.map((s: string) => s.toLowerCase())
-              : Object.keys(c.professional_skills || {}).map(s => s.toLowerCase());
+              ? c.professional_skills.filter((s: any) => typeof s === 'string').map((s: string) => s.toLowerCase())
+              : (c.professional_skills ? Object.keys(c.professional_skills).map(s => s.toLowerCase()) : []);
             // Complementary skills (they have skills I don't)
             cSkills.forEach((cs: string) => {
               if (!skillsLower.includes(cs)) relevance += 2; // complementary

@@ -211,8 +211,8 @@ export const UnifiedHome = () => {
             const cRole = (c.role || "").toLowerCase();
             const cLocation = (c.location || "").toLowerCase();
             const cSkills = Array.isArray(c.professional_skills)
-              ? c.professional_skills.map((s: string) => s.toLowerCase())
-              : Object.keys(c.professional_skills || {}).map(s => s.toLowerCase());
+              ? c.professional_skills.filter((s: any) => typeof s === 'string').map((s: string) => s.toLowerCase())
+              : (c.professional_skills ? Object.keys(c.professional_skills).map(s => s.toLowerCase()) : []);
             // Complementary skills (they have skills I don't)
             cSkills.forEach((cs: string) => {
               if (!skillsLower.includes(cs)) relevance += 2; // complementary

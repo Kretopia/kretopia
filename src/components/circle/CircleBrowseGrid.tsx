@@ -221,7 +221,7 @@ export function CircleBrowseGrid({ filters }: { filters: SwipeFiltersState }) {
                   </div>
                   <h3 className="text-base font-bold mb-1">See More Creators</h3>
                   <p className="text-xs text-muted-foreground mb-4">
-                    Upgrade to Pro to browse unlimited creator profiles and find your perfect collaborator.
+                    Upgrade to Creator to browse unlimited creator profiles and find your perfect collaborator.
                   </p>
                   <Button
                     onClick={() => navigate("/subscription")}

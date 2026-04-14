@@ -20,8 +20,9 @@ interface SiteSetupWizardProps {
 }
 
 export const SiteSetupWizard = ({ open, onOpenChange, onComplete }: SiteSetupWizardProps) => {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
   const { toast } = useToast();
+  const isCreatorPro = hasCreatorProAccess(subscriptionInfo.tier as any);
   const [step, setStep] = useState(0);
   const [template, setTemplate] = useState("bold-electric");
   const [headline, setHeadline] = useState("");
@@ -116,28 +117,42 @@ export const SiteSetupWizard = ({ open, onOpenChange, onComplete }: SiteSetupWiz
       subtitle: "Pick a template that matches your style",
       content: (
         <div className="space-y-3">
-          {TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTemplate(t.id)}
-              className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
-                template === t.id
-                  ? "border-primary ring-2 ring-primary/20 bg-primary/5"
-                  : "border-border hover:border-muted-foreground/30"
-              }`}
-            >
-              <div className={`w-16 h-12 rounded-lg ${t.preview} border border-border/50 flex items-center justify-center shrink-0 shadow-sm`}>
-                <div className={`w-4 h-4 rounded-full ${t.accent}`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">{t.name}</p>
-                <p className="text-xs text-muted-foreground">{t.description}</p>
-              </div>
-              {template === t.id && (
-                <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-              )}
-            </button>
-          ))}
+          {TEMPLATES.map((t) => {
+            const accessible = isTemplateAccessible(t.id, isCreatorPro);
+            return (
+              <button
+                key={t.id}
+                onClick={() => {
+                  if (!accessible) {
+                    toast({ title: "Creator Pro Template", description: `"${t.name}" requires Creator Pro.` });
+                    return;
+                  }
+                  setTemplate(t.id);
+                }}
+                className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
+                  template === t.id
+                    ? "border-primary ring-2 ring-primary/20 bg-primary/5"
+                    : accessible ? "border-border hover:border-muted-foreground/30" : "border-border opacity-60 hover:opacity-80"
+                }`}
+              >
+                <div className={`w-16 h-12 rounded-lg ${t.preview} border border-border/50 flex items-center justify-center shrink-0 shadow-sm`}>
+                  <div className={`w-4 h-4 rounded-full ${t.accent}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-semibold text-sm">{t.name}</p>
+                    {!accessible && <Lock className="h-3 w-3 text-muted-foreground" />}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t.description}</p>
+                  {!accessible && <p className="text-[10px] text-primary mt-0.5">Creator Pro</p>}
+                </div>
+                {template === t.id && accessible && (
+                  <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                )}
+                {!accessible && <Crown className="h-4 w-4 text-primary shrink-0" />}
+              </button>
+            );
+          })}
         </div>
       ),
     },

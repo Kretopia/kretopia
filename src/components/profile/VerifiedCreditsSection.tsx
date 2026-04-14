@@ -194,7 +194,11 @@ function CreditCard({ credit, isOwnProfile, onDelete, isDeleting }: {
 }) {
   const Icon = CREDIT_TYPE_ICONS[credit.credit_type] || Film;
   const sourceColor = SOURCE_COLORS[credit.source] || 'bg-gray-500';
-  const thumbnailUrl = credit.metadata?.posterUrl || credit.metadata?.imageUrl || credit.metadata?.thumbUrl || credit.metadata?.thumbnailUrl;
+  const thumbnailUrl = resolveCreditThumbnail(
+    credit.thumbnail_url, 
+    credit.primary_media_url, 
+    credit.url
+  ) || credit.metadata?.posterUrl || credit.metadata?.imageUrl || credit.metadata?.thumbUrl || credit.metadata?.thumbnailUrl;
 
   return (
     <div className="flex-shrink-0 w-[160px] group/card">

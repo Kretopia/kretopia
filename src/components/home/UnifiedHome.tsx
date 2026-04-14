@@ -258,8 +258,7 @@ export const UnifiedHome = () => {
       {/* ═══════════ WHY THRIVEIN — FULL TOOL SHOWCASE ═══════════ */}
       {!user && <WhyCreatorsChooseSection />}
 
-      {/* ═══════════ BEFORE/AFTER DIFFERENTIATION ═══════════ */}
-      {!user && <BeforeAfterSection />}
+
 
       {/* ═══════════ PRICING PREVIEW ═══════════ */}
       {!user && <PricingPreviewSection />}

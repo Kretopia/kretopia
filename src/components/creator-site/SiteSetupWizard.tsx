@@ -5,11 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, ArrowRight, ArrowLeft, Globe, Sparkles, Eye, Loader2 } from "lucide-react";
+import { CheckCircle2, ArrowRight, ArrowLeft, Globe, Sparkles, Eye, Loader2, Lock, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-
+import { TEMPLATES, isTemplateAccessible } from "@/components/creator-site/templateConfig";
+import { hasCreatorProAccess } from "@/lib/subscriptionConfig";
 const TEMPLATES = [
   {
     id: "bold-electric",

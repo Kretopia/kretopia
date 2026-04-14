@@ -231,6 +231,13 @@ export const FullScreenSiteEditor = ({ open, onClose, siteUrl, initialData, onSa
                   <span className="hidden lg:inline">{tab.label}</span>
                 </button>
               ))}
+              <button
+                onClick={() => setSidebarCollapsed(true)}
+                className="px-2 py-2.5 text-muted-foreground hover:text-foreground transition-colors hidden md:flex items-center"
+                title="Collapse sidebar"
+              >
+                <PanelLeft className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
 

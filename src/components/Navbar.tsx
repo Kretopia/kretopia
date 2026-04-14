@@ -112,7 +112,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
     : mode === "create"
     ? [
         { path: "/", icon: Home, label: "Home" },
-        { path: "/nearby", icon: CalendarDays, label: "Discover" },
+        { path: "/nearby", icon: MapPin, label: "Discover" },
         { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
       ]
@@ -301,7 +301,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
                       <MenuButton icon={Globe} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
-                      <MenuButton icon={MapPin} label="Nearby" onClick={() => handleNavigation("/nearby")} />
                     </>
                   ) : (
                     /* ====== WORK MODE MENU ====== */

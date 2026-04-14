@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, Briefcase, LayoutDashboard, Wallet, User, Home, CalendarDays, UserSearch } from "lucide-react";
+import { Sparkles, Briefcase, LayoutDashboard, Wallet, User, Home, MapPin, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useRef, useState, useEffect } from "react";
 import { useNavMode, NavMode } from "@/hooks/useNavMode";
@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const CREATE_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
-  { path: "/nearby", icon: CalendarDays, label: "Discover" },
+  { path: "/nearby", icon: MapPin, label: "Discover" },
   { path: "/circle", icon: Sparkles, label: "Match" },
   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
 ];

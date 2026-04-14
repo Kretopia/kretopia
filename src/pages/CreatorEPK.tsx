@@ -475,6 +475,18 @@ const CreatorEPK = () => {
               profileName={profile.full_name}
               profileRole={profile.role || 'Creator'}
               userId={userId || ''}
+              epkPdfData={{
+                profile,
+                credits,
+                awards,
+                pressLinks,
+                industryStats,
+                reviews: reviews.map((r: any) => ({
+                  reviewer_name: r.reviewer_name || r.reviewer?.full_name,
+                  rating: r.rating,
+                  review_text: r.review_text,
+                })),
+              }}
             />
           </div>
         )}

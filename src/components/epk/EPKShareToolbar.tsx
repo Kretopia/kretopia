@@ -1,16 +1,24 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Share2, Copy, Check, MessageCircle, Send } from "lucide-react";
+import { Share2, Copy, Check, MessageCircle, Send, FileDown, Loader2, Crown } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { hasProAccess } from "@/lib/subscriptionConfig";
+import { useNavigate } from "react-router-dom";
 
 interface EPKShareToolbarProps {
   profileName: string;
   profileRole: string;
   userId: string;
+  epkPdfData?: any; // EPKPdfInput passed from parent
 }
 
-export const EPKShareToolbar = ({ profileName, profileRole, userId }: EPKShareToolbarProps) => {
+export const EPKShareToolbar = ({ profileName, profileRole, userId, epkPdfData }: EPKShareToolbarProps) => {
   const [copied, setCopied] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const { subscriptionInfo } = useAuth();
+  const navigate = useNavigate();
+  const isPro = hasProAccess((subscriptionInfo?.tier || 'free') as any);
 
   const epkUrl = `https://thrivein.io/epk/${userId}`;
   const shareText = `Check out my verified creative portfolio on ThriveIN \n\n${profileName} — ${profileRole}\n\n`;
@@ -36,7 +44,6 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId }: EPKShareTo
   };
 
   const handleInstagram = () => {
-    // Instagram doesn't support direct URL sharing — copy link and prompt
     navigator.clipboard.writeText(`${shortShareText}\n${epkUrl}`);
     toast.success("Link & caption copied! Paste it in your Instagram Story or bio.");
   };
@@ -54,6 +61,36 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId }: EPKShareTo
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDownloadPdf = async () => {
+    if (!isPro) {
+      toast.error("Creator plan required", {
+        description: "Upgrade to Creator or Creator+ to download your EPK as a professional PDF deck.",
+        action: {
+          label: "Upgrade",
+          onClick: () => navigate("/subscription"),
+        },
+      });
+      return;
+    }
+
+    if (!epkPdfData) {
+      toast.error("Profile data not ready. Please try again.");
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const { generateEPKPdf } = await import("@/lib/epkPdfGenerator");
+      await generateEPKPdf(epkPdfData);
+      toast.success("EPK PDF downloaded!");
+    } catch (error) {
+      console.error("EPK PDF generation error:", error);
+      toast.error("Failed to generate PDF. Please try again.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <div className="mb-6 p-4 rounded-xl bg-primary/5 border border-primary/20">
       <div className="flex items-center justify-between mb-3">
@@ -61,16 +98,34 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId }: EPKShareTo
           <Share2 className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold">Share your EPK</span>
         </div>
-        {navigator.share && (
+        <div className="flex items-center gap-2">
+          {/* Download PDF Button */}
           <Button
             size="sm"
-            className="h-9 gap-1.5 touch-manipulation"
-            onClick={handleNativeShare}
+            variant="outline"
+            className="h-9 gap-1.5 touch-manipulation border-primary/30 text-primary hover:bg-primary/10"
+            onClick={handleDownloadPdf}
+            disabled={generating}
           >
-            <Send className="h-3.5 w-3.5" />
-            Share
+            {generating ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <FileDown className="h-3.5 w-3.5" />
+            )}
+            {generating ? 'Generating...' : 'PDF'}
+            {!isPro && <Crown className="h-3 w-3 text-amber-500" />}
           </Button>
-        )}
+          {navigator.share && (
+            <Button
+              size="sm"
+              className="h-9 gap-1.5 touch-manipulation"
+              onClick={handleNativeShare}
+            >
+              <Send className="h-3.5 w-3.5" />
+              Share
+            </Button>
+          )}
+        </div>
       </div>
       
       {/* Link preview */}

@@ -33,7 +33,6 @@ const cities = [
   { name: "Geneva", flag: "🇨🇭" },
   { name: "Trinidad", flag: "🇹🇹" },
   { name: "Bali", flag: "🇮🇩" },
-  { name: "London", flag: "🇬🇧" },
 ];
 
 const About = () => {

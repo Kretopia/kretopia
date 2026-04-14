@@ -300,10 +300,10 @@ export const EventCheckInDialog = ({ eventId, eventTitle, open, onOpenChange }: 
           ) : filteredParticipants.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No attendees found</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 pr-1">
               {filteredParticipants.map(p => (
                 <div key={p.id} className="flex items-center gap-2 p-2.5 rounded-xl border border-border/50 bg-card">
-                  <Avatar className="h-9 w-9">
+                  <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={p.profile?.avatar_url || ''} />
                     <AvatarFallback className="text-xs">
                       {(p.profile?.full_name || '?')[0]}
@@ -312,18 +312,18 @@ export const EventCheckInDialog = ({ eventId, eventTitle, open, onOpenChange }: 
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{p.profile?.full_name || 'Unknown'}</p>
                     {p.profile?.username && (
-                      <p className="text-xs text-muted-foreground">@{p.profile.username}</p>
+                      <p className="text-xs text-muted-foreground truncate">@{p.profile.username}</p>
                     )}
                   </div>
                   {p.checked_in_at ? (
-                    <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">
+                    <Badge className="bg-green-100 text-green-700 border-green-200 text-xs shrink-0">
                       <CheckCircle className="h-3 w-3 mr-1" /> In
                     </Badge>
                   ) : (
                     <Button
                       size="sm"
                       variant="outline"
-                      className="text-xs h-8"
+                      className="text-xs h-8 shrink-0 px-3"
                       disabled={!!checkingIn}
                       onClick={() => checkInById(p.id)}
                     >

@@ -20,6 +20,7 @@ import { useLocationBookmarks } from "@/hooks/useLocationBookmarks";
 import { AtlasSearchBar, defaultAtlasFilters, type AtlasSearchFilters } from "@/components/nearby/AtlasSearchBar";
 import { SeedLocationsDialog } from "@/components/nearby/SeedLocationsDialog";
 import { analytics } from "@/lib/analytics";
+import Events from "@/pages/Events";
 
 import { NearbyCreator, CreatorCard, formatDistance, getSkills } from "@/components/nearby/NearbyCreatorCard";
 import { NearbySession, SessionListItem } from "@/components/nearby/NearbySessionListItem";

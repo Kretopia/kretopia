@@ -31,6 +31,8 @@ interface Opportunity {
   created_at: string;
   claim_status?: string | null;
   claim_token?: string | null;
+  source_platform?: string | null;
+  original_source_text?: string | null;
   barter_offering?: string | null;
   barter_requesting?: string | null;
   platform_requirements?: string[] | null;
@@ -53,20 +55,51 @@ const OpportunityDetail = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const isOwner = user && (opportunity?.created_by === user.id || opportunity?.scouted_by === user.id);
+  const isScoutedGig = Boolean(
+    opportunity && (
+      opportunity.scouted_by ||
+      opportunity.claim_token ||
+      opportunity.claim_status ||
+      opportunity.source_platform ||
+      opportunity.original_source_text
+    )
+  );
   const canShareClaimLink = Boolean(
     user &&
-    opportunity?.claim_token &&
     opportunity?.claim_status !== 'claimed' &&
+    isScoutedGig &&
     (opportunity?.scouted_by === user.id || opportunity?.created_by === user.id)
   );
 
   const handleShareClaimLink = async () => {
-    if (!opportunity?.claim_token) return;
-
-    const claimUrl = `${window.location.origin}/claim-gig/${opportunity.claim_token}`;
-    const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
-
     try {
+      if (!opportunity) return;
+
+      let claimToken = opportunity.claim_token;
+
+      if (!claimToken) {
+        claimToken = crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+
+        const { error } = await supabase
+          .from('opportunities')
+          .update({
+            claim_token: claimToken,
+            claim_status: opportunity.claim_status ?? 'unclaimed',
+          } as any)
+          .eq('id', opportunity.id);
+
+        if (error) throw error;
+
+        setOpportunity({
+          ...opportunity,
+          claim_token: claimToken,
+          claim_status: opportunity.claim_status ?? 'unclaimed',
+        });
+      }
+
+      const claimUrl = `${window.location.origin}/claim-gig/${claimToken}`;
+      const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
+
       if (navigator.share) {
         await navigator.share({ title: "Claim your gig on ThriveIN", text: shareText, url: claimUrl });
         return;
@@ -76,9 +109,20 @@ const OpportunityDetail = () => {
       toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
     } catch {
       try {
+        if (!opportunity?.claim_token) throw new Error('missing claim token');
+
+        const claimUrl = `${window.location.origin}/claim-gig/${opportunity.claim_token}`;
+        const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
         await navigator.clipboard.writeText(shareText);
         toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
       } catch {
+        if (!opportunity?.claim_token) {
+          toast({ title: "Couldn't prepare claim link", description: "Please try again.", variant: "destructive" });
+          return;
+        }
+
+        const claimUrl = `${window.location.origin}/claim-gig/${opportunity.claim_token}`;
+        const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
         const textarea = document.createElement('textarea');
         textarea.value = shareText;
         textarea.style.position = 'fixed';

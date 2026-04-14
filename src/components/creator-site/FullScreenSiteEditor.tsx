@@ -231,17 +231,26 @@ export const FullScreenSiteEditor = ({ open, onClose, siteUrl, initialData, onSa
                   <span className="hidden lg:inline">{tab.label}</span>
                 </button>
               ))}
+              <button
+                onClick={() => setSidebarCollapsed(true)}
+                className="px-2 py-2.5 text-muted-foreground hover:text-foreground transition-colors hidden md:flex items-center"
+                title="Collapse sidebar"
+              >
+                <PanelLeft className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
 
-          {/* Collapse toggle */}
-          <button
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background border border-border rounded-r-md p-1 hover:bg-muted hidden md:flex"
-            style={{ left: sidebarCollapsed ? '48px' : '320px' }}
-          >
-            <PanelLeft className={cn("h-3 w-3 transition-transform", sidebarCollapsed && "rotate-180")} />
-          </button>
+          {/* Collapse toggle - inside sidebar at top */}
+          {sidebarCollapsed && (
+            <button
+              onClick={() => setSidebarCollapsed(false)}
+              className="flex items-center justify-center w-full py-3 hover:bg-muted transition-colors"
+              title="Expand editor"
+            >
+              <PanelLeft className="h-4 w-4 rotate-180" />
+            </button>
+          )}
 
           {/* Tab content */}
           {!sidebarCollapsed && (

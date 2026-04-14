@@ -12,6 +12,7 @@ import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { CreatorSiteSectionEditor, SiteSection } from "./CreatorSiteSectionEditor";
+import type { ContentBlock } from "@/components/creator-site/blocks/BlockTypes";
 import { SiteSetupWizard } from "@/components/creator-site/SiteSetupWizard";
 import { SitePreviewPanel } from "@/components/creator-site/SitePreviewPanel";
 import { SiteAnalyticsDashboard } from "@/components/creator-site/SiteAnalyticsDashboard";
@@ -42,6 +43,7 @@ export const CreatorSiteSettings = () => {
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [siteSections, setSiteSections] = useState<SiteSection[]>([]);
+  const [siteCustomBlocks, setSiteCustomBlocks] = useState<ContentBlock[]>([]);
   const [siteHeadline, setSiteHeadline] = useState('');
   const [siteBio, setSiteBio] = useState('');
   const [username, setUsername] = useState('');
@@ -60,7 +62,7 @@ export const CreatorSiteSettings = () => {
     if (!user) return;
     supabase
       .from('profiles')
-      .select('site_enabled, site_template, site_sections, site_headline, site_bio, username')
+      .select('site_enabled, site_template, site_sections, site_headline, site_bio, site_custom_blocks, username')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -70,6 +72,7 @@ export const CreatorSiteSettings = () => {
           setSiteSections((data.site_sections as any) || []);
           setSiteHeadline(data.site_headline || '');
           setSiteBio(data.site_bio || '');
+          setSiteCustomBlocks((data.site_custom_blocks as any) || []);
           setUsername((data as any).username || '');
           setUsernameInput((data as any).username || '');
         }
@@ -324,6 +327,7 @@ export const CreatorSiteSettings = () => {
                     initialSections={siteSections}
                     initialHeadline={siteHeadline}
                     initialBio={siteBio}
+                    initialCustomBlocks={siteCustomBlocks}
                   />
 
                   {/* Analytics */}

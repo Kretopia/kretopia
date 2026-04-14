@@ -75,7 +75,6 @@ export const UnifiedHome = () => {
   // Fetch public dashboard data + personalized data for auth users
   useEffect(() => {
     const fetchPublic = async () => {
-      // Get user profile for personalization if logged in
       let myProfile: any = null;
       if (user) {
         const { data } = await supabase
@@ -86,7 +85,6 @@ export const UnifiedHome = () => {
         myProfile = data;
       }
 
-      // Build skill keywords for matching (safely handle non-string entries)
       const mySkills: string[] = [];
       if (myProfile) {
         const extractSkills = (skills: any) => {
@@ -100,19 +98,16 @@ export const UnifiedHome = () => {
       const myRole = myProfile?.role || "";
       const myLocation = myProfile?.location || "";
 
-      // Fetch credits — if auth, try to match by user's role/category first
       let creditsQuery = supabase
         .from("credits")
         .select("id, project_name, role, verification_status, credit_category, thumbnail_url, primary_media_url, url, project_type, user_id, year")
         .not("thumbnail_url", "is", null)
         .order("created_at", { ascending: false });
 
-      // For auth users, exclude own credits and prioritize relevant categories
       if (user) {
         creditsQuery = creditsQuery.neq("user_id", user.id);
       }
 
-      // Fetch gigs — for auth users, try to match skills in title/type
       let gigsQuery = supabase
         .from("opportunities")
         .select("id, title, type, location, created_at, skills_required")
@@ -120,7 +115,6 @@ export const UnifiedHome = () => {
         .order("created_at", { ascending: false })
         .limit(10);
 
-      // Fetch creators — exclude self for auth users
       let creatorsQuery = supabase
         .from("profiles")
         .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills")
@@ -142,7 +136,6 @@ export const UnifiedHome = () => {
         supabase.from("creative_jams").select("id, title, start_time, venue_name, category, cover_image_url, created_by").eq("is_public", true).gte("start_time", new Date().toISOString()).order("start_time", { ascending: true }).limit(4),
       ]);
 
-      // ── Personalize credits: score by relevance to user's role/skills ──
       let credits = creditsRes.data || [];
       if (user && mySkills.length > 0 && credits.length > 0) {
         const skillsLower = mySkills.map(s => s.toLowerCase());
@@ -153,13 +146,10 @@ export const UnifiedHome = () => {
             const cRole = (c.role || "").toLowerCase();
             const cCategory = (c.credit_category || "").toLowerCase();
             const cProject = (c.project_name || "").toLowerCase();
-            // Role match
             if (roleLower && (cRole.includes(roleLower) || cCategory.includes(roleLower))) relevance += 3;
-            // Skill match
             skillsLower.forEach(sk => {
               if (cRole.includes(sk) || cCategory.includes(sk) || cProject.includes(sk)) relevance += 2;
             });
-            // Verified bonus
             if (c.verification_status === "verified") relevance += 1;
             return { ...c, _relevance: relevance };
           })
@@ -170,7 +160,6 @@ export const UnifiedHome = () => {
       }
       setTrendingCredits(credits);
 
-      // ── Personalize gigs: score by skill match ──
       let gigs = gigsRes.data || [];
       if (user && mySkills.length > 0 && gigs.length > 0) {
         const skillsLower = mySkills.map(s => s.toLowerCase());
@@ -181,14 +170,11 @@ export const UnifiedHome = () => {
             const title = (g.title || "").toLowerCase();
             const type = (g.type || "").toLowerCase();
             const required = Array.isArray(g.skills_required) ? g.skills_required.map((s: string) => s.toLowerCase()) : [];
-            // Direct skill match
             skillsLower.forEach(sk => {
               if (required.some((r: string) => r.includes(sk) || sk.includes(r))) relevance += 3;
               if (title.includes(sk)) relevance += 2;
             });
-            // Role match
             if (roleLower && (title.includes(roleLower) || type.includes(roleLower))) relevance += 2;
-            // Location match
             if (myLocation && g.location && g.location.toLowerCase().includes(myLocation.toLowerCase().split(",")[0].trim())) relevance += 1;
             return { ...g, _relevance: relevance };
           })
@@ -199,7 +185,6 @@ export const UnifiedHome = () => {
       }
       setActiveGigs(gigs);
 
-      // ── Personalize creators: prioritize complementary roles + same location ──
       let creators = creatorsRes.data || [];
       if (user && creators.length > 0) {
         const skillsLower = mySkills.map(s => s.toLowerCase());
@@ -213,16 +198,12 @@ export const UnifiedHome = () => {
             const cSkills = Array.isArray(c.professional_skills)
               ? c.professional_skills.filter((s: any) => typeof s === 'string').map((s: string) => s.toLowerCase())
               : (c.professional_skills ? Object.keys(c.professional_skills).map(s => s.toLowerCase()) : []);
-            // Complementary skills (they have skills I don't)
             cSkills.forEach((cs: string) => {
-              if (!skillsLower.includes(cs)) relevance += 2; // complementary
-              if (skillsLower.includes(cs)) relevance += 1; // shared interest
+              if (!skillsLower.includes(cs)) relevance += 2;
+              if (skillsLower.includes(cs)) relevance += 1;
             });
-            // Same industry/role area
-            if (roleLower && cRole && cRole !== roleLower) relevance += 1; // different role = complementary
-            // Location match
+            if (roleLower && cRole && cRole !== roleLower) relevance += 1;
             if (locationCity && cLocation.includes(locationCity)) relevance += 3;
-            // Verified bonus
             if (c.verification_tier === "verified" || c.verification_tier === "pro") relevance += 1;
             return { ...c, _relevance: relevance };
           })
@@ -234,10 +215,8 @@ export const UnifiedHome = () => {
       setUpcomingEvents(eventsRes.data || []);
       setStats({ creators: statsCreators.count || 0, credits: statsCredits.count || 0, gigs: statsGigs.count || 0 });
 
-      // Set activity names from real creators
       setActivityNames(creators.filter((c: any) => c.full_name).map((c: any) => c.full_name.split(" ")[0]));
 
-      // Lazy-fetch thumbnails for credits that don't have one
       const missing = credits.filter((c: any) => !c.thumbnail_url);
       if (missing.length > 0) {
         for (const credit of missing.slice(0, 4)) {
@@ -298,7 +277,6 @@ export const UnifiedHome = () => {
       {/* ═══════════ GUEST HERO ═══════════ */}
       {!user && (
         <div className="relative overflow-hidden">
-          {/* Background gradient orbs */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary/8 blur-3xl" />
             <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-accent/10 blur-3xl" />
@@ -306,7 +284,6 @@ export const UnifiedHome = () => {
           </div>
 
           <div className="relative container mx-auto max-w-5xl px-4 sm:px-6 pt-8 sm:pt-14 pb-6">
-            {/* Conversion-first hero */}
             <div className="text-center mb-5 sm:mb-6">
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.05] mb-4">
                 {t("landing.heroTitle1")}
@@ -342,12 +319,10 @@ export const UnifiedHome = () => {
                 placeholder={t("landing.searchPlaceholder")}
               />
             </div>
-            {/* Discover Creatives — real profiles under search */}
             <div className="mb-6">
               <DiscoverCreativesRow />
             </div>
 
-            {/* 3-Step Visual Process */}
             <div className="mb-5">
               <p className="text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-semibold mb-3">
                 {t("landing.howItWorks")}
@@ -394,12 +369,8 @@ export const UnifiedHome = () => {
         </div>
       )}
 
-      {/* ═══════════ WHY THRIVEIN — FULL TOOL SHOWCASE ═══════════ */}
       {!user && <WhyCreatorsChooseSection />}
 
-
-
-      {/* ═══════════ PRICING PREVIEW ═══════════ */}
       {!user && <PricingPreviewSection />}
 
       {activityMsg && !user && (
@@ -444,7 +415,6 @@ export const UnifiedHome = () => {
             </Link>
           </div>
 
-          {/* Auth search */}
           <p className="text-[11px] text-muted-foreground/70 mb-1.5">
             {t("home.searchHint")}
           </p>
@@ -454,7 +424,6 @@ export const UnifiedHome = () => {
             placeholder={t("landing.searchPlaceholder")}
           />
 
-          {/* Quick stats */}
           <div className="grid grid-cols-3 gap-2.5 mb-4">
             {[
               { label: t("home.credits"), value: myCredits, to: "/profile", icon: Database, color: "text-primary" },
@@ -469,7 +438,6 @@ export const UnifiedHome = () => {
             ))}
           </div>
 
-          {/* Quick actions */}
           <div className="grid grid-cols-4 gap-2 mb-5">
             {[
               { icon: PlusCircle, label: t("home.postHire"), action: () => setQuickPostType("gig"), color: "text-success" },
@@ -490,7 +458,6 @@ export const UnifiedHome = () => {
             ))}
           </div>
 
-          {/* Profile Completion Card - show if profile is less than 100% complete */}
           {profileFull && (() => {
             const completion = checkProfileCompletion(profileFull, myCredits);
             return completion.percentage < 100 ? (
@@ -500,13 +467,9 @@ export const UnifiedHome = () => {
             ) : null;
           })()}
 
-
-          {/* Push Notification Prompt */}
           <PushNotificationPrompt trigger="default" className="mb-4" />
         </div>
       )}
-
-      {/* Section nav removed — guest navigation now lives in the top navbar */}
 
       {/* ═══════════ CONTENT SECTIONS ═══════════ */}
       <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
@@ -531,58 +494,47 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── TRENDING CREDITS (auth only — guests discover via nav) ── */}
-        {user && (
-          <section id="section-credits" className="mb-8 scroll-mt-14">
+        {/* ── 1. CREATORS FOR YOU (auth only) ── */}
+        {user && featuredCreators.length > 0 && (
+          <section className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                Credits In Your World
+                <Users className="h-4 w-4 text-accent" />
+                Creators For You
               </h2>
-              <Link to="/credits" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
+              <Link to="/circle" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                See all <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
-              {trendingCredits.map((c, i) => (
-                <motion.button
-                  key={c.id}
-                  initial={{ opacity: 0, y: 16 }}
+              {featuredCreators.slice(0, 8).map((c: any, i: number) => (
+                <motion.div
+                  key={c.user_id}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)}
-                  className="shrink-0 w-[140px] sm:w-[180px] group text-left snap-start"
+                  className="shrink-0 w-[120px] snap-start"
                 >
-                  <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
-                    {(c.thumbnail_url || c.primary_media_url) ? (
-                      <div className="aspect-[3/4] overflow-hidden">
-                        <img src={c.thumbnail_url || c.primary_media_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
-                      </div>
-                    ) : (
-                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 flex items-center justify-center">
-                        <Play className="h-8 w-8 text-primary/20" />
-                      </div>
-                    )}
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <div className="flex items-center gap-1 mb-1">
-                        <Verified className="h-3 w-3 text-primary" />
-                        <span className="text-[8px] font-bold text-primary uppercase tracking-widest">{t("landing.verified")}</span>
-                      </div>
-                      <p className="text-xs font-bold text-foreground leading-tight line-clamp-2">{c.project_name}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{c.role}{c.year ? ` · ${c.year}` : ''}</p>
-                    </div>
+                  <div
+                    className="rounded-2xl border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group p-3 text-center"
+                    onClick={() => navigate(`/profile/${c.user_id}`)}
+                  >
+                    <Avatar className="h-14 w-14 mx-auto mb-2 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
+                      <AvatarImage src={c.avatar_url || ""} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
+                        {(c.full_name || "?")[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <p className="text-xs font-semibold text-foreground line-clamp-1">{c.full_name}</p>
+                    <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{c.role || "Creative"}</p>
                   </div>
-                </motion.button>
-              ))}
-              {trendingCredits.length === 0 && Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="shrink-0 w-[140px] sm:w-[180px] rounded-2xl border border-border bg-card aspect-[3/4] animate-pulse" />
+                </motion.div>
               ))}
             </div>
           </section>
         )}
 
-        {/* ── OPEN GIGS (auth only) ── */}
+        {/* ── 2. GIGS FOR YOU (auth only) ── */}
         {user && (
           <section id="section-gigs" className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
@@ -632,139 +584,22 @@ export const UnifiedHome = () => {
                 ))}
               </div>
             ) : (
-              <button
-                onClick={() => setQuickPostType("gig")}
-                className="w-full rounded-xl border border-dashed border-border hover:border-success/40 bg-card/50 p-4 text-center transition-all group"
+              <div
+                className="rounded-xl border border-border bg-card/50 p-5 text-center cursor-pointer hover:border-primary/30 transition-all"
+                onClick={() => navigate("/opportunities")}
               >
-                <PlusCircle className="h-5 w-5 text-success/50 mx-auto mb-1.5 group-hover:text-success transition-colors" />
-                <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{t("landing.postGigOrHire")}</p>
-              </button>
+                <Zap className="h-6 w-6 text-warning/40 mx-auto mb-2" />
+                <p className="text-sm font-medium text-foreground mb-1">No matched gigs yet</p>
+                <p className="text-xs text-muted-foreground mb-3">We haven't found gigs tailored to your profile — but new ones drop daily.</p>
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                  Browse all gigs <ArrowRight className="h-3 w-3" />
+                </span>
+              </div>
             )}
           </section>
         )}
 
-        {/* ── UPCOMING EVENTS (auth only) ── */}
-        {user && (
-          <section id="section-events" className="mb-8 scroll-mt-14">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-warning" />
-                {t("landing.upcomingEvents")}
-              </h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setQuickPostType("event")}
-                  className="text-[10px] font-semibold text-warning flex items-center gap-1 hover:text-warning/80 transition-colors"
-                >
-                  <PlusCircle className="h-3.5 w-3.5" /> {t("landing.createEvent")}
-                </button>
-                <span className="text-border">·</span>
-                <Link to="/nearby" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                  {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
-                </Link>
-              </div>
-            </div>
-            {upcomingEvents.length > 0 ? (
-              <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
-                {upcomingEvents.map((ev: any, i: number) => {
-                  const eventDate = new Date(ev.start_time);
-                  const month = eventDate.toLocaleString("en", { month: "short" }).toUpperCase();
-                  const day = eventDate.getDate();
-                  return (
-                    <motion.div
-                      key={ev.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.06 }}
-                      className="shrink-0 w-[200px] sm:w-[240px] snap-start"
-                    >
-                      <div
-                        className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
-                        onClick={() => navigate(`/event/${ev.id}`)}
-                      >
-                        {ev.cover_image_url ? (
-                          <div className="aspect-[16/9] overflow-hidden relative">
-                            <img src={ev.cover_image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                            <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
-                              <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
-                              <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="aspect-[16/9] bg-gradient-to-br from-warning/10 to-primary/10 flex items-center justify-center relative">
-                            <CalendarDays className="h-6 w-6 text-warning/30" />
-                            <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
-                              <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
-                              <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
-                            </div>
-                          </div>
-                        )}
-                        <div className="p-3">
-                          <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{ev.title}</p>
-                          {ev.venue_name && (
-                            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                              <MapPin className="h-2.5 w-2.5" /> {ev.venue_name}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            ) : (
-              <button
-                onClick={() => setQuickPostType("event")}
-                className="w-full rounded-xl border border-dashed border-border hover:border-warning/40 bg-card/50 p-4 text-center transition-all group"
-              >
-                <PlusCircle className="h-5 w-5 text-warning/50 mx-auto mb-1.5 group-hover:text-warning transition-colors" />
-                <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{t("landing.createMeetup")}</p>
-              </button>
-            )}
-          </section>
-        )}
-
-        {/* ── CREATORS FOR YOU (auth only) ── */}
-        {user && featuredCreators.length > 0 && (
-          <section className="mb-8 scroll-mt-14">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Users className="h-4 w-4 text-accent" />
-                Creators You Should Connect With
-              </h2>
-              <Link to="/circle" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                See all <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
-              {featuredCreators.slice(0, 8).map((c: any, i: number) => (
-                <motion.div
-                  key={c.user_id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="shrink-0 w-[120px] snap-start"
-                >
-                  <div
-                    className="rounded-2xl border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group p-3 text-center"
-                    onClick={() => navigate(`/profile/${c.user_id}`)}
-                  >
-                    <Avatar className="h-14 w-14 mx-auto mb-2 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
-                      <AvatarImage src={c.avatar_url || ""} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
-                        {(c.full_name || "?")[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <p className="text-xs font-semibold text-foreground line-clamp-1">{c.full_name}</p>
-                    <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{c.role || "Creative"}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ── WHAT'S HAPPENING NEAR YOU (auth only) ── */}
+        {/* ── 3. WHAT'S HAPPENING NEAR YOU (auth only) ── */}
         {user && upcomingEvents.length > 0 && (
           <section className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
@@ -822,6 +657,57 @@ export const UnifiedHome = () => {
                   </motion.div>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {/* ── 4. CREDITS IN YOUR WORLD (auth only) ── */}
+        {user && (
+          <section id="section-credits" className="mb-8 scroll-mt-14">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                Credits In Your World
+              </h2>
+              <Link to="/credits" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
+              {trendingCredits.map((c, i) => (
+                <motion.button
+                  key={c.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)}
+                  className="shrink-0 w-[140px] sm:w-[180px] group text-left snap-start"
+                >
+                  <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
+                    {(c.thumbnail_url || c.primary_media_url) ? (
+                      <div className="aspect-[3/4] overflow-hidden">
+                        <img src={c.thumbnail_url || c.primary_media_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
+                      </div>
+                    ) : (
+                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 flex items-center justify-center">
+                        <Play className="h-8 w-8 text-primary/20" />
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Verified className="h-3 w-3 text-primary" />
+                        <span className="text-[8px] font-bold text-primary uppercase tracking-widest">{t("landing.verified")}</span>
+                      </div>
+                      <p className="text-xs font-bold text-foreground leading-tight line-clamp-2">{c.project_name}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{c.role}{c.year ? ` · ${c.year}` : ''}</p>
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+              {trendingCredits.length === 0 && Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="shrink-0 w-[140px] sm:w-[180px] rounded-2xl border border-border bg-card aspect-[3/4] animate-pulse" />
+              ))}
             </div>
           </section>
         )}

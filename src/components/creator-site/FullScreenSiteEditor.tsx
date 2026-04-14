@@ -16,24 +16,16 @@ import { useToast } from "@/hooks/use-toast";
 import { BlockEditor } from "@/components/creator-site/blocks/BlockEditor";
 import type { ContentBlock } from "@/components/creator-site/blocks/BlockTypes";
 import { SiteSection } from "@/components/settings/CreatorSiteSectionEditor";
+import { TEMPLATES, isTemplateAccessible } from "@/components/creator-site/templateConfig";
+import { hasCreatorProAccess } from "@/lib/subscriptionConfig";
+import { Lock, Crown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const DEVICES = [
   { id: 'desktop', icon: Monitor, width: '100%', label: 'Desktop' },
   { id: 'tablet', icon: Tablet, width: '768px', label: 'Tablet' },
   { id: 'mobile', icon: Smartphone, width: '375px', label: 'Mobile' },
 ] as const;
-
-const TEMPLATES = [
-  { id: 'bold-electric', name: 'Bold Electric', preview: 'bg-gradient-to-br from-[#0a0a0c] to-[#1a1a2e]', accent: 'bg-[#ff00ff]' },
-  { id: 'minimal-editorial', name: 'Minimal Editorial', preview: 'bg-[#faf9f7]', accent: 'bg-[#1a1a1a]' },
-  { id: 'portfolio-mosaic', name: 'Portfolio Mosaic', preview: 'bg-white', accent: 'bg-[#111]' },
-  { id: 'creative-director', name: 'Creative Director', preview: 'bg-gradient-to-br from-[#0d0d0d] to-[#1a1510]', accent: 'bg-[#b8a080]' },
-  { id: 'artist-showcase', name: 'Artist Showcase', preview: 'bg-gradient-to-br from-[#1a0a2e] to-[#111]', accent: 'bg-white' },
-  { id: 'producer', name: 'Producer', preview: 'bg-[#fefefe]', accent: 'bg-[#111]' },
-  { id: 'agency', name: 'Agency', preview: 'bg-white', accent: 'bg-[#111]' },
-  { id: 'minimal-clean', name: 'Minimal Clean', preview: 'bg-[#fcfcfc]', accent: 'bg-[#222]' },
-  { id: 'photographer', name: 'Photographer', preview: 'bg-[#1a1a1a]', accent: 'bg-white' },
-];
 
 const DEFAULT_SECTIONS: SiteSection[] = [
   { id: "hero", label: "Hero", visible: true },
@@ -61,8 +53,10 @@ interface FullScreenEditorProps {
 type EditorTab = 'content' | 'sections' | 'blocks' | 'template';
 
 export const FullScreenSiteEditor = ({ open, onClose, siteUrl, initialData, onSaved, onOpenAI }: FullScreenEditorProps) => {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const isCreatorPro = hasCreatorProAccess(subscriptionInfo.tier as any);
 
   const [device, setDevice] = useState<string>('desktop');
   const [previewKey, setPreviewKey] = useState(0);

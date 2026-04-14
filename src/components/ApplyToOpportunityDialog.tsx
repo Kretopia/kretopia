@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { validateApplication, sanitizeInput, isValidUrl, handleSupabaseError } from "@/lib/errorHandling";
 import { AIOpportunityInsights } from "@/components/discover/AIOpportunityInsights";
+import { APP_URL } from "@/lib/constants";
 
 interface ApplyToOpportunityDialogProps {
   open: boolean;
@@ -121,7 +122,7 @@ export const ApplyToOpportunityDialog = ({
     ]);
     const opportunity = oppRes.data;
     const applicantName = profileRes.data?.full_name || 'A creator';
-    const gigUrl = `${window.location.origin}/opportunity/${opportunityId}`;
+    const gigUrl = `${APP_URL}/opportunity/${opportunityId}`;
 
     // Send confirmation email to applicant
     supabase.functions.invoke('send-transactional-email', {

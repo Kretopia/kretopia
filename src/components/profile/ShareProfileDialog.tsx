@@ -9,6 +9,7 @@ import { ShareableProfileCard } from "./ShareableProfileCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
+import { APP_URL } from "@/lib/constants";
 
 interface ShareProfileDialogProps {
   profile: {
@@ -45,8 +46,8 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
   const isOwner = user?.id === profile.user_id;
 
   const siteUrl = siteUsername 
-    ? `${window.location.origin}/${siteUsername}`
-    : `${window.location.origin}/site/${profile.user_id}`;
+    ? `${APP_URL}/${siteUsername}`
+    : `${APP_URL}/site/${profile.user_id}`;
 
   useEffect(() => {
     if (!open || !isOwner || !isPro) return;
@@ -61,8 +62,8 @@ export const ShareProfileDialog = ({ profile, portfolioItems = [], open, onOpenC
       });
   }, [open, profile.user_id, isOwner, isPro]);
 
-  const profileUrl = `${window.location.origin}/profile/${profile.user_id}`;
-  const shareableUrl = `${window.location.origin}/share/profile/${profile.user_id}/`;
+  const profileUrl = `${APP_URL}/profile/${profile.user_id}`;
+  const shareableUrl = `${APP_URL}/share/profile/${profile.user_id}/`;
   
   const shareText = `${profile.full_name} | ${profile.role} — Verified Creative Portfolio on ThriveIN
 

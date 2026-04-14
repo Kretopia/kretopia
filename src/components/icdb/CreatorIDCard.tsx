@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Copy, ShieldCheck, Fingerprint, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { APP_URL } from "@/lib/constants";
 
 interface CreatorIDCardProps {
   creatorId: string;
@@ -29,7 +30,7 @@ export const CreatorIDCard = ({
     toast.success("Creator ID copied!");
   };
 
-  const profileUrl = `${window.location.origin}/epk/${creatorId}`;
+  const profileUrl = `${APP_URL}/epk/${creatorId}`;
   const copyLink = () => {
     navigator.clipboard.writeText(profileUrl);
     toast.success("Profile link copied!");

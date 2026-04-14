@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Code, Copy, Check, Crown, Sparkles, ExternalLink, Globe, Shield, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { APP_URL } from "@/lib/constants";
 
 interface EmbeddableCreditsWidgetProps {
   userId: string;
@@ -26,7 +27,7 @@ export function EmbeddableCreditsWidget({ userId, displayName, thriveId, creditC
   const { toast } = useToast();
   const [copied, setCopied] = useState<string | null>(null);
 
-  const baseUrl = window.location.origin;
+  const baseUrl = APP_URL;
   const profileUrl = `${baseUrl}/epk/${userId}`;
 
   const embedHtml = `<!-- ThriveCredits™ Widget -->

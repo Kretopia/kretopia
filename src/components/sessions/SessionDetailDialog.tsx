@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { sendEventConfirmationEmail } from "@/utils/eventConfirmationEmail";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { SessionParticipants } from "./SessionParticipants";
@@ -31,6 +32,7 @@ interface Session {
   venue_name?: string;
   venue_address?: string;
   start_time: string;
+  end_time?: string;
   max_participants: number;
   participant_count: number;
   distance_km?: number;
@@ -121,10 +123,22 @@ export const SessionDetailDialog = ({
         }
       } else {
         // Free event — join directly
-        await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' });
+        const { data: inserted } = await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' }).select('id, check_in_token').single();
         setParticipation('going');
         toast({ title: "You're in!" });
         onRefresh?.();
+        if (inserted) {
+          sendEventConfirmationEmail({
+            eventId: session.id,
+            eventTitle: session.title,
+            startTime: session.start_time,
+            endTime: session.end_time,
+            venueName: session.venue_name,
+            venueAddress: session.venue_address,
+            isTicketed: false,
+            participantId: inserted.id,
+          });
+        }
       }
     } catch (err: any) {
       console.error('Join/ticket error:', err);

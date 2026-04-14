@@ -3694,6 +3694,8 @@ export type Database = {
       }
       jam_participants: {
         Row: {
+          check_in_token: string
+          checked_in_at: string | null
           id: string
           jam_id: string
           joined_at: string
@@ -3701,6 +3703,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          check_in_token?: string
+          checked_in_at?: string | null
           id?: string
           jam_id: string
           joined_at?: string
@@ -3708,6 +3712,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          check_in_token?: string
+          checked_in_at?: string | null
           id?: string
           jam_id?: string
           joined_at?: string

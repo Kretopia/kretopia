@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Calendar, Clock, Users, Check, Loader2, Ticket, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { sendEventConfirmationEmail } from "@/utils/eventConfirmationEmail";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -67,9 +68,20 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
         setParticipation(null);
         toast({ title: "Left event" });
       } else {
-        await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' });
+        const { data: inserted } = await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' }).select('id, check_in_token').single();
         setParticipation('going');
         toast({ title: "Joined!" });
+        if (inserted) {
+          sendEventConfirmationEmail({
+            eventId: session.id,
+            eventTitle: session.title,
+            startTime: session.start_time,
+            venueName: session.venue_name,
+            venueAddress: session.venue_address,
+            isTicketed: false,
+            participantId: inserted.id,
+          });
+        }
       }
       onJoin?.();
     } catch {

@@ -320,8 +320,16 @@ export default function Onboarding() {
       // Process pending event join
       const pendingEventJoin = sessionStorage.getItem("pending_event_join");
       if (pendingEventJoin && user) {
-        try { await supabase.from("jam_participants").insert({ jam_id: pendingEventJoin, user_id: user.id, status: "going" }); }
-        catch (e) { console.error("[Onboarding] Event join:", e); }
+        try {
+          const { data: inserted } = await supabase.from("jam_participants").insert({ jam_id: pendingEventJoin, user_id: user.id, status: "going" }).select("id, check_in_token").single();
+          if (inserted) {
+            const { data: ev } = await supabase.from("creative_jams").select("title, start_time, end_time, venue_name, venue_address").eq("id", pendingEventJoin).single();
+            if (ev) {
+              const { sendEventConfirmationEmail } = await import("@/utils/eventConfirmationEmail");
+              sendEventConfirmationEmail({ eventId: pendingEventJoin, eventTitle: ev.title, startTime: ev.start_time, endTime: ev.end_time, venueName: ev.venue_name, venueAddress: ev.venue_address, isTicketed: false, participantId: inserted.id });
+            }
+          }
+        } catch (e) { console.error("[Onboarding] Event join:", e); }
       }
 
       // Partner & manager referrals

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { sendEventConfirmationEmail } from "@/utils/eventConfirmationEmail";
 import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
@@ -9,13 +10,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Loader2, Lock, 
-  Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle
+  Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine
 } from "lucide-react";
 import { format } from "date-fns";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
 import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";
+import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
@@ -42,6 +44,7 @@ const EventPage = () => {
   const [participation, setParticipation] = useState<string | null>(null);
   const [showShareKit, setShowShareKit] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showCheckIn, setShowCheckIn] = useState(false);
 
   useEffect(() => {
     if (eventId) fetchEvent();
@@ -109,10 +112,22 @@ const EventPage = () => {
         setParticipantCount(prev => prev - 1);
         toast({ title: "Left event" });
       } else {
-        await supabase.from('jam_participants').insert({ jam_id: event.id, user_id: user.id, status: 'going' });
+        const { data: inserted } = await supabase.from('jam_participants').insert({ jam_id: event.id, user_id: user.id, status: 'going' }).select('id, check_in_token').single();
         setParticipation('going');
         setParticipantCount(prev => prev + 1);
         toast({ title: "You're in!", description: "You've joined this event" });
+        if (inserted) {
+          sendEventConfirmationEmail({
+            eventId: event.id,
+            eventTitle: event.title,
+            startTime: event.start_time,
+            endTime: event.end_time,
+            venueName: event.venue_name,
+            venueAddress: event.venue_address,
+            isTicketed: false,
+            participantId: inserted.id,
+          });
+        }
       }
     } catch {
       toast({ title: "Error", description: "Failed to update", variant: "destructive" });
@@ -176,7 +191,7 @@ const EventPage = () => {
         description={event.description?.slice(0, 155) || `Join ${creator?.full_name || 'a creator'} for ${event.title} on ThriveIN`}
         type="article"
         image={event.cover_image_url || undefined}
-        url={`https://thrivein-new-beta.lovable.app/event/${eventId}`}
+        url={`https://thrivein.io/event/${eventId}`}
       />
       {/* JSON-LD Event Schema */}
       <Helmet>
@@ -243,7 +258,10 @@ const EventPage = () => {
 
           {/* Host Edit Button */}
           {isCreator && (
-            <div className="flex justify-end mb-2">
+            <div className="flex justify-end gap-2 mb-2">
+              <Button variant="outline" size="sm" onClick={() => setShowCheckIn(true)} className="gap-1.5">
+                <ScanLine className="h-3.5 w-3.5" /> Check-In
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)} className="gap-1.5">
                 <Pencil className="h-3.5 w-3.5" /> Edit Event
               </Button>
@@ -478,6 +496,14 @@ const EventPage = () => {
               open={showEditDialog} 
               onOpenChange={setShowEditDialog} 
               onUpdated={fetchEvent}
+            />
+          )}
+          {isCreator && (
+            <EventCheckInDialog
+              eventId={event.id}
+              eventTitle={event.title}
+              open={showCheckIn}
+              onOpenChange={setShowCheckIn}
             />
           )}
         </div>

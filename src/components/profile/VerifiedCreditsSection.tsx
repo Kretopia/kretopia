@@ -25,6 +25,9 @@ interface VerifiedCredit {
   metadata: any;
   verification_url: string;
   verified_at: string;
+  thumbnail_url?: string | null;
+  primary_media_url?: string | null;
+  url?: string | null;
 }
 
 interface VerifiedCreditsSectionProps {

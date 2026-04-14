@@ -620,53 +620,67 @@ export const UnifiedHome = () => {
                 </Link>
               </div>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
-              {upcomingEvents.map((ev: any, i: number) => {
-                const eventDate = new Date(ev.start_time);
-                const month = eventDate.toLocaleString("en", { month: "short" }).toUpperCase();
-                const day = eventDate.getDate();
-                return (
-                  <motion.div
-                    key={ev.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    className="shrink-0 w-[200px] sm:w-[240px] snap-start"
-                  >
-                    <div
-                      className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
-                      onClick={() => navigate(`/event/${ev.id}`)}
+            {upcomingEvents.length > 0 ? (
+              <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
+                {upcomingEvents.map((ev: any, i: number) => {
+                  const eventDate = new Date(ev.start_time);
+                  const month = eventDate.toLocaleString("en", { month: "short" }).toUpperCase();
+                  const day = eventDate.getDate();
+                  return (
+                    <motion.div
+                      key={ev.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.06 }}
+                      className="shrink-0 w-[200px] sm:w-[240px] snap-start"
                     >
-                      {ev.cover_image_url ? (
-                        <div className="aspect-[16/9] overflow-hidden relative">
-                          <img src={ev.cover_image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                          <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
-                            <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
-                            <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
+                      <div
+                        className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
+                        onClick={() => navigate(`/event/${ev.id}`)}
+                      >
+                        {ev.cover_image_url ? (
+                          <div className="aspect-[16/9] overflow-hidden relative">
+                            <img src={ev.cover_image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                            <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
+                              <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
+                              <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="aspect-[16/9] bg-gradient-to-br from-warning/10 to-primary/10 flex items-center justify-center relative">
-                          <CalendarDays className="h-6 w-6 text-warning/30" />
-                          <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
-                            <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
-                            <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
+                        ) : (
+                          <div className="aspect-[16/9] bg-gradient-to-br from-warning/10 to-primary/10 flex items-center justify-center relative">
+                            <CalendarDays className="h-6 w-6 text-warning/30" />
+                            <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
+                              <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
+                              <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      <div className="p-3">
-                        <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{ev.title}</p>
-                        {ev.venue_name && (
-                          <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                            <MapPin className="h-2.5 w-2.5" /> {ev.venue_name}
-                          </p>
                         )}
+                        <div className="p-3">
+                          <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{ev.title}</p>
+                          {ev.venue_name && (
+                            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                              <MapPin className="h-2.5 w-2.5" /> {ev.venue_name}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div
+                className="rounded-xl border border-border bg-card/50 p-5 text-center cursor-pointer hover:border-warning/30 transition-all"
+                onClick={() => setQuickPostType("event")}
+              >
+                <CalendarDays className="h-6 w-6 text-warning/40 mx-auto mb-2" />
+                <p className="text-sm font-medium text-foreground mb-1">Nothing happening near you yet</p>
+                <p className="text-xs text-muted-foreground mb-3">Be the first to bring creatives together — host a casual meetup or jam session.</p>
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-warning">
+                  Create a meetup <ArrowRight className="h-3 w-3" />
+                </span>
+              </div>
+            )}
           </section>
         )}
 

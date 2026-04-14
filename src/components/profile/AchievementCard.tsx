@@ -40,6 +40,7 @@ export const AchievementCard = ({
   onRequestEndorsement,
   icon,
   metadata,
+  category,
 }: AchievementCardProps) => {
   const getVariantStyles = () => {
     switch (variant) {

@@ -117,9 +117,27 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
   }
 }
 
-export async function generateEPKPdf(input: EPKPdfInput): Promise<void> {
+export interface EPKBrandingOptions {
+  primaryColor?: [number, number, number];
+  accentColor?: [number, number, number];
+  darkColor?: [number, number, number];
+  logoUrl?: string;
+  tagline?: string;
+}
+
+export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBrandingOptions): Promise<void> {
   const { default: jsPDF } = await import("jspdf");
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  // Apply custom branding if provided
+  const COLORS = {
+    primary: brandingOptions?.primaryColor || BRAND.primary,
+    dark: brandingOptions?.darkColor || BRAND.dark,
+    accent: brandingOptions?.accentColor || BRAND.accent,
+    white: BRAND.white,
+    muted: BRAND.muted,
+    light: BRAND.light,
+  };
 
   const { profile, credits, awards, pressLinks, industryStats, reviews } = input;
   let y = 0;

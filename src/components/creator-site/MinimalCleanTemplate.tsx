@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useState } from "react";
 import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRequestDialog";
@@ -82,11 +83,13 @@ export const MinimalCleanTemplate = ({ data }: { data: CreatorSiteData }) => {
         <section className="max-w-3xl mx-auto px-6 py-12 md:py-16 border-t border-[#eee]">
           <h2 className="text-sm font-medium text-[#999] mb-8">Selected Work</h2>
           <div className="space-y-6">
-            {credits.slice(0, 10).map((credit) => (
+            {credits.slice(0, 10).map((credit) => {
+              const thumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
+              return (
               <div key={credit.id} className="flex items-start gap-4 group">
-                {(credit.thumbnail_url || credit.primary_media_url) && (
+                {thumb && (
                   <img
-                    src={credit.thumbnail_url || credit.primary_media_url || ''}
+                    src={thumb}
                     alt=""
                     className="w-16 h-16 rounded-lg object-cover shrink-0"
                   />
@@ -96,7 +99,8 @@ export const MinimalCleanTemplate = ({ data }: { data: CreatorSiteData }) => {
                   <p className="text-sm text-[#999]">{credit.role}{credit.year ? ` · ${credit.year}` : ''}</p>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

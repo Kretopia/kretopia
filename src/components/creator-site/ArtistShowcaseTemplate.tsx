@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useState } from "react";
 import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRequestDialog";
@@ -29,8 +30,8 @@ export const ArtistShowcaseTemplate = ({ data }: { data: CreatorSiteData }) => {
     })),
   ];
 
-  const visualCredits = credits.filter(c => c.thumbnail_url || c.primary_media_url);
-  const textCredits = credits.filter(c => !c.thumbnail_url && !c.primary_media_url);
+  const visualCredits = credits.filter(c => resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
+  const textCredits = credits.filter(c => !resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
 
   return (
     <div className="bg-[#111] text-white min-h-dvh">
@@ -93,7 +94,7 @@ export const ArtistShowcaseTemplate = ({ data }: { data: CreatorSiteData }) => {
                   }`}
                 >
                   <img
-                    src={credit.thumbnail_url || credit.primary_media_url || ''}
+                    src={resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url) || ''}
                     alt={credit.project_name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />

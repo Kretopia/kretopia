@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { extractThumbnailForStorage } from "@/lib/thumbnailExtractor";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -76,9 +77,11 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const extractedThumb = extractThumbnailForStorage(newCredit.url || null);
       const { data: insertedData, error } = await supabase.from("credits").insert({
         user_id: user.id,
         ...newCredit,
+        thumbnail_url: extractedThumb,
       }).select().single();
 
       if (error) throw error;

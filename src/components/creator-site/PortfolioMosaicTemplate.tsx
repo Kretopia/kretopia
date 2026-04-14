@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useState } from "react";
 import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRequestDialog";
@@ -120,11 +121,13 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
               Portfolio
             </h2>
             <div className="columns-2 md:columns-3 gap-4 space-y-4">
-              {credits.slice(0, 12).map((credit) => (
+              {credits.slice(0, 12).map((credit) => {
+                const thumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
+                return (
                 <div key={credit.id} className="break-inside-avoid group relative rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition-shadow">
-                  {(credit.thumbnail_url || credit.primary_media_url) ? (
+                  {thumb ? (
                     <img
-                      src={credit.thumbnail_url || credit.primary_media_url}
+                      src={thumb}
                       alt={credit.project_name}
                       className="w-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
                       loading="lazy"
@@ -146,7 +149,8 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
                     )}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

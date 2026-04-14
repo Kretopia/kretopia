@@ -40,6 +40,21 @@ export function extractThumbnailFromUrl(url: string | null | undefined): string 
 /**
  * Given a credit's available URLs, try to resolve the best thumbnail.
  */
+/**
+ * Given a URL (e.g. YouTube, direct image), pre-extract a thumbnail
+ * to store at credit creation time.
+ */
+export function extractThumbnailForStorage(
+  url: string | null | undefined,
+  primaryMediaUrl?: string | null
+): string | null {
+  const fromUrl = extractThumbnailFromUrl(url);
+  if (fromUrl) return fromUrl;
+  const fromMedia = extractThumbnailFromUrl(primaryMediaUrl);
+  if (fromMedia) return fromMedia;
+  return null;
+}
+
 export function resolveCreditThumbnail(
   thumbnailUrl: string | null | undefined,
   primaryMediaUrl: string | null | undefined,

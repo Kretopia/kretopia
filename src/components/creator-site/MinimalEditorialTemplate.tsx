@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useState } from "react";
 import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRequestDialog";
@@ -150,11 +151,13 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
           <div className="max-w-5xl">
             <h2 className="text-3xl md:text-4xl font-light mb-12 md:mb-20">Selected Work</h2>
             <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-              {credits.slice(0, 8).map((credit) => (
+              {credits.slice(0, 8).map((credit) => {
+                const thumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
+                return (
                 <div key={credit.id} className="group">
-                  {(credit.thumbnail_url || credit.primary_media_url) ? (
+                  {thumb ? (
                     <img
-                      src={credit.thumbnail_url || credit.primary_media_url}
+                      src={thumb}
                       alt={credit.project_name}
                       className="w-full aspect-[4/3] object-cover mb-4 grayscale-[30%] group-hover:grayscale-0 transition-all duration-500"
                       loading="lazy"
@@ -169,7 +172,8 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
                     {credit.role} {credit.year ? `— ${credit.year}` : ''}
                   </p>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

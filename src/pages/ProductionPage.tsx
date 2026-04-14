@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { extractThumbnailForStorage } from "@/lib/thumbnailExtractor";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
@@ -143,6 +144,7 @@ const ProductionPage = () => {
       return;
     }
     try {
+      const extractedThumb = extractThumbnailForStorage(production?.external_url || null);
       await supabase.from("credits").insert({
         user_id: user.id,
         project_name: projectName,
@@ -153,6 +155,7 @@ const ProductionPage = () => {
         client_brand: production?.client_brand,
         project_type: production?.type,
         verification_status: "manual",
+        thumbnail_url: extractedThumb,
       });
       toast.success(`Claimed "${roleName}" on ${projectName}!`);
       fetchProduction();

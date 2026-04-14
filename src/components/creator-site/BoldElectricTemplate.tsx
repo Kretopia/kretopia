@@ -150,15 +150,17 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
         <section id="work" className="px-6 md:px-16 py-12 md:py-20">
           <h2 className="text-xs uppercase tracking-[0.5em] text-[#ff00ff] mb-10 md:mb-16">Featured Work</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-            {credits.map((credit) => (
+            {credits.map((credit) => {
+              const thumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
+              return (
               <div
                 key={credit.id}
                 className="group relative overflow-hidden bg-zinc-900 cursor-pointer"
                 onClick={() => navigate(`/profile/${profile.user_id}`)}
               >
-                {(() => { const thumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url); return thumb; })() ? (
+                {thumb ? (
                   <img
-                    src={resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url)!}
+                    src={thumb}
                     alt={credit.project_name}
                     className="w-full aspect-[2/3] object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                     loading="lazy"

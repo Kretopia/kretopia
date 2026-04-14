@@ -23,6 +23,7 @@ import { EditEventDialog } from "./EditEventDialog";
 
 import { EventCohosts } from "./EventCohosts";
 import { EventRecapButton } from "./EventRecapButton";
+import { EventCheckInDialog } from "./EventCheckInDialog";
 
 interface Session {
   id: string;
@@ -79,6 +80,7 @@ export const SessionDetailDialog = ({
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showCohosts, setShowCohosts] = useState(false);
   const [showRecap, setShowRecap] = useState(false);
+  const [showCheckIn, setShowCheckIn] = useState(false);
 
   useEffect(() => {
     if (open && session && user) {
@@ -161,16 +163,16 @@ export const SessionDetailDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[700px] h-[100dvh] sm:h-[85vh] flex flex-col p-0 overflow-hidden gap-0 rounded-none sm:rounded-lg">
+        <DialogContent className="sm:max-w-[700px] h-[100dvh] sm:h-[85vh] flex flex-col p-0 overflow-hidden gap-0 rounded-none sm:rounded-lg [&>button:last-child]:hidden">
           {/* Hero Cover Image */}
           <div className="relative shrink-0">
             {session.cover_image_url ? (
-              <div className="relative h-44 sm:h-56">
+              <div className="relative h-28 sm:h-44">
                 <img src={session.cover_image_url} alt={session.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
               </div>
             ) : (
-              <div className="h-20 bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20" />
+              <div className="h-14 sm:h-20 bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20" />
             )}
             
             {/* Top-right actions */}
@@ -191,6 +193,9 @@ export const SessionDetailDialog = ({
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setShowCohosts(true)}>
                       <Crown className="h-4 w-4 mr-2" /> Manage Co-hosts
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowCheckIn(true)}>
+                      <CheckCircle className="h-4 w-4 mr-2" /> Check In Guests
                     </DropdownMenuItem>
                     {isPast && (
                       <DropdownMenuItem onClick={() => setShowRecap(true)}>
@@ -235,17 +240,17 @@ export const SessionDetailDialog = ({
           </div>
 
           {/* Event Info Header */}
-          <div className="px-4 sm:px-5 pb-4 pt-3 border-b shrink-0 space-y-3">
-            <div className="flex items-start gap-3">
-              <Avatar className="h-11 w-11 ring-2 ring-primary/30 shrink-0">
+          <div className="px-4 sm:px-5 pb-3 pt-2 border-b shrink-0 space-y-2">
+            <div className="flex items-start gap-2.5">
+              <Avatar className="h-9 w-9 ring-2 ring-primary/30 shrink-0">
                 <AvatarImage src={session.creator_avatar} />
-                <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                <AvatarFallback className="bg-primary/10 text-primary text-xs">
                   {session.creator_name?.charAt(0) || 'S'}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-bold leading-tight">{session.title}</h2>
-                <p className="text-sm text-muted-foreground">Hosted by {session.creator_name}</p>
+                <h2 className="text-base font-bold leading-tight">{session.title}</h2>
+                <p className="text-xs text-muted-foreground">Hosted by {session.creator_name}</p>
               </div>
             </div>
 
@@ -306,8 +311,8 @@ export const SessionDetailDialog = ({
           </div>
 
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-            <div className="mx-3 sm:mx-5 mt-3 overflow-x-auto scrollbar-hide shrink-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+            <div className="mx-3 sm:mx-5 mt-2 overflow-x-auto scrollbar-hide shrink-0">
             <TabsList className="w-max">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="participants">
@@ -319,8 +324,8 @@ export const SessionDetailDialog = ({
             </TabsList>
             </div>
 
-            <div className="flex-1 overflow-hidden">
-              <TabsContent value="details" className="h-full overflow-y-auto px-4 sm:px-5 py-4 m-0">
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <TabsContent value="details" className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 m-0 data-[state=inactive]:hidden">
                 <div className="space-y-5">
                   {session.description && (
                     <div>
@@ -390,11 +395,11 @@ export const SessionDetailDialog = ({
                 </div>
               </TabsContent>
 
-              <TabsContent value="participants" className="h-full overflow-y-auto m-0">
+              <TabsContent value="participants" className="flex-1 overflow-y-auto m-0 data-[state=inactive]:hidden">
                 <SessionParticipants sessionId={session.id} creatorId={session.created_by} isCreator={isCreator} onRefresh={onRefresh} />
               </TabsContent>
 
-              <TabsContent value="chat" className="h-full m-0 flex flex-col overflow-hidden">
+              <TabsContent value="chat" className="flex-1 m-0 flex flex-col min-h-0 data-[state=inactive]:hidden">
                 <SessionChat sessionId={session.id} isCreator={isCreator} />
               </TabsContent>
 
@@ -436,6 +441,14 @@ export const SessionDetailDialog = ({
             </div>
           </DialogContent>
         </Dialog>
+      )}
+      {session && isCreator && (
+        <EventCheckInDialog
+          eventId={session.id}
+          eventTitle={session.title}
+          open={showCheckIn}
+          onOpenChange={setShowCheckIn}
+        />
       )}
     </>
   );

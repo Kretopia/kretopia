@@ -470,6 +470,17 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
+
+    // Custom logo in footer (Creator+)
+    if (brandingOptions?.logoUrl) {
+      try {
+        const logoData = await loadImageAsDataUrl(brandingOptions.logoUrl);
+        if (logoData) {
+          doc.addImage(logoData, 'PNG', MARGIN, PAGE_H - 14, 12, 12);
+        }
+      } catch {}
+    }
+
     // Bottom accent line
     doc.setFillColor(...COLORS.primary);
     doc.rect(0, PAGE_H - 12, PAGE_W, 12, 'F');

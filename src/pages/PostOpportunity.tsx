@@ -162,6 +162,7 @@ const PostOpportunity = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
+      clearDraft();
       setStep("sent");
     } catch (error: any) {
       console.error("Error posting:", error);

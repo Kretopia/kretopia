@@ -194,7 +194,7 @@ const NearbyCreators = () => {
           {/* Row 1: Title + actions */}
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="min-w-0">
-              <h1 className="text-lg font-bold truncate">Nearby</h1>
+              <h1 className="text-lg font-bold truncate">Discover</h1>
               {userLocation && (
                 <p className="text-[11px] text-muted-foreground">
                   {totalResults} result{totalResults !== 1 ? 's' : ''} within {radius}km
@@ -322,6 +322,8 @@ const NearbyCreators = () => {
                 <div className="space-y-3">
                   {loading ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                  ) : atlasFilter === 'sessions' ? (
+                    <Events embedded />
                   ) : totalResults === 0 ? (
                     <Card>
                       <CardContent className="py-12 text-center">

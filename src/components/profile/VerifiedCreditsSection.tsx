@@ -10,6 +10,7 @@ import {
   PersonStanding, CalendarDays, Sparkles, Crown, Shirt,
   Megaphone, Briefcase,
 } from "lucide-react";
+import { CreditCoverPlaceholder } from "./CreditCoverPlaceholder";
 import { cn } from "@/lib/utils";
 
 interface VerifiedCredit {

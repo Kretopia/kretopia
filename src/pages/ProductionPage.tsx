@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { extractThumbnailForStorage } from "@/lib/thumbnailExtractor";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";

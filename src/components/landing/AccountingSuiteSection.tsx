@@ -1,12 +1,17 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { PieChart, FileText, Bot, TrendingUp, Receipt, Wallet } from "lucide-react";
+import { PieChart, FileText, Bot, TrendingUp, Receipt, Wallet, Milestone, FolderKanban } from "lucide-react";
 
 const FINANCE_FEATURES = [
   {
     icon: FileText,
     title: "Professional Invoicing",
-    description: "Create branded invoices in 11 currencies with custom logos, colors & one-click PDF export.",
+    description: "Create invoices in 11 currencies. Creator+ adds your logo, brand colors & custom letterhead.",
+  },
+  {
+    icon: Milestone,
+    title: "Milestone Payments",
+    description: "Split projects into payment stages. Funds release when deliverables are approved — no more trust issues.",
   },
   {
     icon: Receipt,
@@ -16,7 +21,12 @@ const FINANCE_FEATURES = [
   {
     icon: PieChart,
     title: "P&L Dashboard",
-    description: "Real-time KPIs, spending pie charts, monthly revenue comparisons & exportable reports.",
+    description: "Real-time KPIs, spending breakdowns, monthly revenue comparisons & exportable reports.",
+  },
+  {
+    icon: FolderKanban,
+    title: "Project Management",
+    description: "Tasks, files, milestones & team chat in one workspace — your creative Slack + Trello.",
   },
   {
     icon: Bot,
@@ -41,11 +51,11 @@ export const AccountingSuiteSection = () => {
             </span>
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            Invoicing, milestone payments, and escrow — built for how creatives actually work. No more chasing payments.
+            Invoicing, milestone payments, expense tracking & project management — built for how creatives actually work. No more chasing payments.
           </p>
         </div>
 
-        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {FINANCE_FEATURES.map((feature) => {
             const Icon = feature.icon;
             return (
@@ -70,7 +80,7 @@ export const AccountingSuiteSection = () => {
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <TrendingUp className="h-4 w-4 text-accent" />
-            <span>Included with Pro membership</span>
+            <span>Included with Creator membership</span>
           </div>
           <Link to="/auth">
             <Button variant="gradient" size="sm" className="gap-2">

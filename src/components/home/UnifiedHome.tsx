@@ -582,46 +582,39 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── MAGAZINE (auth only) ── */}
-        {user && latestArticles.length > 0 && (
-          <section id="section-stories" className="mb-8 scroll-mt-14">
+        {/* ── CREATORS FOR YOU (auth only) ── */}
+        {user && featuredCreators.length > 0 && (
+          <section className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-                {t("landing.magazine")}
+                <Users className="h-4 w-4 text-accent" />
+                Creators You Should Connect With
               </h2>
-              <Link to="/magazine" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                {t("landing.readAll")} <ArrowRight className="h-3 w-3" />
+              <Link to="/circle" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                See all <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
-              {latestArticles.map((a: any, i: number) => (
+              {featuredCreators.slice(0, 8).map((c: any, i: number) => (
                 <motion.div
-                  key={a.id}
+                  key={c.user_id}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                  className="shrink-0 w-[200px] sm:w-[240px] snap-start"
+                  transition={{ delay: i * 0.05 }}
+                  className="shrink-0 w-[120px] snap-start"
                 >
-                  <div className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
-                    onClick={() => navigate(a.slug ? `/magazine/${a.slug}` : `/magazine/${a.id}`)}
+                  <div
+                    className="rounded-2xl border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group p-3 text-center"
+                    onClick={() => navigate(`/profile/${c.user_id}`)}
                   >
-                    {a.cover_image_url ? (
-                      <div className="aspect-[16/9] overflow-hidden">
-                        <img src={a.cover_image_url} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                      </div>
-                    ) : (
-                      <div className="aspect-[16/9] bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                        <BookOpen className="h-6 w-6 text-primary/30" />
-                      </div>
-                    )}
-                    <div className="p-3">
-                      <Badge variant="outline" className="text-[8px] mb-1.5">{a.category || t("common.article")}</Badge>
-                      <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{a.title}</p>
-                      {a.read_time_minutes && (
-                        <p className="text-[10px] text-muted-foreground mt-1">{t("common.minRead", { count: a.read_time_minutes })}</p>
-                      )}
-                    </div>
+                    <Avatar className="h-14 w-14 mx-auto mb-2 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
+                      <AvatarImage src={c.avatar_url || ""} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
+                        {(c.full_name || "?")[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <p className="text-xs font-semibold text-foreground line-clamp-1">{c.full_name}</p>
+                    <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{c.role || "Creative"}</p>
                   </div>
                 </motion.div>
               ))}
@@ -629,29 +622,64 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── PODCAST (auth only) ── */}
-        {user && (
-          <section className="mb-8">
+        {/* ── WHAT'S HAPPENING NEAR YOU (auth only) ── */}
+        {user && upcomingEvents.length > 0 && (
+          <section className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Headphones className="h-4 w-4 text-accent" />
-                {t("landing.podcast")}
+                <MapPin className="h-4 w-4 text-warning" />
+                What's Happening Near You
               </h2>
+              <Link to="/nearby" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                Explore <ArrowRight className="h-3 w-3" />
+              </Link>
             </div>
-            <div
-              className="rounded-2xl overflow-hidden border border-border/50 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 p-5 cursor-pointer hover:border-primary/30 transition-all group"
-              onClick={() => navigate("/podcast")}
-            >
-              <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
-                  <Headphones className="h-7 w-7 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground mb-0.5">{t("landing.podcastTitle")}</p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">{t("landing.podcastDesc")}</p>
-                </div>
-                <Play className="h-5 w-5 text-primary shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
-              </div>
+            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
+              {upcomingEvents.map((ev: any, i: number) => {
+                const eventDate = new Date(ev.start_time);
+                const month = eventDate.toLocaleString("en", { month: "short" }).toUpperCase();
+                const day = eventDate.getDate();
+                return (
+                  <motion.div
+                    key={ev.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.06 }}
+                    className="shrink-0 w-[200px] sm:w-[240px] snap-start"
+                  >
+                    <div
+                      className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
+                      onClick={() => navigate(`/event/${ev.id}`)}
+                    >
+                      {ev.cover_image_url ? (
+                        <div className="aspect-[16/9] overflow-hidden relative">
+                          <img src={ev.cover_image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                          <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
+                            <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
+                            <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="aspect-[16/9] bg-gradient-to-br from-warning/10 to-primary/10 flex items-center justify-center relative">
+                          <CalendarDays className="h-6 w-6 text-warning/30" />
+                          <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
+                            <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
+                            <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
+                          </div>
+                        </div>
+                      )}
+                      <div className="p-3">
+                        <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{ev.title}</p>
+                        {ev.venue_name && (
+                          <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                            <MapPin className="h-2.5 w-2.5" /> {ev.venue_name}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </section>
         )}

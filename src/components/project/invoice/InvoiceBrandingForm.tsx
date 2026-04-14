@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Upload, Palette, ImagePlus, X, FileImage } from "lucide-react";
+import { Building2, Upload, Palette, ImagePlus, X, FileImage, Crown } from "lucide-react";
 import { toast } from "sonner";
+import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
 
 export interface InvoiceBranding {
   brand_name: string;
@@ -28,7 +29,10 @@ const DEFAULT_COLORS = [
 ];
 
 export function InvoiceBrandingForm({ branding, onChange }: InvoiceBrandingFormProps) {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
+  const tier = (subscriptionInfo?.tier || 'free') as any;
+  const isCreator = hasProAccess(tier);
+  const isCreatorPlus = hasCreatorProAccess(tier);
   const [uploading, setUploading] = useState(false);
   const [uploadingLetterhead, setUploadingLetterhead] = useState(false);
   const [logoDragActive, setLogoDragActive] = useState(false);
@@ -136,14 +140,17 @@ export function InvoiceBrandingForm({ branding, onChange }: InvoiceBrandingFormP
         <h3 className="font-semibold text-sm">Your Branding</h3>
       </div>
 
-      {/* Logo Upload - Clean drag/drop area */}
-      <div>
-        <Label className="text-xs font-medium mb-1.5 block">Business Logo</Label>
+      {/* Logo Upload - Creator+ only */}
+      <div className={!isCreatorPlus ? "relative" : ""}>
+        <Label className="text-xs font-medium mb-1.5 flex items-center gap-1">
+          Business Logo
+          {!isCreatorPlus && <span className="inline-flex items-center gap-0.5 text-[10px] text-primary font-semibold ml-1"><Crown className="h-3 w-3" /> Creator+</span>}
+        </Label>
         <div
-          onClick={() => logoInputRef.current?.click()}
-          onDrop={(e) => handleDrop(e, "logo")}
-          onDragOver={(e) => handleDragOver(e, "logo")}
-          onDragLeave={(e) => handleDragLeave(e, "logo")}
+          onClick={() => isCreatorPlus ? logoInputRef.current?.click() : toast.error("Upgrade to Creator+ for custom logo branding")}
+          onDrop={(e) => isCreatorPlus ? handleDrop(e, "logo") : e.preventDefault()}
+          onDragOver={(e) => isCreatorPlus ? handleDragOver(e, "logo") : e.preventDefault()}
+          onDragLeave={(e) => isCreatorPlus ? handleDragLeave(e, "logo") : e.preventDefault()}
           className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all duration-200 p-4 flex items-center gap-4 ${
             logoDragActive 
               ? "border-primary bg-primary/5 scale-[1.01]" 
@@ -231,10 +238,11 @@ export function InvoiceBrandingForm({ branding, onChange }: InvoiceBrandingFormP
         </div>
       </div>
 
-      {/* Brand Color */}
-      <div>
+      {/* Brand Color - Creator+ only */}
+      <div className={!isCreatorPlus ? "opacity-60 pointer-events-none" : ""}>
         <Label className="text-xs flex items-center gap-1">
           <Palette className="h-3 w-3" /> Accent Color
+          {!isCreatorPlus && <span className="inline-flex items-center gap-0.5 text-[10px] text-primary font-semibold ml-1"><Crown className="h-3 w-3" /> Creator+</span>}
         </Label>
         <div className="flex gap-1.5 mt-1.5 flex-wrap">
           {DEFAULT_COLORS.map((color) => (
@@ -257,10 +265,12 @@ export function InvoiceBrandingForm({ branding, onChange }: InvoiceBrandingFormP
         </div>
       </div>
 
-      {/* Letterhead Upload - Optional */}
-      <div>
+      {/* Letterhead Upload - Creator+ only */}
+      <div className={!isCreatorPlus ? "opacity-60 pointer-events-none" : ""}>
         <Label className="text-xs font-medium mb-1.5 flex items-center gap-1">
-          <FileImage className="h-3 w-3" /> Custom Letterhead <span className="text-muted-foreground font-normal">(optional)</span>
+          <FileImage className="h-3 w-3" /> Custom Letterhead
+          {!isCreatorPlus && <span className="inline-flex items-center gap-0.5 text-[10px] text-primary font-semibold ml-1"><Crown className="h-3 w-3" /> Creator+</span>}
+          {isCreatorPlus && <span className="text-muted-foreground font-normal">(optional)</span>}
         </Label>
         <p className="text-[10px] text-muted-foreground mb-2">
           Upload a designed header image that appears at the top of your invoice instead of the default layout.

@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
+import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlaceholder";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -643,17 +644,12 @@ function PosterCard({
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
         ) : (
-          <div className={cn("absolute inset-0 bg-gradient-to-br", gradient)}>
-            <div className="absolute inset-0 flex items-center justify-center opacity-10">
-              <CatIcon className="h-20 w-20" />
-            </div>
-            {/* Title overlay for placeholder */}
-            <div className="absolute inset-0 flex items-end p-3">
-              <p className="text-white/60 text-[10px] font-medium uppercase tracking-wider line-clamp-2">
-                {formatType(type)}
-              </p>
-            </div>
-          </div>
+          <CreditCoverPlaceholder
+            category={type}
+            title={title}
+            role={formatType(type)}
+            height="absolute inset-0"
+          />
         )}
 
         {/* Gradient overlay on bottom */}

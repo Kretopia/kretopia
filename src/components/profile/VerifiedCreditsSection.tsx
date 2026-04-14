@@ -10,6 +10,7 @@ import {
   PersonStanding, CalendarDays, Sparkles, Crown, Shirt,
   Megaphone, Briefcase,
 } from "lucide-react";
+import { CreditCoverPlaceholder } from "./CreditCoverPlaceholder";
 import { cn } from "@/lib/utils";
 
 interface VerifiedCredit {
@@ -202,12 +203,11 @@ function CreditCard({ credit, isOwnProfile, onDelete, isDeleting }: {
             className="w-full h-[220px] object-cover"
           />
         ) : (
-          <div className="w-full h-[220px] bg-gradient-to-br from-muted to-muted-foreground/10 flex flex-col items-center justify-center gap-2">
-            <Icon className="h-10 w-10 text-muted-foreground/40" />
-            <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">
-              {credit.credit_type.replace('_', ' ')}
-            </span>
-          </div>
+          <CreditCoverPlaceholder
+            category={credit.credit_type}
+            title={credit.title}
+            role={credit.role}
+          />
         )}
 
         {/* Source badge */}

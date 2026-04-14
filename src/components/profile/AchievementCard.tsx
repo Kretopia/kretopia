@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Shield, Star, Trash2, Award, Trophy, UserPlus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CreditCoverPlaceholder } from "./CreditCoverPlaceholder";
 
 export interface AchievementCardProps {
   variant: "credit" | "press" | "award" | "stat";
@@ -20,6 +21,7 @@ export interface AchievementCardProps {
   onRequestEndorsement?: () => void;
   icon?: React.ReactNode;
   metadata?: Record<string, string | number>;
+  category?: string | null;
 }
 
 export const AchievementCard = ({
@@ -38,6 +40,7 @@ export const AchievementCard = ({
   onRequestEndorsement,
   icon,
   metadata,
+  category,
 }: AchievementCardProps) => {
   const getVariantStyles = () => {
     switch (variant) {
@@ -190,7 +193,7 @@ export const AchievementCard = ({
     >
       <CardContent className="p-0">
         {/* Thumbnail/Icon Section */}
-        {imageUrl && (
+        {imageUrl ? (
           <div className="relative h-48 bg-muted overflow-hidden">
             <img
               src={imageUrl}
@@ -206,7 +209,14 @@ export const AchievementCard = ({
               </div>
             )}
           </div>
-        )}
+        ) : variant === "credit" ? (
+          <CreditCoverPlaceholder
+            category={category}
+            title={title}
+            role={subtitle || undefined}
+            height="h-48"
+          />
+        ) : null}
 
         {/* Content Section */}
         <div className="p-4 space-y-2">

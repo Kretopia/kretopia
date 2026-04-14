@@ -302,7 +302,7 @@ export const EventCheckInDialog = ({ eventId, eventTitle, open, onOpenChange }: 
           ) : (
             <div className="space-y-2">
               {filteredParticipants.map(p => (
-                <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-card">
+                <div key={p.id} className="flex items-center gap-2 p-2.5 rounded-xl border border-border/50 bg-card">
                   <Avatar className="h-9 w-9">
                     <AvatarImage src={p.profile?.avatar_url || ''} />
                     <AvatarFallback className="text-xs">

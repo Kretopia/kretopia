@@ -600,16 +600,25 @@ export const UnifiedHome = () => {
         )}
 
         {/* ── 3. WHAT'S HAPPENING NEAR YOU (auth only) ── */}
-        {user && upcomingEvents.length > 0 && (
+        {user && (
           <section className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-warning" />
                 What's Happening Near You
               </h2>
-              <Link to="/nearby" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                Explore <ArrowRight className="h-3 w-3" />
-              </Link>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setQuickPostType("event")}
+                  className="text-[10px] font-semibold text-warning flex items-center gap-1 hover:text-warning/80 transition-colors"
+                >
+                  <PlusCircle className="h-3.5 w-3.5" /> Create Event
+                </button>
+                <span className="text-border">·</span>
+                <Link to="/nearby" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                  Explore <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
               {upcomingEvents.map((ev: any, i: number) => {

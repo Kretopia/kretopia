@@ -21,6 +21,7 @@ export interface AchievementCardProps {
   onRequestEndorsement?: () => void;
   icon?: React.ReactNode;
   metadata?: Record<string, string | number>;
+  category?: string | null;
 }
 
 export const AchievementCard = ({

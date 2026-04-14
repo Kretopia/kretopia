@@ -315,7 +315,7 @@ export default function PartnerSubmit() {
                     <SelectContent>
                       <SelectItem value="free">All Members (Spark)</SelectItem>
                       <SelectItem value="pro">Pro Members & Above</SelectItem>
-                      <SelectItem value="enterprise">Enterprise Members Only</SelectItem>
+                      <SelectItem value="enterprise">Creator+ Members Only</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

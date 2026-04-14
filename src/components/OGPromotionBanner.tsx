@@ -54,7 +54,7 @@ export const OGPromotionBanner = () => {
             OG Member Bonus
           </Badge>
           <span className="text-sm">
-            You're enjoying free Creator Pro membership! {daysLeft} days remaining.
+            You're enjoying free Creator+ membership! {daysLeft} days remaining.
           </span>
         </div>
         <span className="text-xs text-muted-foreground">

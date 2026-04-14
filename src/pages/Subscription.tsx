@@ -338,7 +338,7 @@ export default function Subscription() {
               </div>
               <CardTitle className="text-2xl">Founder Circle <span className="text-accent">⭕</span></CardTitle>
               <CardDescription>
-                Join the founding members. Lifetime Enterprise access with exclusive perks.
+                Join the founding members. Lifetime Creator+ access with exclusive perks.
               </CardDescription>
               <div className="mt-3">
                 <span className="text-4xl font-bold">$499</span>

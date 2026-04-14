@@ -534,7 +534,7 @@ export const UnifiedHome = () => {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                Trending Credits
+                Credits In Your World
               </h2>
               <Link to="/credits" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
                 {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />

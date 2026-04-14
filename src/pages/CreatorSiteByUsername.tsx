@@ -6,6 +6,12 @@ import { SEO } from "@/components/SEO";
 import { BoldElectricTemplate } from "@/components/creator-site/BoldElectricTemplate";
 import { MinimalEditorialTemplate } from "@/components/creator-site/MinimalEditorialTemplate";
 import { PortfolioMosaicTemplate } from "@/components/creator-site/PortfolioMosaicTemplate";
+import { CreativeDirectorTemplate } from "@/components/creator-site/CreativeDirectorTemplate";
+import { ArtistShowcaseTemplate } from "@/components/creator-site/ArtistShowcaseTemplate";
+import { ProducerTemplate } from "@/components/creator-site/ProducerTemplate";
+import { AgencyTemplate } from "@/components/creator-site/AgencyTemplate";
+import { MinimalCleanTemplate } from "@/components/creator-site/MinimalCleanTemplate";
+import { PhotographerTemplate } from "@/components/creator-site/PhotographerTemplate";
 import { useSiteViewTracker } from "@/hooks/useSiteAnalytics";
 import type { CreatorSiteData } from "@/pages/CreatorSite";
 
@@ -18,8 +24,17 @@ const CreatorSiteByUsername = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<CreatorSiteData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSite, setIsSite] = useState(false);
 
   useSiteViewTracker(!loading && data ? data.profile.user_id : undefined);
+
+  // Hide platform nav when rendering a creator site
+  useEffect(() => {
+    if (isSite) {
+      document.body.classList.add('creator-site-active');
+      return () => { document.body.classList.remove('creator-site-active'); };
+    }
+  }, [isSite]);
 
   useEffect(() => {
     const resolve = async () => {
@@ -28,7 +43,6 @@ const CreatorSiteByUsername = () => {
         return;
       }
 
-      // Look up the username
       const { data: profile } = await supabase
         .from("profiles")
         .select("user_id, full_name, role, bio, location, avatar_url, cover_image_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, rate_range, site_template, site_enabled, site_headline, site_bio, site_sections, site_custom_blocks, professional_skills, subscription_tier, username")
@@ -48,7 +62,8 @@ const CreatorSiteByUsername = () => {
         return;
       }
 
-      // Fetch supporting data
+      setIsSite(true);
+
       const userId = profile.user_id;
       const [servicesRes, creditsRes, reviewsRes, endorsementsRes] = await Promise.all([
         supabase.from("creator_services").select("id, title, description, category, cover_image_url, delivery_time, tags, service_format").eq("user_id", userId).eq("is_active", true).order("display_order"),
@@ -57,7 +72,6 @@ const CreatorSiteByUsername = () => {
         supabase.from("credit_endorsements").select("id, testimonial, endorser_name, relationship, status").eq("status", "endorsed").in("credit_id", (await supabase.from("credits").select("id").eq("user_id", userId)).data?.map((c: any) => c.id) || []).limit(6),
       ]);
 
-      // Fetch service tiers
       const serviceIds = (servicesRes.data || []).map((s: any) => s.id);
       let tiers: any[] = [];
       if (serviceIds.length > 0) {
@@ -111,10 +125,16 @@ const CreatorSiteByUsername = () => {
         title={`${data.profile.full_name} — ${data.profile.role || "Creator"}`}
         description={data.profile.bio?.slice(0, 160) || `${data.profile.full_name}'s professional site powered by ThriveIN`}
       />
-      {template === "bold-electric" && <BoldElectricTemplate data={data} />}
-      {template === "minimal-editorial" && <MinimalEditorialTemplate data={data} />}
-      {template === "portfolio-mosaic" && <PortfolioMosaicTemplate data={data} />}
-      {!["bold-electric", "minimal-editorial", "portfolio-mosaic"].includes(template) && <BoldElectricTemplate data={data} />}
+      {template === 'bold-electric' && <BoldElectricTemplate data={data} />}
+      {template === 'minimal-editorial' && <MinimalEditorialTemplate data={data} />}
+      {template === 'portfolio-mosaic' && <PortfolioMosaicTemplate data={data} />}
+      {template === 'creative-director' && <CreativeDirectorTemplate data={data} />}
+      {template === 'artist-showcase' && <ArtistShowcaseTemplate data={data} />}
+      {template === 'producer' && <ProducerTemplate data={data} />}
+      {template === 'agency' && <AgencyTemplate data={data} />}
+      {template === 'minimal-clean' && <MinimalCleanTemplate data={data} />}
+      {template === 'photographer' && <PhotographerTemplate data={data} />}
+      {!['bold-electric', 'minimal-editorial', 'portfolio-mosaic', 'creative-director', 'artist-showcase', 'producer', 'agency', 'minimal-clean', 'photographer'].includes(template) && <BoldElectricTemplate data={data} />}
     </>
   );
 };

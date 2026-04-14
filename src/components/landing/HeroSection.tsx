@@ -298,9 +298,12 @@ export const HeroSection = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
                       </div>
                     ) : (
-                      <div className="aspect-[4/3] bg-muted flex items-center justify-center">
-                        <Database className="h-6 w-6 text-muted-foreground/30" />
-                      </div>
+                      <CreditCoverPlaceholder
+                        category={c.credit_category}
+                        title={c.project_name}
+                        role={c.role}
+                        height="aspect-[4/3]"
+                      />
                     )}
                     <div className="absolute bottom-0 left-0 right-0 p-2.5">
                       <div className="flex items-center gap-1 mb-1">

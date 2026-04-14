@@ -367,15 +367,58 @@ export const UnifiedHome = () => {
         </div>
       )}
 
+      {/* ═══════════ SECTION NAV ═══════════ */}
+      <div className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border/40 mb-2">
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6">
+          <div className="flex gap-1 overflow-x-auto scrollbar-hide py-2">
+            {[
+              { id: "credits", label: "Credits", icon: Database },
+              { id: "gigs", label: "Gigs", icon: Zap },
+              { id: "events", label: "Events", icon: CalendarDays },
+              { id: "stories", label: "Stories", icon: BookOpen },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => document.getElementById(`section-${tab.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all whitespace-nowrap shrink-0"
+              >
+                <tab.icon className="h-3.5 w-3.5" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ═══════════ CONTENT SECTIONS ═══════════ */}
       <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
 
-        {/* ── TRENDING PRODUCTIONS ── */}
-        <section className="mb-8">
+        {/* ── CREDITS EXPLAINER (guest only) ── */}
+        {!user && (
+          <section className="mb-8 rounded-2xl border border-primary/20 bg-primary/5 p-5 sm:p-6">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                <Database className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-1">What are ThriveCredits?</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Think of credits like IMDb — but for every creative industry. Each credit is a verified record of work you've done: a music video you directed, a brand shoot you styled, an event you produced. AI + peer endorsements verify your work so clients trust your portfolio instantly.
+                </p>
+                <Link to="/auth" className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-primary hover:underline">
+                  Search your name to find your credits <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── TRENDING CREDITS ── */}
+        <section id="section-credits" className="mb-8 scroll-mt-14">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              {t("landing.trendingProductions")}
+              Trending Credits
             </h2>
             <Link to="/credits" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
               {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
@@ -421,7 +464,7 @@ export const UnifiedHome = () => {
 
 
         {/* ── OPEN GIGS ── */}
-        <section className="mb-8">
+        <section id="section-gigs" className="mb-8 scroll-mt-14">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Zap className="h-4 w-4 text-warning" />
@@ -480,7 +523,7 @@ export const UnifiedHome = () => {
         </section>
 
         {/* ── UPCOMING EVENTS ── */}
-        <section className="mb-8">
+        <section id="section-events" className="mb-8 scroll-mt-14">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-warning" />
@@ -560,7 +603,7 @@ export const UnifiedHome = () => {
 
         {/* ── MAGAZINE ── */}
         {latestArticles.length > 0 && (
-          <section className="mb-8">
+          <section id="section-stories" className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-primary" />

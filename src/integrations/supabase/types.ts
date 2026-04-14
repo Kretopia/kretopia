@@ -5816,6 +5816,7 @@ export type Database = {
           role: string
           section_order: Json | null
           site_bio: string | null
+          site_custom_blocks: Json | null
           site_enabled: boolean | null
           site_headline: string | null
           site_sections: Json | null
@@ -5967,6 +5968,7 @@ export type Database = {
           role: string
           section_order?: Json | null
           site_bio?: string | null
+          site_custom_blocks?: Json | null
           site_enabled?: boolean | null
           site_headline?: string | null
           site_sections?: Json | null
@@ -6118,6 +6120,7 @@ export type Database = {
           role?: string
           section_order?: Json | null
           site_bio?: string | null
+          site_custom_blocks?: Json | null
           site_enabled?: boolean | null
           site_headline?: string | null
           site_sections?: Json | null

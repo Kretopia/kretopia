@@ -31,7 +31,7 @@ const CreatorSiteByUsername = () => {
       // Look up the username
       const { data: profile } = await supabase
         .from("profiles")
-        .select("user_id, full_name, role, bio, location, avatar_url, cover_image_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, rate_range, site_template, site_enabled, site_headline, site_bio, site_sections, professional_skills, subscription_tier, username")
+        .select("user_id, full_name, role, bio, location, avatar_url, cover_image_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, rate_range, site_template, site_enabled, site_headline, site_bio, site_sections, site_custom_blocks, professional_skills, subscription_tier, username")
         .eq("username", username.toLowerCase())
         .maybeSingle();
 
@@ -71,7 +71,7 @@ const CreatorSiteByUsername = () => {
       }));
 
       setData({
-        profile,
+        profile: { ...profile, site_custom_blocks: (profile.site_custom_blocks as any) || [] },
         services: servicesWithTiers,
         credits: creditsRes.data || [],
         reviews: reviewsRes.data || [],

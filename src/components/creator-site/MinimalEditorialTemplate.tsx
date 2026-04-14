@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useState } from "react";
 import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRequestDialog";
 
@@ -240,6 +241,9 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
             </div>
           </div>
         </div>
+        {profile.site_custom_blocks?.length > 0 && (
+          <BlockRenderer blocks={profile.site_custom_blocks} theme="light" />
+        )}
         <div className="mt-16 pt-8 border-t border-[#e5e3df] text-center">
           <a
             href="https://www.thrivein.io"

@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useState } from "react";
 import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRequestDialog";
 
@@ -161,6 +162,9 @@ export const MinimalCleanTemplate = ({ data }: { data: CreatorSiteData }) => {
       )}
 
       {/* Footer */}
+      {profile.site_custom_blocks?.length > 0 && (
+        <BlockRenderer blocks={profile.site_custom_blocks} theme="light" />
+      )}
       <footer className="max-w-3xl mx-auto px-6 py-8 flex justify-between items-center text-xs text-[#ccc]">
         <span>© {new Date().getFullYear()} {profile.full_name}</span>
         <span>Powered by ThriveIN</span>

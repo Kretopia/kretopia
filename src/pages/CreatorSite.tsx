@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
+import type { ContentBlock } from "@/components/creator-site/blocks/BlockTypes";
 import { BoldElectricTemplate } from "@/components/creator-site/BoldElectricTemplate";
 import { MinimalEditorialTemplate } from "@/components/creator-site/MinimalEditorialTemplate";
 import { PortfolioMosaicTemplate } from "@/components/creator-site/PortfolioMosaicTemplate";
@@ -35,6 +36,7 @@ export interface CreatorSiteData {
     site_headline: string;
     site_bio: string;
     site_sections: any;
+    site_custom_blocks: ContentBlock[];
     professional_skills: any;
   };
   services: any[];
@@ -59,7 +61,7 @@ const CreatorSite = () => {
       // Fetch profile - check if site is enabled
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, location, avatar_url, cover_image_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, rate_range, site_template, site_enabled, site_headline, site_bio, site_sections, professional_skills, subscription_tier, username')
+        .select('user_id, full_name, role, bio, location, avatar_url, cover_image_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, rate_range, site_template, site_enabled, site_headline, site_bio, site_sections, site_custom_blocks, professional_skills, subscription_tier, username')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -128,7 +130,7 @@ const CreatorSite = () => {
       }));
 
       setData({
-        profile,
+        profile: { ...profile, site_custom_blocks: (profile.site_custom_blocks as any) || [] },
         services: servicesWithTiers,
         credits: creditsRes.data || [],
         reviews: reviewsRes.data || [],

@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useState } from "react";
 import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRequestDialog";
 
@@ -182,6 +183,9 @@ export const PhotographerTemplate = ({ data }: { data: CreatorSiteData }) => {
       )}
 
       {/* Footer */}
+      {profile.site_custom_blocks?.length > 0 && (
+        <BlockRenderer blocks={profile.site_custom_blocks} theme="dark" />
+      )}
       <footer className="px-6 py-6 flex justify-between items-center text-[10px] text-white/15 uppercase tracking-widest">
         <span>© {new Date().getFullYear()} {profile.full_name}</span>
         <span>Powered by ThriveIN</span>

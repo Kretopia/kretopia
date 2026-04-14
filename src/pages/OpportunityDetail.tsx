@@ -370,14 +370,34 @@ const OpportunityDetail = () => {
                   {opportunity.scouted_by === user?.id && (opportunity as any).claim_token && (opportunity as any).claim_status === 'unclaimed' && (
                     <>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => {
+                      <DropdownMenuItem onClick={async (e) => {
+                        e.preventDefault();
                         const claimUrl = `${window.location.origin}/claim-gig/${(opportunity as any).claim_token}`;
                         const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
-                        if (navigator.share) {
-                          navigator.share({ title: "Claim your gig on ThriveIN", text: shareText, url: claimUrl }).catch(() => {});
-                        } else {
-                          navigator.clipboard.writeText(shareText);
-                          toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
+                        try {
+                          if (navigator.share) {
+                            await navigator.share({ title: "Claim your gig on ThriveIN", text: shareText, url: claimUrl });
+                          } else {
+                            await navigator.clipboard.writeText(shareText);
+                            toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
+                          }
+                        } catch {
+                          // Fallback: try clipboard, then manual copy
+                          try {
+                            await navigator.clipboard.writeText(shareText);
+                            toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
+                          } catch {
+                            // Final fallback using textarea
+                            const textarea = document.createElement('textarea');
+                            textarea.value = shareText;
+                            textarea.style.position = 'fixed';
+                            textarea.style.opacity = '0';
+                            document.body.appendChild(textarea);
+                            textarea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textarea);
+                            toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
+                          }
                         }
                       }}>
                         <Radar className="h-4 w-4 mr-2" /> Share Claim Link

@@ -125,6 +125,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // Guest navigation items
+  const guestNavItems = [
+    { path: "/about", label: "About Us" },
+    { path: "/magazine", label: "Magazine" },
+    { path: "/podcast", label: "Discover a Thriver" },
+    { path: "/explore", label: "Explore" },
+  ];
+
+  const [guestMenuOpen, setGuestMenuOpen] = useState(false);
+
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2.5">
@@ -136,6 +146,21 @@ const Navbar = memo(({ user }: NavbarProps) => {
             variant="navbar"
             className="hidden sm:block flex-1 max-w-sm mx-4"
           />
+        )}
+
+        {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
+        {!user && isLandingPage && (
+          <div className="hidden md:flex items-center gap-1 mx-4">
+            {guestNavItems.map(({ path, label }) => (
+              <Link
+                key={path}
+                to={path}
+                className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all whitespace-nowrap"
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
         )}
 
         {/* Desktop Navigation - Mode Aware */}
@@ -371,6 +396,41 @@ const Navbar = memo(({ user }: NavbarProps) => {
             </Sheet>
           ) : !user && isLandingPage ? (
             <>
+              {/* Mobile hamburger for guests */}
+              <Sheet open={guestMenuOpen} onOpenChange={setGuestMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 md:hidden">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[80vw] sm:w-[320px]">
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-1 mt-6">
+                    {guestNavItems.map(({ path, label }) => (
+                      <Button
+                        key={path}
+                        variant="ghost"
+                        className="justify-start h-12 text-sm font-medium"
+                        onClick={() => { setGuestMenuOpen(false); navigate(path); }}
+                      >
+                        {label}
+                      </Button>
+                    ))}
+                    <Separator className="my-3" />
+                    <Button
+                      variant="ghost"
+                      className="justify-start h-12 text-sm font-medium"
+                      onClick={() => { setGuestMenuOpen(false); navigate("/post-opportunity"); }}
+                    >
+                      <Briefcase className="h-4 w-4 mr-2" />
+                      Hire Talent
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+
               <Link to="/post-opportunity" className="hidden sm:inline-flex">
                 <Button variant="outline" size="sm" className="gap-2">
                   <Briefcase className="h-4 w-4" />

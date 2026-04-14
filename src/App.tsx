@@ -86,6 +86,7 @@ const CreditDatabase = lazy(() => import("./pages/CreditDatabase"));
 const ICDBProjectPage = lazy(() => import("./pages/ICDBProjectPage"));
 const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
+const Explore = lazy(() => import("./pages/Explore"));
 const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
 const CreatorSite = lazy(() => import("./pages/CreatorSite"));
 const CreatorSiteByUsername = lazy(() => import("./pages/CreatorSiteByUsername"));
@@ -261,6 +262,7 @@ const AppContent = () => {
             <Route path="/nearby" element={<NearbyCreators />} />
             <Route path="/events" element={<Events />} />
             <Route path="/scene" element={<Scene />} />
+            <Route path="/explore" element={<Explore />} />
             
             {/* Public Magazine Article - SEO accessible */}
             <Route path="/magazine/:slug" element={<MagazineArticlePage />} />

@@ -25,13 +25,14 @@ serve(async (req) => {
       const xml = await feedRes.text();
       const entries = parseRSS(xml);
       if (entries.length > 0) {
+        console.log(`RSS returned ${entries.length} episodes`);
         return new Response(JSON.stringify({ episodes: entries }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
 
-    // Fallback: scrape playlist page for video data
+    // Fallback: scrape playlist page
     console.log("RSS feed failed, falling back to playlist page scrape");
     const pageUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
     const pageRes = await fetch(pageUrl, {
@@ -45,40 +46,59 @@ serve(async (req) => {
 
     const html = await pageRes.text();
 
-    // Extract ytInitialData JSON from the page
-    const dataMatch = html.match(/var ytInitialData\s*=\s*({.*?});<\/script>/s);
-    if (!dataMatch) throw new Error("Could not parse playlist data");
+    // Extract ytInitialData JSON
+    const dataMatch = html.match(/var\s+ytInitialData\s*=\s*(\{.*?\});\s*<\/script>/s);
+    if (!dataMatch) {
+      console.error("Could not find ytInitialData in page");
+      // Last resort: extract video IDs with simple regex
+      const videoIds = [...new Set(
+        [...html.matchAll(/"videoId":"([a-zA-Z0-9_-]{11})"/g)].map(m => m[1])
+      )];
+      console.log(`Regex fallback found ${videoIds.length} video IDs`);
+      const episodes = videoIds.slice(0, 20).map(id => ({
+        videoId: id,
+        title: "",
+        description: "",
+        thumbnail: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+        publishedAt: "",
+      }));
+      return new Response(JSON.stringify({ episodes }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const ytData = JSON.parse(dataMatch[1]);
 
-    // Navigate to playlist video items
+    // Navigate JSON structure to find playlist items
     const tabs = ytData?.contents?.twoColumnBrowseResultsRenderer?.tabs || [];
     let items: any[] = [];
     for (const tab of tabs) {
       const contents = tab?.tabRenderer?.content?.sectionListRenderer?.contents || [];
       for (const section of contents) {
         const playlistItems = section?.itemSectionRenderer?.contents?.[0]?.playlistVideoListRenderer?.contents || [];
-        items = playlistItems;
+        if (playlistItems.length > 0) {
+          items = playlistItems;
+          break;
+        }
       }
+      if (items.length > 0) break;
     }
+
+    console.log(`Parsed ${items.length} playlist items from ytInitialData`);
 
     const episodes = items
       .filter((item: any) => item.playlistVideoRenderer)
       .map((item: any) => {
-        const renderer = item.playlistVideoRenderer;
-        const videoId = renderer.videoId || "";
-        const title = renderer.title?.runs?.[0]?.text || renderer.title?.simpleText || "";
-        const thumbnail = renderer.thumbnail?.thumbnails?.pop()?.url || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-        
-        // Try to get description snippet
-        const description = renderer.shortBylineText?.runs?.[0]?.text || "";
-
+        const r = item.playlistVideoRenderer;
+        const videoId = r.videoId || "";
+        const title = r.title?.runs?.[0]?.text || r.title?.simpleText || "";
+        const thumbnail = r.thumbnail?.thumbnails?.slice(-1)?.[0]?.url || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
         return {
           videoId,
           title,
-          description,
+          description: "",
           thumbnail,
-          publishedAt: "", // Not available from scrape
+          publishedAt: "",
         };
       })
       .filter((ep: any) => ep.videoId && ep.title);
@@ -99,19 +119,16 @@ function parseRSS(xml: string) {
   const entries: any[] = [];
   const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
   let match;
-
   while ((match = entryRegex.exec(xml)) !== null) {
     const entry = match[1];
     const get = (tag: string) => {
       const m = entry.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`));
       return m ? m[1].trim() : "";
     };
-
     const id = (() => {
       const vidMatch = entry.match(/<yt:videoId>([^<]*)<\/yt:videoId>/);
       return vidMatch ? vidMatch[1] : "";
     })();
-
     const title = get("title");
     const published = get("published");
     const updated = get("updated");
@@ -119,15 +136,8 @@ function parseRSS(xml: string) {
     const description = descMatch ? descMatch[1].trim() : "";
     const thumbMatch = entry.match(/<media:thumbnail[^>]*url="([^"]*)"[^>]*\/>/);
     const thumbnail = thumbMatch ? thumbMatch[1] : `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-
     if (id && title) {
-      entries.push({
-        videoId: id,
-        title,
-        description: description.slice(0, 300),
-        thumbnail,
-        publishedAt: published || updated,
-      });
+      entries.push({ videoId: id, title, description: description.slice(0, 300), thumbnail, publishedAt: published || updated });
     }
   }
   return entries;

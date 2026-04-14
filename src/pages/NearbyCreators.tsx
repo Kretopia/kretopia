@@ -20,6 +20,7 @@ import { useLocationBookmarks } from "@/hooks/useLocationBookmarks";
 import { AtlasSearchBar, defaultAtlasFilters, type AtlasSearchFilters } from "@/components/nearby/AtlasSearchBar";
 import { SeedLocationsDialog } from "@/components/nearby/SeedLocationsDialog";
 import { analytics } from "@/lib/analytics";
+import Events from "@/pages/Events";
 
 import { NearbyCreator, CreatorCard, formatDistance, getSkills } from "@/components/nearby/NearbyCreatorCard";
 import { NearbySession, SessionListItem } from "@/components/nearby/NearbySessionListItem";
@@ -193,7 +194,7 @@ const NearbyCreators = () => {
           {/* Row 1: Title + actions */}
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="min-w-0">
-              <h1 className="text-lg font-bold truncate">Nearby</h1>
+              <h1 className="text-lg font-bold truncate">Discover</h1>
               {userLocation && (
                 <p className="text-[11px] text-muted-foreground">
                   {totalResults} result{totalResults !== 1 ? 's' : ''} within {radius}km
@@ -268,21 +269,25 @@ const NearbyCreators = () => {
 
         {/* No Location State */}
         {!userLocation && !loading && (
-          <Card className="mt-8">
-            <CardContent className="py-12 text-center">
-              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <MapPin className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Enable Location</h3>
-              <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
-                Allow location access to discover creators, studios, and sessions near you.
-              </p>
-              <Button onClick={detectLocation} disabled={locating} variant="gradient" size="lg">
-                {locating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Navigation className="h-4 w-4 mr-2" />}
-                Enable Location
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="py-8 text-center">
+                <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                  <MapPin className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="text-base font-semibold mb-1">Enable Location</h3>
+                <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
+                  Allow location access to discover creators and studios near you.
+                </p>
+                <Button onClick={detectLocation} disabled={locating} variant="gradient" size="default">
+                  {locating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Navigation className="h-4 w-4 mr-2" />}
+                  Enable Location
+                </Button>
+              </CardContent>
+            </Card>
+            {/* Show events even without location */}
+            <Events embedded />
+          </div>
         )}
 
         {/* AI Discovery CTA — compact inline */}
@@ -321,6 +326,8 @@ const NearbyCreators = () => {
                 <div className="space-y-3">
                   {loading ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                  ) : atlasFilter === 'sessions' ? (
+                    <Events embedded />
                   ) : totalResults === 0 ? (
                     <Card>
                       <CardContent className="py-12 text-center">

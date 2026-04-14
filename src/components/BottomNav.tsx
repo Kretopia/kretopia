@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const CREATE_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
-  { path: "/events", icon: CalendarDays, label: "Events" },
+  { path: "/nearby", icon: CalendarDays, label: "Discover" },
   { path: "/circle", icon: Sparkles, label: "Match" },
   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
 ];
@@ -61,7 +61,7 @@ const BottomNav = memo(() => {
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
-    if (path === "/events") return location.pathname === "/events";
+    if (path === "/nearby") return location.pathname === "/nearby";
     if (path === "/circle") return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
     if (path === "/opportunities") return location.pathname === "/opportunities" || location.pathname === "/opportunity-dashboard";
     if (path === "/desk") return location.pathname.startsWith("/desk");

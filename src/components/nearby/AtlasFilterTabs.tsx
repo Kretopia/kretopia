@@ -33,7 +33,7 @@ const PRIMARY_TABS: { value: AtlasFilter; label: string; icon: any; countKey?: k
   { value: 'all', label: 'All', icon: MapPin },
   { value: 'bookmarked', label: 'Saved', icon: Bookmark, countKey: 'bookmarked' },
   { value: 'creators', label: 'Creators', icon: Users, countKey: 'creators' },
-  { value: 'sessions', label: 'Sessions', icon: Calendar, countKey: 'sessions' },
+  { value: 'sessions', label: 'Events', icon: Calendar, countKey: 'sessions' },
 ];
 
 const MORE_TABS: { value: AtlasFilter; label: string; icon: any; countKey: keyof AtlasFilterTabsProps['counts'] }[] = [

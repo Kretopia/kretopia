@@ -77,7 +77,7 @@ const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 
 const EventPage = lazy(() => import("./pages/EventPage"));
-const Events = lazy(() => import("./pages/Events"));
+
 const Scene = lazy(() => import("./pages/Scene"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Magazine = lazy(() => import("./pages/Magazine"));
@@ -262,7 +262,7 @@ const AppContent = () => {
             
             {/* Public Browsable Routes */}
             <Route path="/nearby" element={<NearbyCreators />} />
-            <Route path="/events" element={<Events />} />
+            <Route path="/events" element={<Navigate to="/nearby" replace />} />
             <Route path="/scene" element={<Scene />} />
             <Route path="/explore" element={<Explore />} />
             

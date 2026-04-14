@@ -211,8 +211,6 @@ export const ProfileContentSections = ({
       {/* Pending verification requests */}
       <CreditVerificationPanel userId={profile.user_id} />
 
-      {/* Video Intro */}
-      <VideoIntroSection videoUrl={profile.video_intro_url} isOwnProfile={true} onRefresh={onRefresh} />
 
       {/* Sentinel for sticky detection */}
       <div ref={tabBarSentinelRef} className="h-0" />

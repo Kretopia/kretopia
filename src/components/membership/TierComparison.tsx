@@ -13,15 +13,17 @@ interface Feature {
 
 const CREATOR_FEATURES: Feature[] = [
   { name: "Credit Claiming", free: "Unlimited", pro: "Unlimited" },
+  { name: "Portfolio / Credits Displayed", free: "5", pro: "Unlimited" },
   { name: "Daily Swipes", free: "20", pro: "Unlimited" },
+  { name: "Browse Profiles", free: "10/month", pro: "Unlimited" },
   { name: "Direct Messaging", free: true, pro: true },
-  { name: "Browse Matches", free: true, pro: true },
-  { name: "Paid Gig Posts", free: "Unlimited", pro: "Unlimited" },
-  { name: "Barter/Collab Posts", free: "3/month", pro: "Unlimited" },
-  { name: "Invoices", free: "5/month", pro: "Unlimited" },
-  { name: "Expenses", free: "10/month", pro: "Unlimited" },
-  { name: "Milestones", free: "5/month", pro: "Unlimited" },
-  { name: "AI Briefs", free: "3/month", pro: "Unlimited" },
+  { name: "Gig Applications", free: "2/month", pro: "Unlimited" },
+  { name: "Active Projects", free: "1", pro: "Unlimited" },
+  { name: "Invoices", free: "2/month", pro: "Unlimited" },
+  { name: "Milestones", free: "1/project", pro: "Unlimited" },
+  { name: "Contracts", free: "1/month", pro: "Unlimited" },
+  { name: "AI Briefs", free: "2/month", pro: "Unlimited" },
+  { name: "Commission on Sales", free: "Higher", pro: "Lower" },
   { name: "AI Match Explanations", free: false, pro: true },
   { name: "Undo Swipe", free: false, pro: "3/day" },
   { name: "Profile Verification Badge", free: false, pro: true },
@@ -34,20 +36,21 @@ const CREATOR_FEATURES: Feature[] = [
 const BRAND_FEATURES: Feature[] = [
   { name: "Company Page", free: "Basic", pro: "Branded" },
   { name: "Direct Messaging", free: true, pro: true },
-  { name: "Browse Talent", free: true, pro: true },
+  { name: "Browse Talent", free: "10/month", pro: "Unlimited" },
   { name: "Paid Job Posts", free: "Unlimited", pro: "Unlimited" },
-  { name: "Barter/Collab Posts", free: "5/month", pro: "Unlimited" },
-  { name: "Invoices", free: "5/month", pro: "Unlimited" },
-  { name: "Expenses", free: "10/month", pro: "Unlimited" },
-  { name: "Milestones", free: "5/month", pro: "Unlimited" },
-  { name: "AI Talent Matching", free: "2/month", pro: "Unlimited" },
-  { name: "AI Job Descriptions", free: "2/month", pro: "Unlimited" },
+  { name: "Barter/Collab Posts", free: "3/month", pro: "Unlimited" },
+  { name: "Invoices", free: "2/month", pro: "Unlimited" },
+  { name: "Active Projects", free: "1", pro: "Unlimited" },
+  { name: "Milestones", free: "1/project", pro: "Unlimited" },
+  { name: "Contracts", free: "1/month", pro: "Unlimited" },
+  { name: "AI Talent Matching", free: "1/month", pro: "Unlimited" },
+  { name: "AI Job Descriptions", free: "1/month", pro: "Unlimited" },
+  { name: "Commission on Sales", free: "Higher", pro: "Lower" },
   { name: "Applicant Tracking", free: false, pro: true },
   { name: "Hiring Analytics", free: false, pro: true },
   { name: "Verification Badge", free: false, pro: true },
   { name: "Advanced Talent Filters", free: false, pro: true },
   { name: "Priority Listing", free: false, pro: true },
-  { name: "Platform Fee", free: "20%", pro: "15%" },
   { name: "Priority Support", free: false, pro: true },
 ];
 
@@ -79,7 +82,7 @@ export function TierComparison({ currentTier = "free", accountType = "individual
       ]
     : [
         { key: "free", name: "Spark", price: "$0", icon: <Zap className="h-5 w-5" /> },
-        { key: "pro", name: "Pro", price: "$12/mo", icon: <Sparkles className="h-5 w-5" />, popular: true },
+        { key: "pro", name: "Pro", price: "$29/mo", icon: <Sparkles className="h-5 w-5" />, popular: true },
       ];
 
   return (

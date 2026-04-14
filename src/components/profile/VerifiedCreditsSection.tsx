@@ -11,6 +11,7 @@ import {
   Megaphone, Briefcase,
 } from "lucide-react";
 import { CreditCoverPlaceholder } from "./CreditCoverPlaceholder";
+import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 import { cn } from "@/lib/utils";
 
 interface VerifiedCredit {

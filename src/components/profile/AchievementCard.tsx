@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Shield, Star, Trash2, Award, Trophy, UserPlus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CreditCoverPlaceholder } from "./CreditCoverPlaceholder";
 
 export interface AchievementCardProps {
   variant: "credit" | "press" | "award" | "stat";

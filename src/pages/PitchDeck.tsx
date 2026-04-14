@@ -287,7 +287,7 @@ const Slide8 = () => (
       <div className="grid grid-cols-4 gap-8">
         {[
           { title: "Transaction Fees", items: ["Free Tier: 15%", "Pro Tier: 8%"], icon: "" },
-          { title: "Subscription", items: ["Pro: $12/month", ""], icon: "" },
+          { title: "Subscription", items: ["Pro: $29/month", "Creator Pro: $59/month"], icon: "" },
           { title: "Founder Circle", items: ["$499 Lifetime", ""], icon: "👑" },
           { title: "Future Expansion", items: ["Financial tools", "Creator credit layer"], icon: "" },
         ].map((item, i) => (

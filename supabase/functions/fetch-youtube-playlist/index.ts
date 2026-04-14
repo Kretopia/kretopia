@@ -17,65 +17,73 @@ serve(async (req) => {
       });
     }
 
-    // Fetch YouTube RSS feed (no API key needed)
+    // Try RSS feed first
     const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`;
     const feedRes = await fetch(feedUrl);
-    if (!feedRes.ok) throw new Error(`YouTube feed error: ${feedRes.status}`);
 
-    const xml = await feedRes.text();
-
-    // Parse entries from XML
-    const entries: any[] = [];
-    const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
-    let match;
-
-    while ((match = entryRegex.exec(xml)) !== null) {
-      const entry = match[1];
-      const get = (tag: string) => {
-        const m = entry.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`));
-        return m ? m[1].trim() : "";
-      };
-      const getAttr = (tag: string, attr: string) => {
-        const m = entry.match(new RegExp(`<${tag}[^>]*${attr}="([^"]*)"[^>]*/>`));
-        return m ? m[1] : "";
-      };
-
-      const videoId = getAttr("yt:videoId", "")
-        ? ""
-        : (() => {
-            const vidMatch = entry.match(/<yt:videoId>([^<]*)<\/yt:videoId>/);
-            return vidMatch ? vidMatch[1] : "";
-          })();
-
-      const id = (() => {
-        const vidMatch = entry.match(/<yt:videoId>([^<]*)<\/yt:videoId>/);
-        return vidMatch ? vidMatch[1] : "";
-      })();
-
-      const title = get("title");
-      const published = get("published");
-      const updated = get("updated");
-      
-      // Get description from media:group > media:description
-      const descMatch = entry.match(/<media:description>([\s\S]*?)<\/media:description>/);
-      const description = descMatch ? descMatch[1].trim() : "";
-
-      // Get thumbnail
-      const thumbMatch = entry.match(/<media:thumbnail[^>]*url="([^"]*)"[^>]*\/>/);
-      const thumbnail = thumbMatch ? thumbMatch[1] : `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-
-      if (id && title) {
-        entries.push({
-          videoId: id,
-          title,
-          description: description.slice(0, 300),
-          thumbnail,
-          publishedAt: published || updated,
+    if (feedRes.ok) {
+      const xml = await feedRes.text();
+      const entries = parseRSS(xml);
+      if (entries.length > 0) {
+        return new Response(JSON.stringify({ episodes: entries }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
 
-    return new Response(JSON.stringify({ episodes: entries }), {
+    // Fallback: scrape playlist page for video data
+    console.log("RSS feed failed, falling back to playlist page scrape");
+    const pageUrl = `https://www.youtube.com/playlist?list=${playlistId}`;
+    const pageRes = await fetch(pageUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+    });
+
+    if (!pageRes.ok) throw new Error(`Playlist page error: ${pageRes.status}`);
+
+    const html = await pageRes.text();
+
+    // Extract ytInitialData JSON from the page
+    const dataMatch = html.match(/var ytInitialData\s*=\s*({.*?});<\/script>/s);
+    if (!dataMatch) throw new Error("Could not parse playlist data");
+
+    const ytData = JSON.parse(dataMatch[1]);
+
+    // Navigate to playlist video items
+    const tabs = ytData?.contents?.twoColumnBrowseResultsRenderer?.tabs || [];
+    let items: any[] = [];
+    for (const tab of tabs) {
+      const contents = tab?.tabRenderer?.content?.sectionListRenderer?.contents || [];
+      for (const section of contents) {
+        const playlistItems = section?.itemSectionRenderer?.contents?.[0]?.playlistVideoListRenderer?.contents || [];
+        items = playlistItems;
+      }
+    }
+
+    const episodes = items
+      .filter((item: any) => item.playlistVideoRenderer)
+      .map((item: any) => {
+        const renderer = item.playlistVideoRenderer;
+        const videoId = renderer.videoId || "";
+        const title = renderer.title?.runs?.[0]?.text || renderer.title?.simpleText || "";
+        const thumbnail = renderer.thumbnail?.thumbnails?.pop()?.url || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        
+        // Try to get description snippet
+        const description = renderer.shortBylineText?.runs?.[0]?.text || "";
+
+        return {
+          videoId,
+          title,
+          description,
+          thumbnail,
+          publishedAt: "", // Not available from scrape
+        };
+      })
+      .filter((ep: any) => ep.videoId && ep.title);
+
+    return new Response(JSON.stringify({ episodes }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
@@ -86,3 +94,41 @@ serve(async (req) => {
     );
   }
 });
+
+function parseRSS(xml: string) {
+  const entries: any[] = [];
+  const entryRegex = /<entry>([\s\S]*?)<\/entry>/g;
+  let match;
+
+  while ((match = entryRegex.exec(xml)) !== null) {
+    const entry = match[1];
+    const get = (tag: string) => {
+      const m = entry.match(new RegExp(`<${tag}[^>]*>([^<]*)</${tag}>`));
+      return m ? m[1].trim() : "";
+    };
+
+    const id = (() => {
+      const vidMatch = entry.match(/<yt:videoId>([^<]*)<\/yt:videoId>/);
+      return vidMatch ? vidMatch[1] : "";
+    })();
+
+    const title = get("title");
+    const published = get("published");
+    const updated = get("updated");
+    const descMatch = entry.match(/<media:description>([\s\S]*?)<\/media:description>/);
+    const description = descMatch ? descMatch[1].trim() : "";
+    const thumbMatch = entry.match(/<media:thumbnail[^>]*url="([^"]*)"[^>]*\/>/);
+    const thumbnail = thumbMatch ? thumbMatch[1] : `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+
+    if (id && title) {
+      entries.push({
+        videoId: id,
+        title,
+        description: description.slice(0, 300),
+        thumbnail,
+        publishedAt: published || updated,
+      });
+    }
+  }
+  return entries;
+}

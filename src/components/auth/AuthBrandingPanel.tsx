@@ -5,8 +5,8 @@ import { BrandLogo } from "@/components/BrandLogo";
 const FEATURES = [
   { icon: ShieldCheck, label: "Verified Credits", desc: "Build an IMDb-style record for your entire career" },
   { icon: Briefcase, label: "Real Gigs & Collabs", desc: "Get matched with paid opportunities & collaborators" },
-  { icon: DollarSign, label: "Invoicing & Payments", desc: "Send invoices, track expenses, and get paid on time" },
-  { icon: Store, label: "Creator Sites", desc: "Your own landing page at yourname.thrivein.app" },
+  { icon: DollarSign, label: "Invoicing & Milestone Payments", desc: "Send invoices, set milestones, and get paid securely" },
+  { icon: Store, label: "Creator Websites", desc: "Launch your own landing page + project management tools" },
 ];
 
 export const AuthBrandingPanel = () => (

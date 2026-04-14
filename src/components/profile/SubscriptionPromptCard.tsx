@@ -15,12 +15,12 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
   if (currentTier !== 'free') return null; // Pro and Founder both hide this
 
   const proFeatures = [
+    "Your own creator website",
+    "Full invoicing & milestone payments",
+    "P&L dashboard & expense tracking",
     "Unlimited swipes & matches",
-    "Unlimited AI briefs & templates",
-    "Full P&L dashboard & reports",
+    "Project management workspace",
     "Profile verification badge",
-    "Unlimited invoicing & expense tracking",
-    "Advanced search filters",
     "Save 17% with annual billing",
   ];
 

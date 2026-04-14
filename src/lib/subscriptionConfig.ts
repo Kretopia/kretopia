@@ -219,8 +219,8 @@ export function getTierDisplayName(tier: SubscriptionTier): string {
     case 'founder': return 'Founder Circle ⭕';
     case 'brand_enterprise': return 'Brand Enterprise';
     case 'brand_pro': return 'Brand Pro';
-    case 'creator_pro': return 'Creator Pro';
-    case 'pro': return 'Pro';
+    case 'creator_pro': return 'Creator +';
+    case 'pro': return 'Creator';
     case 'free':
     default: return 'Spark';
   }

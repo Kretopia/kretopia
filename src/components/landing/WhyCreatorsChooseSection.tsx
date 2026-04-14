@@ -1,23 +1,38 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Palette, Brain, MessageSquare, Shield, Award, Verified, DollarSign, Sparkles, Crown } from "lucide-react";
+import { Award, Brain, MessageSquare, Shield, Verified, DollarSign, Sparkles, Crown, Globe, FileText, FolderKanban, Milestone, LayoutDashboard } from "lucide-react";
 
 export const WhyCreatorsChooseSection = () => {
   const features = [
     {
       icon: <Award className="h-5 w-5" />,
       title: "ThriveCredits™",
-      text: "Claim your work on any project — AI + peer verification builds a reputation that lasts"
+      text: "Claim your work on any project — AI + peer verification builds a portable reputation that lasts"
+    },
+    {
+      icon: <Globe className="h-5 w-5" />,
+      title: "Creator Websites",
+      text: "Launch your own landing page at yourname.thrivein.app — no coding, premium templates included"
     },
     {
       icon: <Brain className="h-5 w-5" />,
       title: "AI Matching",
-      text: "Swipe through portfolios, get matched by style & skills"
+      text: "Swipe through portfolios, get matched by style, skills & location"
     },
     {
-      icon: <Palette className="h-5 w-5" />,
-      title: "Nearby Creators",
-      text: "Discover verified creatives in your area on a map"
+      icon: <FolderKanban className="h-5 w-5" />,
+      title: "Project Management",
+      text: "Tasks, files, milestones & team chat in one workspace — your creative Slack + Trello"
+    },
+    {
+      icon: <DollarSign className="h-5 w-5" />,
+      title: "Invoicing & Milestone Payments",
+      text: "Send invoices, set milestone payments, track expenses & get paid securely via escrow"
+    },
+    {
+      icon: <FileText className="h-5 w-5" />,
+      title: "EPK & PDF Decks",
+      text: "Generate professional press kits & pitch decks from your profile in one click"
     },
     {
       icon: <Shield className="h-5 w-5" />,
@@ -25,14 +40,14 @@ export const WhyCreatorsChooseSection = () => {
       text: "One unique ID across industries — embed it anywhere, own your reputation"
     },
     {
-      icon: <MessageSquare className="h-5 w-5" />,
-      title: "Project Workspaces",
-      text: "Chat, tasks, files & milestones in one workspace"
+      icon: <LayoutDashboard className="h-5 w-5" />,
+      title: "Business Dashboard",
+      text: "P&L reports, earnings tracking, expense management — run your creative business like a pro"
     },
     {
-      icon: <DollarSign className="h-5 w-5" />,
-      title: "Invoicing & Payments",
-      text: "Send invoices, track milestones & get paid securely"
+      icon: <MessageSquare className="h-5 w-5" />,
+      title: "Real Gigs & Collabs",
+      text: "Post paid gigs, find collaborators, apply to opportunities — all in one place"
     },
   ];
 
@@ -40,6 +55,9 @@ export const WhyCreatorsChooseSection = () => {
     <section className="px-4 sm:px-6 py-16 sm:py-20 md:py-24">
       <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-12">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mb-3">
+            Your Full Creative Studio
+          </p>
           <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
             Why Creators Choose{" "}
             <span className="text-primary">
@@ -47,7 +65,7 @@ export const WhyCreatorsChooseSection = () => {
             </span>
           </h2>
           <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
-            No more scattered tools. No more unpaid invoices. Everything you need to find work, collaborate, and get paid — in one place.
+            Stop juggling 9 different apps. Credits, gigs, contracts, invoices, websites, project management & payments — all in one platform built for creatives.
           </p>
         </div>
 

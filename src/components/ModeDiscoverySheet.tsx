@@ -29,7 +29,7 @@ export function ModeDiscoverySheet() {
             return () => clearTimeout(timer);
           }
         } catch {}
-      });
+      }, () => {});
   }, [user]);
 
   const dismiss = (selectedMode?: "create" | "work") => {

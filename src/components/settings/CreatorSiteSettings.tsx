@@ -253,18 +253,43 @@ export const CreatorSiteSettings = () => {
 
                   {/* Custom Domain */}
                   {isCreatorPro ? (
-                    <div className="p-3 rounded-lg bg-muted/50 border border-border space-y-2">
+                    <div className="p-3 rounded-lg bg-muted/50 border border-border space-y-3">
                       <div className="flex items-center gap-2">
                         <Globe className="h-4 w-4 text-primary shrink-0" />
-                        <p className="text-xs font-medium">Custom Domain</p>
+                        <p className="text-xs font-medium">Custom Domain Redirect</p>
                         <Badge variant="secondary" className="text-[10px]">Creator Pro</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Connect your own domain to your creator site. Go to your project's publish settings to add a custom domain that points to your site.
+                        Point your own domain (e.g. yourdomain.com) to your ThriveIN creator site. Visitors who go to your domain will be redirected to your page.
                       </p>
-                      <Button variant="outline" size="sm" className="text-xs" onClick={() => window.open('https://docs.lovable.dev/features/custom-domain', '_blank')}>
-                        Domain Setup Guide →
-                      </Button>
+                      <div className="bg-background rounded-md p-3 border border-border space-y-2">
+                        <p className="text-[11px] font-semibold text-foreground">Setup Instructions</p>
+                        <ol className="text-[11px] text-muted-foreground space-y-1.5 list-decimal list-inside">
+                          <li>Go to your domain registrar (GoDaddy, Namecheap, Cloudflare, etc.)</li>
+                          <li>Find <span className="font-medium text-foreground">DNS Settings</span> or <span className="font-medium text-foreground">Forwarding</span></li>
+                          <li>Add a <span className="font-medium text-foreground">URL Redirect / Forward</span> pointing to:</li>
+                        </ol>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="text-[11px] bg-muted px-2 py-1 rounded font-mono flex-1 truncate">
+                            {siteUrl || `thrivein.io/${profile?.vanity_url || profile?.username || 'yourname'}`}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 shrink-0"
+                            onClick={() => {
+                              const url = siteUrl || `thrivein.io/${profile?.vanity_url || profile?.username || 'yourname'}`;
+                              navigator.clipboard.writeText(url);
+                              toast({ title: 'Copied!', description: 'URL copied to clipboard' });
+                            }}
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground/70 mt-1">
+                          Choose "Permanent (301)" redirect if available for best SEO.
+                        </p>
+                      </div>
                     </div>
                   ) : (
                     <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">

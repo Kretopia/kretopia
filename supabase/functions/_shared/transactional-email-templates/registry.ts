@@ -11,8 +11,10 @@ export interface TemplateEntry {
 
 import { template as applicationConfirmation } from './application-confirmation.tsx'
 import { template as newApplicantNotification } from './new-applicant-notification.tsx'
+import { template as eventRegistrationConfirmation } from './event-registration-confirmation.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-confirmation': applicationConfirmation,
   'new-applicant-notification': newApplicantNotification,
+  'event-registration-confirmation': eventRegistrationConfirmation,
 }

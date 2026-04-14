@@ -5,6 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Download, Share2, Shield, Sparkles, Copy, Check, MessageCircle, Twitter, Link2, Instagram } from "lucide-react";
 import html2canvas from "html2canvas";
 import { useToast } from "@/hooks/use-toast";
+import { APP_URL } from "@/lib/constants";
 
 interface CreatorCardProps {
   open: boolean;
@@ -43,9 +44,9 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
 
   const getProfileUrl = () => {
     if (profile.user_id) {
-      return `${window.location.origin}/profile/${profile.user_id}`;
+      return `${APP_URL}/profile/${profile.user_id}`;
     }
-    return `${window.location.origin}/u/${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}`;
+    return `${APP_URL}/u/${profile.full_name?.replace(/\s+/g, "-").toLowerCase() || "creator"}`;
   };
 
   const getShareText = () => {

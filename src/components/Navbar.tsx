@@ -149,13 +149,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
         )}
 
         {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
-        {!user && isLandingPage && (
+        {!user && (
           <div className="hidden md:flex items-center gap-1 mx-4">
             {guestNavItems.map(({ path, label }) => (
               <Link
                 key={path}
                 to={path}
-                className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all whitespace-nowrap"
+                className={cn(
+                  "px-3 py-2 rounded-lg text-sm font-medium hover:text-foreground hover:bg-accent/50 transition-all whitespace-nowrap",
+                  location.pathname === path ? "text-foreground bg-accent/30" : "text-muted-foreground"
+                )}
               >
                 {label}
               </Link>
@@ -394,9 +397,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 </div>
               </SheetContent>
             </Sheet>
-          ) : !user && isLandingPage ? (
+          ) : !user ? (
             <>
-              {/* Mobile hamburger for guests */}
+              {/* Mobile hamburger for guests — all pages */}
               <Sheet open={guestMenuOpen} onOpenChange={setGuestMenuOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-9 w-9 md:hidden">
@@ -408,11 +411,18 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-1 mt-6">
+                    <Button
+                      variant="ghost"
+                      className={cn("justify-start h-12 text-sm font-medium", location.pathname === "/" && "bg-accent/30")}
+                      onClick={() => { setGuestMenuOpen(false); navigate("/"); }}
+                    >
+                      Home
+                    </Button>
                     {guestNavItems.map(({ path, label }) => (
                       <Button
                         key={path}
                         variant="ghost"
-                        className="justify-start h-12 text-sm font-medium"
+                        className={cn("justify-start h-12 text-sm font-medium", location.pathname === path && "bg-accent/30")}
                         onClick={() => { setGuestMenuOpen(false); navigate(path); }}
                       >
                         {label}
@@ -437,15 +447,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   Hire Talent
                 </Button>
               </Link>
-              <Link to="/auth">
-                <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4">Sign In</Button>
-              </Link>
-              <Link to="/auth">
-                <Button variant="gradient" size="sm" className="text-xs sm:text-sm px-2.5 sm:px-4">Get Started</Button>
-              </Link>
-            </>
-          ) : !user && !isLandingPage ? (
-            <>
               <Link to="/auth">
                 <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-4">Sign In</Button>
               </Link>

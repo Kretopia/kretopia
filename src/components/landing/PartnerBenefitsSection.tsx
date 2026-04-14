@@ -155,11 +155,11 @@ export const PartnerBenefitsSection = () => {
         {/* Upgrade CTA */}
         <div className="mt-12 text-center">
           <p className="text-muted-foreground mb-4">
-            Get even more partner benefits with Creator Pro membership
+            Get even more partner benefits with Creator+ membership
           </p>
           <Link to="/membership">
             <Button size="lg" className="font-semibold">
-              Upgrade to Creator Pro
+              Upgrade to Creator+
             </Button>
           </Link>
         </div>

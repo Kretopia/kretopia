@@ -36,7 +36,7 @@ export const AIMatchBadge = ({ score, size = "md", showLocked = false }: AIMatch
           </Badge>
         </TooltipTrigger>
         <TooltipContent>
-          <p className="text-sm">Upgrade to Creator Pro for unlimited AI match scores</p>
+          <p className="text-sm">Upgrade to Creator+ for unlimited AI match scores</p>
         </TooltipContent>
       </Tooltip>
     );

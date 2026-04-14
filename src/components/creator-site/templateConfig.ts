@@ -13,8 +13,8 @@ export interface TemplateOption {
 }
 
 /**
- * Pro tier: bold-electric, minimal-editorial, portfolio-mosaic (3 templates)
- * Creator Pro tier: all 9 templates
+ * Creator tier: bold-electric, minimal-editorial, portfolio-mosaic (3 templates)
+ * Creator+ tier: all 9 templates
  */
 export const TEMPLATES: TemplateOption[] = [
   {
@@ -105,7 +105,7 @@ export function isTemplateAccessible(templateId: string, isCreatorPro: boolean):
   const t = TEMPLATES.find(tpl => tpl.id === templateId);
   if (!t) return false;
   if (t.tier === 'pro') return true; // accessible to all Pro+
-  return isCreatorPro; // creator_pro templates need Creator Pro
+  return isCreatorPro; // creator_pro templates need Creator+
 }
 
 /** Get accessible templates for a tier */

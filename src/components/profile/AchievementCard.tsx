@@ -193,7 +193,7 @@ export const AchievementCard = ({
     >
       <CardContent className="p-0">
         {/* Thumbnail/Icon Section */}
-        {imageUrl && (
+        {imageUrl ? (
           <div className="relative h-48 bg-muted overflow-hidden">
             <img
               src={imageUrl}
@@ -209,7 +209,14 @@ export const AchievementCard = ({
               </div>
             )}
           </div>
-        )}
+        ) : variant === "credit" ? (
+          <CreditCoverPlaceholder
+            category={category}
+            title={title}
+            role={subtitle || undefined}
+            height="h-48"
+          />
+        ) : null}
 
         {/* Content Section */}
         <div className="p-4 space-y-2">

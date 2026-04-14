@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Scan, Upload, X, Loader2, Copy, Share2 } from "lucide-react";
+import { APP_URL } from "@/lib/constants";
 
 interface ScoutGigDialogProps {
   trigger?: React.ReactNode;
@@ -61,8 +62,7 @@ export const ScoutGigDialog = ({ trigger }: ScoutGigDialogProps) => {
   };
 
   const getClaimUrl = () => {
-    const base = window.location.origin;
-    return `${base}/claim-gig/${result?.claim_token}`;
+    return `${APP_URL}/claim-gig/${result?.claim_token}`;
   };
 
   const handleCopyClaimLink = () => {

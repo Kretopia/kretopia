@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sendEventConfirmationEmail } from "@/utils/eventConfirmationEmail";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { APP_URL } from "@/lib/constants";
 
 interface Session {
   id: string;
@@ -93,7 +94,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/event/${session.id}`;
+    const url = `${APP_URL}/event/${session.id}`;
     if (navigator.share) {
       navigator.share({ title: session.title, url }).catch(() => {});
     } else {

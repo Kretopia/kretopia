@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles, Wand2, Loader2, Eye, PenLine, Maximize2, Lock, Crown } from "lucide-react";
+import { APP_URL } from "@/lib/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
@@ -48,8 +49,8 @@ export const CreatorSiteSettings = () => {
   const [previewKey, setPreviewKey] = useState(0);
 
   const siteUrl = username 
-    ? `${window.location.origin}/${username}` 
-    : user ? `${window.location.origin}/site/${user.id}` : '';
+    ? `${APP_URL}/${username}` 
+    : user ? `${APP_URL}/site/${user.id}` : '';
 
   const reloadSettings = () => {
     if (!user) return;

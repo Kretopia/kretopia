@@ -13,6 +13,7 @@ import { ApplyToOpportunityDialog } from "@/components/ApplyToOpportunityDialog"
 import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { SEO } from "@/components/SEO";
+import { APP_URL } from "@/lib/constants";
 
 interface Opportunity {
   id: string;
@@ -97,7 +98,7 @@ const OpportunityDetail = () => {
         });
       }
 
-      const claimUrl = `${window.location.origin}/claim-gig/${claimToken}`;
+      const claimUrl = `${APP_URL}/claim-gig/${claimToken}`;
       const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
 
       if (navigator.share) {
@@ -111,7 +112,7 @@ const OpportunityDetail = () => {
       try {
         if (!opportunity?.claim_token) throw new Error('missing claim token');
 
-        const claimUrl = `${window.location.origin}/claim-gig/${opportunity.claim_token}`;
+        const claimUrl = `${APP_URL}/claim-gig/${opportunity.claim_token}`;
         const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
         await navigator.clipboard.writeText(shareText);
         toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
@@ -121,7 +122,7 @@ const OpportunityDetail = () => {
           return;
         }
 
-        const claimUrl = `${window.location.origin}/claim-gig/${opportunity.claim_token}`;
+        const claimUrl = `${APP_URL}/claim-gig/${opportunity.claim_token}`;
         const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
         const textarea = document.createElement('textarea');
         textarea.value = shareText;

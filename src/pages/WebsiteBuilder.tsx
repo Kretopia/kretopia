@@ -12,6 +12,7 @@ import {
   Settings2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { APP_URL } from "@/lib/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -78,8 +79,8 @@ const WebsiteBuilder = () => {
   const [showWizard, setShowWizard] = useState(false);
 
   const siteUrl = username
-    ? `${window.location.origin}/${username}`
-    : user ? `${window.location.origin}/site/${user.id}` : '';
+    ? `${APP_URL}/${username}`
+    : user ? `${APP_URL}/site/${user.id}` : '';
 
   const loadData = useCallback(async () => {
     if (!user) return;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
+import { APP_URL } from "@/lib/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -135,7 +136,7 @@ export default function TalentManager() {
 
   const copyLink = () => {
     if (!manager) return;
-    const link = `${window.location.origin}/join/${manager.referral_code}`;
+    const link = `${APP_URL}/join/${manager.referral_code}`;
     navigator.clipboard.writeText(link);
     toast.success("Referral link copied!");
   };
@@ -306,7 +307,7 @@ export default function TalentManager() {
               <div className="flex gap-2">
                 <Input
                   readOnly
-                  value={`${window.location.origin}/join/${manager.referral_code}`}
+                  value={`${APP_URL}/join/${manager.referral_code}`}
                   className="font-mono text-sm"
                 />
                 <Button onClick={copyLink} variant="outline" size="icon">

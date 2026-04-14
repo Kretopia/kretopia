@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Code, ExternalLink, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { APP_URL } from "@/lib/constants";
 
 interface CreditEmbedWidgetProps {
   creatorId: string;
@@ -13,7 +14,7 @@ interface CreditEmbedWidgetProps {
 
 export const CreditEmbedWidget = ({ creatorId, fullName }: CreditEmbedWidgetProps) => {
   const [style, setStyle] = useState<"badge" | "card" | "timeline">("badge");
-  const baseUrl = window.location.origin;
+  const baseUrl = APP_URL;
 
   const embedCodes: Record<string, string> = {
     badge: `<a href="${baseUrl}/epk/${creatorId}" target="_blank" rel="noopener">

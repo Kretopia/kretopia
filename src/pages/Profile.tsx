@@ -409,6 +409,7 @@ const ProfileContent = () => {
           isUploadingAvatar={isUploadingAvatar}
           onShowQR={() => setIsQRDialogOpen(true)}
           onCreatorCard={() => setIsCreatorCardOpen(true)}
+          onEPKEditor={() => setIsEPKEditorOpen(true)}
           dashboardTrigger={
             <ProfileDashboardDrawer
               profile={profile}

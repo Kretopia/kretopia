@@ -392,196 +392,201 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── TRENDING CREDITS ── */}
-        <section id="section-credits" className="mb-8 scroll-mt-14">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Trending Credits
-            </h2>
-            <Link to="/credits" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-              {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
-            {trendingCredits.map((c, i) => (
-              <motion.button
-                key={c.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)}
-                className="shrink-0 w-[140px] sm:w-[180px] group text-left snap-start"
-              >
-                <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
-                  {(c.thumbnail_url || c.primary_media_url) ? (
-                    <div className="aspect-[3/4] overflow-hidden">
-                      <img src={c.thumbnail_url || c.primary_media_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
-                    </div>
-                  ) : (
-                    <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 flex items-center justify-center">
-                      <Play className="h-8 w-8 text-primary/20" />
-                    </div>
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <div className="flex items-center gap-1 mb-1">
-                      <Verified className="h-3 w-3 text-primary" />
-                      <span className="text-[8px] font-bold text-primary uppercase tracking-widest">{t("landing.verified")}</span>
-                    </div>
-                    <p className="text-xs font-bold text-foreground leading-tight line-clamp-2">{c.project_name}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{c.role}{c.year ? ` · ${c.year}` : ''}</p>
-                  </div>
-                </div>
-              </motion.button>
-            ))}
-            {trendingCredits.length === 0 && Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="shrink-0 w-[140px] sm:w-[180px] rounded-2xl border border-border bg-card aspect-[3/4] animate-pulse" />
-            ))}
-          </div>
-        </section>
-
-
-        {/* ── OPEN GIGS ── */}
-        <section id="section-gigs" className="mb-8 scroll-mt-14">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Zap className="h-4 w-4 text-warning" />
-              {user ? t("landing.gigsForYou") : t("landing.openGigs")}
-            </h2>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setQuickPostType("gig")}
-                className="text-[10px] font-semibold text-success flex items-center gap-1 hover:text-success/80 transition-colors"
-              >
-                <PlusCircle className="h-3.5 w-3.5" /> {t("landing.postGig")}
-              </button>
-              <span className="text-border">·</span>
-              <Link to="/opportunities" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                {t("landing.browse")} <ArrowRight className="h-3 w-3" />
+        {/* ── TRENDING CREDITS (auth only — guests discover via nav) ── */}
+        {user && (
+          <section id="section-credits" className="mb-8 scroll-mt-14">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                Trending Credits
+              </h2>
+              <Link to="/credits" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
-          </div>
-          {activeGigs.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {activeGigs.map((g, i) => (
+            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
+              {trendingCredits.map((c, i) => (
                 <motion.button
-                  key={g.id}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                  onClick={() => navigate(`/opportunity/${g.id}`)}
-                  className="w-full text-left group"
+                  key={c.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)}
+                  className="shrink-0 w-[140px] sm:w-[180px] group text-left snap-start"
                 >
-                  <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 hover:shadow-md transition-all">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <Badge className="text-[8px] mb-2 bg-success/15 text-success border-success/25 font-semibold">{g.type}</Badge>
-                        <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{g.title}</p>
-                        {g.location && (
-                          <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
-                            <MapPin className="h-3 w-3" /> {g.location}
-                          </p>
-                        )}
+                  <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
+                    {(c.thumbnail_url || c.primary_media_url) ? (
+                      <div className="aspect-[3/4] overflow-hidden">
+                        <img src={c.thumbnail_url || c.primary_media_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0 mt-1 group-hover:text-primary transition-colors" />
+                    ) : (
+                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 flex items-center justify-center">
+                        <Play className="h-8 w-8 text-primary/20" />
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Verified className="h-3 w-3 text-primary" />
+                        <span className="text-[8px] font-bold text-primary uppercase tracking-widest">{t("landing.verified")}</span>
+                      </div>
+                      <p className="text-xs font-bold text-foreground leading-tight line-clamp-2">{c.project_name}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{c.role}{c.year ? ` · ${c.year}` : ''}</p>
                     </div>
                   </div>
                 </motion.button>
               ))}
+              {trendingCredits.length === 0 && Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="shrink-0 w-[140px] sm:w-[180px] rounded-2xl border border-border bg-card aspect-[3/4] animate-pulse" />
+              ))}
             </div>
-          ) : (
-            <button
-              onClick={() => setQuickPostType("gig")}
-              className="w-full rounded-xl border border-dashed border-border hover:border-success/40 bg-card/50 p-4 text-center transition-all group"
-            >
-              <PlusCircle className="h-5 w-5 text-success/50 mx-auto mb-1.5 group-hover:text-success transition-colors" />
-              <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{t("landing.postGigOrHire")}</p>
-            </button>
-          )}
-        </section>
+          </section>
+        )}
 
-        {/* ── UPCOMING EVENTS ── */}
-        <section id="section-events" className="mb-8 scroll-mt-14">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-warning" />
-              {t("landing.upcomingEvents")}
-            </h2>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setQuickPostType("event")}
-                className="text-[10px] font-semibold text-warning flex items-center gap-1 hover:text-warning/80 transition-colors"
-              >
-                <PlusCircle className="h-3.5 w-3.5" /> {t("landing.createEvent")}
-              </button>
-              <span className="text-border">·</span>
-              <Link to="/scene" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
-              </Link>
+        {/* ── OPEN GIGS (auth only) ── */}
+        {user && (
+          <section id="section-gigs" className="mb-8 scroll-mt-14">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Zap className="h-4 w-4 text-warning" />
+                {t("landing.gigsForYou")}
+              </h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setQuickPostType("gig")}
+                  className="text-[10px] font-semibold text-success flex items-center gap-1 hover:text-success/80 transition-colors"
+                >
+                  <PlusCircle className="h-3.5 w-3.5" /> {t("landing.postGig")}
+                </button>
+                <span className="text-border">·</span>
+                <Link to="/opportunities" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                  {t("landing.browse")} <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
             </div>
-          </div>
-          {upcomingEvents.length > 0 ? (
-            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
-              {upcomingEvents.map((ev: any, i: number) => {
-                const eventDate = new Date(ev.start_time);
-                const month = eventDate.toLocaleString("en", { month: "short" }).toUpperCase();
-                const day = eventDate.getDate();
-                return (
-                  <motion.div
-                    key={ev.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
+            {activeGigs.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {activeGigs.map((g, i) => (
+                  <motion.button
+                    key={g.id}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.06 }}
-                    className="shrink-0 w-[200px] sm:w-[240px] snap-start"
+                    onClick={() => navigate(`/opportunity/${g.id}`)}
+                    className="w-full text-left group"
                   >
-                    <div
-                      className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
-                      onClick={() => navigate(`/event/${ev.id}`)}
-                    >
-                      {ev.cover_image_url ? (
-                        <div className="aspect-[16/9] overflow-hidden relative">
-                          <img src={ev.cover_image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                          <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
-                            <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
-                            <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
-                          </div>
+                    <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 hover:shadow-md transition-all">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <Badge className="text-[8px] mb-2 bg-success/15 text-success border-success/25 font-semibold">{g.type}</Badge>
+                          <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{g.title}</p>
+                          {g.location && (
+                            <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                              <MapPin className="h-3 w-3" /> {g.location}
+                            </p>
+                          )}
                         </div>
-                      ) : (
-                        <div className="aspect-[16/9] bg-gradient-to-br from-warning/10 to-primary/10 flex items-center justify-center relative">
-                          <CalendarDays className="h-6 w-6 text-warning/30" />
-                          <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
-                            <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
-                            <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
-                          </div>
-                        </div>
-                      )}
-                      <div className="p-3">
-                        <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{ev.title}</p>
-                        {ev.venue_name && (
-                          <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                            <MapPin className="h-2.5 w-2.5" /> {ev.venue_name}
-                          </p>
-                        )}
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0 mt-1 group-hover:text-primary transition-colors" />
                       </div>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          ) : (
-            <button
-              onClick={() => setQuickPostType("event")}
-              className="w-full rounded-xl border border-dashed border-border hover:border-warning/40 bg-card/50 p-4 text-center transition-all group"
-            >
-              <PlusCircle className="h-5 w-5 text-warning/50 mx-auto mb-1.5 group-hover:text-warning transition-colors" />
-              <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{t("landing.createMeetup")}</p>
-            </button>
-          )}
-        </section>
+                  </motion.button>
+                ))}
+              </div>
+            ) : (
+              <button
+                onClick={() => setQuickPostType("gig")}
+                className="w-full rounded-xl border border-dashed border-border hover:border-success/40 bg-card/50 p-4 text-center transition-all group"
+              >
+                <PlusCircle className="h-5 w-5 text-success/50 mx-auto mb-1.5 group-hover:text-success transition-colors" />
+                <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{t("landing.postGigOrHire")}</p>
+              </button>
+            )}
+          </section>
+        )}
 
-        {/* ── MAGAZINE ── */}
-        {latestArticles.length > 0 && (
+        {/* ── UPCOMING EVENTS (auth only) ── */}
+        {user && (
+          <section id="section-events" className="mb-8 scroll-mt-14">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-warning" />
+                {t("landing.upcomingEvents")}
+              </h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setQuickPostType("event")}
+                  className="text-[10px] font-semibold text-warning flex items-center gap-1 hover:text-warning/80 transition-colors"
+                >
+                  <PlusCircle className="h-3.5 w-3.5" /> {t("landing.createEvent")}
+                </button>
+                <span className="text-border">·</span>
+                <Link to="/scene" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+                  {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+            {upcomingEvents.length > 0 ? (
+              <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
+                {upcomingEvents.map((ev: any, i: number) => {
+                  const eventDate = new Date(ev.start_time);
+                  const month = eventDate.toLocaleString("en", { month: "short" }).toUpperCase();
+                  const day = eventDate.getDate();
+                  return (
+                    <motion.div
+                      key={ev.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.06 }}
+                      className="shrink-0 w-[200px] sm:w-[240px] snap-start"
+                    >
+                      <div
+                        className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
+                        onClick={() => navigate(`/event/${ev.id}`)}
+                      >
+                        {ev.cover_image_url ? (
+                          <div className="aspect-[16/9] overflow-hidden relative">
+                            <img src={ev.cover_image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                            <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
+                              <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
+                              <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="aspect-[16/9] bg-gradient-to-br from-warning/10 to-primary/10 flex items-center justify-center relative">
+                            <CalendarDays className="h-6 w-6 text-warning/30" />
+                            <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
+                              <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
+                              <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
+                            </div>
+                          </div>
+                        )}
+                        <div className="p-3">
+                          <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{ev.title}</p>
+                          {ev.venue_name && (
+                            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                              <MapPin className="h-2.5 w-2.5" /> {ev.venue_name}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <button
+                onClick={() => setQuickPostType("event")}
+                className="w-full rounded-xl border border-dashed border-border hover:border-warning/40 bg-card/50 p-4 text-center transition-all group"
+              >
+                <PlusCircle className="h-5 w-5 text-warning/50 mx-auto mb-1.5 group-hover:text-warning transition-colors" />
+                <p className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{t("landing.createMeetup")}</p>
+              </button>
+            )}
+          </section>
+        )}
+
+        {/* ── MAGAZINE (auth only) ── */}
+        {user && latestArticles.length > 0 && (
           <section id="section-stories" className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -627,30 +632,32 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── PODCAST ── */}
-        <section className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Headphones className="h-4 w-4 text-accent" />
-              {t("landing.podcast")}
-            </h2>
-          </div>
-          <div
-            className="rounded-2xl overflow-hidden border border-border/50 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 p-5 cursor-pointer hover:border-primary/30 transition-all group"
-            onClick={() => navigate("/podcast")}
-          >
-            <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
-                <Headphones className="h-7 w-7 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground mb-0.5">{t("landing.podcastTitle")}</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">{t("landing.podcastDesc")}</p>
-              </div>
-              <Play className="h-5 w-5 text-primary shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+        {/* ── PODCAST (auth only) ── */}
+        {user && (
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Headphones className="h-4 w-4 text-accent" />
+                {t("landing.podcast")}
+              </h2>
             </div>
-          </div>
-        </section>
+            <div
+              className="rounded-2xl overflow-hidden border border-border/50 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 p-5 cursor-pointer hover:border-primary/30 transition-all group"
+              onClick={() => navigate("/podcast")}
+            >
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
+                  <Headphones className="h-7 w-7 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-foreground mb-0.5">{t("landing.podcastTitle")}</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">{t("landing.podcastDesc")}</p>
+                </div>
+                <Play className="h-5 w-5 text-primary shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Trust badges - guest only */}
         {!user && (

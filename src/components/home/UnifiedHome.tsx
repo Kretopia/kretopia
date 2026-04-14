@@ -367,28 +367,7 @@ export const UnifiedHome = () => {
         </div>
       )}
 
-      {/* ═══════════ SECTION NAV ═══════════ */}
-      <div className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border/40 mb-2">
-        <div className="container mx-auto max-w-5xl px-4 sm:px-6">
-          <div className="flex gap-1 overflow-x-auto scrollbar-hide py-2">
-            {[
-              { id: "credits", label: "Credits", icon: Database },
-              { id: "gigs", label: "Gigs", icon: Zap },
-              { id: "events", label: "Events", icon: CalendarDays },
-              { id: "stories", label: "Stories", icon: BookOpen },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => document.getElementById(`section-${tab.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all whitespace-nowrap shrink-0"
-              >
-                <tab.icon className="h-3.5 w-3.5" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Section nav removed — guest navigation now lives in the top navbar */}
 
       {/* ═══════════ CONTENT SECTIONS ═══════════ */}
       <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">

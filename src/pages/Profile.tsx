@@ -362,25 +362,6 @@ const ProfileContent = () => {
         {/* Claim success banner */}
         <ClaimContinueBanner onRefresh={fetchData} />
 
-        {/* My Website quick-access banner */}
-        {profile?.site_enabled && (
-          <button
-            onClick={() => navigate('/settings')}
-            className="w-full mt-3 flex items-center gap-3 p-3 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
-          >
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">My Website</p>
-              <p className="text-xs text-muted-foreground truncate">
-                {profile?.username ? `thrivein.io/${profile.username}` : 'Edit your creator site'}
-              </p>
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-        )}
-
         {/* Profile Hero — compact, Instagram-style */}
         <ProfileHero
           profile={profile}
@@ -423,8 +404,26 @@ const ProfileContent = () => {
           }
         />
 
+        {/* My Website quick-access */}
+        {profile?.site_enabled && (
+          <button
+            onClick={() => navigate('/website-builder')}
+            className="w-full mt-3 flex items-center gap-3 p-3 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
+          >
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">My Website</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {profile?.username ? `thrivein.io/${profile.username}` : 'Edit your creator site'}
+              </p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        )}
 
-        {/* Profile Completion — only show if not 100% */}
+
         {profile && (() => {
           const completion = checkProfileCompletion(profile, (portfolioItems?.length || 0) + (credits?.length || 0));
           return completion.percentage < 100 ? (

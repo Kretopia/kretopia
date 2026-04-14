@@ -271,7 +271,7 @@ export const CreatorSiteSettings = () => {
                         </ol>
                         <div className="flex items-center gap-2 mt-1">
                           <code className="text-[11px] bg-muted px-2 py-1 rounded font-mono flex-1 truncate">
-                            {siteUrl || `thrivein.io/${profile?.vanity_url || profile?.username || 'yourname'}`}
+                            {siteUrl || `thrivein.io/${username || 'yourname'}`}
                           </code>
                           <Button
                             variant="ghost"

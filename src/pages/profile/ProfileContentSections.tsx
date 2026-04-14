@@ -16,7 +16,7 @@ import { AwardsSection } from "@/components/profile/AwardsSection";
 import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
-import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
+
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 
 interface ProfileContentSectionsProps {

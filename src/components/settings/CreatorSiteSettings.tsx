@@ -15,29 +15,18 @@ import { CreatorSiteSectionEditor, SiteSection } from "./CreatorSiteSectionEdito
 import { SiteSetupWizard } from "@/components/creator-site/SiteSetupWizard";
 import { SitePreviewPanel } from "@/components/creator-site/SitePreviewPanel";
 import { SiteAnalyticsDashboard } from "@/components/creator-site/SiteAnalyticsDashboard";
+import { AIWebsiteGenerator } from "@/components/creator-site/AIWebsiteGenerator";
 
 const TEMPLATES = [
-  {
-    id: 'bold-electric',
-    name: 'Bold Electric',
-    description: 'High-energy dark mode with vibrant gradients',
-    preview: 'bg-gradient-to-br from-[#0a0a0c] to-[#1a1a2e]',
-    accent: 'bg-[#ff00ff]',
-  },
-  {
-    id: 'minimal-editorial',
-    name: 'Minimal Editorial',
-    description: 'Clean, elegant serif typography on warm white',
-    preview: 'bg-[#faf9f7]',
-    accent: 'bg-[#1a1a1a]',
-  },
-  {
-    id: 'portfolio-mosaic',
-    name: 'Portfolio Mosaic',
-    description: 'Image-first masonry layout, modern and rounded',
-    preview: 'bg-white',
-    accent: 'bg-[#111]',
-  },
+  { id: 'bold-electric', name: 'Bold Electric', description: 'High-energy dark mode with vibrant gradients', preview: 'bg-gradient-to-br from-[#0a0a0c] to-[#1a1a2e]', accent: 'bg-[#ff00ff]' },
+  { id: 'minimal-editorial', name: 'Minimal Editorial', description: 'Clean, elegant serif typography on warm white', preview: 'bg-[#faf9f7]', accent: 'bg-[#1a1a1a]' },
+  { id: 'portfolio-mosaic', name: 'Portfolio Mosaic', description: 'Image-first masonry layout, modern and rounded', preview: 'bg-white', accent: 'bg-[#111]' },
+  { id: 'creative-director', name: 'Creative Director', description: 'Cinematic dark layout with gold accents', preview: 'bg-gradient-to-br from-[#0d0d0d] to-[#1a1510]', accent: 'bg-[#b8a080]' },
+  { id: 'artist-showcase', name: 'Artist Showcase', description: 'Immersive full-screen imagery with masonry gallery', preview: 'bg-gradient-to-br from-[#1a0a2e] to-[#111]', accent: 'bg-white' },
+  { id: 'producer', name: 'Producer', description: 'Stats-driven light layout with filmography scroll', preview: 'bg-[#fefefe]', accent: 'bg-[#111]' },
+  { id: 'agency', name: 'Agency', description: 'Bold, corporate energy with oversized typography', preview: 'bg-white', accent: 'bg-[#111]' },
+  { id: 'minimal-clean', name: 'Minimal Clean', description: 'Ultra-minimal single-column layout', preview: 'bg-[#fcfcfc]', accent: 'bg-[#222]' },
+  { id: 'photographer', name: 'Photographer', description: 'Image-first dark theme with lightbox', preview: 'bg-[#1a1a1a]', accent: 'bg-white' },
 ];
 
 export const CreatorSiteSettings = () => {
@@ -59,6 +48,7 @@ export const CreatorSiteSettings = () => {
   const [usernameInput, setUsernameInput] = useState('');
   const [savingUsername, setSavingUsername] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
 
@@ -66,7 +56,7 @@ export const CreatorSiteSettings = () => {
     ? `${window.location.origin}/${username}` 
     : user ? `${window.location.origin}/site/${user.id}` : '';
 
-  useEffect(() => {
+  const reloadSettings = () => {
     if (!user) return;
     supabase
       .from('profiles')
@@ -85,7 +75,9 @@ export const CreatorSiteSettings = () => {
         }
         setLoading(false);
       });
-  }, [user?.id]);
+  };
+
+  useEffect(() => { reloadSettings(); }, [user?.id]);
 
   const handleToggle = async (enabled: boolean) => {
     if (!user) return;
@@ -94,7 +86,6 @@ export const CreatorSiteSettings = () => {
       return;
     }
     
-    // If enabling for first time and no site setup yet, show wizard
     if (enabled && !siteEnabled) {
       setShowWizard(true);
       return;
@@ -160,27 +151,6 @@ export const CreatorSiteSettings = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleWizardComplete = () => {
-    // Reload the settings
-    if (!user) return;
-    supabase
-      .from('profiles')
-      .select('site_enabled, site_template, site_sections, site_headline, site_bio, username')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          setSiteEnabled(data.site_enabled || false);
-          setSelectedTemplate(data.site_template || 'bold-electric');
-          setSiteSections((data.site_sections as any) || []);
-          setSiteHeadline(data.site_headline || '');
-          setSiteBio(data.site_bio || '');
-          setUsername((data as any).username || '');
-          setUsernameInput((data as any).username || '');
-        }
-      });
-  };
-
   return (
     <>
       <Card className={!isPro ? "border-primary/20 bg-primary/5" : ""}>
@@ -195,7 +165,7 @@ export const CreatorSiteSettings = () => {
             )}
           </CardTitle>
           <CardDescription>
-            Transform your profile into a standalone landing page for link-in-bio and direct sharing
+            Transform your profile into a standalone professional website powered by your real data
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -205,7 +175,7 @@ export const CreatorSiteSettings = () => {
                 <div className="space-y-0.5">
                   <Label>Enable Creator Site</Label>
                   <p className="text-sm text-muted-foreground">
-                    Your profile becomes a full landing page at a unique URL
+                    Your profile becomes a full website at a unique URL
                   </p>
                 </div>
                 <Switch
@@ -214,6 +184,23 @@ export const CreatorSiteSettings = () => {
                   disabled={loading || saving}
                 />
               </div>
+
+              {/* AI Generate button — always visible for Pro users */}
+              {!siteEnabled && (
+                <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-5 text-center space-y-3">
+                  <Wand2 className="h-8 w-8 text-primary mx-auto" />
+                  <div>
+                    <p className="text-sm font-semibold">Create My Website with AI</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      AI analyzes your credits, services, and profile to generate a professional website in seconds
+                    </p>
+                  </div>
+                  <Button onClick={() => setShowAIGenerator(true)} className="w-full">
+                    <Wand2 className="h-4 w-4 mr-2" />
+                    Create My Website
+                  </Button>
+                </div>
+              )}
 
               {siteEnabled && (
                 <div className="space-y-5 pt-2">
@@ -259,7 +246,7 @@ export const CreatorSiteSettings = () => {
                     </div>
                   </div>
 
-                  {/* Custom Domain upsell for Pro users */}
+                  {/* Custom Domain upsell */}
                   {!isCreatorPro && (
                     <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                       <div className="flex items-start gap-2">
@@ -267,7 +254,7 @@ export const CreatorSiteSettings = () => {
                         <div>
                           <p className="text-xs font-medium">Connect Your Own Domain</p>
                           <p className="text-xs text-muted-foreground">
-                            Creator Pro members can use their own domain (yourdomain.com) for their site
+                            Creator Pro members can use their own domain (yourdomain.com)
                           </p>
                           <Button variant="link" size="sm" className="h-auto p-0 text-xs mt-1" onClick={() => navigate('/subscription')}>
                             Upgrade to Creator Pro →
@@ -277,10 +264,10 @@ export const CreatorSiteSettings = () => {
                     </div>
                   )}
 
-                  {/* Template Picker */}
+                  {/* Template Picker — scrollable grid */}
                   <div className="space-y-3">
                     <Label className="text-xs text-muted-foreground uppercase tracking-wider">Template Style</Label>
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-1">
                       {TEMPLATES.map((template) => (
                         <button
                           key={template.id}
@@ -307,7 +294,7 @@ export const CreatorSiteSettings = () => {
                     </div>
                   </div>
 
-                  {/* Preview & Wizard buttons */}
+                  {/* Action buttons */}
                   <div className="flex gap-2">
                     <Button 
                       variant={showPreview ? "default" : "outline"} 
@@ -318,9 +305,12 @@ export const CreatorSiteSettings = () => {
                       <Eye className="h-4 w-4 mr-2" />
                       {showPreview ? "Hide Preview" : "Live Preview"}
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowWizard(true)}>
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowAIGenerator(true)}>
                       <Wand2 className="h-4 w-4 mr-2" />
-                      Setup Wizard
+                      AI Regenerate
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setShowWizard(true)}>
+                      <PenLine className="h-4 w-4" />
                     </Button>
                   </div>
 
@@ -348,7 +338,7 @@ export const CreatorSiteSettings = () => {
                 <div>
                   <p className="text-sm font-medium">Turn your profile into a website</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Pro members get a beautiful, standalone landing page that works as their professional website — powered by your existing ThriveIN profile data. Perfect for link-in-bio and sharing with clients.
+                    Pro members get a beautiful, standalone website powered by your existing ThriveIN profile data — with AI-powered generation, 8 premium templates, and live data blocks.
                   </p>
                 </div>
               </div>
@@ -363,7 +353,13 @@ export const CreatorSiteSettings = () => {
       <SiteSetupWizard
         open={showWizard}
         onOpenChange={setShowWizard}
-        onComplete={handleWizardComplete}
+        onComplete={reloadSettings}
+      />
+
+      <AIWebsiteGenerator
+        open={showAIGenerator}
+        onOpenChange={setShowAIGenerator}
+        onComplete={reloadSettings}
       />
     </>
   );

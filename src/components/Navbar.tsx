@@ -56,7 +56,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
       .then(({ data }) => {
         if (data?.account_type) setAccountType(data.account_type);
         if (data?.is_manager_mode) setIsManagerMode(true);
-      });
+      })
+      .catch(err => console.warn('[Navbar] Error loading profile:', err));
   }, [user?.id]);
 
   const handleSignOut = async () => {

@@ -51,7 +51,8 @@ const BottomNav = memo(() => {
         const company = data?.account_type === "company";
         setIsCompany(company);
         if (company && mode === "create") setMode("work");
-      });
+      })
+      .catch(err => console.warn('[BottomNav] Error loading profile:', err));
   }, [user?.id]);
 
   if (location.pathname === "/auth") return null;

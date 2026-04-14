@@ -178,7 +178,8 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

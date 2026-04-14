@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
+import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlaceholder";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },

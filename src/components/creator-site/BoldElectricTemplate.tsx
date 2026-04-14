@@ -1,4 +1,5 @@
 import { CreatorSiteData } from "@/pages/CreatorSite";
+import { BlockRenderer } from "./blocks/BlockRenderer";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRequestDialog";
@@ -243,6 +244,11 @@ export const BoldElectricTemplate = ({ data }: { data: CreatorSiteData }) => {
             </div>
           </div>
         </div>
+
+        {/* Custom Blocks */}
+        {profile.site_custom_blocks?.length > 0 && (
+          <BlockRenderer blocks={profile.site_custom_blocks} theme="dark" accentColor="#ff00ff" />
+        )}
 
         {/* Powered by ThriveIN */}
         <div className="mt-12 md:mt-20 pt-8 border-t border-zinc-900 text-center">

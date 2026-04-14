@@ -128,7 +128,8 @@ export const CreativeDirectorTemplate = ({ data }: { data: CreatorSiteData }) =>
                   {credit.year && <p className="text-xs text-[#666] mt-1">{credit.year}</p>}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

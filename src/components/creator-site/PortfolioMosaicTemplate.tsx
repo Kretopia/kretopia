@@ -149,7 +149,8 @@ export const PortfolioMosaicTemplate = ({ data }: { data: CreatorSiteData }) => 
                     )}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

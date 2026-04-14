@@ -172,7 +172,8 @@ export const MinimalEditorialTemplate = ({ data }: { data: CreatorSiteData }) =>
                     {credit.role} {credit.year ? `— ${credit.year}` : ''}
                   </p>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

@@ -121,7 +121,8 @@ export const AgencyTemplate = ({ data }: { data: CreatorSiteData }) => {
                 </div>
                 <span className="text-sm text-[#ccc] font-medium">{credit.year || ''}</span>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

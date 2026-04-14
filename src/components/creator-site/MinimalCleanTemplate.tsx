@@ -99,7 +99,8 @@ export const MinimalCleanTemplate = ({ data }: { data: CreatorSiteData }) => {
                   <p className="text-sm text-[#999]">{credit.role}{credit.year ? ` · ${credit.year}` : ''}</p>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

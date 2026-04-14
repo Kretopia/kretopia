@@ -22,9 +22,11 @@ interface Comment {
 interface EventCommentsProps {
   eventId: string;
   isCreator: boolean;
+  creatorId?: string;
+  eventTitle?: string;
 }
 
-export const EventComments = ({ eventId, isCreator }: EventCommentsProps) => {
+export const EventComments = ({ eventId, isCreator, creatorId, eventTitle }: EventCommentsProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();

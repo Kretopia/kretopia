@@ -74,6 +74,7 @@ const ProfileContent = () => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
   const [isCreatorCardOpen, setIsCreatorCardOpen] = useState(false);
+  const [isEPKEditorOpen, setIsEPKEditorOpen] = useState(false);
   const [showCropDialog, setShowCropDialog] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState("");
 

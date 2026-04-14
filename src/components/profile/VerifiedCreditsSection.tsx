@@ -318,6 +318,9 @@ export function VerifiedCreditsSection({ userId, isOwnProfile, onCreditsChanged 
         metadata: c.metadata,
         verification_url: c.verification_url || c.url || '',
         verified_at: c.metadata?.verified_at || c.created_at,
+        thumbnail_url: c.thumbnail_url,
+        primary_media_url: c.primary_media_url,
+        url: c.url,
       }));
       setCredits(mapped);
     } catch (error) {

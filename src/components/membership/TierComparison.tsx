@@ -14,6 +14,8 @@ interface Feature {
 const CREATOR_FEATURES: Feature[] = [
   { name: "Credit Claiming", free: "Unlimited", pro: "Unlimited" },
   { name: "Portfolio / Credits Displayed", free: "5", pro: "Unlimited" },
+  { name: "Website Builder", free: false, pro: true },
+  { name: "Website Templates", free: false, pro: "3 Templates" },
   { name: "Daily Swipes", free: "20", pro: "Unlimited" },
   { name: "Browse Profiles", free: "10/month", pro: "Unlimited" },
   { name: "Direct Messaging", free: true, pro: true },

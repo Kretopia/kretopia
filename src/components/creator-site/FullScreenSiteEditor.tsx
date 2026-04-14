@@ -16,24 +16,16 @@ import { useToast } from "@/hooks/use-toast";
 import { BlockEditor } from "@/components/creator-site/blocks/BlockEditor";
 import type { ContentBlock } from "@/components/creator-site/blocks/BlockTypes";
 import { SiteSection } from "@/components/settings/CreatorSiteSectionEditor";
+import { TEMPLATES, isTemplateAccessible } from "@/components/creator-site/templateConfig";
+import { hasCreatorProAccess } from "@/lib/subscriptionConfig";
+import { Lock, Crown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const DEVICES = [
   { id: 'desktop', icon: Monitor, width: '100%', label: 'Desktop' },
   { id: 'tablet', icon: Tablet, width: '768px', label: 'Tablet' },
   { id: 'mobile', icon: Smartphone, width: '375px', label: 'Mobile' },
 ] as const;
-
-const TEMPLATES = [
-  { id: 'bold-electric', name: 'Bold Electric', preview: 'bg-gradient-to-br from-[#0a0a0c] to-[#1a1a2e]', accent: 'bg-[#ff00ff]' },
-  { id: 'minimal-editorial', name: 'Minimal Editorial', preview: 'bg-[#faf9f7]', accent: 'bg-[#1a1a1a]' },
-  { id: 'portfolio-mosaic', name: 'Portfolio Mosaic', preview: 'bg-white', accent: 'bg-[#111]' },
-  { id: 'creative-director', name: 'Creative Director', preview: 'bg-gradient-to-br from-[#0d0d0d] to-[#1a1510]', accent: 'bg-[#b8a080]' },
-  { id: 'artist-showcase', name: 'Artist Showcase', preview: 'bg-gradient-to-br from-[#1a0a2e] to-[#111]', accent: 'bg-white' },
-  { id: 'producer', name: 'Producer', preview: 'bg-[#fefefe]', accent: 'bg-[#111]' },
-  { id: 'agency', name: 'Agency', preview: 'bg-white', accent: 'bg-[#111]' },
-  { id: 'minimal-clean', name: 'Minimal Clean', preview: 'bg-[#fcfcfc]', accent: 'bg-[#222]' },
-  { id: 'photographer', name: 'Photographer', preview: 'bg-[#1a1a1a]', accent: 'bg-white' },
-];
 
 const DEFAULT_SECTIONS: SiteSection[] = [
   { id: "hero", label: "Hero", visible: true },
@@ -61,8 +53,10 @@ interface FullScreenEditorProps {
 type EditorTab = 'content' | 'sections' | 'blocks' | 'template';
 
 export const FullScreenSiteEditor = ({ open, onClose, siteUrl, initialData, onSaved, onOpenAI }: FullScreenEditorProps) => {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const isCreatorPro = hasCreatorProAccess(subscriptionInfo.tier as any);
 
   const [device, setDevice] = useState<string>('desktop');
   const [previewKey, setPreviewKey] = useState(0);
@@ -357,22 +351,39 @@ export const FullScreenSiteEditor = ({ open, onClose, siteUrl, initialData, onSa
                 {/* Template tab */}
                 {activeTab === 'template' && (
                   <div className="space-y-2">
-                    {TEMPLATES.map(t => (
-                      <button
-                        key={t.id}
-                        onClick={() => handleTemplateChange(t.id)}
-                        className={cn(
-                          "flex items-center gap-3 p-3 rounded-lg border w-full text-left transition-all",
-                          template === t.id ? "border-primary ring-1 ring-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                        )}
-                      >
-                        <div className={cn("w-8 h-8 rounded-md border border-border flex items-center justify-center shrink-0", t.preview)}>
-                          <div className={cn("w-2.5 h-2.5 rounded-full", t.accent)} />
-                        </div>
-                        <span className="text-sm font-medium flex-1">{t.name}</span>
-                        {template === t.id && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
-                      </button>
-                    ))}
+                    {TEMPLATES.map(t => {
+                      const accessible = isTemplateAccessible(t.id, isCreatorPro);
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => {
+                            if (!accessible) {
+                              toast({ title: "Creator Pro Template", description: `"${t.name}" requires Creator Pro.` });
+                              navigate("/subscription");
+                              return;
+                            }
+                            handleTemplateChange(t.id);
+                          }}
+                          className={cn(
+                            "flex items-center gap-3 p-3 rounded-lg border w-full text-left transition-all",
+                            template === t.id ? "border-primary ring-1 ring-primary bg-primary/5" : accessible ? "border-border hover:border-muted-foreground/30" : "border-border opacity-60 hover:opacity-80"
+                          )}
+                        >
+                          <div className={cn("w-8 h-8 rounded-md border border-border flex items-center justify-center shrink-0", t.preview)}>
+                            <div className={cn("w-2.5 h-2.5 rounded-full", t.accent)} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm font-medium">{t.name}</span>
+                              {!accessible && <Lock className="h-3 w-3 text-muted-foreground" />}
+                            </div>
+                            {!accessible && <p className="text-[10px] text-primary">Creator Pro</p>}
+                          </div>
+                          {template === t.id && accessible && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
+                          {!accessible && <Crown className="h-4 w-4 text-primary shrink-0" />}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

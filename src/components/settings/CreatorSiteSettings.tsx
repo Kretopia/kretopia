@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles, Wand2, Loader2, Eye, PenLine, Maximize2 } from "lucide-react";
+import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles, Wand2, Loader2, Eye, PenLine, Maximize2, Lock, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
@@ -18,18 +18,9 @@ import { SitePreviewPanel } from "@/components/creator-site/SitePreviewPanel";
 import { SiteAnalyticsDashboard } from "@/components/creator-site/SiteAnalyticsDashboard";
 import { AIWebsiteGenerator } from "@/components/creator-site/AIWebsiteGenerator";
 import { FullScreenSiteEditor } from "@/components/creator-site/FullScreenSiteEditor";
+import { TEMPLATES, isTemplateAccessible } from "@/components/creator-site/templateConfig";
 
-const TEMPLATES = [
-  { id: 'bold-electric', name: 'Bold Electric', description: 'High-energy dark mode with vibrant gradients', preview: 'bg-gradient-to-br from-[#0a0a0c] to-[#1a1a2e]', accent: 'bg-[#ff00ff]' },
-  { id: 'minimal-editorial', name: 'Minimal Editorial', description: 'Clean, elegant serif typography on warm white', preview: 'bg-[#faf9f7]', accent: 'bg-[#1a1a1a]' },
-  { id: 'portfolio-mosaic', name: 'Portfolio Mosaic', description: 'Image-first masonry layout, modern and rounded', preview: 'bg-white', accent: 'bg-[#111]' },
-  { id: 'creative-director', name: 'Creative Director', description: 'Cinematic dark layout with gold accents', preview: 'bg-gradient-to-br from-[#0d0d0d] to-[#1a1510]', accent: 'bg-[#b8a080]' },
-  { id: 'artist-showcase', name: 'Artist Showcase', description: 'Immersive full-screen imagery with masonry gallery', preview: 'bg-gradient-to-br from-[#1a0a2e] to-[#111]', accent: 'bg-white' },
-  { id: 'producer', name: 'Producer', description: 'Stats-driven light layout with filmography scroll', preview: 'bg-[#fefefe]', accent: 'bg-[#111]' },
-  { id: 'agency', name: 'Agency', description: 'Bold, corporate energy with oversized typography', preview: 'bg-white', accent: 'bg-[#111]' },
-  { id: 'minimal-clean', name: 'Minimal Clean', description: 'Ultra-minimal single-column layout', preview: 'bg-[#fcfcfc]', accent: 'bg-[#222]' },
-  { id: 'photographer', name: 'Photographer', description: 'Image-first dark theme with lightbox', preview: 'bg-[#1a1a1a]', accent: 'bg-white' },
-];
+// Templates imported from templateConfig.ts
 
 export const CreatorSiteSettings = () => {
   const { user, subscriptionInfo } = useAuth();
@@ -312,29 +303,44 @@ export const CreatorSiteSettings = () => {
                   <div className="space-y-3">
                     <Label className="text-xs text-muted-foreground uppercase tracking-wider">Template Style</Label>
                     <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-1">
-                      {TEMPLATES.map((template) => (
-                        <button
-                          key={template.id}
-                          onClick={() => handleTemplateChange(template.id)}
-                          disabled={saving}
-                          className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
-                            selectedTemplate === template.id
-                              ? 'border-primary ring-1 ring-primary bg-primary/5'
-                              : 'border-border hover:border-muted-foreground/30'
-                          }`}
-                        >
-                          <div className={`w-10 h-10 rounded-md ${template.preview} border border-border flex items-center justify-center shrink-0`}>
-                            <div className={`w-3 h-3 rounded-full ${template.accent}`} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">{template.name}</p>
-                            <p className="text-xs text-muted-foreground truncate">{template.description}</p>
-                          </div>
-                          {selectedTemplate === template.id && (
-                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                          )}
-                        </button>
-                      ))}
+                      {TEMPLATES.map((tmpl) => {
+                        const accessible = isTemplateAccessible(tmpl.id, isCreatorPro);
+                        return (
+                          <button
+                            key={tmpl.id}
+                            onClick={() => {
+                              if (!accessible) {
+                                toast({ title: "Creator Pro Template", description: `"${tmpl.name}" requires Creator Pro. Upgrade to unlock all ${TEMPLATES.length} templates.` });
+                                navigate("/subscription");
+                                return;
+                              }
+                              handleTemplateChange(tmpl.id);
+                            }}
+                            disabled={saving}
+                            className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                              selectedTemplate === tmpl.id
+                                ? 'border-primary ring-1 ring-primary bg-primary/5'
+                                : accessible ? 'border-border hover:border-muted-foreground/30' : 'border-border opacity-60 hover:opacity-80'
+                            }`}
+                          >
+                            <div className={`w-10 h-10 rounded-md ${tmpl.preview} border border-border flex items-center justify-center shrink-0`}>
+                              <div className={`w-3 h-3 rounded-full ${tmpl.accent}`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-medium">{tmpl.name}</p>
+                                {!accessible && <Lock className="h-3 w-3 text-muted-foreground" />}
+                              </div>
+                              <p className="text-xs text-muted-foreground truncate">{tmpl.description}</p>
+                              {!accessible && <p className="text-[10px] text-primary mt-0.5">Creator Pro</p>}
+                            </div>
+                            {selectedTemplate === tmpl.id && accessible && (
+                              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                            )}
+                            {!accessible && <Crown className="h-4 w-4 text-primary shrink-0" />}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 

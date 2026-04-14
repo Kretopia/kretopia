@@ -443,6 +443,21 @@ const EventPage = () => {
             </Card>
           )}
 
+          {/* Discussion */}
+          {isAuthenticated && (
+            <Card className="mb-6">
+              <CardContent className="p-0">
+                <h3 className="font-semibold px-5 pt-4 pb-2">Discussion</h3>
+                <EventComments 
+                  eventId={event.id} 
+                  isCreator={isCreator} 
+                  creatorId={event.created_by}
+                  eventTitle={event.title}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           {/* CTA */}
           {!isCancelled && (
             <div className="space-y-3">

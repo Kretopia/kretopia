@@ -42,17 +42,17 @@ const BottomNav = memo(() => {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("profiles")
-      .select("account_type")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        const company = data?.account_type === "company";
-        setIsCompany(company);
-        if (company && mode === "create") setMode("work");
-      })
-      .catch(err => console.warn('[BottomNav] Error loading profile:', err));
+    Promise.resolve(
+      supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("user_id", user.id)
+        .maybeSingle()
+    ).then(({ data }) => {
+      const company = data?.account_type === "company";
+      setIsCompany(company);
+      if (company && mode === "create") setMode("work");
+    }).catch(err => console.warn('[BottomNav] Error loading profile:', err));
   }, [user?.id]);
 
   if (location.pathname === "/auth") return null;

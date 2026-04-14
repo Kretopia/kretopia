@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles, Wand2, Loader2, Eye, PenLine } from "lucide-react";
+import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles, Wand2, Loader2, Eye, PenLine, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
@@ -17,6 +17,7 @@ import { SiteSetupWizard } from "@/components/creator-site/SiteSetupWizard";
 import { SitePreviewPanel } from "@/components/creator-site/SitePreviewPanel";
 import { SiteAnalyticsDashboard } from "@/components/creator-site/SiteAnalyticsDashboard";
 import { AIWebsiteGenerator } from "@/components/creator-site/AIWebsiteGenerator";
+import { FullScreenSiteEditor } from "@/components/creator-site/FullScreenSiteEditor";
 
 const TEMPLATES = [
   { id: 'bold-electric', name: 'Bold Electric', description: 'High-energy dark mode with vibrant gradients', preview: 'bg-gradient-to-br from-[#0a0a0c] to-[#1a1a2e]', accent: 'bg-[#ff00ff]' },
@@ -52,6 +53,7 @@ export const CreatorSiteSettings = () => {
   const [showWizard, setShowWizard] = useState(false);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showFullEditor, setShowFullEditor] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
 
   const siteUrl = username 
@@ -299,6 +301,21 @@ export const CreatorSiteSettings = () => {
 
                   {/* Action buttons */}
                   <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setShowFullEditor(true)}
+                    >
+                      <Maximize2 className="h-4 w-4 mr-2" />
+                      Open Editor
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowAIGenerator(true)}>
+                      <Wand2 className="h-4 w-4 mr-2" />
+                      AI Regenerate
+                    </Button>
+                  </div>
+
+                  <div className="flex gap-2">
                     <Button 
                       variant={showPreview ? "default" : "outline"} 
                       size="sm" 
@@ -306,14 +323,11 @@ export const CreatorSiteSettings = () => {
                       onClick={() => { setShowPreview(!showPreview); setPreviewKey(k => k + 1); }}
                     >
                       <Eye className="h-4 w-4 mr-2" />
-                      {showPreview ? "Hide Preview" : "Live Preview"}
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowAIGenerator(true)}>
-                      <Wand2 className="h-4 w-4 mr-2" />
-                      AI Regenerate
+                      {showPreview ? "Hide Preview" : "Quick Preview"}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => setShowWizard(true)}>
-                      <PenLine className="h-4 w-4" />
+                      <PenLine className="h-4 w-4 mr-2" />
+                      Setup
                     </Button>
                   </div>
 
@@ -364,6 +378,21 @@ export const CreatorSiteSettings = () => {
         open={showAIGenerator}
         onOpenChange={setShowAIGenerator}
         onComplete={reloadSettings}
+      />
+
+      <FullScreenSiteEditor
+        open={showFullEditor}
+        onClose={() => setShowFullEditor(false)}
+        siteUrl={siteUrl}
+        initialData={{
+          template: selectedTemplate,
+          sections: siteSections,
+          headline: siteHeadline,
+          bio: siteBio,
+          customBlocks: siteCustomBlocks,
+        }}
+        onSaved={reloadSettings}
+        onOpenAI={() => { setShowFullEditor(false); setShowAIGenerator(true); }}
       />
     </>
   );

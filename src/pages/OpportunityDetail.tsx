@@ -29,6 +29,8 @@ interface Opportunity {
   status: string;
   image_url: string;
   created_at: string;
+  claim_status?: string | null;
+  claim_token?: string | null;
   barter_offering?: string | null;
   barter_requesting?: string | null;
   platform_requirements?: string[] | null;
@@ -51,6 +53,44 @@ const OpportunityDetail = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const isOwner = user && (opportunity?.created_by === user.id || opportunity?.scouted_by === user.id);
+  const canShareClaimLink = Boolean(
+    user &&
+    opportunity?.claim_token &&
+    opportunity?.claim_status !== 'claimed' &&
+    (opportunity?.scouted_by === user.id || opportunity?.created_by === user.id)
+  );
+
+  const handleShareClaimLink = async () => {
+    if (!opportunity?.claim_token) return;
+
+    const claimUrl = `${window.location.origin}/claim-gig/${opportunity.claim_token}`;
+    const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Claim your gig on ThriveIN", text: shareText, url: claimUrl });
+        return;
+      }
+
+      await navigator.clipboard.writeText(shareText);
+      toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
+    } catch {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
+      } catch {
+        const textarea = document.createElement('textarea');
+        textarea.value = shareText;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
+      }
+    }
+  };
 
   const handleStatusChange = async (newStatus: string) => {
     if (!opportunity) return;
@@ -367,39 +407,10 @@ const OpportunityDetail = () => {
                       <PlayCircle className="h-4 w-4 mr-2" /> Reopen Gig
                     </DropdownMenuItem>
                   )}
-                  {opportunity.scouted_by === user?.id && (opportunity as any).claim_token && (opportunity as any).claim_status === 'unclaimed' && (
+                  {canShareClaimLink && (
                     <>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={async (e) => {
-                        e.preventDefault();
-                        const claimUrl = `${window.location.origin}/claim-gig/${(opportunity as any).claim_token}`;
-                        const shareText = `Hey! I listed your gig on ThriveIN so creatives can find and apply directly. Claim it here to manage applicants, message talent, and fill the role faster:\n\n${claimUrl}`;
-                        try {
-                          if (navigator.share) {
-                            await navigator.share({ title: "Claim your gig on ThriveIN", text: shareText, url: claimUrl });
-                          } else {
-                            await navigator.clipboard.writeText(shareText);
-                            toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
-                          }
-                        } catch {
-                          // Fallback: try clipboard, then manual copy
-                          try {
-                            await navigator.clipboard.writeText(shareText);
-                            toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
-                          } catch {
-                            // Final fallback using textarea
-                            const textarea = document.createElement('textarea');
-                            textarea.value = shareText;
-                            textarea.style.position = 'fixed';
-                            textarea.style.opacity = '0';
-                            document.body.appendChild(textarea);
-                            textarea.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(textarea);
-                            toast({ title: "Claim link copied!", description: "Send it to the person who posted this gig" });
-                          }
-                        }
-                      }}>
+                      <DropdownMenuItem onClick={handleShareClaimLink}>
                         <Radar className="h-4 w-4 mr-2" /> Share Claim Link
                       </DropdownMenuItem>
                     </>

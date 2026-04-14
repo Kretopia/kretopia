@@ -11,13 +11,17 @@ interface Feature {
 }
 
 const features: Feature[] = [
-  { name: "Daily Swipes", free: "10", creator_pro: "Unlimited" },
+  { name: "Daily Swipes", free: "20", creator_pro: "Unlimited" },
+  { name: "Portfolio / Credits", free: "5", creator_pro: "Unlimited" },
+  { name: "Website Builder", free: false, creator_pro: true },
+  { name: "Website Templates", free: false, creator_pro: "All 9 Templates" },
+  { name: "Custom Domain", free: false, creator_pro: true },
+  { name: "Site Analytics", free: false, creator_pro: true },
   { name: "Active Projects", free: "1", creator_pro: "Unlimited" },
-  { name: "AI Match Recommendations", free: "3/day", creator_pro: "Unlimited" },
-  { name: "Undo Swipe", free: false, creator_pro: true },
+  { name: "AI Briefs & Templates", free: "2/month", creator_pro: "Unlimited" },
+  { name: "Undo Swipe", free: false, creator_pro: "3/day" },
   { name: "Profile Verification Badge", free: false, creator_pro: true },
-  { name: "Advanced Analytics", free: false, creator_pro: true },
-  { name: "Featured Profile (3x visibility)", free: false, creator_pro: true },
+  { name: "Advanced Search Filters", free: false, creator_pro: true },
   { name: "Priority Matching", free: false, creator_pro: true },
   { name: "Partner Discounts", free: "5%", creator_pro: "15%" },
   { name: "Early Access to Features", free: false, creator_pro: true },
@@ -42,8 +46,8 @@ export function SubscriptionComparison({ currentTier = "free" }: SubscriptionCom
   };
 
   const tiers = [
-    { key: "free", name: "Thriver", price: "$0", icon: <Sparkles className="h-5 w-5" /> },
-    { key: "creator_pro", name: "Creator Pro", price: "$29/mo", icon: <Crown className="h-5 w-5" />, popular: true },
+    { key: "free", name: "Spark", price: "$0", icon: <Sparkles className="h-5 w-5" /> },
+    { key: "creator_pro", name: "Creator Pro", price: "$59/mo", icon: <Crown className="h-5 w-5" />, popular: true },
   ];
 
   return (

@@ -498,6 +498,14 @@ const EventPage = () => {
               onUpdated={fetchEvent}
             />
           )}
+          {isCreator && (
+            <EventCheckInDialog
+              eventId={event.id}
+              eventTitle={event.title}
+              open={showCheckIn}
+              onOpenChange={setShowCheckIn}
+            />
+          )}
         </div>
       </div>
     </>

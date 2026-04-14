@@ -67,7 +67,8 @@ export const EasyApplyButton = ({ opportunityId, opportunityTitle, className, si
     e.stopPropagation();
 
     if (!user) {
-      navigate("/auth");
+      sessionStorage.setItem('pending_apply_opportunity', opportunityId);
+      navigate(`/auth?redirect=/opportunity/${opportunityId}`);
       return;
     }
 

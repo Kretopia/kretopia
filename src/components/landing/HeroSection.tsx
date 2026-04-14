@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { QuickPostModal } from "@/components/QuickPostModal";
+import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlaceholder";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";

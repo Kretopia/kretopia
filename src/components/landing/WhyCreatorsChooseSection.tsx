@@ -1,18 +1,18 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Award, Brain, MessageSquare, Shield, Verified, DollarSign, Sparkles, Crown, Globe, FileText, FolderKanban, Milestone, LayoutDashboard } from "lucide-react";
+import { Award, Brain, MessageSquare, Shield, Verified, DollarSign, Sparkles, Crown, Globe, FileText, FolderKanban, Milestone, LayoutDashboard, FileSignature, Fingerprint } from "lucide-react";
 
 export const WhyCreatorsChooseSection = () => {
   const features = [
     {
       icon: <Award className="h-5 w-5" />,
-      title: "ThriveCredits™",
+      title: "ThriveCredits",
       text: "Claim your work on any project — AI + peer verification builds a portable reputation that lasts"
     },
     {
       icon: <Globe className="h-5 w-5" />,
       title: "Creator Websites",
-      text: "Launch your own landing page at yourname.thrivein.app — no coding, premium templates included"
+      text: "Launch your own landing page at yourname.thrivein.io — no coding, premium templates included"
     },
     {
       icon: <Brain className="h-5 w-5" />,
@@ -26,23 +26,23 @@ export const WhyCreatorsChooseSection = () => {
     },
     {
       icon: <DollarSign className="h-5 w-5" />,
-      title: "Invoicing & Milestone Payments",
-      text: "Send invoices, set milestone payments, track expenses & get paid securely via escrow"
+      title: "Invoicing & Payments",
+      text: "Send invoices, set milestone payments, track expenses, P&L reports & get paid securely via escrow"
     },
     {
       icon: <FileText className="h-5 w-5" />,
-      title: "EPK & PDF Decks",
-      text: "Generate professional press kits & pitch decks from your profile in one click"
+      title: "EPK to PDF",
+      text: "Generate a professional electronic press kit from your profile and export it as a polished PDF deck"
     },
     {
-      icon: <Shield className="h-5 w-5" />,
-      title: "Portable Creator ID",
-      text: "One unique ID across industries — embed it anywhere, own your reputation"
+      icon: <Fingerprint className="h-5 w-5" />,
+      title: "Creator Passport",
+      text: "One verified identity across industries — embed it anywhere, carry your reputation with you"
     },
     {
-      icon: <LayoutDashboard className="h-5 w-5" />,
-      title: "Business Dashboard",
-      text: "P&L reports, earnings tracking, expense management — run your creative business like a pro"
+      icon: <FileSignature className="h-5 w-5" />,
+      title: "Contracts & Agreements",
+      text: "Create contracts from templates, get e-signatures & protect your work — no lawyer needed"
     },
     {
       icon: <MessageSquare className="h-5 w-5" />,
@@ -91,23 +91,23 @@ export const WhyCreatorsChooseSection = () => {
         {/* Verification tiers */}
         <div className="mt-12 sm:mt-16">
           <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-muted/50 to-muted/30 border border-border/50">
-            <h3 className="mb-2 text-xl sm:text-2xl font-bold text-center">Industry-Standard Verification</h3>
-            <p className="mb-6 text-center text-sm text-muted-foreground">Three levels of creator credibility</p>
+            <h3 className="mb-2 text-xl sm:text-2xl font-bold text-center">Creator Verification</h3>
+            <p className="mb-6 text-center text-sm text-muted-foreground">Build trust with every verified credit</p>
             <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center">
               <div className="p-3 sm:p-4 rounded-xl bg-primary/5 border border-primary/15 hover:scale-105 transition-transform">
                 <Verified className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-primary mb-2" />
                 <div className="font-semibold text-primary text-sm sm:text-base">Verified</div>
-                <p className="text-xs text-muted-foreground mt-1">Profile complete</p>
+                <p className="text-xs text-muted-foreground mt-1">AI + peer endorsed</p>
               </div>
               <div className="p-3 sm:p-4 rounded-xl bg-primary/10 border border-primary/20 hover:scale-105 transition-transform">
                 <Award className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-primary mb-2" />
                 <div className="font-semibold text-primary text-sm sm:text-base">Industry</div>
-                <p className="text-xs text-muted-foreground mt-1">IMDb · Spotify</p>
+                <p className="text-xs text-muted-foreground mt-1">IMDb · Spotify linked</p>
               </div>
-              <div className="p-3 sm:p-4 rounded-xl bg-accent/10 border border-accent/20 hover:scale-105 transition-transform">
-                <Crown className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-accent mb-2" />
-                <div className="font-semibold text-accent-foreground text-sm sm:text-base">Elite</div>
-                <p className="text-xs text-muted-foreground mt-1">Grammy · Oscar</p>
+              <div className="p-3 sm:p-4 rounded-xl bg-primary/15 border border-primary/25 hover:scale-105 transition-transform">
+                <Crown className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-primary mb-2" />
+                <div className="font-semibold text-foreground text-sm sm:text-base">Elite</div>
+                <p className="text-xs text-muted-foreground mt-1">Grammy · Oscar level</p>
               </div>
             </div>
           </div>

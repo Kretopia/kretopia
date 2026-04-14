@@ -248,7 +248,7 @@ export const CreatorSiteSettings = () => {
                       <div className="flex items-center gap-2">
                         <Globe className="h-4 w-4 text-primary shrink-0" />
                         <p className="text-xs font-medium">Custom Domain Redirect</p>
-                        <Badge variant="secondary" className="text-[10px]">Creator Pro</Badge>
+                        <Badge variant="secondary" className="text-[10px]">Creator+</Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Point your own domain (e.g. yourdomain.com) to your ThriveIN creator site. Visitors who go to your domain will be redirected to your page.
@@ -289,10 +289,10 @@ export const CreatorSiteSettings = () => {
                         <div>
                           <p className="text-xs font-medium">Connect Your Own Domain</p>
                           <p className="text-xs text-muted-foreground">
-                            Creator Pro members can use their own domain (yourdomain.com)
+                            Creator+ members can use their own domain (yourdomain.com)
                           </p>
                           <Button variant="link" size="sm" className="h-auto p-0 text-xs mt-1" onClick={() => navigate('/subscription')}>
-                            Upgrade to Creator Pro →
+                            Upgrade to Creator+ →
                           </Button>
                         </div>
                       </div>
@@ -310,7 +310,7 @@ export const CreatorSiteSettings = () => {
                             key={tmpl.id}
                             onClick={() => {
                               if (!accessible) {
-                                toast({ title: "Creator Pro Template", description: `"${tmpl.name}" requires Creator Pro. Upgrade to unlock all ${TEMPLATES.length} templates.` });
+                                toast({ title: "Creator+ Template", description: `"${tmpl.name}" requires Creator+. Upgrade to unlock all ${TEMPLATES.length} templates.` });
                                 navigate("/subscription");
                                 return;
                               }
@@ -332,7 +332,7 @@ export const CreatorSiteSettings = () => {
                                 {!accessible && <Lock className="h-3 w-3 text-muted-foreground" />}
                               </div>
                               <p className="text-xs text-muted-foreground truncate">{tmpl.description}</p>
-                              {!accessible && <p className="text-[10px] text-primary mt-0.5">Creator Pro</p>}
+                              {!accessible && <p className="text-[10px] text-primary mt-0.5">Creator+</p>}
                             </div>
                             {selectedTemplate === tmpl.id && accessible && (
                               <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />

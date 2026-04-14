@@ -17,6 +17,7 @@ import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { BeforeAfterSection } from "@/components/landing/BeforeAfterSection";
+import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 
@@ -253,6 +254,9 @@ export const UnifiedHome = () => {
           </div>
         </div>
       )}
+
+      {/* ═══════════ WHY THRIVEIN — FULL TOOL SHOWCASE ═══════════ */}
+      {!user && <WhyCreatorsChooseSection />}
 
       {/* ═══════════ BEFORE/AFTER DIFFERENTIATION ═══════════ */}
       {!user && <BeforeAfterSection />}

@@ -278,7 +278,7 @@ export const CreatorSiteSettings = () => {
                             size="sm"
                             className="h-6 w-6 p-0 shrink-0"
                             onClick={() => {
-                              const url = siteUrl || `thrivein.io/${profile?.vanity_url || profile?.username || 'yourname'}`;
+                              const url = siteUrl || `thrivein.io/${username || 'yourname'}`;
                               navigator.clipboard.writeText(url);
                               toast({ title: 'Copied!', description: 'URL copied to clipboard' });
                             }}

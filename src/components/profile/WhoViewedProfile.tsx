@@ -179,7 +179,7 @@ export function WhoViewedProfile({ userId, isPro }: WhoViewedProfileProps) {
                 className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground gap-2"
               >
                 <Sparkles className="h-4 w-4" />
-                See Who's Viewing — Go Pro
+                See Who's Viewing — Go Creator
               </Button>
             </div>
           </div>

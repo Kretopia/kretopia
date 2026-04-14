@@ -83,7 +83,7 @@ export function FreeTierGate({ feature, featureLabel, description, children }: F
                 onClick={() => navigate("/subscription")}
                 className="text-xs font-semibold text-primary hover:underline shrink-0 ml-2"
               >
-                Go Pro →
+                Go Creator →
               </button>
             </div>
             <Progress value={usagePercent} className="h-1.5" />

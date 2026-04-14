@@ -56,7 +56,7 @@ export const PodcastPlayer = () => {
         <div className="flex-1">
           <h3 className="font-bold text-sm">Discover A Thriver</h3>
           <p className="text-[11px] text-muted-foreground">
-            Inspiration, features & stories about Thrivers • {episodes.length} episodes
+            A backstage pass to the creative industry from leading professionals • {episodes.length} episodes
           </p>
         </div>
         <Button variant="outline" size="sm" asChild className="gap-1.5 text-xs">

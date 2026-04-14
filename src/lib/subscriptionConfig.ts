@@ -150,6 +150,7 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
 export const CREATOR_PRO_FEATURES: Record<AccountType, string[]> = {
   individual: [
     "Everything in Pro, plus:",
+    "🎨 All 9 premium site templates",
     "🔗 Custom domain support (yourdomain.com)",
     "✏️ Advanced site section editor & customization",
     "📊 Site visitor analytics",

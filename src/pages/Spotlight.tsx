@@ -55,7 +55,7 @@ const Spotlight = () => {
               <Sparkles className="h-5 w-5 text-primary" />
               Spotlight
             </h1>
-            <p className="text-xs text-muted-foreground">Stories, features & sounds to inspire</p>
+            <p className="text-xs text-muted-foreground">Inspiration, features & stories about Thrivers</p>
           </div>
 
           {/* Tabs */}

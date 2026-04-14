@@ -86,13 +86,16 @@ export const UnifiedHome = () => {
         myProfile = data;
       }
 
-      // Build skill keywords for matching
+      // Build skill keywords for matching (safely handle non-string entries)
       const mySkills: string[] = [];
       if (myProfile) {
-        if (Array.isArray(myProfile.professional_skills)) mySkills.push(...myProfile.professional_skills);
-        else if (myProfile.professional_skills) mySkills.push(...Object.keys(myProfile.professional_skills));
-        if (Array.isArray(myProfile.passion_skills)) mySkills.push(...myProfile.passion_skills);
-        else if (myProfile.passion_skills) mySkills.push(...Object.keys(myProfile.passion_skills));
+        const extractSkills = (skills: any) => {
+          if (Array.isArray(skills)) return skills.filter((s: any) => typeof s === 'string');
+          if (skills && typeof skills === 'object') return Object.keys(skills);
+          return [];
+        };
+        mySkills.push(...extractSkills(myProfile.professional_skills));
+        mySkills.push(...extractSkills(myProfile.passion_skills));
       }
       const myRole = myProfile?.role || "";
       const myLocation = myProfile?.location || "";

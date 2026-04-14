@@ -32,6 +32,7 @@ interface Session {
   venue_name?: string;
   venue_address?: string;
   start_time: string;
+  end_time?: string;
   max_participants: number;
   participant_count: number;
   distance_km?: number;

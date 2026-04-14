@@ -11,7 +11,7 @@
     "myProfile": "My Profile",
     "settings": "Settings",
     "subscription": "Subscription",
-    "goPro": "Go Pro"
+    "goPro": "Go Creator"
   },
   "landing": {
     "heroTitle1": "Get Discovered. Get Booked.",
@@ -50,11 +50,11 @@
     "verifiedIdentity": "Verified Identity",
     "escrowProtected": "Escrow Protected",
     "peerEndorsed": "Peer Endorsed",
-    "goProTitle": "Go Pro — from $29/mo",
+    "goProTitle": "Go Creator — from $29/mo",
     "foundingMemberTitle": "Become a Founding Member",
-    "goProDesc": "Unlimited smart tools, verified badge, full invoicing & expense suite. 7-day free trial.",
+    "goProDesc": "Your website, invoicing, milestone payments, project tools & verified badge. 7-day free trial.",
     "foundingMemberDesc": "Early creators get priority visibility, first access to gigs, and help shape the platform.",
-    "pricingNote": "Free forever · Pro from $29/mo · Save 17% annually",
+    "pricingNote": "Free forever · Creator from $29/mo · Save 17% annually",
     "startTrial": "Start 7-Day Trial",
     "joinNow": "Join Now — It's Free",
     "builtByCreatives": "Built by creatives, for creatives",

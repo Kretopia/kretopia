@@ -80,7 +80,7 @@ export function DiscoveryUpsell({ totalItems, freePreviewCount, itemLabel }: Dis
           className="w-full max-w-xs bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2"
         >
           <Sparkles className="h-4 w-4" />
-          Go Pro — $12/mo
+          Go Creator — $12/mo
         </Button>
       </div>
     </div>

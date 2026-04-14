@@ -149,13 +149,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
         )}
 
         {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
-        {!user && isLandingPage && (
+        {!user && (
           <div className="hidden md:flex items-center gap-1 mx-4">
             {guestNavItems.map(({ path, label }) => (
               <Link
                 key={path}
                 to={path}
-                className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all whitespace-nowrap"
+                className={cn(
+                  "px-3 py-2 rounded-lg text-sm font-medium hover:text-foreground hover:bg-accent/50 transition-all whitespace-nowrap",
+                  location.pathname === path ? "text-foreground bg-accent/30" : "text-muted-foreground"
+                )}
               >
                 {label}
               </Link>

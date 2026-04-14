@@ -251,8 +251,22 @@ export const CreatorSiteSettings = () => {
                     </div>
                   </div>
 
-                  {/* Custom Domain upsell */}
-                  {!isCreatorPro && (
+                  {/* Custom Domain */}
+                  {isCreatorPro ? (
+                    <div className="p-3 rounded-lg bg-muted/50 border border-border space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-primary shrink-0" />
+                        <p className="text-xs font-medium">Custom Domain</p>
+                        <Badge variant="secondary" className="text-[10px]">Creator Pro</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Connect your own domain to your creator site. Go to your project's publish settings to add a custom domain that points to your site.
+                      </p>
+                      <Button variant="outline" size="sm" className="text-xs" onClick={() => window.open('https://docs.lovable.dev/features/custom-domain', '_blank')}>
+                        Domain Setup Guide →
+                      </Button>
+                    </div>
+                  ) : (
                     <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                       <div className="flex items-start gap-2">
                         <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />

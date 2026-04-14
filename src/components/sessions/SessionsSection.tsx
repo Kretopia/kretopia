@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Sparkles, MapPin, Calendar, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { sendEventConfirmationEmail } from "@/utils/eventConfirmationEmail";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { SessionCard } from "./SessionCard";
@@ -181,11 +182,33 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
           .maybeSingle();
 
         if (!existing) {
-          await supabase.from('jam_participants').insert({
+          const { data: inserted } = await supabase.from('jam_participants').insert({
             jam_id: ticketSuccess,
             user_id: user.id,
             status: 'going',
-          });
+          }).select('id, check_in_token').single();
+
+          // Send confirmation email for ticket purchase
+          if (inserted) {
+            // Fetch event details for the email
+            const { data: eventData } = await supabase
+              .from('creative_jams')
+              .select('title, start_time, end_time, venue_name, venue_address')
+              .eq('id', ticketSuccess)
+              .single();
+            if (eventData) {
+              sendEventConfirmationEmail({
+                eventId: ticketSuccess,
+                eventTitle: eventData.title,
+                startTime: eventData.start_time,
+                endTime: eventData.end_time,
+                venueName: eventData.venue_name,
+                venueAddress: eventData.venue_address,
+                isTicketed: true,
+                participantId: inserted.id,
+              });
+            }
+          }
         }
 
         toast({ title: "Ticket purchased!", description: "You're in! See you at the event." });

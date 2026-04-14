@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";
 import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
+import { EventComments } from "@/components/sessions/EventComments";
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',

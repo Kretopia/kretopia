@@ -87,15 +87,53 @@ export const EventComments = ({ eventId, isCreator, creatorId, eventTitle }: Eve
   const handleSend = async () => {
     if (!newComment.trim() || !user) return;
     setSending(true);
+    const commentContent = newComment.trim();
 
     const { error } = await supabase
       .from('event_comments' as any)
-      .insert({ event_id: eventId, user_id: user.id, content: newComment.trim() });
+      .insert({ event_id: eventId, user_id: user.id, content: commentContent });
 
     if (error) {
       toast({ title: "Error", description: "Failed to post comment", variant: "destructive" });
     } else {
       setNewComment("");
+
+      // Get commenter's name for notification
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .single();
+      const commenterName = profile?.full_name || 'Someone';
+      const preview = commentContent.length > 80 ? commentContent.slice(0, 80) + '…' : commentContent;
+      const title = eventTitle || 'an event';
+
+      // Notify event creator (if commenter is not the creator)
+      if (creatorId && creatorId !== user.id) {
+        sendPushNotification({
+          userId: creatorId,
+          title: `New comment on ${title}`,
+          body: `${commenterName}: ${preview}`,
+          type: 'general',
+          link: `/event/${eventId}`,
+        });
+      }
+
+      // Notify other unique commenters (excluding current user and creator)
+      const otherCommenters = [...new Set(
+        comments
+          .map(c => c.user_id)
+          .filter(id => id !== user.id && id !== creatorId)
+      )];
+      for (const userId of otherCommenters) {
+        sendPushNotification({
+          userId,
+          title: `New comment on ${title}`,
+          body: `${commenterName}: ${preview}`,
+          type: 'general',
+          link: `/event/${eventId}`,
+        });
+      }
     }
     setSending(false);
   };

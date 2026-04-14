@@ -30,8 +30,8 @@ export const ArtistShowcaseTemplate = ({ data }: { data: CreatorSiteData }) => {
     })),
   ];
 
-  const visualCredits = credits.filter(c => c.thumbnail_url || c.primary_media_url);
-  const textCredits = credits.filter(c => !c.thumbnail_url && !c.primary_media_url);
+  const visualCredits = credits.filter(c => resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
+  const textCredits = credits.filter(c => !resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
 
   return (
     <div className="bg-[#111] text-white min-h-dvh">

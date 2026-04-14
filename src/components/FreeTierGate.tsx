@@ -45,8 +45,8 @@ export function FreeTierGate({ feature, featureLabel, description, children }: F
             </p>
             <p className="text-xs text-muted-foreground mb-5">
               {description || (isPro 
-                ? `Upgrade to Enterprise for higher limits on ${getFeatureDisplayName(feature)}.`
-                : `Upgrade to Pro for more ${getFeatureDisplayName(feature)}.`
+                ? `Upgrade to Creator+ for higher limits on ${getFeatureDisplayName(feature)}.`
+                : `Upgrade to Creator for more ${getFeatureDisplayName(feature)}.`
               )}
             </p>
             <Button
@@ -54,10 +54,10 @@ export function FreeTierGate({ feature, featureLabel, description, children }: F
               className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground font-semibold gap-2"
             >
               <Sparkles className="h-4 w-4" />
-              {isPro ? "Upgrade to Enterprise" : "Upgrade to Pro"}
+              {isPro ? "Upgrade to Creator+" : "Upgrade to Creator"}
             </Button>
             <p className="text-[11px] text-muted-foreground mt-3">
-              {isPro ? "$49/month · Enterprise" : "$12/month · Cancel anytime"}
+              {isPro ? "$59/month · Creator+" : "$29/month · 7-day free trial"}
             </p>
           </div>
         </div>

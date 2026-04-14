@@ -116,12 +116,13 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
     "Unlimited swipes & matches",
     "Unlimited work credits & portfolio",
     "🤖 Unlimited AI Briefs & Templates",
-    "📊 Unlimited Expense Tracking & Invoicing",
+    "📊 Unlimited Invoicing & Milestone Payments",
     "📊 Full P&L Dashboard & Reports",
-    "🔓 Unlimited Workspace Tools",
+    "🔓 Unlimited Workspace & Project Tools",
     "🌐 Creator Site — your own landing page/website",
     "🎨 3 premium site templates",
     "🔗 Free yourname.thrivein.app subdomain",
+    "📄 EPK-to-PDF deck export",
     "AI match explanations",
     "Profile verification badge",
     "Advanced search filters",
@@ -149,10 +150,11 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
 
 export const CREATOR_PRO_FEATURES: Record<AccountType, string[]> = {
   individual: [
-    "Everything in Pro, plus:",
+    "Everything in Creator, plus:",
     "🎨 All 9 premium site templates",
     "🔗 Custom domain support (yourdomain.com)",
     "✏️ Advanced site section editor & customization",
+    "🎨 Custom invoice & EPK branding (logo, colors, letterhead)",
     "📊 Site visitor analytics",
     "📊 Campaign analytics (open/click tracking)",
     "⏰ Scheduled email sends",

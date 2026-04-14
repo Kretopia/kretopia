@@ -17,9 +17,10 @@ export function SubscriptionPromptCard({ currentTier }: SubscriptionPromptCardPr
   const proFeatures = [
     "Your own creator website",
     "Full invoicing & milestone payments",
-    "P&L dashboard & expense tracking",
-    "Unlimited swipes & matches",
     "Project management workspace",
+    "P&L dashboard & expense tracking",
+    "EPK-to-PDF deck export",
+    "Unlimited swipes & matches",
     "Profile verification badge",
     "Save 17% with annual billing",
   ];

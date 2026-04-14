@@ -20,6 +20,8 @@ interface Credit {
   thumbnail_url?: string;
   verification_status?: "unverified" | "pending" | "verified";
   is_featured?: boolean;
+  credit_category?: string;
+  project_type?: string;
 }
 
 interface CreditsSectionProps {
@@ -317,6 +319,7 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
               onRequestEndorsement={() => setEndorsementCredit(credit)}
               icon={<Film className="h-16 w-16" />}
               metadata={credit.platform ? { Platform: credit.platform } : undefined}
+              category={credit.credit_category || credit.project_type}
             />
           ))}
         </div>

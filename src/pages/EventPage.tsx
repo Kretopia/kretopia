@@ -44,6 +44,7 @@ const EventPage = () => {
   const [participation, setParticipation] = useState<string | null>(null);
   const [showShareKit, setShowShareKit] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showCheckIn, setShowCheckIn] = useState(false);
 
   useEffect(() => {
     if (eventId) fetchEvent();
@@ -257,7 +258,10 @@ const EventPage = () => {
 
           {/* Host Edit Button */}
           {isCreator && (
-            <div className="flex justify-end mb-2">
+            <div className="flex justify-end gap-2 mb-2">
+              <Button variant="outline" size="sm" onClick={() => setShowCheckIn(true)} className="gap-1.5">
+                <ScanLine className="h-3.5 w-3.5" /> Check-In
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)} className="gap-1.5">
                 <Pencil className="h-3.5 w-3.5" /> Edit Event
               </Button>

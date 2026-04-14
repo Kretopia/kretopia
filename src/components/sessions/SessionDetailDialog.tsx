@@ -311,8 +311,8 @@ export const SessionDetailDialog = ({
           </div>
 
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-            <div className="mx-3 sm:mx-5 mt-3 overflow-x-auto scrollbar-hide shrink-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+            <div className="mx-3 sm:mx-5 mt-2 overflow-x-auto scrollbar-hide shrink-0">
             <TabsList className="w-max">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="participants">
@@ -324,8 +324,8 @@ export const SessionDetailDialog = ({
             </TabsList>
             </div>
 
-            <div className="flex-1 overflow-hidden">
-              <TabsContent value="details" className="h-full overflow-y-auto px-4 sm:px-5 py-4 m-0">
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <TabsContent value="details" className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 m-0 data-[state=inactive]:hidden">
                 <div className="space-y-5">
                   {session.description && (
                     <div>
@@ -395,11 +395,11 @@ export const SessionDetailDialog = ({
                 </div>
               </TabsContent>
 
-              <TabsContent value="participants" className="h-full overflow-y-auto m-0">
+              <TabsContent value="participants" className="flex-1 overflow-y-auto m-0 data-[state=inactive]:hidden">
                 <SessionParticipants sessionId={session.id} creatorId={session.created_by} isCreator={isCreator} onRefresh={onRefresh} />
               </TabsContent>
 
-              <TabsContent value="chat" className="h-full m-0 flex flex-col overflow-hidden">
+              <TabsContent value="chat" className="flex-1 m-0 flex flex-col min-h-0 data-[state=inactive]:hidden">
                 <SessionChat sessionId={session.id} isCreator={isCreator} />
               </TabsContent>
 

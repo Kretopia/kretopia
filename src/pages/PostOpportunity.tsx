@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,30 @@ import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescrip
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 
+const STORAGE_KEY = "thrivein_draft_opportunity";
+
+function loadDraft() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return null;
+}
+
+function saveDraft(data: Record<string, unknown>) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {}
+}
+
+function clearDraft() {
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch {}
+}
+
 const PostOpportunity = () => {
+  const draft = loadDraft();
   const [step, setStep] = useState<"form" | "sent" | "error">("form");
   const [posting, setPosting] = useState(false);
   const [skillInput, setSkillInput] = useState("");
@@ -25,24 +48,42 @@ const PostOpportunity = () => {
   const [rawImageUrl, setRawImageUrl] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
-    company_name: "",
-    email: "",
-    logo_url: "",
-    title: "",
-    description: "",
-    type: "collab",
-    compensation: "",
-    skills: [] as string[],
-    requirements: "",
-    deliverables: "",
-    location: "remote",
-    location_city: "",
-    location_country: "",
-    image_url: "",
+    company_name: draft?.company_name || "",
+    email: draft?.email || "",
+    logo_url: draft?.logo_url || "",
+    title: draft?.title || "",
+    description: draft?.description || "",
+    type: draft?.type || "collab",
+    compensation: draft?.compensation || "",
+    skills: (draft?.skills as string[]) || ([] as string[]),
+    requirements: draft?.requirements || "",
+    deliverables: draft?.deliverables || "",
+    location: draft?.location || "remote",
+    location_city: draft?.location_city || "",
+    location_country: draft?.location_country || "",
+    image_url: draft?.image_url || "",
   });
   const { toast } = useToast();
   const { subscriptionInfo } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
+
+  // Auto-save draft on every form change
+  useEffect(() => {
+    saveDraft(formData);
+  }, [formData]);
+
+  // Warn before leaving page with data
+  useEffect(() => {
+    const hasData = formData.title.trim() || formData.description.trim() || formData.company_name.trim();
+    if (!hasData) return;
+
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [formData.title, formData.description, formData.company_name]);
 
   const handleAddSkill = () => {
     if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
@@ -121,6 +162,7 @@ const PostOpportunity = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
+      clearDraft();
       setStep("sent");
     } catch (error: any) {
       console.error("Error posting:", error);

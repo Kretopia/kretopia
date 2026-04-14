@@ -106,11 +106,13 @@ export const CreativeDirectorTemplate = ({ data }: { data: CreatorSiteData }) =>
             <p className="text-sm text-[#555] hidden md:block">{credits.length} projects</p>
           </div>
           <div className="grid md:grid-cols-2 gap-1">
-            {credits.slice(0, 8).map((credit, i) => (
+            {credits.slice(0, 8).map((credit, i) => {
+              const thumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
+              return (
               <div key={credit.id} className="group relative aspect-[16/10] overflow-hidden bg-[#111]">
-                {credit.thumbnail_url || credit.primary_media_url ? (
+                {thumb ? (
                   <img
-                    src={credit.thumbnail_url || credit.primary_media_url || ''}
+                    src={thumb}
                     alt={credit.project_name}
                     className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-105 transition-all duration-700"
                   />

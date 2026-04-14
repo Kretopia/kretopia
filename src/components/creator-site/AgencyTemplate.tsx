@@ -101,13 +101,15 @@ export const AgencyTemplate = ({ data }: { data: CreatorSiteData }) => {
             <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Selected Work</h2>
           </div>
           <div className="space-y-2">
-            {credits.slice(0, 10).map((credit, i) => (
+            {credits.slice(0, 10).map((credit, i) => {
+              const thumb = resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url);
+              return (
               <div key={credit.id} className="group grid md:grid-cols-[auto_1fr_auto] gap-4 items-center py-6 border-b border-[#eee] hover:border-[#111] transition-colors cursor-default">
                 <span className="text-xs font-mono text-[#ccc] w-8">{String(i + 1).padStart(2, '0')}</span>
                 <div className="flex items-center gap-4">
-                  {(credit.thumbnail_url || credit.primary_media_url) && (
+                  {thumb && (
                     <img
-                      src={credit.thumbnail_url || credit.primary_media_url || ''}
+                      src={thumb}
                       alt=""
                       className="w-12 h-12 rounded object-cover opacity-0 group-hover:opacity-100 transition-opacity"
                     />

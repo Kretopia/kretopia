@@ -94,7 +94,7 @@ export const ArtistShowcaseTemplate = ({ data }: { data: CreatorSiteData }) => {
                   }`}
                 >
                   <img
-                    src={credit.thumbnail_url || credit.primary_media_url || ''}
+                    src={resolveCreditThumbnail(credit.thumbnail_url, credit.primary_media_url, credit.url) || ''}
                     alt={credit.project_name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />

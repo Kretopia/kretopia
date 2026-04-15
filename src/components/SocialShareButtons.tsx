@@ -31,7 +31,7 @@ export function SocialShareButtons({ url, title, description, socialUrl, variant
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title, text, url: fullUrl });
+        await navigator.share({ title, text, url: networkUrl });
         return;
       } catch {}
     }
@@ -39,7 +39,7 @@ export function SocialShareButtons({ url, title, description, socialUrl, variant
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`${text}\n${fullUrl}`);
+    navigator.clipboard.writeText(`${text}\n${networkUrl}`);
     toast.success("Link copied!");
   };
 

@@ -68,14 +68,15 @@ function buildGigShareHtml(gig: GigRow, siteUrl: string) {
   const gigUrl = `${siteUrl}/opportunity/${gig.id}`;
   const shareUrl = `${siteUrl}/share/gig/${gig.id}/`;
   const title = `${gig.title} | ThriveIN`;
-  const typeLabel = gig.type === "barter" ? "Barter" : gig.type === "collab" ? "Collab" : "Gig";
+  const typeLabel = gig.type === "barter" ? "Barter" : gig.type === "collab" ? "Collab" : "Paid Gig";
   const parts = [typeLabel];
   if (gig.location) parts.push(gig.location);
   if (gig.compensation) parts.push(gig.compensation);
   const subtitle = parts.join(" · ");
   const description = gig.description
-    ? truncate(gig.description, 155)
-    : `${subtitle} — Browse and apply on ThriveIN, the Creative OS.`;
+    ? `${subtitle} — ${truncate(gig.description, 120)}`
+    : `${subtitle} — Apply now on ThriveIN, the Creative OS for professionals.`;
+  const ctaDescription = `${description} Browse opportunities and apply directly.`;
   const image = gig.image_url || FALLBACK_OG_IMAGE;
 
   return `<!doctype html>
@@ -84,20 +85,20 @@ function buildGigShareHtml(gig: GigRow, siteUrl: string) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(title)}</title>
-    <meta name="description" content="${escapeHtml(description)}" />
+    <meta name="description" content="${escapeHtml(ctaDescription)}" />
     <meta name="robots" content="noindex,follow" />
     <link rel="canonical" href="${gigUrl}" />
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content="${escapeHtml(title)}" />
-    <meta property="og:description" content="${escapeHtml(subtitle + " — " + description)}" />
+    <meta property="og:description" content="${escapeHtml(ctaDescription)}" />
     <meta property="og:url" content="${shareUrl}" />
     <meta property="og:site_name" content="ThriveIN" />
     <meta property="og:image" content="${escapeHtml(image)}" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(title)}" />
-    <meta name="twitter:description" content="${escapeHtml(description)}" />
+    <meta name="twitter:description" content="${escapeHtml(ctaDescription)}" />
     <meta name="twitter:image" content="${escapeHtml(image)}" />
 
     <meta http-equiv="refresh" content="0;url=${gigUrl}" />
@@ -107,8 +108,8 @@ function buildGigShareHtml(gig: GigRow, siteUrl: string) {
     <main>
       <h1>${escapeHtml(gig.title)}</h1>
       <p>${escapeHtml(subtitle)}</p>
-      <p>${escapeHtml(description)}</p>
-      <p><a href="${gigUrl}">View gig on ThriveIN</a></p>
+      <p>${escapeHtml(ctaDescription)}</p>
+      <p><a href="${gigUrl}">Apply now on ThriveIN</a></p>
     </main>
   </body>
 </html>`;

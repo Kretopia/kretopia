@@ -287,12 +287,17 @@ const OpportunityDetail = () => {
   }, [id, user?.id]);
 
   const handleShare = async () => {
-    const url = `https://www.thrivein.io/opportunity/${id}`;
-    const shareText = `${opportunity?.title} — ${opportunity?.type === 'barter' ? 'Barter exchange' : opportunity?.type} gig on ThriveIN!\n\nApply now 👇\n${url}`;
+    const shareUrl = `https://www.thrivein.io/share/gig/${id}/`;
+    const typeLabel = opportunity?.type === 'barter' ? 'Barter' : opportunity?.type === 'collab' ? 'Collab' : 'Paid';
+    const parts = [typeLabel];
+    if (opportunity?.location) parts.push(opportunity.location);
+    if (opportunity?.compensation) parts.push(opportunity.compensation);
+    const details = parts.join(' · ');
+    const shareText = `🎯 ${opportunity?.title}\n${details}\n\nApply now on ThriveIN — the Creative OS 👇\n${shareUrl}`;
     
     if (navigator.share) {
       try {
-        await navigator.share({ title: opportunity?.title, text: shareText, url });
+        await navigator.share({ title: opportunity?.title, text: shareText, url: shareUrl });
         return;
       } catch {}
     }

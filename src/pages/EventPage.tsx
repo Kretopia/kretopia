@@ -138,9 +138,11 @@ const EventPage = () => {
   };
 
   const handleShare = () => {
-    const url = window.location.href;
+    const shareUrl = `https://www.thrivein.io/share/event/${eventId}/`;
+    const eventDate = event ? new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : '';
+    const shareText = `🎉 ${event?.title}\n📅 ${eventDate}${event?.venue_name ? `\n📍 ${event.venue_name}` : ''}\n\nRSVP now on ThriveIN 👇\n${shareUrl}`;
     if (navigator.share) {
-      navigator.share({ title: event?.title, url }).catch(() => {});
+      navigator.share({ title: event?.title, text: shareText, url: shareUrl }).catch(() => {});
     } else {
       setShowShareKit(true);
     }

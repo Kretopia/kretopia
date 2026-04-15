@@ -9,6 +9,24 @@ import { setupGlobalErrorLogging } from "./lib/errorLogger";
 import "./i18n";
 import "./index.css";
 
+const isInIframe = (() => {
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+})();
+
+const isPreviewHost =
+  window.location.hostname.includes("id-preview--") ||
+  window.location.hostname.includes("lovableproject.com");
+
+if (isInIframe || isPreviewHost) {
+  navigator.serviceWorker?.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => registration.unregister());
+  });
+}
+
 // Initialize Sentry for error monitoring
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN || "",
@@ -26,13 +44,15 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
-// VitePWA handles SW registration via registerType: "autoUpdate"
-// Our listener detects when a new SW activates and force-reloads for freshness
-initSWUpdateListener();
+if (!isInIframe && !isPreviewHost) {
+  // VitePWA handles SW registration via registerType: "autoUpdate"
+  // Our listener detects when a new SW activates and force-reloads for freshness
+  initSWUpdateListener();
 
-// Nuclear cache-bust: compare embedded build hash vs server version.json
-// If stale, purge ALL caches + unregister SW + hard reload
-checkForNewVersion();
+  // Nuclear cache-bust: compare embedded build hash vs server version.json
+  // If stale, purge ALL caches + unregister SW + hard reload
+  checkForNewVersion();
+}
 
 // Log unhandled errors to the database for monitoring
 setupGlobalErrorLogging();

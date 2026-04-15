@@ -84,7 +84,6 @@ export const UnifiedNearbyMap = ({
   const userMarker = useRef<mapboxgl.Marker | null>(null);
   const cleanupMapListeners = useRef<(() => void) | null>(null);
   const resizeTimeouts = useRef<number[]>([]);
-  const initFrame = useRef<number | null>(null);
   const hasRetriedInit = useRef(false);
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -93,22 +92,6 @@ export const UnifiedNearbyMap = ({
   const clearResizeTimeouts = useCallback(() => {
     resizeTimeouts.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
     resizeTimeouts.current = [];
-  }, []);
-
-  const cancelInitFrame = useCallback(() => {
-    if (initFrame.current !== null) {
-      window.cancelAnimationFrame(initFrame.current);
-      initFrame.current = null;
-    }
-  }, []);
-
-  const getContainerSize = useCallback(() => {
-    const rect = mapContainer.current?.getBoundingClientRect();
-
-    return {
-      width: rect?.width ?? 0,
-      height: rect?.height ?? 0,
-    };
   }, []);
 
   const scheduleResizeBurst = useCallback(() => {
@@ -135,7 +118,6 @@ export const UnifiedNearbyMap = ({
   }, []);
 
   const destroyMap = useCallback(() => {
-    cancelInitFrame();
     clearResizeTimeouts();
     clearMarkers();
     cleanupMapListeners.current?.();
@@ -149,21 +131,10 @@ export const UnifiedNearbyMap = ({
     }
 
     setMapLoaded(false);
-  }, [cancelInitFrame, clearMarkers, clearResizeTimeouts]);
+  }, [clearMarkers, clearResizeTimeouts]);
 
   const initializeMap = useCallback(() => {
     if (!mapContainer.current || map.current || !userLocation) return;
-
-    const { width, height } = getContainerSize();
-
-    if (width < 40 || height < 40) {
-      cancelInitFrame();
-      initFrame.current = window.requestAnimationFrame(() => {
-        initFrame.current = null;
-        initializeMap();
-      });
-      return;
-    }
 
     if (!mapboxgl.supported()) {
       console.error("[UnifiedNearbyMap] Mapbox GL is not supported on this device");
@@ -194,13 +165,7 @@ export const UnifiedNearbyMap = ({
     const handleLoad = () => {
       setMapLoaded(true);
       hasRetriedInit.current = false;
-      mapInstance.resize();
       scheduleResizeBurst();
-
-      window.requestAnimationFrame(() => {
-        mapInstance.resize();
-        mapInstance.triggerRepaint();
-      });
     };
 
     const handleStyleData = () => {
@@ -252,7 +217,7 @@ export const UnifiedNearbyMap = ({
       mapInstance.off("idle", handleIdle);
       mapInstance.off("error", handleError);
     };
-  }, [cancelInitFrame, destroyMap, getContainerSize, mapboxToken, scheduleResizeBurst, userLocation]);
+  }, [destroyMap, mapboxToken, scheduleResizeBurst, userLocation]);
 
   useEffect(() => {
     initializeMap();
@@ -489,7 +454,7 @@ export const UnifiedNearbyMap = ({
     <div className="relative h-full w-full min-h-[300px] bg-background/20">
       <div ref={mapContainer} className="absolute inset-0" />
       {(loading || !mapLoaded) && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/70">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/40 backdrop-blur-[1px]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           {!loading && <p className="text-xs text-muted-foreground">Loading map…</p>}
         </div>

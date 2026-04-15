@@ -78,6 +78,12 @@ const WebsiteBuilder = () => {
   const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
 
+  // For live preview iframe, use current origin so it works in both preview and production
+  const previewOrigin = typeof window !== 'undefined' ? window.location.origin : APP_URL;
+  const previewUrl = username
+    ? `${previewOrigin}/${username}`
+    : user ? `${previewOrigin}/site/${user.id}` : '';
+  // For sharing/display, always use the canonical production URL
   const siteUrl = username
     ? `${APP_URL}/${username}`
     : user ? `${APP_URL}/site/${user.id}` : '';

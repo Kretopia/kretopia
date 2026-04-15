@@ -367,33 +367,8 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   };
 
   const handleEditInvoice = (invoice: any) => {
-    setRecipientName(invoice.recipient_name || "");
-    setRecipientEmail(invoice.recipient_email || "");
-    setRecipientAddress(invoice.recipient_address || "");
+    loadInvoiceData(invoice);
     setDueDate(invoice.due_date || "");
-    setTaxRate(String(invoice.tax_rate || 0));
-    setNotes(invoice.notes || "");
-    setCurrency(invoice.currency || "USD");
-    setDiscountType(invoice.discount_type || "");
-    setDiscountValue(String(invoice.discount_value || 0));
-    setLineItems(
-      (invoice.line_items || []).length > 0
-        ? (invoice.line_items as LineItem[])
-        : [{ description: "", quantity: 1, rate: 0, amount: 0 }]
-    );
-    setBranding({
-      brand_name: invoice.brand_name || "",
-      brand_logo_url: invoice.brand_logo_url || "",
-      brand_address: invoice.brand_address || "",
-      brand_email: invoice.brand_email || "",
-      brand_website: invoice.brand_website || "",
-      brand_color: invoice.brand_color || "#6366f1",
-    });
-    setPaymentConfig({
-      payment_method: invoice.payment_method || "bank_transfer",
-      payment_details: invoice.payment_details || {},
-      terms_conditions: invoice.terms_conditions || "",
-    });
     setEditingInvoiceId(invoice.id);
     setCreateStep("details");
     setShowCreateDialog(true);

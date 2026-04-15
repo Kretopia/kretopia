@@ -895,147 +895,166 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                   </div>
                 )}
 
-                {/* AI Pricing Co-Pilot - positioned first so users can get AI help before filling form */}
+                {/* AI Pricing Co-Pilot — chat-first experience */}
                 <PricingCoPilot
                   lineItems={lineItems}
                   currency={currency}
+                  documentType={documentType}
                   onApplyLineItems={(items) => setLineItems(items)}
                   onApplyNotes={(n) => setNotes(n)}
                   onApplyTerms={(t) => setPaymentConfig(prev => ({ ...prev, terms_conditions: t }))}
                   onApplyTaxRate={(r) => setTaxRate(String(r))}
-                />
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <Label className="text-xs">Client Name *</Label>
-                    <Input className="h-8 text-sm" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Client or company name" />
-                    {collaborators.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {collaborators.map((c) => (
-                          <button key={c.user_id} type="button" className="text-[10px] px-1.5 py-0.5 rounded bg-muted hover:bg-accent text-muted-foreground" onClick={() => setRecipientName(c.full_name)}>
-                            {c.full_name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <Label className="text-xs">Client Email</Label>
-                    <Input className="h-8 text-sm" value={recipientEmail} onChange={(e) => setRecipientEmail(e.target.value)} placeholder="client@email.com" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Client Address</Label>
-                    <Input className="h-8 text-sm" value={recipientAddress} onChange={(e) => setRecipientAddress(e.target.value)} placeholder="City, Country" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {documentType === "invoice" ? (
-                    <div>
-                      <Label className="text-xs">Due Date</Label>
-                      <Input className="h-8 text-sm" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                    </div>
-                  ) : (
-                    <div>
-                      <Label className="text-xs">Valid Until</Label>
-                      <Input className="h-8 text-sm" type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
-                    </div>
-                  )}
-                  <div>
-                    <Label className="text-xs">Currency</Label>
-                    <Select value={currency} onValueChange={setCurrency}>
-                      <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "BRL", "ZAR", "INR", "NGN", "IDR", "TTD", "AED", "KES"].map(c => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-xs">Tax Rate (%)</Label>
-                    <Input className="h-8 text-sm" type="number" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} placeholder="0" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <Label className="text-xs font-semibold">Line Items *</Label>
-                    <Button type="button" size="sm" variant="outline" onClick={addLineItem} className="h-7 text-xs">
-                      <Plus className="h-3 w-3 mr-1" /> Add Item
-                    </Button>
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="grid grid-cols-12 gap-1.5 text-[10px] text-muted-foreground font-medium px-1">
-                      <span className="col-span-5">Description</span>
-                      <span className="col-span-2 text-center">Qty</span>
-                      <span className="col-span-2 text-right">Rate</span>
-                      <span className="col-span-2 text-right">Amount</span>
-                    </div>
-                    {lineItems.map((item, index) => (
-                      <div key={index} className="grid grid-cols-12 gap-1.5 items-center">
-                        <Input className="col-span-5 h-8 text-sm" placeholder="Service description" value={item.description} onChange={(e) => updateLineItem(index, "description", e.target.value)} />
-                        <Input className="col-span-2 h-8 text-sm text-center" type="number" value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", parseFloat(e.target.value) || 0)} />
-                        <Input className="col-span-2 h-8 text-sm text-right" type="number" value={item.rate} onChange={(e) => updateLineItem(index, "rate", parseFloat(e.target.value) || 0)} />
-                        <span className="col-span-2 text-sm text-right font-medium">{currencySymbol}{item.amount.toFixed(2)}</span>
-                        <Button type="button" size="icon" variant="ghost" className="col-span-1 h-7 w-7" onClick={() => removeLineItem(index)} disabled={lineItems.length === 1}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3 items-end">
-                  <div>
-                    <Label className="text-xs">Discount</Label>
-                    <Select value={discountType} onValueChange={setDiscountType}>
-                      <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="No discount" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No discount</SelectItem>
-                        <SelectItem value="percentage">Percentage</SelectItem>
-                        <SelectItem value="fixed">Fixed Amount</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {discountType && discountType !== "none" && (
-                    <div className="relative">
-                      <Input className="h-8 text-sm pl-6" type="number" value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} />
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                        {discountType === "percentage" ? "%" : currencySymbol}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <Card className="p-3 bg-muted/30">
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{currencySymbol}{calculateSubtotal().toFixed(2)}</span></div>
-                    {calculateDiscount() > 0 && (
-                      <div className="flex justify-between text-green-600"><span>Discount</span><span>-{currencySymbol}{calculateDiscount().toFixed(2)}</span></div>
-                    )}
-                    {parseFloat(taxRate) > 0 && (
-                      <div className="flex justify-between"><span className="text-muted-foreground">Tax ({taxRate}%)</span><span>{currencySymbol}{calculateTax().toFixed(2)}</span></div>
-                    )}
-                    <Separator />
-                    <div className="flex justify-between font-bold text-base"><span>Total</span><span>{currencySymbol}{calculateTotal().toFixed(2)}</span></div>
-                  </div>
-                </Card>
-
-
-                {/* Quick Markup Calculator */}
-                <AIMarkupHelper
-                  lineItems={lineItems}
-                  currency={currency}
-                  onApplyMarkup={(updatedItems, pct) => {
-                    setLineItems(updatedItems);
+                  onApplyDocumentDetails={(details) => {
+                    if (details.client_name) setRecipientName(details.client_name);
+                    if (details.client_email) setRecipientEmail(details.client_email);
+                    if (details.client_address) setRecipientAddress(details.client_address);
+                    if (details.currency) setCurrency(details.currency);
+                    if (details.tax_rate !== undefined) setTaxRate(String(details.tax_rate));
+                    if (details.due_date) {
+                      if (documentType === "invoice") setDueDate(details.due_date);
+                      else setValidUntil(details.due_date);
+                    }
+                    if (details.notes) setNotes(details.notes);
                   }}
                 />
 
-                <div>
-                  <Label className="text-xs">Notes</Label>
-                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={`Additional notes for the ${documentType === "quote" ? "quote" : "client"}...`} rows={2} className="text-sm" />
-                </div>
+                {/* Summary of what's been filled — only shows when there are line items */}
+                {lineItems.some(i => i.description) && (
+                  <Card className="p-3 bg-muted/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold">{docLabel.charAt(0).toUpperCase() + docLabel.slice(1)} Summary</span>
+                      <Badge variant="outline" className="text-[9px]">{lineItems.filter(i => i.description).length} items</Badge>
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{currencySymbol}{calculateSubtotal().toFixed(2)}</span></div>
+                      {calculateDiscount() > 0 && (
+                        <div className="flex justify-between text-green-600"><span>Discount</span><span>-{currencySymbol}{calculateDiscount().toFixed(2)}</span></div>
+                      )}
+                      {parseFloat(taxRate) > 0 && (
+                        <div className="flex justify-between"><span className="text-muted-foreground">Tax ({taxRate}%)</span><span>{currencySymbol}{calculateTax().toFixed(2)}</span></div>
+                      )}
+                      <Separator />
+                      <div className="flex justify-between font-bold text-base"><span>Total</span><span>{currencySymbol}{calculateTotal().toFixed(2)}</span></div>
+                    </div>
+                  </Card>
+                )}
+
+                {/* Manual edit toggle — hidden by default, expandable */}
+                <details className="group">
+                  <summary className="cursor-pointer text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 py-1">
+                    <Pencil className="h-3 w-3" />
+                    Manually edit details & line items
+                  </summary>
+                  <div className="mt-3 space-y-3 pt-3 border-t border-border/50">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <Label className="text-xs">Client Name *</Label>
+                        <Input className="h-8 text-sm" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Client or company name" />
+                        {collaborators.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {collaborators.map((c) => (
+                              <button key={c.user_id} type="button" className="text-[10px] px-1.5 py-0.5 rounded bg-muted hover:bg-accent text-muted-foreground" onClick={() => setRecipientName(c.full_name)}>
+                                {c.full_name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <Label className="text-xs">Client Email</Label>
+                        <Input className="h-8 text-sm" value={recipientEmail} onChange={(e) => setRecipientEmail(e.target.value)} placeholder="client@email.com" />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Client Address</Label>
+                        <Input className="h-8 text-sm" value={recipientAddress} onChange={(e) => setRecipientAddress(e.target.value)} placeholder="City, Country" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {documentType === "invoice" ? (
+                        <div>
+                          <Label className="text-xs">Due Date</Label>
+                          <Input className="h-8 text-sm" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                        </div>
+                      ) : (
+                        <div>
+                          <Label className="text-xs">Valid Until</Label>
+                          <Input className="h-8 text-sm" type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
+                        </div>
+                      )}
+                      <div>
+                        <Label className="text-xs">Currency</Label>
+                        <Select value={currency} onValueChange={setCurrency}>
+                          <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "BRL", "ZAR", "INR", "NGN", "IDR", "TTD", "AED", "KES"].map(c => (
+                              <SelectItem key={c} value={c}>{c}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Tax Rate (%)</Label>
+                        <Input className="h-8 text-sm" type="number" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} placeholder="0" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <Label className="text-xs font-semibold">Line Items *</Label>
+                        <Button type="button" size="sm" variant="outline" onClick={addLineItem} className="h-7 text-xs">
+                          <Plus className="h-3 w-3 mr-1" /> Add Item
+                        </Button>
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="grid grid-cols-12 gap-1.5 text-[10px] text-muted-foreground font-medium px-1">
+                          <span className="col-span-5">Description</span>
+                          <span className="col-span-2 text-center">Qty</span>
+                          <span className="col-span-2 text-right">Rate</span>
+                          <span className="col-span-2 text-right">Amount</span>
+                        </div>
+                        {lineItems.map((item, index) => (
+                          <div key={index} className="grid grid-cols-12 gap-1.5 items-center">
+                            <Input className="col-span-5 h-8 text-sm" placeholder="Service description" value={item.description} onChange={(e) => updateLineItem(index, "description", e.target.value)} />
+                            <Input className="col-span-2 h-8 text-sm text-center" type="number" value={item.quantity} onChange={(e) => updateLineItem(index, "quantity", parseFloat(e.target.value) || 0)} />
+                            <Input className="col-span-2 h-8 text-sm text-right" type="number" value={item.rate} onChange={(e) => updateLineItem(index, "rate", parseFloat(e.target.value) || 0)} />
+                            <span className="col-span-2 text-sm text-right font-medium">{currencySymbol}{item.amount.toFixed(2)}</span>
+                            <Button type="button" size="icon" variant="ghost" className="col-span-1 h-7 w-7" onClick={() => removeLineItem(index)} disabled={lineItems.length === 1}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 items-end">
+                      <div>
+                        <Label className="text-xs">Discount</Label>
+                        <Select value={discountType} onValueChange={setDiscountType}>
+                          <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="No discount" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No discount</SelectItem>
+                            <SelectItem value="percentage">Percentage</SelectItem>
+                            <SelectItem value="fixed">Fixed Amount</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {discountType && discountType !== "none" && (
+                        <div className="relative">
+                          <Input className="h-8 text-sm pl-6" type="number" value={discountValue} onChange={(e) => setDiscountValue(e.target.value)} />
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                            {discountType === "percentage" ? "%" : currencySymbol}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="text-xs">Notes</Label>
+                      <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={`Additional notes for the ${documentType === "quote" ? "quote" : "client"}...`} rows={2} className="text-sm" />
+                    </div>
+                  </div>
+                </details>
 
                 <Button className="w-full" onClick={() => setCreateStep("branding")}>
                   Next: Your Branding →

@@ -895,6 +895,16 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                   </div>
                 )}
 
+                {/* AI Pricing Co-Pilot - positioned first so users can get AI help before filling form */}
+                <PricingCoPilot
+                  lineItems={lineItems}
+                  currency={currency}
+                  onApplyLineItems={(items) => setLineItems(items)}
+                  onApplyNotes={(n) => setNotes(n)}
+                  onApplyTerms={(t) => setPaymentConfig(prev => ({ ...prev, terms_conditions: t }))}
+                  onApplyTaxRate={(r) => setTaxRate(String(r))}
+                />
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <Label className="text-xs">Client Name *</Label>
@@ -1012,15 +1022,6 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                   </div>
                 </Card>
 
-                {/* AI Pricing Co-Pilot */}
-                <PricingCoPilot
-                  lineItems={lineItems}
-                  currency={currency}
-                  onApplyLineItems={(items) => setLineItems(items)}
-                  onApplyNotes={(n) => setNotes(n)}
-                  onApplyTerms={(t) => setPaymentConfig(prev => ({ ...prev, terms_conditions: t }))}
-                  onApplyTaxRate={(r) => setTaxRate(String(r))}
-                />
 
                 {/* Quick Markup Calculator */}
                 <AIMarkupHelper

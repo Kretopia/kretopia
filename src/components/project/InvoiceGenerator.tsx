@@ -755,79 +755,101 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
             </Button>
           </div>
 
-            {/* Invoice List */}
-            {invoices.length === 0 ? (
+          <div className="flex-1 overflow-y-auto">
+            {/* Invoice/Quote List */}
+            {filteredInvoices.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium">No invoices yet</p>
-                <p className="text-sm">Create your first branded, professional invoice</p>
+                <p className="font-medium">No {listFilter === "all" ? "documents" : listFilter === "quote" ? "quotes" : "invoices"} yet</p>
+                <p className="text-sm">Create your first branded, professional {listFilter === "quote" ? "quote" : "invoice"}</p>
               </div>
             ) : (
               <div className="space-y-2">
-                {invoices.map((inv) => (
-                  <Card key={inv.id} className="p-3 hover:bg-accent/30 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1 h-12 rounded-full" style={{ backgroundColor: inv.brand_color || "#6366f1" }} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-mono text-xs font-medium">{inv.invoice_number}</p>
-                          {getStatusBadge(inv.status)}
-                        </div>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {inv.recipient_name || inv.issued_to_profile?.full_name || "Client"}
-                        </p>
-                        {inv.due_date && (
-                          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                            <Clock className="h-2.5 w-2.5" />
-                            Due: {new Date(inv.due_date).toLocaleDateString()}
+                {filteredInvoices.map((inv) => {
+                  const isQuote = (inv.document_type || "invoice") === "quote";
+                  return (
+                    <Card key={inv.id} className="p-3 hover:bg-accent/30 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-1 h-12 rounded-full" style={{ backgroundColor: inv.brand_color || "#6366f1" }} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-mono text-xs font-medium">{inv.invoice_number}</p>
+                            {getStatusBadge(inv.status)}
+                            {isQuote && (
+                              <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">
+                                <ScrollText className="h-2.5 w-2.5 mr-0.5" /> Quote
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {inv.recipient_name || inv.issued_to_profile?.full_name || "Client"}
                           </p>
+                          {inv.due_date && (
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-2.5 w-2.5" />
+                              Due: {new Date(inv.due_date).toLocaleDateString()}
+                            </p>
+                          )}
+                          {isQuote && inv.valid_until && (
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-2.5 w-2.5" />
+                              Valid until: {new Date(inv.valid_until).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg">{getCurrencySymbol(inv.currency || "USD")}{Number(inv.total_amount).toFixed(2)}</p>
+                          <p className="text-[10px] text-muted-foreground">{inv.currency || "USD"}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-1.5 mt-2 pt-2 border-t flex-wrap">
+                        {inv.status === "draft" && (
+                          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary/80" onClick={() => handleEditInvoice(inv)}>
+                            <Pencil className="h-3 w-3" /> Edit
+                          </Button>
+                        )}
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handlePreview(inv)}>
+                          <Eye className="h-3 w-3" /> Preview
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleDownloadPDF(inv)}>
+                          <Download className="h-3 w-3" /> PDF
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleSendInvoice(inv)}>
+                          <Mail className="h-3 w-3" /> Send
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleDuplicateInvoice(inv)}>
+                          <Copy className="h-3 w-3" /> Duplicate
+                        </Button>
+                        {/* Quote → Invoice conversion */}
+                        {isQuote && inv.status !== "accepted" && (
+                          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary/80" onClick={() => handleConvertToInvoice(inv)} disabled={loading}>
+                            <ArrowRightLeft className="h-3 w-3" /> Convert to Invoice
+                          </Button>
+                        )}
+                        {!isQuote && inv.status !== "paid" && (
+                          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-green-600 hover:text-green-700" onClick={() => handleMarkAsPaid(inv)}>
+                            <CreditCard className="h-3 w-3" /> Mark Paid
+                          </Button>
                         )}
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg">{getCurrencySymbol(inv.currency || "USD")}{Number(inv.total_amount).toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground">{inv.currency || "USD"}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-1.5 mt-2 pt-2 border-t flex-wrap">
-                      {inv.status === "draft" && (
-                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary/80" onClick={() => handleEditInvoice(inv)}>
-                          <Pencil className="h-3 w-3" /> Edit
-                        </Button>
-                      )}
-                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handlePreview(inv)}>
-                        <Eye className="h-3 w-3" /> Preview
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleDownloadPDF(inv)}>
-                        <Download className="h-3 w-3" /> PDF
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleSendInvoice(inv)}>
-                        <Mail className="h-3 w-3" /> Send
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleDuplicateInvoice(inv)}>
-                        <Copy className="h-3 w-3" /> Duplicate
-                      </Button>
-                      {inv.status !== "paid" && (
-                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-green-600 hover:text-green-700" onClick={() => handleMarkAsPaid(inv)}>
-                          <CreditCard className="h-3 w-3" /> Mark Paid
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Create/Edit Invoice Dialog */}
+      {/* Create/Edit Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={(open) => {
         setShowCreateDialog(open);
         if (!open) { setEditingInvoiceId(null); resetForm(); }
       }}>
         <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>{editingInvoiceId ? "Edit Invoice" : "Create Invoice"}</DialogTitle>
+            <DialogTitle>{editingInvoiceId ? `Edit ${docLabel}` : `Create ${docLabel}`}</DialogTitle>
+          </DialogHeader>
           </DialogHeader>
 
           {/* Step Navigation */}

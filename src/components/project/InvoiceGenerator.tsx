@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard, Pencil, ArrowRightLeft, ScrollText } from "lucide-react";
+import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard, Pencil, ArrowRightLeft, ScrollText, RotateCcw, Save } from "lucide-react";
 import { toast } from "sonner";
 import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingForm";
 import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
@@ -20,6 +20,7 @@ import { InvoicePreview } from "./invoice/InvoicePreview";
 
 import { PricingCoPilot } from "./invoice/PricingCoPilot";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
+import { useAutoSaveDraft } from "@/hooks/useAutoSaveDraft";
 
 interface InvoiceGeneratorProps {
   projectId?: string;

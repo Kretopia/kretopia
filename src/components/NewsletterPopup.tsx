@@ -56,14 +56,14 @@ export function NewsletterPopup() {
       if (subError) throw subError;
 
       // Also track as analytics event
-      await supabase
+      supabase
         .from('analytics_events')
         .insert({
           event_name: 'newsletter_signup',
           event_category: 'engagement',
           event_properties: { email: email.trim(), source: 'popup' },
           page_path: window.location.pathname,
-        }).catch(() => {});
+        }).then(() => {}).catch(() => {});
 
       setSubmitted(true);
       localStorage.setItem(STORAGE_KEY, Date.now().toString());

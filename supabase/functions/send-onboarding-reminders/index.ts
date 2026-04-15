@@ -1,170 +1,120 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from 'npm:@supabase/supabase-js@2'
+import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
-
-interface Profile {
-  user_id: string;
-  full_name: string;
-  onboarding_step: number;
-  onboarding_started_at: string;
-}
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
   }
-
-  // No auth check needed - this is a server-side cron function with verify_jwt=false
 
   try {
     const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
 
-    console.log("[Onboarding Reminders] Starting to check for incomplete onboarding...");
+    console.log('[Onboarding Reminders] Checking for incomplete onboarding...')
 
-    // Find users who:
-    // 1. Started onboarding more than 24 hours ago
-    // 2. Haven't completed it
-    // 3. Haven't received a reminder yet
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Find users who started 24h+ ago, haven't completed, and haven't been reminded
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
     const { data: incompleteProfiles, error: fetchError } = await supabaseClient
-      .from("profiles")
-      .select("user_id, full_name, onboarding_step, onboarding_started_at")
-      .eq("onboarding_completed", false)
-      .eq("onboarding_reminder_sent", false)
-      .lt("onboarding_started_at", twentyFourHoursAgo)
-      .not("onboarding_started_at", "is", null);
+      .from('profiles')
+      .select('user_id, full_name, onboarding_step, onboarding_started_at')
+      .eq('onboarding_completed', false)
+      .eq('onboarding_reminder_sent', false)
+      .lt('onboarding_started_at', twentyFourHoursAgo)
+      .not('onboarding_started_at', 'is', null)
 
     if (fetchError) {
-      console.error("[Onboarding Reminders] Error fetching profiles:", fetchError);
-      throw fetchError;
+      console.error('[Onboarding Reminders] Query error:', fetchError)
+      throw fetchError
     }
 
-    console.log(`[Onboarding Reminders] Found ${incompleteProfiles?.length || 0} users to remind`);
+    console.log(`[Onboarding Reminders] Found ${incompleteProfiles?.length || 0} users to remind`)
 
     if (!incompleteProfiles || incompleteProfiles.length === 0) {
       return new Response(
-        JSON.stringify({ message: "No users to remind", count: 0 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+        JSON.stringify({ message: 'No users to remind', count: 0 }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    let successCount = 0;
-    let errorCount = 0;
+    let successCount = 0
+    let errorCount = 0
 
-    // Send reminders to each user
     for (const profile of incompleteProfiles) {
       try {
-        // Get user email
         const { data: userData, error: userError } = await supabaseClient.auth.admin.getUserById(
           profile.user_id
-        );
+        )
 
-        if (userError || !userData.user) {
-          console.error(`[Onboarding Reminders] Error getting user ${profile.user_id}:`, userError);
-          errorCount++;
-          continue;
+        if (userError || !userData.user?.email) {
+          console.error(`[Onboarding Reminders] No email for ${profile.user_id}`)
+          errorCount++
+          continue
         }
 
-        const userEmail = userData.user.email;
-        const userName = profile.full_name || "there";
-
-        // Determine which step they're on
-        let stepMessage = "You're almost there!";
-        let actionText = "Complete Your Profile";
-        
-        switch (profile.onboarding_step) {
-          case 0:
-          case 1:
-            stepMessage = "Complete your profile to start connecting with creators";
-            break;
-          case 2:
-            stepMessage = "Add your skills to get matched with opportunities";
-            break;
-          case 3:
-            stepMessage = "Discover and connect with other creators to finish setup";
-            break;
-        }
+        const firstName = profile.full_name?.split(' ')[0] || undefined
 
         // Create in-app notification
-        const { error: notifError } = await supabaseClient
-          .from("notifications")
+        await supabaseClient
+          .from('notifications')
           .insert({
             user_id: profile.user_id,
-            title: "🚀 Complete Your ThriveIN Profile",
-            message: stepMessage,
-            type: "reminder",
-            link: "/onboarding",
-            action_url: "/onboarding",
-            action_text: actionText,
-            priority: "high",
-            category: "onboarding",
-          });
+            title: '🚀 Complete Your ThriveIN Profile',
+            message: 'You\'re almost there — finish setting up to start connecting with creators.',
+            type: 'reminder',
+            link: '/onboarding',
+            action_url: '/onboarding',
+            action_text: 'Complete Your Profile',
+            priority: 'high',
+            category: 'onboarding',
+          })
 
-        if (notifError) {
-          console.error(`[Onboarding Reminders] Error creating notification for ${profile.user_id}:`, notifError);
-        }
-
-        // Send email notification
+        // Send email via transactional email system
         const { error: emailError } = await supabaseClient.functions.invoke(
-          "send-notification-email",
+          'send-transactional-email',
           {
             body: {
-              to: userEmail,
-              type: "onboarding-reminder",
-              data: {
-                userName,
-                stepMessage,
-                onboardingUrl: `https://www.thrivein.io/onboarding`,
-              },
+              templateName: 'onboarding-reminder',
+              recipientEmail: userData.user.email,
+              idempotencyKey: `onboarding-reminder-${profile.user_id}`,
+              templateData: { name: firstName },
             },
           }
-        );
+        )
 
         if (emailError) {
-          console.error(`[Onboarding Reminders] Error sending email to ${userEmail}:`, emailError);
+          console.error(`[Onboarding Reminders] Email error for ${userData.user.email}:`, emailError)
+          errorCount++
+          continue
         }
 
         // Mark reminder as sent
         await supabaseClient
-          .from("profiles")
+          .from('profiles')
           .update({ onboarding_reminder_sent: true })
-          .eq("user_id", profile.user_id);
+          .eq('user_id', profile.user_id)
 
-        console.log(`[Onboarding Reminders] Successfully sent reminder to ${userEmail}`);
-        successCount++;
+        console.log(`[Onboarding Reminders] Sent to ${userData.user.email}`)
+        successCount++
       } catch (error) {
-        console.error(`[Onboarding Reminders] Error processing user ${profile.user_id}:`, error);
-        errorCount++;
+        console.error(`[Onboarding Reminders] Error for ${profile.user_id}:`, error)
+        errorCount++
       }
     }
 
-    console.log(`[Onboarding Reminders] Complete. Success: ${successCount}, Errors: ${errorCount}`);
+    console.log(`[Onboarding Reminders] Done. Success: ${successCount}, Errors: ${errorCount}`)
 
     return new Response(
-      JSON.stringify({
-        message: "Onboarding reminders sent",
-        total: incompleteProfiles.length,
-        success: successCount,
-        errors: errorCount,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+      JSON.stringify({ total: incompleteProfiles.length, success: successCount, errors: errorCount }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   } catch (error: any) {
-    console.error("[Onboarding Reminders] Fatal error:", error);
+    console.error('[Onboarding Reminders] Fatal error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
-    );
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
-});
+})

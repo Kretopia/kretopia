@@ -32,10 +32,10 @@ export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps)
   const qrRef = useRef<HTMLDivElement>(null);
   const qrCode = useRef<QRCodeStyling | null>(null);
 
-  const baseUrl = "https://thrivein.io";
-  const eventUrl = `${baseUrl}/event/${event.id}`;
+  const baseUrl = "https://www.thrivein.io";
+  const eventUrl = `${baseUrl}/share/event/${event.id}/`;
 
-  const shareText = `Join me at "${event.title}" on ThriveIN!\n\n📅 ${new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}${event.venue_name ? `\n${event.venue_name}` : ''}\n\nSign up & join here:`;
+  const shareText = `🎉 "${event.title}" on ThriveIN!\n\n📅 ${new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}${event.venue_name ? `\n📍 ${event.venue_name}` : ''}\n\nRSVP & join here:`;
 
   useEffect(() => {
     if (open && qrRef.current) {

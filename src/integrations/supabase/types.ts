@@ -4724,9 +4724,11 @@ export type Database = {
           image_url: string | null
           is_guest_post: boolean | null
           is_priority: boolean | null
+          latitude: number | null
           location: string | null
           location_city: string | null
           location_country: string | null
+          longitude: number | null
           min_followers: number | null
           original_source_text: string | null
           platform_requirements: string[] | null
@@ -4765,9 +4767,11 @@ export type Database = {
           image_url?: string | null
           is_guest_post?: boolean | null
           is_priority?: boolean | null
+          latitude?: number | null
           location?: string | null
           location_city?: string | null
           location_country?: string | null
+          longitude?: number | null
           min_followers?: number | null
           original_source_text?: string | null
           platform_requirements?: string[] | null
@@ -4806,9 +4810,11 @@ export type Database = {
           image_url?: string | null
           is_guest_post?: boolean | null
           is_priority?: boolean | null
+          latitude?: number | null
           location?: string | null
           location_city?: string | null
           location_country?: string | null
+          longitude?: number | null
           min_followers?: number | null
           original_source_text?: string | null
           platform_requirements?: string[] | null
@@ -10240,6 +10246,33 @@ export type Database = {
           professional_skills: Json
           role: string
           user_id: string
+        }[]
+      }
+      get_nearby_gigs: {
+        Args: {
+          limit_count?: number
+          radius_km?: number
+          user_lat: number
+          user_lon: number
+        }
+        Returns: {
+          compensation: string
+          created_at: string
+          created_by: string
+          creator_avatar: string
+          creator_name: string
+          description: string
+          distance_km: number
+          id: string
+          image_url: string
+          latitude: number
+          location: string
+          location_city: string
+          longitude: number
+          skills: string[]
+          tags: string[]
+          title: string
+          type: string
         }[]
       }
       get_nearby_jams: {

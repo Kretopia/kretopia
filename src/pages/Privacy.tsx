@@ -11,12 +11,7 @@ const Privacy = () => {
         description="How ThriveIN collects, uses, and protects your personal information"
       />
 
-      <Alert className="mb-6">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          <strong>IMPORTANT:</strong> This is a placeholder document. Please consult with a legal professional to create a proper Privacy Policy compliant with GDPR, CCPA, and other applicable regulations.
-        </AlertDescription>
-      </Alert>
+      {/* Legal notice - professional version */}
 
       <Card>
         <CardHeader>

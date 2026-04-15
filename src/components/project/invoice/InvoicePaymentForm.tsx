@@ -6,13 +6,34 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CreditCard, Building, Wallet, Globe, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import {
+  CreditCard, Building, Wallet, Globe, CheckCircle2,
+  Save, Trash2, ChevronDown,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface PaymentConfig {
   payment_method: string;
   payment_details: Record<string, string>;
   terms_conditions: string;
+}
+
+interface SavedBank {
+  id: string;
+  label: string | null;
+  bank_name: string;
+  account_name: string;
+  account_number: string;
+  routing_number: string | null;
+  is_default: boolean;
 }
 
 interface InvoicePaymentFormProps {
@@ -28,10 +49,17 @@ const DEFAULT_TERMS = `Payment Terms:
 
 export function InvoicePaymentForm({ config, onChange }: InvoicePaymentFormProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [hasThrivePay, setHasThrivePay] = useState(false);
+  const [savedBanks, setSavedBanks] = useState<SavedBank[]>([]);
+  const [selectedBankId, setSelectedBankId] = useState<string>("");
+  const [savingBank, setSavingBank] = useState(false);
 
   useEffect(() => {
-    checkThrivePay();
+    if (user?.id) {
+      checkThrivePay();
+      loadSavedBanks();
+    }
   }, [user?.id]);
 
   const checkThrivePay = async () => {
@@ -41,16 +69,81 @@ export function InvoicePaymentForm({ config, onChange }: InvoicePaymentFormProps
       .select("stripe_account_id, stripe_account_status")
       .eq("user_id", user.id)
       .single();
-    
     setHasThrivePay(data?.stripe_account_status === "active");
   };
 
-  const updateDetail = (key: string, value: string) => {
+  const loadSavedBanks = async () => {
+    if (!user?.id) return;
+    const { data } = await supabase
+      .from("saved_bank_accounts")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("is_default", { ascending: false });
+    if (data) setSavedBanks(data);
+  };
+
+  const selectSavedBank = (bankId: string) => {
+    const bank = savedBanks.find((b) => b.id === bankId);
+    if (!bank) return;
+    setSelectedBankId(bankId);
     onChange({
       ...config,
-      payment_details: { ...config.payment_details, [key]: value }
+      payment_details: {
+        bank_name: bank.bank_name,
+        account_name: bank.account_name,
+        account_number: bank.account_number,
+        routing_number: bank.routing_number || "",
+      },
     });
   };
+
+  const saveCurrentBank = async () => {
+    if (!user?.id) return;
+    const { bank_name, account_name, account_number, routing_number } = config.payment_details;
+    if (!bank_name || !account_name || !account_number) {
+      toast({ title: "Fill in bank name, account name and number first", variant: "destructive" });
+      return;
+    }
+    setSavingBank(true);
+    const label = `${bank_name} ••${account_number.slice(-4)}`;
+    const { error } = await supabase.from("saved_bank_accounts").insert({
+      user_id: user.id,
+      label,
+      bank_name,
+      account_name,
+      account_number,
+      routing_number: routing_number || null,
+      is_default: savedBanks.length === 0,
+    });
+    setSavingBank(false);
+    if (error) {
+      toast({ title: "Failed to save", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Bank account saved" });
+      loadSavedBanks();
+    }
+  };
+
+  const deleteSavedBank = async (id: string) => {
+    await supabase.from("saved_bank_accounts").delete().eq("id", id);
+    if (selectedBankId === id) setSelectedBankId("");
+    toast({ title: "Bank account removed" });
+    loadSavedBanks();
+  };
+
+  const updateDetail = (key: string, value: string) => {
+    setSelectedBankId("");
+    onChange({
+      ...config,
+      payment_details: { ...config.payment_details, [key]: value },
+    });
+  };
+
+  const isCurrentBankAlreadySaved = savedBanks.some(
+    (b) =>
+      b.account_number === config.payment_details.account_number &&
+      b.bank_name === config.payment_details.bank_name
+  );
 
   return (
     <div className="space-y-4">
@@ -61,7 +154,10 @@ export function InvoicePaymentForm({ config, onChange }: InvoicePaymentFormProps
 
       <RadioGroup
         value={config.payment_method}
-        onValueChange={(v) => onChange({ ...config, payment_method: v, payment_details: {} })}
+        onValueChange={(v) => {
+          setSelectedBankId("");
+          onChange({ ...config, payment_method: v, payment_details: {} });
+        }}
         className="grid grid-cols-2 gap-2"
       >
         {/* ThrivePay */}
@@ -136,9 +232,60 @@ export function InvoicePaymentForm({ config, onChange }: InvoicePaymentFormProps
         </Label>
       </RadioGroup>
 
-      {/* Payment Details Fields */}
+      {/* Bank Transfer with saved accounts */}
       {config.payment_method === "bank_transfer" && (
-        <Card className="p-3 space-y-2 bg-muted/30">
+        <Card className="p-3 space-y-3 bg-muted/30">
+          {/* Saved accounts selector */}
+          {savedBanks.length > 0 && (
+            <div>
+              <Label className="text-xs mb-1 block">Saved Accounts</Label>
+              <div className="space-y-1.5">
+                {savedBanks.map((bank) => (
+                  <div
+                    key={bank.id}
+                    onClick={() => selectSavedBank(bank.id)}
+                    className={`flex items-center justify-between p-2 rounded-md border cursor-pointer transition-all text-xs ${
+                      selectedBankId === bank.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/30"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <div className="min-w-0">
+                        <span className="font-medium truncate block">
+                          {bank.label || bank.bank_name}
+                        </span>
+                        <span className="text-muted-foreground text-[10px]">
+                          {bank.account_name}
+                        </span>
+                      </div>
+                      {bank.is_default && (
+                        <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full shrink-0">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0 text-destructive hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteSavedBank(bank.id);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-border my-2" />
+              <p className="text-[10px] text-muted-foreground mb-1">Or enter new details:</p>
+            </div>
+          )}
+
+          {/* Manual entry fields */}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Label className="text-xs">Bank Name</Label>
@@ -157,6 +304,21 @@ export function InvoicePaymentForm({ config, onChange }: InvoicePaymentFormProps
               <Input className="h-8 text-sm" placeholder="SWIFT / Sort Code" value={config.payment_details.routing_number || ""} onChange={(e) => updateDetail("routing_number", e.target.value)} />
             </div>
           </div>
+
+          {/* Save button */}
+          {config.payment_details.bank_name && config.payment_details.account_number && !isCurrentBankAlreadySaved && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full text-xs gap-1.5"
+              onClick={saveCurrentBank}
+              disabled={savingBank}
+            >
+              <Save className="h-3 w-3" />
+              {savingBank ? "Saving..." : "Save this account for next time"}
+            </Button>
+          )}
         </Card>
       )}
 

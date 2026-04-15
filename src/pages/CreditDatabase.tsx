@@ -474,7 +474,7 @@ const CreditDatabase = () => {
           ) : (
             /* Browse mode */
             <div className="py-5 space-y-8">
-              {/* Visual credits with art */}
+              {/* Visual credits with art — hero spotlight */}
               {recentCredits.length > 0 && (() => {
                 const withArt = recentCredits.filter(c => resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
                 const withoutArt = recentCredits.filter(c => !resolveCreditThumbnail(c.thumbnail_url, c.primary_media_url, c.url));
@@ -485,9 +485,10 @@ const CreditDatabase = () => {
                         <div className="flex items-center gap-2 mb-3">
                           <Star className="h-4 w-4 text-primary" />
                           <h2 className="text-sm font-semibold">Featured Work</h2>
+                          <span className="text-[11px] text-muted-foreground">Visual credits</span>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                          {withArt.slice(0, 16).map(credit => (
+                          {withArt.slice(0, 20).map(credit => (
                             <CreditPosterCard
                               key={credit.id}
                               credit={credit}
@@ -504,10 +505,10 @@ const CreditDatabase = () => {
                       <section>
                         <div className="flex items-center gap-2 mb-3">
                           <List className="h-4 w-4 text-muted-foreground" />
-                          <h2 className="text-sm font-semibold">More Credits</h2>
+                          <h2 className="text-xs font-medium text-muted-foreground">Other Credits ({withoutArt.length})</h2>
                         </div>
-                        <div className="space-y-1">
-                          {withoutArt.map(credit => (
+                        <div className="space-y-0.5 max-h-[200px] overflow-y-auto rounded-lg border border-border/40 bg-muted/20 p-1">
+                          {withoutArt.slice(0, 10).map(credit => (
                             <CompactCreditRow
                               key={credit.id}
                               credit={credit}

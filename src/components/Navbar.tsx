@@ -127,8 +127,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   // Guest navigation items
   const guestNavItems = [
-    { path: "/nearby", label: "Discover" },
-    { path: "/credits", label: "ThriveCredits" },
     { path: "/spotlight", label: "Spotlight" },
     { path: "/about", label: "About Us" },
   ];
@@ -299,8 +297,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <Separator className="my-3" />
 
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Discover</p>
+                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Explore</p>
                       <MenuButton icon={Globe} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
+                      <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} />
                     </>
                   ) : (
                     /* ====== WORK MODE MENU ====== */

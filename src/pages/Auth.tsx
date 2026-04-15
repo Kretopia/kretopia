@@ -346,7 +346,7 @@ const Auth = () => {
           {isPasswordReset ? (
             <PasswordResetForm loading={loading} onSubmit={handlePasswordReset} />
           ) : (
-            <Tabs defaultValue="signin" className="w-full" onValueChange={async (tab) => {
+            <Tabs defaultValue={searchParams.get("tab") === "signin" ? "signin" : "signup"} className="w-full" onValueChange={async (tab) => {
               const { trackEvent, EventCategory } = await import("@/lib/analytics");
               trackEvent({ eventName: 'auth_tab_switch', eventCategory: EventCategory.AUTH, properties: { tab, time_on_page_ms: Date.now() - authLoadTime } });
             }}>

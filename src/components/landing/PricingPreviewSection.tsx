@@ -16,8 +16,8 @@ const TIERS = [
       "2 invoices/month",
       "1 active project/month",
     ],
-    cta: "Get Started",
-    ctaLink: "/auth",
+    cta: "Get Started Free",
+    ctaLink: "/auth?tab=signup",
   },
   {
     name: "Creator",
@@ -34,7 +34,7 @@ const TIERS = [
       "Profile verification badge",
     ],
     cta: "Start 7-Day Trial",
-    ctaLink: "/auth",
+    ctaLink: "/subscription",
   },
   {
     name: "Creator +",
@@ -50,7 +50,7 @@ const TIERS = [
       "Dedicated account manager",
     ],
     cta: "Start 7-Day Trial",
-    ctaLink: "/auth",
+    ctaLink: "/subscription",
   },
 ];
 

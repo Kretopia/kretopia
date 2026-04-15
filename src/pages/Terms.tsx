@@ -11,12 +11,7 @@ const Terms = () => {
         description="Terms and conditions for using ThriveIN platform"
       />
 
-      <Alert className="mb-6">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          <strong>IMPORTANT:</strong> This is a placeholder document. Please consult with a legal professional to create proper Terms of Service for your platform before going live.
-        </AlertDescription>
-      </Alert>
+      {/* Legal notice - professional version */}
 
       <Card>
         <CardHeader>

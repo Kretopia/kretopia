@@ -35,7 +35,7 @@ export function gigSharePagesPlugin(options: GigSharePagesPluginOptions): Plugin
       const outDir = resolve(process.cwd(), "dist");
 
       const response = await fetch(
-        `${projectUrl}/rest/v1/opportunities?select=id,title,description,type,compensation,location,image_url&status=eq.open&order=created_at.desc&limit=100`,
+        `${projectUrl}/rest/v1/opportunities?select=id,title,description,type,compensation,location,image_url&status=eq.active&order=created_at.desc&limit=100`,
         {
           headers: {
             apikey: options.publishableKey,

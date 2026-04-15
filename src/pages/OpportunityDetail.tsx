@@ -481,6 +481,7 @@ const OpportunityDetail = () => {
             </Button>
             <SocialShareButtons
               url={`/opportunity/${opportunity.id}`}
+              socialUrl={`/share/gig/${opportunity.id}/`}
               title={`${opportunity.title} — ${opportunity.type} gig on ThriveIN`}
               description={opportunity.description?.slice(0, 100)}
             />

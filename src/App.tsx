@@ -92,7 +92,10 @@ const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
 const CreatorSite = lazy(() => import("./pages/CreatorSite"));
 const CreatorSiteByUsername = lazy(() => import("./pages/CreatorSiteByUsername"));
 const WebsiteBuilder = lazy(() => import("./pages/WebsiteBuilder"));
-const { ShareGigRedirect, ShareProfileRedirect, ShareEventRedirect, ShareMagazineRedirect } = await import("./pages/ShareRedirects");
+const ShareGigRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareGigRedirect })));
+const ShareProfileRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareProfileRedirect })));
+const ShareEventRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareEventRedirect })));
+const ShareMagazineRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareMagazineRedirect })));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

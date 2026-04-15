@@ -349,6 +349,43 @@ All colors MUST be HSL.
   display: none;
 }
 
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: hsl(var(--muted));
+  font-family: inherit;
+}
+
+.leaflet-control-zoom a,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border-color: hsl(var(--border));
+}
+
+.leaflet-control-zoom a {
+  border-bottom-color: hsl(var(--border));
+}
+
+.leaflet-bar {
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--shadow-card);
+}
+
+.leaflet-control-attribution {
+  background: hsl(var(--background) / 0.82);
+  color: hsl(var(--muted-foreground));
+}
+
+.leaflet-control-attribution a {
+  color: hsl(var(--primary));
+}
+
+.leaflet-popup-content {
+  margin: 10px 12px;
+}
+
 /* Native safe area utilities */
 .safe-top {
   padding-top: env(safe-area-inset-top, 0px);

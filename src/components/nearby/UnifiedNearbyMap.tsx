@@ -124,7 +124,7 @@ export const UnifiedNearbyMap = ({
       .addTo(map.current);
 
     return () => { map.current?.remove(); map.current = null; };
-  }, []);
+  }, [loading]);
 
   useEffect(() => {
     if (userMarker.current && userLocation) {
@@ -276,5 +276,9 @@ export const UnifiedNearbyMap = ({
     );
   }
 
-  return <div ref={mapContainer} className="w-full h-full" style={{ minHeight: '300px' }} />;
+  return (
+    <div className="w-full h-full relative" style={{ minHeight: '300px' }}>
+      <div ref={mapContainer} className="absolute inset-0" />
+    </div>
+  );
 };

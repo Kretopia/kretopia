@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => {
       mode === "development" && componentTagger(),
       VitePWA({
         registerType: "autoUpdate",
+        devOptions: {
+          enabled: false,
+        },
         includeAssets: ["favicon.png", "apple-touch-icon.png"],
         // Inject push notification handlers from public/sw.js
         injectManifest: undefined,

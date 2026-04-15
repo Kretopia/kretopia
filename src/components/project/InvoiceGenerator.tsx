@@ -590,23 +590,27 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       if (invoice.brand_address) { doc.text(invoice.brand_address, logoXOffset, yPos); yPos += 4; }
       if (invoice.brand_website) { doc.text(invoice.brand_website, logoXOffset, yPos); }
 
-      // Invoice title
+      // Document title (Invoice or Quote)
+      const isQuoteDoc = invoice.document_type === "quote";
+      const pdfDocTitle = isQuoteDoc ? "QUOTE" : "INVOICE";
       doc.setFontSize(28);
       doc.setFont(undefined!, "bold");
       doc.setTextColor(rgb[0], rgb[1], rgb[2]);
-      doc.text("INVOICE", 140, 20);
+      doc.text(pdfDocTitle, 140, 20);
       doc.setTextColor(60, 60, 60);
       doc.setFontSize(9);
       doc.setFont(undefined!, "normal");
       doc.text(`#${invoice.invoice_number}`, 140, 27);
-      if (invoice.due_date) {
+      if (isQuoteDoc && invoice.valid_until) {
+        doc.text(`Valid Until: ${new Date(invoice.valid_until).toLocaleDateString()}`, 140, 32);
+      } else if (invoice.due_date) {
         doc.text(`Due: ${new Date(invoice.due_date).toLocaleDateString()}`, 140, 32);
       }
 
-      // Bill To
+      // Bill To / Quote For
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(8);
-      doc.text("BILL TO", 20, 48);
+      doc.text(isQuoteDoc ? "QUOTE FOR" : "BILL TO", 20, 48);
       doc.setFontSize(11);
       doc.setFont(undefined!, "bold");
       doc.text(invoice.recipient_name || invoice.issued_to_profile?.full_name || "Client", 20, 54);
@@ -719,8 +723,9 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       doc.setTextColor(150, 150, 150);
       doc.text("Powered by ThriveIN", 105, 285, { align: "center" });
 
-      doc.save(`invoice-${invoice.invoice_number}.pdf`);
-      toast.success("PDF downloaded!");
+      const filePrefix = isQuoteDoc ? "quote" : "invoice";
+      doc.save(`${filePrefix}-${invoice.invoice_number}.pdf`);
+      toast.success(`${isQuoteDoc ? "Quote" : "Invoice"} PDF downloaded!`);
     } catch (error) {
       console.error("Error generating PDF:", error);
       toast.error("Failed to generate PDF");

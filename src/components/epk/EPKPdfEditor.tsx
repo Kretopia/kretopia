@@ -673,7 +673,7 @@ const EPKPreview = ({
   );
 };
 
-// Utility
+// Utilities
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
   return [
@@ -681,4 +681,8 @@ function hexToRgb(hex: string): [number, number, number] {
     parseInt(h.substring(2, 4), 16),
     parseInt(h.substring(4, 6), 16),
   ];
+}
+
+function rgbToHex(rgb: [number, number, number]): string {
+  return '#' + rgb.map(v => v.toString(16).padStart(2, '0')).join('');
 }

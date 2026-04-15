@@ -138,7 +138,7 @@ const EventPage = () => {
   };
 
   const handleShare = () => {
-    const shareUrl = `https://www.thrivein.io/share/event/${id}/`;
+    const shareUrl = `https://www.thrivein.io/share/event/${eventId}/`;
     const eventDate = event ? new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : '';
     const shareText = `🎉 ${event?.title}\n📅 ${eventDate}${event?.venue_name ? `\n📍 ${event.venue_name}` : ''}\n\nRSVP now on ThriveIN 👇\n${shareUrl}`;
     if (navigator.share) {

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";
 import { fuzzyCoordinates } from "@/lib/fuzzyLocation";
@@ -98,18 +97,32 @@ export const UnifiedNearbyMap = ({
 
   const mapboxToken = "pk.eyJ1IjoiZXRoYW5hdWd1c3RlIiwiYSI6ImNtZzhvbDk0dzAwaHYycnB6eWp4Zjh2OHAifQ.4uCSa5SdtxZAnC2Xvx6V5w";
 
-  // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current || !userLocation) return;
+
     mapboxgl.accessToken = mapboxToken;
-    map.current = new mapboxgl.Map({
+
+    const mapInstance = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/dark-v11",
       center: [userLocation.lng, userLocation.lat],
       zoom: 11,
     });
-    map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
-    map.current.on('load', () => setMapLoaded(true));
+
+    map.current = mapInstance;
+    mapInstance.addControl(new mapboxgl.NavigationControl(), "top-right");
+
+    const handleLoad = () => {
+      setMapLoaded(true);
+      requestAnimationFrame(() => mapInstance.resize());
+    };
+
+    const handleError = (event: any) => {
+      console.error("[UnifiedNearbyMap] Mapbox error", event?.error ?? event);
+    };
+
+    mapInstance.on("load", handleLoad);
+    mapInstance.on("error", handleError);
 
     const userEl = document.createElement("div");
     userEl.className = "user-location-marker";
@@ -119,19 +132,50 @@ export const UnifiedNearbyMap = ({
         <div class="relative h-4 w-4 rounded-full bg-primary border-2 border-white shadow-lg"></div>
       </div>
     `;
+
     userMarker.current = new mapboxgl.Marker(userEl)
       .setLngLat([userLocation.lng, userLocation.lat])
-      .addTo(map.current);
+      .addTo(mapInstance);
 
-    return () => { map.current?.remove(); map.current = null; };
-  }, [loading]);
+    let resizeObserver: ResizeObserver | null = null;
+    const triggerResize = () => {
+      requestAnimationFrame(() => mapInstance.resize());
+    };
+
+    if (typeof ResizeObserver !== "undefined" && mapContainer.current) {
+      resizeObserver = new ResizeObserver(triggerResize);
+      resizeObserver.observe(mapContainer.current);
+    }
+
+    window.addEventListener("resize", triggerResize);
+    window.addEventListener("orientationchange", triggerResize);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", triggerResize);
+      window.removeEventListener("orientationchange", triggerResize);
+      userMarker.current?.remove();
+      userMarker.current = null;
+      mapInstance.off("load", handleLoad);
+      mapInstance.off("error", handleError);
+      mapInstance.remove();
+      map.current = null;
+      setMapLoaded(false);
+    };
+  }, [mapboxToken, userLocation]);
 
   useEffect(() => {
-    if (userMarker.current && userLocation) {
-      userMarker.current.setLngLat([userLocation.lng, userLocation.lat]);
-      map.current?.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 11 });
-    }
+    if (!map.current || !userLocation) return;
+
+    userMarker.current?.setLngLat([userLocation.lng, userLocation.lat]);
+    map.current.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 11 });
+    requestAnimationFrame(() => map.current?.resize());
   }, [userLocation]);
+
+  useEffect(() => {
+    if (!map.current || loading) return;
+    requestAnimationFrame(() => map.current?.resize());
+  }, [loading, creators.length, sessions.length, locations.length]);
 
   // Creator markers with fuzzy location + privacy masking
   useEffect(() => {
@@ -143,17 +187,16 @@ export const UnifiedNearbyMap = ({
       const fuzzy = fuzzyCoordinates(creator.latitude, creator.longitude, creator.user_id, creator.location_precision || 'approximate');
       const connected = connectedIds.has(creator.user_id);
       const displayName = getMaskedName(creator.full_name, connected);
-      
+
       const el = document.createElement("div");
       el.className = "creator-marker cursor-pointer";
       const isSelected = selectedItem?.type === 'creator' && selectedItem?.id === creator.user_id;
-      
-      // Connected users: show avatar. Non-connected: show initial only
+
       el.innerHTML = `
         <div class="relative transition-transform ${isSelected ? 'scale-125' : 'hover:scale-110'}">
           <div class="absolute -inset-1 rounded-full ${isSelected ? 'bg-cyan-400/40 animate-pulse' : 'bg-cyan-500/20'}"></div>
           <div class="relative h-10 w-10 rounded-full overflow-hidden border-2 ${isSelected ? 'border-cyan-400 shadow-lg shadow-cyan-400/30' : 'border-cyan-500'} bg-background">
-            ${connected && creator.avatar_url 
+            ${connected && creator.avatar_url
               ? `<img src="${creator.avatar_url}" alt="${displayName}" class="h-full w-full object-cover" />`
               : `<div class="h-full w-full flex items-center justify-center bg-cyan-500/10 text-cyan-500 font-semibold">${creator.full_name?.charAt(0) || 'U'}</div>`
             }
@@ -194,12 +237,12 @@ export const UnifiedNearbyMap = ({
       const startTime = new Date(session.start_time);
       const timeStr = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const dateStr = startTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
-      
+
       el.innerHTML = `
         <div class="relative transition-transform ${isSelected ? 'scale-125' : 'hover:scale-110'}">
           <div class="absolute -inset-1.5 rounded-full ${isSelected ? 'bg-amber-400/40 animate-pulse' : 'bg-amber-500/20'}"></div>
           <div class="relative h-10 w-10 rounded-full overflow-hidden border-[3px] border-dashed ${isSelected ? 'border-amber-400 shadow-lg shadow-amber-400/30' : 'border-amber-500'} bg-background flex items-center justify-center">
-            ${session.creator_avatar 
+            ${session.creator_avatar
               ? `<img src="${session.creator_avatar}" alt="${session.creator_name}" class="h-full w-full object-cover" />`
               : `<div class="h-full w-full flex items-center justify-center bg-amber-500/10 text-amber-600 font-semibold text-xs"></div>`
             }
@@ -268,17 +311,14 @@ export const UnifiedNearbyMap = ({
     });
   }, [locations, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation]);
 
-  if (loading) {
-    return (
-      <Card className="h-full flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </Card>
-    );
-  }
-
   return (
-    <div className="w-full h-full relative" style={{ minHeight: '300px' }}>
+    <div className="relative h-full w-full min-h-[300px] bg-background/20">
       <div ref={mapContainer} className="absolute inset-0" />
+      {loading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/40 backdrop-blur-[1px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      )}
     </div>
   );
 };

@@ -298,11 +298,20 @@ const Auth = () => {
       errAnalytics.errorOccurred('signup_failed', error.message.includes("already registered") ? "already_registered" : "other", 'auth');
 
       if (error.message.includes("already registered")) {
-        toast({ title: "Account Exists", description: "This email is already registered. Please sign in instead.", variant: "destructive" });
+        toast({ title: "Account Exists", description: "This email is already registered. Switching to sign in.", variant: "destructive" });
+        setActiveTab("signin");
       } else {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       }
     } else {
+      // Detect Supabase "fake user" when email already exists (identities is empty)
+      if (signUpData?.user && (!signUpData.user.identities || signUpData.user.identities.length === 0)) {
+        toast({ title: "Account Exists", description: "This email is already registered. Please sign in instead.", variant: "destructive" });
+        setActiveTab("signin");
+        setLoading(false);
+        return;
+      }
+
       const { analytics } = await import("@/lib/analytics");
       analytics.signUp('email');
       analytics.onboardingStart();

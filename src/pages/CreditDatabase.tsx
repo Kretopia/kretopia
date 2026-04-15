@@ -10,7 +10,7 @@ import {
   Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
   Database, MapPin, Building2, CalendarDays, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
-  TrendingUp, Play, Star, List,
+  TrendingUp, Play, Star, List, Fingerprint,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -306,8 +306,8 @@ const CreditDatabase = () => {
   return (
     <>
       <Helmet>
-        <title>ThriveCredits™ — The Global Creative Record | ThriveIN</title>
-        <meta name="description" content="The definitive database of creative work. Search projects across film, music, events, fashion, art, and all creative industries." />
+        <title>Creative Passport™ — Your Verified Creative Identity | ThriveIN</title>
+        <meta name="description" content="Your verified creative identity. Search and claim your work across film, music, events, fashion, art, and all creative industries." />
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">
@@ -321,11 +321,14 @@ const CreditDatabase = () => {
           <div className="container mx-auto px-4">
             {!isSearchActive && (
               <div className="text-center mb-5">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
-                  ThriveCredits™
-                </h1>
+                <div className="inline-flex items-center gap-2 mb-2">
+                  <Fingerprint className="h-6 w-6 text-primary" />
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                    Creative Passport™
+                  </h1>
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  The global creative record — search any project, person, or production
+                  Your verified creative identity — search any project, person, or production
                 </p>
               </div>
             )}

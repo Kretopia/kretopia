@@ -869,9 +869,31 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {/* Step 1: Invoice Details */}
+            {/* Step 1: Details */}
             {createStep === "details" && (
               <div className="space-y-4">
+                {/* Document Type Toggle */}
+                {!editingInvoiceId && (
+                  <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
+                    <button
+                      onClick={() => setDocumentType("invoice")}
+                      className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        documentType === "invoice" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <FileText className="h-3 w-3 inline mr-1" /> Invoice
+                    </button>
+                    <button
+                      onClick={() => setDocumentType("quote")}
+                      className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        documentType === "quote" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <ScrollText className="h-3 w-3 inline mr-1" /> Quote
+                    </button>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <Label className="text-xs">Client Name *</Label>
@@ -897,10 +919,17 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <Label className="text-xs">Due Date</Label>
-                    <Input className="h-8 text-sm" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                  </div>
+                  {documentType === "invoice" ? (
+                    <div>
+                      <Label className="text-xs">Due Date</Label>
+                      <Input className="h-8 text-sm" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                    </div>
+                  ) : (
+                    <div>
+                      <Label className="text-xs">Valid Until</Label>
+                      <Input className="h-8 text-sm" type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
+                    </div>
+                  )}
                   <div>
                     <Label className="text-xs">Currency</Label>
                     <Select value={currency} onValueChange={setCurrency}>

@@ -57,6 +57,8 @@ const NearbyCreators = () => {
   const [atlasFilter, setAtlasFilter] = useState<AtlasFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const { bookmarkedIds, toggleBookmark } = useLocationBookmarks();
+  const { connectedIds, isConnected } = useConnectedUsers();
+  const { isBlocked, refetch: refetchBlocks } = useUserBlocks();
 
   useEffect(() => {
     analytics.pageView("nearby-creators");

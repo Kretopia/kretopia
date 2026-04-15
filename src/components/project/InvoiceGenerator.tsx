@@ -934,6 +934,11 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
               </button>
             ))}
           </div>
+          {!editingInvoiceId && showCreateDialog && (
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
+              <Save className="h-2.5 w-2.5" /> Auto-saving draft…
+            </p>
+          )}
 
           <div className="flex-1 overflow-y-auto">
             {/* Step 1: Details */}

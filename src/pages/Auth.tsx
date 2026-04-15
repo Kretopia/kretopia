@@ -47,6 +47,13 @@ const Auth = () => {
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 
+  // Set initial tab from URL
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "signin") setActiveTab("signin");
+    else setActiveTab("signup");
+  }, [searchParams]);
+
   const authLoadTime = useState(() => Date.now())[0];
   const hasTrackedView = useState(false);
 

@@ -568,8 +568,27 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                 </FilterSection>
               </>
             ) : (
-              <ProLockedOverlay>
-                <div className="space-y-4">
+              <div className="space-y-4">
+                {/* Compelling pro upsell */}
+                <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 text-center space-y-3">
+                  <Crown className="h-8 w-8 text-amber-500 mx-auto" />
+                  <div>
+                    <h4 className="font-semibold text-sm">Find Your Perfect Match Faster</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Unlock 6 powerful filters: Verified Only, Follower Count, Experience Level, Skills, Availability, and AI Smart Match.
+                    </p>
+                  </div>
+                  <Button 
+                    className="w-full gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg"
+                    onClick={() => navigate('/subscription')}
+                  >
+                    <Crown className="h-4 w-4" />
+                    Upgrade to Creator+
+                  </Button>
+                </div>
+
+                {/* Blurred preview of what they're missing */}
+                <div className="blur-[2px] pointer-events-none opacity-40 space-y-3">
                   <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
                     <div>
                       <p className="text-sm font-medium">Verified Creators Only</p>
@@ -578,20 +597,18 @@ export function SwipeFilters({ filters, onFiltersChange, isPro = false, profiles
                     <Switch disabled />
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" disabled className="text-xs">1K+</Button>
                     <Button variant="outline" size="sm" disabled className="text-xs">10K+</Button>
-                    <Button variant="outline" size="sm" disabled className="text-xs">50K+</Button>
                     <Button variant="outline" size="sm" disabled className="text-xs">100K+</Button>
-                  </div>
-                  <div className="h-10 rounded-md border bg-muted/30 flex items-center px-3 text-sm text-muted-foreground">
-                    Experience Level
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Photography</Button>
+                    <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Music Production</Button>
+                    <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Videography</Button>
                     <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Design</Button>
-                    <Button variant="outline" size="sm" disabled className="text-xs h-7 px-2">Music</Button>
                   </div>
                 </div>
-              </ProLockedOverlay>
+              </div>
             )}
           </div>
         </div>

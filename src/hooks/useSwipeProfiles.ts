@@ -157,9 +157,32 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
           .filter(p => (p.portfolio_count >= 1) || (p.credits_count >= 1) || (p.awards_count >= 1));
       }
 
-      // Shuffle
-      const shuffled = filtered.sort(() => Math.random() - 0.5);
-      setAllProfiles(shuffled);
+      // Shuffle only once — store in sessionStorage key to maintain order across remounts
+      const cacheKey = `swipe_order_${currentUserId}`;
+      const cachedOrder = sessionStorage.getItem(cacheKey);
+      let ordered: typeof filtered;
+
+      if (cachedOrder) {
+        try {
+          const orderIds: string[] = JSON.parse(cachedOrder);
+          const idSet = new Set(filtered.map(p => p.user_id));
+          // Keep cached order for profiles still present, append any new ones
+          const orderedFromCache = orderIds
+            .filter(id => idSet.has(id))
+            .map(id => filtered.find(p => p.user_id === id)!);
+          const newProfiles = filtered.filter(p => !orderIds.includes(p.user_id));
+          ordered = [...orderedFromCache, ...newProfiles.sort(() => Math.random() - 0.5)];
+        } catch {
+          ordered = filtered.sort(() => Math.random() - 0.5);
+        }
+      } else {
+        ordered = filtered.sort(() => Math.random() - 0.5);
+      }
+
+      // Cache the order
+      sessionStorage.setItem(cacheKey, JSON.stringify(ordered.map(p => p.user_id)));
+
+      setAllProfiles(ordered);
       setHasFetched(true);
     } catch (err: any) {
       console.error('[useSwipeProfiles] Error:', err);
@@ -283,8 +306,15 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
 
   const removeProfile = useCallback((userId: string) => {
     setProfiles(prev => prev.filter(p => p.user_id !== userId));
-    setAllProfiles(prev => prev.filter(p => p.user_id !== userId));
-  }, []);
+    setAllProfiles(prev => {
+      const updated = prev.filter(p => p.user_id !== userId);
+      // Update cached order
+      if (currentUserId) {
+        sessionStorage.setItem(`swipe_order_${currentUserId}`, JSON.stringify(updated.map(p => p.user_id)));
+      }
+      return updated;
+    });
+  }, [currentUserId]);
 
   return {
     profiles,

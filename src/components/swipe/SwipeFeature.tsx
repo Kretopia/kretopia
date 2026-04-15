@@ -107,10 +107,6 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
     setShowProfilePreview(true);
   }, []);
 
-  const handleSendMessage = useCallback((profile: SwipeProfile) => {
-    navigate(`/messages?user=${profile.user_id}`);
-  }, [navigate]);
-
   const handlePreviewSwipe = useCallback((direction: 'left' | 'right') => {
     if (previewProfile) {
       if (direction === 'right') {
@@ -238,7 +234,6 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
         onLike={handleLike}
         onPass={handlePass}
         onViewProfile={handleViewProfile}
-        onMessage={handleSendMessage}
       />
 
       <MatchModal
@@ -269,7 +264,6 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
         open={showProfilePreview}
         onOpenChange={setShowProfilePreview}
         onSwipe={handlePreviewSwipe}
-        onMessage={handleSendMessage}
       />
     </div>
   );

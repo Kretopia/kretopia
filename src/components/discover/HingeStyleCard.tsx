@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
   Heart, X, MapPin, Briefcase, Sparkles, Star, 
-  ChevronDown, Eye, MessageCircle 
+  ChevronDown, Eye
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,7 +65,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
   return (
     <Card className="w-full max-w-[360px] sm:max-w-sm mx-auto overflow-hidden rounded-2xl border border-border/50 shadow-xl bg-card">
       {/* Hero Section — Photo + Name */}
-      <div className="relative aspect-[3/4] max-h-[320px] overflow-hidden">
+      <div className="relative aspect-[4/5] overflow-hidden">
         <img
           src={profile.avatar_url || ''}
           alt={profile.full_name}
@@ -209,15 +209,15 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
           </button>
         )}
 
-        {/* Action Buttons */}
+        {/* Action Buttons — encourage connection */}
         <div className="flex items-center gap-2 pt-2">
           <Button
             variant="outline"
-            size="lg"
-            className="h-12 flex-1 rounded-full border-2 border-destructive/30 hover:bg-destructive/10 hover:border-destructive text-destructive"
+            size="icon"
+            className="h-10 w-10 rounded-full shrink-0 border-destructive/30 hover:bg-destructive/10 hover:border-destructive"
             onClick={() => onPass(profile)}
           >
-            <X className="h-5 w-5 mr-1.5" /> Pass
+            <X className="h-4 w-4 text-destructive" />
           </Button>
           <Button
             variant="outline"
@@ -227,16 +227,13 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
           >
             <Eye className="h-4 w-4" />
           </Button>
-          {onMessage && (
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-10 w-10 rounded-full shrink-0 border-primary/30 hover:bg-primary/10"
-              onClick={() => onMessage(profile)}
-            >
-              <MessageCircle className="h-4 w-4 text-primary" />
-            </Button>
-          )}
+          <Button
+            size="lg"
+            className="h-12 flex-1 rounded-full bg-green-500 hover:bg-green-600 text-white gap-2"
+            onClick={() => onLike(profile, { type: 'profile', label: 'their profile' })}
+          >
+            <Heart className="h-5 w-5" /> Connect
+          </Button>
         </div>
       </CardContent>
     </Card>

@@ -36,7 +36,8 @@ export default function Circle() {
   const [filters, setFilters] = useState<SwipeFiltersState>(DEFAULT_SWIPE_FILTERS);
   const [profilesCount, setProfilesCount] = useState(0);
   const [accountType, setAccountType] = useState<string>("individual");
-  
+  const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
+  const [showMatchDialog, setShowMatchDialog] = useState(false);
 
   // Fetch account type
   useEffect(() => {

@@ -1,12 +1,4 @@
-import { useEffect, useMemo } from "react";
-import {
-  MapContainer,
-  Marker,
-  Popup,
-  TileLayer,
-  ZoomControl,
-  useMap,
-} from "react-leaflet";
+import { useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Loader2 } from "lucide-react";
@@ -25,7 +17,7 @@ interface NearbyCreator {
   latitude: number;
   longitude: number;
   distance_km: number;
-  location_precision?: 'exact' | 'approximate' | 'area_only';
+  location_precision?: "exact" | "approximate" | "area_only";
 }
 
 interface NearbySession {
@@ -46,7 +38,7 @@ interface NearbySession {
   created_by: string;
 }
 
-export type MapItemType = 'creator' | 'session' | 'location';
+export type MapItemType = "creator" | "session" | "location";
 
 interface UnifiedNearbyMapProps {
   creators: NearbyCreator[];
@@ -61,15 +53,17 @@ interface UnifiedNearbyMapProps {
   connectedIds?: Set<string>;
 }
 
+const EMPTY_CONNECTED_IDS = new Set<string>();
+
 const LOCATION_TYPE_EMOJI: Record<string, string> = {
-  studio: '🎙',
-  creative_space: '🏛️',
-  shoot_spot: '📸',
-  venue: '🎭',
-  music_store: '🎵',
-  art_supply: '🛒',
-  photo_lab: '📷',
-  rental_house: '🏠',
+  studio: "🎙",
+  creative_space: "🏛️",
+  shoot_spot: "📸",
+  venue: "🎭",
+  music_store: "🎵",
+  art_supply: "🛒",
+  photo_lab: "📷",
+  rental_house: "🏠",
 };
 
 const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -77,7 +71,6 @@ const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyrigh
 
 const getHslToken = (token: string, fallback: string) => {
   if (typeof window === "undefined") return fallback;
-
   const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
   return value ? `hsl(${value})` : fallback;
 };
@@ -196,49 +189,48 @@ const buildLocationIcon = ({
     popupAnchor: [0, -20],
   });
 
-const MapViewportController = ({
-  userLocation,
-  selectedTarget,
-  points,
+const creatorPopupHtml = ({
+  creator,
+  displayName,
+  connected,
 }: {
-  userLocation: { lat: number; lng: number };
-  selectedTarget: { lat: number; lng: number; zoom: number } | null;
-  points: Array<[number, number]>;
-}) => {
-  const map = useMap();
+  creator: NearbyCreator;
+  displayName: string;
+  connected: boolean;
+}) => `
+  <div style="display:flex;flex-direction:column;gap:6px;min-width:170px;">
+    <div style="font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:hsl(var(--primary));">Creator</div>
+    <p style="margin:0;font-size:14px;font-weight:600;">${sanitizeHtml(displayName)}</p>
+    <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground));">${sanitizeHtml(creator.role || "Creative")}</p>
+    <p style="margin:0;font-size:12px;color:hsl(var(--primary));">${sanitizeHtml(formatDistanceLabel(creator.distance_km))}</p>
+    <p style="margin:0;font-size:10px;color:hsl(var(--muted-foreground));font-style:italic;">Approximate location</p>
+    ${!connected ? '<p style="margin:0;font-size:10px;color:hsl(var(--primary));">Connect to see full profile</p>' : ""}
+  </div>
+`;
 
-  useEffect(() => {
-    const timers = [0, 120, 320].map((delay) =>
-      window.setTimeout(() => {
-        map.invalidateSize();
-      }, delay),
-    );
-
-    return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, [map]);
-
-  useEffect(() => {
-    if (selectedTarget) {
-      map.flyTo([selectedTarget.lat, selectedTarget.lng], selectedTarget.zoom, {
-        animate: true,
-        duration: 0.8,
-      });
-      return;
-    }
-
-    if (points.length > 1) {
-      map.fitBounds(points, {
-        padding: [32, 32],
-        maxZoom: 13,
-      });
-      return;
-    }
-
-    map.setView([userLocation.lat, userLocation.lng], 11);
-  }, [map, points, selectedTarget, userLocation]);
-
-  return null;
+const sessionPopupHtml = (session: NearbySession) => {
+  const startTime = new Date(session.start_time);
+  return `
+    <div style="display:flex;flex-direction:column;gap:6px;min-width:180px;">
+      <div style="font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:hsl(var(--primary));">Event</div>
+      <p style="margin:0;font-size:14px;font-weight:600;">${sanitizeHtml(session.title)}</p>
+      <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground));">${sanitizeHtml(startTime.toLocaleDateString([], { month: "short", day: "numeric" }))} · ${sanitizeHtml(startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))}</p>
+      ${session.venue_name ? `<p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground));">${sanitizeHtml(session.venue_name)}</p>` : ""}
+      <p style="margin:0;font-size:12px;color:hsl(var(--primary));">${session.participant_count}/${session.max_participants} joined</p>
+    </div>
+  `;
 };
+
+const locationPopupHtml = (location: CreativeLocation) => `
+  <div style="display:flex;flex-direction:column;gap:6px;min-width:180px;">
+    <div style="font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:hsl(var(--primary));">
+      ${sanitizeHtml(location.location_type.replace("_", " "))}
+    </div>
+    <p style="margin:0;font-size:14px;font-weight:600;">${sanitizeHtml(location.name)}</p>
+    ${location.address ? `<p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground));">${sanitizeHtml(location.address)}</p>` : ""}
+    ${location.average_rating ? `<p style="margin:0;font-size:12px;color:hsl(var(--primary));">⭐ ${location.average_rating.toFixed(1)}</p>` : ""}
+  </div>
+`;
 
 export const UnifiedNearbyMap = ({
   creators,
@@ -250,8 +242,13 @@ export const UnifiedNearbyMap = ({
   onSelectSession,
   onSelectLocation,
   loading,
-  connectedIds = new Set(),
+  connectedIds = EMPTY_CONNECTED_IDS,
 }: UnifiedNearbyMapProps) => {
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const markerLookupRef = useRef<Map<string, L.Marker>>(new Map());
+
   const palette = useMemo<MarkerPalette>(
     () => ({
       primary: getHslToken("--primary", "hsl(221 83% 53%)"),
@@ -311,141 +308,179 @@ export const UnifiedNearbyMap = ({
     [creatorPoints, locations, sessions, userLocation.lat, userLocation.lng],
   );
 
-  const userIcon = useMemo(() => buildUserIcon(palette), [palette]);
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    const map = L.map(mapContainerRef.current, {
+      zoomControl: false,
+      preferCanvas: true,
+      attributionControl: true,
+    }).setView([userLocation.lat, userLocation.lng], 11);
+
+    L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION }).addTo(map);
+    L.control.zoom({ position: "topright" }).addTo(map);
+
+    mapRef.current = map;
+    markersLayerRef.current = L.layerGroup().addTo(map);
+
+    const timers = [0, 120, 320].map((delay) =>
+      window.setTimeout(() => {
+        map.invalidateSize();
+      }, delay),
+    );
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      markerLookupRef.current.clear();
+      markersLayerRef.current?.clearLayers();
+      map.remove();
+      markersLayerRef.current = null;
+      mapRef.current = null;
+    };
+  }, [userLocation.lat, userLocation.lng]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (selectedTarget) {
+      map.flyTo([selectedTarget.lat, selectedTarget.lng], selectedTarget.zoom, {
+        animate: true,
+        duration: 0.8,
+      });
+      return;
+    }
+
+    if (allPoints.length > 1) {
+      map.fitBounds(allPoints, {
+        padding: [32, 32],
+        maxZoom: 13,
+      });
+      return;
+    }
+
+    map.setView([userLocation.lat, userLocation.lng], 11);
+  }, [allPoints, selectedTarget, userLocation]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const layerGroup = markersLayerRef.current;
+    if (!map || !layerGroup) return;
+
+    layerGroup.clearLayers();
+    markerLookupRef.current.clear();
+
+    const userMarker = L.marker([userLocation.lat, userLocation.lng], {
+      icon: buildUserIcon(palette),
+      keyboard: false,
+    }).bindPopup(
+      `<div style="display:flex;flex-direction:column;gap:4px;min-width:170px;">
+        <p style="margin:0;font-size:14px;font-weight:600;">Your location</p>
+        <p style="margin:0;font-size:12px;color:hsl(var(--muted-foreground));">Used to discover nearby creators, events, and spots.</p>
+      </div>`,
+      { closeButton: false, offset: [0, -14], className: "nearby-map-popup" },
+    );
+    userMarker.addTo(layerGroup);
+
+    creatorPoints.forEach(({ creator, lat, lng, connected }) => {
+      const displayName = getMaskedName(creator.full_name, connected);
+      const isSelected = selectedItem?.type === "creator" && selectedItem.id === creator.user_id;
+      const marker = L.marker([lat, lng], {
+        icon: buildCreatorIcon({
+          label: displayName,
+          avatarUrl: connected ? creator.avatar_url : null,
+          selected: isSelected,
+          palette,
+        }),
+      })
+        .on("click", () => {
+          onSelectCreator(creator);
+          onSelectSession(null);
+          onSelectLocation(null);
+        })
+        .bindPopup(creatorPopupHtml({ creator, displayName, connected }), {
+          closeButton: false,
+          offset: [0, -18],
+          className: "nearby-map-popup",
+        });
+
+      marker.addTo(layerGroup);
+      markerLookupRef.current.set(`creator:${creator.user_id}`, marker);
+    });
+
+    sessions.forEach((session) => {
+      const isSelected = selectedItem?.type === "session" && selectedItem.id === session.id;
+      const marker = L.marker([session.latitude, session.longitude], {
+        icon: buildSessionIcon({
+          count: session.participant_count,
+          avatarUrl: session.creator_avatar,
+          label: session.title,
+          selected: isSelected,
+          palette,
+        }),
+      })
+        .on("click", () => {
+          onSelectSession(session);
+          onSelectCreator(null);
+          onSelectLocation(null);
+        })
+        .bindPopup(sessionPopupHtml(session), {
+          closeButton: false,
+          offset: [0, -18],
+          className: "nearby-map-popup",
+        });
+
+      marker.addTo(layerGroup);
+      markerLookupRef.current.set(`session:${session.id}`, marker);
+    });
+
+    locations.forEach((location) => {
+      const isSelected = selectedItem?.type === "location" && selectedItem.id === location.id;
+      const marker = L.marker([location.latitude, location.longitude], {
+        icon: buildLocationIcon({
+          emoji: LOCATION_TYPE_EMOJI[location.location_type] || "📍",
+          selected: isSelected,
+          palette,
+        }),
+      })
+        .on("click", () => {
+          onSelectLocation(location);
+          onSelectCreator(null);
+          onSelectSession(null);
+        })
+        .bindPopup(locationPopupHtml(location), {
+          closeButton: false,
+          offset: [0, -18],
+          className: "nearby-map-popup",
+        });
+
+      marker.addTo(layerGroup);
+      markerLookupRef.current.set(`location:${location.id}`, marker);
+    });
+
+    window.requestAnimationFrame(() => map.invalidateSize());
+  }, [
+    creatorPoints,
+    loading,
+    locations,
+    onSelectCreator,
+    onSelectLocation,
+    onSelectSession,
+    palette,
+    selectedItem,
+    sessions,
+    userLocation.lat,
+    userLocation.lng,
+  ]);
+
+  useEffect(() => {
+    if (!selectedItem) return;
+    markerLookupRef.current.get(`${selectedItem.type}:${selectedItem.id}`)?.openPopup();
+  }, [selectedItem]);
 
   return (
     <div className="relative h-full w-full min-h-[300px] overflow-hidden bg-muted/20">
-      <MapContainer
-        center={[userLocation.lat, userLocation.lng]}
-        zoom={11}
-        scrollWheelZoom
-        zoomControl={false}
-        preferCanvas
-        className="h-full w-full z-0"
-      >
-        <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
-        <ZoomControl position="topright" />
-        <MapViewportController
-          userLocation={userLocation}
-          selectedTarget={selectedTarget}
-          points={allPoints}
-        />
-
-        <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
-          <Popup>
-            <div className="space-y-1">
-              <p className="text-sm font-semibold">Your location</p>
-              <p className="text-xs text-muted-foreground">Used to discover nearby creators, events, and spots.</p>
-            </div>
-          </Popup>
-        </Marker>
-
-        {creatorPoints.map(({ creator, lat, lng, connected }) => {
-          const displayName = getMaskedName(creator.full_name, connected);
-          const isSelected = selectedItem?.type === "creator" && selectedItem.id === creator.user_id;
-
-          return (
-            <Marker
-              key={creator.user_id}
-              position={[lat, lng]}
-              icon={buildCreatorIcon({
-                label: displayName,
-                avatarUrl: connected ? creator.avatar_url : null,
-                selected: isSelected,
-                palette,
-              })}
-              eventHandlers={{
-                click: () => {
-                  onSelectCreator(creator);
-                  onSelectSession(null);
-                  onSelectLocation(null);
-                },
-              }}
-            >
-              <Popup>
-                <div className="space-y-1.5">
-                  <div className="text-[10px] font-medium uppercase tracking-[0.16em] text-primary">Creator</div>
-                  <p className="text-sm font-semibold">{displayName}</p>
-                  <p className="text-xs text-muted-foreground">{creator.role}</p>
-                  <p className="text-xs text-primary">{formatDistanceLabel(creator.distance_km)}</p>
-                  <p className="text-[10px] text-muted-foreground italic">Approximate location</p>
-                  {!connected && <p className="text-[10px] text-primary">Connect to see full profile</p>}
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
-
-        {sessions.map((session) => {
-          const isSelected = selectedItem?.type === "session" && selectedItem.id === session.id;
-          const startTime = new Date(session.start_time);
-
-          return (
-            <Marker
-              key={session.id}
-              position={[session.latitude, session.longitude]}
-              icon={buildSessionIcon({
-                count: session.participant_count,
-                avatarUrl: session.creator_avatar,
-                label: session.title,
-                selected: isSelected,
-                palette,
-              })}
-              eventHandlers={{
-                click: () => {
-                  onSelectSession(session);
-                  onSelectCreator(null);
-                  onSelectLocation(null);
-                },
-              }}
-            >
-              <Popup>
-                <div className="space-y-1.5">
-                  <div className="text-[10px] font-medium uppercase tracking-[0.16em] text-primary">Event</div>
-                  <p className="text-sm font-semibold">{session.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {startTime.toLocaleDateString([], { month: "short", day: "numeric" })} · {" "}
-                    {startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                  {!!session.venue_name && <p className="text-xs text-muted-foreground">{session.venue_name}</p>}
-                  <p className="text-xs text-primary">{session.participant_count}/{session.max_participants} joined</p>
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
-
-        {locations.map((location) => {
-          const isSelected = selectedItem?.type === "location" && selectedItem.id === location.id;
-          const emoji = LOCATION_TYPE_EMOJI[location.location_type] || "📍";
-
-          return (
-            <Marker
-              key={location.id}
-              position={[location.latitude, location.longitude]}
-              icon={buildLocationIcon({ emoji, selected: isSelected, palette })}
-              eventHandlers={{
-                click: () => {
-                  onSelectLocation(location);
-                  onSelectCreator(null);
-                  onSelectSession(null);
-                },
-              }}
-            >
-              <Popup>
-                <div className="space-y-1.5">
-                  <div className="text-[10px] font-medium uppercase tracking-[0.16em] text-primary">
-                    {location.location_type.replace("_", " ")}
-                  </div>
-                  <p className="text-sm font-semibold">{location.name}</p>
-                  {!!location.address && <p className="text-xs text-muted-foreground">{location.address}</p>}
-                  {!!location.average_rating && <p className="text-xs text-primary">⭐ {location.average_rating.toFixed(1)}</p>}
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
-      </MapContainer>
+      <div ref={mapContainerRef} className="h-full w-full" />
 
       {(loading || !userLocation) && (
         <div className="absolute inset-0 z-[500] flex flex-col items-center justify-center gap-2 bg-background/75">

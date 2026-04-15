@@ -41,17 +41,23 @@ export const sendEventConfirmationEmail = async ({
       .eq('user_id', user.id)
       .single();
 
+    // Always format in the event's local timezone (Trinidad/Caribbean default)
+    // TODO: store timezone per event for multi-region support
+    const eventTimezone = 'America/Port_of_Spain';
+
     const eventDate = new Date(startTime).toLocaleDateString('en-US', {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
       year: 'numeric',
+      timeZone: eventTimezone,
     });
 
     const eventTime = new Date(startTime).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       timeZoneName: 'short',
+      timeZone: eventTimezone,
     });
 
     const venue = venueName

@@ -67,7 +67,7 @@ interface EPKPdfEditorProps {
   userId: string;
 }
 
-type EditorTab = "content" | "sections" | "branding";
+type EditorTab = "content" | "sections" | "template" | "branding";
 
 export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorProps) => {
   const { subscriptionInfo } = useAuth();

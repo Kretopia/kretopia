@@ -130,7 +130,6 @@ export function InvoicePreview({
                 <p className="text-xs font-medium">{new Date(validUntil).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
               </div>
             )}
-            )}
           </div>
         </div>
 

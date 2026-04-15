@@ -180,7 +180,7 @@ export function InvoicePreview({
             )}
             <Separator className="my-1" />
             <div className="flex justify-between items-baseline pt-1">
-              <span className="text-sm font-bold">Total Due</span>
+              <span className="text-sm font-bold">{isQuote ? "Total" : "Total Due"}</span>
               <span className="text-xl font-black tracking-tight" style={{ color: brandColor }}>
                 {fmt(total)}
               </span>

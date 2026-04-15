@@ -1046,7 +1046,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                 <InvoicePaymentForm config={paymentConfig} onChange={setPaymentConfig} />
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setCreateStep("branding")}>← Back</Button>
-                  <Button className="flex-1" onClick={() => setCreateStep("preview")}>Preview Invoice →</Button>
+                  <Button className="flex-1" onClick={() => setCreateStep("preview")}>Preview {docLabel} →</Button>
                 </div>
               </div>
             )}
@@ -1056,14 +1056,16 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                 <InvoicePreview
                   branding={branding}
                   recipient={{ name: recipientName, email: recipientEmail, address: recipientAddress }}
-                  invoiceNumber="INV-DRAFT"
-                  dueDate={dueDate}
+                  invoiceNumber={documentType === "quote" ? "QUO-DRAFT" : "INV-DRAFT"}
+                  dueDate={documentType === "invoice" ? dueDate : ""}
                   lineItems={lineItems}
                   taxRate={parseFloat(taxRate)}
                   discount={{ type: discountType, value: parseFloat(discountValue), amount: calculateDiscount() }}
                   notes={notes}
                   payment={paymentConfig}
                   currency={currency}
+                  documentType={documentType}
+                  validUntil={documentType === "quote" ? validUntil : ""}
                 />
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setCreateStep("payment")}>← Back</Button>

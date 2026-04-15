@@ -9,7 +9,7 @@ import {
   Monitor, Smartphone, X, Save, Loader2, Eye, EyeOff,
   GripVertical, ChevronDown, ChevronRight, Wand2,
   PanelLeft, ArrowLeft, Crown, Lock, FileDown, Palette,
-  Type, Image as ImageIcon, Plus, Trash2
+  Type, Image as ImageIcon, Plus, Trash2, LayoutTemplate, Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
 import { useNavigate } from "react-router-dom";
 import type { EPKPdfInput } from "@/lib/epkPdfGenerator";
+import { EPK_TEMPLATES, type EPKTemplateId } from "@/lib/epkPdfGenerator";
 
 // Editable sections for the EPK
 interface EPKSection {
@@ -66,7 +67,7 @@ interface EPKPdfEditorProps {
   userId: string;
 }
 
-type EditorTab = "content" | "sections" | "branding";
+type EditorTab = "content" | "sections" | "template" | "branding";
 
 export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorProps) => {
   const { subscriptionInfo } = useAuth();
@@ -95,6 +96,7 @@ export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorPro
     tagline: "",
   });
   const [creditOverrides, setCreditOverrides] = useState<Record<string, { hidden?: boolean; customRole?: string }>>({});
+  const [selectedTemplate, setSelectedTemplate] = useState<EPKTemplateId>('cinematic-dark');
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   // Reset state when data changes
@@ -146,9 +148,10 @@ export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorPro
       const modifiedData = buildModifiedData();
       
       if (isCreatorPlus) {
-        // Pass custom branding
+        // Pass custom branding + template
         const { generateEPKPdf } = await import("@/lib/epkPdfGenerator");
         await generateEPKPdf(modifiedData, {
+          templateId: selectedTemplate,
           primaryColor: hexToRgb(branding.primaryColor),
           accentColor: hexToRgb(branding.accentColor),
           darkColor: hexToRgb(branding.darkColor),
@@ -192,6 +195,7 @@ export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorPro
   const TABS: { id: EditorTab; label: string; icon: any; proOnly?: boolean }[] = [
     { id: "content", label: "Content", icon: Type },
     { id: "sections", label: "Sections", icon: GripVertical },
+    { id: "template", label: "Template", icon: LayoutTemplate, proOnly: true },
     { id: "branding", label: "Branding", icon: Palette, proOnly: true },
   ];
 
@@ -390,6 +394,61 @@ export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorPro
                   </div>
                 </>
               )}
+
+              {activeTab === "template" && isCreatorPlus && (
+                <>
+                  <p className="text-xs text-muted-foreground">Choose a design template for your EPK deck</p>
+                  <div className="space-y-3">
+                    {EPK_TEMPLATES.map(tpl => {
+                      const isSelected = selectedTemplate === tpl.id;
+                      return (
+                        <button
+                          key={tpl.id}
+                          onClick={() => {
+                            setSelectedTemplate(tpl.id);
+                            // Auto-update branding colors to match template
+                            setBranding(prev => ({
+                              ...prev,
+                              primaryColor: rgbToHex(tpl.palette.primary),
+                              accentColor: rgbToHex(tpl.palette.accent),
+                              darkColor: rgbToHex(tpl.palette.bg),
+                            }));
+                            markChanged();
+                          }}
+                          className={cn(
+                            "w-full text-left rounded-lg border-2 p-3 transition-all",
+                            isSelected
+                              ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                              : "border-border hover:border-muted-foreground/30"
+                          )}
+                        >
+                          {/* Preview swatch */}
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className={cn("w-10 h-10 rounded-md flex items-center justify-center", tpl.previewBg)}>
+                              <div className={cn("w-4 h-4 rounded-full", tpl.previewAccent)} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold">{tpl.name}</span>
+                                {isSelected && <Check className="h-3.5 w-3.5 text-primary" />}
+                              </div>
+                              <p className="text-[10px] text-muted-foreground leading-tight">{tpl.description}</p>
+                            </div>
+                          </div>
+                          {/* Color strip preview */}
+                          <div className="flex gap-1 h-2 rounded-full overflow-hidden">
+                            <div className="flex-1" style={{ backgroundColor: rgbToHex(tpl.palette.bg) }} />
+                            <div className="flex-1" style={{ backgroundColor: rgbToHex(tpl.palette.primary) }} />
+                            <div className="flex-1" style={{ backgroundColor: rgbToHex(tpl.palette.accent) }} />
+                            <div className="flex-1" style={{ backgroundColor: rgbToHex(tpl.palette.gold) }} />
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
 
               {activeTab === "branding" && isCreatorPlus && (
                 <>
@@ -615,7 +674,7 @@ const EPKPreview = ({
   );
 };
 
-// Utility
+// Utilities
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
   return [
@@ -623,4 +682,8 @@ function hexToRgb(hex: string): [number, number, number] {
     parseInt(h.substring(2, 4), 16),
     parseInt(h.substring(4, 6), 16),
   ];
+}
+
+function rgbToHex(rgb: [number, number, number]): string {
+  return '#' + rgb.map(v => v.toString(16).padStart(2, '0')).join('');
 }

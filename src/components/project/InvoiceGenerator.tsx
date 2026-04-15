@@ -80,6 +80,54 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     terms_conditions: ""
   });
 
+  // Auto-save draft
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+  const DRAFT_KEY = `thrive_invoice_draft_${user?.id || "anon"}`;
+
+  const draftData = useMemo(() => ({
+    documentType, recipientName, recipientEmail, recipientAddress,
+    dueDate, taxRate, notes, currency, discountType, discountValue,
+    lineItems, branding, paymentConfig, validUntil, createStep,
+  }), [documentType, recipientName, recipientEmail, recipientAddress,
+    dueDate, taxRate, notes, currency, discountType, discountValue,
+    lineItems, branding, paymentConfig, validUntil, createStep]);
+
+  const { loadDraft, clearDraft, hasDraft } = useAutoSaveDraft(
+    DRAFT_KEY, draftData, showCreateDialog && !editingInvoiceId
+  );
+
+  const restoreDraft = () => {
+    const draft = loadDraft();
+    if (!draft) return;
+    const d = draft.data;
+    setDocumentType(d.documentType || "invoice");
+    setRecipientName(d.recipientName || "");
+    setRecipientEmail(d.recipientEmail || "");
+    setRecipientAddress(d.recipientAddress || "");
+    setDueDate(d.dueDate || "");
+    setTaxRate(d.taxRate || "0");
+    setNotes(d.notes || "");
+    setCurrency(d.currency || "USD");
+    setDiscountType(d.discountType || "");
+    setDiscountValue(d.discountValue || "0");
+    setLineItems(d.lineItems?.length ? d.lineItems : [{ description: "", quantity: 1, rate: 0, amount: 0 }]);
+    setBranding(d.branding || { brand_name: "", brand_logo_url: "", brand_address: "", brand_email: "", brand_website: "", brand_color: "#6366f1" });
+    setPaymentConfig(d.paymentConfig || { payment_method: "bank_transfer", payment_details: {}, terms_conditions: "" });
+    setValidUntil(d.validUntil || "");
+    if (d.createStep) setCreateStep(d.createStep);
+    setShowDraftBanner(false);
+    toast.success("Draft restored!");
+  };
+
+  // Check for draft when opening create dialog
+  useEffect(() => {
+    if (showCreateDialog && !editingInvoiceId && hasDraft()) {
+      setShowDraftBanner(true);
+    } else {
+      setShowDraftBanner(false);
+    }
+  }, [showCreateDialog, editingInvoiceId]);
+
   // Collaborators for recipient picker
   const [collaborators, setCollaborators] = useState<any[]>([]);
 

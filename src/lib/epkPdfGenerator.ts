@@ -1,6 +1,6 @@
 /**
- * EPK (Electronic Press Kit) PDF Generator
- * Generates a professional, branded PDF deck from a creator's profile data.
+ * EPK (Electronic Press Kit) PDF Generator — Cinematic 16:9 Landscape Deck
+ * Generates a visually stunning, branded pitch-deck from a creator's profile data.
  * Gated to Creator / Creator+ subscribers.
  */
 
@@ -40,12 +40,15 @@ interface EPKCredit {
   platform?: string;
   isVerified?: boolean;
   verificationTier?: string;
+  credit_category?: string;
+  thumbnail_url?: string;
 }
 
 interface EPKAward {
   title: string;
   organization: string;
   year?: number;
+  category?: string;
 }
 
 interface EPKPressLink {
@@ -75,20 +78,33 @@ export interface EPKPdfInput {
   reviews: EPKReview[];
 }
 
-// Brand colors
-const BRAND = {
-  primary: [139, 92, 246] as [number, number, number],    // violet
-  dark: [30, 27, 45] as [number, number, number],          // near-black
-  white: [255, 255, 255] as [number, number, number],
-  muted: [148, 148, 160] as [number, number, number],
-  light: [245, 243, 255] as [number, number, number],
-  accent: [168, 130, 255] as [number, number, number],
-};
+export interface EPKBrandingOptions {
+  primaryColor?: [number, number, number];
+  accentColor?: [number, number, number];
+  darkColor?: [number, number, number];
+  logoUrl?: string;
+  tagline?: string;
+}
 
-const PAGE_W = 210; // A4 width mm
-const PAGE_H = 297; // A4 height mm
-const MARGIN = 20;
+// 16:9 landscape dimensions in mm
+const PAGE_W = 338;
+const PAGE_H = 190;
+const MARGIN = 18;
 const CONTENT_W = PAGE_W - MARGIN * 2;
+
+// Brand palette
+const BRAND = {
+  bg: [12, 10, 18] as [number, number, number],
+  surface: [22, 20, 32] as [number, number, number],
+  card: [30, 28, 42] as [number, number, number],
+  primary: [91, 107, 245] as [number, number, number],   // indigo-blue #5B6BF5
+  accent: [139, 92, 246] as [number, number, number],    // violet
+  gold: [245, 197, 66] as [number, number, number],
+  white: [255, 255, 255] as [number, number, number],
+  muted: [140, 140, 160] as [number, number, number],
+  dimmed: [80, 78, 98] as [number, number, number],
+  light: [220, 218, 235] as [number, number, number],
+};
 
 function decodeHtml(text: string): string {
   if (!text) return '';
@@ -117,383 +133,626 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
   }
 }
 
-export interface EPKBrandingOptions {
-  primaryColor?: [number, number, number];
-  accentColor?: [number, number, number];
-  darkColor?: [number, number, number];
-  logoUrl?: string;
-  tagline?: string;
+function drawRoundedRect(doc: any, x: number, y: number, w: number, h: number, r: number) {
+  doc.roundedRect(x, y, w, h, r, r, 'F');
+}
+
+function truncateText(doc: any, text: string, maxWidth: number): string {
+  if (doc.getTextWidth(text) <= maxWidth) return text;
+  while (text.length > 0 && doc.getTextWidth(text + '...') > maxWidth) {
+    text = text.slice(0, -1);
+  }
+  return text + '...';
 }
 
 export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBrandingOptions): Promise<void> {
   const { default: jsPDF } = await import("jspdf");
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [PAGE_W, PAGE_H] });
 
-  // Apply custom branding if provided
-  const COLORS = {
+  const C = {
+    bg: brandingOptions?.darkColor || BRAND.bg,
+    surface: BRAND.surface,
+    card: BRAND.card,
     primary: brandingOptions?.primaryColor || BRAND.primary,
-    dark: brandingOptions?.darkColor || BRAND.dark,
     accent: brandingOptions?.accentColor || BRAND.accent,
+    gold: BRAND.gold,
     white: BRAND.white,
     muted: BRAND.muted,
+    dimmed: BRAND.dimmed,
     light: BRAND.light,
   };
 
   const { profile, credits, awards, pressLinks, industryStats, reviews } = input;
-  let y = 0;
+  let pageNum = 0;
 
-  // Helper: add new page
+  // ── Helpers ──────────────────────────────────────────────
+  const fillPage = () => {
+    doc.setFillColor(...C.bg);
+    doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
+  };
+
+  const drawFooter = (num: number, total: number) => {
+    // Thin accent line
+    doc.setFillColor(...C.primary);
+    doc.rect(0, PAGE_H - 8, PAGE_W, 0.4, 'F');
+    // Brand name
+    doc.setFontSize(6.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...C.dimmed);
+    doc.text('thrivein.io', MARGIN, PAGE_H - 3.5);
+    // Page number
+    doc.text(`${num} / ${total}`, PAGE_W - MARGIN, PAGE_H - 3.5, { align: 'right' });
+  };
+
   const newPage = () => {
-    doc.addPage();
-    y = MARGIN;
+    doc.addPage([PAGE_W, PAGE_H], 'landscape');
+    pageNum++;
+    fillPage();
   };
 
-  // Helper: check page break
-  const checkPageBreak = (needed: number) => {
-    if (y + needed > PAGE_H - MARGIN) {
-      newPage();
-      return true;
-    }
-    return false;
-  };
-
-  // Helper: draw section header
-  const drawSectionHeader = (title: string) => {
-    checkPageBreak(20);
-    y += 6;
-    doc.setFontSize(11);
+  const drawSectionTitle = (title: string, x: number, y: number) => {
+    doc.setFontSize(7);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...COLORS.primary);
-    doc.text(title.toUpperCase(), MARGIN, y);
-    y += 2;
-    doc.setDrawColor(...COLORS.primary);
-    doc.setLineWidth(0.5);
-    doc.line(MARGIN, y, MARGIN + 30, y);
-    y += 6;
+    doc.setTextColor(...C.primary);
+    doc.text(title.toUpperCase(), x, y);
+    // Underline
+    const tw = doc.getTextWidth(title.toUpperCase());
+    doc.setFillColor(...C.primary);
+    doc.rect(x, y + 1.2, tw, 0.4, 'F');
   };
 
-  // ============================================================
-  // PAGE 1: Cover / Hero
-  // ============================================================
-  
-  // Dark header band
-  doc.setFillColor(...COLORS.dark);
-  doc.rect(0, 0, PAGE_W, 120, 'F');
-
-  // Accent line
-  doc.setFillColor(...COLORS.primary);
-  doc.rect(0, 120, PAGE_W, 3, 'F');
-
-  // Avatar (circular placeholder — draw a circle, try to embed image)
-  const avatarSize = 36;
-  const avatarX = PAGE_W / 2;
-  const avatarY = 45;
-  
+  // Pre-load avatar
+  let avatarData: string | null = null;
   if (profile.avatar_url) {
-    const avatarData = await loadImageAsDataUrl(profile.avatar_url);
-    if (avatarData) {
-      // Clip circle effect — draw image then overlay ring
-      doc.addImage(avatarData, 'JPEG', avatarX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
-    }
+    avatarData = await loadImageAsDataUrl(profile.avatar_url);
   }
-  // Circle border around avatar
-  doc.setDrawColor(...COLORS.primary);
-  doc.setLineWidth(1.5);
-  doc.circle(avatarX, avatarY, avatarSize / 2);
+
+  // Pre-load cover image
+  let coverData: string | null = null;
+  if (profile.cover_image_url) {
+    coverData = await loadImageAsDataUrl(profile.cover_image_url);
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // SLIDE 1: COVER / HERO
+  // ════════════════════════════════════════════════════════════
+  pageNum = 1;
+  fillPage();
+
+  // Full background cover image with overlay
+  if (coverData) {
+    doc.addImage(coverData, 'JPEG', 0, 0, PAGE_W, PAGE_H);
+    // Dark overlay for readability
+    doc.setGState(new (doc as any).GState({ opacity: 0.75 }));
+    doc.setFillColor(0, 0, 0);
+    doc.rect(0, 0, PAGE_W, PAGE_H, 'F');
+    doc.setGState(new (doc as any).GState({ opacity: 1 }));
+  }
+
+  // Gradient accent bar at top
+  doc.setFillColor(...C.primary);
+  doc.rect(0, 0, PAGE_W, 1.5, 'F');
+
+  // Left column: Avatar + Info
+  const heroLeftX = MARGIN + 10;
+  const heroCenterY = PAGE_H / 2;
+
+  // Avatar
+  const avatarSize = 44;
+  const avatarY = heroCenterY - 30;
+  if (avatarData) {
+    // Background ring
+    doc.setFillColor(...C.primary);
+    drawRoundedRect(doc, heroLeftX - 1.5, avatarY - 1.5, avatarSize + 3, avatarSize + 3, 6);
+    doc.addImage(avatarData, 'JPEG', heroLeftX, avatarY, avatarSize, avatarSize);
+  }
 
   // Name
-  doc.setFontSize(26);
+  const nameY = avatarY + avatarSize + 14;
+  doc.setFontSize(28);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(...COLORS.white);
-  doc.text(profile.full_name || 'Creator', PAGE_W / 2, 78, { align: 'center' });
+  doc.setTextColor(...C.white);
+  doc.text(profile.full_name || 'Creator', heroLeftX, nameY);
 
-  // Title
+  // Role
   const displayRole = profile.job_title || profile.role || 'Creative Professional';
   doc.setFontSize(13);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(...COLORS.accent);
-  doc.text(displayRole, PAGE_W / 2, 88, { align: 'center' });
+  doc.setTextColor(...C.primary);
+  doc.text(displayRole, heroLeftX, nameY + 10);
 
-  // Location
+  // Location + Verification
+  let metaY = nameY + 19;
+  doc.setFontSize(9);
+  doc.setTextColor(...C.muted);
   if (profile.location) {
-    doc.setFontSize(10);
-    doc.setTextColor(...COLORS.muted);
-    doc.text(`📍 ${profile.location}`, PAGE_W / 2, 97, { align: 'center' });
+    doc.text(profile.location, heroLeftX, metaY);
+    metaY += 6;
   }
-
-  // Verification badge
   if (profile.verification_tier || profile.verification_status === 'verified') {
-    doc.setFontSize(9);
-    doc.setTextColor(...COLORS.accent);
-    const badge = profile.verification_tier === 'elite' ? '✦ Elite Verified' 
-                : profile.verification_tier === 'industry' ? '✦ Industry Verified' 
-                : '✓ Verified Creator';
-    doc.text(badge, PAGE_W / 2, 106, { align: 'center' });
+    doc.setTextColor(...C.gold);
+    doc.setFont("helvetica", "bold");
+    const badge = profile.verification_tier === 'elite' ? 'Elite Verified'
+                : profile.verification_tier === 'industry' ? 'Industry Verified'
+                : 'Verified Creator';
+    doc.text(badge, heroLeftX, metaY);
   }
 
-  // Bio section
-  y = 133;
+  // Right side: Quick stats cards
+  const statsX = PAGE_W / 2 + 30;
+  const statsY = heroCenterY - 15;
+  const statItems: { label: string; value: string }[] = [];
+  if (credits.length > 0) statItems.push({ label: 'Credits', value: String(credits.length) });
+  const verifiedCount = credits.filter(c => c.isVerified).length;
+  if (verifiedCount > 0) statItems.push({ label: 'Verified', value: String(verifiedCount) });
+  if (awards.length > 0) statItems.push({ label: 'Awards', value: String(awards.length) });
+  if (profile.average_rating) statItems.push({ label: 'Rating', value: profile.average_rating.toFixed(1) });
+
+  statItems.slice(0, 4).forEach((stat, i) => {
+    const sx = statsX + i * 36;
+    doc.setFillColor(...C.card);
+    drawRoundedRect(doc, sx, statsY, 32, 30, 4);
+    // Value
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...C.primary);
+    doc.text(stat.value, sx + 16, statsY + 14, { align: 'center' });
+    // Label
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...C.muted);
+    doc.text(stat.label, sx + 16, statsY + 22, { align: 'center' });
+  });
+
+  // ════════════════════════════════════════════════════════════
+  // SLIDE 2: ABOUT + SKILLS
+  // ════════════════════════════════════════════════════════════
+  newPage();
+
+  // Left half: About
+  const aboutX = MARGIN;
+  let aboutY = MARGIN + 5;
+  drawSectionTitle('About', aboutX, aboutY);
+  aboutY += 10;
+
   if (profile.bio) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(60, 60, 70);
-    const bioLines = doc.splitTextToSize(profile.bio, CONTENT_W);
-    doc.text(bioLines, MARGIN, y);
-    y += bioLines.length * 5 + 6;
+    doc.setTextColor(...C.light);
+    const bioLines = doc.splitTextToSize(profile.bio, CONTENT_W / 2 - 10);
+    doc.text(bioLines.slice(0, 12), aboutX, aboutY);
+    aboutY += Math.min(bioLines.length, 12) * 5 + 8;
   }
 
-  // Quick stats row
-  const statsRow: string[] = [];
-  if (credits.length > 0) statsRow.push(`${credits.length} Credits`);
-  if (credits.filter(c => c.isVerified).length > 0) statsRow.push(`${credits.filter(c => c.isVerified).length} Verified`);
-  if (awards.length > 0) statsRow.push(`${awards.length} Awards`);
-  if (profile.average_rating) statsRow.push(`⭐ ${profile.average_rating.toFixed(1)} Rating`);
-  if (profile.total_reviews) statsRow.push(`${profile.total_reviews} Reviews`);
-  
-  if (statsRow.length > 0) {
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...COLORS.primary);
-    doc.text(statsRow.join('  •  '), PAGE_W / 2, y, { align: 'center' });
-    y += 10;
-  }
-
-  // Contact & Social Links
-  const contactLines: string[] = [];
-  if (profile.website) contactLines.push(`🌐 ${profile.website}`);
-  if (profile.linkedin_url) contactLines.push(`LinkedIn: ${profile.linkedin_url}`);
-  if (profile.instagram_url) contactLines.push(`Instagram: ${profile.instagram_url}`);
-  if (profile.youtube_url) contactLines.push(`YouTube: ${profile.youtube_url}`);
-  if (profile.spotify_url) contactLines.push(`Spotify: ${profile.spotify_url}`);
-  if (profile.twitter_url) contactLines.push(`X: ${profile.twitter_url}`);
-  if (profile.behance_url) contactLines.push(`Behance: ${profile.behance_url}`);
-  if (profile.imdb_url) contactLines.push(`IMDb: ${profile.imdb_url}`);
-  if (profile.soundcloud_url) contactLines.push(`SoundCloud: ${profile.soundcloud_url}`);
-  if (profile.calendly_url) contactLines.push(`📅 Book a call: ${profile.calendly_url}`);
-
-  if (contactLines.length > 0) {
-    drawSectionHeader('Contact & Links');
+  // Availability
+  if (profile.collab_intent || profile.rate_range) {
+    drawSectionTitle('Availability', aboutX, aboutY);
+    aboutY += 8;
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(60, 60, 70);
-    contactLines.forEach(line => {
-      checkPageBreak(6);
-      doc.text(line, MARGIN, y);
-      y += 5;
-    });
-    y += 4;
+    doc.setTextColor(...C.light);
+    if (profile.collab_intent) {
+      doc.text(`Open to: ${profile.collab_intent.replace(/_/g, ' ')}`, aboutX, aboutY);
+      aboutY += 5.5;
+    }
+    if (profile.rate_range) {
+      doc.text(`Rate: ${profile.rate_range}`, aboutX, aboutY);
+      aboutY += 5.5;
+    }
   }
 
-  // Skills
+  // Right half: Skills
+  const skillsX = PAGE_W / 2 + 10;
+  let skillsY = MARGIN + 5;
+  
   const allSkills: string[] = [
-    ...(Array.isArray(profile.professional_skills) 
+    ...(Array.isArray(profile.professional_skills)
       ? profile.professional_skills.map((s: any) => typeof s === 'string' ? s : s?.skill || s?.name).filter(Boolean)
       : []),
-    ...(Array.isArray(profile.passion_skills) 
+    ...(Array.isArray(profile.passion_skills)
       ? profile.passion_skills.map((s: any) => typeof s === 'string' ? s : s?.skill || s?.name).filter(Boolean)
       : [])
   ];
 
   if (allSkills.length > 0) {
-    drawSectionHeader('Skills & Expertise');
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(60, 60, 70);
-    const skillsText = allSkills.slice(0, 20).join('  •  ');
-    const skillLines = doc.splitTextToSize(skillsText, CONTENT_W);
-    doc.text(skillLines, MARGIN, y);
-    y += skillLines.length * 5 + 4;
+    drawSectionTitle('Skills & Expertise', skillsX, skillsY);
+    skillsY += 10;
+
+    // Skill chips in a grid
+    let chipX = skillsX;
+    let chipY = skillsY;
+    const chipMaxX = PAGE_W - MARGIN;
+    const chipH = 8;
+    const chipPadX = 4;
+    const chipGap = 3;
+
+    allSkills.slice(0, 18).forEach((skill) => {
+      doc.setFontSize(7.5);
+      const tw = doc.getTextWidth(skill);
+      const chipW = tw + chipPadX * 2;
+
+      if (chipX + chipW > chipMaxX) {
+        chipX = skillsX;
+        chipY += chipH + chipGap;
+      }
+
+      doc.setFillColor(...C.card);
+      drawRoundedRect(doc, chipX, chipY, chipW, chipH, 3);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...C.light);
+      doc.text(skill, chipX + chipPadX, chipY + 5.5);
+
+      chipX += chipW + chipGap;
+    });
+    skillsY = chipY + chipH + 12;
   }
 
-  // Availability
-  if (profile.collab_intent || profile.rate_range) {
-    drawSectionHeader('Availability');
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(60, 60, 70);
-    if (profile.collab_intent) {
-      doc.text(`Looking for: ${profile.collab_intent.replace(/_/g, ' ')}`, MARGIN, y);
-      y += 5;
-    }
-    if (profile.rate_range) {
-      doc.text(`Rate: ${profile.rate_range}`, MARGIN, y);
-      y += 5;
-    }
-    y += 4;
+  // Social/Contact links on the right column below skills
+  const contactLinks: { label: string; url: string }[] = [];
+  if (profile.website) contactLinks.push({ label: 'Website', url: profile.website });
+  if (profile.linkedin_url) contactLinks.push({ label: 'LinkedIn', url: profile.linkedin_url });
+  if (profile.instagram_url) contactLinks.push({ label: 'Instagram', url: profile.instagram_url });
+  if (profile.youtube_url) contactLinks.push({ label: 'YouTube', url: profile.youtube_url });
+  if (profile.spotify_url) contactLinks.push({ label: 'Spotify', url: profile.spotify_url });
+  if (profile.twitter_url) contactLinks.push({ label: 'X (Twitter)', url: profile.twitter_url });
+  if (profile.behance_url) contactLinks.push({ label: 'Behance', url: profile.behance_url });
+  if (profile.imdb_url) contactLinks.push({ label: 'IMDb', url: profile.imdb_url });
+  if (profile.soundcloud_url) contactLinks.push({ label: 'SoundCloud', url: profile.soundcloud_url });
+  if (profile.calendly_url) contactLinks.push({ label: 'Book a Call', url: profile.calendly_url });
+
+  if (contactLinks.length > 0) {
+    drawSectionTitle('Connect', skillsX, skillsY);
+    skillsY += 8;
+    doc.setFontSize(8);
+    contactLinks.slice(0, 8).forEach((link) => {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...C.primary);
+      doc.text(link.label, skillsX, skillsY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...C.muted);
+      const labelW = doc.getTextWidth(link.label);
+      const urlTrunc = truncateText(doc, link.url, CONTENT_W / 2 - labelW - 15);
+      doc.text(`  ${urlTrunc}`, skillsX + labelW, skillsY);
+      // Make clickable
+      doc.link(skillsX, skillsY - 3, CONTENT_W / 2, 5, { url: link.url });
+      skillsY += 6;
+    });
   }
 
-  // ============================================================
-  // CREDITS (Work History)
-  // ============================================================
+  // ════════════════════════════════════════════════════════════
+  // SLIDE 3+: CREDITS (Visual Cards)
+  // ════════════════════════════════════════════════════════════
   if (credits.length > 0) {
-    checkPageBreak(30);
-    drawSectionHeader(`Work History — ${credits.length} Credits`);
-    
-    credits.slice(0, 30).forEach((credit) => {
-      checkPageBreak(12);
-      const name = decodeHtml(credit.project_name || credit.title || '');
-      const verifiedTag = credit.isVerified ? ' ✓' : '';
-      
-      // Project name
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...COLORS.dark);
-      doc.text(`${name}${verifiedTag}`, MARGIN, y);
-      
-      // Year on the right
-      if (credit.year) {
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(...COLORS.muted);
-        doc.text(String(credit.year), PAGE_W - MARGIN, y, { align: 'right' });
+    const CARDS_PER_ROW = 4;
+    const ROWS_PER_PAGE = 2;
+    const CARDS_PER_PAGE = CARDS_PER_ROW * ROWS_PER_PAGE;
+    const cardGap = 6;
+    const totalCardW = (CONTENT_W - (CARDS_PER_ROW - 1) * cardGap) / CARDS_PER_ROW;
+    const cardH = (PAGE_H - MARGIN * 2 - 18 - cardGap) / ROWS_PER_PAGE;
+    const displayCredits = credits.slice(0, 24);
+
+    for (let pageIdx = 0; pageIdx < Math.ceil(displayCredits.length / CARDS_PER_PAGE); pageIdx++) {
+      newPage();
+      const pageCredits = displayCredits.slice(pageIdx * CARDS_PER_PAGE, (pageIdx + 1) * CARDS_PER_PAGE);
+
+      // Section header
+      if (pageIdx === 0) {
+        drawSectionTitle(`Selected Work  —  ${credits.length} Credits`, MARGIN, MARGIN + 5);
+      } else {
+        drawSectionTitle('Selected Work (continued)', MARGIN, MARGIN + 5);
       }
-      y += 5;
 
-      // Role & platform
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(80, 80, 90);
-      const roleText = credit.platform ? `${credit.role} • ${credit.platform}` : credit.role;
-      doc.text(roleText, MARGIN, y);
-      y += 7;
-    });
-  }
+      const startY = MARGIN + 14;
 
-  // ============================================================
-  // PRESS & AWARDS
-  // ============================================================
-  if (pressLinks.length > 0) {
-    checkPageBreak(20);
-    drawSectionHeader('Featured In');
-    
-    pressLinks.slice(0, 8).forEach((press) => {
-      checkPageBreak(10);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...COLORS.dark);
-      doc.text(decodeHtml(press.title), MARGIN, y);
-      y += 5;
-      if (press.publication) {
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "italic");
-        doc.setTextColor(...COLORS.muted);
-        doc.text(press.publication, MARGIN, y);
-        y += 5;
-      }
-      y += 3;
-    });
-  }
+      pageCredits.forEach((credit, i) => {
+        const row = Math.floor(i / CARDS_PER_ROW);
+        const col = i % CARDS_PER_ROW;
+        const cx = MARGIN + col * (totalCardW + cardGap);
+        const cy = startY + row * (cardH + cardGap);
 
-  if (awards.length > 0) {
-    checkPageBreak(20);
-    drawSectionHeader('Awards & Recognition');
-    
-    awards.slice(0, 8).forEach((award) => {
-      checkPageBreak(10);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...COLORS.dark);
-      doc.text(`🏆 ${award.title}`, MARGIN, y);
-      y += 5;
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(...COLORS.muted);
-      doc.text(`${award.organization}${award.year ? ` • ${award.year}` : ''}`, MARGIN, y);
-      y += 7;
-    });
-  }
+        // Card background
+        doc.setFillColor(...C.card);
+        drawRoundedRect(doc, cx, cy, totalCardW, cardH, 4);
 
-  // ============================================================
-  // CREDENTIALS & STATS
-  // ============================================================
-  if (industryStats.length > 0) {
-    checkPageBreak(20);
-    drawSectionHeader('Credentials & Stats');
-    
-    industryStats.slice(0, 10).forEach((stat) => {
-      checkPageBreak(10);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...COLORS.primary);
-      doc.text(stat.value || '', MARGIN, y);
-      const valueWidth = stat.value ? doc.getTextWidth(stat.value) + 3 : 0;
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(...COLORS.dark);
-      doc.text(stat.title, MARGIN + valueWidth, y);
-      y += 5;
-      if (stat.issuer) {
+        // Visual area (top 55% of card)
+        const visualH = cardH * 0.55;
+        const categoryColors: Record<string, [number, number, number]> = {
+          film: [30, 25, 65],
+          music: [50, 20, 35],
+          tv: [20, 30, 55],
+          podcast: [20, 45, 35],
+          photography: [45, 30, 20],
+          video: [45, 18, 22],
+          design: [20, 40, 50],
+          writing: [40, 35, 20],
+        };
+        const catKey = (credit.credit_category || '').toLowerCase();
+        const catColor = Object.entries(categoryColors).find(([k]) => catKey.includes(k))?.[1] || [25, 23, 38];
+        doc.setFillColor(...catColor);
+        // Top rounded corners only — draw full rounded rect then cover bottom
+        drawRoundedRect(doc, cx, cy, totalCardW, visualH + 4, 4);
+
+        // Credit name in visual area
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...C.white);
+        const creditName = decodeHtml(credit.project_name || credit.title || '');
+        const nameLines = doc.splitTextToSize(creditName, totalCardW - 10);
+        doc.text(nameLines.slice(0, 2), cx + 5, cy + visualH / 2 - 2);
+
+        // Verified badge in visual area
+        if (credit.isVerified) {
+          doc.setFontSize(6);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(...C.gold);
+          doc.text('VERIFIED', cx + totalCardW - 5, cy + 6, { align: 'right' });
+        }
+
+        // Info area (bottom 45%)
+        const infoY = cy + visualH + 4;
+        
+        // Role
         doc.setFontSize(8);
-        doc.setTextColor(...COLORS.muted);
-        doc.text(stat.issuer, MARGIN, y);
-        y += 4;
-      }
-      y += 3;
-    });
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...C.light);
+        const roleTrunc = truncateText(doc, credit.role, totalCardW - 10);
+        doc.text(roleTrunc, cx + 5, infoY + 4);
+
+        // Year + Platform
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...C.muted);
+        const meta = [credit.year, credit.platform].filter(Boolean).join(' · ');
+        if (meta) {
+          doc.text(meta, cx + 5, infoY + 10);
+        }
+
+        // Category pill
+        if (credit.credit_category) {
+          const pillY = infoY + 15;
+          doc.setFontSize(5.5);
+          const catText = credit.credit_category.toUpperCase();
+          const catTw = doc.getTextWidth(catText);
+          doc.setFillColor(...C.surface);
+          drawRoundedRect(doc, cx + 5, pillY - 3, catTw + 6, 5.5, 2);
+          doc.setTextColor(...C.muted);
+          doc.text(catText, cx + 8, pillY);
+        }
+      });
+    }
   }
 
-  // ============================================================
-  // REVIEWS / TESTIMONIALS
-  // ============================================================
-  if (reviews.length > 0) {
-    checkPageBreak(25);
-    drawSectionHeader('Client Reviews');
-    
-    reviews.slice(0, 5).forEach((review) => {
-      checkPageBreak(20);
-      // Stars
-      const stars = '★'.repeat(Math.round(review.rating)) + '☆'.repeat(5 - Math.round(review.rating));
-      doc.setFontSize(10);
-      doc.setTextColor(...COLORS.primary);
-      doc.text(stars, MARGIN, y);
-      if (review.reviewer_name) {
+  // ════════════════════════════════════════════════════════════
+  // SLIDE: AWARDS & PRESS
+  // ════════════════════════════════════════════════════════════
+  if (awards.length > 0 || pressLinks.length > 0) {
+    newPage();
+
+    // Left: Awards
+    if (awards.length > 0) {
+      let ax = MARGIN;
+      let ay = MARGIN + 5;
+      drawSectionTitle(`Awards & Recognition`, ax, ay);
+      ay += 10;
+
+      awards.slice(0, 6).forEach((award) => {
+        // Award card
+        doc.setFillColor(...C.card);
+        drawRoundedRect(doc, ax, ay, CONTENT_W / 2 - 10, 18, 3);
+
         doc.setFontSize(9);
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(...COLORS.dark);
-        doc.text(`— ${review.reviewer_name}`, MARGIN + doc.getTextWidth(stars) + 3, y);
-      }
-      y += 5;
-      if (review.review_text) {
+        doc.setTextColor(...C.gold);
+        doc.text(truncateText(doc, award.title, CONTENT_W / 2 - 25), ax + 5, ay + 7);
+
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...C.muted);
+        const awardMeta = [award.organization, award.year, award.category].filter(Boolean).join(' · ');
+        doc.text(truncateText(doc, awardMeta, CONTENT_W / 2 - 25), ax + 5, ay + 13);
+        ay += 22;
+      });
+    }
+
+    // Right: Press
+    if (pressLinks.length > 0) {
+      let px = PAGE_W / 2 + 10;
+      let py = MARGIN + 5;
+      drawSectionTitle('Featured In', px, py);
+      py += 10;
+
+      pressLinks.slice(0, 6).forEach((press) => {
+        doc.setFillColor(...C.card);
+        drawRoundedRect(doc, px, py, CONTENT_W / 2 - 10, 18, 3);
+
         doc.setFontSize(9);
-        doc.setFont("helvetica", "italic");
-        doc.setTextColor(80, 80, 90);
-        const reviewLines = doc.splitTextToSize(`"${review.review_text}"`, CONTENT_W);
-        doc.text(reviewLines.slice(0, 4), MARGIN, y);
-        y += Math.min(reviewLines.length, 4) * 5 + 4;
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...C.white);
+        doc.text(truncateText(doc, decodeHtml(press.title), CONTENT_W / 2 - 25), px + 5, py + 7);
+
+        if (press.publication) {
+          doc.setFontSize(7.5);
+          doc.setFont("helvetica", "italic");
+          doc.setTextColor(...C.muted);
+          doc.text(press.publication, px + 5, py + 13);
+        }
+
+        // Clickable link
+        if (press.url) {
+          doc.link(px, py, CONTENT_W / 2 - 10, 18, { url: press.url });
+        }
+        py += 22;
+      });
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // SLIDE: TESTIMONIALS
+  // ════════════════════════════════════════════════════════════
+  if (reviews.length > 0) {
+    newPage();
+
+    drawSectionTitle('Client Testimonials', MARGIN, MARGIN + 5);
+
+    const reviewCards = reviews.slice(0, 4);
+    const cardW = (CONTENT_W - 8) / 2;
+    const reviewCardH = 60;
+
+    reviewCards.forEach((review, i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const rx = MARGIN + col * (cardW + 8);
+      const ry = MARGIN + 16 + row * (reviewCardH + 8);
+
+      doc.setFillColor(...C.card);
+      drawRoundedRect(doc, rx, ry, cardW, reviewCardH, 4);
+
+      // Stars
+      const stars = '★'.repeat(Math.round(review.rating));
+      doc.setFontSize(11);
+      doc.setTextColor(...C.gold);
+      doc.text(stars, rx + 8, ry + 10);
+
+      // Reviewer name
+      if (review.reviewer_name) {
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...C.primary);
+        doc.text(review.reviewer_name, rx + 8, ry + 18);
       }
-      y += 2;
+
+      // Review text
+      if (review.review_text) {
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(...C.light);
+        const rLines = doc.splitTextToSize(`"${review.review_text}"`, cardW - 16);
+        doc.text(rLines.slice(0, 5), rx + 8, ry + 26);
+      }
     });
   }
 
-  // ============================================================
-  // FOOTER on every page
-  // ============================================================
-  const pageCount = doc.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
+  // ════════════════════════════════════════════════════════════
+  // SLIDE: CREDENTIALS & STATS
+  // ════════════════════════════════════════════════════════════
+  if (industryStats.length > 0) {
+    newPage();
+
+    drawSectionTitle('Credentials & Industry Stats', MARGIN, MARGIN + 5);
+
+    const statCards = industryStats.slice(0, 8);
+    const statCardW = (CONTENT_W - 8 * 3) / 4;
+    const statCardH = 35;
+
+    statCards.forEach((stat, i) => {
+      const col = i % 4;
+      const row = Math.floor(i / 4);
+      const sx = MARGIN + col * (statCardW + 8);
+      const sy = MARGIN + 16 + row * (statCardH + 8);
+
+      doc.setFillColor(...C.card);
+      drawRoundedRect(doc, sx, sy, statCardW, statCardH, 4);
+
+      // Value
+      if (stat.value) {
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...C.primary);
+        doc.text(stat.value, sx + statCardW / 2, sy + 14, { align: 'center' });
+      }
+
+      // Title
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...C.light);
+      const titleLines = doc.splitTextToSize(stat.title, statCardW - 8);
+      doc.text(titleLines.slice(0, 2), sx + statCardW / 2, sy + 22, { align: 'center' });
+
+      // Issuer
+      if (stat.issuer) {
+        doc.setFontSize(6);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...C.muted);
+        doc.text(truncateText(doc, stat.issuer, statCardW - 8), sx + statCardW / 2, sy + 29, { align: 'center' });
+      }
+    });
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // FINAL SLIDE: Contact CTA
+  // ════════════════════════════════════════════════════════════
+  newPage();
+  
+  // Centered CTA
+  const ctaCenterY = PAGE_H / 2 - 10;
+
+  doc.setFontSize(24);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...C.white);
+  doc.text("Let's Create Together", PAGE_W / 2, ctaCenterY, { align: 'center' });
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...C.muted);
+  doc.text(profile.full_name || '', PAGE_W / 2, ctaCenterY + 12, { align: 'center' });
+
+  const ctaRole = profile.job_title || profile.role || '';
+  if (ctaRole) {
+    doc.setTextColor(...C.primary);
+    doc.text(ctaRole, PAGE_W / 2, ctaCenterY + 20, { align: 'center' });
+  }
+
+  // EPK link as clickable button
+  const epkUrl = `https://thrivein.io/epk/${encodeURIComponent(profile.full_name?.toLowerCase().replace(/\s+/g, '-') || 'creator')}`;
+  const btnW = 70;
+  const btnH = 10;
+  const btnX = PAGE_W / 2 - btnW / 2;
+  const btnY = ctaCenterY + 30;
+  doc.setFillColor(...C.primary);
+  drawRoundedRect(doc, btnX, btnY, btnW, btnH, 4);
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...C.white);
+  doc.text('View Full EPK', PAGE_W / 2, btnY + 6.5, { align: 'center' });
+  doc.link(btnX, btnY, btnW, btnH, { url: epkUrl });
+
+  // Contact links below
+  let ctaLinkY = btnY + 18;
+  const ctaLinks: string[] = [];
+  if (profile.website) ctaLinks.push(profile.website);
+  if (profile.calendly_url) ctaLinks.push(profile.calendly_url);
+  if (profile.linkedin_url) ctaLinks.push(profile.linkedin_url);
+  if (profile.instagram_url) ctaLinks.push(profile.instagram_url);
+
+  if (ctaLinks.length > 0) {
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...C.dimmed);
+    ctaLinks.slice(0, 3).forEach((link) => {
+      doc.text(link, PAGE_W / 2, ctaLinkY, { align: 'center' });
+      doc.link(PAGE_W / 2 - 50, ctaLinkY - 3, 100, 5, { url: link });
+      ctaLinkY += 6;
+    });
+  }
+
+  // ════════════════════════════════════════════════════════════
+  // FOOTERS — Apply to all pages
+  // ════════════════════════════════════════════════════════════
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
 
-    // Custom logo in footer (Creator+)
+    // Custom branding logo
     if (brandingOptions?.logoUrl) {
       try {
         const logoData = await loadImageAsDataUrl(brandingOptions.logoUrl);
         if (logoData) {
-          doc.addImage(logoData, 'PNG', MARGIN, PAGE_H - 14, 12, 12);
+          doc.addImage(logoData, 'PNG', PAGE_W - MARGIN - 10, PAGE_H - 9, 8, 8);
         }
       } catch {}
     }
 
-    // Bottom accent line
-    doc.setFillColor(...COLORS.primary);
-    doc.rect(0, PAGE_H - 12, PAGE_W, 12, 'F');
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...COLORS.white);
-    const footerText = brandingOptions?.tagline 
-      ? `${profile.full_name} — ${brandingOptions.tagline}`
-      : `${profile.full_name} — EPK  •  thrivein.io/epk/${encodeURIComponent(profile.full_name?.toLowerCase().replace(/\s+/g, '-') || 'creator')}`;
-    doc.text(footerText, PAGE_W / 2, PAGE_H - 5, { align: 'center' });
-    // Page number
-    doc.setFontSize(7);
-    doc.text(`${i} / ${pageCount}`, PAGE_W - MARGIN, PAGE_H - 5, { align: 'right' });
+    drawFooter(i, totalPages);
   }
 
   // Save

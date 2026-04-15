@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MessageCircle, X, Briefcase, Shield } from "lucide-react";
+import { Sparkles, MessageCircle, X, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 

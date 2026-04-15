@@ -489,25 +489,7 @@ export const UnifiedHome = () => {
       {/* ═══════════ CONTENT SECTIONS ═══════════ */}
       <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
 
-        {/* ── CREDITS EXPLAINER (guest only) ── */}
-        {!user && (
-          <section className="mb-8 rounded-2xl border border-primary/20 bg-primary/5 p-5 sm:p-6">
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-                <Database className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-foreground mb-1">What are ThriveCredits?</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Think of credits like IMDb — but for every creative industry. Each credit is a verified record of work you've done: a music video you directed, a brand shoot you styled, an event you produced. AI + peer endorsements verify your work so clients trust your portfolio instantly.
-                </p>
-                <Link to="/auth" className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-primary hover:underline">
-                  Search your name to find your credits <ArrowRight className="h-3 w-3" />
-                </Link>
-              </div>
-            </div>
-          </section>
-        )}
+
 
         {!user && <WhyCreatorsChooseSection />}
 

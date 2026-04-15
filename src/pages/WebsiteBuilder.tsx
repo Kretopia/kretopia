@@ -537,7 +537,7 @@ const WebsiteBuilder = () => {
                 >
                   <iframe
                     key={previewKey}
-                    src={siteUrl}
+                    src={previewUrl}
                     className="w-full h-full border-0"
                     title="Site Preview"
                   />

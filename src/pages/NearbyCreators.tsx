@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, MapPin, Navigation, Users, Plus, Sparkles, List, Map, Search, SlidersHorizontal, RefreshCw } from "lucide-react";
-import { UnifiedNearbyMap } from "@/components/nearby/UnifiedNearbyMap";
+import { UnifiedNearbyMap, type MapItemType } from "@/components/nearby/UnifiedNearbyMap";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionCard } from "@/components/sessions/SessionCard";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
@@ -29,7 +29,27 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-type MapItemType = 'creator' | 'session' | 'location';
+// MapItemType imported from UnifiedNearbyMap
+
+interface NearbyGig {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  compensation: string | null;
+  location: string | null;
+  location_city: string | null;
+  skills: string[] | null;
+  tags: string[] | null;
+  image_url: string | null;
+  created_by: string | null;
+  created_at: string;
+  latitude: number;
+  longitude: number;
+  distance_km: number;
+  creator_name: string | null;
+  creator_avatar: string | null;
+}
 
 const NearbyCreators = () => {
   const { user } = useAuth();
@@ -41,6 +61,7 @@ const NearbyCreators = () => {
   const [creators, setCreators] = useState<NearbyCreator[]>([]);
   const [sessions, setSessions] = useState<NearbySession[]>([]);
   const [locations, setLocations] = useState<CreativeLocation[]>([]);
+  const [gigs, setGigs] = useState<NearbyGig[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [radius, setRadius] = useState(25);
   const [locationVisible, setLocationVisible] = useState(true);
@@ -106,16 +127,18 @@ const NearbyCreators = () => {
     if (!userLocation) { setLoading(false); return; }
     setLoading(true);
     try {
-      const [cr, sr, lr] = await Promise.all([
+      const [cr, sr, lr, gr] = await Promise.all([
         supabase.rpc('get_nearby_creators', { user_lat: userLocation.lat, user_lon: userLocation.lng, radius_km: radius, limit_count: 50 }),
         supabase.rpc('get_nearby_jams', { user_lat: userLocation.lat, user_lon: userLocation.lng, radius_km: radius, limit_count: 20 }),
         supabase.rpc('get_nearby_locations', { user_lat: userLocation.lat, user_lon: userLocation.lng, radius_km: radius, limit_count: 50 }),
+        supabase.rpc('get_nearby_gigs' as any, { user_lat: userLocation.lat, user_lon: userLocation.lng, radius_km: radius, limit_count: 30 }),
       ]);
       if (cr.error) throw cr.error;
       if (sr.error) throw sr.error;
       setCreators(cr.data || []);
       setSessions((sr.data || []) as NearbySession[]);
       setLocations((lr.data || []) as CreativeLocation[]);
+      setGigs((gr.data || []) as NearbyGig[]);
     } catch (error: any) {
       toast({ title: "Error loading nearby data", description: error.message, variant: "destructive" });
     } finally { setLoading(false); }
@@ -162,7 +185,14 @@ const NearbyCreators = () => {
     return r.sort((a, b) => a.distance_km - b.distance_km);
   }, [atlasFilter, locations, bookmarkedIds, searchQuery]);
 
-  const totalResults = filteredCreators.length + filteredSessions.length + filteredLocations.length;
+  const filteredGigs = useMemo(() => {
+    if (atlasFilter !== 'all' && atlasFilter !== 'gigs') return [];
+    let r = gigs;
+    if (searchQuery) { const q = searchQuery.toLowerCase(); r = r.filter(g => g.title?.toLowerCase().includes(q) || g.type?.toLowerCase().includes(q)); }
+    return r;
+  }, [atlasFilter, gigs, searchQuery]);
+
+  const totalResults = filteredCreators.length + filteredSessions.length + filteredLocations.length + filteredGigs.length;
 
   return (
     <div className="min-h-screen pb-24 md:pb-6">
@@ -232,6 +262,7 @@ const NearbyCreators = () => {
                   creators: creators.length,
                   sessions: sessions.length,
                   spots: locations.length,
+                  gigs: gigs.length,
                   bookmarked: locations.filter(l => bookmarkedIds.has(l.id)).length,
                 }} />
               </div>
@@ -289,10 +320,12 @@ const NearbyCreators = () => {
                   <div className="rounded-xl overflow-hidden border h-[55vh] sm:h-[65vh]">
                     <UnifiedNearbyMap
                       creators={filteredCreators} sessions={filteredSessions} locations={filteredLocations}
+                      gigs={filteredGigs}
                       userLocation={userLocation} selectedItem={selectedItem}
                       onSelectCreator={(c) => setSelectedItem(c ? { type: 'creator', id: c.user_id } : null)}
                       onSelectSession={(s) => { if (s) { setSelectedItem({ type: 'session', id: s.id }); setSelectedSession(s); } else setSelectedItem(null); }}
                       onSelectLocation={(l) => setSelectedItem(l ? { type: 'location', id: l.id } : null)}
+                      onSelectGig={(g) => { if (g) { setSelectedItem({ type: 'gig', id: g.id }); navigate(`/opportunity/${g.id}`); } else setSelectedItem(null); }}
                       loading={loading}
                     />
                   </div>

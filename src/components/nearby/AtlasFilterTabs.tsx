@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Users, Calendar, MapPin, Building2, Bookmark } from "lucide-react";
+import { Users, Calendar, MapPin, Building2, Bookmark, Briefcase } from "lucide-react";
 
-export type AtlasFilter = 'all' | 'creators' | 'sessions' | 'spots' | 'bookmarked';
+export type AtlasFilter = 'all' | 'creators' | 'sessions' | 'spots' | 'gigs' | 'bookmarked';
 
 interface AtlasFilterTabsProps {
   active: AtlasFilter;
@@ -10,6 +10,7 @@ interface AtlasFilterTabsProps {
     creators: number;
     sessions: number;
     spots: number;
+    gigs: number;
     bookmarked: number;
   };
 }
@@ -18,12 +19,13 @@ const TABS: { value: AtlasFilter; label: string; icon: any; countKey: keyof Atla
   { value: 'all', label: 'All', icon: MapPin, countKey: null },
   { value: 'creators', label: 'Creators', icon: Users, countKey: 'creators' },
   { value: 'sessions', label: 'Events', icon: Calendar, countKey: 'sessions' },
+  { value: 'gigs', label: 'Gigs', icon: Briefcase, countKey: 'gigs' },
   { value: 'spots', label: 'Spots', icon: Building2, countKey: 'spots' },
   { value: 'bookmarked', label: 'Saved', icon: Bookmark, countKey: 'bookmarked' },
 ];
 
 export function AtlasFilterTabs({ active, onChange, counts }: AtlasFilterTabsProps) {
-  const total = counts.creators + counts.sessions + counts.spots;
+  const total = counts.creators + counts.sessions + counts.spots + counts.gigs;
 
   return (
     <div className="flex gap-1.5 items-center whitespace-nowrap">

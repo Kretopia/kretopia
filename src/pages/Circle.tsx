@@ -171,7 +171,7 @@ export default function Circle() {
                 <h1 className="text-xl sm:text-2xl font-bold">Match</h1>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {activeTab === 'foryou' ? 'Swipe to discover & connect' : 
+                {activeTab === 'foryou' ? 'Like what catches your eye' : 
                  activeTab === 'browse' ? 'Search & browse all creators' :
                  `${connections.length} collaborator${connections.length !== 1 ? 's' : ''} in your circle`}
               </p>
@@ -190,7 +190,7 @@ export default function Circle() {
           <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Swipe
+              For You
             </TabsTrigger>
             <TabsTrigger value="browse" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <LayoutGrid className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

@@ -293,7 +293,7 @@ export const UnifiedNearbyMap = ({
 
   return (
     <Card className="overflow-hidden relative">
-      <div ref={mapContainer} className="w-full h-[500px] lg:h-[600px]" />
+      <div ref={mapContainer} className="w-full h-full" />
       
       {loading && (
         <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center">

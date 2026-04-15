@@ -13,10 +13,12 @@ import { template as applicationConfirmation } from './application-confirmation.
 import { template as newApplicantNotification } from './new-applicant-notification.tsx'
 import { template as eventRegistrationConfirmation } from './event-registration-confirmation.tsx'
 import { template as onboardingReminder } from './onboarding-reminder.tsx'
+import { template as eventReminder } from './event-reminder.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-confirmation': applicationConfirmation,
   'new-applicant-notification': newApplicantNotification,
   'event-registration-confirmation': eventRegistrationConfirmation,
   'onboarding-reminder': onboardingReminder,
+  'event-reminder': eventReminder,
 }

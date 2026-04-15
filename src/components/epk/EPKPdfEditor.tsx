@@ -96,6 +96,7 @@ export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorPro
     tagline: "",
   });
   const [creditOverrides, setCreditOverrides] = useState<Record<string, { hidden?: boolean; customRole?: string }>>({});
+  const [selectedTemplate, setSelectedTemplate] = useState<EPKTemplateId>('cinematic-dark');
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   // Reset state when data changes
@@ -147,9 +148,10 @@ export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorPro
       const modifiedData = buildModifiedData();
       
       if (isCreatorPlus) {
-        // Pass custom branding
+        // Pass custom branding + template
         const { generateEPKPdf } = await import("@/lib/epkPdfGenerator");
         await generateEPKPdf(modifiedData, {
+          templateId: selectedTemplate,
           primaryColor: hexToRgb(branding.primaryColor),
           accentColor: hexToRgb(branding.accentColor),
           darkColor: hexToRgb(branding.darkColor),

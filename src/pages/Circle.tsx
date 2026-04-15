@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
 import { PageTip } from "@/components/PageTip";
 import { AuthGate } from "@/components/AuthGate";
 import { useAuth } from "@/hooks/useAuth";

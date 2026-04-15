@@ -22,11 +22,14 @@ interface InvoicePreviewProps {
   notes: string;
   payment: PaymentConfig;
   currency?: string;
+  documentType?: "invoice" | "quote";
+  validUntil?: string;
 }
 
 export function InvoicePreview({
   branding, recipient, invoiceNumber, dueDate,
-  lineItems, taxRate, discount, notes, payment, currency = "USD"
+  lineItems, taxRate, discount, notes, payment, currency = "USD",
+  documentType = "invoice", validUntil
 }: InvoicePreviewProps) {
   const subtotal = lineItems.reduce((s, i) => s + i.amount, 0);
   const discountAmt = discount.type === "percentage" ? subtotal * (discount.value / 100) : discount.amount;

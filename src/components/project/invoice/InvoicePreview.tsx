@@ -108,7 +108,7 @@ export function InvoicePreview({
         {/* Date + Bill To Row */}
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-1.5">Bill To</p>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-1.5">{isQuote ? "Quote For" : "Bill To"}</p>
             <p className="font-semibold text-sm">{recipient.name || "Client Name"}</p>
             {recipient.email && <p className="text-xs text-muted-foreground mt-0.5">{recipient.email}</p>}
             {recipient.address && <p className="text-xs text-muted-foreground">{recipient.address}</p>}

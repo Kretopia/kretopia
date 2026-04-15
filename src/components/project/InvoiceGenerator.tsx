@@ -212,20 +212,19 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       const subtotal = calculateSubtotal();
       const tax = calculateTax();
       const total = calculateTotal();
-      const tempInvoiceNumber = `INV-${new Date().getFullYear()}-${Date.now()}`;
+      const prefix = documentType === "quote" ? "QUO" : "INV";
+      const tempNumber = `${prefix}-${new Date().getFullYear()}-${Date.now()}`;
 
-      // Find the issued_to user id from collaborators or leave null for external clients
       const issuedTo = collaborators.find(c => c.full_name === recipientName)?.user_id || collaborators[0]?.user_id || null;
 
       const invoiceData: any = {
-        invoice_number: tempInvoiceNumber,
+        invoice_number: tempNumber,
         project_id: projectId || null,
         issued_by: user?.id!,
         issued_to: issuedTo || user?.id!,
         amount: subtotal,
         tax_rate: parseFloat(taxRate),
-        
-        due_date: dueDate || null,
+        due_date: documentType === "invoice" ? (dueDate || null) : null,
         notes,
         line_items: lineItems as any,
         status: "draft",
@@ -245,19 +244,21 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         discount_type: discountType || null,
         discount_value: parseFloat(discountValue) || 0,
         discount_amount: calculateDiscount(),
+        document_type: documentType,
+        valid_until: documentType === "quote" ? (validUntil || null) : null,
       };
 
       const { error } = await supabase.from("invoices").insert(invoiceData);
       if (error) throw error;
 
-      toast.success("Invoice created successfully!");
+      toast.success(`${documentType === "quote" ? "Quote" : "Invoice"} created successfully!`);
       setShowCreateDialog(false);
       setCreateStep("details");
       fetchInvoices();
       resetForm();
     } catch (error) {
-      console.error("Error creating invoice:", error);
-      toast.error("Failed to create invoice");
+      console.error("Error creating document:", error);
+      toast.error(`Failed to create ${documentType}`);
     } finally {
       setLoading(false);
     }

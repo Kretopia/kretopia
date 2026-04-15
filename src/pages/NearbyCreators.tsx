@@ -28,8 +28,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-
-// MapItemType imported from UnifiedNearbyMap
+import { useConnectedUsers } from "@/hooks/useConnectedUsers";
+import { useUserBlocks } from "@/hooks/useUserBlocks";
 
 
 const NearbyCreators = () => {
@@ -57,6 +57,8 @@ const NearbyCreators = () => {
   const [atlasFilter, setAtlasFilter] = useState<AtlasFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const { bookmarkedIds, toggleBookmark } = useLocationBookmarks();
+  const { connectedIds, isConnected } = useConnectedUsers();
+  const { isBlocked, refetch: refetchBlocks } = useUserBlocks();
 
   useEffect(() => {
     analytics.pageView("nearby-creators");
@@ -141,13 +143,13 @@ const NearbyCreators = () => {
     navigate(data ? `/messages?match=${data.id}` : `/profile/${userId}`);
   };
 
-  // Simplified filtering
+  // Simplified filtering — exclude blocked users
   const filteredCreators = useMemo(() => {
     if (atlasFilter !== 'all' && atlasFilter !== 'creators') return [];
-    let r = creators;
+    let r = creators.filter(c => !isBlocked(c.user_id));
     if (searchQuery) { const q = searchQuery.toLowerCase(); r = r.filter(c => c.full_name?.toLowerCase().includes(q) || c.role?.toLowerCase().includes(q)); }
     return r;
-  }, [atlasFilter, creators, searchQuery]);
+  }, [atlasFilter, creators, searchQuery, isBlocked]);
 
   const filteredSessions = useMemo(() => {
     if (atlasFilter !== 'all' && atlasFilter !== 'sessions') return [];
@@ -296,6 +298,7 @@ const NearbyCreators = () => {
                       onSelectSession={(s) => { if (s) { setSelectedItem({ type: 'session', id: s.id }); setSelectedSession(s); } else setSelectedItem(null); }}
                       onSelectLocation={(l) => setSelectedItem(l ? { type: 'location', id: l.id } : null)}
                       loading={loading}
+                      connectedIds={connectedIds}
                     />
                   </div>
                 </div>
@@ -308,19 +311,23 @@ const NearbyCreators = () => {
                         <Users className="h-3 w-3 inline mr-1" />{filteredCreators.length} Creators
                       </h3>
                       <div className="space-y-1.5">
-                        {filteredCreators.slice(0, 8).map(c => (
-                          <button key={c.user_id}
-                            onClick={() => setSelectedItem({ type: 'creator', id: c.user_id })}
-                            className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-colors hover:bg-muted/50 ${selectedItem?.id === c.user_id ? 'bg-primary/5 border border-primary/20' : ''}`}>
-                            <div className="h-8 w-8 rounded-full overflow-hidden bg-muted shrink-0">
-                              {c.avatar_url ? <img src={c.avatar_url} className="h-full w-full object-cover" /> : <div className="h-full w-full flex items-center justify-center text-xs font-medium">{c.full_name?.charAt(0)}</div>}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-medium truncate">{c.full_name}</p>
-                              <p className="text-[10px] text-muted-foreground truncate">{c.role} • {formatDistance(c.distance_km)}</p>
-                            </div>
-                          </button>
-                        ))}
+                        {filteredCreators.slice(0, 8).map(c => {
+                          const connected = isConnected(c.user_id);
+                          const displayName = connected ? c.full_name : `${c.full_name?.split(' ')[0]?.[0] || ''}***`;
+                          return (
+                            <button key={c.user_id}
+                              onClick={() => setSelectedItem({ type: 'creator', id: c.user_id })}
+                              className={`w-full flex items-center gap-2.5 p-2 rounded-lg text-left transition-colors hover:bg-muted/50 ${selectedItem?.id === c.user_id ? 'bg-primary/5 border border-primary/20' : ''}`}>
+                              <div className="h-8 w-8 rounded-full overflow-hidden bg-muted shrink-0">
+                                {connected && c.avatar_url ? <img src={c.avatar_url} className="h-full w-full object-cover" /> : <div className="h-full w-full flex items-center justify-center text-xs font-medium">{c.full_name?.charAt(0)}</div>}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-medium truncate">{displayName}</p>
+                                <p className="text-[10px] text-muted-foreground truncate">{c.role} • {formatDistance(c.distance_km)}</p>
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -392,7 +399,7 @@ const NearbyCreators = () => {
                   ) : (
                     <div className="space-y-2">
                       {filteredCreators.slice(0, 5).map(c => (
-                        <CreatorCard key={c.user_id} creator={c} onViewProfile={handleViewProfile} onMessage={handleMessage} />
+                        <CreatorCard key={c.user_id} creator={c} onViewProfile={handleViewProfile} onMessage={handleMessage} isConnected={isConnected(c.user_id)} onBlocked={refetchBlocks} />
                       ))}
                       {filteredSessions.slice(0, 5).map(s => (
                         <SessionCard key={s.id} session={s} onJoin={fetchNearbyData} onClick={() => setSelectedSession(s)} />
@@ -423,7 +430,7 @@ const NearbyCreators = () => {
                   </Card>
                 ) : (
                   <>
-                    {filteredCreators.map(c => <CreatorCard key={c.user_id} creator={c} onViewProfile={handleViewProfile} onMessage={handleMessage} />)}
+                    {filteredCreators.map(c => <CreatorCard key={c.user_id} creator={c} onViewProfile={handleViewProfile} onMessage={handleMessage} isConnected={isConnected(c.user_id)} onBlocked={refetchBlocks} />)}
                     {filteredSessions.map(s => <SessionCard key={s.id} session={s} onJoin={fetchNearbyData} onClick={() => setSelectedSession(s)} />)}
                     {filteredLocations.map(loc => (
                       <LocationListItem key={loc.id} location={loc} isSelected={false} onClick={() => setSelectedLocation(loc)}

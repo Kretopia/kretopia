@@ -706,6 +706,13 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   };
   const currencySymbol = getCurrencySymbol(currency);
 
+  const filteredInvoices = invoices.filter(inv => {
+    if (listFilter === "all") return true;
+    return (inv.document_type || "invoice") === listFilter;
+  });
+
+  const docLabel = documentType === "quote" ? "Quote" : "Invoice";
+
   return (
     <>
       {/* Invoice List Dialog */}
@@ -713,22 +720,40 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         <DialogTrigger asChild>
           <Button variant="outline" size="sm">
             <FileText className="h-4 w-4 mr-2" />
-            Invoices {invoices.length > 0 && `(${invoices.length})`}
+            Invoices & Quotes {invoices.length > 0 && `(${invoices.length})`}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Invoice Manager
+              Invoice & Quote Manager
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto">
-            <Button size="sm" className="w-full mb-4 gap-2" onClick={() => { setEditingInvoiceId(null); resetForm(); setShowCreateDialog(true); }}>
-              <Plus className="h-4 w-4" />
-              Create Professional Invoice
+          {/* Filter Tabs */}
+          <div className="flex items-center gap-2 mb-3">
+            {(["all", "invoice", "quote"] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setListFilter(f)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all border ${
+                  listFilter === f
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted text-muted-foreground border-transparent hover:border-border"
+                }`}
+              >
+                {f === "all" ? "All" : f === "invoice" ? "Invoices" : "Quotes"}
+              </button>
+            ))}
+            <div className="flex-1" />
+            <Button size="sm" className="gap-1.5" onClick={() => { setEditingInvoiceId(null); resetForm(); setDocumentType("invoice"); setShowCreateDialog(true); }}>
+              <Plus className="h-3.5 w-3.5" /> Invoice
             </Button>
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => { setEditingInvoiceId(null); resetForm(); setDocumentType("quote"); setShowCreateDialog(true); }}>
+              <ScrollText className="h-3.5 w-3.5" /> Quote
+            </Button>
+          </div>
 
             {/* Invoice List */}
             {invoices.length === 0 ? (

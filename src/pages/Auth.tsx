@@ -21,6 +21,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<string>("signup");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");

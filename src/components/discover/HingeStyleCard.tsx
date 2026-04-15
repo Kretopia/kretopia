@@ -149,7 +149,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
           </div>
         )}
 
-        {/* Top Credits — each is likeable */}
+        {/* Top Credits — view profile instead of auto-liking */}
         {credits.length > 0 && (
           <div>
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 font-medium">Verified Work</p>
@@ -157,7 +157,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
               {credits.slice(0, expanded ? 4 : 2).map((credit) => (
                 <button
                   key={credit.id}
-                  onClick={() => onLike(profile, { type: 'credit', label: `${credit.role} on "${credit.project_name}"` })}
+                  onClick={() => onViewProfile(profile)}
                   className="group w-full flex items-center gap-2.5 p-2 rounded-lg hover:bg-primary/5 transition-colors text-left"
                 >
                   <div className="h-10 w-10 rounded-lg bg-muted overflow-hidden shrink-0">
@@ -176,7 +176,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
                   {credit.verification_status === 'verified' && (
                     <Badge variant="outline" className="text-[8px] h-4 shrink-0 border-green-500/30 text-green-600">✓</Badge>
                   )}
-                  <Heart className="h-3.5 w-3.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                  <Eye className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </button>
               ))}
               {credits.length > 2 && (

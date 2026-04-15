@@ -38,32 +38,17 @@ interface NearbySession {
   created_by: string;
 }
 
-interface NearbyGig {
-  id: string;
-  title: string;
-  type: string;
-  compensation: string | null;
-  location: string | null;
-  latitude: number;
-  longitude: number;
-  distance_km: number;
-  creator_name: string | null;
-  creator_avatar: string | null;
-}
-
-export type MapItemType = 'creator' | 'session' | 'location' | 'gig';
+export type MapItemType = 'creator' | 'session' | 'location';
 
 interface UnifiedNearbyMapProps {
   creators: NearbyCreator[];
   sessions: NearbySession[];
   locations: CreativeLocation[];
-  gigs?: NearbyGig[];
   userLocation: { lat: number; lng: number };
   selectedItem: { type: MapItemType; id: string } | null;
   onSelectCreator: (creator: NearbyCreator | null) => void;
   onSelectSession: (session: NearbySession | null) => void;
   onSelectLocation: (location: CreativeLocation | null) => void;
-  onSelectGig?: (gig: NearbyGig | null) => void;
   loading?: boolean;
 }
 
@@ -93,13 +78,11 @@ export const UnifiedNearbyMap = ({
   creators,
   sessions,
   locations,
-  gigs = [],
   userLocation,
   selectedItem,
   onSelectCreator,
   onSelectSession,
   onSelectLocation,
-  onSelectGig,
   loading,
 }: UnifiedNearbyMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -107,7 +90,6 @@ export const UnifiedNearbyMap = ({
   const creatorMarkers = useRef<mapboxgl.Marker[]>([]);
   const sessionMarkers = useRef<mapboxgl.Marker[]>([]);
   const locationMarkers = useRef<mapboxgl.Marker[]>([]);
-  const gigMarkers = useRef<mapboxgl.Marker[]>([]);
   const userMarker = useRef<mapboxgl.Marker | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 

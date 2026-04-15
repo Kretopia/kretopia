@@ -326,8 +326,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     }
   };
 
-  const handleDuplicateInvoice = (invoice: any) => {
-    // Pre-fill form with existing invoice data
+  const loadInvoiceData = (invoice: any) => {
     setRecipientName(invoice.recipient_name || "");
     setRecipientEmail(invoice.recipient_email || "");
     setRecipientAddress(invoice.recipient_address || "");
@@ -355,10 +354,16 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       payment_details: invoice.payment_details || {},
       terms_conditions: invoice.terms_conditions || "",
     });
+    setDocumentType(invoice.document_type || "invoice");
+    setValidUntil(invoice.valid_until || "");
+  };
+
+  const handleDuplicateInvoice = (invoice: any) => {
+    loadInvoiceData(invoice);
     setEditingInvoiceId(null);
     setCreateStep("details");
     setShowCreateDialog(true);
-    toast.success("Invoice data loaded for duplication");
+    toast.success(`${(invoice.document_type || "invoice") === "quote" ? "Quote" : "Invoice"} data loaded for duplication`);
   };
 
   const handleEditInvoice = (invoice: any) => {

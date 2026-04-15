@@ -143,13 +143,13 @@ const NearbyCreators = () => {
     navigate(data ? `/messages?match=${data.id}` : `/profile/${userId}`);
   };
 
-  // Simplified filtering
+  // Simplified filtering — exclude blocked users
   const filteredCreators = useMemo(() => {
     if (atlasFilter !== 'all' && atlasFilter !== 'creators') return [];
-    let r = creators;
+    let r = creators.filter(c => !isBlocked(c.user_id));
     if (searchQuery) { const q = searchQuery.toLowerCase(); r = r.filter(c => c.full_name?.toLowerCase().includes(q) || c.role?.toLowerCase().includes(q)); }
     return r;
-  }, [atlasFilter, creators, searchQuery]);
+  }, [atlasFilter, creators, searchQuery, isBlocked]);
 
   const filteredSessions = useMemo(() => {
     if (atlasFilter !== 'all' && atlasFilter !== 'sessions') return [];

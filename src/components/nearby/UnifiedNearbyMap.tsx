@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";
 import { fuzzyCoordinates } from "@/lib/fuzzyLocation";
+import { getMaskedName } from "./NearbyCreatorCard";
 
 interface NearbyCreator {
   user_id: string;
@@ -50,6 +51,7 @@ interface UnifiedNearbyMapProps {
   onSelectSession: (session: NearbySession | null) => void;
   onSelectLocation: (location: CreativeLocation | null) => void;
   loading?: boolean;
+  connectedIds?: Set<string>;
 }
 
 const LOCATION_TYPE_EMOJI: Record<string, string> = {
@@ -59,8 +61,8 @@ const LOCATION_TYPE_EMOJI: Record<string, string> = {
   venue: '',
   music_store: '',
   art_supply: '🛒',
-  rental_house: '',
   photo_lab: '📷',
+  rental_house: '',
 };
 
 const LOCATION_TYPE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
@@ -84,6 +86,7 @@ export const UnifiedNearbyMap = ({
   onSelectSession,
   onSelectLocation,
   loading,
+  connectedIds = new Set(),
 }: UnifiedNearbyMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -130,7 +133,7 @@ export const UnifiedNearbyMap = ({
     }
   }, [userLocation]);
 
-  // Creator markers with fuzzy location
+  // Creator markers with fuzzy location + privacy masking
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
     creatorMarkers.current.forEach((m) => m.remove());
@@ -138,16 +141,20 @@ export const UnifiedNearbyMap = ({
 
     creators.forEach((creator) => {
       const fuzzy = fuzzyCoordinates(creator.latitude, creator.longitude, creator.user_id, creator.location_precision || 'approximate');
+      const connected = connectedIds.has(creator.user_id);
+      const displayName = getMaskedName(creator.full_name, connected);
       
       const el = document.createElement("div");
       el.className = "creator-marker cursor-pointer";
       const isSelected = selectedItem?.type === 'creator' && selectedItem?.id === creator.user_id;
+      
+      // Connected users: show avatar. Non-connected: show initial only
       el.innerHTML = `
         <div class="relative transition-transform ${isSelected ? 'scale-125' : 'hover:scale-110'}">
           <div class="absolute -inset-1 rounded-full ${isSelected ? 'bg-cyan-400/40 animate-pulse' : 'bg-cyan-500/20'}"></div>
           <div class="relative h-10 w-10 rounded-full overflow-hidden border-2 ${isSelected ? 'border-cyan-400 shadow-lg shadow-cyan-400/30' : 'border-cyan-500'} bg-background">
-            ${creator.avatar_url 
-              ? `<img src="${creator.avatar_url}" alt="${creator.full_name}" class="h-full w-full object-cover" />`
+            ${connected && creator.avatar_url 
+              ? `<img src="${creator.avatar_url}" alt="${displayName}" class="h-full w-full object-cover" />`
               : `<div class="h-full w-full flex items-center justify-center bg-cyan-500/10 text-cyan-500 font-semibold">${creator.full_name?.charAt(0) || 'U'}</div>`
             }
           </div>
@@ -161,17 +168,18 @@ export const UnifiedNearbyMap = ({
             <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
             <span class="text-[10px] uppercase tracking-wide text-cyan-600 font-medium">Creator</span>
           </div>
-          <p class="font-semibold text-sm">${creator.full_name}</p>
+          <p class="font-semibold text-sm">${displayName}</p>
           <p class="text-xs text-gray-500">${creator.role}</p>
           <p class="text-xs text-cyan-600 mt-1">~${creator.distance_km < 1 ? `${Math.round(creator.distance_km * 1000)}m` : `${creator.distance_km.toFixed(1)}km`} away</p>
           <p class="text-[9px] text-gray-400 mt-0.5 italic">Approximate location</p>
+          ${!connected ? '<p class="text-[9px] text-cyan-500 mt-1">Connect to see full profile</p>' : ''}
         </div>
       `);
 
       const marker = new mapboxgl.Marker(el).setLngLat([fuzzy.lng, fuzzy.lat]).setPopup(popup).addTo(map.current!);
       creatorMarkers.current.push(marker);
     });
-  }, [creators, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation]);
+  }, [creators, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation, connectedIds]);
 
   // Session markers
   useEffect(() => {
@@ -199,17 +207,19 @@ export const UnifiedNearbyMap = ({
           <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center shadow-sm">${session.participant_count}</div>
         </div>
       `;
+
       el.addEventListener("click", () => { onSelectSession(session); onSelectCreator(null); onSelectLocation(null); });
 
       const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-        <div class="p-2 min-w-[180px]">
+        <div class="p-2 min-w-[160px]">
           <div class="flex items-center gap-1 mb-1">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span class="text-[10px] uppercase tracking-wide text-amber-600 font-medium">Session</span>
+            <span class="text-[10px] uppercase tracking-wide text-amber-600 font-medium">Event</span>
           </div>
           <p class="font-semibold text-sm">${session.title}</p>
-          <p class="text-xs text-gray-500">${session.category} • ${session.venue_name || 'TBD'}</p>
-          <p class="text-xs text-amber-600 mt-1">${dateStr} at ${timeStr}</p>
+          <p class="text-xs text-gray-500 mt-0.5">${dateStr} · ${timeStr}</p>
+          <p class="text-xs text-gray-500">${session.venue_name || ''}</p>
+          <p class="text-xs text-amber-600 mt-1">${session.participant_count}/${session.max_participants} joined</p>
         </div>
       `);
 
@@ -224,124 +234,47 @@ export const UnifiedNearbyMap = ({
     locationMarkers.current.forEach((m) => m.remove());
     locationMarkers.current = [];
 
-    locations.forEach((loc) => {
+    locations.forEach((location) => {
       const el = document.createElement("div");
       el.className = "location-marker cursor-pointer";
-      const isSelected = selectedItem?.type === 'location' && selectedItem?.id === loc.id;
-      const emoji = LOCATION_TYPE_EMOJI[loc.location_type] || '';
-      const colors = LOCATION_TYPE_COLORS[loc.location_type] || LOCATION_TYPE_COLORS.shoot_spot;
-      
+      const isSelected = selectedItem?.type === 'location' && selectedItem?.id === location.id;
+      const emoji = LOCATION_TYPE_EMOJI[location.location_type] || '📍';
+
       el.innerHTML = `
         <div class="relative transition-transform ${isSelected ? 'scale-125' : 'hover:scale-110'}">
-          <div class="absolute -inset-1 rounded-lg ${isSelected ? 'bg-primary/30 animate-pulse' : 'bg-primary/10'}"></div>
-          <div class="relative h-10 w-10 rounded-lg overflow-hidden border-2 ${isSelected ? 'border-primary shadow-lg' : `${colors.border}`} bg-background flex items-center justify-center">
-            ${loc.cover_image_url 
-              ? `<img src="${loc.cover_image_url}" alt="${loc.name}" class="h-full w-full object-cover" />`
-              : `<span class="text-lg">${emoji}</span>`
-            }
+          <div class="absolute -inset-1 rounded-lg ${isSelected ? 'bg-emerald-400/40 animate-pulse' : 'bg-emerald-500/15'}"></div>
+          <div class="relative h-9 w-9 rounded-lg overflow-hidden border-2 ${isSelected ? 'border-emerald-400 shadow-lg shadow-emerald-400/30' : 'border-emerald-500/60'} bg-background flex items-center justify-center text-base">
+            ${emoji}
           </div>
-          ${(loc.average_rating ?? 0) > 0 ? `<div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center shadow-sm">★</div>` : ''}
         </div>
       `;
-      el.addEventListener("click", () => { onSelectLocation(loc); onSelectCreator(null); onSelectSession(null); });
 
-      const ratingHtml = (loc.average_rating ?? 0) > 0 
-        ? `<span class="text-xs text-amber-500">★ ${Number(loc.average_rating).toFixed(1)} (${loc.review_count})</span>` 
-        : '';
-      const priceHtml = loc.is_rentable && loc.price_per_hour 
-        ? `<p class="text-xs text-emerald-600 mt-0.5">$${loc.price_per_hour}/${loc.price_currency || 'USD'}/hr</p>` 
-        : '';
+      el.addEventListener("click", () => { onSelectLocation(location); onSelectCreator(null); onSelectSession(null); });
 
       const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-        <div class="p-2 min-w-[180px]">
+        <div class="p-2 min-w-[150px]">
           <div class="flex items-center gap-1 mb-1">
-            <span class="text-xs">${emoji}</span>
-            <span class="text-[10px] uppercase tracking-wide font-medium ${colors.text}">${loc.location_type.replace('_', ' ')}</span>
+            <span class="text-sm">${emoji}</span>
+            <span class="text-[10px] uppercase tracking-wide text-emerald-600 font-medium">${location.location_type.replace('_', ' ')}</span>
           </div>
-          <p class="font-semibold text-sm">${loc.name}</p>
-          <p class="text-xs text-gray-500">${loc.address || loc.city || ''}</p>
-          <div class="flex items-center gap-2 mt-1">${ratingHtml}</div>
-          ${priceHtml}
-          <p class="text-xs text-gray-400 mt-0.5">${loc.distance_km < 1 ? `${Math.round(loc.distance_km * 1000)}m` : `${loc.distance_km.toFixed(1)}km`} away</p>
+          <p class="font-semibold text-sm">${location.name}</p>
+          ${location.address ? `<p class="text-xs text-gray-500 mt-0.5">${location.address}</p>` : ''}
+          ${location.average_rating ? `<p class="text-xs text-amber-500 mt-1">⭐ ${location.average_rating.toFixed(1)}</p>` : ''}
         </div>
       `);
 
-      const marker = new mapboxgl.Marker(el).setLngLat([loc.longitude, loc.latitude]).setPopup(popup).addTo(map.current!);
+      const marker = new mapboxgl.Marker(el).setLngLat([location.longitude, location.latitude]).setPopup(popup).addTo(map.current!);
       locationMarkers.current.push(marker);
     });
   }, [locations, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation]);
 
-  // Fly to selected item
-  useEffect(() => {
-    if (!map.current || !selectedItem) return;
-    let center: [number, number] | null = null;
-    if (selectedItem.type === 'creator') {
-      const c = creators.find(c => c.user_id === selectedItem.id);
-      if (c) {
-        const fuzzy = fuzzyCoordinates(c.latitude, c.longitude, c.user_id, c.location_precision || 'approximate');
-        center = [fuzzy.lng, fuzzy.lat];
-      }
-    } else if (selectedItem.type === 'session') {
-      const s = sessions.find(s => s.id === selectedItem.id);
-      if (s) center = [s.longitude, s.latitude];
-    } else if (selectedItem.type === 'location') {
-      const l = locations.find(l => l.id === selectedItem.id);
-      if (l) center = [l.longitude, l.latitude];
-    }
-    if (center) map.current.flyTo({ center, zoom: 14, duration: 1000 });
-  }, [selectedItem, creators, sessions, locations]);
+  if (loading) {
+    return (
+      <Card className="h-full flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </Card>
+    );
+  }
 
-  return (
-    <Card className="overflow-hidden relative">
-      <div ref={mapContainer} className="w-full h-full" />
-      
-      {loading && (
-        <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      )}
-
-      {/* Map Legend */}
-      <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 text-xs space-y-1.5 shadow-md border border-border">
-        <div className="flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-primary border border-primary-foreground"></div>
-          <span className="text-foreground">You</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded-full bg-muted border-2 border-cyan-500/60"></div>
-          <span className="text-foreground">Creators ({creators.length})</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded-full bg-muted border-2 border-dashed border-amber-500"></div>
-          <span className="text-foreground">Events ({sessions.length})</span>
-        </div>
-        {locations.length > 0 && (
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-4 rounded-lg bg-muted border-2 border-primary/40 text-[8px] flex items-center justify-center"></div>
-            <span className="text-foreground">Spots ({locations.length})</span>
-          </div>
-        )}
-        <div className="pt-1 border-t border-border mt-1">
-          <span className="text-muted-foreground">📍 Approximate locations</span>
-        </div>
-      </div>
-      
-      {/* Counts */}
-      <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
-        <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-cyan-500/60"></span>
-          <span className="text-foreground">{creators.length} creators</span>
-        </div>
-        <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-          <span className="text-foreground">{sessions.length} events</span>
-        </div>
-        {locations.length > 0 && (
-          <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
-            <span className="text-foreground">{locations.length} spots</span>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
+  return <div ref={mapContainer} className="w-full h-full" />;
 };

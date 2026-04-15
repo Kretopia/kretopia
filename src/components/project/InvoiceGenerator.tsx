@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingForm";
 import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
 import { InvoicePreview } from "./invoice/InvoicePreview";
-import { AIMarkupHelper } from "./invoice/AIMarkupHelper";
+
 import { PricingCoPilot } from "./invoice/PricingCoPilot";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
 

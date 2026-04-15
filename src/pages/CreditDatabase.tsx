@@ -10,7 +10,7 @@ import {
   Search, Film, ShieldCheck, ExternalLink, Loader2, Users,
   Database, MapPin, Building2, CalendarDays, Sparkles,
   UserPlus, Globe, Music, Palette, Theater, Camera, Tv,
-  TrendingUp, Play, Star, List,
+  TrendingUp, Play, Star, List, Fingerprint,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";

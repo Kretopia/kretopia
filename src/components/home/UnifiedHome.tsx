@@ -87,8 +87,8 @@ export const UnifiedHome = () => {
 
       const mySkills: string[] = [];
       if (myProfile) {
-        const extractSkills = (skills: any) => {
-          if (Array.isArray(skills)) return skills.filter((s: any) => typeof s === 'string');
+      const extractSkills = (skills: any): string[] => {
+          if (Array.isArray(skills)) return skills.map((s: any) => typeof s === 'string' ? s : (s?.skill || '')).filter(Boolean);
           if (skills && typeof skills === 'object') return Object.keys(skills);
           return [];
         };
@@ -110,7 +110,7 @@ export const UnifiedHome = () => {
 
       let gigsQuery = supabase
         .from("opportunities")
-        .select("id, title, type, location, created_at, skills_required")
+        .select("id, title, type, location, created_at, skills")
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(10);
@@ -169,7 +169,7 @@ export const UnifiedHome = () => {
             let relevance = 0;
             const title = (g.title || "").toLowerCase();
             const type = (g.type || "").toLowerCase();
-            const required = Array.isArray(g.skills_required) ? g.skills_required.map((s: string) => s.toLowerCase()) : [];
+            const required = Array.isArray(g.skills) ? g.skills.map((s: string) => (s || '').toLowerCase()) : [];
             skillsLower.forEach(sk => {
               if (required.some((r: string) => r.includes(sk) || sk.includes(r))) relevance += 3;
               if (title.includes(sk)) relevance += 2;

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
 import { PageTip } from "@/components/PageTip";
 import { AuthGate } from "@/components/AuthGate";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,7 +36,8 @@ export default function Circle() {
   const [filters, setFilters] = useState<SwipeFiltersState>(DEFAULT_SWIPE_FILTERS);
   const [profilesCount, setProfilesCount] = useState(0);
   const [accountType, setAccountType] = useState<string>("individual");
-  
+  const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
+  const [showMatchDialog, setShowMatchDialog] = useState(false);
 
   // Fetch account type
   useEffect(() => {
@@ -121,9 +123,11 @@ export default function Circle() {
     if (activeTab === 'network' && user?.id) fetchConnections();
   }, [activeTab, user?.id, fetchConnections]);
 
-  const handleMatch = async (matchedUserData: { name: string; avatar: string; role: string; userId: string }) => {
+   const handleMatch = async (matchedUserData: { name: string; avatar: string; role: string; userId: string }) => {
     const { analytics } = await import("@/lib/analytics");
     analytics.match(matchedUserData.userId);
+    setMatchedUser(matchedUserData);
+    setShowMatchDialog(true);
   };
 
   const handleMessage = (userId: string) => navigate(`/messages?user=${userId}`);
@@ -252,6 +256,14 @@ export default function Circle() {
       </div>
 
       <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
+      {matchedUser && (
+        <MatchCelebrationDialog
+          open={showMatchDialog}
+          onOpenChange={setShowMatchDialog}
+          matchedUser={matchedUser}
+          onSendMessage={() => navigate(`/messages?user=${matchedUser.userId}`)}
+        />
+      )}
     </div>
     </PageTransition>
   );

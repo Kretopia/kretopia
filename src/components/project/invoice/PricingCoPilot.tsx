@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Sparkles, Send, Check, RefreshCw, ArrowRight, X, MessageSquare, Wand2 } from "lucide-react";
+import { Sparkles, Send, Check, RefreshCw, ArrowRight, X, Wand2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface LineItem {
   description: string;
@@ -23,29 +24,46 @@ interface ChatMessage {
   };
 }
 
+interface DocumentDetails {
+  client_name?: string;
+  client_email?: string;
+  client_address?: string;
+  currency?: string;
+  tax_rate?: number;
+  due_date?: string;
+  valid_until?: string;
+  notes?: string;
+}
+
 interface PricingCoPilotProps {
   lineItems: LineItem[];
   currency: string;
+  documentType: "invoice" | "quote";
   onApplyLineItems: (items: LineItem[]) => void;
   onApplyNotes?: (notes: string) => void;
   onApplyTerms?: (terms: string) => void;
   onApplyTaxRate?: (rate: number) => void;
   onApplyDescriptions?: (enhanced: { original: string; enhanced: string; suggested_rate?: number }[]) => void;
+  onApplyDocumentDetails?: (details: DocumentDetails) => void;
 }
 
 export function PricingCoPilot({
   lineItems,
   currency,
+  documentType,
   onApplyLineItems,
   onApplyNotes,
   onApplyTerms,
   onApplyTaxRate,
   onApplyDescriptions,
+  onApplyDocumentDetails,
 }: PricingCoPilotProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [detailsSummary, setDetailsSummary] = useState<DocumentDetails | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -54,7 +72,7 @@ export function PricingCoPilot({
   }, [messages]);
 
   const getCurrencySymbol = (c: string) => {
-    const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", JPY: "¥", INR: "₹", NGN: "₦", TTD: "TT$", CAD: "C$", AUD: "A$", AED: "د.إ" };
+    const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", JPY: "¥", INR: "₹", NGN: "₦", TTD: "TT$", CAD: "C$", AUD: "A$", AED: "د.إ", IDR: "Rp" };
     return symbols[c] || `${c} `;
   };
   const sym = getCurrencySymbol(currency);
@@ -69,7 +87,8 @@ export function PricingCoPilot({
     setIsLoading(true);
 
     let assistantContent = "";
-    let pendingToolCall: { name: string; args: string } | null = null;
+    let pendingToolCalls: { name: string; args: string }[] = [];
+    let currentToolIdx = -1;
 
     try {
       const resp = await fetch(
@@ -83,7 +102,9 @@ export function PricingCoPilot({
           body: JSON.stringify({
             messages: allMessages.map(m => ({ role: m.role, content: m.content })),
             currency,
+            document_type: documentType,
             existing_items: lineItems.filter(i => i.description),
+            current_details: detailsSummary,
           }),
         }
       );
@@ -129,38 +150,68 @@ export function PricingCoPilot({
                 return [...prev, { role: "assistant", content: assistantContent }];
               });
             }
-            // Handle tool calls
-            if (delta?.tool_calls?.[0]) {
-              const tc = delta.tool_calls[0];
-              if (tc.function?.name) {
-                pendingToolCall = { name: tc.function.name, args: "" };
-              }
-              if (tc.function?.arguments && pendingToolCall) {
-                pendingToolCall.args += tc.function.arguments;
+            if (delta?.tool_calls) {
+              for (const tc of delta.tool_calls) {
+                if (tc.index !== undefined && tc.index !== currentToolIdx) {
+                  currentToolIdx = tc.index;
+                  pendingToolCalls.push({ name: tc.function?.name || "", args: "" });
+                }
+                if (tc.function?.name && pendingToolCalls[pendingToolCalls.length - 1]) {
+                  pendingToolCalls[pendingToolCalls.length - 1].name = tc.function.name;
+                }
+                if (tc.function?.arguments && pendingToolCalls.length > 0) {
+                  pendingToolCalls[pendingToolCalls.length - 1].args += tc.function.arguments;
+                }
               }
             }
           } catch {
-            // partial JSON, wait for more
+            // partial JSON
           }
         }
       }
 
-      // Process tool call
-      if (pendingToolCall) {
+      // Process tool calls
+      for (const ptc of pendingToolCalls) {
+        if (!ptc.name || !ptc.args) continue;
         try {
-          const toolData = JSON.parse(pendingToolCall.args);
-          const toolMsg: ChatMessage = {
-            role: "assistant",
-            content: assistantContent || "Here's what I've prepared for you:",
-            toolCall: { name: pendingToolCall.name, data: toolData },
-          };
-          setMessages(prev => {
-            const last = prev[prev.length - 1];
-            if (last?.role === "assistant") {
-              return prev.map((m, i) => (i === prev.length - 1 ? toolMsg : m));
+          const toolData = JSON.parse(ptc.args);
+          
+          if (ptc.name === "set_document_details") {
+            setDetailsSummary(prev => ({ ...prev, ...toolData }));
+            setShowSummary(true);
+            // Auto-apply details
+            if (onApplyDocumentDetails) {
+              onApplyDocumentDetails(toolData);
             }
-            return [...prev, toolMsg];
-          });
+            const detailsList = Object.entries(toolData)
+              .filter(([, v]) => v !== undefined && v !== null && v !== "")
+              .map(([k, v]) => `**${k.replace(/_/g, " ")}**: ${v}`)
+              .join("\n");
+            const detailsMsg = assistantContent
+              ? assistantContent
+              : `✅ Got it! I've captured these details:\n\n${detailsList}\n\nYou can edit these anytime from the summary above.`;
+            setMessages(prev => {
+              const last = prev[prev.length - 1];
+              if (last?.role === "assistant") {
+                return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: detailsMsg } : m);
+              }
+              return [...prev, { role: "assistant", content: detailsMsg }];
+            });
+            toast.success("Document details updated");
+          } else {
+            const toolMsg: ChatMessage = {
+              role: "assistant",
+              content: assistantContent || "Here's what I've prepared for you:",
+              toolCall: { name: ptc.name, data: toolData },
+            };
+            setMessages(prev => {
+              const last = prev[prev.length - 1];
+              if (last?.role === "assistant") {
+                return prev.map((m, i) => (i === prev.length - 1 ? toolMsg : m));
+              }
+              return [...prev, toolMsg];
+            });
+          }
         } catch (e) {
           console.error("Failed to parse tool call:", e);
         }
@@ -193,7 +244,6 @@ export function PricingCoPilot({
       onApplyDescriptions(enhanced);
       toast.success("Descriptions enhanced!");
     } else {
-      // Fallback: update line items with enhanced descriptions
       const updated = lineItems.map(item => {
         const match = enhanced.find((e: any) => e.original === item.description);
         if (match) {
@@ -211,11 +261,13 @@ export function PricingCoPilot({
     }
   };
 
+  const docLabel = documentType === "quote" ? "quote" : "invoice";
+
   const quickPrompts = [
-    { label: "Break down my project", prompt: "I need help breaking down my project into professional line items. Let me describe what I'm working on..." },
-    { label: "Suggest markups", prompt: `I have my supplier/subcontractor costs. Can you help me calculate appropriate markups for my client quote in ${currency}?` },
-    { label: "Enhance descriptions", prompt: "Can you improve my current line item descriptions to sound more professional?" },
-    { label: "Suggest terms", prompt: "What payment terms and conditions should I include for a creative services quote?" },
+    { label: "💬 Help me price this", prompt: `I need help creating a ${docLabel}. Let me tell you about the project and my costs...` },
+    { label: "📊 Calculate markups", prompt: `I have my supplier/subcontractor costs. Help me calculate competitive markups for my client ${docLabel} in ${currency}.` },
+    { label: "✍️ Enhance descriptions", prompt: "Can you improve my current line item descriptions to sound more professional?" },
+    { label: "📝 Full ${docLabel} from scratch", prompt: `I want to create a complete ${docLabel} from scratch. I'll describe the project and client — help me with everything from line items to terms.` },
   ];
 
   if (!isOpen) {
@@ -229,7 +281,7 @@ export function PricingCoPilot({
         </div>
         <div className="text-left flex-1">
           <p className="text-sm font-semibold">ThriveQuote AI</p>
-          <p className="text-[11px] text-muted-foreground">Describe your project — AI helps you price, break down & write professional line items</p>
+          <p className="text-[11px] text-muted-foreground">Chat with AI to build your {docLabel} — pricing, line items, client details & more</p>
         </div>
         <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
       </button>
@@ -244,7 +296,7 @@ export function PricingCoPilot({
           <Sparkles className="h-4 w-4" />
           <div>
             <p className="text-sm font-bold">ThriveQuote AI</p>
-            <p className="text-[10px] opacity-80">Your pricing co-pilot</p>
+            <p className="text-[10px] opacity-80">Your {docLabel} co-pilot</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -262,25 +314,87 @@ export function PricingCoPilot({
         </div>
       </div>
 
+      {/* Details Summary Card */}
+      {detailsSummary && Object.values(detailsSummary).some(v => v) && (
+        <div className="mx-3 mt-3">
+          <button
+            onClick={() => setShowSummary(!showSummary)}
+            className="w-full flex items-center justify-between p-2.5 rounded-lg bg-accent/50 border border-border/50 hover:bg-accent/70 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Check className="h-3.5 w-3.5 text-green-500" />
+              <span className="text-xs font-medium">Document Details</span>
+              {detailsSummary.client_name && (
+                <span className="text-[10px] text-muted-foreground">— {detailsSummary.client_name}</span>
+              )}
+            </div>
+            {showSummary ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+          {showSummary && (
+            <div className="p-2.5 mt-1 rounded-lg bg-muted/30 border border-border/30 space-y-1.5">
+              {detailsSummary.client_name && (
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted-foreground">Client</span>
+                  <span className="font-medium">{detailsSummary.client_name}</span>
+                </div>
+              )}
+              {detailsSummary.client_email && (
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted-foreground">Email</span>
+                  <span className="font-medium">{detailsSummary.client_email}</span>
+                </div>
+              )}
+              {detailsSummary.client_address && (
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted-foreground">Address</span>
+                  <span className="font-medium">{detailsSummary.client_address}</span>
+                </div>
+              )}
+              {detailsSummary.currency && (
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted-foreground">Currency</span>
+                  <span className="font-medium">{detailsSummary.currency}</span>
+                </div>
+              )}
+              {detailsSummary.tax_rate !== undefined && (
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted-foreground">Tax Rate</span>
+                  <span className="font-medium">{detailsSummary.tax_rate}%</span>
+                </div>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="w-full h-6 text-[10px] gap-1 text-muted-foreground hover:text-primary"
+                onClick={() => sendMessage("I need to update my client details")}
+              >
+                <Pencil className="h-2.5 w-2.5" /> Edit Details
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Messages */}
-      <div className="h-[300px] overflow-y-auto p-3 space-y-3 bg-muted/20">
+      <div className="h-[380px] overflow-y-auto p-3 space-y-3 bg-muted/20">
         {messages.length === 0 && (
           <div className="space-y-3">
             <div className="flex gap-2">
-              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                <Sparkles className="h-3 w-3 text-primary" />
+              <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
               </div>
-              <div className="bg-background rounded-lg rounded-tl-none p-2.5 text-xs text-muted-foreground max-w-[90%]">
-                <p className="font-medium text-foreground mb-1">Hey! I'm your pricing co-pilot 👋</p>
-                <p>Tell me about your project — your costs, what services you're providing — and I'll help you build a professional quote with competitive pricing.</p>
+              <div className="bg-background rounded-lg rounded-tl-none p-3 text-[13px] text-muted-foreground max-w-[90%] leading-relaxed">
+                <p className="font-semibold text-foreground mb-1.5">Hey! I'm your {docLabel} co-pilot 👋</p>
+                <p className="mb-2">Tell me about your project — costs, services, client info — and I'll help you build everything step by step.</p>
+                <p className="text-[11px] text-muted-foreground/70">I can calculate markups, write professional descriptions, suggest terms, and fill in all the details for you.</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-1.5 pl-8">
+            <div className="grid grid-cols-2 gap-1.5 pl-9">
               {quickPrompts.map((qp, i) => (
                 <button
                   key={i}
                   onClick={() => sendMessage(qp.prompt)}
-                  className="text-left p-2 rounded-lg border bg-background hover:bg-accent/50 hover:border-primary/30 transition-all text-[11px]"
+                  className="text-left p-2.5 rounded-lg border bg-background hover:bg-accent/50 hover:border-primary/30 transition-all text-[11px] leading-snug"
                 >
                   <span className="font-medium">{qp.label}</span>
                 </button>
@@ -293,80 +407,154 @@ export function PricingCoPilot({
           <div key={i}>
             {msg.role === "user" ? (
               <div className="flex gap-2 justify-end">
-                <div className="bg-primary text-primary-foreground rounded-lg rounded-tr-none p-2.5 text-xs max-w-[85%]">
+                <div className="bg-primary text-primary-foreground rounded-lg rounded-tr-none p-3 text-[13px] max-w-[85%] leading-relaxed">
                   {msg.content}
                 </div>
               </div>
             ) : (
               <div className="flex gap-2">
-                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <Sparkles className="h-3 w-3 text-primary" />
+                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <div className="max-w-[90%] space-y-2">
+                <div className="max-w-[92%] space-y-2">
                   {msg.content && (
-                    <div className="bg-background rounded-lg rounded-tl-none p-2.5 text-xs prose prose-sm max-w-none">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <div className="bg-background rounded-lg rounded-tl-none p-3 text-[13px] leading-relaxed copilot-prose">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          table: ({ children }) => (
+                            <div className="overflow-x-auto my-2 rounded-lg border border-border">
+                              <table className="w-full text-[11px]">{children}</table>
+                            </div>
+                          ),
+                          thead: ({ children }) => (
+                            <thead className="bg-muted/60">{children}</thead>
+                          ),
+                          th: ({ children }) => (
+                            <th className="px-2.5 py-2 text-left font-semibold text-foreground border-b border-border whitespace-nowrap">{children}</th>
+                          ),
+                          td: ({ children }) => (
+                            <td className="px-2.5 py-1.5 border-b border-border/40 text-muted-foreground">{children}</td>
+                          ),
+                          tr: ({ children }) => (
+                            <tr className="hover:bg-muted/30 transition-colors">{children}</tr>
+                          ),
+                          p: ({ children }) => (
+                            <p className="mb-2 last:mb-0">{children}</p>
+                          ),
+                          strong: ({ children }) => (
+                            <strong className="font-semibold text-foreground">{children}</strong>
+                          ),
+                          ul: ({ children }) => (
+                            <ul className="list-disc list-inside space-y-1 my-2 text-muted-foreground">{children}</ul>
+                          ),
+                          ol: ({ children }) => (
+                            <ol className="list-decimal list-inside space-y-1 my-2 text-muted-foreground">{children}</ol>
+                          ),
+                          li: ({ children }) => (
+                            <li className="leading-relaxed">{children}</li>
+                          ),
+                          h3: ({ children }) => (
+                            <h3 className="font-bold text-foreground text-sm mt-3 mb-1">{children}</h3>
+                          ),
+                          h4: ({ children }) => (
+                            <h4 className="font-semibold text-foreground text-[13px] mt-2 mb-1">{children}</h4>
+                          ),
+                          code: ({ children, className }) => {
+                            if (className) return <code className={className}>{children}</code>;
+                            return <code className="bg-muted px-1 py-0.5 rounded text-[11px] font-mono">{children}</code>;
+                          },
+                          hr: () => <Separator className="my-3" />,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
                     </div>
                   )}
 
                   {/* Tool call: generated line items */}
                   {msg.toolCall?.name === "generate_line_items" && (
-                    <Card className="p-3 bg-background border-primary/20 space-y-2">
+                    <Card className="p-3 bg-background border-primary/20 space-y-2.5">
                       <div className="flex items-center gap-1.5">
                         <Wand2 className="h-3.5 w-3.5 text-primary" />
                         <span className="text-xs font-semibold">Generated Line Items</span>
                       </div>
-                      <div className="space-y-1">
-                        {msg.toolCall.data.line_items?.map((item: any, idx: number) => (
-                          <div key={idx} className="flex justify-between items-center text-[11px] p-1.5 bg-muted/50 rounded">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{item.description}</p>
-                              <p className="text-muted-foreground">Qty: {item.quantity || 1}</p>
-                            </div>
-                            <span className="font-bold text-primary ml-2">
-                              {sym}{(item.rate).toFixed(2)}
-                            </span>
-                          </div>
-                        ))}
-                        <Separator />
-                        <div className="flex justify-between text-xs font-bold">
-                          <span>Total</span>
-                          <span className="text-primary">
-                            {sym}{msg.toolCall.data.line_items?.reduce((s: number, i: any) => s + (i.quantity || 1) * i.rate, 0).toFixed(2)}
-                          </span>
-                        </div>
+                      <div className="overflow-x-auto rounded-lg border border-border">
+                        <table className="w-full text-[11px]">
+                          <thead className="bg-muted/60">
+                            <tr>
+                              <th className="px-2.5 py-2 text-left font-semibold">Item</th>
+                              <th className="px-2.5 py-2 text-center font-semibold w-12">Qty</th>
+                              <th className="px-2.5 py-2 text-right font-semibold w-20">Rate</th>
+                              <th className="px-2.5 py-2 text-right font-semibold w-24">Amount</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {msg.toolCall.data.line_items?.map((item: any, idx: number) => (
+                              <tr key={idx} className="border-b border-border/40 hover:bg-muted/20">
+                                <td className="px-2.5 py-2">{item.description}</td>
+                                <td className="px-2.5 py-2 text-center">{item.quantity || 1}</td>
+                                <td className="px-2.5 py-2 text-right font-mono">{sym}{item.rate.toLocaleString()}</td>
+                                <td className="px-2.5 py-2 text-right font-mono font-medium">{sym}{((item.quantity || 1) * item.rate).toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr className="bg-muted/30">
+                              <td colSpan={3} className="px-2.5 py-2 text-right font-bold">Total</td>
+                              <td className="px-2.5 py-2 text-right font-bold font-mono text-primary">
+                                {sym}{msg.toolCall.data.line_items?.reduce((s: number, i: any) => s + (i.quantity || 1) * i.rate, 0).toLocaleString()}
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
                       </div>
                       <Button
                         size="sm"
-                        className="w-full h-7 text-xs gap-1"
+                        className="w-full h-8 text-xs gap-1.5"
                         onClick={() => handleApplyLineItems(msg.toolCall!.data.line_items)}
                       >
-                        <Check className="h-3 w-3" /> Apply to Document
+                        <Check className="h-3 w-3" /> Apply to {docLabel.charAt(0).toUpperCase() + docLabel.slice(1)}
                       </Button>
-                      {msg.toolCall.data.suggested_notes && onApplyNotes && (
+                      <div className="flex gap-1.5">
+                        {msg.toolCall.data.suggested_notes && onApplyNotes && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 h-7 text-[10px] gap-1"
+                            onClick={() => {
+                              onApplyNotes!(msg.toolCall!.data.suggested_notes);
+                              toast.success("Notes applied");
+                            }}
+                          >
+                            Apply Notes
+                          </Button>
+                        )}
+                        {msg.toolCall.data.suggested_terms && onApplyTerms && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 h-7 text-[10px] gap-1"
+                            onClick={() => {
+                              onApplyTerms!(msg.toolCall!.data.suggested_terms);
+                              toast.success("Terms applied");
+                            }}
+                          >
+                            Apply Terms
+                          </Button>
+                        )}
+                      </div>
+                      {msg.toolCall.data.suggested_tax_rate !== undefined && onApplyTaxRate && (
                         <Button
                           size="sm"
                           variant="outline"
-                          className="w-full h-7 text-xs gap-1"
+                          className="w-full h-7 text-[10px] gap-1"
                           onClick={() => {
-                            onApplyNotes!(msg.toolCall!.data.suggested_notes);
-                            toast.success("Notes applied");
+                            onApplyTaxRate!(msg.toolCall!.data.suggested_tax_rate);
+                            toast.success(`Tax rate set to ${msg.toolCall!.data.suggested_tax_rate}%`);
                           }}
                         >
-                          Apply Suggested Notes
-                        </Button>
-                      )}
-                      {msg.toolCall.data.suggested_terms && onApplyTerms && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full h-7 text-xs gap-1"
-                          onClick={() => {
-                            onApplyTerms!(msg.toolCall!.data.suggested_terms);
-                            toast.success("Terms applied");
-                          }}
-                        >
-                          Apply Suggested Terms
+                          Apply {msg.toolCall.data.suggested_tax_rate}% Tax Rate
                         </Button>
                       )}
                     </Card>
@@ -381,18 +569,18 @@ export function PricingCoPilot({
                       </div>
                       <div className="space-y-1.5">
                         {msg.toolCall.data.enhanced_items?.map((item: any, idx: number) => (
-                          <div key={idx} className="text-[11px] p-2 bg-muted/50 rounded space-y-1">
+                          <div key={idx} className="text-[11px] p-2 bg-muted/50 rounded-lg space-y-1">
                             <p className="text-muted-foreground line-through">{item.original}</p>
                             <p className="font-medium text-foreground">{item.enhanced}</p>
                             {item.suggested_rate && (
-                              <p className="text-primary text-[10px]">Suggested rate: {sym}{item.suggested_rate.toFixed(2)}</p>
+                              <p className="text-primary text-[10px]">Suggested rate: {sym}{item.suggested_rate.toLocaleString()}</p>
                             )}
                           </div>
                         ))}
                       </div>
                       <Button
                         size="sm"
-                        className="w-full h-7 text-xs gap-1"
+                        className="w-full h-8 text-xs gap-1.5"
                         onClick={() => handleApplyEnhanced(msg.toolCall!.data.enhanced_items)}
                       >
                         <Check className="h-3 w-3" /> Apply Enhanced Descriptions
@@ -407,14 +595,14 @@ export function PricingCoPilot({
 
         {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
           <div className="flex gap-2">
-            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+            <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
             </div>
-            <div className="bg-background rounded-lg rounded-tl-none p-2.5">
-              <div className="flex gap-1">
-                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+            <div className="bg-background rounded-lg rounded-tl-none p-3">
+              <div className="flex gap-1.5">
+                <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           </div>
@@ -424,29 +612,34 @@ export function PricingCoPilot({
       </div>
 
       {/* Input */}
-      <div className="p-2 border-t bg-background flex gap-2 items-end">
-        <textarea
-          ref={inputRef}
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              sendMessage(input);
-            }
-          }}
-          placeholder="Describe your project costs, services, or ask for pricing help..."
-          className="flex-1 resize-none text-xs bg-muted/50 rounded-lg p-2 min-h-[36px] max-h-[80px] outline-none focus:ring-1 focus:ring-primary/30"
-          rows={1}
-        />
-        <Button
-          size="icon"
-          className="h-8 w-8 shrink-0"
-          onClick={() => sendMessage(input)}
-          disabled={!input.trim() || isLoading}
-        >
-          <Send className="h-3.5 w-3.5" />
-        </Button>
+      <div className="p-3 border-t bg-background">
+        <div className="flex gap-2 items-end">
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage(input);
+              }
+            }}
+            placeholder="Describe your project costs, services, or ask for pricing help..."
+            className="flex-1 resize-none text-[13px] bg-muted/50 rounded-xl p-3 min-h-[44px] max-h-[100px] outline-none focus:ring-2 focus:ring-primary/30 transition-shadow placeholder:text-muted-foreground/50"
+            rows={1}
+          />
+          <Button
+            size="icon"
+            className="h-10 w-10 shrink-0 rounded-xl"
+            onClick={() => sendMessage(input)}
+            disabled={!input.trim() || isLoading}
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+        <p className="text-[9px] text-muted-foreground/50 mt-1.5 text-center">
+          AI suggestions are estimates — always verify pricing for your market
+        </p>
       </div>
     </Card>
   );

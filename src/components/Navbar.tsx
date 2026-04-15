@@ -127,10 +127,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   // Guest navigation items
   const guestNavItems = [
+    { path: "/nearby", label: "Discover" },
+    { path: "/credits", label: "ThriveCredits" },
+    { path: "/spotlight", label: "Spotlight" },
     { path: "/about", label: "About Us" },
-    { path: "/magazine", label: "Magazine" },
-    { path: "/podcast", label: "Discover a Thriver" },
-    { path: "/explore", label: "Explore" },
   ];
 
   const [guestMenuOpen, setGuestMenuOpen] = useState(false);

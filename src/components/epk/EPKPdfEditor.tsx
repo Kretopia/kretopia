@@ -195,6 +195,7 @@ export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorPro
   const TABS: { id: EditorTab; label: string; icon: any; proOnly?: boolean }[] = [
     { id: "content", label: "Content", icon: Type },
     { id: "sections", label: "Sections", icon: GripVertical },
+    { id: "template", label: "Template", icon: LayoutTemplate, proOnly: true },
     { id: "branding", label: "Branding", icon: Palette, proOnly: true },
   ];
 

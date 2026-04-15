@@ -262,6 +262,7 @@ const NearbyCreators = () => {
                   creators: creators.length,
                   sessions: sessions.length,
                   spots: locations.length,
+                  gigs: gigs.length,
                   bookmarked: locations.filter(l => bookmarkedIds.has(l.id)).length,
                 }} />
               </div>

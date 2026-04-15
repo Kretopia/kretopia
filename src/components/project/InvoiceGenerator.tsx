@@ -18,6 +18,7 @@ import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingF
 import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
 import { InvoicePreview } from "./invoice/InvoicePreview";
 import { AIMarkupHelper } from "./invoice/AIMarkupHelper";
+import { PricingCoPilot } from "./invoice/PricingCoPilot";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
 
 interface InvoiceGeneratorProps {

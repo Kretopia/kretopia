@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard, Pencil, ArrowRightLeft, ScrollText } from "lucide-react";
+import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard, Pencil, ArrowRightLeft, ScrollText, RotateCcw, Save } from "lucide-react";
 import { toast } from "sonner";
 import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingForm";
 import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
@@ -20,6 +20,7 @@ import { InvoicePreview } from "./invoice/InvoicePreview";
 
 import { PricingCoPilot } from "./invoice/PricingCoPilot";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
+import { useAutoSaveDraft } from "@/hooks/useAutoSaveDraft";
 
 interface InvoiceGeneratorProps {
   projectId?: string;
@@ -78,6 +79,54 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     payment_details: {},
     terms_conditions: ""
   });
+
+  // Auto-save draft
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+  const DRAFT_KEY = `thrive_invoice_draft_${user?.id || "anon"}`;
+
+  const draftData = useMemo(() => ({
+    documentType, recipientName, recipientEmail, recipientAddress,
+    dueDate, taxRate, notes, currency, discountType, discountValue,
+    lineItems, branding, paymentConfig, validUntil, createStep,
+  }), [documentType, recipientName, recipientEmail, recipientAddress,
+    dueDate, taxRate, notes, currency, discountType, discountValue,
+    lineItems, branding, paymentConfig, validUntil, createStep]);
+
+  const { loadDraft, clearDraft, hasDraft } = useAutoSaveDraft(
+    DRAFT_KEY, draftData, showCreateDialog && !editingInvoiceId
+  );
+
+  const restoreDraft = () => {
+    const draft = loadDraft();
+    if (!draft) return;
+    const d = draft.data;
+    setDocumentType(d.documentType || "invoice");
+    setRecipientName(d.recipientName || "");
+    setRecipientEmail(d.recipientEmail || "");
+    setRecipientAddress(d.recipientAddress || "");
+    setDueDate(d.dueDate || "");
+    setTaxRate(d.taxRate || "0");
+    setNotes(d.notes || "");
+    setCurrency(d.currency || "USD");
+    setDiscountType(d.discountType || "");
+    setDiscountValue(d.discountValue || "0");
+    setLineItems(d.lineItems?.length ? d.lineItems : [{ description: "", quantity: 1, rate: 0, amount: 0 }]);
+    setBranding(d.branding || { brand_name: "", brand_logo_url: "", brand_address: "", brand_email: "", brand_website: "", brand_color: "#6366f1" });
+    setPaymentConfig(d.paymentConfig || { payment_method: "bank_transfer", payment_details: {}, terms_conditions: "" });
+    setValidUntil(d.validUntil || "");
+    if (d.createStep) setCreateStep(d.createStep);
+    setShowDraftBanner(false);
+    toast.success("Draft restored!");
+  };
+
+  // Check for draft when opening create dialog
+  useEffect(() => {
+    if (showCreateDialog && !editingInvoiceId && hasDraft()) {
+      setShowDraftBanner(true);
+    } else {
+      setShowDraftBanner(false);
+    }
+  }, [showCreateDialog, editingInvoiceId]);
 
   // Collaborators for recipient picker
   const [collaborators, setCollaborators] = useState<any[]>([]);
@@ -272,6 +321,8 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     setCreateStep("details");
     setDocumentType("invoice");
     setValidUntil("");
+    clearDraft();
+    setShowDraftBanner(false);
   };
 
   // Convert a quote to an invoice
@@ -852,6 +903,21 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
             <DialogTitle>{editingInvoiceId ? `Edit ${docLabel}` : `Create ${docLabel}`}</DialogTitle>
           </DialogHeader>
 
+          {/* Draft Recovery Banner */}
+          {showDraftBanner && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-sm">
+              <RotateCcw className="h-4 w-4 text-amber-500 shrink-0" />
+              <span className="flex-1 text-foreground">
+                You have an unsaved draft. Pick up where you left off?
+              </span>
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={restoreDraft}>
+                <RotateCcw className="h-3 w-3" /> Restore
+              </Button>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { clearDraft(); setShowDraftBanner(false); }}>
+                Discard
+              </Button>
+            </div>
+          )}
           {/* Step Navigation */}
           <div className="flex gap-1 mb-4">
             {(["details", "branding", "payment", "preview"] as const).map((step, i) => (
@@ -868,6 +934,11 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
               </button>
             ))}
           </div>
+          {!editingInvoiceId && showCreateDialog && (
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
+              <Save className="h-2.5 w-2.5" /> Auto-saving draft…
+            </p>
+          )}
 
           <div className="flex-1 overflow-y-auto">
             {/* Step 1: Details */}

@@ -276,5 +276,5 @@ export const UnifiedNearbyMap = ({
     );
   }
 
-  return <div ref={mapContainer} className="w-full h-full" />;
+  return <div ref={mapContainer} className="w-full h-full" style={{ minHeight: '300px' }} />;
 };

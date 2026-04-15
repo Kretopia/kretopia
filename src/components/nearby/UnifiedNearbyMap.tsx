@@ -1,6 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import { useEffect, useMemo } from "react";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  ZoomControl,
+  useMap,
+} from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { Loader2 } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";
 import { fuzzyCoordinates } from "@/lib/fuzzyLocation";
@@ -64,6 +72,174 @@ const LOCATION_TYPE_EMOJI: Record<string, string> = {
   rental_house: '🏠',
 };
 
+const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+const getHslToken = (token: string, fallback: string) => {
+  if (typeof window === "undefined") return fallback;
+
+  const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+  return value ? `hsl(${value})` : fallback;
+};
+
+const sanitizeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const formatDistanceLabel = (distanceKm: number) =>
+  distanceKm < 1 ? `~${Math.round(distanceKm * 1000)}m away` : `~${distanceKm.toFixed(1)}km away`;
+
+interface MarkerPalette {
+  primary: string;
+  primarySoft: string;
+  background: string;
+  foreground: string;
+  border: string;
+  muted: string;
+}
+
+const buildUserIcon = (palette: MarkerPalette) =>
+  L.divIcon({
+    className: "",
+    html: `
+      <div style="position: relative; width: 20px; height: 20px; display: grid; place-items: center;">
+        <div style="position: absolute; inset: -6px; border-radius: 9999px; background: ${palette.primarySoft}; opacity: 0.9;"></div>
+        <div style="position: relative; width: 14px; height: 14px; border-radius: 9999px; background: ${palette.primary}; border: 2px solid ${palette.background}; box-shadow: 0 0 0 2px ${palette.primarySoft};"></div>
+      </div>
+    `,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+
+const buildCreatorIcon = ({
+  label,
+  avatarUrl,
+  selected,
+  palette,
+}: {
+  label: string;
+  avatarUrl: string | null;
+  selected: boolean;
+  palette: MarkerPalette;
+}) =>
+  L.divIcon({
+    className: "",
+    html: `
+      <div style="position: relative; width: 44px; height: 44px; transform: scale(${selected ? 1.1 : 1}); transition: transform 160ms ease;">
+        <div style="position: absolute; inset: -4px; border-radius: 9999px; background: ${palette.primarySoft}; opacity: ${selected ? 1 : 0.7};"></div>
+        <div style="position: relative; width: 44px; height: 44px; border-radius: 9999px; overflow: hidden; border: 2px solid ${selected ? palette.primary : palette.border}; background: ${palette.background}; display: flex; align-items: center; justify-content: center; color: ${palette.primary}; font-size: 14px; font-weight: 700; box-shadow: 0 10px 24px rgba(0,0,0,0.18);">
+          ${avatarUrl ? `<img src="${sanitizeHtml(avatarUrl)}" alt="${sanitizeHtml(label)}" style="width: 100%; height: 100%; object-fit: cover;" />` : sanitizeHtml(label.charAt(0) || "U")}
+        </div>
+      </div>
+    `,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+    popupAnchor: [0, -22],
+  });
+
+const buildSessionIcon = ({
+  count,
+  avatarUrl,
+  label,
+  selected,
+  palette,
+}: {
+  count: number;
+  avatarUrl?: string;
+  label: string;
+  selected: boolean;
+  palette: MarkerPalette;
+}) =>
+  L.divIcon({
+    className: "",
+    html: `
+      <div style="position: relative; width: 46px; height: 46px; transform: scale(${selected ? 1.12 : 1}); transition: transform 160ms ease;">
+        <div style="position: absolute; inset: -5px; border-radius: 9999px; background: ${palette.primarySoft}; opacity: ${selected ? 1 : 0.72};"></div>
+        <div style="position: relative; width: 46px; height: 46px; border-radius: 9999px; overflow: hidden; border: 3px dashed ${palette.primary}; background: ${palette.background}; display: flex; align-items: center; justify-content: center; color: ${palette.primary}; font-size: 12px; font-weight: 700; box-shadow: 0 10px 24px rgba(0,0,0,0.18);">
+          ${avatarUrl ? `<img src="${sanitizeHtml(avatarUrl)}" alt="${sanitizeHtml(label)}" style="width: 100%; height: 100%; object-fit: cover;" />` : "EV"}
+        </div>
+        <div style="position: absolute; right: -2px; bottom: -2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9999px; background: ${palette.primary}; color: ${palette.background}; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; border: 2px solid ${palette.background};">
+          ${count}
+        </div>
+      </div>
+    `,
+    iconSize: [46, 46],
+    iconAnchor: [23, 23],
+    popupAnchor: [0, -23],
+  });
+
+const buildLocationIcon = ({
+  emoji,
+  selected,
+  palette,
+}: {
+  emoji: string;
+  selected: boolean;
+  palette: MarkerPalette;
+}) =>
+  L.divIcon({
+    className: "",
+    html: `
+      <div style="position: relative; width: 42px; height: 42px; transform: scale(${selected ? 1.08 : 1}); transition: transform 160ms ease;">
+        <div style="position: absolute; inset: -4px; border-radius: 14px; background: ${palette.primarySoft}; opacity: ${selected ? 1 : 0.68};"></div>
+        <div style="position: relative; width: 42px; height: 42px; border-radius: 14px; border: 2px solid ${palette.primary}; background: ${palette.background}; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 10px 24px rgba(0,0,0,0.18);">
+          ${emoji}
+        </div>
+      </div>
+    `,
+    iconSize: [42, 42],
+    iconAnchor: [21, 21],
+    popupAnchor: [0, -20],
+  });
+
+const MapViewportController = ({
+  userLocation,
+  selectedTarget,
+  points,
+}: {
+  userLocation: { lat: number; lng: number };
+  selectedTarget: { lat: number; lng: number; zoom: number } | null;
+  points: Array<[number, number]>;
+}) => {
+  const map = useMap();
+
+  useEffect(() => {
+    const timers = [0, 120, 320].map((delay) =>
+      window.setTimeout(() => {
+        map.invalidateSize();
+      }, delay),
+    );
+
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [map]);
+
+  useEffect(() => {
+    if (selectedTarget) {
+      map.flyTo([selectedTarget.lat, selectedTarget.lng], selectedTarget.zoom, {
+        animate: true,
+        duration: 0.8,
+      });
+      return;
+    }
+
+    if (points.length > 1) {
+      map.fitBounds(points, {
+        padding: [32, 32],
+        maxZoom: 13,
+      });
+      return;
+    }
+
+    map.setView([userLocation.lat, userLocation.lng], 11);
+  }, [map, points, selectedTarget, userLocation]);
+
+  return null;
+};
+
 export const UnifiedNearbyMap = ({
   creators,
   sessions,
@@ -76,385 +252,203 @@ export const UnifiedNearbyMap = ({
   loading,
   connectedIds = new Set(),
 }: UnifiedNearbyMapProps) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const creatorMarkers = useRef<mapboxgl.Marker[]>([]);
-  const sessionMarkers = useRef<mapboxgl.Marker[]>([]);
-  const locationMarkers = useRef<mapboxgl.Marker[]>([]);
-  const userMarker = useRef<mapboxgl.Marker | null>(null);
-  const cleanupMapListeners = useRef<(() => void) | null>(null);
-  const resizeTimeouts = useRef<number[]>([]);
-  const hasRetriedInit = useRef(false);
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const palette = useMemo<MarkerPalette>(
+    () => ({
+      primary: getHslToken("--primary", "hsl(221 83% 53%)"),
+      primarySoft: getHslToken("--accent", "hsl(221 83% 53% / 0.24)"),
+      background: getHslToken("--background", "hsl(222 47% 11%)"),
+      foreground: getHslToken("--foreground", "hsl(210 40% 98%)"),
+      border: getHslToken("--border", "hsl(217 33% 24%)"),
+      muted: getHslToken("--muted-foreground", "hsl(215 20% 65%)"),
+    }),
+    [],
+  );
 
-  const mapboxToken = "pk.eyJ1IjoiZXRoYW5hdWd1c3RlIiwiYSI6ImNtZzhvbDk0dzAwaHYycnB6eWp4Zjh2OHAifQ.4uCSa5SdtxZAnC2Xvx6V5w";
+  const creatorPoints = useMemo(
+    () =>
+      creators.map((creator) => {
+        const fuzzy = fuzzyCoordinates(
+          creator.latitude,
+          creator.longitude,
+          creator.user_id,
+          creator.location_precision || "approximate",
+        );
 
-  const clearResizeTimeouts = useCallback(() => {
-    resizeTimeouts.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
-    resizeTimeouts.current = [];
-  }, []);
+        return {
+          creator,
+          lat: fuzzy.lat,
+          lng: fuzzy.lng,
+          connected: connectedIds.has(creator.user_id),
+        };
+      }),
+    [connectedIds, creators],
+  );
 
-  const scheduleResizeBurst = useCallback(() => {
-    clearResizeTimeouts();
+  const selectedTarget = useMemo(() => {
+    if (!selectedItem) return null;
 
-    [0, 120, 350, 800].forEach((delay) => {
-      const timeoutId = window.setTimeout(() => {
-        if (!map.current) return;
-        map.current.resize();
-        map.current.triggerRepaint();
-      }, delay);
-
-      resizeTimeouts.current.push(timeoutId);
-    });
-  }, [clearResizeTimeouts]);
-
-  const clearMarkers = useCallback(() => {
-    creatorMarkers.current.forEach((marker) => marker.remove());
-    sessionMarkers.current.forEach((marker) => marker.remove());
-    locationMarkers.current.forEach((marker) => marker.remove());
-    creatorMarkers.current = [];
-    sessionMarkers.current = [];
-    locationMarkers.current = [];
-  }, []);
-
-  const destroyMap = useCallback(() => {
-    clearResizeTimeouts();
-    clearMarkers();
-    cleanupMapListeners.current?.();
-    cleanupMapListeners.current = null;
-    userMarker.current?.remove();
-    userMarker.current = null;
-
-    if (map.current) {
-      map.current.remove();
-      map.current = null;
+    if (selectedItem.type === "creator") {
+      const match = creatorPoints.find(({ creator }) => creator.user_id === selectedItem.id);
+      return match ? { lat: match.lat, lng: match.lng, zoom: 13 } : null;
     }
 
-    setMapLoaded(false);
-  }, [clearMarkers, clearResizeTimeouts]);
-
-  const initializeMap = useCallback(() => {
-    if (!mapContainer.current || map.current || !userLocation) return;
-
-    if (!mapboxgl.supported()) {
-      console.error("[UnifiedNearbyMap] Mapbox GL is not supported on this device");
-      return;
+    if (selectedItem.type === "session") {
+      const match = sessions.find((session) => session.id === selectedItem.id);
+      return match ? { lat: match.latitude, lng: match.longitude, zoom: 13 } : null;
     }
 
-    setMapLoaded(false);
-    mapboxgl.accessToken = mapboxToken;
+    const location = locations.find((item) => item.id === selectedItem.id);
+    return location ? { lat: location.latitude, lng: location.longitude, zoom: 14 } : null;
+  }, [creatorPoints, locations, selectedItem, sessions]);
 
-    let mapInstance: mapboxgl.Map;
+  const allPoints = useMemo<Array<[number, number]>>(
+    () => [
+      [userLocation.lat, userLocation.lng],
+      ...creatorPoints.map(({ lat, lng }) => [lat, lng] as [number, number]),
+      ...sessions.map((session) => [session.latitude, session.longitude] as [number, number]),
+      ...locations.map((location) => [location.latitude, location.longitude] as [number, number]),
+    ],
+    [creatorPoints, locations, sessions, userLocation.lat, userLocation.lng],
+  );
 
-    try {
-      mapInstance = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [userLocation.lng, userLocation.lat],
-        zoom: 11,
-        trackResize: true,
-      });
-    } catch (error) {
-      console.error("[UnifiedNearbyMap] Failed to initialize map", error);
-      return;
-    }
-
-    map.current = mapInstance;
-    mapInstance.addControl(new mapboxgl.NavigationControl(), "top-right");
-
-    const handleLoad = () => {
-      setMapLoaded(true);
-      hasRetriedInit.current = false;
-      scheduleResizeBurst();
-    };
-
-    const handleStyleData = () => {
-      scheduleResizeBurst();
-    };
-
-    const handleIdle = () => {
-      scheduleResizeBurst();
-    };
-
-    const handleError = (event: any) => {
-      console.error("[UnifiedNearbyMap] Mapbox error", event?.error ?? event);
-    };
-
-    const handleWebglContextLost = (event: Event) => {
-      event.preventDefault?.();
-      console.warn("[UnifiedNearbyMap] WebGL context lost, rebuilding map");
-      destroyMap();
-      window.setTimeout(() => initializeMap(), 150);
-    };
-
-    mapInstance.on("load", handleLoad);
-    mapInstance.on("styledata", handleStyleData);
-    mapInstance.on("idle", handleIdle);
-    mapInstance.on("error", handleError);
-
-    const canvas = mapInstance.getCanvas();
-    canvas.addEventListener("webglcontextlost", handleWebglContextLost as EventListener, false);
-
-    const userEl = document.createElement("div");
-    userEl.className = "user-location-marker";
-    userEl.innerHTML = `
-      <div class="relative">
-        <div class="absolute -inset-2 rounded-full bg-primary/30 animate-ping"></div>
-        <div class="relative h-4 w-4 rounded-full bg-primary border-2 border-white shadow-lg"></div>
-      </div>
-    `;
-
-    userMarker.current = new mapboxgl.Marker(userEl)
-      .setLngLat([userLocation.lng, userLocation.lat])
-      .addTo(mapInstance);
-
-    scheduleResizeBurst();
-
-    cleanupMapListeners.current = () => {
-      canvas.removeEventListener("webglcontextlost", handleWebglContextLost as EventListener, false);
-      mapInstance.off("load", handleLoad);
-      mapInstance.off("styledata", handleStyleData);
-      mapInstance.off("idle", handleIdle);
-      mapInstance.off("error", handleError);
-    };
-  }, [destroyMap, mapboxToken, scheduleResizeBurst, userLocation]);
-
-  useEffect(() => {
-    initializeMap();
-  }, [initializeMap]);
-
-  useEffect(() => {
-    return () => {
-      destroyMap();
-    };
-  }, [destroyMap]);
-
-  useEffect(() => {
-    const handleViewportChange = () => scheduleResizeBurst();
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        scheduleResizeBurst();
-      }
-    };
-
-    const resizeObserver = typeof ResizeObserver !== "undefined" && mapContainer.current
-      ? new ResizeObserver(handleViewportChange)
-      : null;
-
-    if (resizeObserver && mapContainer.current) {
-      resizeObserver.observe(mapContainer.current);
-    }
-
-    window.addEventListener("resize", handleViewportChange);
-    window.addEventListener("orientationchange", handleViewportChange);
-    window.addEventListener("pageshow", handleViewportChange);
-    window.addEventListener("focus", handleViewportChange);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.visualViewport?.addEventListener("resize", handleViewportChange);
-
-    return () => {
-      resizeObserver?.disconnect();
-      window.removeEventListener("resize", handleViewportChange);
-      window.removeEventListener("orientationchange", handleViewportChange);
-      window.removeEventListener("pageshow", handleViewportChange);
-      window.removeEventListener("focus", handleViewportChange);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.visualViewport?.removeEventListener("resize", handleViewportChange);
-    };
-  }, [scheduleResizeBurst]);
-
-  useEffect(() => {
-    if (!map.current || !userLocation) return;
-
-    userMarker.current?.setLngLat([userLocation.lng, userLocation.lat]);
-    map.current.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 11 });
-    scheduleResizeBurst();
-  }, [userLocation, scheduleResizeBurst]);
-
-  useEffect(() => {
-    if (!userLocation || loading || mapLoaded) return;
-
-    const timeoutId = window.setTimeout(() => {
-      if (mapLoaded) return;
-
-      console.warn("[UnifiedNearbyMap] Map load stalled, retrying initialization");
-
-      if (!hasRetriedInit.current) {
-        hasRetriedInit.current = true;
-        destroyMap();
-        window.setTimeout(() => initializeMap(), 150);
-      }
-    }, 2500);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [destroyMap, initializeMap, loading, mapLoaded, userLocation]);
-
-  useEffect(() => {
-    if (!map.current || loading) return;
-    scheduleResizeBurst();
-  }, [loading, creators.length, sessions.length, locations.length, scheduleResizeBurst]);
-
-  useEffect(() => {
-    if (!map.current || !mapLoaded) return;
-    creatorMarkers.current.forEach((marker) => marker.remove());
-    creatorMarkers.current = [];
-
-    creators.forEach((creator) => {
-      const fuzzy = fuzzyCoordinates(creator.latitude, creator.longitude, creator.user_id, creator.location_precision || 'approximate');
-      const connected = connectedIds.has(creator.user_id);
-      const displayName = getMaskedName(creator.full_name, connected);
-
-      const el = document.createElement("div");
-      el.className = "creator-marker cursor-pointer";
-      const isSelected = selectedItem?.type === 'creator' && selectedItem?.id === creator.user_id;
-
-      el.innerHTML = `
-        <div class="relative transition-transform ${isSelected ? 'scale-125' : 'hover:scale-110'}">
-          <div class="absolute -inset-1 rounded-full ${isSelected ? 'bg-cyan-400/40 animate-pulse' : 'bg-cyan-500/20'}"></div>
-          <div class="relative h-10 w-10 rounded-full overflow-hidden border-2 ${isSelected ? 'border-cyan-400 shadow-lg shadow-cyan-400/30' : 'border-cyan-500'} bg-background">
-            ${connected && creator.avatar_url
-              ? `<img src="${creator.avatar_url}" alt="${displayName}" class="h-full w-full object-cover" />`
-              : `<div class="h-full w-full flex items-center justify-center bg-cyan-500/10 text-cyan-500 font-semibold">${creator.full_name?.charAt(0) || 'U'}</div>`
-            }
-          </div>
-        </div>
-      `;
-
-      el.addEventListener("click", () => {
-        onSelectCreator(creator);
-        onSelectSession(null);
-        onSelectLocation(null);
-      });
-
-      const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-        <div class="p-2 min-w-[150px]">
-          <div class="flex items-center gap-1 mb-1">
-            <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
-            <span class="text-[10px] uppercase tracking-wide text-cyan-600 font-medium">Creator</span>
-          </div>
-          <p class="font-semibold text-sm">${displayName}</p>
-          <p class="text-xs text-gray-500">${creator.role}</p>
-          <p class="text-xs text-cyan-600 mt-1">~${creator.distance_km < 1 ? `${Math.round(creator.distance_km * 1000)}m` : `${creator.distance_km.toFixed(1)}km`} away</p>
-          <p class="text-[9px] text-gray-400 mt-0.5 italic">Approximate location</p>
-          ${!connected ? '<p class="text-[9px] text-cyan-500 mt-1">Connect to see full profile</p>' : ''}
-        </div>
-      `);
-
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat([fuzzy.lng, fuzzy.lat])
-        .setPopup(popup)
-        .addTo(map.current!);
-
-      creatorMarkers.current.push(marker);
-    });
-  }, [connectedIds, creators, mapLoaded, onSelectCreator, onSelectLocation, onSelectSession, selectedItem]);
-
-  useEffect(() => {
-    if (!map.current || !mapLoaded) return;
-    sessionMarkers.current.forEach((marker) => marker.remove());
-    sessionMarkers.current = [];
-
-    sessions.forEach((session) => {
-      const el = document.createElement("div");
-      el.className = "session-marker cursor-pointer";
-      const isSelected = selectedItem?.type === 'session' && selectedItem?.id === session.id;
-      const startTime = new Date(session.start_time);
-      const timeStr = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const dateStr = startTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
-
-      el.innerHTML = `
-        <div class="relative transition-transform ${isSelected ? 'scale-125' : 'hover:scale-110'}">
-          <div class="absolute -inset-1.5 rounded-full ${isSelected ? 'bg-amber-400/40 animate-pulse' : 'bg-amber-500/20'}"></div>
-          <div class="relative h-10 w-10 rounded-full overflow-hidden border-[3px] border-dashed ${isSelected ? 'border-amber-400 shadow-lg shadow-amber-400/30' : 'border-amber-500'} bg-background flex items-center justify-center">
-            ${session.creator_avatar
-              ? `<img src="${session.creator_avatar}" alt="${session.creator_name}" class="h-full w-full object-cover" />`
-              : `<div class="h-full w-full flex items-center justify-center bg-amber-500/10 text-amber-600 font-semibold text-xs"></div>`
-            }
-          </div>
-          <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center shadow-sm">${session.participant_count}</div>
-        </div>
-      `;
-
-      el.addEventListener("click", () => {
-        onSelectSession(session);
-        onSelectCreator(null);
-        onSelectLocation(null);
-      });
-
-      const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-        <div class="p-2 min-w-[160px]">
-          <div class="flex items-center gap-1 mb-1">
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span class="text-[10px] uppercase tracking-wide text-amber-600 font-medium">Event</span>
-          </div>
-          <p class="font-semibold text-sm">${session.title}</p>
-          <p class="text-xs text-gray-500 mt-0.5">${dateStr} · ${timeStr}</p>
-          <p class="text-xs text-gray-500">${session.venue_name || ''}</p>
-          <p class="text-xs text-amber-600 mt-1">${session.participant_count}/${session.max_participants} joined</p>
-        </div>
-      `);
-
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat([session.longitude, session.latitude])
-        .setPopup(popup)
-        .addTo(map.current!);
-
-      sessionMarkers.current.push(marker);
-    });
-  }, [mapLoaded, onSelectCreator, onSelectLocation, onSelectSession, selectedItem, sessions]);
-
-  useEffect(() => {
-    if (!map.current || !mapLoaded) return;
-    locationMarkers.current.forEach((marker) => marker.remove());
-    locationMarkers.current = [];
-
-    locations.forEach((location) => {
-      const el = document.createElement("div");
-      el.className = "location-marker cursor-pointer";
-      const isSelected = selectedItem?.type === 'location' && selectedItem?.id === location.id;
-      const emoji = LOCATION_TYPE_EMOJI[location.location_type] || '📍';
-
-      el.innerHTML = `
-        <div class="relative transition-transform ${isSelected ? 'scale-125' : 'hover:scale-110'}">
-          <div class="absolute -inset-1 rounded-lg ${isSelected ? 'bg-emerald-400/40 animate-pulse' : 'bg-emerald-500/15'}"></div>
-          <div class="relative h-9 w-9 rounded-lg overflow-hidden border-2 ${isSelected ? 'border-emerald-400 shadow-lg shadow-emerald-400/30' : 'border-emerald-500/60'} bg-background flex items-center justify-center text-base">
-            ${emoji}
-          </div>
-        </div>
-      `;
-
-      el.addEventListener("click", () => {
-        onSelectLocation(location);
-        onSelectCreator(null);
-        onSelectSession(null);
-      });
-
-      const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
-        <div class="p-2 min-w-[150px]">
-          <div class="flex items-center gap-1 mb-1">
-            <span class="text-sm">${emoji}</span>
-            <span class="text-[10px] uppercase tracking-wide text-emerald-600 font-medium">${location.location_type.replace('_', ' ')}</span>
-          </div>
-          <p class="font-semibold text-sm">${location.name}</p>
-          ${location.address ? `<p class="text-xs text-gray-500 mt-0.5">${location.address}</p>` : ''}
-          ${location.average_rating ? `<p class="text-xs text-amber-500 mt-1">⭐ ${location.average_rating.toFixed(1)}</p>` : ''}
-        </div>
-      `);
-
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat([location.longitude, location.latitude])
-        .setPopup(popup)
-        .addTo(map.current!);
-
-      locationMarkers.current.push(marker);
-    });
-  }, [locations, mapLoaded, onSelectCreator, onSelectLocation, onSelectSession, selectedItem]);
+  const userIcon = useMemo(() => buildUserIcon(palette), [palette]);
 
   return (
-    <div className="relative h-full w-full min-h-[300px] bg-background/20">
-      <div ref={mapContainer} className="absolute inset-0" />
-      {(loading || !mapLoaded) && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/40 backdrop-blur-[1px]">
+    <div className="relative h-full w-full min-h-[300px] overflow-hidden bg-muted/20">
+      <MapContainer
+        center={[userLocation.lat, userLocation.lng]}
+        zoom={11}
+        scrollWheelZoom
+        zoomControl={false}
+        preferCanvas
+        className="h-full w-full z-0"
+      >
+        <TileLayer attribution={TILE_ATTRIBUTION} url={TILE_URL} />
+        <ZoomControl position="topright" />
+        <MapViewportController
+          userLocation={userLocation}
+          selectedTarget={selectedTarget}
+          points={allPoints}
+        />
+
+        <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+          <Popup>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold">Your location</p>
+              <p className="text-xs text-muted-foreground">Used to discover nearby creators, events, and spots.</p>
+            </div>
+          </Popup>
+        </Marker>
+
+        {creatorPoints.map(({ creator, lat, lng, connected }) => {
+          const displayName = getMaskedName(creator.full_name, connected);
+          const isSelected = selectedItem?.type === "creator" && selectedItem.id === creator.user_id;
+
+          return (
+            <Marker
+              key={creator.user_id}
+              position={[lat, lng]}
+              icon={buildCreatorIcon({
+                label: displayName,
+                avatarUrl: connected ? creator.avatar_url : null,
+                selected: isSelected,
+                palette,
+              })}
+              eventHandlers={{
+                click: () => {
+                  onSelectCreator(creator);
+                  onSelectSession(null);
+                  onSelectLocation(null);
+                },
+              }}
+            >
+              <Popup>
+                <div className="space-y-1.5">
+                  <div className="text-[10px] font-medium uppercase tracking-[0.16em] text-primary">Creator</div>
+                  <p className="text-sm font-semibold">{displayName}</p>
+                  <p className="text-xs text-muted-foreground">{creator.role}</p>
+                  <p className="text-xs text-primary">{formatDistanceLabel(creator.distance_km)}</p>
+                  <p className="text-[10px] text-muted-foreground italic">Approximate location</p>
+                  {!connected && <p className="text-[10px] text-primary">Connect to see full profile</p>}
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+
+        {sessions.map((session) => {
+          const isSelected = selectedItem?.type === "session" && selectedItem.id === session.id;
+          const startTime = new Date(session.start_time);
+
+          return (
+            <Marker
+              key={session.id}
+              position={[session.latitude, session.longitude]}
+              icon={buildSessionIcon({
+                count: session.participant_count,
+                avatarUrl: session.creator_avatar,
+                label: session.title,
+                selected: isSelected,
+                palette,
+              })}
+              eventHandlers={{
+                click: () => {
+                  onSelectSession(session);
+                  onSelectCreator(null);
+                  onSelectLocation(null);
+                },
+              }}
+            >
+              <Popup>
+                <div className="space-y-1.5">
+                  <div className="text-[10px] font-medium uppercase tracking-[0.16em] text-primary">Event</div>
+                  <p className="text-sm font-semibold">{session.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {startTime.toLocaleDateString([], { month: "short", day: "numeric" })} · {" "}
+                    {startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                  {!!session.venue_name && <p className="text-xs text-muted-foreground">{session.venue_name}</p>}
+                  <p className="text-xs text-primary">{session.participant_count}/{session.max_participants} joined</p>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+
+        {locations.map((location) => {
+          const isSelected = selectedItem?.type === "location" && selectedItem.id === location.id;
+          const emoji = LOCATION_TYPE_EMOJI[location.location_type] || "📍";
+
+          return (
+            <Marker
+              key={location.id}
+              position={[location.latitude, location.longitude]}
+              icon={buildLocationIcon({ emoji, selected: isSelected, palette })}
+              eventHandlers={{
+                click: () => {
+                  onSelectLocation(location);
+                  onSelectCreator(null);
+                  onSelectSession(null);
+                },
+              }}
+            >
+              <Popup>
+                <div className="space-y-1.5">
+                  <div className="text-[10px] font-medium uppercase tracking-[0.16em] text-primary">
+                    {location.location_type.replace("_", " ")}
+                  </div>
+                  <p className="text-sm font-semibold">{location.name}</p>
+                  {!!location.address && <p className="text-xs text-muted-foreground">{location.address}</p>}
+                  {!!location.average_rating && <p className="text-xs text-primary">⭐ {location.average_rating.toFixed(1)}</p>}
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+      </MapContainer>
+
+      {(loading || !userLocation) && (
+        <div className="absolute inset-0 z-[500] flex flex-col items-center justify-center gap-2 bg-background/75">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           {!loading && <p className="text-xs text-muted-foreground">Loading map…</p>}
         </div>

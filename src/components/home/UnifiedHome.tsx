@@ -491,6 +491,11 @@ export const UnifiedHome = () => {
           </section>
         )}
 
+        {!user && <WhyCreatorsChooseSection />}
+
+        {!user && <PricingPreviewSection />}
+
+
         {/* ── 1. CREATORS FOR YOU (auth only) ── */}
         {user && featuredCreators.length > 0 && (
           <section className="mb-8 scroll-mt-14">

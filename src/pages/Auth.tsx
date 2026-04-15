@@ -20,7 +20,7 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/BrandLogo";
 
 const Auth = () => {
-  const [email, setEmail] = useState("");
+  const [activeTab, setActiveTab] = useState<string>("signup");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [inviteCode, setInviteCode] = useState("");

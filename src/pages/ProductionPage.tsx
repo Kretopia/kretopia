@@ -234,9 +234,7 @@ const ProductionPage = () => {
           )}
           <div className="relative container mx-auto max-w-3xl px-4 py-5">
             <button onClick={() => {
-              const referrer = document.referrer;
-              const isInternal = referrer && new URL(referrer).origin === window.location.origin;
-              if (isInternal && window.history.length > 1) {
+              if (window.history.length > 1) {
                 navigate(-1);
               } else {
                 navigate('/');

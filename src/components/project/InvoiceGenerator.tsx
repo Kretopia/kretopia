@@ -1083,7 +1083,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Invoice Preview</DialogTitle>
+            <DialogTitle>{(previewInvoice?.document_type || "invoice") === "quote" ? "Quote" : "Invoice"} Preview</DialogTitle>
           </DialogHeader>
           {previewInvoice && (
             <InvoicePreview
@@ -1116,6 +1116,8 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                 terms_conditions: previewInvoice.terms_conditions || "",
               }}
               currency={previewInvoice.currency}
+              documentType={previewInvoice.document_type || "invoice"}
+              validUntil={previewInvoice.valid_until || ""}
             />
           )}
         </DialogContent>

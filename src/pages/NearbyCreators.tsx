@@ -320,10 +320,12 @@ const NearbyCreators = () => {
                   <div className="rounded-xl overflow-hidden border h-[55vh] sm:h-[65vh]">
                     <UnifiedNearbyMap
                       creators={filteredCreators} sessions={filteredSessions} locations={filteredLocations}
+                      gigs={filteredGigs}
                       userLocation={userLocation} selectedItem={selectedItem}
                       onSelectCreator={(c) => setSelectedItem(c ? { type: 'creator', id: c.user_id } : null)}
                       onSelectSession={(s) => { if (s) { setSelectedItem({ type: 'session', id: s.id }); setSelectedSession(s); } else setSelectedItem(null); }}
                       onSelectLocation={(l) => setSelectedItem(l ? { type: 'location', id: l.id } : null)}
+                      onSelectGig={(g) => { if (g) { setSelectedItem({ type: 'gig', id: g.id }); navigate(`/opportunity/${g.id}`); } else setSelectedItem(null); }}
                       loading={loading}
                     />
                   </div>

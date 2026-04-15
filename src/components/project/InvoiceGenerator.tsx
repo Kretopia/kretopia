@@ -12,11 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard, Pencil } from "lucide-react";
+import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard, Pencil, ArrowRightLeft, ScrollText } from "lucide-react";
 import { toast } from "sonner";
 import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingForm";
 import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
 import { InvoicePreview } from "./invoice/InvoicePreview";
+import { AIMarkupHelper } from "./invoice/AIMarkupHelper";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
 
 interface InvoiceGeneratorProps {
@@ -30,6 +31,7 @@ interface LineItem {
   amount: number;
 }
 
+type DocumentType = "invoice" | "quote";
 type InvoiceInsert = Database['public']['Tables']['invoices']['Insert'];
 
 export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
@@ -43,6 +45,11 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   const [createStep, setCreateStep] = useState<"details" | "branding" | "payment" | "preview">("details");
   const [loading, setLoading] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
+  const [listFilter, setListFilter] = useState<"all" | "invoice" | "quote">("all");
+
+  // Document type toggle
+  const [documentType, setDocumentType] = useState<DocumentType>("invoice");
+  const [validUntil, setValidUntil] = useState("");
 
   // Form state
   const [recipientName, setRecipientName] = useState("");

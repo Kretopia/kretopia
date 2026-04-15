@@ -104,23 +104,23 @@ export const MatchActionSheet = ({ isOpen, onClose, matchedUser, currentUserId }
 
         <div className="space-y-6 py-4">
           {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             <Button 
               variant="default" 
-              className="h-auto py-4 flex flex-col gap-2"
+              className="w-full h-auto py-4 flex items-center justify-center gap-2"
               onClick={handleSendMessage}
               disabled={sending}
             >
               <MessageCircle className="h-6 w-6" />
-              <span>Send Message</span>
+              <span>Start a Conversation</span>
             </Button>
             <Button 
               variant="outline" 
-              className="h-auto py-4 flex flex-col gap-2 border-primary/20 hover:bg-primary/5"
+              className="w-full h-auto py-3 flex items-center justify-center gap-2 border-primary/20 hover:bg-primary/5"
               onClick={handleStartProject}
             >
-              <Briefcase className="h-6 w-6" />
-              <span>Start Project</span>
+              <Briefcase className="h-5 w-5" />
+              <span>Start Project Together</span>
             </Button>
           </div>
 

@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MessageCircle, X, Briefcase, Shield } from "lucide-react";
+import { Sparkles, MessageCircle, X, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -115,30 +115,14 @@ export const MatchCelebrationDialog = ({
               size="lg"
               onClick={() => {
                 onOpenChange(false);
-                navigate('/projects');
+                navigate(`/messages?user=${matchedUser.userId}`);
               }}
             >
-              <Briefcase className="h-5 w-5 mr-2" />
-              Create Protected Workspace
+              <MessageCircle className="h-5 w-5 mr-2" />
+              Start a Conversation
             </Button>
-            
-            <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
-              <Shield className="h-3.5 w-3.5 text-primary" />
-              <span>Escrow payments • Task board • Chat • Files</span>
-            </div>
 
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  onSendMessage();
-                  onOpenChange(false);
-                }}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Message
-              </Button>
               <Button
                 variant="outline"
                 className="flex-1"
@@ -150,6 +134,17 @@ export const MatchCelebrationDialog = ({
                 }}
               >
                 View Profile
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate('/desk', { state: { collaboratorId: matchedUser.userId, collaboratorName: matchedUser.name } });
+                }}
+              >
+                <Briefcase className="h-4 w-4 mr-2" />
+                Start Project
               </Button>
             </div>
           </div>

@@ -3563,17 +3563,21 @@ export type Database = {
           brand_logo_url: string | null
           brand_name: string | null
           brand_website: string | null
+          converted_from_quote_id: string | null
+          cost_breakdown: Json | null
           created_at: string | null
           currency: string
           discount_amount: number | null
           discount_type: string | null
           discount_value: number | null
+          document_type: string
           due_date: string | null
           id: string
           invoice_number: string
           issued_by: string
           issued_to: string | null
           line_items: Json | null
+          markup_percentage: number | null
           milestone_id: string | null
           notes: string | null
           paid_at: string | null
@@ -3593,6 +3597,7 @@ export type Database = {
           terms_conditions: string | null
           total_amount: number | null
           updated_at: string | null
+          valid_until: string | null
           viewed_at: string | null
         }
         Insert: {
@@ -3603,17 +3608,21 @@ export type Database = {
           brand_logo_url?: string | null
           brand_name?: string | null
           brand_website?: string | null
+          converted_from_quote_id?: string | null
+          cost_breakdown?: Json | null
           created_at?: string | null
           currency?: string
           discount_amount?: number | null
           discount_type?: string | null
           discount_value?: number | null
+          document_type?: string
           due_date?: string | null
           id?: string
           invoice_number: string
           issued_by: string
           issued_to?: string | null
           line_items?: Json | null
+          markup_percentage?: number | null
           milestone_id?: string | null
           notes?: string | null
           paid_at?: string | null
@@ -3633,6 +3642,7 @@ export type Database = {
           terms_conditions?: string | null
           total_amount?: number | null
           updated_at?: string | null
+          valid_until?: string | null
           viewed_at?: string | null
         }
         Update: {
@@ -3643,17 +3653,21 @@ export type Database = {
           brand_logo_url?: string | null
           brand_name?: string | null
           brand_website?: string | null
+          converted_from_quote_id?: string | null
+          cost_breakdown?: Json | null
           created_at?: string | null
           currency?: string
           discount_amount?: number | null
           discount_type?: string | null
           discount_value?: number | null
+          document_type?: string
           due_date?: string | null
           id?: string
           invoice_number?: string
           issued_by?: string
           issued_to?: string | null
           line_items?: Json | null
+          markup_percentage?: number | null
           milestone_id?: string | null
           notes?: string | null
           paid_at?: string | null
@@ -3673,9 +3687,17 @@ export type Database = {
           terms_conditions?: string | null
           total_amount?: number | null
           updated_at?: string | null
+          valid_until?: string | null
           viewed_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_converted_from_quote_id_fkey"
+            columns: ["converted_from_quote_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoices_milestone_id_fkey"
             columns: ["milestone_id"]

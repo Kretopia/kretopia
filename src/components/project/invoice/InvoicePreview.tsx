@@ -22,11 +22,14 @@ interface InvoicePreviewProps {
   notes: string;
   payment: PaymentConfig;
   currency?: string;
+  documentType?: "invoice" | "quote";
+  validUntil?: string;
 }
 
 export function InvoicePreview({
   branding, recipient, invoiceNumber, dueDate,
-  lineItems, taxRate, discount, notes, payment, currency = "USD"
+  lineItems, taxRate, discount, notes, payment, currency = "USD",
+  documentType = "invoice", validUntil
 }: InvoicePreviewProps) {
   const subtotal = lineItems.reduce((s, i) => s + i.amount, 0);
   const discountAmt = discount.type === "percentage" ? subtotal * (discount.value / 100) : discount.amount;
@@ -34,6 +37,8 @@ export function InvoicePreview({
   const tax = afterDiscount * (taxRate / 100);
   const total = afterDiscount + tax;
   const brandColor = branding.brand_color || "#6366f1";
+  const isQuote = documentType === "quote";
+  const docTitle = isQuote ? "Quote" : "Invoice";
 
   const fmt = (n: number) => {
     const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", JPY: "¥", INR: "₹", NGN: "₦", KES: "KSh ", BRL: "R$", ZAR: "R", AED: "د.إ ", IDR: "Rp ", TTD: "TT$", CHF: "CHF ", CAD: "C$", AUD: "A$" };
@@ -84,9 +89,9 @@ export function InvoicePreview({
                 className="text-2xl sm:text-3xl font-black tracking-tighter uppercase"
                 style={{ color: brandColor }}
               >
-                Invoice
+                {docTitle}
               </h1>
-              <p className="text-xs font-mono text-muted-foreground mt-0.5">{invoiceNumber || "INV-DRAFT"}</p>
+              <p className="text-xs font-mono text-muted-foreground mt-0.5">{invoiceNumber || `${isQuote ? "QUO" : "INV"}-DRAFT`}</p>
             </div>
           </div>
         )}
@@ -94,8 +99,8 @@ export function InvoicePreview({
         {branding.letterhead_url && (
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-black tracking-tighter uppercase" style={{ color: brandColor }}>Invoice</h1>
-              <p className="text-xs font-mono text-muted-foreground">{invoiceNumber || "INV-DRAFT"}</p>
+            <h1 className="text-2xl font-black tracking-tighter uppercase" style={{ color: brandColor }}>{docTitle}</h1>
+            <p className="text-xs font-mono text-muted-foreground">{invoiceNumber || `${isQuote ? "QUO" : "INV"}-DRAFT`}</p>
             </div>
           </div>
         )}
@@ -113,10 +118,16 @@ export function InvoicePreview({
               <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-0.5">Issue Date</p>
               <p className="text-xs font-medium">{issueDate}</p>
             </div>
-            {dueDateFormatted && (
+            {dueDateFormatted && !isQuote && (
               <div>
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-0.5">Due Date</p>
                 <p className="text-xs font-medium">{dueDateFormatted}</p>
+              </div>
+            )}
+            {isQuote && validUntil && (
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-0.5">Valid Until</p>
+                <p className="text-xs font-medium">{new Date(validUntil).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
               </div>
             )}
           </div>

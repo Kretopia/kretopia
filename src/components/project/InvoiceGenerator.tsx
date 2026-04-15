@@ -12,11 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard, Pencil } from "lucide-react";
+import { FileText, Plus, Trash2, Mail, Download, Eye, Clock, CheckCircle2, Send, AlertCircle, Percent, DollarSign, Copy, CreditCard, Pencil, ArrowRightLeft, ScrollText } from "lucide-react";
 import { toast } from "sonner";
 import { InvoiceBrandingForm, InvoiceBranding } from "./invoice/InvoiceBrandingForm";
 import { InvoicePaymentForm, PaymentConfig } from "./invoice/InvoicePaymentForm";
 import { InvoicePreview } from "./invoice/InvoicePreview";
+import { AIMarkupHelper } from "./invoice/AIMarkupHelper";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
 
 interface InvoiceGeneratorProps {
@@ -30,6 +31,7 @@ interface LineItem {
   amount: number;
 }
 
+type DocumentType = "invoice" | "quote";
 type InvoiceInsert = Database['public']['Tables']['invoices']['Insert'];
 
 export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
@@ -43,6 +45,11 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   const [createStep, setCreateStep] = useState<"details" | "branding" | "payment" | "preview">("details");
   const [loading, setLoading] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
+  const [listFilter, setListFilter] = useState<"all" | "invoice" | "quote">("all");
+
+  // Document type toggle
+  const [documentType, setDocumentType] = useState<DocumentType>("invoice");
+  const [validUntil, setValidUntil] = useState("");
 
   // Form state
   const [recipientName, setRecipientName] = useState("");
@@ -205,20 +212,19 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       const subtotal = calculateSubtotal();
       const tax = calculateTax();
       const total = calculateTotal();
-      const tempInvoiceNumber = `INV-${new Date().getFullYear()}-${Date.now()}`;
+      const prefix = documentType === "quote" ? "QUO" : "INV";
+      const tempNumber = `${prefix}-${new Date().getFullYear()}-${Date.now()}`;
 
-      // Find the issued_to user id from collaborators or leave null for external clients
       const issuedTo = collaborators.find(c => c.full_name === recipientName)?.user_id || collaborators[0]?.user_id || null;
 
       const invoiceData: any = {
-        invoice_number: tempInvoiceNumber,
+        invoice_number: tempNumber,
         project_id: projectId || null,
         issued_by: user?.id!,
         issued_to: issuedTo || user?.id!,
         amount: subtotal,
         tax_rate: parseFloat(taxRate),
-        
-        due_date: dueDate || null,
+        due_date: documentType === "invoice" ? (dueDate || null) : null,
         notes,
         line_items: lineItems as any,
         status: "draft",
@@ -238,19 +244,21 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         discount_type: discountType || null,
         discount_value: parseFloat(discountValue) || 0,
         discount_amount: calculateDiscount(),
+        document_type: documentType,
+        valid_until: documentType === "quote" ? (validUntil || null) : null,
       };
 
       const { error } = await supabase.from("invoices").insert(invoiceData);
       if (error) throw error;
 
-      toast.success("Invoice created successfully!");
+      toast.success(`${documentType === "quote" ? "Quote" : "Invoice"} created successfully!`);
       setShowCreateDialog(false);
       setCreateStep("details");
       fetchInvoices();
       resetForm();
     } catch (error) {
-      console.error("Error creating invoice:", error);
-      toast.error("Failed to create invoice");
+      console.error("Error creating document:", error);
+      toast.error(`Failed to create ${documentType}`);
     } finally {
       setLoading(false);
     }
@@ -261,10 +269,64 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     setDueDate(""); setTaxRate("0"); setNotes(""); setDiscountType(""); setDiscountValue("0");
     setLineItems([{ description: "", quantity: 1, rate: 0, amount: 0 }]);
     setCreateStep("details");
+    setDocumentType("invoice");
+    setValidUntil("");
   };
 
-  const handleDuplicateInvoice = (invoice: any) => {
-    // Pre-fill form with existing invoice data
+  // Convert a quote to an invoice
+  const handleConvertToInvoice = async (quote: any) => {
+    if (!guardInvoice()) return;
+    setLoading(true);
+    try {
+      const invoiceNumber = `INV-${new Date().getFullYear()}-${Date.now()}`;
+      const invoiceData: any = {
+        invoice_number: invoiceNumber,
+        project_id: quote.project_id,
+        issued_by: quote.issued_by,
+        issued_to: quote.issued_to,
+        amount: quote.amount,
+        tax_rate: quote.tax_rate,
+        due_date: null,
+        notes: quote.notes,
+        line_items: quote.line_items,
+        status: "draft",
+        currency: quote.currency,
+        brand_name: quote.brand_name,
+        brand_logo_url: quote.brand_logo_url,
+        brand_address: quote.brand_address,
+        brand_email: quote.brand_email,
+        brand_website: quote.brand_website,
+        brand_color: quote.brand_color,
+        recipient_name: quote.recipient_name,
+        recipient_email: quote.recipient_email,
+        recipient_address: quote.recipient_address,
+        payment_method: quote.payment_method,
+        payment_details: quote.payment_details,
+        terms_conditions: quote.terms_conditions,
+        discount_type: quote.discount_type,
+        discount_value: quote.discount_value,
+        discount_amount: quote.discount_amount,
+        document_type: "invoice",
+        converted_from_quote_id: quote.id,
+      };
+
+      const { error } = await supabase.from("invoices").insert(invoiceData);
+      if (error) throw error;
+
+      // Mark the quote as accepted
+      await supabase.from("invoices").update({ status: "accepted" } as any).eq("id", quote.id);
+
+      toast.success("Quote converted to invoice!");
+      fetchInvoices();
+    } catch (error) {
+      console.error("Error converting quote:", error);
+      toast.error("Failed to convert quote to invoice");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadInvoiceData = (invoice: any) => {
     setRecipientName(invoice.recipient_name || "");
     setRecipientEmail(invoice.recipient_email || "");
     setRecipientAddress(invoice.recipient_address || "");
@@ -292,40 +354,21 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       payment_details: invoice.payment_details || {},
       terms_conditions: invoice.terms_conditions || "",
     });
+    setDocumentType(invoice.document_type || "invoice");
+    setValidUntil(invoice.valid_until || "");
+  };
+
+  const handleDuplicateInvoice = (invoice: any) => {
+    loadInvoiceData(invoice);
     setEditingInvoiceId(null);
     setCreateStep("details");
     setShowCreateDialog(true);
-    toast.success("Invoice data loaded for duplication");
+    toast.success(`${(invoice.document_type || "invoice") === "quote" ? "Quote" : "Invoice"} data loaded for duplication`);
   };
 
   const handleEditInvoice = (invoice: any) => {
-    setRecipientName(invoice.recipient_name || "");
-    setRecipientEmail(invoice.recipient_email || "");
-    setRecipientAddress(invoice.recipient_address || "");
+    loadInvoiceData(invoice);
     setDueDate(invoice.due_date || "");
-    setTaxRate(String(invoice.tax_rate || 0));
-    setNotes(invoice.notes || "");
-    setCurrency(invoice.currency || "USD");
-    setDiscountType(invoice.discount_type || "");
-    setDiscountValue(String(invoice.discount_value || 0));
-    setLineItems(
-      (invoice.line_items || []).length > 0
-        ? (invoice.line_items as LineItem[])
-        : [{ description: "", quantity: 1, rate: 0, amount: 0 }]
-    );
-    setBranding({
-      brand_name: invoice.brand_name || "",
-      brand_logo_url: invoice.brand_logo_url || "",
-      brand_address: invoice.brand_address || "",
-      brand_email: invoice.brand_email || "",
-      brand_website: invoice.brand_website || "",
-      brand_color: invoice.brand_color || "#6366f1",
-    });
-    setPaymentConfig({
-      payment_method: invoice.payment_method || "bank_transfer",
-      payment_details: invoice.payment_details || {},
-      terms_conditions: invoice.terms_conditions || "",
-    });
     setEditingInvoiceId(invoice.id);
     setCreateStep("details");
     setShowCreateDialog(true);
@@ -663,6 +706,13 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   };
   const currencySymbol = getCurrencySymbol(currency);
 
+  const filteredInvoices = invoices.filter(inv => {
+    if (listFilter === "all") return true;
+    return (inv.document_type || "invoice") === listFilter;
+  });
+
+  const docLabel = documentType === "quote" ? "Quote" : "Invoice";
+
   return (
     <>
       {/* Invoice List Dialog */}
@@ -670,96 +720,135 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         <DialogTrigger asChild>
           <Button variant="outline" size="sm">
             <FileText className="h-4 w-4 mr-2" />
-            Invoices {invoices.length > 0 && `(${invoices.length})`}
+            Invoices & Quotes {invoices.length > 0 && `(${invoices.length})`}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Invoice Manager
+              Invoice & Quote Manager
             </DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto">
-            <Button size="sm" className="w-full mb-4 gap-2" onClick={() => { setEditingInvoiceId(null); resetForm(); setShowCreateDialog(true); }}>
-              <Plus className="h-4 w-4" />
-              Create Professional Invoice
+          {/* Filter Tabs */}
+          <div className="flex items-center gap-2 mb-3">
+            {(["all", "invoice", "quote"] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setListFilter(f)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all border ${
+                  listFilter === f
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted text-muted-foreground border-transparent hover:border-border"
+                }`}
+              >
+                {f === "all" ? "All" : f === "invoice" ? "Invoices" : "Quotes"}
+              </button>
+            ))}
+            <div className="flex-1" />
+            <Button size="sm" className="gap-1.5" onClick={() => { setEditingInvoiceId(null); resetForm(); setDocumentType("invoice"); setShowCreateDialog(true); }}>
+              <Plus className="h-3.5 w-3.5" /> Invoice
             </Button>
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => { setEditingInvoiceId(null); resetForm(); setDocumentType("quote"); setShowCreateDialog(true); }}>
+              <ScrollText className="h-3.5 w-3.5" /> Quote
+            </Button>
+          </div>
 
-            {/* Invoice List */}
-            {invoices.length === 0 ? (
+          <div className="flex-1 overflow-y-auto">
+            {/* Invoice/Quote List */}
+            {filteredInvoices.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium">No invoices yet</p>
-                <p className="text-sm">Create your first branded, professional invoice</p>
+                <p className="font-medium">No {listFilter === "all" ? "documents" : listFilter === "quote" ? "quotes" : "invoices"} yet</p>
+                <p className="text-sm">Create your first branded, professional {listFilter === "quote" ? "quote" : "invoice"}</p>
               </div>
             ) : (
               <div className="space-y-2">
-                {invoices.map((inv) => (
-                  <Card key={inv.id} className="p-3 hover:bg-accent/30 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1 h-12 rounded-full" style={{ backgroundColor: inv.brand_color || "#6366f1" }} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-mono text-xs font-medium">{inv.invoice_number}</p>
-                          {getStatusBadge(inv.status)}
-                        </div>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {inv.recipient_name || inv.issued_to_profile?.full_name || "Client"}
-                        </p>
-                        {inv.due_date && (
-                          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                            <Clock className="h-2.5 w-2.5" />
-                            Due: {new Date(inv.due_date).toLocaleDateString()}
+                {filteredInvoices.map((inv) => {
+                  const isQuote = (inv.document_type || "invoice") === "quote";
+                  return (
+                    <Card key={inv.id} className="p-3 hover:bg-accent/30 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-1 h-12 rounded-full" style={{ backgroundColor: inv.brand_color || "#6366f1" }} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-mono text-xs font-medium">{inv.invoice_number}</p>
+                            {getStatusBadge(inv.status)}
+                            {isQuote && (
+                              <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">
+                                <ScrollText className="h-2.5 w-2.5 mr-0.5" /> Quote
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {inv.recipient_name || inv.issued_to_profile?.full_name || "Client"}
                           </p>
+                          {inv.due_date && (
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-2.5 w-2.5" />
+                              Due: {new Date(inv.due_date).toLocaleDateString()}
+                            </p>
+                          )}
+                          {isQuote && inv.valid_until && (
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-2.5 w-2.5" />
+                              Valid until: {new Date(inv.valid_until).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg">{getCurrencySymbol(inv.currency || "USD")}{Number(inv.total_amount).toFixed(2)}</p>
+                          <p className="text-[10px] text-muted-foreground">{inv.currency || "USD"}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-1.5 mt-2 pt-2 border-t flex-wrap">
+                        {inv.status === "draft" && (
+                          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary/80" onClick={() => handleEditInvoice(inv)}>
+                            <Pencil className="h-3 w-3" /> Edit
+                          </Button>
+                        )}
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handlePreview(inv)}>
+                          <Eye className="h-3 w-3" /> Preview
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleDownloadPDF(inv)}>
+                          <Download className="h-3 w-3" /> PDF
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleSendInvoice(inv)}>
+                          <Mail className="h-3 w-3" /> Send
+                        </Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleDuplicateInvoice(inv)}>
+                          <Copy className="h-3 w-3" /> Duplicate
+                        </Button>
+                        {/* Quote → Invoice conversion */}
+                        {isQuote && inv.status !== "accepted" && (
+                          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary/80" onClick={() => handleConvertToInvoice(inv)} disabled={loading}>
+                            <ArrowRightLeft className="h-3 w-3" /> Convert to Invoice
+                          </Button>
+                        )}
+                        {!isQuote && inv.status !== "paid" && (
+                          <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-green-600 hover:text-green-700" onClick={() => handleMarkAsPaid(inv)}>
+                            <CreditCard className="h-3 w-3" /> Mark Paid
+                          </Button>
                         )}
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg">{getCurrencySymbol(inv.currency || "USD")}{Number(inv.total_amount).toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground">{inv.currency || "USD"}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-1.5 mt-2 pt-2 border-t flex-wrap">
-                      {inv.status === "draft" && (
-                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary/80" onClick={() => handleEditInvoice(inv)}>
-                          <Pencil className="h-3 w-3" /> Edit
-                        </Button>
-                      )}
-                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handlePreview(inv)}>
-                        <Eye className="h-3 w-3" /> Preview
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleDownloadPDF(inv)}>
-                        <Download className="h-3 w-3" /> PDF
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleSendInvoice(inv)}>
-                        <Mail className="h-3 w-3" /> Send
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => handleDuplicateInvoice(inv)}>
-                        <Copy className="h-3 w-3" /> Duplicate
-                      </Button>
-                      {inv.status !== "paid" && (
-                        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-green-600 hover:text-green-700" onClick={() => handleMarkAsPaid(inv)}>
-                          <CreditCard className="h-3 w-3" /> Mark Paid
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Create/Edit Invoice Dialog */}
+      {/* Create/Edit Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={(open) => {
         setShowCreateDialog(open);
         if (!open) { setEditingInvoiceId(null); resetForm(); }
       }}>
         <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>{editingInvoiceId ? "Edit Invoice" : "Create Invoice"}</DialogTitle>
+            <DialogTitle>{editingInvoiceId ? `Edit ${docLabel}` : `Create ${docLabel}`}</DialogTitle>
           </DialogHeader>
 
           {/* Step Navigation */}
@@ -780,9 +869,31 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {/* Step 1: Invoice Details */}
+            {/* Step 1: Details */}
             {createStep === "details" && (
               <div className="space-y-4">
+                {/* Document Type Toggle */}
+                {!editingInvoiceId && (
+                  <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
+                    <button
+                      onClick={() => setDocumentType("invoice")}
+                      className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        documentType === "invoice" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <FileText className="h-3 w-3 inline mr-1" /> Invoice
+                    </button>
+                    <button
+                      onClick={() => setDocumentType("quote")}
+                      className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        documentType === "quote" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <ScrollText className="h-3 w-3 inline mr-1" /> Quote
+                    </button>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <Label className="text-xs">Client Name *</Label>
@@ -808,10 +919,17 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <Label className="text-xs">Due Date</Label>
-                    <Input className="h-8 text-sm" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                  </div>
+                  {documentType === "invoice" ? (
+                    <div>
+                      <Label className="text-xs">Due Date</Label>
+                      <Input className="h-8 text-sm" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                    </div>
+                  ) : (
+                    <div>
+                      <Label className="text-xs">Valid Until</Label>
+                      <Input className="h-8 text-sm" type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
+                    </div>
+                  )}
                   <div>
                     <Label className="text-xs">Currency</Label>
                     <Select value={currency} onValueChange={setCurrency}>
@@ -893,9 +1011,18 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                   </div>
                 </Card>
 
+                {/* AI Markup Helper */}
+                <AIMarkupHelper
+                  lineItems={lineItems}
+                  currency={currency}
+                  onApplyMarkup={(updatedItems, pct) => {
+                    setLineItems(updatedItems);
+                  }}
+                />
+
                 <div>
                   <Label className="text-xs">Notes</Label>
-                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Additional notes for the client..." rows={2} className="text-sm" />
+                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={`Additional notes for the ${documentType === "quote" ? "quote" : "client"}...`} rows={2} className="text-sm" />
                 </div>
 
                 <Button className="w-full" onClick={() => setCreateStep("branding")}>
@@ -919,7 +1046,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                 <InvoicePaymentForm config={paymentConfig} onChange={setPaymentConfig} />
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setCreateStep("branding")}>← Back</Button>
-                  <Button className="flex-1" onClick={() => setCreateStep("preview")}>Preview Invoice →</Button>
+                  <Button className="flex-1" onClick={() => setCreateStep("preview")}>Preview {docLabel} →</Button>
                 </div>
               </div>
             )}
@@ -929,19 +1056,21 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                 <InvoicePreview
                   branding={branding}
                   recipient={{ name: recipientName, email: recipientEmail, address: recipientAddress }}
-                  invoiceNumber="INV-DRAFT"
-                  dueDate={dueDate}
+                  invoiceNumber={documentType === "quote" ? "QUO-DRAFT" : "INV-DRAFT"}
+                  dueDate={documentType === "invoice" ? dueDate : ""}
                   lineItems={lineItems}
                   taxRate={parseFloat(taxRate)}
                   discount={{ type: discountType, value: parseFloat(discountValue), amount: calculateDiscount() }}
                   notes={notes}
                   payment={paymentConfig}
                   currency={currency}
+                  documentType={documentType}
+                  validUntil={documentType === "quote" ? validUntil : ""}
                 />
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setCreateStep("payment")}>← Back</Button>
                   <Button className="flex-1" onClick={editingInvoiceId ? handleUpdateInvoice : handleCreateInvoice} disabled={loading}>
-                    {loading ? (editingInvoiceId ? "Saving..." : "Creating...") : (editingInvoiceId ? "Save Changes" : "Create Invoice")}
+                    {loading ? (editingInvoiceId ? "Saving..." : "Creating...") : (editingInvoiceId ? "Save Changes" : `Create ${docLabel}`)}
                   </Button>
                 </div>
               </div>
@@ -954,7 +1083,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Invoice Preview</DialogTitle>
+            <DialogTitle>{(previewInvoice?.document_type || "invoice") === "quote" ? "Quote" : "Invoice"} Preview</DialogTitle>
           </DialogHeader>
           {previewInvoice && (
             <InvoicePreview
@@ -987,6 +1116,8 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                 terms_conditions: previewInvoice.terms_conditions || "",
               }}
               currency={previewInvoice.currency}
+              documentType={previewInvoice.document_type || "invoice"}
+              validUntil={previewInvoice.valid_until || ""}
             />
           )}
         </DialogContent>

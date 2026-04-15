@@ -1022,15 +1022,6 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                   </div>
                 </Card>
 
-                {/* AI Pricing Co-Pilot */}
-                <PricingCoPilot
-                  lineItems={lineItems}
-                  currency={currency}
-                  onApplyLineItems={(items) => setLineItems(items)}
-                  onApplyNotes={(n) => setNotes(n)}
-                  onApplyTerms={(t) => setPaymentConfig(prev => ({ ...prev, terms_conditions: t }))}
-                  onApplyTaxRate={(r) => setTaxRate(String(r))}
-                />
 
                 {/* Quick Markup Calculator */}
                 <AIMarkupHelper

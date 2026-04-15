@@ -147,10 +147,10 @@ const DefaultRoute = () => {
 // Catch-all: authenticated users go to mode-aware home
 const CatchAllRedirect = () => {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/scene" replace />;
+  if (!user) return <Navigate to="/" replace />;
   let mode = "create";
   try { mode = localStorage.getItem("thrivein-nav-mode") || "create"; } catch {}
-  return <Navigate to={mode === "work" ? "/desk" : "/scene"} replace />;
+  return <Navigate to={mode === "work" ? "/desk" : "/"} replace />;
 };
 
 // Track page views
@@ -265,7 +265,7 @@ const AppContent = () => {
             <Route path="/nearby" element={<NearbyCreators />} />
             <Route path="/events" element={<Navigate to="/nearby" replace />} />
             <Route path="/scene" element={<Scene />} />
-            <Route path="/explore" element={<Explore />} />
+            <Route path="/explore" element={<Navigate to="/nearby" replace />} />
             
             {/* Public Magazine Article - SEO accessible */}
             <Route path="/magazine/:slug" element={<MagazineArticlePage />} />

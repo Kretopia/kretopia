@@ -84,6 +84,98 @@ export interface EPKBrandingOptions {
   darkColor?: [number, number, number];
   logoUrl?: string;
   tagline?: string;
+  templateId?: string;
+}
+
+// EPK PDF Template definitions
+export type EPKTemplateId = 'cinematic-dark' | 'clean-light' | 'bold-minimal';
+
+export interface EPKTemplate {
+  id: EPKTemplateId;
+  name: string;
+  description: string;
+  previewBg: string;
+  previewAccent: string;
+  previewText: string;
+  palette: {
+    bg: [number, number, number];
+    surface: [number, number, number];
+    card: [number, number, number];
+    primary: [number, number, number];
+    accent: [number, number, number];
+    gold: [number, number, number];
+    white: [number, number, number];
+    muted: [number, number, number];
+    dimmed: [number, number, number];
+    light: [number, number, number];
+  };
+}
+
+export const EPK_TEMPLATES: EPKTemplate[] = [
+  {
+    id: 'cinematic-dark',
+    name: 'Cinematic Dark',
+    description: 'Deep dark tones with indigo-violet accents — dramatic & premium',
+    previewBg: 'bg-[#0C0A12]',
+    previewAccent: 'bg-[#5B6BF5]',
+    previewText: 'text-white',
+    palette: {
+      bg: [12, 10, 18],
+      surface: [22, 20, 32],
+      card: [30, 28, 42],
+      primary: [91, 107, 245],
+      accent: [139, 92, 246],
+      gold: [245, 197, 66],
+      white: [255, 255, 255],
+      muted: [140, 140, 160],
+      dimmed: [80, 78, 98],
+      light: [220, 218, 235],
+    },
+  },
+  {
+    id: 'clean-light',
+    name: 'Clean Light',
+    description: 'Warm white with sage green accents — editorial & elegant',
+    previewBg: 'bg-[#FAFAF8]',
+    previewAccent: 'bg-[#5A7A64]',
+    previewText: 'text-[#1a1a1a]',
+    palette: {
+      bg: [250, 250, 248],
+      surface: [245, 244, 240],
+      card: [255, 255, 255],
+      primary: [90, 122, 100],
+      accent: [70, 100, 80],
+      gold: [180, 140, 60],
+      white: [26, 26, 26],       // inverted: text is dark
+      muted: [120, 120, 115],
+      dimmed: [180, 178, 172],
+      light: [60, 58, 55],
+    },
+  },
+  {
+    id: 'bold-minimal',
+    name: 'Bold Minimal',
+    description: 'Pure black with electric red accents — striking & modern',
+    previewBg: 'bg-black',
+    previewAccent: 'bg-[#FF2D2D]',
+    previewText: 'text-white',
+    palette: {
+      bg: [0, 0, 0],
+      surface: [15, 15, 15],
+      card: [24, 24, 24],
+      primary: [255, 45, 45],
+      accent: [255, 80, 80],
+      gold: [255, 200, 60],
+      white: [255, 255, 255],
+      muted: [130, 130, 130],
+      dimmed: [70, 70, 70],
+      light: [210, 210, 210],
+    },
+  },
+];
+
+export function getEPKTemplate(id?: string): EPKTemplate {
+  return EPK_TEMPLATES.find(t => t.id === id) || EPK_TEMPLATES[0];
 }
 
 // 16:9 landscape dimensions in mm

@@ -29,7 +29,27 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-type MapItemType = 'creator' | 'session' | 'location';
+type MapItemType = 'creator' | 'session' | 'location' | 'gig';
+
+interface NearbyGig {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  compensation: string | null;
+  location: string | null;
+  location_city: string | null;
+  skills: string[] | null;
+  tags: string[] | null;
+  image_url: string | null;
+  created_by: string | null;
+  created_at: string;
+  latitude: number;
+  longitude: number;
+  distance_km: number;
+  creator_name: string | null;
+  creator_avatar: string | null;
+}
 
 const NearbyCreators = () => {
   const { user } = useAuth();
@@ -41,6 +61,7 @@ const NearbyCreators = () => {
   const [creators, setCreators] = useState<NearbyCreator[]>([]);
   const [sessions, setSessions] = useState<NearbySession[]>([]);
   const [locations, setLocations] = useState<CreativeLocation[]>([]);
+  const [gigs, setGigs] = useState<NearbyGig[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [radius, setRadius] = useState(25);
   const [locationVisible, setLocationVisible] = useState(true);
@@ -106,16 +127,18 @@ const NearbyCreators = () => {
     if (!userLocation) { setLoading(false); return; }
     setLoading(true);
     try {
-      const [cr, sr, lr] = await Promise.all([
+      const [cr, sr, lr, gr] = await Promise.all([
         supabase.rpc('get_nearby_creators', { user_lat: userLocation.lat, user_lon: userLocation.lng, radius_km: radius, limit_count: 50 }),
         supabase.rpc('get_nearby_jams', { user_lat: userLocation.lat, user_lon: userLocation.lng, radius_km: radius, limit_count: 20 }),
         supabase.rpc('get_nearby_locations', { user_lat: userLocation.lat, user_lon: userLocation.lng, radius_km: radius, limit_count: 50 }),
+        supabase.rpc('get_nearby_gigs' as any, { user_lat: userLocation.lat, user_lon: userLocation.lng, radius_km: radius, limit_count: 30 }),
       ]);
       if (cr.error) throw cr.error;
       if (sr.error) throw sr.error;
       setCreators(cr.data || []);
       setSessions((sr.data || []) as NearbySession[]);
       setLocations((lr.data || []) as CreativeLocation[]);
+      setGigs((gr.data || []) as NearbyGig[]);
     } catch (error: any) {
       toast({ title: "Error loading nearby data", description: error.message, variant: "destructive" });
     } finally { setLoading(false); }

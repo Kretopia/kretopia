@@ -264,7 +264,6 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
         open={showProfilePreview}
         onOpenChange={setShowProfilePreview}
         onSwipe={handlePreviewSwipe}
-        onMessage={handleSendMessage}
       />
     </div>
   );

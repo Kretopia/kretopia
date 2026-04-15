@@ -243,22 +243,13 @@ export function ProfilePreviewSheet({
               <X className="h-6 w-6 text-red-500" />
             </Button>
             
-            {/* Send Message Button */}
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-14 w-14 rounded-full border-2 border-primary/50 hover:bg-primary/10"
-              onClick={handleMessage}
-            >
-              <MessageCircle className="h-6 w-6 text-primary" />
-            </Button>
-            
             <Button
               size="lg"
-              className="h-14 w-14 rounded-full bg-green-500 hover:bg-green-600"
+              className="h-14 flex-1 max-w-[200px] rounded-full bg-green-500 hover:bg-green-600 gap-2"
               onClick={handleLike}
             >
               <Heart className="h-6 w-6 text-white" />
+              <span className="text-white font-semibold">Connect</span>
             </Button>
           </div>
         </div>

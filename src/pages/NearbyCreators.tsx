@@ -185,7 +185,14 @@ const NearbyCreators = () => {
     return r.sort((a, b) => a.distance_km - b.distance_km);
   }, [atlasFilter, locations, bookmarkedIds, searchQuery]);
 
-  const totalResults = filteredCreators.length + filteredSessions.length + filteredLocations.length;
+  const filteredGigs = useMemo(() => {
+    if (atlasFilter !== 'all' && atlasFilter !== 'gigs') return [];
+    let r = gigs;
+    if (searchQuery) { const q = searchQuery.toLowerCase(); r = r.filter(g => g.title?.toLowerCase().includes(q) || g.type?.toLowerCase().includes(q)); }
+    return r;
+  }, [atlasFilter, gigs, searchQuery]);
+
+  const totalResults = filteredCreators.length + filteredSessions.length + filteredLocations.length + filteredGigs.length;
 
   return (
     <div className="min-h-screen pb-24 md:pb-6">

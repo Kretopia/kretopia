@@ -306,8 +306,8 @@ const CreditDatabase = () => {
   return (
     <>
       <Helmet>
-        <title>ThriveCredits™ — The Global Creative Record | ThriveIN</title>
-        <meta name="description" content="The definitive database of creative work. Search projects across film, music, events, fashion, art, and all creative industries." />
+        <title>Creative Passport™ — Your Verified Creative Identity | ThriveIN</title>
+        <meta name="description" content="Your verified creative identity. Search and claim your work across film, music, events, fashion, art, and all creative industries." />
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">

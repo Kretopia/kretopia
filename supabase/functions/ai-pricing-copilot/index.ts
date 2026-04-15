@@ -14,9 +14,11 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const { messages, currency, existing_items } = await req.json();
+    const { messages, currency, document_type, existing_items, current_details } = await req.json();
 
-    const systemPrompt = `You are ThriveQuote AI — an expert pricing co-pilot for creative freelancers and agencies. You help users build professional quotes and invoices by analyzing their costs and suggesting competitive pricing.
+    const docLabel = document_type === "quote" ? "quote" : "invoice";
+
+    const systemPrompt = `You are ThriveQuote AI — an expert pricing co-pilot for creative freelancers and agencies. You help users build professional quotes and invoices through natural conversation.
 
 Your capabilities:
 1. **Cost Analysis**: When a user shares supplier/subcontractor costs, calculate appropriate markups based on industry standards
@@ -24,18 +26,32 @@ Your capabilities:
 3. **Market Pricing**: Suggest rates based on creative industry standards for the user's region
 4. **Description Enhancement**: Improve service descriptions to sound more professional
 5. **Terms & Notes**: Suggest professional terms, payment conditions, and notes
+6. **Client Details Collection**: Gather client name, email, address, dates, currency, tax info naturally through conversation
 
+Document type: ${docLabel}
 Currency: ${currency || "USD"}
+
+CONVERSATION FLOW:
+- Start by understanding the project/services
+- Help with pricing, markups, and line items
+- When discussing client details or when the user provides them, use the set_document_details tool to capture them
+- Be proactive: after pricing is sorted, ask "Who is this ${docLabel} for?" to collect client info
+- Format tables clearly using markdown tables with proper alignment
+- Use bold headers and clean spacing in your responses
 
 RULES:
 - Always be conversational and helpful, like a pricing mentor
-- When suggesting prices, show the math (cost → markup → client price)
+- When suggesting prices, show the math (cost → markup → client price) in clean markdown tables
 - Consider the creative industry context (film, design, music, photography, etc.)
 - Typical creative markups: 1.5x-3x for subcontractor costs, 2x-4x for equipment
 - Always suggest adding a creative direction/project management fee (10-20% of total)
 - When the user is ready, use the generate_line_items tool to output structured data
+- When discussing currency, recommend appropriate currency based on client location
+- Collect client details naturally — don't dump a form, ask conversationally
 
-${existing_items && existing_items.length > 0 ? `\nCurrent line items on the document:\n${existing_items.map((i: any, idx: number) => `${idx + 1}. "${i.description}" — Qty: ${i.quantity}, Rate: ${currency} ${i.rate}`).join("\n")}` : ""}`;
+${existing_items && existing_items.length > 0 ? `\nCurrent line items on the document:\n${existing_items.map((i: any, idx: number) => `${idx + 1}. "${i.description}" — Qty: ${i.quantity}, Rate: ${currency} ${i.rate}`).join("\n")}` : ""}
+
+${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -100,6 +116,25 @@ ${existing_items && existing_items.length > 0 ? `\nCurrent line items on the doc
                   },
                 },
                 required: ["enhanced_items"],
+              },
+            },
+          },
+          {
+            type: "function",
+            function: {
+              name: "set_document_details",
+              description: "Capture client and document details when the user provides them during conversation. Call this whenever the user mentions their client name, email, address, preferred currency, tax rate, or due dates.",
+              parameters: {
+                type: "object",
+                properties: {
+                  client_name: { type: "string", description: "Client or company name" },
+                  client_email: { type: "string", description: "Client email address" },
+                  client_address: { type: "string", description: "Client address or location" },
+                  currency: { type: "string", description: "Preferred currency code (e.g., USD, EUR, IDR)" },
+                  tax_rate: { type: "number", description: "Tax rate percentage" },
+                  due_date: { type: "string", description: "Due date or valid until date in YYYY-MM-DD format" },
+                  notes: { type: "string", description: "Document notes" },
+                },
               },
             },
           },

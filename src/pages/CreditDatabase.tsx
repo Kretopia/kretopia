@@ -321,11 +321,14 @@ const CreditDatabase = () => {
           <div className="container mx-auto px-4">
             {!isSearchActive && (
               <div className="text-center mb-5">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
-                  ThriveCredits™
-                </h1>
+                <div className="inline-flex items-center gap-2 mb-2">
+                  <Fingerprint className="h-6 w-6 text-primary" />
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                    Creative Passport™
+                  </h1>
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  The global creative record — search any project, person, or production
+                  Your verified creative identity — search any project, person, or production
                 </p>
               </div>
             )}

@@ -43,16 +43,27 @@ export function NewsletterPopup() {
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      // Store in dedicated newsletter_subscribers table
+      const { error: subError } = await supabase
+        .from('newsletter_subscribers')
+        .upsert({
+          email: email.trim().toLowerCase(),
+          source: 'popup',
+          segments: ['weekly_founder_message', 'spotlight'],
+          metadata: { page_path: window.location.pathname, referrer: document.referrer },
+        }, { onConflict: 'email' });
+
+      if (subError) throw subError;
+
+      // Also track as analytics event
+      await supabase
         .from('analytics_events')
         .insert({
           event_name: 'newsletter_signup',
           event_category: 'engagement',
-          event_properties: { email: email.trim() },
+          event_properties: { email: email.trim(), source: 'popup' },
           page_path: window.location.pathname,
-        });
-
-      if (error) throw error;
+        }).catch(() => {});
 
       setSubmitted(true);
       localStorage.setItem(STORAGE_KEY, Date.now().toString());

@@ -18,9 +18,9 @@ interface BrandLogoProps {
 }
 
 const sizeConfig = {
-  sm: { icon: "h-9 w-9", text: "text-base", gap: "gap-1.5" },
-  md: { icon: "h-11 w-11", text: "text-xl", gap: "gap-2" },
-  lg: { icon: "h-14 w-14", text: "text-2xl", gap: "gap-2.5" },
+  sm: { icon: "h-10 w-10", text: "text-lg", gap: "gap-1.5" },
+  md: { icon: "h-12 w-12", text: "text-xl", gap: "gap-2" },
+  lg: { icon: "h-16 w-16", text: "text-3xl", gap: "gap-2.5" },
 } as const;
 
 /**

@@ -321,6 +321,8 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     setCreateStep("details");
     setDocumentType("invoice");
     setValidUntil("");
+    clearDraft();
+    setShowDraftBanner(false);
   };
 
   // Convert a quote to an invoice
@@ -901,6 +903,21 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
             <DialogTitle>{editingInvoiceId ? `Edit ${docLabel}` : `Create ${docLabel}`}</DialogTitle>
           </DialogHeader>
 
+          {/* Draft Recovery Banner */}
+          {showDraftBanner && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-sm">
+              <RotateCcw className="h-4 w-4 text-amber-500 shrink-0" />
+              <span className="flex-1 text-foreground">
+                You have an unsaved draft. Pick up where you left off?
+              </span>
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={restoreDraft}>
+                <RotateCcw className="h-3 w-3" /> Restore
+              </Button>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { clearDraft(); setShowDraftBanner(false); }}>
+                Discard
+              </Button>
+            </div>
+          )}
           {/* Step Navigation */}
           <div className="flex gap-1 mb-4">
             {(["details", "branding", "payment", "preview"] as const).map((step, i) => (

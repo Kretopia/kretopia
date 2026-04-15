@@ -37,6 +37,8 @@ export function InvoicePreview({
   const tax = afterDiscount * (taxRate / 100);
   const total = afterDiscount + tax;
   const brandColor = branding.brand_color || "#6366f1";
+  const isQuote = documentType === "quote";
+  const docTitle = isQuote ? "Quote" : "Invoice";
 
   const fmt = (n: number) => {
     const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", JPY: "¥", INR: "₹", NGN: "₦", KES: "KSh ", BRL: "R$", ZAR: "R", AED: "د.إ ", IDR: "Rp ", TTD: "TT$", CHF: "CHF ", CAD: "C$", AUD: "A$" };
@@ -87,9 +89,9 @@ export function InvoicePreview({
                 className="text-2xl sm:text-3xl font-black tracking-tighter uppercase"
                 style={{ color: brandColor }}
               >
-                Invoice
+                {docTitle}
               </h1>
-              <p className="text-xs font-mono text-muted-foreground mt-0.5">{invoiceNumber || "INV-DRAFT"}</p>
+              <p className="text-xs font-mono text-muted-foreground mt-0.5">{invoiceNumber || `${isQuote ? "QUO" : "INV"}-DRAFT`}</p>
             </div>
           </div>
         )}

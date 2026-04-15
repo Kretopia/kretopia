@@ -1,6 +1,7 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight, Crown } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const TIERS = [
   {
@@ -17,7 +18,8 @@ const TIERS = [
       "1 active project/month",
     ],
     cta: "Get Started Free",
-    ctaLink: "/auth?tab=signup",
+    guestLink: "/auth?tab=signup",
+    authedLink: "/circle",
   },
   {
     name: "Creator",
@@ -34,7 +36,8 @@ const TIERS = [
       "Profile verification badge",
     ],
     cta: "Start 7-Day Trial",
-    ctaLink: "/subscription",
+    guestLink: "/auth?tab=signup&redirect=/subscription",
+    authedLink: "/subscription",
   },
   {
     name: "Creator +",
@@ -50,11 +53,15 @@ const TIERS = [
       "Dedicated account manager",
     ],
     cta: "Start 7-Day Trial",
-    ctaLink: "/subscription",
+    guestLink: "/auth?tab=signup&redirect=/subscription",
+    authedLink: "/subscription",
   },
 ];
 
 export const PricingPreviewSection = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <section className="px-4 sm:px-6 py-12 sm:py-16">
       <div className="container mx-auto max-w-4xl">
@@ -102,28 +109,27 @@ export const PricingPreviewSection = () => {
                   </li>
                 ))}
               </ul>
-              <Link to={tier.ctaLink}>
-                <Button
-                  size="sm"
-                  variant={tier.popular ? "default" : "outline"}
-                  className="w-full text-xs"
-                >
-                  {tier.cta}
-                </Button>
-              </Link>
+              <Button
+                size="sm"
+                variant={tier.popular ? "default" : "outline"}
+                className="w-full text-xs"
+                onClick={() => navigate(user ? tier.authedLink : tier.guestLink)}
+              >
+                {tier.cta}
+              </Button>
             </div>
           ))}
         </div>
 
         <div className="mt-6 text-center">
-          <Link
-            to="/subscription"
+          <button
+            onClick={() => navigate(user ? "/subscription" : "/auth?tab=signup&redirect=/subscription")}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
           >
             <Crown className="h-3.5 w-3.5" />
             View all plans including Brand tiers & Founder Circle
             <ArrowRight className="h-3 w-3" />
-          </Link>
+          </button>
         </div>
       </div>
     </section>

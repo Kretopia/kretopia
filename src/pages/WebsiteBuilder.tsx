@@ -506,7 +506,7 @@ const WebsiteBuilder = () => {
           {/* Preview area */}
           <div className="flex-1 flex flex-col overflow-hidden bg-muted/30">
             {/* Browser chrome */}
-            <div className="px-4 pt-3 pb-2">
+            <div className="px-4 pt-3 pb-2 shrink-0">
               <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-1.5 border border-border max-w-2xl mx-auto">
                 <div className="flex gap-1 shrink-0">
                   <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
@@ -519,18 +519,23 @@ const WebsiteBuilder = () => {
                 </Button>
               </div>
             </div>
-            <div className="flex-1 flex items-start justify-center overflow-auto px-4 pb-4">
-              <div
-                className="bg-white rounded-lg shadow-xl overflow-hidden transition-all duration-300 h-full"
-                style={{ width: currentDevice.width, maxWidth: '100%' }}
-              >
-                <iframe
-                  key={previewKey}
-                  src={siteUrl}
-                  className="w-full h-full border-0"
-                  title="Site Preview"
-                  style={{ minHeight: '100%' }}
-                />
+            <div className="flex-1 relative overflow-auto px-4 pb-4">
+              <div className="flex items-start justify-center min-h-full">
+                <div
+                  className="bg-white rounded-lg shadow-xl overflow-hidden transition-all duration-300"
+                  style={{ 
+                    width: currentDevice.width, 
+                    maxWidth: '100%',
+                    height: 'calc(100vh - 140px)',
+                  }}
+                >
+                  <iframe
+                    key={previewKey}
+                    src={siteUrl}
+                    className="w-full h-full border-0"
+                    title="Site Preview"
+                  />
+                </div>
               </div>
             </div>
           </div>

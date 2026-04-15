@@ -7346,6 +7346,45 @@ export type Database = {
           },
         ]
       }
+      saved_bank_accounts: {
+        Row: {
+          account_name: string
+          account_number: string
+          bank_name: string
+          created_at: string
+          id: string
+          is_default: boolean
+          label: string | null
+          routing_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          bank_name: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          routing_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          bank_name?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          routing_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_opportunities: {
         Row: {
           created_at: string | null

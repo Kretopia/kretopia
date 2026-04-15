@@ -4,6 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";
+import { fuzzyCoordinates } from "@/lib/fuzzyLocation";
 
 interface NearbyCreator {
   user_id: string;
@@ -37,17 +38,32 @@ interface NearbySession {
   created_by: string;
 }
 
-type MapItemType = 'creator' | 'session' | 'location';
+interface NearbyGig {
+  id: string;
+  title: string;
+  type: string;
+  compensation: string | null;
+  location: string | null;
+  latitude: number;
+  longitude: number;
+  distance_km: number;
+  creator_name: string | null;
+  creator_avatar: string | null;
+}
+
+export type MapItemType = 'creator' | 'session' | 'location' | 'gig';
 
 interface UnifiedNearbyMapProps {
   creators: NearbyCreator[];
   sessions: NearbySession[];
   locations: CreativeLocation[];
+  gigs?: NearbyGig[];
   userLocation: { lat: number; lng: number };
   selectedItem: { type: MapItemType; id: string } | null;
   onSelectCreator: (creator: NearbyCreator | null) => void;
   onSelectSession: (session: NearbySession | null) => void;
   onSelectLocation: (location: CreativeLocation | null) => void;
+  onSelectGig?: (gig: NearbyGig | null) => void;
   loading?: boolean;
 }
 
@@ -77,11 +93,13 @@ export const UnifiedNearbyMap = ({
   creators,
   sessions,
   locations,
+  gigs = [],
   userLocation,
   selectedItem,
   onSelectCreator,
   onSelectSession,
   onSelectLocation,
+  onSelectGig,
   loading,
 }: UnifiedNearbyMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -89,6 +107,7 @@ export const UnifiedNearbyMap = ({
   const creatorMarkers = useRef<mapboxgl.Marker[]>([]);
   const sessionMarkers = useRef<mapboxgl.Marker[]>([]);
   const locationMarkers = useRef<mapboxgl.Marker[]>([]);
+  const gigMarkers = useRef<mapboxgl.Marker[]>([]);
   const userMarker = useRef<mapboxgl.Marker | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -129,13 +148,16 @@ export const UnifiedNearbyMap = ({
     }
   }, [userLocation]);
 
-  // Creator markers
+  // Creator markers with fuzzy location
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
     creatorMarkers.current.forEach((m) => m.remove());
     creatorMarkers.current = [];
 
     creators.forEach((creator) => {
+      // Apply fuzzy location for privacy
+      const fuzzy = fuzzyCoordinates(creator.latitude, creator.longitude, creator.user_id, creator.location_precision || 'approximate');
+      
       const el = document.createElement("div");
       el.className = "creator-marker cursor-pointer";
       const isSelected = selectedItem?.type === 'creator' && selectedItem?.id === creator.user_id;
@@ -150,7 +172,7 @@ export const UnifiedNearbyMap = ({
           </div>
         </div>
       `;
-      el.addEventListener("click", () => { onSelectCreator(creator); onSelectSession(null); onSelectLocation(null); });
+      el.addEventListener("click", () => { onSelectCreator(creator); onSelectSession(null); onSelectLocation(null); onSelectGig?.(null); });
 
       const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
         <div class="p-2 min-w-[150px]">
@@ -160,14 +182,15 @@ export const UnifiedNearbyMap = ({
           </div>
           <p class="font-semibold text-sm">${creator.full_name}</p>
           <p class="text-xs text-gray-500">${creator.role}</p>
-          <p class="text-xs text-cyan-600 mt-1">${creator.distance_km < 1 ? `${Math.round(creator.distance_km * 1000)}m` : `${creator.distance_km.toFixed(1)}km`} away</p>
+          <p class="text-xs text-cyan-600 mt-1">~${creator.distance_km < 1 ? `${Math.round(creator.distance_km * 1000)}m` : `${creator.distance_km.toFixed(1)}km`} away</p>
+          <p class="text-[9px] text-gray-400 mt-0.5 italic">Approximate location</p>
         </div>
       `);
 
-      const marker = new mapboxgl.Marker(el).setLngLat([creator.longitude, creator.latitude]).setPopup(popup).addTo(map.current!);
+      const marker = new mapboxgl.Marker(el).setLngLat([fuzzy.lng, fuzzy.lat]).setPopup(popup).addTo(map.current!);
       creatorMarkers.current.push(marker);
     });
-  }, [creators, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation]);
+  }, [creators, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation, onSelectGig]);
 
   // Session markers
   useEffect(() => {
@@ -195,7 +218,7 @@ export const UnifiedNearbyMap = ({
           <div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center shadow-sm">${session.participant_count}</div>
         </div>
       `;
-      el.addEventListener("click", () => { onSelectSession(session); onSelectCreator(null); onSelectLocation(null); });
+      el.addEventListener("click", () => { onSelectSession(session); onSelectCreator(null); onSelectLocation(null); onSelectGig?.(null); });
 
       const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
         <div class="p-2 min-w-[180px]">
@@ -212,9 +235,9 @@ export const UnifiedNearbyMap = ({
       const marker = new mapboxgl.Marker(el).setLngLat([session.longitude, session.latitude]).setPopup(popup).addTo(map.current!);
       sessionMarkers.current.push(marker);
     });
-  }, [sessions, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation]);
+  }, [sessions, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation, onSelectGig]);
 
-  // Location markers (studios, spots, venues, creative spaces)
+  // Location markers
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
     locationMarkers.current.forEach((m) => m.remove());
@@ -239,7 +262,7 @@ export const UnifiedNearbyMap = ({
           ${(loc.average_rating ?? 0) > 0 ? `<div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-amber-500 text-white text-[8px] font-bold flex items-center justify-center shadow-sm">★</div>` : ''}
         </div>
       `;
-      el.addEventListener("click", () => { onSelectLocation(loc); onSelectCreator(null); onSelectSession(null); });
+      el.addEventListener("click", () => { onSelectLocation(loc); onSelectCreator(null); onSelectSession(null); onSelectGig?.(null); });
 
       const ratingHtml = (loc.average_rating ?? 0) > 0 
         ? `<span class="text-xs text-amber-500">★ ${Number(loc.average_rating).toFixed(1)} (${loc.review_count})</span>` 
@@ -265,7 +288,46 @@ export const UnifiedNearbyMap = ({
       const marker = new mapboxgl.Marker(el).setLngLat([loc.longitude, loc.latitude]).setPopup(popup).addTo(map.current!);
       locationMarkers.current.push(marker);
     });
-  }, [locations, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation]);
+  }, [locations, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation, onSelectGig]);
+
+  // Gig markers
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+    gigMarkers.current.forEach((m) => m.remove());
+    gigMarkers.current = [];
+
+    gigs.forEach((gig) => {
+      const el = document.createElement("div");
+      el.className = "gig-marker cursor-pointer";
+      const isSelected = selectedItem?.type === 'gig' && selectedItem?.id === gig.id;
+      
+      el.innerHTML = `
+        <div class="relative transition-transform ${isSelected ? 'scale-125' : 'hover:scale-110'}">
+          <div class="absolute -inset-1 rounded-lg ${isSelected ? 'bg-emerald-400/40 animate-pulse' : 'bg-emerald-500/20'}"></div>
+          <div class="relative h-10 w-10 rounded-lg overflow-hidden border-2 ${isSelected ? 'border-emerald-400 shadow-lg shadow-emerald-400/30' : 'border-emerald-500'} bg-background flex items-center justify-center">
+            <span class="text-lg">💼</span>
+          </div>
+          <div class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-white text-[7px] font-bold flex items-center justify-center shadow-sm">${gig.type === 'paid' ? '$' : '↔'}</div>
+        </div>
+      `;
+      el.addEventListener("click", () => { onSelectGig?.(gig); onSelectCreator(null); onSelectSession(null); onSelectLocation(null); });
+
+      const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
+        <div class="p-2 min-w-[180px]">
+          <div class="flex items-center gap-1 mb-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span class="text-[10px] uppercase tracking-wide text-emerald-600 font-medium">Gig</span>
+          </div>
+          <p class="font-semibold text-sm">${gig.title}</p>
+          <p class="text-xs text-gray-500">${gig.type}${gig.compensation ? ` • ${gig.compensation}` : ''}</p>
+          <p class="text-xs text-emerald-600 mt-1">${gig.distance_km < 1 ? `${Math.round(gig.distance_km * 1000)}m` : `${gig.distance_km.toFixed(1)}km`} away</p>
+        </div>
+      `);
+
+      const marker = new mapboxgl.Marker(el).setLngLat([gig.longitude, gig.latitude]).setPopup(popup).addTo(map.current!);
+      gigMarkers.current.push(marker);
+    });
+  }, [gigs, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation, onSelectGig]);
 
   // Fly to selected item
   useEffect(() => {
@@ -273,16 +335,22 @@ export const UnifiedNearbyMap = ({
     let center: [number, number] | null = null;
     if (selectedItem.type === 'creator') {
       const c = creators.find(c => c.user_id === selectedItem.id);
-      if (c) center = [c.longitude, c.latitude];
+      if (c) {
+        const fuzzy = fuzzyCoordinates(c.latitude, c.longitude, c.user_id, c.location_precision || 'approximate');
+        center = [fuzzy.lng, fuzzy.lat];
+      }
     } else if (selectedItem.type === 'session') {
       const s = sessions.find(s => s.id === selectedItem.id);
       if (s) center = [s.longitude, s.latitude];
     } else if (selectedItem.type === 'location') {
       const l = locations.find(l => l.id === selectedItem.id);
       if (l) center = [l.longitude, l.latitude];
+    } else if (selectedItem.type === 'gig') {
+      const g = gigs.find(g => g.id === selectedItem.id);
+      if (g) center = [g.longitude, g.latitude];
     }
     if (center) map.current.flyTo({ center, zoom: 14, duration: 1000 });
-  }, [selectedItem, creators, sessions, locations]);
+  }, [selectedItem, creators, sessions, locations, gigs]);
 
   return (
     <Card className="overflow-hidden relative">
@@ -301,13 +369,19 @@ export const UnifiedNearbyMap = ({
           <span className="text-foreground">You</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded-full bg-muted border-2 border-primary/60"></div>
+          <div className="h-4 w-4 rounded-full bg-muted border-2 border-cyan-500/60"></div>
           <span className="text-foreground">Creators ({creators.length})</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded-full bg-muted border-2 border-dashed border-accent"></div>
-          <span className="text-foreground">Sessions ({sessions.length})</span>
+          <div className="h-4 w-4 rounded-full bg-muted border-2 border-dashed border-amber-500"></div>
+          <span className="text-foreground">Events ({sessions.length})</span>
         </div>
+        {gigs.length > 0 && (
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 rounded-lg bg-muted border-2 border-emerald-500 text-[8px] flex items-center justify-center">💼</div>
+            <span className="text-foreground">Gigs ({gigs.length})</span>
+          </div>
+        )}
         {locations.length > 0 && (
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 rounded-lg bg-muted border-2 border-primary/40 text-[8px] flex items-center justify-center"></div>
@@ -315,20 +389,26 @@ export const UnifiedNearbyMap = ({
           </div>
         )}
         <div className="pt-1 border-t border-border mt-1">
-          <span className="text-muted-foreground">Privacy-protected</span>
+          <span className="text-muted-foreground">📍 Approximate locations</span>
         </div>
       </div>
       
       {/* Counts */}
       <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
         <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-primary/60"></span>
+          <span className="w-2 h-2 rounded-full bg-cyan-500/60"></span>
           <span className="text-foreground">{creators.length} creators</span>
         </div>
         <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-accent"></span>
-          <span className="text-foreground">{sessions.length} sessions</span>
+          <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span className="text-foreground">{sessions.length} events</span>
         </div>
+        {gigs.length > 0 && (
+          <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="text-foreground">{gigs.length} gigs</span>
+          </div>
+        )}
         {locations.length > 0 && (
           <div className="bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 border border-border shadow-sm">
             <span className="text-foreground">{locations.length} spots</span>

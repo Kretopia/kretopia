@@ -28,8 +28,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-
-// MapItemType imported from UnifiedNearbyMap
+import { useConnectedUsers } from "@/hooks/useConnectedUsers";
+import { useUserBlocks } from "@/hooks/useUserBlocks";
 
 
 const NearbyCreators = () => {

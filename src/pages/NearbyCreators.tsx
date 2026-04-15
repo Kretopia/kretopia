@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, MapPin, Navigation, Users, Plus, Sparkles, List, Map, Search, SlidersHorizontal, RefreshCw } from "lucide-react";
-import { UnifiedNearbyMap } from "@/components/nearby/UnifiedNearbyMap";
+import { UnifiedNearbyMap, type MapItemType } from "@/components/nearby/UnifiedNearbyMap";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionCard } from "@/components/sessions/SessionCard";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";

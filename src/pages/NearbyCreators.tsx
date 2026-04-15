@@ -29,7 +29,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-type MapItemType = 'creator' | 'session' | 'location' | 'gig';
+// MapItemType imported from UnifiedNearbyMap
 
 interface NearbyGig {
   id: string;

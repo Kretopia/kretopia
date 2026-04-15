@@ -269,6 +269,61 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     setDueDate(""); setTaxRate("0"); setNotes(""); setDiscountType(""); setDiscountValue("0");
     setLineItems([{ description: "", quantity: 1, rate: 0, amount: 0 }]);
     setCreateStep("details");
+    setDocumentType("invoice");
+    setValidUntil("");
+  };
+
+  // Convert a quote to an invoice
+  const handleConvertToInvoice = async (quote: any) => {
+    if (!guardInvoice()) return;
+    setLoading(true);
+    try {
+      const invoiceNumber = `INV-${new Date().getFullYear()}-${Date.now()}`;
+      const invoiceData: any = {
+        invoice_number: invoiceNumber,
+        project_id: quote.project_id,
+        issued_by: quote.issued_by,
+        issued_to: quote.issued_to,
+        amount: quote.amount,
+        tax_rate: quote.tax_rate,
+        due_date: null,
+        notes: quote.notes,
+        line_items: quote.line_items,
+        status: "draft",
+        currency: quote.currency,
+        brand_name: quote.brand_name,
+        brand_logo_url: quote.brand_logo_url,
+        brand_address: quote.brand_address,
+        brand_email: quote.brand_email,
+        brand_website: quote.brand_website,
+        brand_color: quote.brand_color,
+        recipient_name: quote.recipient_name,
+        recipient_email: quote.recipient_email,
+        recipient_address: quote.recipient_address,
+        payment_method: quote.payment_method,
+        payment_details: quote.payment_details,
+        terms_conditions: quote.terms_conditions,
+        discount_type: quote.discount_type,
+        discount_value: quote.discount_value,
+        discount_amount: quote.discount_amount,
+        document_type: "invoice",
+        converted_from_quote_id: quote.id,
+      };
+
+      const { error } = await supabase.from("invoices").insert(invoiceData);
+      if (error) throw error;
+
+      // Mark the quote as accepted
+      await supabase.from("invoices").update({ status: "accepted" } as any).eq("id", quote.id);
+
+      toast.success("Quote converted to invoice!");
+      fetchInvoices();
+    } catch (error) {
+      console.error("Error converting quote:", error);
+      toast.error("Failed to convert quote to invoice");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDuplicateInvoice = (invoice: any) => {

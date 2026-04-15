@@ -99,8 +99,8 @@ export function InvoicePreview({
         {branding.letterhead_url && (
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-black tracking-tighter uppercase" style={{ color: brandColor }}>Invoice</h1>
-              <p className="text-xs font-mono text-muted-foreground">{invoiceNumber || "INV-DRAFT"}</p>
+            <h1 className="text-2xl font-black tracking-tighter uppercase" style={{ color: brandColor }}>{docTitle}</h1>
+            <p className="text-xs font-mono text-muted-foreground">{invoiceNumber || `${isQuote ? "QUO" : "INV"}-DRAFT`}</p>
             </div>
           </div>
         )}
@@ -118,11 +118,18 @@ export function InvoicePreview({
               <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-0.5">Issue Date</p>
               <p className="text-xs font-medium">{issueDate}</p>
             </div>
-            {dueDateFormatted && (
+            {dueDateFormatted && !isQuote && (
               <div>
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-0.5">Due Date</p>
                 <p className="text-xs font-medium">{dueDateFormatted}</p>
               </div>
+            )}
+            {isQuote && validUntil && (
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-0.5">Valid Until</p>
+                <p className="text-xs font-medium">{new Date(validUntil).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+              </div>
+            )}
             )}
           </div>
         </div>

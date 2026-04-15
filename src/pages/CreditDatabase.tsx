@@ -306,8 +306,8 @@ const CreditDatabase = () => {
   return (
     <>
       <Helmet>
-        <title>Creative Passport™ — Your Verified Creative Identity | ThriveIN</title>
-        <meta name="description" content="Your verified creative identity. Search and claim your work across film, music, events, fashion, art, and all creative industries." />
+        <title>ThriveCredits — Your Creative Passport | ThriveIN</title>
+        <meta name="description" content="Your creative passport. Search and claim your work across film, music, events, fashion, art, and all creative industries." />
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">
@@ -321,14 +321,12 @@ const CreditDatabase = () => {
           <div className="container mx-auto px-4">
             {!isSearchActive && (
               <div className="text-center mb-5">
-                <div className="inline-flex items-center gap-2 mb-2">
-                  <Fingerprint className="h-6 w-6 text-primary" />
-                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                    Creative Passport™
-                  </h1>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Your verified creative identity — search any project, person, or production
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">
+                  ThriveCredits
+                </h1>
+                <p className="text-sm text-muted-foreground flex items-center justify-center gap-1.5">
+                  <Fingerprint className="h-3.5 w-3.5 text-primary" />
+                  Your Creative Passport — search any project, person, or production
                 </p>
               </div>
             )}

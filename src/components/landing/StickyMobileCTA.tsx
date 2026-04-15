@@ -24,7 +24,7 @@ export const StickyMobileCTA = () => {
   return (
     <div className="fixed bottom-[72px] left-0 right-0 z-40 lg:hidden px-3 pb-1">
       <button
-        onClick={() => navigate("/auth")}
+        onClick={() => navigate("/auth?tab=signup")}
         className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary text-primary-foreground py-3.5 text-sm font-bold shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98]"
       >
         Get Started — Free <ArrowRight className="h-4 w-4" />

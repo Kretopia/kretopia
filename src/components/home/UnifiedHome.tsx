@@ -778,7 +778,7 @@ export const UnifiedHome = () => {
               </p>
             )}
             <Link
-              to={user ? "/subscription" : "/auth"}
+              to={user ? "/subscription" : "/auth?tab=signup"}
               className="inline-flex items-center gap-2 rounded-xl bg-white text-primary px-6 py-3 text-sm font-bold hover:bg-white/90 transition-colors shadow-md"
             >
               {user ? t("landing.startTrial") : t("landing.joinNow")} <ArrowRight className="h-4 w-4" />

@@ -12,6 +12,7 @@ import {
   Img,
   Link,
   Preview,
+  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
@@ -33,17 +34,24 @@ export const SignupEmail = ({
     <Preview>Welcome to ThriveIN — verify your email to get started</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img
-          src="https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png"
-          width="48"
-          height="48"
-          alt="ThriveIN"
-          style={{ marginBottom: '24px' }}
-        />
+        <Section style={logoSection}>
+          <Img
+            src="https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png"
+            width="56"
+            height="56"
+            alt="ThriveIN"
+            style={{ borderRadius: '14px' }}
+          />
+        </Section>
+
         <Heading style={h1}>Welcome to ThriveIN</Heading>
+        <Text style={subtitle}>The Creative OS</Text>
+
         <Text style={text}>
-          You're one step away from joining the professional creative network. Verify your email to unlock verified credits, real gigs, and your creative career dashboard.
+          You're one step away from joining the professional creative network.
+          Verify your email to unlock verified credits, real gigs, and your creative career dashboard.
         </Text>
+
         <Text style={text}>
           Confirm your email (
           <Link href={`mailto:${recipient}`} style={link}>
@@ -51,11 +59,20 @@ export const SignupEmail = ({
           </Link>
           ) to get started:
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Get Started
-        </Button>
+
+        <Section style={buttonSection}>
+          <Button style={button} href={confirmationUrl}>
+            Verify & Get Started
+          </Button>
+        </Section>
+
+        <Section style={divider} />
+
         <Text style={footer}>
           If you didn't sign up for ThriveIN, you can safely ignore this email.
+        </Text>
+        <Text style={footerBrand}>
+          © {new Date().getFullYear()} ThriveIN · thrivein.io
         </Text>
       </Container>
     </Body>
@@ -64,28 +81,63 @@ export const SignupEmail = ({
 
 export default SignupEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }
-const container = { padding: '32px 28px', maxWidth: '480px', margin: '0 auto' }
+const brandPrimary = '#5B6BF5'
+const brandDark = '#0a0a0f'
+
+const main = {
+  backgroundColor: '#f4f4f7',
+  fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+  padding: '24px 0',
+}
+const container = {
+  padding: '40px 32px',
+  maxWidth: '480px',
+  margin: '0 auto',
+  backgroundColor: '#ffffff',
+  borderRadius: '16px',
+  border: '1px solid #e5e5ea',
+}
+const logoSection = {
+  marginBottom: '28px',
+}
 const h1 = {
-  fontSize: '24px',
+  fontSize: '26px',
   fontWeight: 'bold' as const,
-  color: '#0a0a0f',
-  margin: '0 0 16px',
+  color: brandDark,
+  margin: '0 0 4px',
+  letterSpacing: '-0.02em',
+}
+const subtitle = {
+  fontSize: '13px',
+  fontWeight: '500' as const,
+  color: brandPrimary,
+  margin: '0 0 24px',
+  letterSpacing: '0.05em',
+  textTransform: 'uppercase' as const,
 }
 const text = {
   fontSize: '15px',
   color: '#606068',
   lineHeight: '1.6',
-  margin: '0 0 24px',
+  margin: '0 0 20px',
 }
-const link = { color: '#4338CA', textDecoration: 'underline' }
+const link = { color: brandPrimary, textDecoration: 'underline' }
+const buttonSection = {
+  textAlign: 'center' as const,
+  margin: '8px 0 32px',
+}
 const button = {
-  backgroundColor: '#4338CA',
+  backgroundColor: brandPrimary,
   color: '#ffffff',
   fontSize: '15px',
   fontWeight: '600' as const,
   borderRadius: '12px',
-  padding: '14px 28px',
+  padding: '14px 32px',
   textDecoration: 'none',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '32px 0 0' }
+const divider = {
+  borderTop: '1px solid #e5e5ea',
+  margin: '0 0 20px',
+}
+const footer = { fontSize: '12px', color: '#999999', margin: '0 0 8px' }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '0' }

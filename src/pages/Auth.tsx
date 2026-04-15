@@ -20,6 +20,7 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/BrandLogo";
 
 const Auth = () => {
+  const [activeTab, setActiveTab] = useState<string>("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -45,6 +46,13 @@ const Auth = () => {
       : (searchParams.get("redirect") || "/circle");
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
+
+  // Set initial tab from URL
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "signin") setActiveTab("signin");
+    else setActiveTab("signup");
+  }, [searchParams]);
 
   const authLoadTime = useState(() => Date.now())[0];
   const hasTrackedView = useState(false);
@@ -290,11 +298,20 @@ const Auth = () => {
       errAnalytics.errorOccurred('signup_failed', error.message.includes("already registered") ? "already_registered" : "other", 'auth');
 
       if (error.message.includes("already registered")) {
-        toast({ title: "Account Exists", description: "This email is already registered. Please sign in instead.", variant: "destructive" });
+        toast({ title: "Account Exists", description: "This email is already registered. Switching to sign in.", variant: "destructive" });
+        setActiveTab("signin");
       } else {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       }
     } else {
+      // Detect Supabase "fake user" when email already exists (identities is empty)
+      if (signUpData?.user && (!signUpData.user.identities || signUpData.user.identities.length === 0)) {
+        toast({ title: "Account Exists", description: "This email is already registered. Please sign in instead.", variant: "destructive" });
+        setActiveTab("signin");
+        setLoading(false);
+        return;
+      }
+
       const { analytics } = await import("@/lib/analytics");
       analytics.signUp('email');
       analytics.onboardingStart();
@@ -346,10 +363,11 @@ const Auth = () => {
           {isPasswordReset ? (
             <PasswordResetForm loading={loading} onSubmit={handlePasswordReset} />
           ) : (
-            <Tabs defaultValue={searchParams.get("tab") === "signin" ? "signin" : "signup"} className="w-full" onValueChange={async (tab) => {
+            <Tabs value={activeTab} onValueChange={async (tab) => {
+              setActiveTab(tab);
               const { trackEvent, EventCategory } = await import("@/lib/analytics");
               trackEvent({ eventName: 'auth_tab_switch', eventCategory: EventCategory.AUTH, properties: { tab, time_on_page_ms: Date.now() - authLoadTime } });
-            }}>
+            }} className="w-full">
               <TabsList className="mb-6 grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>

@@ -92,6 +92,10 @@ const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
 const CreatorSite = lazy(() => import("./pages/CreatorSite"));
 const CreatorSiteByUsername = lazy(() => import("./pages/CreatorSiteByUsername"));
 const WebsiteBuilder = lazy(() => import("./pages/WebsiteBuilder"));
+const ShareGigRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareGigRedirect })));
+const ShareProfileRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareProfileRedirect })));
+const ShareEventRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareEventRedirect })));
+const ShareMagazineRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareMagazineRedirect })));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -301,6 +305,12 @@ const AppContent = () => {
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/email-unsubscribe" element={<Suspense fallback={null}><EmailUnsubscribe /></Suspense>} />
             
+            {/* Share page SPA fallbacks (static HTML may not be served by SPA hosting) */}
+            <Route path="/share/gig/:id" element={<ShareGigRedirect />} />
+            <Route path="/share/profile/:id" element={<ShareProfileRedirect />} />
+            <Route path="/share/event/:id" element={<ShareEventRedirect />} />
+            <Route path="/share/magazine/:slug" element={<ShareMagazineRedirect />} />
+
             {/* Partner Pages — redirected */}
             <Route path="/partner-directory" element={<Navigate to="/" replace />} />
             <Route path="/partner-submit" element={<Navigate to="/" replace />} />

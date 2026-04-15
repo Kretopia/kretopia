@@ -450,6 +450,7 @@ export const EPKPdfEditor = ({ open, onClose, epkData, userId }: EPKPdfEditorPro
               )}
 
 
+              {activeTab === "branding" && isCreatorPlus && (
                 <>
                   <p className="text-xs text-muted-foreground">Customize your EPK branding</p>
                   <div className="space-y-3">

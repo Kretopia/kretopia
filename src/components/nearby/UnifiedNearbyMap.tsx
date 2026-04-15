@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Loader2 } from "lucide-react";
@@ -55,24 +55,13 @@ interface UnifiedNearbyMapProps {
 
 const LOCATION_TYPE_EMOJI: Record<string, string> = {
   studio: '🎙',
-  creative_space: '',
-  shoot_spot: '',
-  venue: '',
-  music_store: '',
+  creative_space: '🏛️',
+  shoot_spot: '📸',
+  venue: '🎭',
+  music_store: '🎵',
   art_supply: '🛒',
   photo_lab: '📷',
-  rental_house: '',
-};
-
-const LOCATION_TYPE_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  studio: { bg: 'bg-purple-500/10', border: 'border-purple-500', text: 'text-purple-600' },
-  creative_space: { bg: 'bg-emerald-500/10', border: 'border-emerald-500', text: 'text-emerald-600' },
-  shoot_spot: { bg: 'bg-rose-500/10', border: 'border-rose-500', text: 'text-rose-600' },
-  venue: { bg: 'bg-blue-500/10', border: 'border-blue-500', text: 'text-blue-600' },
-  music_store: { bg: 'bg-violet-500/10', border: 'border-violet-500', text: 'text-violet-600' },
-  art_supply: { bg: 'bg-orange-500/10', border: 'border-orange-500', text: 'text-orange-600' },
-  rental_house: { bg: 'bg-teal-500/10', border: 'border-teal-500', text: 'text-teal-600' },
-  photo_lab: { bg: 'bg-pink-500/10', border: 'border-pink-500', text: 'text-pink-600' },
+  rental_house: '🏠',
 };
 
 export const UnifiedNearbyMap = ({
@@ -93,36 +82,118 @@ export const UnifiedNearbyMap = ({
   const sessionMarkers = useRef<mapboxgl.Marker[]>([]);
   const locationMarkers = useRef<mapboxgl.Marker[]>([]);
   const userMarker = useRef<mapboxgl.Marker | null>(null);
+  const cleanupMapListeners = useRef<(() => void) | null>(null);
+  const resizeTimeouts = useRef<number[]>([]);
+  const hasRetriedInit = useRef(false);
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const mapboxToken = "pk.eyJ1IjoiZXRoYW5hdWd1c3RlIiwiYSI6ImNtZzhvbDk0dzAwaHYycnB6eWp4Zjh2OHAifQ.4uCSa5SdtxZAnC2Xvx6V5w";
 
-  useEffect(() => {
-    if (!mapContainer.current || map.current || !userLocation) return;
+  const clearResizeTimeouts = useCallback(() => {
+    resizeTimeouts.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    resizeTimeouts.current = [];
+  }, []);
 
+  const scheduleResizeBurst = useCallback(() => {
+    clearResizeTimeouts();
+
+    [0, 120, 350, 800].forEach((delay) => {
+      const timeoutId = window.setTimeout(() => {
+        if (!map.current) return;
+        map.current.resize();
+        map.current.triggerRepaint();
+      }, delay);
+
+      resizeTimeouts.current.push(timeoutId);
+    });
+  }, [clearResizeTimeouts]);
+
+  const clearMarkers = useCallback(() => {
+    creatorMarkers.current.forEach((marker) => marker.remove());
+    sessionMarkers.current.forEach((marker) => marker.remove());
+    locationMarkers.current.forEach((marker) => marker.remove());
+    creatorMarkers.current = [];
+    sessionMarkers.current = [];
+    locationMarkers.current = [];
+  }, []);
+
+  const destroyMap = useCallback(() => {
+    clearResizeTimeouts();
+    clearMarkers();
+    cleanupMapListeners.current?.();
+    cleanupMapListeners.current = null;
+    userMarker.current?.remove();
+    userMarker.current = null;
+
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+    }
+
+    setMapLoaded(false);
+  }, [clearMarkers, clearResizeTimeouts]);
+
+  const initializeMap = useCallback(() => {
+    if (!mapContainer.current || map.current || !userLocation) return;
+    if (!mapboxgl.supported()) {
+      console.error("[UnifiedNearbyMap] Mapbox GL is not supported on this device");
+      return;
+    }
+
+    setMapLoaded(false);
     mapboxgl.accessToken = mapboxToken;
 
-    const mapInstance = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [userLocation.lng, userLocation.lat],
-      zoom: 11,
-    });
+    let mapInstance: mapboxgl.Map;
+
+    try {
+      mapInstance = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/dark-v11",
+        center: [userLocation.lng, userLocation.lat],
+        zoom: 11,
+        trackResize: true,
+        antialias: true,
+      });
+    } catch (error) {
+      console.error("[UnifiedNearbyMap] Failed to initialize map", error);
+      return;
+    }
 
     map.current = mapInstance;
     mapInstance.addControl(new mapboxgl.NavigationControl(), "top-right");
 
     const handleLoad = () => {
       setMapLoaded(true);
-      requestAnimationFrame(() => mapInstance.resize());
+      hasRetriedInit.current = false;
+      scheduleResizeBurst();
+    };
+
+    const handleStyleData = () => {
+      scheduleResizeBurst();
+    };
+
+    const handleIdle = () => {
+      scheduleResizeBurst();
     };
 
     const handleError = (event: any) => {
       console.error("[UnifiedNearbyMap] Mapbox error", event?.error ?? event);
     };
 
+    const handleWebglContextLost = (event: Event) => {
+      event.preventDefault?.();
+      console.warn("[UnifiedNearbyMap] WebGL context lost, rebuilding map");
+      destroyMap();
+      window.setTimeout(() => initializeMap(), 150);
+    };
+
     mapInstance.on("load", handleLoad);
+    mapInstance.on("styledata", handleStyleData);
+    mapInstance.on("idle", handleIdle);
     mapInstance.on("error", handleError);
+
+    const canvas = mapInstance.getCanvas();
+    canvas.addEventListener("webglcontextlost", handleWebglContextLost as EventListener, false);
 
     const userEl = document.createElement("div");
     userEl.className = "user-location-marker";
@@ -137,50 +208,95 @@ export const UnifiedNearbyMap = ({
       .setLngLat([userLocation.lng, userLocation.lat])
       .addTo(mapInstance);
 
-    let resizeObserver: ResizeObserver | null = null;
-    const triggerResize = () => {
-      requestAnimationFrame(() => mapInstance.resize());
+    scheduleResizeBurst();
+
+    cleanupMapListeners.current = () => {
+      canvas.removeEventListener("webglcontextlost", handleWebglContextLost as EventListener, false);
+      mapInstance.off("load", handleLoad);
+      mapInstance.off("styledata", handleStyleData);
+      mapInstance.off("idle", handleIdle);
+      mapInstance.off("error", handleError);
+    };
+  }, [destroyMap, mapboxToken, scheduleResizeBurst, userLocation]);
+
+  useEffect(() => {
+    initializeMap();
+  }, [initializeMap]);
+
+  useEffect(() => {
+    return () => {
+      destroyMap();
+    };
+  }, [destroyMap]);
+
+  useEffect(() => {
+    const handleViewportChange = () => scheduleResizeBurst();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        scheduleResizeBurst();
+      }
     };
 
-    if (typeof ResizeObserver !== "undefined" && mapContainer.current) {
-      resizeObserver = new ResizeObserver(triggerResize);
+    const resizeObserver = typeof ResizeObserver !== "undefined" && mapContainer.current
+      ? new ResizeObserver(handleViewportChange)
+      : null;
+
+    if (resizeObserver && mapContainer.current) {
       resizeObserver.observe(mapContainer.current);
     }
 
-    window.addEventListener("resize", triggerResize);
-    window.addEventListener("orientationchange", triggerResize);
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("orientationchange", handleViewportChange);
+    window.addEventListener("pageshow", handleViewportChange);
+    window.addEventListener("focus", handleViewportChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.visualViewport?.addEventListener("resize", handleViewportChange);
 
     return () => {
       resizeObserver?.disconnect();
-      window.removeEventListener("resize", triggerResize);
-      window.removeEventListener("orientationchange", triggerResize);
-      userMarker.current?.remove();
-      userMarker.current = null;
-      mapInstance.off("load", handleLoad);
-      mapInstance.off("error", handleError);
-      mapInstance.remove();
-      map.current = null;
-      setMapLoaded(false);
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("orientationchange", handleViewportChange);
+      window.removeEventListener("pageshow", handleViewportChange);
+      window.removeEventListener("focus", handleViewportChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.visualViewport?.removeEventListener("resize", handleViewportChange);
     };
-  }, [mapboxToken, userLocation]);
+  }, [scheduleResizeBurst]);
 
   useEffect(() => {
     if (!map.current || !userLocation) return;
 
     userMarker.current?.setLngLat([userLocation.lng, userLocation.lat]);
     map.current.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 11 });
-    requestAnimationFrame(() => map.current?.resize());
-  }, [userLocation]);
+    scheduleResizeBurst();
+  }, [userLocation, scheduleResizeBurst]);
+
+  useEffect(() => {
+    if (!userLocation || loading || mapLoaded) return;
+
+    const timeoutId = window.setTimeout(() => {
+      if (mapLoaded) return;
+
+      console.warn("[UnifiedNearbyMap] Map load stalled, retrying initialization");
+
+      if (!hasRetriedInit.current) {
+        hasRetriedInit.current = true;
+        destroyMap();
+        window.setTimeout(() => initializeMap(), 150);
+      }
+    }, 2500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [destroyMap, initializeMap, loading, mapLoaded, userLocation]);
 
   useEffect(() => {
     if (!map.current || loading) return;
-    requestAnimationFrame(() => map.current?.resize());
-  }, [loading, creators.length, sessions.length, locations.length]);
+    scheduleResizeBurst();
+  }, [loading, creators.length, sessions.length, locations.length, scheduleResizeBurst]);
 
-  // Creator markers with fuzzy location + privacy masking
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
-    creatorMarkers.current.forEach((m) => m.remove());
+    creatorMarkers.current.forEach((marker) => marker.remove());
     creatorMarkers.current = [];
 
     creators.forEach((creator) => {
@@ -203,7 +319,12 @@ export const UnifiedNearbyMap = ({
           </div>
         </div>
       `;
-      el.addEventListener("click", () => { onSelectCreator(creator); onSelectSession(null); onSelectLocation(null); });
+
+      el.addEventListener("click", () => {
+        onSelectCreator(creator);
+        onSelectSession(null);
+        onSelectLocation(null);
+      });
 
       const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
         <div class="p-2 min-w-[150px]">
@@ -219,15 +340,18 @@ export const UnifiedNearbyMap = ({
         </div>
       `);
 
-      const marker = new mapboxgl.Marker(el).setLngLat([fuzzy.lng, fuzzy.lat]).setPopup(popup).addTo(map.current!);
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat([fuzzy.lng, fuzzy.lat])
+        .setPopup(popup)
+        .addTo(map.current!);
+
       creatorMarkers.current.push(marker);
     });
-  }, [creators, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation, connectedIds]);
+  }, [connectedIds, creators, mapLoaded, onSelectCreator, onSelectLocation, onSelectSession, selectedItem]);
 
-  // Session markers
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
-    sessionMarkers.current.forEach((m) => m.remove());
+    sessionMarkers.current.forEach((marker) => marker.remove());
     sessionMarkers.current = [];
 
     sessions.forEach((session) => {
@@ -251,7 +375,11 @@ export const UnifiedNearbyMap = ({
         </div>
       `;
 
-      el.addEventListener("click", () => { onSelectSession(session); onSelectCreator(null); onSelectLocation(null); });
+      el.addEventListener("click", () => {
+        onSelectSession(session);
+        onSelectCreator(null);
+        onSelectLocation(null);
+      });
 
       const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
         <div class="p-2 min-w-[160px]">
@@ -266,15 +394,18 @@ export const UnifiedNearbyMap = ({
         </div>
       `);
 
-      const marker = new mapboxgl.Marker(el).setLngLat([session.longitude, session.latitude]).setPopup(popup).addTo(map.current!);
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat([session.longitude, session.latitude])
+        .setPopup(popup)
+        .addTo(map.current!);
+
       sessionMarkers.current.push(marker);
     });
-  }, [sessions, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation]);
+  }, [mapLoaded, onSelectCreator, onSelectLocation, onSelectSession, selectedItem, sessions]);
 
-  // Location markers
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
-    locationMarkers.current.forEach((m) => m.remove());
+    locationMarkers.current.forEach((marker) => marker.remove());
     locationMarkers.current = [];
 
     locations.forEach((location) => {
@@ -292,7 +423,11 @@ export const UnifiedNearbyMap = ({
         </div>
       `;
 
-      el.addEventListener("click", () => { onSelectLocation(location); onSelectCreator(null); onSelectSession(null); });
+      el.addEventListener("click", () => {
+        onSelectLocation(location);
+        onSelectCreator(null);
+        onSelectSession(null);
+      });
 
       const popup = new mapboxgl.Popup({ offset: 25, closeButton: false }).setHTML(`
         <div class="p-2 min-w-[150px]">
@@ -306,17 +441,22 @@ export const UnifiedNearbyMap = ({
         </div>
       `);
 
-      const marker = new mapboxgl.Marker(el).setLngLat([location.longitude, location.latitude]).setPopup(popup).addTo(map.current!);
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat([location.longitude, location.latitude])
+        .setPopup(popup)
+        .addTo(map.current!);
+
       locationMarkers.current.push(marker);
     });
-  }, [locations, selectedItem, mapLoaded, onSelectCreator, onSelectSession, onSelectLocation]);
+  }, [locations, mapLoaded, onSelectCreator, onSelectLocation, onSelectSession, selectedItem]);
 
   return (
     <div className="relative h-full w-full min-h-[300px] bg-background/20">
       <div ref={mapContainer} className="absolute inset-0" />
-      {loading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/40 backdrop-blur-[1px]">
+      {(loading || !mapLoaded) && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/40 backdrop-blur-[1px]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          {!loading && <p className="text-xs text-muted-foreground">Loading map…</p>}
         </div>
       )}
     </div>

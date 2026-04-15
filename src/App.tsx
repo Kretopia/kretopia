@@ -302,6 +302,12 @@ const AppContent = () => {
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/email-unsubscribe" element={<Suspense fallback={null}><EmailUnsubscribe /></Suspense>} />
             
+            {/* Share page SPA fallbacks (static HTML may not be served by SPA hosting) */}
+            <Route path="/share/gig/:id" element={<ShareGigRedirect />} />
+            <Route path="/share/profile/:id" element={<Navigate to={window.location.pathname.replace('/share/profile/', '/profile/')} replace />} />
+            <Route path="/share/event/:id" element={<Navigate to={window.location.pathname.replace('/share/event/', '/event/')} replace />} />
+            <Route path="/share/magazine/:slug" element={<Navigate to={window.location.pathname.replace('/share/magazine/', '/magazine/')} replace />} />
+
             {/* Partner Pages — redirected */}
             <Route path="/partner-directory" element={<Navigate to="/" replace />} />
             <Route path="/partner-submit" element={<Navigate to="/" replace />} />

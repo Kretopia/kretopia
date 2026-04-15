@@ -256,6 +256,14 @@ export default function Circle() {
       </div>
 
       <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
+      {matchedUser && (
+        <MatchCelebrationDialog
+          open={showMatchDialog}
+          onOpenChange={setShowMatchDialog}
+          matchedUser={matchedUser}
+          onSendMessage={() => navigate(`/messages?user=${matchedUser.userId}`)}
+        />
+      )}
     </div>
     </PageTransition>
   );

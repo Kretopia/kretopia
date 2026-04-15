@@ -2,17 +2,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSwipeProfiles, SwipeProfile } from '@/hooks/useSwipeProfiles';
 import { useSwipeActions } from '@/hooks/useSwipeActions';
-import { SwipeStack } from './SwipeStack';
 import { MatchModal } from './MatchModal';
 import { ProfilePreviewSheet } from './ProfilePreviewSheet';
 import { MatchExplanationDialog } from '@/components/discover/MatchExplanationDialog';
+import { HingeStyleCard } from '@/components/discover/HingeStyleCard';
 import { SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from '@/components/circle/SwipeFilters';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { getDiscoveryMissingFields } from '@/lib/profileCompletion';
 import { Button } from '@/components/ui/button';
-import { EyeOff, Camera, FileText, Image as ImageIcon, ArrowRight } from 'lucide-react';
+import { EyeOff, Camera, FileText, Image as ImageIcon, ArrowRight, Heart, RotateCcw } from 'lucide-react';
 
 interface SwipeFeatureProps {
   onMatch?: (profile: any) => void;
@@ -64,8 +64,8 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
     }
   }, [user?.id]);
 
-  const handleSwipe = useCallback(async (profile: SwipeProfile, direction: 'left' | 'right') => {
-    console.log('[SwipeFeature] Swiping', direction, 'on', profile.full_name);
+  const handleLike = useCallback(async (profile: SwipeProfile, context: { type: string; label: string }) => {
+    console.log('[SwipeFeature] Liked', profile.full_name, 'context:', context);
     
     // Add to history for undo
     setSwipeHistory(prev => [profile, ...prev].slice(0, 5));
@@ -73,8 +73,8 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
     // Remove from stack
     removeProfile(profile.user_id);
 
-    // Record the swipe
-    const result = await recordSwipe(profile.user_id, direction);
+    // Record the swipe as a right swipe with context
+    const result = await recordSwipe(profile.user_id, 'right');
     
     if (result.isMatch && result.matchedProfile) {
       console.log('[SwipeFeature] MATCH!', result.matchedProfile);
@@ -89,52 +89,43 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
           userId: result.matchedProfile.user_id
         });
       }
-    } else if (direction === 'right') {
-      toast.success('Interest sent!', { duration: 1500 });
+    } else {
+      toast.success(`Liked ${context.label}!`, { duration: 1500 });
     }
   }, [recordSwipe, removeProfile, onMatch]);
 
+  const handlePass = useCallback(async (profile: SwipeProfile) => {
+    console.log('[SwipeFeature] Passed', profile.full_name);
+    
+    setSwipeHistory(prev => [profile, ...prev].slice(0, 5));
+    removeProfile(profile.user_id);
+    await recordSwipe(profile.user_id, 'left');
+  }, [recordSwipe, removeProfile]);
+
   const handleViewProfile = useCallback((profile: SwipeProfile) => {
-    // Open profile preview sheet instead of navigating away
     setPreviewProfile(profile);
     setShowProfilePreview(true);
   }, []);
 
-  const handleMatchBadgeClick = useCallback((profile: SwipeProfile) => {
-    setExplanationProfile(profile);
-    setShowMatchExplanation(true);
-  }, []);
-
-  const handleExplanationConnect = useCallback(() => {
-    if (explanationProfile) {
-      handleSwipe(explanationProfile, 'right');
-    }
-  }, [explanationProfile, handleSwipe]);
-
-  const handleExplanationPass = useCallback(() => {
-    if (explanationProfile) {
-      handleSwipe(explanationProfile, 'left');
-    }
-  }, [explanationProfile, handleSwipe]);
-
-  // Handle swipe from profile preview sheet
-  const handlePreviewSwipe = useCallback((direction: 'left' | 'right') => {
-    if (previewProfile) {
-      handleSwipe(previewProfile, direction);
-      setPreviewProfile(null);
-    }
-  }, [previewProfile, handleSwipe]);
-
-  // Handle sending a message request to a non-connected profile
   const handleSendMessage = useCallback((profile: SwipeProfile) => {
-    // Navigate to messages with the user - this will trigger message request flow
     navigate(`/messages?user=${profile.user_id}`);
   }, [navigate]);
+
+  const handlePreviewSwipe = useCallback((direction: 'left' | 'right') => {
+    if (previewProfile) {
+      if (direction === 'right') {
+        handleLike(previewProfile, { type: 'profile', label: 'their profile' });
+      } else {
+        handlePass(previewProfile);
+      }
+      setPreviewProfile(null);
+    }
+  }, [previewProfile, handleLike, handlePass]);
+
   const handleUndo = useCallback(async () => {
     const lastProfile = swipeHistory[0];
     if (!lastProfile || !user?.id) return;
 
-    // Remove the swipe record
     await supabase
       .from('swipes')
       .delete()
@@ -142,7 +133,6 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
       .eq('target_id', lastProfile.user_id)
       .eq('target_type', 'profile');
 
-    // Add back to profiles (handled by refetching)
     setSwipeHistory(prev => prev.slice(1));
     fetchProfiles();
     toast.success('Undo successful!');
@@ -176,7 +166,7 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
           <EyeOff className="h-8 w-8 text-orange-500" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-lg font-bold">Complete Your Profile to Swipe</h3>
+          <h3 className="text-lg font-bold">Complete Your Profile to Connect</h3>
           <p className="text-sm text-muted-foreground max-w-sm">
             Other creators can't see you until your profile meets quality standards. Complete these items to unlock matching:
           </p>
@@ -199,17 +189,56 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
     );
   }
 
+  const currentProfile = profiles[0];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!currentProfile) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+          <Heart className="h-10 w-10 text-muted-foreground" />
+        </div>
+        <h3 className="text-xl font-semibold mb-2">All Caught Up!</h3>
+        <p className="text-muted-foreground mb-4">
+          You've seen all available creators for now. Check back later!
+        </p>
+        {swipeHistory.length > 0 && (
+          <Button variant="outline" onClick={handleUndo} className="gap-2">
+            <RotateCcw className="h-4 w-4" /> Undo Last
+          </Button>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full">
-      <SwipeStack
-        profiles={profiles}
-        onSwipe={handleSwipe}
+    <div className="w-full space-y-4">
+      {/* Counter + Undo */}
+      <div className="flex items-center justify-between px-2">
+        <p className="text-xs text-muted-foreground">
+          {profiles.length} creator{profiles.length !== 1 ? 's' : ''} to discover
+        </p>
+        {swipeHistory.length > 0 && (
+          <Button variant="ghost" size="sm" onClick={handleUndo} className="text-xs text-muted-foreground gap-1">
+            <RotateCcw className="h-3 w-3" /> Undo
+          </Button>
+        )}
+      </div>
+
+      {/* Hinge-style card — one at a time */}
+      <HingeStyleCard
+        profile={currentProfile}
+        onLike={handleLike}
+        onPass={handlePass}
         onViewProfile={handleViewProfile}
-        onMatchBadgeClick={handleMatchBadgeClick}
         onMessage={handleSendMessage}
-        onUndo={swipeHistory.length > 0 ? handleUndo : undefined}
-        canUndo={swipeHistory.length > 0}
-        loading={loading}
       />
 
       <MatchModal
@@ -230,8 +259,8 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
             location: explanationProfile.location || '',
             image: explanationProfile.avatar_url || ''
           }}
-          onConnect={handleExplanationConnect}
-          onPass={handleExplanationPass}
+          onConnect={() => handleLike(explanationProfile, { type: 'profile', label: 'their profile' })}
+          onPass={() => handlePass(explanationProfile)}
         />
       )}
 

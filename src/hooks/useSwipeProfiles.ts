@@ -306,8 +306,15 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
 
   const removeProfile = useCallback((userId: string) => {
     setProfiles(prev => prev.filter(p => p.user_id !== userId));
-    setAllProfiles(prev => prev.filter(p => p.user_id !== userId));
-  }, []);
+    setAllProfiles(prev => {
+      const updated = prev.filter(p => p.user_id !== userId);
+      // Update cached order
+      if (currentUserId) {
+        sessionStorage.setItem(`swipe_order_${currentUserId}`, JSON.stringify(updated.map(p => p.user_id)));
+      }
+      return updated;
+    });
+  }, [currentUserId]);
 
   return {
     profiles,

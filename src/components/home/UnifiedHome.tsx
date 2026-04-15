@@ -349,7 +349,7 @@ export const UnifiedHome = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-6 sm:gap-8 mb-2">
+            <div className="flex items-center justify-center gap-6 sm:gap-8 mb-4">
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.creators.toLocaleString()}+</p>
                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCreators")}</p>
@@ -365,6 +365,24 @@ export const UnifiedHome = () => {
                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsGigs")}</p>
               </div>
             </div>
+
+            {/* What are ThriveCredits? - moved higher */}
+            <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5 mb-2">
+              <div className="flex items-start gap-3">
+                <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                  <Database className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground mb-1">What are ThriveCredits?</h3>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Think of credits like IMDb — but for every creative industry. Each credit is a verified record of work you've done: a music video you directed, a brand shoot you styled, an event you produced.
+                  </p>
+                  <Link to="/auth?tab=signup" className="inline-flex items-center gap-1 mt-1.5 text-xs font-semibold text-primary hover:underline">
+                    Search your name to find your credits <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
       )}

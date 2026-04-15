@@ -123,9 +123,11 @@ export default function Circle() {
     if (activeTab === 'network' && user?.id) fetchConnections();
   }, [activeTab, user?.id, fetchConnections]);
 
-  const handleMatch = async (matchedUserData: { name: string; avatar: string; role: string; userId: string }) => {
+   const handleMatch = async (matchedUserData: { name: string; avatar: string; role: string; userId: string }) => {
     const { analytics } = await import("@/lib/analytics");
     analytics.match(matchedUserData.userId);
+    setMatchedUser(matchedUserData);
+    setShowMatchDialog(true);
   };
 
   const handleMessage = (userId: string) => navigate(`/messages?user=${userId}`);

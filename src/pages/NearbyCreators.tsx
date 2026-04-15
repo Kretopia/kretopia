@@ -290,7 +290,7 @@ const NearbyCreators = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Map takes priority */}
                 <div className="lg:col-span-2">
-                  <div className="rounded-xl overflow-hidden border h-[55vh] sm:h-[65vh]">
+                  <div className="rounded-xl overflow-hidden border h-[55dvh] min-h-[320px] sm:h-[65dvh]">
                     <UnifiedNearbyMap
                       creators={filteredCreators} sessions={filteredSessions} locations={filteredLocations}
                       userLocation={userLocation} selectedItem={selectedItem}

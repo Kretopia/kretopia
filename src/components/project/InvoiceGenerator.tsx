@@ -1011,9 +1011,18 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                   </div>
                 </Card>
 
+                {/* AI Markup Helper */}
+                <AIMarkupHelper
+                  lineItems={lineItems}
+                  currency={currency}
+                  onApplyMarkup={(updatedItems, pct) => {
+                    setLineItems(updatedItems);
+                  }}
+                />
+
                 <div>
                   <Label className="text-xs">Notes</Label>
-                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Additional notes for the client..." rows={2} className="text-sm" />
+                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={`Additional notes for the ${documentType === "quote" ? "quote" : "client"}...`} rows={2} className="text-sm" />
                 </div>
 
                 <Button className="w-full" onClick={() => setCreateStep("branding")}>

@@ -850,7 +850,6 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
           <DialogHeader>
             <DialogTitle>{editingInvoiceId ? `Edit ${docLabel}` : `Create ${docLabel}`}</DialogTitle>
           </DialogHeader>
-          </DialogHeader>
 
           {/* Step Navigation */}
           <div className="flex gap-1 mb-4">

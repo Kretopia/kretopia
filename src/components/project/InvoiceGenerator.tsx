@@ -1070,7 +1070,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setCreateStep("payment")}>← Back</Button>
                   <Button className="flex-1" onClick={editingInvoiceId ? handleUpdateInvoice : handleCreateInvoice} disabled={loading}>
-                    {loading ? (editingInvoiceId ? "Saving..." : "Creating...") : (editingInvoiceId ? "Save Changes" : "Create Invoice")}
+                    {loading ? (editingInvoiceId ? "Saving..." : "Creating...") : (editingInvoiceId ? "Save Changes" : `Create ${docLabel}`)}
                   </Button>
                 </div>
               </div>

@@ -241,15 +241,18 @@ export async function generateEPKPdf(input: EPKPdfInput, brandingOptions?: EPKBr
   const { default: jsPDF } = await import("jspdf");
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [PAGE_W, PAGE_H] });
 
+  // Resolve template palette first, then allow branding overrides
+  const tpl = getEPKTemplate(brandingOptions?.templateId);
+
   const C = {
-    bg: brandingOptions?.darkColor || BRAND.bg,
-    surface: BRAND.surface,
-    card: BRAND.card,
-    primary: brandingOptions?.primaryColor || BRAND.primary,
-    accent: brandingOptions?.accentColor || BRAND.accent,
-    gold: BRAND.gold,
-    white: BRAND.white,
-    muted: BRAND.muted,
+    bg: brandingOptions?.darkColor || tpl.palette.bg,
+    surface: tpl.palette.surface,
+    card: tpl.palette.card,
+    primary: brandingOptions?.primaryColor || tpl.palette.primary,
+    accent: brandingOptions?.accentColor || tpl.palette.accent,
+    gold: tpl.palette.gold,
+    white: tpl.palette.white,
+    muted: tpl.palette.muted,
     dimmed: BRAND.dimmed,
     light: BRAND.light,
   };

@@ -9,7 +9,7 @@ import {
   Monitor, Smartphone, X, Save, Loader2, Eye, EyeOff,
   GripVertical, ChevronDown, ChevronRight, Wand2,
   PanelLeft, ArrowLeft, Crown, Lock, FileDown, Palette,
-  Type, Image as ImageIcon, Plus, Trash2
+  Type, Image as ImageIcon, Plus, Trash2, LayoutTemplate, Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
 import { useNavigate } from "react-router-dom";
 import type { EPKPdfInput } from "@/lib/epkPdfGenerator";
+import { EPK_TEMPLATES, type EPKTemplateId } from "@/lib/epkPdfGenerator";
 
 // Editable sections for the EPK
 interface EPKSection {

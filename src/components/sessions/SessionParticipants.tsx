@@ -215,9 +215,17 @@ export const SessionParticipants = ({
 
           {/* Participants Section */}
           <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium text-muted-foreground">
               Participants ({participants.length})
             </h4>
+            {isCreator && participants.length > 0 && (
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleDownloadGuestList}>
+                <Download className="h-3.5 w-3.5" />
+                Download List
+              </Button>
+            )}
+          </div>
             
             {participants.length === 0 ? (
               <div className="text-center py-8">

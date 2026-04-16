@@ -132,8 +132,35 @@ export const SessionParticipants = ({
   };
 
   const handleMessage = (userId: string) => {
-    // This will open the messages dialog - for now navigate to profile
     navigate(`/profile/${userId}`);
+  };
+
+  const handleDownloadGuestList = () => {
+    const rows: string[][] = [["Name", "Role", "Status", "Joined At"]];
+
+    if (creator) {
+      rows.push([creator.full_name || "Unknown", creator.role || "", "Host", ""]);
+    }
+
+    participants.forEach((p) => {
+      rows.push([
+        p.profile?.full_name || "Unknown",
+        p.profile?.role || "",
+        p.status,
+        p.joined_at ? new Date(p.joined_at).toLocaleDateString() : "",
+      ]);
+    });
+
+    const csv = rows.map((r) => r.map((c) => `"${(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `guest-list-${sessionId.slice(0, 8)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    toast({ title: "Guest list downloaded" });
   };
 
   if (loading) {

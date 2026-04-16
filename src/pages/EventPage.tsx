@@ -10,8 +10,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Loader2, Lock, 
-  Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine
+  Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine,
+  MoreVertical, Crown, Ban, CheckCircle
 } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +24,8 @@ import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";
 import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
 import { EventComments } from "@/components/sessions/EventComments";
+import { EventCohosts } from "@/components/sessions/EventCohosts";
+import { EventRecapButton } from "@/components/sessions/EventRecapButton";
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',

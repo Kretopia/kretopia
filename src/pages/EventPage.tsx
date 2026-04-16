@@ -573,6 +573,29 @@ const EventPage = () => {
               onOpenChange={setShowCheckIn}
             />
           )}
+          {isCreator && showCohosts && (
+            <Dialog open={showCohosts} onOpenChange={setShowCohosts}>
+              <DialogContent className="max-w-md">
+                <EventCohosts eventId={event.id} isCreator={isCreator} />
+              </DialogContent>
+            </Dialog>
+          )}
+          {isCreator && showRecap && (
+            <Dialog open={showRecap} onOpenChange={setShowRecap}>
+              <DialogContent className="max-w-sm">
+                <div className="space-y-4 py-2">
+                  <h3 className="font-semibold text-lg">Post Event Update / Recap</h3>
+                  <p className="text-sm text-muted-foreground">Share an update or recap of this event to your feed so your network can see what's happening.</p>
+                  <EventRecapButton
+                    eventId={event.id}
+                    eventTitle={event.title}
+                    eventCategory={event.category}
+                    venueName={event.venue_name}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
     </>

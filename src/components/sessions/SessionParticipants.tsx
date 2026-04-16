@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, UserMinus, MessageCircle, UserPlus, Crown } from "lucide-react";
+import { Loader2, UserMinus, MessageCircle, UserPlus, Crown, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -132,8 +132,35 @@ export const SessionParticipants = ({
   };
 
   const handleMessage = (userId: string) => {
-    // This will open the messages dialog - for now navigate to profile
     navigate(`/profile/${userId}`);
+  };
+
+  const handleDownloadGuestList = () => {
+    const rows: string[][] = [["Name", "Role", "Status", "Joined At"]];
+
+    if (creator) {
+      rows.push([creator.full_name || "Unknown", creator.role || "", "Host", ""]);
+    }
+
+    participants.forEach((p) => {
+      rows.push([
+        p.profile?.full_name || "Unknown",
+        p.profile?.role || "",
+        p.status,
+        p.joined_at ? new Date(p.joined_at).toLocaleDateString() : "",
+      ]);
+    });
+
+    const csv = rows.map((r) => r.map((c) => `"${(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `guest-list-${sessionId.slice(0, 8)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    toast({ title: "Guest list downloaded" });
   };
 
   if (loading) {
@@ -188,9 +215,17 @@ export const SessionParticipants = ({
 
           {/* Participants Section */}
           <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium text-muted-foreground">
               Participants ({participants.length})
             </h4>
+            {isCreator && participants.length > 0 && (
+              <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleDownloadGuestList}>
+                <Download className="h-3.5 w-3.5" />
+                Download List
+              </Button>
+            )}
+          </div>
             
             {participants.length === 0 ? (
               <div className="text-center py-8">

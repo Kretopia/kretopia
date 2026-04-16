@@ -268,15 +268,55 @@ const EventPage = () => {
             </div>
           )}
 
-          {/* Host Edit Button */}
+          {/* Host Actions */}
           {isCreator && (
             <div className="flex justify-end gap-2 mb-2">
               <Button variant="outline" size="sm" onClick={() => setShowCheckIn(true)} className="gap-1.5">
                 <ScanLine className="h-3.5 w-3.5" /> Check-In
               </Button>
               <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)} className="gap-1.5">
-                <Pencil className="h-3.5 w-3.5" /> Edit Event
+                <Pencil className="h-3.5 w-3.5" /> Edit
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="px-2">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => setShowShareKit(true)}>
+                    <Share2 className="h-4 w-4 mr-2" /> Share / QR Code
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowCohosts(true)}>
+                    <Crown className="h-4 w-4 mr-2" /> Manage Co-hosts
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowRecap(true)}>
+                    <Sparkles className="h-4 w-4 mr-2" /> Post Update / Recap
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {!isPast && !isCompleted && (
+                    <DropdownMenuItem onClick={async () => {
+                      await supabase.from('creative_jams').update({ status: 'completed' } as any).eq('id', event.id).eq('created_by', user?.id || '');
+                      toast({ title: "Event marked complete" });
+                      fetchEvent();
+                    }}>
+                      <CheckCircle className="h-4 w-4 mr-2" /> Mark Complete
+                    </DropdownMenuItem>
+                  )}
+                  {!isCancelled && (
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={async () => {
+                        await supabase.from('creative_jams').update({ status: 'cancelled' } as any).eq('id', event.id).eq('created_by', user?.id || '');
+                        toast({ title: "Event cancelled" });
+                        fetchEvent();
+                      }}
+                    >
+                      <Ban className="h-4 w-4 mr-2" /> Cancel Event
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
           

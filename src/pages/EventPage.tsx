@@ -293,6 +293,35 @@ const EventPage = () => {
                   <DropdownMenuItem onClick={() => setShowRecap(true)}>
                     <Sparkles className="h-4 w-4 mr-2" /> Post Update / Recap
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={async () => {
+                    const { data: parts } = await supabase
+                      .from('jam_participants')
+                      .select('user_id, status, joined_at')
+                      .eq('jam_id', event.id)
+                      .in('status', ['going', 'interested', 'maybe']);
+                    const userIds = (parts || []).map((p: any) => p.user_id);
+                    const { data: profiles } = userIds.length > 0
+                      ? await supabase.from('profiles').select('user_id, full_name, role').in('user_id', userIds)
+                      : { data: [] };
+                    const pMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+                    const rows = [["Name", "Role", "Status", "Joined At"]];
+                    if (creator) rows.push([creator.full_name || "Host", creator.role || "", "Host", ""]);
+                    (parts || []).forEach((p: any) => {
+                      const prof = pMap.get(p.user_id) as any;
+                      rows.push([prof?.full_name || "Unknown", prof?.role || "", p.status, p.joined_at ? new Date(p.joined_at).toLocaleDateString() : ""]);
+                    });
+                    const csv = rows.map(r => r.map(c => `"${(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `guest-list-${event.id.slice(0, 8)}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast({ title: "Guest list downloaded" });
+                  }}>
+                    <Download className="h-4 w-4 mr-2" /> Download Guest List
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {!isPast && !isCompleted && (
                     <DropdownMenuItem onClick={async () => {

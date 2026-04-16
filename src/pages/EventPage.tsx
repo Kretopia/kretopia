@@ -10,8 +10,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Loader2, Lock, 
-  Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine
+  Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine,
+  MoreVertical, Crown, Ban, CheckCircle
 } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +24,8 @@ import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";
 import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
 import { EventComments } from "@/components/sessions/EventComments";
+import { EventCohosts } from "@/components/sessions/EventCohosts";
+import { EventRecapButton } from "@/components/sessions/EventRecapButton";
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
@@ -46,6 +53,8 @@ const EventPage = () => {
   const [showShareKit, setShowShareKit] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
+  const [showCohosts, setShowCohosts] = useState(false);
+  const [showRecap, setShowRecap] = useState(false);
 
   useEffect(() => {
     if (eventId) fetchEvent();
@@ -259,15 +268,55 @@ const EventPage = () => {
             </div>
           )}
 
-          {/* Host Edit Button */}
+          {/* Host Actions */}
           {isCreator && (
             <div className="flex justify-end gap-2 mb-2">
               <Button variant="outline" size="sm" onClick={() => setShowCheckIn(true)} className="gap-1.5">
                 <ScanLine className="h-3.5 w-3.5" /> Check-In
               </Button>
               <Button variant="outline" size="sm" onClick={() => setShowEditDialog(true)} className="gap-1.5">
-                <Pencil className="h-3.5 w-3.5" /> Edit Event
+                <Pencil className="h-3.5 w-3.5" /> Edit
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="px-2">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => setShowShareKit(true)}>
+                    <Share2 className="h-4 w-4 mr-2" /> Share / QR Code
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowCohosts(true)}>
+                    <Crown className="h-4 w-4 mr-2" /> Manage Co-hosts
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowRecap(true)}>
+                    <Sparkles className="h-4 w-4 mr-2" /> Post Update / Recap
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {!isPast && !isCompleted && (
+                    <DropdownMenuItem onClick={async () => {
+                      await supabase.from('creative_jams').update({ status: 'completed' } as any).eq('id', event.id).eq('created_by', user?.id || '');
+                      toast({ title: "Event marked complete" });
+                      fetchEvent();
+                    }}>
+                      <CheckCircle className="h-4 w-4 mr-2" /> Mark Complete
+                    </DropdownMenuItem>
+                  )}
+                  {!isCancelled && (
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={async () => {
+                        await supabase.from('creative_jams').update({ status: 'cancelled' } as any).eq('id', event.id).eq('created_by', user?.id || '');
+                        toast({ title: "Event cancelled" });
+                        fetchEvent();
+                      }}
+                    >
+                      <Ban className="h-4 w-4 mr-2" /> Cancel Event
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
           
@@ -523,6 +572,29 @@ const EventPage = () => {
               open={showCheckIn}
               onOpenChange={setShowCheckIn}
             />
+          )}
+          {isCreator && showCohosts && (
+            <Dialog open={showCohosts} onOpenChange={setShowCohosts}>
+              <DialogContent className="max-w-md">
+                <EventCohosts eventId={event.id} isCreator={isCreator} />
+              </DialogContent>
+            </Dialog>
+          )}
+          {isCreator && showRecap && (
+            <Dialog open={showRecap} onOpenChange={setShowRecap}>
+              <DialogContent className="max-w-sm">
+                <div className="space-y-4 py-2">
+                  <h3 className="font-semibold text-lg">Post Event Update / Recap</h3>
+                  <p className="text-sm text-muted-foreground">Share an update or recap of this event to your feed so your network can see what's happening.</p>
+                  <EventRecapButton
+                    eventId={event.id}
+                    eventTitle={event.title}
+                    eventCategory={event.category}
+                    venueName={event.venue_name}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       </div>

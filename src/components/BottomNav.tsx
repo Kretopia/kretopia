@@ -96,7 +96,7 @@ const BottomNav = memo(() => {
         <div className="flex items-center justify-center gap-2 pt-1.5 pb-0.5">
           <button
             onClick={toggle}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-all active:scale-95 bg-muted/60 text-muted-foreground touch-manipulation min-h-[36px]"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-all active:scale-95 bg-card/80 border border-[hsl(var(--mode-accent)/0.4)] text-foreground touch-manipulation min-h-[36px] shadow-[0_0_12px_hsl(var(--mode-accent)/0.15)]"
           >
             <span className={cn("h-1.5 w-1.5 rounded-full transition-colors", MODE_META[mode].accent)} />
             {MODE_META[mode].label}
@@ -115,14 +115,19 @@ const BottomNav = memo(() => {
               aria-label={`Navigate to ${item.label}`}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 min-w-[64px] min-h-[48px]",
+                "relative flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 min-w-[64px] min-h-[48px]",
                 "touch-manipulation select-none active:scale-95",
-                active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                active
+                  ? "text-[hsl(var(--mode-accent))]"
+                  : "text-muted-foreground hover:text-foreground"
               )}
               style={{ WebkitTapHighlightColor: "transparent" }}
             >
-              <item.icon className={cn("h-5 w-5 transition-all duration-200", active && "scale-110")} />
+              <item.icon className={cn("h-5 w-5 transition-all duration-200", active && "scale-110 drop-shadow-[0_0_8px_hsl(var(--mode-accent)/0.6)]")} />
               <span className={cn("text-[10px] font-medium leading-tight", active && "font-semibold")}>{item.label}</span>
+              {active && (
+                <span className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-[hsl(var(--mode-accent))] shadow-[0_0_8px_hsl(var(--mode-accent)/0.8)]" />
+              )}
             </Link>
           );
         })}

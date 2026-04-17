@@ -120,6 +120,8 @@ export const ROLE_OPTIONS = [
   { value: 'Talent Manager', label: 'Talent Manager / Agent' },
   { value: 'A&R', label: 'A&R' },
   { value: 'Music Supervisor', label: 'Music Supervisor' },
+  { value: 'Promoter', label: 'Promoter / Event Promoter' },
+  { value: 'Booking Agent', label: 'Booking Agent' },
   // Multi-Discipline (Multi-Creative removed — use Specialties / sub-roles instead)
   { value: 'Creative Entrepreneur', label: 'Creative Entrepreneur' },
   // Other
@@ -170,6 +172,13 @@ export const LOCATION_OPTIONS = [
   { value: 'Tokyo, Japan', label: '🇯🇵 Tokyo, Japan' },
   { value: 'Seoul, South Korea', label: '🇰🇷 Seoul, South Korea' },
   { value: 'Sydney, Australia', label: '🇦🇺 Sydney, Australia' },
+  // Middle East
+  { value: 'Dubai, UAE', label: '🇦🇪 Dubai, UAE' },
+  { value: 'Abu Dhabi, UAE', label: '🇦🇪 Abu Dhabi, UAE' },
+  { value: 'Sharjah, UAE', label: '🇦🇪 Sharjah, UAE' },
+  { value: 'United Arab Emirates', label: '🇦🇪 United Arab Emirates' },
+  { value: 'Riyadh, Saudi Arabia', label: '🇸🇦 Riyadh, Saudi Arabia' },
+  { value: 'Doha, Qatar', label: '🇶🇦 Doha, Qatar' },
   // LATAM
   { value: 'São Paulo, Brazil', label: '🇧🇷 São Paulo, Brazil' },
   { value: 'Mexico City, Mexico', label: '🇲🇽 Mexico City, Mexico' },

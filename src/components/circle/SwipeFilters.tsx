@@ -124,7 +124,7 @@ const ROLE_CATEGORIES: { label: string; roles: string[] }[] = [
   },
   {
     label: 'Business & Tech',
-    roles: ['Brand Strategist', 'Marketing Manager', 'PR Specialist', 'Talent Manager', 'Event Producer', 'Project Manager', 'Web Developer', 'App Developer', 'Product Designer', 'Data Analyst'],
+    roles: ['Brand Strategist', 'Marketing Manager', 'PR Specialist', 'Talent Manager', 'Promoter', 'Booking Agent', 'Event Producer', 'Project Manager', 'Web Developer', 'App Developer', 'Product Designer', 'Data Analyst'],
   },
   {
     label: 'Performing Arts',

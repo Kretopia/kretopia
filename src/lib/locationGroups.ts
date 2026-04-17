@@ -187,6 +187,33 @@ export const LOCATION_HIERARCHY: LocationCountry[] = [
     ],
   },
   {
+    value: 'United Arab Emirates',
+    label: 'United Arab Emirates',
+    flag: '🇦🇪',
+    cities: [
+      { value: 'Dubai, UAE', label: 'Dubai' },
+      { value: 'Abu Dhabi, UAE', label: 'Abu Dhabi' },
+      { value: 'Sharjah, UAE', label: 'Sharjah' },
+    ],
+  },
+  {
+    value: 'Saudi Arabia',
+    label: 'Saudi Arabia',
+    flag: '🇸🇦',
+    cities: [
+      { value: 'Riyadh, Saudi Arabia', label: 'Riyadh' },
+      { value: 'Jeddah, Saudi Arabia', label: 'Jeddah' },
+    ],
+  },
+  {
+    value: 'Qatar',
+    label: 'Qatar',
+    flag: '🇶🇦',
+    cities: [
+      { value: 'Doha, Qatar', label: 'Doha' },
+    ],
+  },
+  {
     value: 'Brazil',
     label: 'Brazil',
     flag: '🇧🇷',

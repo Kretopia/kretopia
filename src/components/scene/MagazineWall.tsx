@@ -161,6 +161,7 @@ export const MagazineWall = () => {
                     src={featured.cover_image_url}
                     alt={featured.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    style={coverImageStyle(featured.cover_position_x, featured.cover_position_y, featured.cover_zoom)}
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20" />

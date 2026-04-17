@@ -14,7 +14,6 @@ import { formatDistanceToNow } from "date-fns";
 interface RecentSignup {
   user_id: string;
   full_name: string | null;
-  email: string | null;
   avatar_url: string | null;
   role: string | null;
   subscription_tier: string | null;
@@ -40,7 +39,7 @@ export function FounderGrantTab() {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("user_id, full_name, email, avatar_url, role, subscription_tier, created_at")
+        .select("user_id, full_name, avatar_url, role, subscription_tier, created_at")
         .order("created_at", { ascending: false })
         .limit(150);
       if (error) throw error;
@@ -92,7 +91,6 @@ export function FounderGrantTab() {
     const q = search.toLowerCase();
     return (
       s.full_name?.toLowerCase().includes(q) ||
-      s.email?.toLowerCase().includes(q) ||
       s.role?.toLowerCase().includes(q)
     );
   });
@@ -113,7 +111,7 @@ export function FounderGrantTab() {
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name, email, or role…"
+              placeholder="Search by name or role…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -182,7 +180,7 @@ export function FounderGrantTab() {
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground truncate">
-                        {s.email || "—"} · {s.role || "no role"}
+                        {s.role || "no role"}
                       </p>
                     </div>
                     <span className="text-xs text-muted-foreground shrink-0">

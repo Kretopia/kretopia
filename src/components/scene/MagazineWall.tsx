@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { MagazineArticleViewer } from "./MagazineArticleViewer";
 import { MagazineEditor } from "./MagazineEditor";
+import { coverImageStyle } from "./CoverImageEditor";
 
 interface Article {
   id: string;

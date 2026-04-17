@@ -43,8 +43,8 @@ export interface GigCreatorProfile {
 const TYPE_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: typeof Briefcase }> = {
   job: { label: "Paid Gig", color: "text-[hsl(152,60%,50%)]", bgColor: "bg-[hsl(152,60%,42%,0.15)] border-[hsl(152,60%,42%,0.3)]", icon: Briefcase },
   paid: { label: "Paid Gig", color: "text-[hsl(152,60%,50%)]", bgColor: "bg-[hsl(152,60%,42%,0.15)] border-[hsl(152,60%,42%,0.3)]", icon: DollarSign },
-  collab: { label: "Collaboration", color: "text-[hsl(235,70%,70%)]", bgColor: "bg-[hsl(235,65%,52%,0.15)] border-[hsl(235,65%,52%,0.3)]", icon: Handshake },
-  collaboration: { label: "Collaboration", color: "text-[hsl(235,70%,70%)]", bgColor: "bg-[hsl(235,65%,52%,0.15)] border-[hsl(235,65%,52%,0.3)]", icon: Handshake },
+  collab: { label: "Collaboration", color: "text-primary", bgColor: "bg-primary/15 border-primary/30", icon: Handshake },
+  collaboration: { label: "Collaboration", color: "text-primary", bgColor: "bg-primary/15 border-primary/30", icon: Handshake },
   gig: { label: "Quick Gig", color: "text-[hsl(45,90%,60%)]", bgColor: "bg-[hsl(45,90%,55%,0.15)] border-[hsl(45,90%,55%,0.3)]", icon: Zap },
   project: { label: "Project", color: "text-[hsl(200,70%,60%)]", bgColor: "bg-[hsl(200,70%,50%,0.15)] border-[hsl(200,70%,50%,0.3)]", icon: Target },
   internship: { label: "Internship", color: "text-[hsl(30,80%,60%)]", bgColor: "bg-[hsl(30,80%,50%,0.15)] border-[hsl(30,80%,50%,0.3)]", icon: GraduationCap },
@@ -77,7 +77,7 @@ const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
 
   return (
     <div
-      className="rounded-xl border border-[hsl(230,15%,18%)] bg-[hsl(230,18%,10%)] overflow-hidden hover:border-[hsl(235,65%,52%,0.4)] transition-all cursor-pointer group"
+      className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-all cursor-pointer group"
       onClick={() => navigate(`/opportunity/${opp.id}`)}
     >
       {/* Barter Exchange Banner */}
@@ -105,7 +105,7 @@ const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
               {config.label}
             </Badge>
             {creator && (
-              <Badge variant="outline" className="text-[10px] shrink-0 bg-[hsl(235,65%,52%,0.1)] border-[hsl(235,65%,52%,0.25)] text-[hsl(235,70%,70%)]">
+              <Badge variant="outline" className="text-[10px] shrink-0 bg-primary/10 border-primary/25 text-primary">
                 <Verified className="h-2.5 w-2.5 mr-1" />
                 Verified Client
               </Badge>
@@ -140,7 +140,7 @@ const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm leading-tight line-clamp-2 text-white group-hover:text-[hsl(235,70%,75%)] transition-colors">
+            <h4 className="font-semibold text-sm leading-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors">
               {opp.title}
             </h4>
             <p className="text-xs text-[hsl(220,10%,45%)] line-clamp-1 mt-0.5">
@@ -157,7 +157,7 @@ const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
               Budgets {opp.compensation}
             </Badge>
             {isPaid && (
-              <Badge variant="outline" className="text-[11px] bg-[hsl(235,65%,52%,0.1)] text-[hsl(235,70%,70%)] border-[hsl(235,65%,52%,0.25)] gap-0.5">
+              <Badge variant="outline" className="text-[11px] bg-primary/10 text-primary border-primary/25 gap-0.5">
                 <Shield className="h-3 w-3" />
                 Escrow Protected
               </Badge>

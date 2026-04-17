@@ -12,6 +12,7 @@ import { ArrowLeft, Loader2, ImagePlus, Sparkles, Upload, Plus, Type, Image, Quo
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
+import { CoverImageEditor, coverImageStyle } from "./CoverImageEditor";
 
 interface Props {
   onClose: () => void;

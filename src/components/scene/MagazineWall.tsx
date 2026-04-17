@@ -18,6 +18,9 @@ interface Article {
   subtitle: string | null;
   content: string;
   cover_image_url: string | null;
+  cover_position_x?: number | null;
+  cover_position_y?: number | null;
+  cover_zoom?: number | null;
   category: string;
   tags: string[];
   author_name: string;

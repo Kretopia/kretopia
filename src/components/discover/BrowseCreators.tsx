@@ -371,6 +371,8 @@ export function BrowseCreators() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </>
+      )}
     </div>
   );
 }

@@ -9112,6 +9112,39 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_founder_notes: {
+        Row: {
+          author_user_id: string
+          body: string
+          created_at: string
+          id: string
+          is_published: boolean
+          title: string | null
+          updated_at: string
+          week_start_date: string
+        }
+        Insert: {
+          author_user_id: string
+          body: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          title?: string | null
+          updated_at?: string
+          week_start_date: string
+        }
+        Update: {
+          author_user_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          title?: string | null
+          updated_at?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
       wishlists: {
         Row: {
           created_at: string

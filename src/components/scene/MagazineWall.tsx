@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { MagazineArticleViewer } from "./MagazineArticleViewer";
 import { MagazineEditor } from "./MagazineEditor";
+import { coverImageStyle } from "./CoverImageEditor";
 
 interface Article {
   id: string;
@@ -17,6 +18,9 @@ interface Article {
   subtitle: string | null;
   content: string;
   cover_image_url: string | null;
+  cover_position_x?: number | null;
+  cover_position_y?: number | null;
+  cover_zoom?: number | null;
   category: string;
   tags: string[];
   author_name: string;
@@ -157,6 +161,7 @@ export const MagazineWall = () => {
                     src={featured.cover_image_url}
                     alt={featured.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    style={coverImageStyle(featured.cover_position_x, featured.cover_position_y, featured.cover_zoom)}
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20" />
@@ -206,6 +211,7 @@ export const MagazineWall = () => {
                       src={article.cover_image_url}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      style={coverImageStyle(article.cover_position_x, article.cover_position_y, article.cover_zoom)}
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">

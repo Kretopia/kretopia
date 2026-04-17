@@ -12,6 +12,7 @@ import { ArrowLeft, Loader2, ImagePlus, Sparkles, Upload, Plus, Type, Image, Quo
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
+import { CoverImageEditor, coverImageStyle } from "./CoverImageEditor";
 
 interface Props {
   onClose: () => void;
@@ -38,6 +39,9 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
   const [subtitle, setSubtitle] = useState("");
   const [category, setCategory] = useState("inspiration");
   const [coverUrl, setCoverUrl] = useState("");
+  const [coverPosX, setCoverPosX] = useState(50);
+  const [coverPosY, setCoverPosY] = useState(50);
+  const [coverZoom, setCoverZoom] = useState(1);
   const [isFeatured, setIsFeatured] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -154,6 +158,9 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
       subtitle: subtitle.trim() || null,
       content: content.trim(),
       cover_image_url: coverUrl || null,
+      cover_position_x: coverPosX,
+      cover_position_y: coverPosY,
+      cover_zoom: coverZoom,
       category,
       is_featured: isFeatured,
       author_user_id: user.id,
@@ -182,7 +189,7 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
         </div>
         {coverUrl && (
           <div className="rounded-xl overflow-hidden aspect-[16/9]">
-            <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+            <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" style={coverImageStyle(coverPosX, coverPosY, coverZoom)} />
           </div>
         )}
         <div>
@@ -221,11 +228,24 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
       <div>
         <Label className="text-xs font-medium">Cover Image</Label>
         {coverUrl ? (
-          <div className="relative mt-1.5 rounded-xl overflow-hidden aspect-[16/9]">
-            <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
-            <Button variant="secondary" size="sm" className="absolute bottom-2 right-2 text-xs" onClick={() => setCoverUrl("")}>
-              Change
-            </Button>
+          <div className="mt-1.5">
+            <CoverImageEditor
+              src={coverUrl}
+              positionX={coverPosX}
+              positionY={coverPosY}
+              zoom={coverZoom}
+              onChange={({ positionX, positionY, zoom }) => {
+                setCoverPosX(positionX);
+                setCoverPosY(positionY);
+                setCoverZoom(zoom);
+              }}
+              onReplace={() => {
+                setCoverUrl("");
+                setCoverPosX(50);
+                setCoverPosY(50);
+                setCoverZoom(1);
+              }}
+            />
           </div>
         ) : (
           <label className="mt-1.5 flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border p-6 cursor-pointer hover:border-primary/50 transition-colors">

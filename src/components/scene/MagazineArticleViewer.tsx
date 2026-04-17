@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { motion } from "framer-motion";
+import { coverImageStyle } from "./CoverImageEditor";
 
 interface Article {
   id: string;
@@ -13,6 +14,9 @@ interface Article {
   subtitle: string | null;
   content: string;
   cover_image_url: string | null;
+  cover_position_x?: number | null;
+  cover_position_y?: number | null;
+  cover_zoom?: number | null;
   category: string;
   author_name: string;
   author_avatar_url: string | null;
@@ -113,6 +117,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
             src={article.cover_image_url}
             alt={article.title}
             className="w-full h-full object-cover"
+            style={coverImageStyle(article.cover_position_x, article.cover_position_y, article.cover_zoom)}
             loading="eager"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />

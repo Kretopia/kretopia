@@ -4072,6 +4072,9 @@ export type Database = {
           category: string
           content: string
           cover_image_url: string | null
+          cover_position_x: number
+          cover_position_y: number
+          cover_zoom: number
           created_at: string
           id: string
           is_featured: boolean | null
@@ -4091,6 +4094,9 @@ export type Database = {
           category?: string
           content: string
           cover_image_url?: string | null
+          cover_position_x?: number
+          cover_position_y?: number
+          cover_zoom?: number
           created_at?: string
           id?: string
           is_featured?: boolean | null
@@ -4110,6 +4116,9 @@ export type Database = {
           category?: string
           content?: string
           cover_image_url?: string | null
+          cover_position_x?: number
+          cover_position_y?: number
+          cover_zoom?: number
           created_at?: string
           id?: string
           is_featured?: boolean | null

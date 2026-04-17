@@ -30,6 +30,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useConnectedUsers } from "@/hooks/useConnectedUsers";
 import { useUserBlocks } from "@/hooks/useUserBlocks";
+import { BrowseCreators } from "@/components/discover/BrowseCreators";
 
 
 const NearbyCreators = () => {
@@ -56,6 +57,7 @@ const NearbyCreators = () => {
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [atlasFilter, setAtlasFilter] = useState<AtlasFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [discoverMode, setDiscoverMode] = useState<'nearby' | 'browse'>('nearby');
   const { bookmarkedIds, toggleBookmark } = useLocationBookmarks();
   const { connectedIds, isConnected } = useConnectedUsers();
   const { isBlocked, refetch: refetchBlocks } = useUserBlocks();
@@ -178,13 +180,27 @@ const NearbyCreators = () => {
             <div className="flex items-center gap-2 min-w-0">
               <MapPin className="h-5 w-5 text-primary shrink-0" />
               <h1 className="text-lg font-bold truncate">Discover</h1>
-              {userLocation && (
+              {userLocation && discoverMode === 'nearby' && (
                 <span className="text-[11px] text-muted-foreground whitespace-nowrap">
                   {totalResults} nearby
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1 rounded-full bg-muted p-0.5 shrink-0">
+              <button
+                onClick={() => setDiscoverMode('nearby')}
+                className={`text-xs px-2.5 py-1 rounded-full transition-colors ${discoverMode === 'nearby' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}
+              >Nearby</button>
+              <button
+                onClick={() => setDiscoverMode('browse')}
+                className={`text-xs px-2.5 py-1 rounded-full transition-colors ${discoverMode === 'browse' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}
+              >Browse</button>
+            </div>
+          </div>
+
+          {/* Nearby-only header controls */}
+          {discoverMode === 'nearby' && (
+            <div className="flex items-center justify-end gap-1.5">
               {userLocation && (
                 <>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewMode(v => v === 'map' ? 'list' : 'map')}>
@@ -217,10 +233,10 @@ const NearbyCreators = () => {
                 <span className="ml-1.5 hidden xs:inline">{userLocation ? 'Update' : 'Locate'}</span>
               </Button>
             </div>
-          </div>
+          )}
 
-          {/* Search + filters */}
-          {userLocation && (
+          {/* Search + filters (Nearby mode only) */}
+          {discoverMode === 'nearby' && userLocation && (
             <>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -246,6 +262,10 @@ const NearbyCreators = () => {
 
       {/* Content */}
       <div className="px-3 sm:px-4 py-3 space-y-3 max-w-7xl mx-auto">
+        {discoverMode === 'browse' ? (
+          <BrowseCreators />
+        ) : (
+        <>
         <ProfileVisibilityBanner isVisible={true} missingFields={[]} />
 
         {/* No location state */}
@@ -441,6 +461,8 @@ const NearbyCreators = () => {
               </div>
             )}
           </div>
+        )}
+        </>
         )}
       </div>
 

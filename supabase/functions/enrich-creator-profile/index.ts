@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
 
     // Load profile + existing data
     const [profileRes, pressRes, awardsRes, creditsRes] = await Promise.all([
-      supabase.from('profiles').select('full_name, website, linkedin_url, imdb_url, bio, professional_skills, passion_skills, job_title, industry, role').eq('user_id', user_id).maybeSingle(),
+      supabase.from('profiles').select('full_name, website, linkedin_url, imdb_url, bio, professional_skills, passion_skills, job_title, industry, role, avatar_url').eq('user_id', user_id).maybeSingle(),
       supabase.from('press_links').select('id, url, title, publication, image_url, excerpt, og_data').eq('user_id', user_id),
       supabase.from('awards').select('id, title').eq('user_id', user_id),
       supabase.from('credits').select('project_name, role, year, credit_category, platform').eq('user_id', user_id).order('year', { ascending: false }).limit(50),

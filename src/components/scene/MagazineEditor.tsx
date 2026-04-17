@@ -228,11 +228,24 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
       <div>
         <Label className="text-xs font-medium">Cover Image</Label>
         {coverUrl ? (
-          <div className="relative mt-1.5 rounded-xl overflow-hidden aspect-[16/9]">
-            <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
-            <Button variant="secondary" size="sm" className="absolute bottom-2 right-2 text-xs" onClick={() => setCoverUrl("")}>
-              Change
-            </Button>
+          <div className="mt-1.5">
+            <CoverImageEditor
+              src={coverUrl}
+              positionX={coverPosX}
+              positionY={coverPosY}
+              zoom={coverZoom}
+              onChange={({ positionX, positionY, zoom }) => {
+                setCoverPosX(positionX);
+                setCoverPosY(positionY);
+                setCoverZoom(zoom);
+              }}
+              onReplace={() => {
+                setCoverUrl("");
+                setCoverPosX(50);
+                setCoverPosY(50);
+                setCoverZoom(1);
+              }}
+            />
           </div>
         ) : (
           <label className="mt-1.5 flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border p-6 cursor-pointer hover:border-primary/50 transition-colors">

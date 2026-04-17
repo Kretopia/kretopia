@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, IdCard, Share2 } from "lucide-react";
 import { ShareableCreatorCard } from "./ShareableCreatorCard";
 import { useProfileContext } from "@/contexts/ProfileContext";
+import { StorageUsageCard } from "./StorageUsageCard";
 
 export const SettingsTab = () => {
   const { toast } = useToast();
@@ -202,6 +203,9 @@ export const SettingsTab = () => {
 
   return (
     <div className="space-y-6 py-4">
+      {/* Storage usage */}
+      <StorageUsageCard />
+
       {/* Share Profile / Creator Card */}
       <Card>
         <CardHeader>

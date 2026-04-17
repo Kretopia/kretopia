@@ -5934,6 +5934,7 @@ export type Database = {
           stripe_account_status: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          sub_roles: string[] | null
           subscription_end_date: string | null
           subscription_product_id: string | null
           subscription_status: string | null
@@ -6086,6 +6087,7 @@ export type Database = {
           stripe_account_status?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          sub_roles?: string[] | null
           subscription_end_date?: string | null
           subscription_product_id?: string | null
           subscription_status?: string | null
@@ -6238,6 +6240,7 @@ export type Database = {
           stripe_account_status?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          sub_roles?: string[] | null
           subscription_end_date?: string | null
           subscription_product_id?: string | null
           subscription_status?: string | null
@@ -10607,6 +10610,7 @@ export type Database = {
           status: string
         }[]
       }
+      get_tier_storage_limit: { Args: { tier: string }; Returns: number }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {

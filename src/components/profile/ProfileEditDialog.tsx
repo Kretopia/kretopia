@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import type { Database } from "@/integrations/supabase/types";
+import { SubRolesPicker } from "./SubRolesPicker";
 
 // Comprehensive roles covering Music, Film, Design, Fashion, Content Creation, Tech, and more
 export const ROLE_OPTIONS = [
@@ -119,8 +120,7 @@ export const ROLE_OPTIONS = [
   { value: 'Talent Manager', label: 'Talent Manager / Agent' },
   { value: 'A&R', label: 'A&R' },
   { value: 'Music Supervisor', label: 'Music Supervisor' },
-  // Multi-Discipline
-  { value: 'Multi-Creative', label: 'Multi-Creative' },
+  // Multi-Discipline (Multi-Creative removed — use Specialties / sub-roles instead)
   { value: 'Creative Entrepreneur', label: 'Creative Entrepreneur' },
   // Other
   { value: 'Other', label: 'Other' },
@@ -240,6 +240,7 @@ export function ProfileEditDialog({
   const [formData, setFormData] = useState({
     full_name: "",
     role: "",
+    sub_roles: [] as string[],
     location: "",
     bio: "",
     website: "",
@@ -265,6 +266,7 @@ export function ProfileEditDialog({
       setFormData({
         full_name: profile.full_name || "",
         role: profile.role || "",
+        sub_roles: ((profile as any).sub_roles as string[] | null) || [],
         location: profile.location || "",
         bio: profile.bio || "",
         website: profile.website || "",
@@ -307,6 +309,7 @@ export function ProfileEditDialog({
       const updatePayload = {
         full_name: formData.full_name || null,
         role: formData.role || null,
+        sub_roles: formData.sub_roles && formData.sub_roles.length > 0 ? formData.sub_roles : [],
         location: formData.location || null,
         bio: formData.bio || null,
         website: formData.website || null,
@@ -461,6 +464,18 @@ export function ProfileEditDialog({
                 ))}
               </SelectContent>
             </Select>
+          </FieldWrapper>
+
+          <FieldWrapper
+            label="Specialties (sub-roles)"
+            isIncomplete={false}
+            hint="Add other things you do — e.g. a Producer who also shoots photo and sings"
+          >
+            <SubRolesPicker
+              mainRole={formData.role}
+              value={formData.sub_roles}
+              onChange={(next) => setFormData((p) => ({ ...p, sub_roles: next }))}
+            />
           </FieldWrapper>
 
           <FieldWrapper 

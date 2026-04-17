@@ -189,7 +189,7 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
         </div>
         {coverUrl && (
           <div className="rounded-xl overflow-hidden aspect-[16/9]">
-            <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+            <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" style={coverImageStyle(coverPosX, coverPosY, coverZoom)} />
           </div>
         )}
         <div>

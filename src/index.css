@@ -121,8 +121,17 @@ All colors MUST be HSL.
     --muted: 250 25% 14%;
     --muted-foreground: 250 10% 60%;
 
-    --accent: 72 100% 65%;
-    --accent-foreground: 250 35% 6%;
+    /* Shadcn accent — violet-tinted dark surface (readable hovers/selected rows) */
+    --accent: 252 30% 18%;
+    --accent-foreground: 250 20% 96%;
+
+    /* Warm cream — rare editorial surface tone */
+    --cream: 38 35% 92%;
+    --cream-foreground: 250 30% 12%;
+
+    /* Lime — dedicated energy accent (borders, glows, CTAs only — never fill behind text) */
+    --energy: 72 100% 60%;
+    --energy-foreground: 250 35% 6%;
 
     --destructive: 0 75% 60%;
     --destructive-foreground: 250 20% 96%;

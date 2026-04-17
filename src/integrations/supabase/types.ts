@@ -10291,6 +10291,7 @@ export type Database = {
         Args: { grant_reason?: string; target_user_id: string }
         Returns: Json
       }
+      admin_set_profile_coords: { Args: { coords: Json }; Returns: number }
       auto_join_circles_for_role: {
         Args: { p_role: string; p_user_id: string }
         Returns: undefined

@@ -246,6 +246,7 @@ export default function Circle() {
             )}
           </TabsContent>
         </Tabs>
+        </ProfileActivationGate>
       </div>
 
       <InviteDialog open={showInvite} onOpenChange={setShowInvite} />

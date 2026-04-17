@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
-import L from "leaflet";
+// Use namespace import to avoid Vite optimizeDeps "DomUtil export missing" error
+import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Loader2 } from "lucide-react";
 import type { CreativeLocation } from "./LocationListItem";

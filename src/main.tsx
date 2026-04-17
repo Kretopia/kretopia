@@ -59,7 +59,7 @@ setupGlobalErrorLogging();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <App />
     </ThemeProvider>
   </StrictMode>

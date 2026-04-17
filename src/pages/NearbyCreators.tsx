@@ -180,12 +180,25 @@ const NearbyCreators = () => {
             <div className="flex items-center gap-2 min-w-0">
               <MapPin className="h-5 w-5 text-primary shrink-0" />
               <h1 className="text-lg font-bold truncate">Discover</h1>
-              {userLocation && (
+              {userLocation && discoverMode === 'nearby' && (
                 <span className="text-[11px] text-muted-foreground whitespace-nowrap">
                   {totalResults} nearby
                 </span>
               )}
             </div>
+            <div className="flex items-center gap-1 rounded-full bg-muted p-0.5 shrink-0">
+              <button
+                onClick={() => setDiscoverMode('nearby')}
+                className={`text-xs px-2.5 py-1 rounded-full transition-colors ${discoverMode === 'nearby' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}
+              >Nearby</button>
+              <button
+                onClick={() => setDiscoverMode('browse')}
+                className={`text-xs px-2.5 py-1 rounded-full transition-colors ${discoverMode === 'browse' ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}
+              >Browse</button>
+            </div>
+          </div>
+          <div className="hidden">
+            <span>placeholder</span>
             <div className="flex items-center gap-1.5 shrink-0">
               {userLocation && (
                 <>

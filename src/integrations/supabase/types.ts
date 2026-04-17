@@ -3080,6 +3080,30 @@ export type Database = {
         }
         Relationships: []
       }
+      founder_circle_grants: {
+        Row: {
+          granted_at: string
+          granted_by: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       founder_circle_purchases: {
         Row: {
           amount: number
@@ -10260,6 +10284,10 @@ export type Database = {
       }
     }
     Functions: {
+      admin_grant_founder_circle: {
+        Args: { grant_reason?: string; target_user_id: string }
+        Returns: Json
+      }
       auto_join_circles_for_role: {
         Args: { p_role: string; p_user_id: string }
         Returns: undefined

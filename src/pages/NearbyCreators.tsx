@@ -155,7 +155,14 @@ const NearbyCreators = () => {
 
   const filteredSessions = useMemo(() => {
     if (atlasFilter !== 'all' && atlasFilter !== 'sessions') return [];
-    let r = sessions;
+    const now = Date.now();
+    // Hide events that have already started (>2h ago) or are at capacity
+    let r = sessions.filter(s => {
+      const startMs = new Date(s.start_time).getTime();
+      const isPast = startMs < now - 2 * 60 * 60 * 1000;
+      const isFull = s.max_participants > 0 && s.participant_count >= s.max_participants;
+      return !isPast && !isFull;
+    });
     if (searchQuery) { const q = searchQuery.toLowerCase(); r = r.filter(s => s.title?.toLowerCase().includes(q) || s.category?.toLowerCase().includes(q)); }
     return r;
   }, [atlasFilter, sessions, searchQuery]);

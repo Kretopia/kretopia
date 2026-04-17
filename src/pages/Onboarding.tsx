@@ -295,6 +295,12 @@ export default function Onboarding() {
 
     setLoading(true);
     try {
+      // Step 4: user submitted profile save
+      try {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.onboardingStep(4, "save_profile_submitted");
+      } catch {}
+
       // Save profile
       const skillObjects = skills.map(skill => ({ skill, level: 3, category: "General" }));
       await supabase.from("profiles").update({

@@ -339,6 +339,13 @@ export function ProfileEditDialog({
         throw error;
       }
 
+      // Auto-geocode location → lat/lng for the Discover map (fire-and-forget)
+      if (formData.location && formData.location !== profile.location) {
+        supabase.functions.invoke('geocode-location', {
+          body: { mode: 'single', location: formData.location, user_id: profile.user_id },
+        }).catch((e) => console.warn('[ProfileEdit] geocode failed', e));
+      }
+
       const newCompletion = checkProfileCompletion({
         ...profile,
         ...formData,

@@ -146,7 +146,7 @@ export const ProfileHero = ({
           {/* Avatar */}
           <div className="relative group flex-shrink-0">
             <FramedAvatar
-              src={displayAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop"}
+              src={displayAvatar || "/avatar-silhouette.svg"}
               fallback={displayName?.split(' ').map((n: string) => n[0]).join('') || '?'}
               frame={profile.profile_frame}
               className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-2 border-border shadow-sm"

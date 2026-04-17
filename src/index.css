@@ -31,9 +31,18 @@ All colors MUST be HSL.
     --muted: 250 15% 95%;
     --muted-foreground: 250 8% 45%;
 
-    /* Lime — energy / CTA accent */
-    --accent: 72 100% 65%;
-    --accent-foreground: 250 30% 8%;
+    /* Warm cream — neutral editorial surface (3rd tone) */
+    --cream: 38 40% 94%;
+    --cream-foreground: 250 30% 12%;
+
+    /* Shadcn accent — violet-tinted neutral (used for hovers, selected rows, menus).
+       Kept readable; NOT lime. Lime lives on --energy below. */
+    --accent: 252 40% 94%;
+    --accent-foreground: 252 60% 20%;
+
+    /* Lime — dedicated energy accent for borders, glows, CTAs (never a fill behind text) */
+    --energy: 72 100% 55%;
+    --energy-foreground: 250 30% 8%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;

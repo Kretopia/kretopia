@@ -4157,6 +4157,225 @@ export type Database = {
         }
         Relationships: []
       }
+      manual_bank_transfers: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          currency: string
+          id: string
+          invoice_id: string | null
+          payment_type: string
+          proof_url: string
+          recipient_bank_account_id: string | null
+          recipient_bank_snapshot: Json | null
+          recipient_id: string | null
+          reference_code: string
+          rejected_reason: string | null
+          sender_account_last4: string | null
+          sender_bank_name: string | null
+          sender_id: string
+          sender_notes: string | null
+          status: string
+          topup_id: string | null
+          transfer_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_id?: string | null
+          payment_type: string
+          proof_url: string
+          recipient_bank_account_id?: string | null
+          recipient_bank_snapshot?: Json | null
+          recipient_id?: string | null
+          reference_code: string
+          rejected_reason?: string | null
+          sender_account_last4?: string | null
+          sender_bank_name?: string | null
+          sender_id: string
+          sender_notes?: string | null
+          status?: string
+          topup_id?: string | null
+          transfer_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_id?: string | null
+          payment_type?: string
+          proof_url?: string
+          recipient_bank_account_id?: string | null
+          recipient_bank_snapshot?: Json | null
+          recipient_id?: string | null
+          reference_code?: string
+          rejected_reason?: string | null
+          sender_account_last4?: string | null
+          sender_bank_name?: string | null
+          sender_id?: string
+          sender_notes?: string | null
+          status?: string
+          topup_id?: string | null
+          transfer_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_bank_transfers_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_discovery"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_confirmed_by_fkey"
+            columns: ["confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_recipient_bank_account_id_fkey"
+            columns: ["recipient_bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "recipient_bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_discovery"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_discovery"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "manual_bank_transfers_topup_id_fkey"
+            columns: ["topup_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_topups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace_orders: {
         Row: {
           amount: number
@@ -7002,6 +7221,106 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      recipient_bank_accounts: {
+        Row: {
+          account_holder_name: string
+          account_number: string
+          bank_name: string
+          branch: string | null
+          country: string
+          created_at: string
+          currency: string
+          id: string
+          instructions: string | null
+          is_active: boolean
+          is_default: boolean
+          label: string
+          routing_number: string | null
+          swift_code: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_holder_name: string
+          account_number: string
+          bank_name: string
+          branch?: string | null
+          country?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          is_default?: boolean
+          label: string
+          routing_number?: string | null
+          swift_code?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_holder_name?: string
+          account_number?: string
+          bank_name?: string
+          branch?: string | null
+          country?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          is_default?: boolean
+          label?: string
+          routing_number?: string | null
+          swift_code?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipient_bank_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "recipient_bank_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "recipient_bank_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "recipient_bank_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_discovery"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "recipient_bank_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "recipient_bank_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       referral_chain: {
         Row: {
@@ -10287,8 +10606,16 @@ export type Database = {
       }
     }
     Functions: {
+      admin_confirm_bank_transfer: {
+        Args: { p_admin_notes?: string; p_transfer_id: string }
+        Returns: Json
+      }
       admin_grant_founder_circle: {
         Args: { grant_reason?: string; target_user_id: string }
+        Returns: Json
+      }
+      admin_reject_bank_transfer: {
+        Args: { p_reason: string; p_transfer_id: string }
         Returns: Json
       }
       admin_set_profile_coords: { Args: { coords: Json }; Returns: number }
@@ -10382,6 +10709,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      generate_bank_transfer_reference: { Args: never; Returns: string }
       generate_claim_token: { Args: never; Returns: string }
       generate_icdb_creator_id: { Args: never; Returns: string }
       generate_invite_codes: {

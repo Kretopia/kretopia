@@ -39,6 +39,9 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
   const [subtitle, setSubtitle] = useState("");
   const [category, setCategory] = useState("inspiration");
   const [coverUrl, setCoverUrl] = useState("");
+  const [coverPosX, setCoverPosX] = useState(50);
+  const [coverPosY, setCoverPosY] = useState(50);
+  const [coverZoom, setCoverZoom] = useState(1);
   const [isFeatured, setIsFeatured] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [generating, setGenerating] = useState(false);

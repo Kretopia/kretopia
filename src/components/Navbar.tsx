@@ -244,16 +244,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[85vw] sm:w-[400px]">
-                <SheetHeader>
-                   <SheetTitle className="flex items-center gap-3">
-                    Menu
+                <SheetHeader className="pr-8">
+                   <SheetTitle className="flex items-center gap-2">
+                    <span className="shrink-0">Menu</span>
                     {/* Mode toggle in hamburger — hidden for company accounts */}
                     {!isCompany && (
-                      <div className="flex items-center bg-muted/60 rounded-full p-0.5 ml-auto">
+                      <div className="flex items-center bg-muted/60 rounded-full p-0.5 ml-auto shrink-0">
                         <button
                           onClick={() => setMode("create")}
                           className={cn(
-                            "px-3 py-1 rounded-full text-[11px] font-semibold transition-all",
+                            "px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all",
                             mode === "create" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
                           )}
                         >
@@ -262,7 +262,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                         <button
                           onClick={() => setMode("work")}
                           className={cn(
-                            "px-3 py-1 rounded-full text-[11px] font-semibold transition-all",
+                            "px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all",
                             mode === "work" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
                           )}
                         >

@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { motion } from "framer-motion";
+import { coverImageStyle } from "./CoverImageEditor";
 
 interface Article {
   id: string;
@@ -13,6 +14,9 @@ interface Article {
   subtitle: string | null;
   content: string;
   cover_image_url: string | null;
+  cover_position_x?: number | null;
+  cover_position_y?: number | null;
+  cover_zoom?: number | null;
   category: string;
   author_name: string;
   author_avatar_url: string | null;

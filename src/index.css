@@ -298,10 +298,10 @@ All colors MUST be HSL.
 
   @keyframes glow {
     from {
-      box-shadow: 0 0 20px hsl(235 65% 52% / 0.15);
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
     }
     to {
-      box-shadow: 0 0 40px hsl(235 65% 52% / 0.35);
+      box-shadow: 0 0 40px hsl(var(--primary) / 0.45);
     }
   }
 

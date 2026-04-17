@@ -157,7 +157,7 @@ export function ContractBuilder({ projectId, currentUserId, collaborators, onBac
               <button
                 key={t.id}
                 onClick={() => applyTemplate(t.id)}
-                className="p-3 rounded-xl border border-border bg-card hover:bg-accent/50 text-left transition-colors"
+                className="p-3 rounded-xl border border-border bg-card hover:border-energy/60 hover:shadow-[0_0_0_1px_hsl(var(--energy)/0.4)] text-left transition-all"
               >
                 <p className="font-medium text-sm">{t.title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{t.description}</p>

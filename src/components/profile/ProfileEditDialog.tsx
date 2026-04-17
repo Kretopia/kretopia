@@ -120,8 +120,7 @@ export const ROLE_OPTIONS = [
   { value: 'Talent Manager', label: 'Talent Manager / Agent' },
   { value: 'A&R', label: 'A&R' },
   { value: 'Music Supervisor', label: 'Music Supervisor' },
-  // Multi-Discipline
-  { value: 'Multi-Creative', label: 'Multi-Creative' },
+  // Multi-Discipline (Multi-Creative removed — use Specialties / sub-roles instead)
   { value: 'Creative Entrepreneur', label: 'Creative Entrepreneur' },
   // Other
   { value: 'Other', label: 'Other' },

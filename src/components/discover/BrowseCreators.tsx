@@ -102,10 +102,12 @@ export function BrowseCreators() {
     try {
       let q = supabase
         .from("profiles")
-        .select("user_id, full_name, avatar_url, role, location, verification_tier, average_rating, professional_skills")
+        .select("user_id, full_name, avatar_url, role, location, verification_tier, average_rating, professional_skills, bio, is_claimed, badge")
         .eq("onboarding_completed", true)
         .not("full_name", "is", null)
-        .limit(60);
+        .not("avatar_url", "is", null)
+        .neq("avatar_url", "")
+        .limit(120);
 
       if (filters.role) q = q.ilike("role", `%${filters.role}%`);
       if (filters.location) q = q.ilike("location", `%${filters.location}%`);
@@ -115,7 +117,31 @@ export function BrowseCreators() {
 
       const { data, error } = await q;
       if (error) throw error;
-      let rows = (data || []) as CreatorRow[];
+      let rows = (data || []) as (CreatorRow & { bio?: string | null; is_claimed?: boolean; badge?: string | null })[];
+
+      // Completeness gate — same standard as Circle/Nearby discovery
+      rows = rows.filter(r => {
+        if (!r.full_name || r.full_name === "New User" || r.full_name.trim() === "") return false;
+        if (!r.role || r.role === "Creator" || r.role.trim() === "") return false;
+        if (!r.avatar_url) return false;
+        if (!r.bio || r.bio.length < 20) return false;
+        if (r.is_claimed === false && r.badge !== "odos") return false;
+        return true;
+      });
+
+      // Require at least one work item (credit, portfolio, or award)
+      if (rows.length > 0) {
+        const userIds = rows.map(r => r.user_id);
+        const [creditsRes, awardsRes] = await Promise.all([
+          supabase.from("credits").select("user_id").in("user_id", userIds),
+          supabase.from("awards").select("user_id").in("user_id", userIds),
+        ]);
+        const hasWork = new Set<string>();
+        creditsRes.data?.forEach(c => hasWork.add(c.user_id));
+        awardsRes.data?.forEach(a => hasWork.add(a.user_id));
+        rows = rows.filter(r => hasWork.has(r.user_id));
+      }
+
       if (filters.skill) {
         const s = filters.skill.toLowerCase();
         rows = rows.filter(r => {
@@ -123,7 +149,7 @@ export function BrowseCreators() {
           return skills.some((sk: any) => String(sk).toLowerCase().includes(s));
         });
       }
-      setResults(rows);
+      setResults(rows.slice(0, 60));
     } catch (e: any) {
       toast({ title: "Search failed", description: e.message, variant: "destructive" });
     } finally { setLoading(false); }

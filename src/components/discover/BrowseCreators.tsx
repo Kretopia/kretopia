@@ -17,6 +17,8 @@ import {
   Bell, BellOff, Bookmark, X, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 
 interface CreatorRow {
   user_id: string;

@@ -148,7 +148,35 @@ Deno.serve(async (req) => {
     }
 
     // ═══════════════════════════════════════════════════
-    // 2. DISCOVER PRESS FROM WEB SEARCH
+    // 1b. AUTO-PULL AVATAR FROM USER'S OWN VERIFIED URLS
+    //     SAFE: Only uses og:image / profile image from
+    //     pages the user EXPLICITLY listed (their own
+    //     website/LinkedIn/IMDb). Never AI-generated.
+    // ═══════════════════════════════════════════════════
+    if (firecrawlKey && !profile.avatar_url) {
+      const ownUrls = [profile.website, profile.linkedin_url, profile.imdb_url].filter(Boolean) as string[];
+      for (const ownUrl of ownUrls) {
+        try {
+          const scrapeData = await firecrawlScrape(ownUrl, firecrawlKey);
+          const metadata = scrapeData?.data?.metadata || scrapeData?.metadata;
+          const candidate: string | undefined = metadata?.ogImage || metadata?.['og:image'] || metadata?.image;
+          if (!candidate || typeof candidate !== 'string') continue;
+          // Validate the image URL: must be http(s), reachable, image content-type
+          try {
+            const head = await fetch(candidate, { method: 'HEAD' });
+            const contentType = head.headers.get('content-type') || '';
+            if (!head.ok || !contentType.startsWith('image/')) continue;
+          } catch { continue; }
+          await supabase.from('profiles').update({ avatar_url: candidate }).eq('user_id', user_id);
+          (results as any).avatar_imported = 1;
+          console.log(`[enrich] Avatar imported from ${ownUrl}`);
+          break;
+        } catch (e) {
+          console.error(`Avatar scrape failed for ${ownUrl}:`, e);
+        }
+      }
+    }
+
     //    SAFE: Only adds URLs that actually exist on the web
     //    NO AI used here — just Firecrawl search results
     // ═══════════════════════════════════════════════════

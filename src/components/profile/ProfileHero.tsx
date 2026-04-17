@@ -200,9 +200,23 @@ export const ProfileHero = ({
               <CreativeCircleBadge userId={profile.user_id} />
             </div>
 
-            {/* Role */}
+            {/* Role + Sub-roles (specialties) */}
             {displayRole && (
               <p className="text-sm text-muted-foreground font-medium">{displayRole}</p>
+            )}
+            {Array.isArray(profile.sub_roles) && profile.sub_roles.length > 0 && (
+              <div className="flex flex-wrap gap-1 pt-0.5">
+                {profile.sub_roles.slice(0, 4).map((r: string) => (
+                  <Badge key={r} variant="outline" className="text-[10px] h-5 px-1.5 font-medium">
+                    {r}
+                  </Badge>
+                ))}
+                {profile.sub_roles.length > 4 && (
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5">
+                    +{profile.sub_roles.length - 4}
+                  </Badge>
+                )}
+              </div>
             )}
 
             {/* Meta row */}

@@ -17,7 +17,7 @@ import {
   Bell, BellOff, Bookmark, X, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 
 interface CreatorRow {
@@ -215,10 +215,11 @@ export function BrowseCreators() {
 
   return (
     <div className="space-y-3">
-      {visibilityChecked && !visibility.isVisible && (
-        <ProfileVisibilityBanner isVisible={false} missingFields={visibility.missingFields} />
-      )}
-      {visibilityChecked && !visibility.isVisible ? null : (
+      <ProfileActivationGate
+        isVisible={!visibilityChecked || visibility.isVisible}
+        missingFields={visibility.missingFields}
+        surfaceLabel="Browse"
+      >
       <>
       {/* Search bar */}
       <div className="space-y-2">
@@ -398,7 +399,7 @@ export function BrowseCreators() {
         </DialogContent>
       </Dialog>
       </>
-      )}
+      </ProfileActivationGate>
     </div>
   );
 }

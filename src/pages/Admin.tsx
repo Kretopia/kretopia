@@ -584,6 +584,25 @@ export default function Admin() {
               </CardContent>
             </Card>
 
+            {/* Weekly Founder Note Card */}
+            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-primary" />
+                  Weekly Founder Note (Monday Drop)
+                </CardTitle>
+                <CardDescription>
+                  Write your personal Sunday note that ships in Monday's digest. Reminder email arrives Sun 6 PM UTC.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button onClick={() => navigate('/admin/weekly-note')} className="w-full sm:w-auto">
+                  <Mail className="h-4 w-4 mr-2" />
+                  Open weekly note editor
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Broadcast Email Card */}
             <Card>
               <CardHeader>

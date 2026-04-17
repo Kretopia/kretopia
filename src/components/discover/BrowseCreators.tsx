@@ -189,6 +189,11 @@ export function BrowseCreators() {
 
   return (
     <div className="space-y-3">
+      {visibilityChecked && !visibility.isVisible && (
+        <ProfileVisibilityBanner isVisible={false} missingFields={visibility.missingFields} />
+      )}
+      {visibilityChecked && !visibility.isVisible ? null : (
+      <>
       {/* Search bar */}
       <div className="space-y-2">
         <div className="flex gap-2">

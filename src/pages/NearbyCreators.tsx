@@ -30,6 +30,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useConnectedUsers } from "@/hooks/useConnectedUsers";
 import { useUserBlocks } from "@/hooks/useUserBlocks";
+import { BrowseCreators } from "@/components/discover/BrowseCreators";
 
 
 const NearbyCreators = () => {

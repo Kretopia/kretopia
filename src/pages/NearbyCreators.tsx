@@ -262,6 +262,10 @@ const NearbyCreators = () => {
 
       {/* Content */}
       <div className="px-3 sm:px-4 py-3 space-y-3 max-w-7xl mx-auto">
+        {discoverMode === 'browse' ? (
+          <BrowseCreators />
+        ) : (
+        <>
         <ProfileVisibilityBanner isVisible={true} missingFields={[]} />
 
         {/* No location state */}

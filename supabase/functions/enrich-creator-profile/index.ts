@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
 
     // Load profile + existing data
     const [profileRes, pressRes, awardsRes, creditsRes] = await Promise.all([
-      supabase.from('profiles').select('full_name, website, linkedin_url, imdb_url, bio, professional_skills, passion_skills, job_title, industry, role').eq('user_id', user_id).maybeSingle(),
+      supabase.from('profiles').select('full_name, website, linkedin_url, imdb_url, bio, professional_skills, passion_skills, job_title, industry, role, avatar_url').eq('user_id', user_id).maybeSingle(),
       supabase.from('press_links').select('id, url, title, publication, image_url, excerpt, og_data').eq('user_id', user_id),
       supabase.from('awards').select('id, title').eq('user_id', user_id),
       supabase.from('credits').select('project_name, role, year, credit_category, platform').eq('user_id', user_id).order('year', { ascending: false }).limit(50),
@@ -143,6 +143,36 @@ Deno.serve(async (req) => {
           }
         } catch (e) {
           console.error(`Press enrich failed for ${link.id}:`, e);
+        }
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // 1b. AUTO-PULL AVATAR FROM USER'S OWN VERIFIED URLS
+    //     SAFE: Only uses og:image / profile image from
+    //     pages the user EXPLICITLY listed (their own
+    //     website/LinkedIn/IMDb). Never AI-generated.
+    // ═══════════════════════════════════════════════════
+    if (firecrawlKey && !profile.avatar_url) {
+      const ownUrls = [profile.website, profile.linkedin_url, profile.imdb_url].filter(Boolean) as string[];
+      for (const ownUrl of ownUrls) {
+        try {
+          const scrapeData = await firecrawlScrape(ownUrl, firecrawlKey);
+          const metadata = scrapeData?.data?.metadata || scrapeData?.metadata;
+          const candidate: string | undefined = metadata?.ogImage || metadata?.['og:image'] || metadata?.image;
+          if (!candidate || typeof candidate !== 'string') continue;
+          // Validate the image URL: must be http(s), reachable, image content-type
+          try {
+            const head = await fetch(candidate, { method: 'HEAD' });
+            const contentType = head.headers.get('content-type') || '';
+            if (!head.ok || !contentType.startsWith('image/')) continue;
+          } catch { continue; }
+          await supabase.from('profiles').update({ avatar_url: candidate }).eq('user_id', user_id);
+          (results as any).avatar_imported = 1;
+          console.log(`[enrich] Avatar imported from ${ownUrl}`);
+          break;
+        } catch (e) {
+          console.error(`Avatar scrape failed for ${ownUrl}:`, e);
         }
       }
     }

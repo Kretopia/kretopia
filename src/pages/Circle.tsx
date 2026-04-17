@@ -11,7 +11,7 @@ import { SwipeFeature } from "@/components/swipe";
 import { GuestSwipePreview } from "@/components/swipe/GuestSwipePreview";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
-import { ProfileVisibilityBanner } from "@/components/ProfileVisibilityBanner";
+import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { InviteDialog } from "@/components/InviteDialog";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
 import { Users, Sparkles, UserPlus } from "lucide-react";
@@ -182,8 +182,11 @@ export default function Circle() {
       </div>
 
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-        <ProfileVisibilityBanner isVisible={profileVisibility.isVisible} missingFields={profileVisibility.missingFields} />
-
+        <ProfileActivationGate
+          isVisible={profileVisibility.isVisible}
+          missingFields={profileVisibility.missingFields}
+          surfaceLabel="Match"
+        >
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
@@ -243,6 +246,7 @@ export default function Circle() {
             )}
           </TabsContent>
         </Tabs>
+        </ProfileActivationGate>
       </div>
 
       <InviteDialog open={showInvite} onOpenChange={setShowInvite} />

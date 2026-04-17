@@ -177,6 +177,8 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ═══════════════════════════════════════════════════
+    // 2. DISCOVER PRESS FROM WEB SEARCH
     //    SAFE: Only adds URLs that actually exist on the web
     //    NO AI used here — just Firecrawl search results
     // ═══════════════════════════════════════════════════

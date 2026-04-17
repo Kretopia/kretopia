@@ -65,7 +65,26 @@ export function BrowseCreators() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [saveAlerts, setSaveAlerts] = useState(false);
+  const [visibility, setVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
+  const [visibilityChecked, setVisibilityChecked] = useState(false);
 
+  // Gate: enforce same discovery requirements as Circle/Nearby
+  useEffect(() => {
+    const check = async () => {
+      if (!user?.id) { setVisibilityChecked(true); return; }
+      try {
+        const { data: profile } = await supabase
+          .from("profiles").select("avatar_url, bio").eq("user_id", user.id).single();
+        const { count } = await supabase
+          .from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+        if (profile) {
+          const missing = getDiscoveryMissingFields(profile as any, count || 0);
+          setVisibility({ isVisible: missing.length === 0, missingFields: missing });
+        }
+      } finally { setVisibilityChecked(true); }
+    };
+    check();
+  }, [user?.id]);
   const loadSaved = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase

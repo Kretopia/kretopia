@@ -111,43 +111,44 @@ function extractCredits(html: string): ImdbCredit[] {
 
   const out: ImdbCredit[] = [];
   const seen = new Set<string>();
+  const groups: any[] = [];
+  const main = data?.props?.pageProps?.mainColumnData;
+  if (main?.released?.edges) groups.push(...main.released.edges);
+  if (main?.unreleased?.edges) groups.push(...main.unreleased.edges);
+  console.log(`IMDb groups found: ${groups.length}`);
 
-  // Walk for creditCategory groupings
-  function walk(node: any) {
-    if (!node || typeof node !== 'object') return;
-    // The shape: { category: { id, text }, credits: { edges: [{ node: { title, characters?, jobs?, ... } }] } }
-    if (node.category && node.credits?.edges) {
-      const dept = node.category.text || node.category.id || 'Unknown';
-      for (const edge of node.credits.edges) {
-        const credit = edge.node;
-        const title = credit?.title;
-        if (!title?.id) continue;
-        // Pick role: jobs[0].text || category text || characters[0]
-        let role = dept;
-        if (Array.isArray(credit.jobs) && credit.jobs.length > 0) {
-          role = credit.jobs.map((j: any) => j.text).filter(Boolean).join(', ') || dept;
-        } else if (Array.isArray(credit.characters) && credit.characters.length > 0) {
-          role = `as ${credit.characters.map((c: any) => c.name).filter(Boolean).join(', ')}`;
+  for (const g of groups) {
+    const creditEdges = g?.node?.credits?.edges || [];
+    for (const ce of creditEdges) {
+      const cn = ce?.node;
+      const title = cn?.title;
+      if (!title?.id) continue;
+      const titleId = title.id;
+      const titleText = title.titleText?.text || title.originalTitleText?.text || '';
+      const year = title.releaseYear?.year || title.releaseDate?.year || null;
+      const type = title.titleType?.text;
+      const posterUrl = title.primaryImage?.url;
+
+      const roleEdges = cn?.creditedRoles?.edges || [];
+      if (roleEdges.length === 0) {
+        const key = `${titleId}|crew`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          out.push({ titleId, title: titleText, role: 'Crew', department: 'Crew', year, type, posterUrl });
         }
-        const titleId = title.id;
+        continue;
+      }
+      for (const re of roleEdges) {
+        const rn = re?.node;
+        const role = rn?.text || rn?.category?.text || 'Crew';
+        const department = rn?.category?.text || 'Crew';
         const key = `${titleId}|${role}`;
         if (seen.has(key)) continue;
         seen.add(key);
-        out.push({
-          titleId,
-          title: title.titleText?.text || title.originalTitleText?.text || '',
-          role,
-          department: dept,
-          year: title.releaseYear?.year || null,
-          type: title.titleType?.text,
-          posterUrl: title.primaryImage?.url,
-        });
+        out.push({ titleId, title: titleText, role, department, year, type, posterUrl });
       }
     }
-    if (Array.isArray(node)) { for (const c of node) walk(c); return; }
-    for (const k in node) walk(node[k]);
   }
-  walk(data);
   return out;
 }
 

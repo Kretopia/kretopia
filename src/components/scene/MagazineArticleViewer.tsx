@@ -117,6 +117,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
             src={article.cover_image_url}
             alt={article.title}
             className="w-full h-full object-cover"
+            style={coverImageStyle(article.cover_position_x, article.cover_position_y, article.cover_zoom)}
             loading="eager"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />

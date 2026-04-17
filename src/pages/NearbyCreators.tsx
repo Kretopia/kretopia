@@ -57,6 +57,7 @@ const NearbyCreators = () => {
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [atlasFilter, setAtlasFilter] = useState<AtlasFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [discoverMode, setDiscoverMode] = useState<'nearby' | 'browse'>('nearby');
   const { bookmarkedIds, toggleBookmark } = useLocationBookmarks();
   const { connectedIds, isConnected } = useConnectedUsers();
   const { isBlocked, refetch: refetchBlocks } = useUserBlocks();

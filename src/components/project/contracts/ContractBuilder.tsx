@@ -127,6 +127,8 @@ export function ContractBuilder({ projectId, currentUserId, collaborators, onBac
         <h2 className="text-lg font-bold">New Contract</h2>
       </div>
 
+      <ContractDisclaimer variant="banner" />
+
       {/* Step indicator */}
       <div className="flex items-center gap-2 text-xs">
         {["Template", "Details", "Terms", "Review"].map((label, i) => (

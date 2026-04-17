@@ -143,6 +143,12 @@ export default function Onboarding() {
     setSearchAttempted(true);
     setNotFound(false);
 
+    // Step 2: user submitted AI search
+    try {
+      const { analytics } = await import("@/lib/analytics");
+      analytics.onboardingStep(2, "ai_search_submitted");
+    } catch {}
+
     try {
       // Add timeout to prevent infinite hanging
       const timeoutMs = 25000;
@@ -218,12 +224,24 @@ export default function Onboarding() {
       if (foundAnything) {
         toast({ title: "Profile discovered!", description: "Review your details below and make any changes." });
         setPhase("review");
+        try {
+          const { analytics } = await import("@/lib/analytics");
+          analytics.onboardingStep(3, "review_phase_entered_via_ai");
+        } catch {}
       } else {
         setNotFound(true);
+        try {
+          const { analytics } = await import("@/lib/analytics");
+          analytics.onboardingStep(2, "ai_search_no_results");
+        } catch {}
       }
     } catch (e) {
       console.error("Discovery error:", e);
       setNotFound(true);
+      try {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.onboardingStep(2, "ai_search_failed");
+      } catch {}
     } finally {
       setSearching(false);
     }
@@ -231,6 +249,9 @@ export default function Onboarding() {
 
   const handleSkipToManual = () => {
     setPhase("review");
+    import("@/lib/analytics").then(({ analytics }) =>
+      analytics.onboardingStep(3, "review_phase_entered_via_skip")
+    ).catch(() => {});
   };
 
   // ─── AVATAR ───
@@ -274,6 +295,12 @@ export default function Onboarding() {
 
     setLoading(true);
     try {
+      // Step 4: user submitted profile save
+      try {
+        const { analytics } = await import("@/lib/analytics");
+        analytics.onboardingStep(4, "save_profile_submitted");
+      } catch {}
+
       // Save profile
       const skillObjects = skills.map(skill => ({ skill, level: 3, category: "General" }));
       await supabase.from("profiles").update({

@@ -35,10 +35,29 @@ export async function logClientError(
 }
 
 /**
+ * Errors we don't care about — noisy browser quirks, not real bugs.
+ * Filtered out before persisting to client_error_logs.
+ */
+const IGNORED_PATTERNS = [
+  /Failed to register a ServiceWorker/i,
+  /ResizeObserver loop/i,
+  /ResizeObserver loop completed with undelivered notifications/i,
+  /Non-Error promise rejection captured/i,
+  /Document is not focused/i, // clipboard noise
+  /Load failed$/i, // generic Safari fetch noise
+];
+
+function shouldIgnore(message: string): boolean {
+  return IGNORED_PATTERNS.some((re) => re.test(message));
+}
+
+/**
  * Sets up global error handlers to catch unhandled errors and rejections.
  */
 export function setupGlobalErrorLogging() {
   window.addEventListener("error", (event) => {
+    const msg = String(event.error?.message || event.message || "");
+    if (shouldIgnore(msg)) return;
     logClientError(
       event.error || event.message,
       "GlobalErrorHandler",
@@ -48,6 +67,8 @@ export function setupGlobalErrorLogging() {
 
   window.addEventListener("unhandledrejection", (event) => {
     const reason = event.reason;
+    const msg = reason instanceof Error ? reason.message : String(reason || "");
+    if (shouldIgnore(msg)) return;
     const errorMsg = reason instanceof Error 
       ? reason 
       : String(reason || 'Unknown rejection');

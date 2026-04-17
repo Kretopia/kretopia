@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ContractDisclaimer } from "@/components/legal/ContractDisclaimer";
 
 interface ContractViewerProps {
   contractId: string;
@@ -36,6 +38,7 @@ export function ContractViewer({ contractId, currentUserId, onBack }: ContractVi
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
+  const [agreedToDisclaimer, setAgreedToDisclaimer] = useState(false);
 
   const { data: contract, isLoading } = useQuery({
     queryKey: ["contract", contractId],
@@ -165,12 +168,30 @@ export function ContractViewer({ contractId, currentUserId, onBack }: ContractVi
         </div>
       </div>
 
-      {/* Sign button */}
+      {/* Sign button + legal acknowledgement */}
       {canSign && contract.status !== "cancelled" && (
-        <Button onClick={() => signMutation.mutate()} disabled={signMutation.isPending} className="w-full gap-2">
-          <FileSignature className="h-4 w-4" />
-          {signMutation.isPending ? "Signing..." : "Sign Contract"}
-        </Button>
+        <div className="space-y-3 p-3 rounded-xl border border-border bg-card">
+          <ContractDisclaimer variant="banner" />
+          <label className="flex items-start gap-2 cursor-pointer">
+            <Checkbox
+              checked={agreedToDisclaimer}
+              onCheckedChange={(c) => setAgreedToDisclaimer(c === true)}
+              className="mt-0.5"
+            />
+            <span className="text-xs text-muted-foreground leading-relaxed">
+              I understand this is a private agreement, not legal advice. Enforceability and required clauses
+              depend on my jurisdiction. I'm signing of my own free will.
+            </span>
+          </label>
+          <Button
+            onClick={() => signMutation.mutate()}
+            disabled={signMutation.isPending || !agreedToDisclaimer}
+            className="w-full gap-2"
+          >
+            <FileSignature className="h-4 w-4" />
+            {signMutation.isPending ? "Signing..." : "Sign Contract"}
+          </Button>
+        </div>
       )}
 
       {/* Blockchain verification */}
@@ -218,6 +239,7 @@ export function ContractViewer({ contractId, currentUserId, onBack }: ContractVi
         ) : (
           <p className="text-sm text-muted-foreground">No terms defined.</p>
         )}
+        <ContractDisclaimer variant="footer" />
       </div>
     </div>
   );

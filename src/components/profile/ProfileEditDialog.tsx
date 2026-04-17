@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import type { Database } from "@/integrations/supabase/types";
+import { SubRolesPicker } from "./SubRolesPicker";
 
 // Comprehensive roles covering Music, Film, Design, Fashion, Content Creation, Tech, and more
 export const ROLE_OPTIONS = [

@@ -197,9 +197,10 @@ const NearbyCreators = () => {
               >Browse</button>
             </div>
           </div>
-          <div className="hidden">
-            <span>placeholder</span>
-            <div className="flex items-center gap-1.5 shrink-0">
+
+          {/* Nearby-only header controls */}
+          {discoverMode === 'nearby' && (
+            <div className="flex items-center justify-end gap-1.5">
               {userLocation && (
                 <>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewMode(v => v === 'map' ? 'list' : 'map')}>
@@ -232,10 +233,10 @@ const NearbyCreators = () => {
                 <span className="ml-1.5 hidden xs:inline">{userLocation ? 'Update' : 'Locate'}</span>
               </Button>
             </div>
-          </div>
+          )}
 
-          {/* Search + filters */}
-          {userLocation && (
+          {/* Search + filters (Nearby mode only) */}
+          {discoverMode === 'nearby' && userLocation && (
             <>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />

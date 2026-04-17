@@ -115,21 +115,21 @@ export const EPK_TEMPLATES: EPKTemplate[] = [
   {
     id: 'cinematic-dark',
     name: 'Cinematic Dark',
-    description: 'Deep dark tones with indigo-violet accents — dramatic & premium',
-    previewBg: 'bg-[#0C0A12]',
-    previewAccent: 'bg-[#5B6BF5]',
+    description: 'Night canvas with electric violet & lime accents — bold & creator-first',
+    previewBg: 'bg-[#0B0A14]',
+    previewAccent: 'bg-[#7B5CFF]',
     previewText: 'text-white',
     palette: {
-      bg: [12, 10, 18],
-      surface: [22, 20, 32],
-      card: [30, 28, 42],
-      primary: [91, 107, 245],
-      accent: [139, 92, 246],
-      gold: [245, 197, 66],
+      bg: [11, 10, 20],
+      surface: [21, 19, 42],
+      card: [28, 25, 52],
+      primary: [123, 92, 255],   // electric violet #7B5CFF
+      accent: [212, 255, 77],    // lime energy #D4FF4D
+      gold: [212, 255, 77],
       white: [255, 255, 255],
-      muted: [140, 140, 160],
-      dimmed: [80, 78, 98],
-      light: [220, 218, 235],
+      muted: [150, 145, 180],
+      dimmed: [85, 80, 115],
+      light: [225, 220, 245],
     },
   },
   {
@@ -184,18 +184,18 @@ const PAGE_H = 190;
 const MARGIN = 18;
 const CONTENT_W = PAGE_W - MARGIN * 2;
 
-// Brand palette
+// Brand palette — Electric Violet + Lime (ThriveIN 2026)
 const BRAND = {
-  bg: [12, 10, 18] as [number, number, number],
-  surface: [22, 20, 32] as [number, number, number],
-  card: [30, 28, 42] as [number, number, number],
-  primary: [91, 107, 245] as [number, number, number],   // indigo-blue #5B6BF5
-  accent: [139, 92, 246] as [number, number, number],    // violet
-  gold: [245, 197, 66] as [number, number, number],
+  bg: [11, 10, 20] as [number, number, number],
+  surface: [21, 19, 42] as [number, number, number],
+  card: [28, 25, 52] as [number, number, number],
+  primary: [123, 92, 255] as [number, number, number],   // electric violet #7B5CFF
+  accent: [212, 255, 77] as [number, number, number],    // lime #D4FF4D
+  gold: [212, 255, 77] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
-  muted: [140, 140, 160] as [number, number, number],
-  dimmed: [80, 78, 98] as [number, number, number],
-  light: [220, 218, 235] as [number, number, number],
+  muted: [150, 145, 180] as [number, number, number],
+  dimmed: [85, 80, 115] as [number, number, number],
+  light: [225, 220, 245] as [number, number, number],
 };
 
 function decodeHtml(text: string): string {

@@ -7385,6 +7385,42 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_creator_searches: {
+        Row: {
+          alerts_enabled: boolean
+          created_at: string
+          filters: Json
+          id: string
+          last_alert_at: string | null
+          name: string
+          query: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alerts_enabled?: boolean
+          created_at?: string
+          filters?: Json
+          id?: string
+          last_alert_at?: string | null
+          name: string
+          query?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alerts_enabled?: boolean
+          created_at?: string
+          filters?: Json
+          id?: string
+          last_alert_at?: string | null
+          name?: string
+          query?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_opportunities: {
         Row: {
           created_at: string | null

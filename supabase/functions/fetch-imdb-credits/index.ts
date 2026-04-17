@@ -19,18 +19,54 @@ interface ImdbCredit {
 }
 
 async function fetchImdb(path: string): Promise<string | null> {
-  const res = await fetch(`https://www.imdb.com${path}`, {
-    headers: {
-      'User-Agent': UA,
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9',
-      'Accept-Language': 'en-US,en;q=0.9',
-    },
-  });
-  if (!res.ok) {
-    console.error(`IMDb fetch failed: ${res.status} ${path}`);
+  // Direct fetch first (cheap)
+  try {
+    const res = await fetch(`https://www.imdb.com${path}`, {
+      headers: {
+        'User-Agent': UA,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    });
+    if (res.ok) {
+      const html = await res.text();
+      if (html.length > 5000) return html;
+      console.warn(`IMDb returned thin response (${html.length} bytes), falling back to Firecrawl`);
+    } else {
+      console.warn(`IMDb direct fetch returned ${res.status}, falling back to Firecrawl`);
+    }
+  } catch (e) {
+    console.warn('IMDb direct fetch error, falling back to Firecrawl:', e);
+  }
+
+  // Fallback: Firecrawl (handles JS rendering + anti-bot)
+  const fcKey = Deno.env.get('FIRECRAWL_API_KEY');
+  if (!fcKey) {
+    console.error('FIRECRAWL_API_KEY not set; cannot scrape IMDb');
     return null;
   }
-  return res.text();
+  const fcRes = await fetch('https://api.firecrawl.dev/v2/scrape', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${fcKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      url: `https://www.imdb.com${path}`,
+      formats: ['rawHtml', 'html'],
+      onlyMainContent: false,
+    }),
+  });
+  if (!fcRes.ok) {
+    console.error(`Firecrawl scrape failed: ${fcRes.status} ${await fcRes.text()}`);
+    return null;
+  }
+  const fcData = await fcRes.json();
+  // v2 returns either { data: { rawHtml, html } } or top-level
+  const html = fcData?.data?.rawHtml || fcData?.data?.html || fcData?.rawHtml || fcData?.html;
+  if (!html) {
+    console.error('Firecrawl returned no html');
+    return null;
+  }
+  console.log(`Firecrawl returned ${html.length} bytes for ${path}`);
+  return html;
 }
 
 function extractName(html: string): string | null {

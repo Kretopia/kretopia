@@ -462,6 +462,8 @@ const NearbyCreators = () => {
             )}
           </div>
         )}
+        </>
+        )}
       </div>
 
       {/* Dialogs */}

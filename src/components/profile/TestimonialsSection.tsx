@@ -40,8 +40,9 @@ export const TestimonialsSection = ({
       {/* Rating Summary */}
       <Card className="p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Reviews & Testimonials</h2>
+          <div className="space-y-1">
+            <p className="brand-eyebrow">What people say</p>
+            <h2 className="text-2xl md:text-3xl font-black tracking-[-0.02em]">Reviews & Testimonials</h2>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (

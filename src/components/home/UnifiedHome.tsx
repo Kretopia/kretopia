@@ -21,6 +21,7 @@ import heroCreators from "@/assets/hero-creators.jpg";
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
+import { InviteCircleCard } from "@/components/InviteCircleCard";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -518,6 +519,8 @@ export const UnifiedHome = () => {
               </Link>
             ))}
           </div>
+
+          <InviteCircleCard variant="home" className="mb-4" />
 
           <div className="grid grid-cols-4 gap-2 mb-5">
             {[

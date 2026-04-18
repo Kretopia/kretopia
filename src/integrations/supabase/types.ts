@@ -234,6 +234,60 @@ export type Database = {
           },
         ]
       }
+      ambassador_applications: {
+        Row: {
+          audience_size: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          niche: string | null
+          pitch: string
+          primary_platform: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          social_links: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audience_size?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          niche?: string | null
+          pitch: string
+          primary_platform?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          social_links?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audience_size?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          niche?: string | null
+          pitch?: string
+          primary_platform?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          social_links?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string | null

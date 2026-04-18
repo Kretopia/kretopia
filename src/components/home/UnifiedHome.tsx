@@ -16,6 +16,7 @@ import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
+import heroCreators from "@/assets/hero-creators.jpg";
 
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
@@ -274,40 +275,105 @@ export const UnifiedHome = () => {
         url="https://thrivein.io"
       />
 
-      {/* ═══════════ GUEST HERO ═══════════ */}
+      {/* ═══════════ GUEST HERO — CINEMATIC STAGE ═══════════ */}
       {!user && (
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary/8 blur-3xl" />
-            <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-accent/10 blur-3xl" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/3 blur-3xl" />
+        <div className="relative overflow-hidden bg-cinematic dark">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -top-40 -left-20 h-[600px] w-[600px] rounded-full bg-primary/25 blur-[160px]" />
+            <div className="absolute top-20 -right-20 h-[500px] w-[500px] rounded-full bg-[hsl(282_95%_60%/0.18)] blur-[140px]" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           </div>
 
-          <div className="relative container mx-auto max-w-5xl px-4 sm:px-6 pt-8 sm:pt-14 pb-6">
-            <div className="text-center mb-5 sm:mb-6">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.05] mb-4">
-                {t("landing.heroTitle1")}
-                <br />
-                <span className="text-primary">{t("landing.heroTitle2")}</span>
-              </h1>
-              <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
-                {t("landing.heroSubtitle1")}{" "}
-                <span className="text-primary font-semibold inline-block min-w-[100px]">
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={heroRoleIdx}
-                      initial={{ y: 14, opacity: 0, filter: "blur(4px)" }}
-                      animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                      exit={{ y: -14, opacity: 0, filter: "blur(4px)" }}
-                      transition={{ duration: 0.3 }}
-                      className="inline-block"
-                    >
-                      {HERO_ROLES[heroRoleIdx]}s
-                    </motion.span>
-                  </AnimatePresence>
-                </span>{" "}
-                {t("landing.heroSubtitle2")}
-              </p>
+          <div className="relative container mx-auto max-w-6xl px-4 sm:px-6 pt-6 sm:pt-12 pb-8">
+            {/* Two-column cinematic stage */}
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-10 sm:mb-14">
+
+              {/* LEFT — Headline + CTA */}
+              <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
+                <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+                  The Creative OS
+                </p>
+
+                <h1 className="text-[2.5rem] sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[-0.04em] text-foreground leading-[0.92] mb-5">
+                  Find Your<br />People.<br />
+                  Build{" "}
+                  <span className="text-energy-glow">Real.</span>
+                </h1>
+
+                <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mb-6">
+                  Where{" "}
+                  <span className="text-primary font-semibold inline-block min-w-[100px]">
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={heroRoleIdx}
+                        initial={{ y: 14, opacity: 0, filter: "blur(4px)" }}
+                        animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                        exit={{ y: -14, opacity: 0, filter: "blur(4px)" }}
+                        transition={{ duration: 0.3 }}
+                        className="inline-block"
+                      >
+                        {HERO_ROLES[heroRoleIdx]}s
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>{" "}
+                  build verified credits, connect with collaborators, and get paid.
+                </p>
+
+                <div className="flex items-center justify-center lg:justify-start gap-3 flex-wrap">
+                  <Link to="/auth?tab=signup" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-7 py-3.5 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
+                    Find Your People <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                  <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-5 py-3.5 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
+                    <Briefcase className="h-4 w-4 text-primary" /> Browse Gigs
+                  </Link>
+                </div>
+              </div>
+
+              {/* RIGHT — Cinematic creator image with overlays */}
+              <div className="relative order-1 lg:order-2">
+                <div className="relative aspect-[4/5] lg:aspect-[3/4] rounded-3xl overflow-hidden border border-primary/25 shadow-glow">
+                  <img
+                    src={heroCreators}
+                    alt="Two creative collaborators captured in cinematic editorial light"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    width={1280}
+                    height={1600}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-background/10" />
+
+                  {/* Signature 94% MATCH card */}
+                  <div className="absolute top-3 right-3 sm:top-5 sm:right-5 animate-fade-in">
+                    <div className="rounded-2xl border-2 border-energy/60 bg-background/85 backdrop-blur-md p-3 sm:p-4 shadow-glow-lime min-w-[140px] sm:min-w-[160px]">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">AI Match</p>
+                      <p className="text-3xl sm:text-4xl font-black text-energy-glow tracking-tighter leading-none">94%</p>
+                      <p className="text-[10px] text-foreground/80 mt-1.5 leading-tight">Photographer × Producer<br/>2.3km away</p>
+                    </div>
+                  </div>
+
+                  {/* Verified chip */}
+                  <div className="absolute top-3 left-3 sm:top-5 sm:left-5 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                    <div className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-background/85 backdrop-blur-md px-2.5 py-1.5">
+                      <Verified className="h-3 w-3 text-primary" />
+                      <span className="text-[9px] font-bold text-foreground uppercase tracking-wider">Verified Credits</span>
+                    </div>
+                  </div>
+
+                  {/* Chat overlay */}
+                  <div className="absolute bottom-4 left-3 right-3 sm:left-5 sm:right-auto sm:max-w-[240px] animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                    <div className="rounded-2xl rounded-bl-sm border border-primary/40 bg-card/95 backdrop-blur-md p-3 shadow-xl">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                          <MessageSquare className="h-3 w-3 text-primary" />
+                        </div>
+                        <p className="text-[10px] font-bold text-foreground">Maya · Photographer</p>
+                      </div>
+                      <p className="text-xs text-foreground/90 leading-snug">"Your sound is exactly what this series needs. Coffee tomorrow?"</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-primary/20 via-transparent to-energy/10 blur-2xl" />
+              </div>
             </div>
 
             <div className="max-w-xl mx-auto mb-5">

@@ -27,10 +27,9 @@ export function SubRolesPicker({ mainRole, value, onChange, max = 5 }: SubRolesP
     return ROLE_OPTIONS.filter(
       (o) =>
         !taken.has(o.value) &&
-        o.value !== "Multi-Creative" &&
         o.value !== "Other" &&
         (query === "" || o.label.toLowerCase().includes(query.toLowerCase()))
-    ).slice(0, 30);
+    );
   }, [mainRole, value, query]);
 
   const add = (role: string) => {
@@ -68,7 +67,12 @@ export function SubRolesPicker({ mainRole, value, onChange, max = 5 }: SubRolesP
                 Add specialty
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-72 p-2" align="start">
+            <PopoverContent
+              className="w-72 p-2"
+              align="start"
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
               <div className="relative mb-2">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
@@ -79,7 +83,11 @@ export function SubRolesPicker({ mainRole, value, onChange, max = 5 }: SubRolesP
                   autoFocus
                 />
               </div>
-              <div className="max-h-60 overflow-y-auto space-y-0.5">
+              <div
+                className="max-h-72 overflow-y-auto overscroll-contain space-y-0.5 touch-pan-y"
+                onWheel={(e) => e.stopPropagation()}
+                onTouchMove={(e) => e.stopPropagation()}
+              >
                 {available.length === 0 ? (
                   <p className="text-xs text-muted-foreground p-2 text-center">
                     No matches

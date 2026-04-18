@@ -154,49 +154,57 @@ export const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative bg-background dark">
-      {/* Background glows */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,hsl(var(--primary)/0.08),transparent_60%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_90%_90%,hsl(var(--accent)/0.04),transparent_50%)]" />
+    <section className="relative bg-cinematic dark overflow-hidden">
+      {/* Layered cinematic glows */}
+      <div className="pointer-events-none absolute -top-32 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[140px]" />
+      <div className="pointer-events-none absolute top-40 right-0 h-[380px] w-[380px] rounded-full bg-[hsl(282_95%_60%/0.12)] blur-[120px]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
       <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 pt-2 pb-16">
         
-        {/* ═══════ HERO — Conversion-first ═══════ */}
+        {/* ═══════ HERO — Cultural, cinematic ═══════ */}
         <div className="text-center pt-4 sm:pt-8 pb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-4">
+          <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
+            <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
             The Creative OS
           </p>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-2 leading-[1.15]">
-            Get Discovered. Get Booked.{" "}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.03em] text-foreground mb-3 leading-[1.02]">
+            Find Your People.{" "}
             <br className="hidden sm:block" />
-            <span className="text-primary">Get Paid.</span>
+            Build Something{" "}
+            <span className="relative inline-block">
+              <span className="text-energy-glow">Real.</span>
+            </span>
           </h1>
 
-          <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto mt-3 leading-relaxed">
-            The all-in-one platform where{" "}
+          <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto mt-4 leading-relaxed">
+            Where{" "}
             <span className="text-primary font-semibold inline-block min-w-[90px] sm:min-w-[130px] transition-all duration-500">
               {roles[roleIdx]}s
             </span>{" "}
-            build verified credits, connect with collaborators, and unlock real opportunities.
+            build verified credits, connect with collaborators, and get paid.
           </p>
 
-          <p className="text-xs text-muted-foreground/70 mt-2 mb-5">
-            Free to join · Early creators get priority access to gigs & features
+          <p className="text-xs text-muted-foreground/60 mt-3 mb-6">
+            Free to join · Early creators get priority access
           </p>
 
-          {/* Browse CTA — Create Profile removed to prioritize search-first flow */}
-          <div className="flex items-center justify-center mb-6">
-            <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card px-7 py-3.5 text-sm font-semibold text-foreground hover:border-primary/40 transition-all">
-              <Briefcase className="h-4 w-4 text-success" /> Browse Opportunities
+          {/* Lime CTA — signature brand action */}
+          <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
+            <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-7 py-3.5 text-sm font-bold shadow-glow-lime hover:scale-[1.03] transition-all">
+              Find Your People <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-6 py-3.5 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
+              <Briefcase className="h-4 w-4 text-primary" /> Browse Gigs
             </Link>
           </div>
 
           {/* Social proof stats */}
           <div className="flex items-center justify-center gap-6 text-[11px] text-muted-foreground">
-            <span className="flex items-center gap-1.5"><Users className="h-3 w-3" /> {stats.creators.toLocaleString()} Creators</span>
-            <span className="flex items-center gap-1.5"><Database className="h-3 w-3" /> {stats.credits.toLocaleString()} Credits</span>
-            <span className="flex items-center gap-1.5"><Briefcase className="h-3 w-3" /> {stats.gigs} Live Gigs</span>
+            <span className="flex items-center gap-1.5"><Users className="h-3 w-3 text-primary" /> {stats.creators.toLocaleString()} Creators</span>
+            <span className="flex items-center gap-1.5"><Database className="h-3 w-3 text-primary" /> {stats.credits.toLocaleString()} Credits</span>
+            <span className="flex items-center gap-1.5"><Briefcase className="h-3 w-3 text-energy" /> {stats.gigs} Live</span>
           </div>
         </div>
 

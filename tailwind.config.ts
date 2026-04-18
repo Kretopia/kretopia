@@ -89,6 +89,7 @@ export default {
         'lg': 'var(--shadow-lg)',
         'xl': 'var(--shadow-xl)',
         'glow': 'var(--shadow-glow)',
+        'glow-lime': 'var(--shadow-glow-lime)',
         'card': 'var(--shadow-card)',
         'card-hover': 'var(--shadow-card-hover)',
       },

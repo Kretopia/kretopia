@@ -21,8 +21,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 250 30% 8%;
 
-    /* Electric Violet — primary brand */
-    --primary: 252 100% 68%;
+    /* Purple #7B61FF — dominant brand */
+    --primary: 248 100% 69%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 250 20% 94%;
@@ -40,9 +40,9 @@ All colors MUST be HSL.
     --accent: 252 40% 94%;
     --accent-foreground: 252 60% 20%;
 
-    /* Lime — dedicated energy accent for borders, glows, CTAs (never a fill behind text) */
-    --energy: 72 100% 55%;
-    --energy-foreground: 250 30% 8%;
+    /* Lime #C6FF00 — dedicated energy accent (CTAs, match %, highlights, active states) */
+    --energy: 75 100% 50%;
+    --energy-foreground: 240 17% 7%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
@@ -100,71 +100,76 @@ All colors MUST be HSL.
   }
 
   /* ============================================================
-     DARK MODE — DEFAULT. Night canvas, electric violet, lime energy.
+     DARK MODE — DEFAULT. Cinematic black canvas, electric violet, lime energy.
+     Brand spec: Purple #7B61FF · Lime #C6FF00 · Deep Black #0F0F14 · Soft Dark #1A1A22
      ============================================================ */
   .dark {
-    --background: 250 35% 6%;
-    --foreground: 250 20% 96%;
+    /* Deep Black #0F0F14 = hsl(240 17% 7%) */
+    --background: 240 17% 7%;
+    --foreground: 240 15% 96%;
 
-    --card: 250 30% 9%;
-    --card-foreground: 250 20% 96%;
+    /* Soft Dark #1A1A22 = hsl(240 12% 12%) */
+    --card: 240 12% 12%;
+    --card-foreground: 240 15% 96%;
 
-    --popover: 250 35% 7%;
-    --popover-foreground: 250 20% 96%;
+    --popover: 240 14% 9%;
+    --popover-foreground: 240 15% 96%;
 
-    --primary: 252 100% 72%;
-    --primary-foreground: 250 35% 6%;
+    /* Purple #7B61FF = hsl(248 100% 69%) — dominant brand */
+    --primary: 248 100% 69%;
+    --primary-foreground: 240 17% 7%;
 
-    --secondary: 250 25% 16%;
-    --secondary-foreground: 250 20% 90%;
+    --secondary: 240 12% 16%;
+    --secondary-foreground: 240 15% 92%;
 
-    --muted: 250 25% 14%;
-    --muted-foreground: 250 10% 60%;
+    --muted: 240 10% 14%;
+    --muted-foreground: 240 8% 62%;
 
-    /* Shadcn accent — violet-tinted dark surface (readable hovers/selected rows) */
-    --accent: 252 30% 18%;
-    --accent-foreground: 250 20% 96%;
+    /* Shadcn accent — violet-tinted surface for hovers/selected rows */
+    --accent: 248 35% 20%;
+    --accent-foreground: 240 15% 96%;
 
-    /* Warm cream — rare editorial surface tone */
     --cream: 38 35% 92%;
-    --cream-foreground: 250 30% 12%;
+    --cream-foreground: 240 17% 12%;
 
-    /* Lime — dedicated energy accent (borders, glows, CTAs only — never fill behind text) */
-    --energy: 72 100% 60%;
-    --energy-foreground: 250 35% 6%;
+    /* Lime #C6FF00 = hsl(75 100% 50%) — energy accent ONLY (CTAs, highlights, match%, active) */
+    --energy: 75 100% 50%;
+    --energy-foreground: 240 17% 7%;
 
     --destructive: 0 75% 60%;
-    --destructive-foreground: 250 20% 96%;
+    --destructive-foreground: 240 15% 96%;
 
-    --border: 250 25% 18%;
-    --input: 250 25% 14%;
-    --ring: 252 100% 72%;
+    --border: 240 12% 18%;
+    --input: 240 10% 14%;
+    --ring: 248 100% 69%;
 
     --success: 152 65% 50%;
-    --success-foreground: 250 35% 6%;
+    --success-foreground: 240 17% 7%;
     --warning: 38 95% 60%;
-    --warning-foreground: 250 35% 6%;
+    --warning-foreground: 240 17% 7%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(252 100% 72%), hsl(285 95% 70%));
-    --gradient-secondary: linear-gradient(135deg, hsl(252 100% 72% / 0.18), hsl(285 95% 70% / 0.06));
-    --gradient-accent: linear-gradient(180deg, hsl(250 35% 6%), hsl(250 30% 9%));
-    --gradient-subtle: linear-gradient(180deg, hsl(252 100% 72% / 0.08), transparent);
-    --gradient-glass: linear-gradient(135deg, hsl(252 30% 14% / 0.85), hsl(250 30% 9% / 0.7));
-    --gradient-gold: linear-gradient(135deg, hsl(72 100% 65%), hsl(60 95% 58%));
-    --gradient-hero: linear-gradient(180deg, hsl(252 100% 72% / 0.12), transparent);
+    /* Cinematic violet→magenta gradient with depth */
+    --gradient-primary: linear-gradient(135deg, hsl(248 100% 69%), hsl(282 95% 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(248 100% 69% / 0.22), hsl(282 95% 65% / 0.06));
+    --gradient-accent: linear-gradient(180deg, hsl(240 17% 7%), hsl(240 12% 12%));
+    --gradient-subtle: linear-gradient(180deg, hsl(248 100% 69% / 0.10), transparent);
+    --gradient-glass: linear-gradient(135deg, hsl(248 30% 14% / 0.85), hsl(240 12% 12% / 0.7));
+    --gradient-gold: linear-gradient(135deg, hsl(75 100% 55%), hsl(68 95% 50%));
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(248 100% 69% / 0.18), transparent 70%);
 
-    --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.3);
-    --shadow-sm: 0 2px 4px hsl(0 0% 0% / 0.35);
-    --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.4);
-    --shadow-lg: 0 8px 24px hsl(0 0% 0% / 0.45);
-    --shadow-xl: 0 16px 48px hsl(0 0% 0% / 0.5);
-    --shadow-glow: 0 0 40px hsl(252 100% 72% / 0.4);
-    --shadow-card: 0 4px 16px -4px hsl(0 0% 0% / 0.5);
-    --shadow-card-hover: 0 8px 24px -4px hsl(252 100% 72% / 0.25), 0 4px 16px -4px hsl(0 0% 0% / 0.5);
+    --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.4);
+    --shadow-sm: 0 2px 4px hsl(0 0% 0% / 0.45);
+    --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.5);
+    --shadow-lg: 0 8px 24px hsl(0 0% 0% / 0.55);
+    --shadow-xl: 0 20px 60px hsl(0 0% 0% / 0.6);
+    --shadow-glow: 0 0 50px hsl(248 100% 69% / 0.5), 0 0 20px hsl(248 100% 69% / 0.3);
+    --shadow-glow-lime: 0 0 40px hsl(75 100% 50% / 0.5), 0 0 12px hsl(75 100% 50% / 0.4);
+    --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.6);
+    --shadow-card-hover: 0 12px 40px -8px hsl(248 100% 69% / 0.3), 0 4px 20px -4px hsl(0 0% 0% / 0.6);
 
-    --mode-accent: 252 100% 72%;
-    --mode-accent-foreground: 250 35% 6%;
-    --mode-glow: 0 0 40px hsl(252 100% 72% / 0.4);
+    --mode-accent: 248 100% 69%;
+    --mode-accent-foreground: 240 17% 7%;
+    --mode-glow: 0 0 50px hsl(248 100% 69% / 0.5);
   }
 
   .dark [data-nav-mode="create"] {
@@ -220,7 +225,10 @@ All colors MUST be HSL.
     min-height: 100vh;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1, h2 {
+    @apply font-black tracking-[-0.02em];
+  }
+  h3, h4, h5, h6 {
     @apply font-bold tracking-tight;
   }
 
@@ -288,6 +296,34 @@ All colors MUST be HSL.
 
   .shadow-glow {
     box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-glow-lime {
+    box-shadow: var(--shadow-glow-lime, 0 0 40px hsl(75 100% 50% / 0.5));
+  }
+
+  /* Lime accent text + halo — for match %, highlights, key CTAs */
+  .text-energy {
+    color: hsl(var(--energy));
+  }
+  .bg-energy {
+    background-color: hsl(var(--energy));
+    color: hsl(var(--energy-foreground));
+  }
+  .border-energy {
+    border-color: hsl(var(--energy));
+  }
+  .text-energy-glow {
+    color: hsl(var(--energy));
+    text-shadow: 0 0 18px hsl(var(--energy) / 0.55), 0 0 4px hsl(var(--energy) / 0.4);
+  }
+
+  /* Cinematic hero backdrop — layered radial purple glow on deep black */
+  .bg-cinematic {
+    background:
+      radial-gradient(ellipse 70% 50% at 25% 0%, hsl(248 100% 69% / 0.18), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 85% 100%, hsl(282 95% 60% / 0.10), transparent 60%),
+      hsl(var(--background));
   }
 
   .shadow-card {

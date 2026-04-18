@@ -76,7 +76,7 @@ const highlightBox = {
 }
 const highlightText = { fontSize: '14px', color: '#3a3a44', lineHeight: '1.8', margin: '0 0 8px', whiteSpace: 'pre-line' as const }
 const button = {
-  backgroundColor: '#4338CA',
+  backgroundColor: '#7B61FF',
   color: '#ffffff',
   fontSize: '15px',
   fontWeight: '600' as const,

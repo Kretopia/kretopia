@@ -128,7 +128,7 @@ const qrLabel = { fontSize: '16px', fontWeight: '600' as const, color: '#0a0a0f'
 const qrHint = { fontSize: '13px', color: '#999', margin: '0 0 16px' }
 const qrImage = { margin: '0 auto', borderRadius: '8px' }
 const button = {
-  backgroundColor: '#4338CA',
+  backgroundColor: '#7B61FF',
   color: '#ffffff',
   fontSize: '15px',
   fontWeight: '600' as const,

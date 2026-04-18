@@ -81,8 +81,9 @@ export const SignupEmail = ({
 
 export default SignupEmail
 
-const brandPrimary = '#5B6BF5'
-const brandDark = '#0a0a0f'
+const brandPrimary = '#7B61FF'
+const brandLime = '#C6FF00'
+const brandDark = '#0F0F14'
 
 const main = {
   backgroundColor: '#f4f4f7',
@@ -96,23 +97,24 @@ const container = {
   backgroundColor: '#ffffff',
   borderRadius: '16px',
   border: '1px solid #e5e5ea',
+  borderTop: `4px solid ${brandLime}`,
 }
 const logoSection = {
   marginBottom: '28px',
 }
 const h1 = {
-  fontSize: '26px',
-  fontWeight: 'bold' as const,
+  fontSize: '28px',
+  fontWeight: '900' as const,
   color: brandDark,
   margin: '0 0 4px',
-  letterSpacing: '-0.02em',
+  letterSpacing: '-0.03em',
 }
 const subtitle = {
-  fontSize: '13px',
-  fontWeight: '500' as const,
+  fontSize: '11px',
+  fontWeight: '900' as const,
   color: brandPrimary,
   margin: '0 0 24px',
-  letterSpacing: '0.05em',
+  letterSpacing: '0.18em',
   textTransform: 'uppercase' as const,
 }
 const text = {
@@ -130,10 +132,11 @@ const button = {
   backgroundColor: brandPrimary,
   color: '#ffffff',
   fontSize: '15px',
-  fontWeight: '600' as const,
+  fontWeight: '700' as const,
   borderRadius: '12px',
   padding: '14px 32px',
   textDecoration: 'none',
+  boxShadow: `0 4px 14px ${brandPrimary}55`,
 }
 const divider = {
   borderTop: '1px solid #e5e5ea',

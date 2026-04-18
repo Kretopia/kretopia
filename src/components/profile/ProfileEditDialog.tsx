@@ -262,6 +262,7 @@ export function ProfileEditDialog({
     behance_url: "",
     imdb_url: "",
     soundcloud_url: "",
+    vimeo_url: "",
     hourly_rate: "",
     project_rate: "",
     rate_currency: "USD",
@@ -288,6 +289,7 @@ export function ProfileEditDialog({
         behance_url: (profile as any).behance_url || "",
         imdb_url: (profile as any).imdb_url || "",
         soundcloud_url: (profile as any).soundcloud_url || "",
+        vimeo_url: (profile as any).vimeo_url || "",
         hourly_rate: (profile as any).hourly_rate?.toString() || "",
         project_rate: (profile as any).project_rate?.toString() || "",
         rate_currency: (profile as any).rate_currency || "USD",
@@ -331,6 +333,7 @@ export function ProfileEditDialog({
         behance_url: formData.behance_url || null,
         imdb_url: formData.imdb_url || null,
         soundcloud_url: formData.soundcloud_url || null,
+        vimeo_url: formData.vimeo_url || null,
         hourly_rate: hourlyRate && !isNaN(hourlyRate) ? hourlyRate : null,
         project_rate: projectRate && !isNaN(projectRate) ? projectRate : null,
         rate_currency: formData.rate_currency || 'USD',
@@ -377,6 +380,8 @@ export function ProfileEditDialog({
         ['spotify', formData.spotify_url, prev.spotify_url || ""],
         ['behance', formData.behance_url, prev.behance_url || ""],
         ['soundcloud', formData.soundcloud_url, prev.soundcloud_url || ""],
+        ['vimeo', formData.vimeo_url, prev.vimeo_url || ""],
+        ['website', formData.website, prev.website || ""],
       ];
       autoSyncPairs.forEach(([p, next, before]) => {
         if (next && next !== before) triggerCreditSync(p, next, true);
@@ -635,14 +640,29 @@ export function ProfileEditDialog({
           <FieldWrapper 
             label="Website" 
             isIncomplete={isFieldIncomplete('Website or Social Link')}
-            hint="Link to your website or portfolio"
+            hint="Link to your website or portfolio — we'll scan it for projects to import"
           >
-            <Input
-              value={formData.website}
-              onChange={(e) => handleInputChange('website', e.target.value)}
-              placeholder="https://yourportfolio.com"
-              type="url"
-            />
+            <div className="flex gap-2">
+              <Input
+                value={formData.website}
+                onChange={(e) => handleInputChange('website', e.target.value)}
+                placeholder="https://yourportfolio.com"
+                type="url"
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0 gap-1"
+                disabled={!formData.website?.trim() || syncing.website}
+                onClick={() => triggerCreditSync('website', formData.website)}
+                title="Scan your website for projects to import"
+              >
+                {syncing.website ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                Sync
+              </Button>
+            </div>
           </FieldWrapper>
 
           {/* Rate Card */}
@@ -842,6 +862,29 @@ export function ProfileEditDialog({
                   title="Import tracks from SoundCloud"
                 >
                   {syncing.soundcloud ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
+            </FieldWrapper>
+
+            <FieldWrapper label="Vimeo" isIncomplete={false}>
+              <div className="flex gap-2">
+                <Input
+                  value={formData.vimeo_url}
+                  onChange={(e) => handleInputChange('vimeo_url', e.target.value)}
+                  placeholder="https://vimeo.com/username"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.vimeo_url?.trim() || syncing.vimeo}
+                  onClick={() => triggerCreditSync('vimeo', formData.vimeo_url)}
+                  title="Import videos from Vimeo"
+                >
+                  {syncing.vimeo ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
                   Sync
                 </Button>
               </div>

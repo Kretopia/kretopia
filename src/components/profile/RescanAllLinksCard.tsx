@@ -11,7 +11,7 @@ interface RescanAllLinksCardProps {
   onRefresh: () => void;
 }
 
-type Platform = 'imdb' | 'youtube' | 'spotify' | 'behance' | 'soundcloud';
+type Platform = 'imdb' | 'youtube' | 'spotify' | 'behance' | 'soundcloud' | 'vimeo' | 'website';
 
 interface PlatformResult {
   key: Platform;
@@ -37,6 +37,8 @@ export const RescanAllLinksCard = ({ profile, onRefresh }: RescanAllLinksCardPro
     { key: 'spotify', label: 'Spotify', url: profile.spotify_url || '', status: profile.spotify_url ? 'pending' : 'skipped' },
     { key: 'behance', label: 'Behance', url: profile.behance_url || '', status: profile.behance_url ? 'pending' : 'skipped' },
     { key: 'soundcloud', label: 'SoundCloud', url: profile.soundcloud_url || '', status: profile.soundcloud_url ? 'pending' : 'skipped' },
+    { key: 'vimeo', label: 'Vimeo', url: profile.vimeo_url || '', status: profile.vimeo_url ? 'pending' : 'skipped' },
+    { key: 'website', label: 'Website', url: profile.website || '', status: profile.website ? 'pending' : 'skipped' },
   ];
 
   const runOne = async (job: PlatformResult): Promise<PlatformResult> => {

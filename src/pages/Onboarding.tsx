@@ -58,6 +58,7 @@ export default function Onboarding() {
 
   // Avatar upload
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [generatingBio, setGeneratingBio] = useState(false);
   const [showCropDialog, setShowCropDialog] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState("");
 

@@ -12,6 +12,7 @@ import { TrustSignals } from "@/components/profile/TrustSignals";
 import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
 import { WhoViewedProfile } from "@/components/profile/WhoViewedProfile";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
+import { RescanAllLinksCard } from "@/components/profile/RescanAllLinksCard";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 

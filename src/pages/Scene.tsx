@@ -63,11 +63,12 @@ const Scene = () => {
           {user && <ProfileVisibilityBanner isVisible={visibility.isVisible} missingFields={visibility.missingFields} />}
 
           {/* Header */}
-          <div className="mb-3 flex items-start justify-between">
-            <div>
-              <h1 className="text-xl font-bold flex items-center gap-2">
-                <Flame className="h-5 w-5 text-primary" />
-                {t("scene.title")}
+          <div className="mb-4 flex items-start justify-between gap-3 border-b-2 border-primary/20 pb-3">
+            <div className="space-y-1 min-w-0 flex-1">
+              <p className="brand-eyebrow">For you</p>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] flex items-center gap-2 leading-[1.05]">
+                <Flame className="h-6 w-6 text-primary shrink-0" />
+                <span className="min-w-0 break-words">{t("scene.title")}</span>
               </h1>
               <p className="text-xs text-muted-foreground">{t("scene.subtitle")}</p>
             </div>

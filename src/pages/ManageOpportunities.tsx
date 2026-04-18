@@ -136,15 +136,16 @@ const ManageOpportunities = () => {
     <PageTransition>
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-[hsl(var(--mode-accent))]" />
-              Gig Manager
+        <div className="flex items-start justify-between gap-3 border-b-2 border-primary/20 pb-4">
+          <div className="space-y-1 min-w-0 flex-1">
+            <p className="brand-eyebrow">Your listings</p>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] flex items-center gap-2 leading-[1.05]">
+              <Briefcase className="h-6 w-6 text-primary shrink-0" />
+              <span className="min-w-0 break-words">Gig Manager</span>
             </h1>
             <p className="text-sm text-muted-foreground">Your listings and your own applications</p>
           </div>
-          <Button size="sm" onClick={() => navigate("/post-opportunity")} className="gap-1.5">
+          <Button size="sm" onClick={() => navigate("/post-opportunity")} className="gap-1.5 shrink-0">
             <Plus className="h-3.5 w-3.5" /> Post Gig
           </Button>
         </div>

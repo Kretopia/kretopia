@@ -166,7 +166,7 @@ All colors MUST be HSL.
     --shadow-lg: 0 8px 24px hsl(0 0% 0% / 0.55);
     --shadow-xl: 0 20px 60px hsl(0 0% 0% / 0.6);
     --shadow-glow: 0 0 50px hsl(248 100% 69% / 0.5), 0 0 20px hsl(248 100% 69% / 0.3);
-    --shadow-glow-lime: 0 0 40px hsl(75 100% 50% / 0.5), 0 0 12px hsl(75 100% 50% / 0.4);
+    --shadow-glow-lime: 0 0 18px hsl(75 100% 50% / 0.22), 0 0 6px hsl(75 100% 50% / 0.18);
     --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.6);
     --shadow-card-hover: 0 12px 40px -8px hsl(248 100% 69% / 0.3), 0 4px 20px -4px hsl(0 0% 0% / 0.6);
 
@@ -307,7 +307,7 @@ All colors MUST be HSL.
   }
 
   .shadow-glow-lime {
-    box-shadow: var(--shadow-glow-lime, 0 0 40px hsl(75 100% 50% / 0.5));
+    box-shadow: var(--shadow-glow-lime, 0 0 18px hsl(75 100% 50% / 0.22));
   }
 
   /* Lime accent text + halo — for match %, highlights, key CTAs */

@@ -715,9 +715,9 @@ export function ProfileEditDialog({
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-sm font-medium">Social Media (Optional)</h3>
+            <h3 className="text-sm font-medium">Social Media & Portfolio Links</h3>
             <p className="text-xs text-muted-foreground -mt-2">
-              Add your profile links so visitors can find you across platforms
+              Add your profile links so visitors can find you across platforms — and we'll auto-populate your profile (bio, projects, credits) from any link with a <span className="font-medium text-foreground">Sync</span> button.
             </p>
             
             <FieldWrapper label="Instagram" isIncomplete={false}>

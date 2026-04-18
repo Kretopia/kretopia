@@ -395,8 +395,16 @@ export function ProfileEditDialog({
   };
 
   const [syncing, setSyncing] = useState<Record<string, boolean>>({});
+
+  // Maps a platform key to (edge function, request body builder).
+  // Spotify uses dedicated music scraper. Vimeo/Behance/SoundCloud/Website fall back to
+  // the generic analyze-profile-url scraper which already understands these domains.
+  type SyncablePlatform =
+    | 'imdb' | 'youtube' | 'spotify'
+    | 'vimeo' | 'behance' | 'soundcloud' | 'website';
+
   const triggerCreditSync = useCallback(async (
-    platform: 'imdb' | 'youtube',
+    platform: SyncablePlatform,
     url: string,
     silent = false,
   ) => {
@@ -405,26 +413,46 @@ export function ProfileEditDialog({
       return;
     }
     setSyncing(prev => ({ ...prev, [platform]: true }));
+    const niceName = platform === 'imdb' ? 'IMDb' : platform === 'youtube' ? 'YouTube'
+      : platform[0].toUpperCase() + platform.slice(1);
     if (!silent) {
-      toast({ title: `Syncing ${platform.toUpperCase()} credits…`, description: "We'll import what we can verify." });
+      toast({ title: `Syncing ${niceName}…`, description: "We'll import what we can verify." });
     }
     try {
-      const fnName = platform === 'imdb' ? 'fetch-imdb-credits' : 'fetch-youtube-credits';
-      const body = platform === 'imdb'
-        ? { imdbUrl: url }
-        : { channelUrl: url, role: 'Cinematographer & Steadicam Operator' };
+      let fnName: string;
+      let body: Record<string, any>;
+      if (platform === 'imdb') {
+        fnName = 'fetch-imdb-credits';
+        body = { imdbUrl: url };
+      } else if (platform === 'youtube') {
+        fnName = 'fetch-youtube-credits';
+        body = { channelUrl: url, role: 'Cinematographer & Steadicam Operator' };
+      } else if (platform === 'spotify') {
+        fnName = 'fetch-spotify-credits';
+        body = { spotifyUrl: url };
+      } else {
+        // Generic Firecrawl-based scraper handles Vimeo, Behance, SoundCloud, personal sites
+        fnName = 'analyze-profile-url';
+        body = { url, autoImportCredits: true };
+      }
       const { data, error } = await supabase.functions.invoke(fnName, { body });
       if (error) throw error;
-      const count = (data?.imported ?? data?.credits?.length ?? 0) as number;
+      // Generic scraper returns { data: { portfolio_items: [...] } } — count those
+      const count = (
+        data?.imported ??
+        data?.credits?.length ??
+        data?.data?.portfolio_items?.length ??
+        0
+      ) as number;
       toast({
-        title: `${platform.toUpperCase()} sync complete`,
-        description: count > 0 ? `Imported ${count} verified credits.` : "No new credits found.",
+        title: `${niceName} sync complete`,
+        description: count > 0 ? `Imported ${count} verified items.` : "No new items found.",
       });
     } catch (e: any) {
       console.error(`[ProfileEdit] ${platform} sync failed`, e);
       if (!silent) {
         toast({
-          title: `${platform.toUpperCase()} sync failed`,
+          title: `${niceName} sync failed`,
           description: e?.message || "Try again in a moment.",
           variant: "destructive",
         });

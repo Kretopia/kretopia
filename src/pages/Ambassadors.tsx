@@ -4,13 +4,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { Crown, Sparkles, TrendingUp, Link2, CheckCircle2, ArrowRight, DollarSign, Users, Award } from "lucide-react";
+import { Crown, Sparkles, TrendingUp, Link2, CheckCircle2, ArrowRight, DollarSign, Users, Award, Lock } from "lucide-react";
 
 const Ambassadors = () => {
   const { user } = useAuth();
@@ -24,14 +23,7 @@ const Ambassadors = () => {
   const [form, setForm] = useState({
     full_name: "",
     email: "",
-    primary_platform: "",
-    audience_size: "",
     instagram: "",
-    tiktok: "",
-    youtube: "",
-    other: "",
-    niche: "",
-    pitch: "",
   });
 
   useEffect(() => {
@@ -64,40 +56,34 @@ const Ambassadors = () => {
       navigate("/auth");
       return;
     }
-    if (!form.pitch.trim() || form.pitch.trim().length < 50) {
-      toast({ title: "Tell us more", description: "Your pitch should be at least 50 characters.", variant: "destructive" });
+    if (!form.email.trim()) {
+      toast({ title: "Email required", description: "We need an email to reach you.", variant: "destructive" });
       return;
     }
     setSubmitting(true);
     const { error } = await supabase.from("ambassador_applications").insert({
       user_id: user.id,
-      full_name: form.full_name,
+      full_name: form.full_name || user.email?.split("@")[0] || "Anonymous",
       email: form.email,
-      primary_platform: form.primary_platform || null,
-      audience_size: form.audience_size || null,
-      niche: form.niche || null,
-      pitch: form.pitch,
+      pitch: "[Waitlist signup — closed beta]",
       social_links: {
         instagram: form.instagram || null,
-        tiktok: form.tiktok || null,
-        youtube: form.youtube || null,
-        other: form.other || null,
       },
     });
     setSubmitting(false);
     if (error) {
-      toast({ title: "Couldn't submit", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't join waitlist", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Application received", description: "We'll review and get back to you within 5 business days." });
+    toast({ title: "You're on the list", description: "We'll reach out personally as we open more seats." });
     setExisting({ status: "pending" });
   };
 
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="ThriveIN Ambassadors — Earn 40% Commission"
-        description="Join the ThriveIN Ambassador Program. Earn 40% recurring commission on every Pro subscription you bring in, get a vanity invite link, and shape the future of the Creative OS."
+        title="ThriveIN Ambassadors — Closed Beta"
+        description="The ThriveIN Ambassador Program is currently invite-only. Join the waitlist to be considered as we open new seats — earn 40% recurring commission, lifetime Pro, and founder-tier perks."
         url="https://thrivein.io/ambassadors"
       />
 
@@ -110,7 +96,7 @@ const Ambassadors = () => {
 
         <div className="relative container mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-20">
           <Badge variant="outline" className="mb-5 border-primary/40 bg-primary/5 text-primary uppercase tracking-widest text-[10px]">
-            <Crown className="h-3 w-3 mr-1.5" /> Application Only
+            <Lock className="h-3 w-3 mr-1.5" /> Currently Invite-Only
           </Badge>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-[-0.04em] text-foreground leading-[0.95] mb-5">
@@ -118,13 +104,16 @@ const Ambassadors = () => {
             <span className="text-energy-glow">the Creative OS.</span>
           </h1>
 
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-8">
-            The ThriveIN Ambassador Program is for creators with real influence in film, music, fashion, content, or events. Bring your community in — earn recurring revenue, unlock founder-tier perks, and help shape the platform.
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed mb-4">
+            The ThriveIN Ambassador Program is in closed beta. We're hand-picking a small group of creators with real influence in film, music, fashion, content, and events to shape what this becomes.
+          </p>
+          <p className="text-sm text-muted-foreground/80 max-w-2xl leading-relaxed mb-8">
+            Want in? Join the waitlist below — we open new seats every few weeks and reach out personally.
           </p>
 
           <div className="flex flex-wrap gap-3">
             <Button size="lg" asChild className="gap-2">
-              <a href="#apply">Apply now <ArrowRight className="h-4 w-4" /></a>
+              <a href="#waitlist">Request access <ArrowRight className="h-4 w-4" /></a>
             </Button>
             <Button size="lg" variant="outline" asChild>
               <a href="#perks">See the perks</a>
@@ -135,7 +124,7 @@ const Ambassadors = () => {
 
       {/* PERKS */}
       <section id="perks" className="container mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">What you get</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">What ambassadors get</p>
         <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-8">Real upside, not just a referral link.</h2>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -158,122 +147,60 @@ const Ambassadors = () => {
         </div>
       </section>
 
-      {/* WHO */}
-      <section className="bg-muted/30 border-y border-border/50">
-        <div className="container mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Who we're looking for</p>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-6">Influence over follower count.</h2>
-          <p className="text-muted-foreground max-w-2xl mb-8">We don't care if you have 5K or 5M. We care that the people who follow you are real creatives who actually trust your taste.</p>
+      {/* WAITLIST */}
+      <section id="waitlist" className="bg-muted/30 border-y border-border/50">
+        <div className="container mx-auto max-w-2xl px-4 sm:px-6 py-12 sm:py-16">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Request access</p>
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3">Join the waitlist.</h2>
+          <p className="text-muted-foreground mb-8">
+            We're keeping the first cohort small and intentional. Drop your details — if there's a fit, we'll be in touch directly.
+          </p>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            {[
-              "Active creators in film, music, fashion, photography, content, or events",
-              "Educators, podcasters, or newsletter writers in the creative industry",
-              "Agency leads, casting directors, or talent managers",
-              "Community organizers running real-life creative meetups",
-            ].map((line, i) => (
-              <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border/50">
-                <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <p className="text-sm text-foreground">{line}</p>
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <Card className="p-6 animate-pulse h-48" />
+          ) : existing ? (
+            <Card className="p-8 border-primary/30 bg-primary/5 text-center">
+              <Sparkles className="h-10 w-10 text-primary mx-auto mb-3" />
+              <h3 className="text-xl font-bold mb-2">
+                {existing.status === "approved" ? "You're in." : existing.status === "rejected" ? "Not this round" : "You're on the list"}
+              </h3>
+              <p className="text-muted-foreground mb-5">
+                {existing.status === "approved"
+                  ? "Welcome to the Ambassador program. Your perks are now active."
+                  : existing.status === "rejected"
+                  ? "We're not moving forward right now — keep building, the door stays open."
+                  : "We open new seats every few weeks. If there's a fit, we'll reach out personally."}
+              </p>
+              <Button asChild variant="outline">
+                <Link to="/profile">Back to profile</Link>
+              </Button>
+            </Card>
+          ) : (
+            <Card className="p-6 sm:p-8 border-border/60 bg-card">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="email">Email *</Label>
+                  <Input id="email" type="email" required placeholder="you@domain.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                </div>
+                <div>
+                  <Label htmlFor="full_name">Name</Label>
+                  <Input id="full_name" placeholder="Your name" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} />
+                </div>
+                <div>
+                  <Label htmlFor="instagram">Instagram or main platform <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                  <Input id="instagram" placeholder="@handle or link" value={form.instagram} onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))} />
+                </div>
+
+                <Button type="submit" size="lg" className="w-full gap-2" disabled={submitting}>
+                  {submitting ? "Joining..." : <>Join the waitlist <ArrowRight className="h-4 w-4" /></>}
+                </Button>
+                <p className="text-xs text-center text-muted-foreground flex items-center justify-center gap-1.5">
+                  <CheckCircle2 className="h-3 w-3" /> No spam. We only reach out if there's a real fit.
+                </p>
+              </form>
+            </Card>
+          )}
         </div>
-      </section>
-
-      {/* APPLY */}
-      <section id="apply" className="container mx-auto max-w-2xl px-4 sm:px-6 py-12 sm:py-16">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Apply</p>
-        <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-6">Tell us your story.</h2>
-
-        {loading ? (
-          <Card className="p-6 animate-pulse h-64" />
-        ) : existing ? (
-          <Card className="p-8 border-primary/30 bg-primary/5 text-center">
-            <Sparkles className="h-10 w-10 text-primary mx-auto mb-3" />
-            <h3 className="text-xl font-bold mb-2">
-              {existing.status === "approved" ? "You're in." : existing.status === "rejected" ? "Application closed" : "Application received"}
-            </h3>
-            <p className="text-muted-foreground mb-5">
-              {existing.status === "approved"
-                ? "Welcome to the Ambassador program. Your perks are now active."
-                : existing.status === "rejected"
-                ? "We're not moving forward right now, but stay in touch — keep building."
-                : "We'll review and get back to you within 5 business days."}
-            </p>
-            <Button asChild variant="outline">
-              <Link to="/profile">Back to profile</Link>
-            </Button>
-          </Card>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="full_name">Full name *</Label>
-                <Input id="full_name" required value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} />
-              </div>
-              <div>
-                <Label htmlFor="email">Email *</Label>
-                <Input id="email" type="email" required value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="primary_platform">Primary platform</Label>
-                <Input id="primary_platform" placeholder="Instagram, TikTok, YouTube..." value={form.primary_platform} onChange={e => setForm(f => ({ ...f, primary_platform: e.target.value }))} />
-              </div>
-              <div>
-                <Label htmlFor="audience_size">Total audience size</Label>
-                <Input id="audience_size" placeholder="~25K, 100K+, 1M..." value={form.audience_size} onChange={e => setForm(f => ({ ...f, audience_size: e.target.value }))} />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="niche">Your niche</Label>
-              <Input id="niche" placeholder="Music producer, fashion stylist, indie filmmaker..." value={form.niche} onChange={e => setForm(f => ({ ...f, niche: e.target.value }))} />
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="instagram">Instagram</Label>
-                <Input id="instagram" placeholder="@handle" value={form.instagram} onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))} />
-              </div>
-              <div>
-                <Label htmlFor="tiktok">TikTok</Label>
-                <Input id="tiktok" placeholder="@handle" value={form.tiktok} onChange={e => setForm(f => ({ ...f, tiktok: e.target.value }))} />
-              </div>
-              <div>
-                <Label htmlFor="youtube">YouTube</Label>
-                <Input id="youtube" placeholder="Channel link or @handle" value={form.youtube} onChange={e => setForm(f => ({ ...f, youtube: e.target.value }))} />
-              </div>
-              <div>
-                <Label htmlFor="other">Other</Label>
-                <Input id="other" placeholder="Website, podcast, newsletter..." value={form.other} onChange={e => setForm(f => ({ ...f, other: e.target.value }))} />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="pitch">Why you, and how would you bring your community in? *</Label>
-              <Textarea
-                id="pitch"
-                required
-                rows={6}
-                placeholder="Tell us about your community, your creative work, and how you'd talk about ThriveIN to your people..."
-                value={form.pitch}
-                onChange={e => setForm(f => ({ ...f, pitch: e.target.value }))}
-              />
-              <p className="text-xs text-muted-foreground mt-1">Min 50 characters. Be specific — this is what we read.</p>
-            </div>
-
-            <Button type="submit" size="lg" className="w-full gap-2" disabled={submitting}>
-              {submitting ? "Submitting..." : <>Submit application <ArrowRight className="h-4 w-4" /></>}
-            </Button>
-            <p className="text-xs text-center text-muted-foreground">
-              We review every application personally. Expect a reply within 5 business days.
-            </p>
-          </form>
-        )}
       </section>
     </div>
   );

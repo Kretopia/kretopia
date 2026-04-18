@@ -226,10 +226,15 @@ All colors MUST be HSL.
   }
 
   h1, h2 {
-    @apply font-black tracking-[-0.02em];
+    @apply font-black tracking-[-0.03em];
   }
   h3, h4, h5, h6 {
-    @apply font-bold tracking-tight;
+    @apply font-black tracking-tight;
+  }
+  /* Default bold weight nudge — across-the-board editorial feel */
+  .font-bold {
+    font-weight: 800;
+    letter-spacing: -0.01em;
   }
 
   /* Global focus-visible styles for better accessibility */
@@ -318,6 +323,14 @@ All colors MUST be HSL.
     text-shadow: 0 0 18px hsl(var(--energy) / 0.55), 0 0 4px hsl(var(--energy) / 0.4);
   }
 
+  /* Brand eyebrow — uppercase status pill text */
+  .brand-eyebrow {
+    @apply text-[10px] font-black uppercase tracking-[0.18em] text-energy;
+  }
+  /* Editorial section header */
+  .section-title {
+    @apply text-2xl sm:text-3xl font-black tracking-[-0.03em];
+  }
   /* Cinematic hero backdrop — layered radial purple glow on deep black */
   .bg-cinematic {
     background:

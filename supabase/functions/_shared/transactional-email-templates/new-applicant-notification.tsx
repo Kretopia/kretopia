@@ -53,7 +53,7 @@ const container = { padding: '32px 28px', maxWidth: '480px', margin: '0 auto' }
 const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#0a0a0f', margin: '0 0 16px' }
 const text = { fontSize: '15px', color: '#606068', lineHeight: '1.6', margin: '0 0 24px' }
 const button = {
-  backgroundColor: '#4338CA',
+  backgroundColor: '#7B61FF',
   color: '#ffffff',
   fontSize: '15px',
   fontWeight: '600' as const,

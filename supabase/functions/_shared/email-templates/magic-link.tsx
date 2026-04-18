@@ -67,7 +67,7 @@ const text = {
   margin: '0 0 24px',
 }
 const button = {
-  backgroundColor: '#4338CA',
+  backgroundColor: '#7B61FF',
   color: '#ffffff',
   fontSize: '15px',
   fontWeight: '600' as const,

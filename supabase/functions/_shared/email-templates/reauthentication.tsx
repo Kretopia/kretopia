@@ -61,7 +61,7 @@ const codeStyle = {
   fontFamily: "'SF Mono', 'Fira Code', Courier, monospace",
   fontSize: '28px',
   fontWeight: 'bold' as const,
-  color: '#4338CA',
+  color: '#7B61FF',
   letterSpacing: '4px',
   margin: '0 0 32px',
 }

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban, Shield, Zap, Star } from "lucide-react";
+import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, CalendarDays, PlusCircle, Newspaper, Mic2, Handshake, DollarSign, FolderKanban, Shield, Zap, Star, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { QuickPostModal } from "@/components/QuickPostModal";
 import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlaceholder";
+import heroCreators from "@/assets/hero-creators.jpg";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";

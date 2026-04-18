@@ -96,7 +96,7 @@ export const ProfileActivationGate = ({
             primary_media_url: p.thumbnail_url || p.media_url || null,
             media_type: p.media_type || "image",
             source: "web_verified",
-            verification_status: "auto_discovered",
+            verification_status: "pending_review",
           }));
           await supabase.from("credits").insert(rows);
         }

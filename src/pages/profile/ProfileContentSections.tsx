@@ -5,6 +5,7 @@ import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, Zap, DollarS
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
+import { ImportReviewBanner } from "@/components/profile/ImportReviewBanner";
 import { EmbeddableCreditsWidget } from "@/components/profile/EmbeddableCreditsWidget";
 
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
@@ -180,6 +181,9 @@ export const ProfileContentSections = ({
     <div>
       {/* Pending verification requests */}
       <CreditVerificationPanel userId={profile.user_id} />
+
+      {/* Auto-imported credits awaiting user review */}
+      <ImportReviewBanner userId={profile.user_id} onResolved={onRefresh} />
 
 
       {/* Sentinel for sticky detection */}

@@ -522,26 +522,26 @@ body.creator-site-active [data-bottom-nav] {
    ============================================================ */
 :root:not(.dark) {
   /* Text colors: hardcoded white/light-gray → readable foreground */
-  body :where(.text-white):not(.dark-surface *):not([data-creator-site] *):not(.pitch-deck *):not(.force-dark *):not(.dark-surface):not(.force-dark) {
+  body:not(.creator-site-active) :where(.text-white):not(.dark-surface *):not([data-creator-site] *):not(.pitch-deck *):not(.force-dark *):not(.dark-surface):not(.force-dark) {
     color: hsl(var(--foreground));
   }
-  body :where(.text-gray-100, .text-gray-200, .text-gray-300, .text-gray-400, .text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400, .text-neutral-100, .text-neutral-200, .text-neutral-300, .text-neutral-400):not(.dark-surface *):not([data-creator-site] *):not(.pitch-deck *):not(.force-dark *):not(.dark-surface):not(.force-dark) {
+  body:not(.creator-site-active) :where(.text-gray-100, .text-gray-200, .text-gray-300, .text-gray-400, .text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400, .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400, .text-neutral-100, .text-neutral-200, .text-neutral-300, .text-neutral-400):not(.dark-surface *):not([data-creator-site] *):not(.pitch-deck *):not(.force-dark *):not(.dark-surface):not(.force-dark) {
     color: hsl(var(--muted-foreground));
   }
 
   /* White text with opacity (text-white/70 etc.) → muted foreground */
-  body :where([class*="text-white/"]):not(.dark-surface *):not([data-creator-site] *):not(.pitch-deck *):not(.force-dark *):not(.dark-surface):not(.force-dark) {
+  body:not(.creator-site-active) :where([class*="text-white/"]):not(.dark-surface *):not([data-creator-site] *):not(.pitch-deck *):not(.force-dark *):not(.dark-surface):not(.force-dark) {
     color: hsl(var(--muted-foreground));
   }
 
   /* Background black → card surface so content stays visible */
-  body :where(.bg-black):not(.dark-surface *):not([data-creator-site] *):not(.pitch-deck *):not(.force-dark *):not(.dark-surface):not(.force-dark) {
+  body:not(.creator-site-active) :where(.bg-black):not(.dark-surface *):not([data-creator-site] *):not(.pitch-deck *):not(.force-dark *):not(.dark-surface):not(.force-dark) {
     background-color: hsl(var(--card));
     color: hsl(var(--card-foreground));
   }
 
   /* Borders on white/10, white/5 etc. — make visible in light mode */
-  body :where([class*="border-white/"]):not(.dark-surface *):not([data-creator-site] *):not(.pitch-deck *):not(.force-dark *):not(.dark-surface):not(.force-dark) {
+  body:not(.creator-site-active) :where([class*="border-white/"]):not(.dark-surface *):not([data-creator-site] *):not(.pitch-deck *):not(.force-dark *):not(.dark-surface):not(.force-dark) {
     border-color: hsl(var(--border));
   }
 }

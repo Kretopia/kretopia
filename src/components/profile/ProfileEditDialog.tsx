@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle2, AlertCircle, Save, Sparkles, Loader2, Search, Video, Upload, X } from "lucide-react";
+import { CheckCircle2, AlertCircle, Save, Sparkles, Loader2, Search, Video, Upload, X, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
@@ -369,6 +369,16 @@ export function ProfileEditDialog({
           : `Profile ${newCompletion.percentage}% complete`,
       });
 
+      // Auto-import credits when external profile URLs are added/changed
+      const prevImdb = (profile as any).imdb_url || "";
+      const prevYt = (profile as any).youtube_url || "";
+      if (formData.imdb_url && formData.imdb_url !== prevImdb) {
+        triggerCreditSync('imdb', formData.imdb_url, true);
+      }
+      if (formData.youtube_url && formData.youtube_url !== prevYt) {
+        triggerCreditSync('youtube', formData.youtube_url, true);
+      }
+
       onProfileUpdate();
       onOpenChange(false);
       hasShownToastRef.current = false;
@@ -383,6 +393,46 @@ export function ProfileEditDialog({
       setIsSaving(false);
     }
   };
+
+  const [syncing, setSyncing] = useState<Record<string, boolean>>({});
+  const triggerCreditSync = useCallback(async (
+    platform: 'imdb' | 'youtube',
+    url: string,
+    silent = false,
+  ) => {
+    if (!url?.trim()) {
+      toast({ title: "Add the link first", variant: "destructive" });
+      return;
+    }
+    setSyncing(prev => ({ ...prev, [platform]: true }));
+    if (!silent) {
+      toast({ title: `Syncing ${platform.toUpperCase()} credits…`, description: "We'll import what we can verify." });
+    }
+    try {
+      const fnName = platform === 'imdb' ? 'fetch-imdb-credits' : 'fetch-youtube-credits';
+      const body = platform === 'imdb'
+        ? { imdbUrl: url }
+        : { channelUrl: url, role: 'Cinematographer & Steadicam Operator' };
+      const { data, error } = await supabase.functions.invoke(fnName, { body });
+      if (error) throw error;
+      const count = (data?.imported ?? data?.credits?.length ?? 0) as number;
+      toast({
+        title: `${platform.toUpperCase()} sync complete`,
+        description: count > 0 ? `Imported ${count} verified credits.` : "No new credits found.",
+      });
+    } catch (e: any) {
+      console.error(`[ProfileEdit] ${platform} sync failed`, e);
+      if (!silent) {
+        toast({
+          title: `${platform.toUpperCase()} sync failed`,
+          description: e?.message || "Try again in a moment.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setSyncing(prev => ({ ...prev, [platform]: false }));
+    }
+  }, [toast]);
 
   const handleInputChange = useCallback((field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -606,11 +656,26 @@ export function ProfileEditDialog({
             </FieldWrapper>
 
             <FieldWrapper label="YouTube" isIncomplete={false}>
-              <Input
-                value={formData.youtube_url}
-                onChange={(e) => handleInputChange('youtube_url', e.target.value)}
-                placeholder="https://youtube.com/@yourchannel"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.youtube_url}
+                  onChange={(e) => handleInputChange('youtube_url', e.target.value)}
+                  placeholder="https://youtube.com/@yourchannel"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.youtube_url?.trim() || syncing.youtube}
+                  onClick={() => triggerCreditSync('youtube', formData.youtube_url)}
+                  title="Import credits from this channel"
+                >
+                  {syncing.youtube ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
             </FieldWrapper>
 
             <FieldWrapper label="TikTok" isIncomplete={false}>
@@ -654,11 +719,26 @@ export function ProfileEditDialog({
             </FieldWrapper>
 
             <FieldWrapper label="IMDb" isIncomplete={false}>
-              <Input
-                value={formData.imdb_url}
-                onChange={(e) => handleInputChange('imdb_url', e.target.value)}
-                placeholder="https://imdb.com/name/..."
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.imdb_url}
+                  onChange={(e) => handleInputChange('imdb_url', e.target.value)}
+                  placeholder="https://imdb.com/name/..."
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.imdb_url?.trim() || syncing.imdb}
+                  onClick={() => triggerCreditSync('imdb', formData.imdb_url)}
+                  title="Import credits from this IMDb profile"
+                >
+                  {syncing.imdb ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
             </FieldWrapper>
 
             <FieldWrapper label="SoundCloud" isIncomplete={false}>

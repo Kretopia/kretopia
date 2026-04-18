@@ -40,9 +40,10 @@ All colors MUST be HSL.
     --accent: 252 40% 94%;
     --accent-foreground: 252 60% 20%;
 
-    /* Lime — toned down for light mode (deeper, less neon).
-       Dark mode overrides this back to electric #C6FF00 below. */
-    --energy: 72 70% 38%;
+    /* Energy accent — Electric Magenta in light mode (lime is too neon on cream).
+       Dark mode overrides this back to electric lime #C6FF00 below.
+       Magenta #E91E8C ≈ hsl(327 82% 51%) — pulls from the violet→magenta gradient. */
+    --energy: 327 82% 51%;
     --energy-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
@@ -93,11 +94,12 @@ All colors MUST be HSL.
     --mode-glow: 0 0 40px hsl(252 100% 68% / 0.3);
   }
 
-  /* Work mode — lime focus */
+  /* Work mode — magenta focus in light mode (lime is too bright on cream canvas).
+     Dark mode overrides this back to electric lime below. */
   [data-nav-mode="work"] {
-    --mode-accent: 72 100% 55%;
-    --mode-accent-foreground: 250 30% 8%;
-    --mode-glow: 0 0 40px hsl(72 100% 55% / 0.3);
+    --mode-accent: 327 82% 51%;
+    --mode-accent-foreground: 0 0% 100%;
+    --mode-glow: 0 0 40px hsl(327 82% 51% / 0.3);
   }
 
   /* ============================================================

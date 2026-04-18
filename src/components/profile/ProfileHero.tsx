@@ -172,7 +172,7 @@ export const ProfileHero = ({
           <div className="flex-1 min-w-0 space-y-1.5">
             {/* Name + Badges */}
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight line-clamp-1">{displayName}</h1>
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight line-clamp-1">{displayName}</h1>
               
               {profile.verification_status === 'verified' && (
                 <div className="flex items-center justify-center h-5 w-5 rounded-full bg-primary">
@@ -181,8 +181,8 @@ export const ProfileHero = ({
               )}
               
               {isIndustryVerified && !isOwnProfile && (
-                <Badge className="h-5 px-1.5 bg-accent/15 text-accent-foreground border border-accent/30 text-[10px] font-semibold gap-0.5">
-                  <Star className="h-2.5 w-2.5 fill-accent text-accent" />
+                <Badge className="h-5 px-2 bg-energy text-energy-foreground border-0 text-[10px] font-black uppercase tracking-wider gap-0.5 shadow-glow-lime">
+                  <Star className="h-2.5 w-2.5 fill-current" />
                   Industry
                 </Badge>
               )}
@@ -319,10 +319,10 @@ export const ProfileHero = ({
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Projects</span>
           </div>
           <div className="text-center">
-            <span className="text-lg font-bold block leading-tight">{creditsCount}</span>
+            <span className="text-lg font-black block leading-tight">{creditsCount}</span>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Credits</span>
             {verifiedCreditsCount > 0 && (
-              <span className="text-[9px] text-primary font-semibold block">{verifiedCreditsCount} verified</span>
+              <span className="text-[9px] text-energy font-black uppercase tracking-wider block">{verifiedCreditsCount} verified</span>
             )}
           </div>
           <div className="text-center">
@@ -422,7 +422,7 @@ export const ProfileHero = ({
           ) : (
             <>
               {(profile.availability === 'available' || profile.availability === 'open_to_work') && (
-                <Button size="sm" className="gap-1.5 flex-1 h-9" onClick={onConnect}>
+                <Button variant="lime" size="sm" className="gap-1.5 flex-1 h-9" onClick={onConnect}>
                   <Briefcase className="h-3.5 w-3.5" />
                   Hire Me
                 </Button>

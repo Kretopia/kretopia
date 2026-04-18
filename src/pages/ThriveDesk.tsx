@@ -75,7 +75,7 @@ const ThriveDesk = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Workspace Header */}
-        <header className="h-14 border-b border-border bg-card/80 backdrop-blur-sm flex items-center gap-3 px-4 shrink-0">
+        <header className="h-14 border-b-2 border-primary/20 bg-gradient-to-r from-card via-card to-primary/5 backdrop-blur-sm flex items-center gap-3 px-4 shrink-0 shadow-sm">
           <Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-5 w-5" />
           </Button>

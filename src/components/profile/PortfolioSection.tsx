@@ -176,13 +176,38 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
     if (file.type.startsWith("video/")) mediaType = "video";
     else if (file.type.startsWith("audio/")) mediaType = "audio";
     
+    // For videos, leave thumbnail blank — VideoThumbnailPicker will populate it
+    // For images, the file IS the thumbnail
+    const thumbForMedia =
+      mediaType === "image" ? data.publicUrl :
+      mediaType === "audio" ? "" :
+      ""; // video → user will pick a frame
+
     setNewItem({ 
       ...newItem, 
       media_url: data.publicUrl,
-      thumbnail_url: data.publicUrl,
+      thumbnail_url: thumbForMedia,
       media_type: mediaType
     });
     setUploading(false);
+  };
+
+  const handleThumbnailCapture = async (blob: Blob, _dataUrl: string) => {
+    // Upload the captured frame to storage so it persists
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const thumbName = `${user.id}/thumb-${Date.now()}.jpg`;
+    const { error } = await supabase.storage.from('portfolio').upload(thumbName, blob, {
+      contentType: 'image/jpeg',
+      upsert: false,
+    });
+    if (error) {
+      toast({ title: "Thumbnail save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    const { data } = supabase.storage.from('portfolio').getPublicUrl(thumbName);
+    setNewItem(prev => ({ ...prev, thumbnail_url: data.publicUrl }));
+    toast({ title: "Cover frame set", description: "Thumbnail will be used in your portfolio grid" });
   };
 
   const handleAdd = async () => {

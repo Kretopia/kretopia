@@ -157,55 +157,103 @@ export const HeroSection = () => {
   return (
     <section className="relative bg-cinematic dark overflow-hidden">
       {/* Layered cinematic glows */}
-      <div className="pointer-events-none absolute -top-32 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[140px]" />
-      <div className="pointer-events-none absolute top-40 right-0 h-[380px] w-[380px] rounded-full bg-[hsl(282_95%_60%/0.12)] blur-[120px]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      <div className="pointer-events-none absolute -top-40 -left-20 h-[600px] w-[600px] rounded-full bg-primary/25 blur-[160px]" />
+      <div className="pointer-events-none absolute top-20 -right-20 h-[500px] w-[500px] rounded-full bg-[hsl(282_95%_60%/0.18)] blur-[140px]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
-      <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 pt-2 pb-16">
-        
-        {/* ═══════ HERO — Cultural, cinematic ═══════ */}
-        <div className="text-center pt-4 sm:pt-8 pb-6">
-          <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
-            <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-            The Creative OS
-          </p>
+      <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 pt-6 sm:pt-10 pb-12 sm:pb-20">
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.03em] text-foreground mb-3 leading-[1.02]">
-            Find Your People.{" "}
-            <br className="hidden sm:block" />
-            Build Something{" "}
-            <span className="relative inline-block">
+        {/* ═══════ CINEMATIC HERO STAGE ═══════ */}
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-14 items-center mb-16 sm:mb-24">
+
+          {/* LEFT — Headline + CTA */}
+          <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
+            <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-6 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
+              <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+              The Creative OS
+            </p>
+
+            <h1 className="text-[2.75rem] sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[-0.04em] text-foreground leading-[0.92] mb-6">
+              Find Your<br />
+              People.<br />
+              Build Something{" "}
               <span className="text-energy-glow">Real.</span>
-            </span>
-          </h1>
+            </h1>
 
-          <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto mt-4 leading-relaxed">
-            Where{" "}
-            <span className="text-primary font-semibold inline-block min-w-[90px] sm:min-w-[130px] transition-all duration-500">
-              {roles[roleIdx]}s
-            </span>{" "}
-            build verified credits, connect with collaborators, and get paid.
-          </p>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mb-3">
+              Where{" "}
+              <span className="text-primary font-semibold inline-block min-w-[90px] sm:min-w-[130px] transition-all duration-500">
+                {roles[roleIdx]}s
+              </span>{" "}
+              build verified credits, connect with collaborators, and get paid.
+            </p>
 
-          <p className="text-xs text-muted-foreground/60 mt-3 mb-6">
-            Free to join · Early creators get priority access
-          </p>
+            <p className="text-xs text-muted-foreground/60 mb-7">
+              Free to join · Early creators get priority access
+            </p>
 
-          {/* Lime CTA — signature brand action */}
-          <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
-            <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-7 py-3.5 text-sm font-bold shadow-glow-lime hover:scale-[1.03] transition-all">
-              Find Your People <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-6 py-3.5 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
-              <Briefcase className="h-4 w-4 text-primary" /> Browse Gigs
-            </Link>
+            <div className="flex items-center justify-center lg:justify-start gap-3 mb-8 flex-wrap">
+              <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-8 py-4 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
+                Find Your People <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-6 py-4 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
+                <Briefcase className="h-4 w-4 text-primary" /> Browse Gigs
+              </Link>
+            </div>
+
+            <div className="flex items-center justify-center lg:justify-start gap-5 text-[11px] text-muted-foreground flex-wrap">
+              <span className="flex items-center gap-1.5"><Users className="h-3 w-3 text-primary" /> {stats.creators.toLocaleString()} Creators</span>
+              <span className="flex items-center gap-1.5"><Database className="h-3 w-3 text-primary" /> {stats.credits.toLocaleString()} Credits</span>
+              <span className="flex items-center gap-1.5"><Briefcase className="h-3 w-3 text-energy" /> {stats.gigs} Live</span>
+            </div>
           </div>
 
-          {/* Social proof stats */}
-          <div className="flex items-center justify-center gap-6 text-[11px] text-muted-foreground">
-            <span className="flex items-center gap-1.5"><Users className="h-3 w-3 text-primary" /> {stats.creators.toLocaleString()} Creators</span>
-            <span className="flex items-center gap-1.5"><Database className="h-3 w-3 text-primary" /> {stats.credits.toLocaleString()} Credits</span>
-            <span className="flex items-center gap-1.5"><Briefcase className="h-3 w-3 text-energy" /> {stats.gigs} Live</span>
+          {/* RIGHT — Cinematic creator image with MATCH overlay */}
+          <div className="relative order-1 lg:order-2">
+            <div className="relative aspect-[4/5] lg:aspect-[3/4] rounded-3xl overflow-hidden border border-primary/25 shadow-glow">
+              <img
+                src={heroCreators}
+                alt="Two creative collaborators captured in cinematic editorial light"
+                className="absolute inset-0 w-full h-full object-cover"
+                width={1280}
+                height={1600}
+              />
+              {/* Subtle gradient for overlay legibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-background/20" />
+
+              {/* Signature 94% MATCH card — top-right, the brand asset */}
+              <div className="absolute top-4 right-4 sm:top-6 sm:right-6 animate-fade-in">
+                <div className="rounded-2xl border-2 border-energy/60 bg-background/85 backdrop-blur-md p-3 sm:p-4 shadow-glow-lime min-w-[150px]">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">AI Match</p>
+                  <p className="text-3xl sm:text-4xl font-black text-energy-glow tracking-tighter leading-none">94%</p>
+                  <p className="text-[10px] text-foreground/80 mt-1.5 leading-tight">Photographer × Producer<br/>2.3km away</p>
+                </div>
+              </div>
+
+              {/* Verified credit chip — top-left */}
+              <div className="absolute top-4 left-4 sm:top-6 sm:left-6 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+                <div className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-background/85 backdrop-blur-md px-3 py-1.5">
+                  <Verified className="h-3 w-3 text-primary" />
+                  <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Verified</span>
+                </div>
+              </div>
+
+              {/* Chat bubble — bottom-left */}
+              <div className="absolute bottom-5 left-4 sm:bottom-6 sm:left-6 max-w-[230px] animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <div className="rounded-2xl rounded-bl-sm border border-primary/40 bg-card/95 backdrop-blur-md p-3 shadow-xl">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                      <MessageCircle className="h-3 w-3 text-primary" />
+                    </div>
+                    <p className="text-[10px] font-bold text-foreground">Maya · Photographer</p>
+                  </div>
+                  <p className="text-xs text-foreground/90 leading-snug">"Your sound is exactly what this series needs. Coffee tomorrow?"</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Decorative glow under image */}
+            <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-primary/20 via-transparent to-energy/10 blur-2xl" />
           </div>
         </div>
 

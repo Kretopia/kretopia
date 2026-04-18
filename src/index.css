@@ -40,9 +40,10 @@ All colors MUST be HSL.
     --accent: 252 40% 94%;
     --accent-foreground: 252 60% 20%;
 
-    /* Lime #C6FF00 — dedicated energy accent (CTAs, match %, highlights, active states) */
-    --energy: 75 100% 50%;
-    --energy-foreground: 240 17% 7%;
+    /* Lime — toned down for light mode (deeper, less neon).
+       Dark mode overrides this back to electric #C6FF00 below. */
+    --energy: 72 70% 38%;
+    --energy-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;

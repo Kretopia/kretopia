@@ -455,7 +455,7 @@ const SparkMediaCard = ({
           className={cn("gap-1.5 h-8", post.has_reacted && "text-energy")}
           onClick={onReact}
         >
-          <Flame className={cn("h-4 w-4", post.has_reacted && "fill-primary")} />
+          <Flame className={cn("h-4 w-4", post.has_reacted && "fill-energy text-energy")} />
           {post.reaction_count > 0 && <span className="text-xs font-medium">{post.reaction_count}</span>}
         </Button>
         <Button
@@ -470,7 +470,7 @@ const SparkMediaCard = ({
         <Button
           variant="ghost"
           size="sm"
-          className={cn("gap-1.5 h-8 ml-auto", post.has_clipped && "text-primary")}
+          className={cn("gap-1.5 h-8 ml-auto", post.has_clipped && "text-energy")}
           onClick={onClip}
         >
           <Paperclip className={cn("h-4 w-4", post.has_clipped && "fill-primary/20")} />
@@ -537,15 +537,15 @@ const SparkTextCard = ({
 
       {/* Action Bar */}
       <div className="flex items-center px-2 py-1.5">
-        <Button variant="ghost" size="sm" className={cn("gap-1.5 h-8", post.has_reacted && "text-primary")} onClick={onReact}>
-          <Flame className={cn("h-4 w-4", post.has_reacted && "fill-primary")} />
+        <Button variant="ghost" size="sm" className={cn("gap-1.5 h-8", post.has_reacted && "text-energy")} onClick={onReact}>
+          <Flame className={cn("h-4 w-4", post.has_reacted && "fill-energy text-energy")} />
           {post.reaction_count > 0 && <span className="text-xs font-medium">{post.reaction_count}</span>}
         </Button>
         <Button variant="ghost" size="sm" className="gap-1.5 h-8" onClick={() => onNavigate(post.user_id)}>
           <MessageCircle className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="sm" className={cn("gap-1.5 h-8 ml-auto", post.has_clipped && "text-primary")} onClick={onClip}>
-          <Paperclip className={cn("h-4 w-4", post.has_clipped && "fill-primary/20")} />
+        <Button variant="ghost" size="sm" className={cn("gap-1.5 h-8 ml-auto", post.has_clipped && "text-energy")} onClick={onClip}>
+          <Paperclip className={cn("h-4 w-4", post.has_clipped && "fill-energy/20 text-energy")} />
         </Button>
       </div>
     </Card>

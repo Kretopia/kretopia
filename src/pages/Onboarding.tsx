@@ -58,6 +58,7 @@ export default function Onboarding() {
 
   // Avatar upload
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [generatingBio, setGeneratingBio] = useState(false);
   const [showCropDialog, setShowCropDialog] = useState(false);
   const [tempImageUrl, setTempImageUrl] = useState("");
 
@@ -615,16 +616,17 @@ export default function Onboarding() {
                 {/* Photo + Name row */}
                 <div className="flex items-start gap-4">
                   <div className="relative shrink-0">
-                    <Avatar className={`h-16 w-16 ring-2 transition-all ${avatarUrl ? "ring-primary shadow-lg shadow-primary/20" : "ring-muted"}`}>
+                    <Avatar className={`h-20 w-20 ring-2 transition-all ${avatarUrl ? "ring-primary shadow-lg shadow-primary/20" : "ring-energy/60 ring-offset-2 ring-offset-background animate-pulse"}`}>
                       <AvatarImage src={avatarUrl} className="object-cover" />
-                      <AvatarFallback className="bg-primary/5"><Camera className="h-6 w-6 text-muted-foreground" /></AvatarFallback>
+                      <AvatarFallback className="bg-primary/5"><Camera className="h-7 w-7 text-muted-foreground" /></AvatarFallback>
                     </Avatar>
                     <input type="file" id="avatar-upload" accept="image/*" className="hidden" onChange={e => { const file = e.target.files?.[0]; if (file) handleFileSelect(file); }} />
                     <button
                       onClick={() => document.getElementById("avatar-upload")?.click()}
-                      className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:opacity-90 transition-opacity"
+                      className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:opacity-90 transition-opacity"
+                      aria-label={avatarUrl ? "Change photo" : "Add a profile photo"}
                     >
-                      {uploadingAvatar ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+                      {uploadingAvatar ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
                     </button>
                   </div>
                   <div className="flex-1 space-y-2">
@@ -632,6 +634,16 @@ export default function Onboarding() {
                       <Label htmlFor="review-name" className="text-xs text-muted-foreground">Name</Label>
                       <Input id="review-name" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" className="h-10" />
                     </div>
+                    {!avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById("avatar-upload")?.click()}
+                        className="text-xs text-energy hover:text-energy-glow font-medium inline-flex items-center gap-1.5 transition-colors text-left"
+                      >
+                        <Sparkles className="h-3 w-3 shrink-0" />
+                        <span>Add a photo — profiles with photos get 3× more matches</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -684,9 +696,38 @@ export default function Onboarding() {
                 </div>
 
                 {/* Bio */}
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Bio</Label>
-                  <Textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="A brief professional summary..." className="min-h-[60px] resize-none text-sm" />
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground">Bio</Label>
+                    <button
+                      type="button"
+                      disabled={!fullName || !role || generatingBio}
+                      onClick={async () => {
+                        setGeneratingBio(true);
+                        try {
+                          const { data, error } = await supabase.functions.invoke("generate-bio", {
+                            body: { fullName, role, location, skills },
+                          });
+                          if (error) throw error;
+                          if (data?.bio) {
+                            setBio(data.bio);
+                            toast({ title: "Bio drafted ✨", description: "Tweak anything you like." });
+                          } else {
+                            throw new Error("No bio returned");
+                          }
+                        } catch (err) {
+                          toast({ title: "Couldn't draft bio", description: "Add one manually below.", variant: "destructive" });
+                        } finally {
+                          setGeneratingBio(false);
+                        }
+                      }}
+                      className="text-xs font-medium inline-flex items-center gap-1 text-primary hover:text-primary/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {generatingBio ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                      {bio ? "Rewrite with AI" : "Suggest with AI"}
+                    </button>
+                  </div>
+                  <Textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="A brief professional summary — or tap ✨ above to draft one." className="min-h-[60px] resize-none text-sm" />
                 </div>
 
                 {/* Skills */}

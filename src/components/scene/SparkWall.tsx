@@ -282,8 +282,8 @@ export const SparkWall = () => {
       <div className="space-y-4">
         <SparkComposer userProfile={userProfile} onPostCreated={() => { hasFetched.current = false; fetchPosts(); }} />
         <Card className="p-6 text-center border-dashed border-2 border-border/60">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-primary/8 flex items-center justify-center">
-            <Flame className="h-6 w-6 text-primary" />
+          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-energy/15 flex items-center justify-center">
+            <Flame className="h-6 w-6 text-energy" />
           </div>
           <p className="font-semibold mb-1 text-sm">Be the first to spark the scene</p>
           <p className="text-xs text-muted-foreground max-w-xs mx-auto">
@@ -452,7 +452,7 @@ const SparkMediaCard = ({
         <Button
           variant="ghost"
           size="sm"
-          className={cn("gap-1.5 h-8", post.has_reacted && "text-primary")}
+          className={cn("gap-1.5 h-8", post.has_reacted && "text-energy")}
           onClick={onReact}
         >
           <Flame className={cn("h-4 w-4", post.has_reacted && "fill-primary")} />

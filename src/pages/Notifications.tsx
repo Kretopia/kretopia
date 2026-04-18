@@ -67,11 +67,14 @@ const Notifications = () => {
             ))}
           </div>
         ) : notifications.length === 0 ? (
-          <div className="text-center py-16">
-            <Bell className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-            <p className="text-muted-foreground font-medium">No notifications yet</p>
-            <p className="text-sm text-muted-foreground/70 mt-1">
-              We'll notify you when something important happens
+          <div className="text-center py-20 px-4">
+            <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-energy/10 border-2 border-energy/30 mb-5 shadow-glow-lime">
+              <Bell className="h-10 w-10 text-energy" />
+            </div>
+            <p className="brand-eyebrow mb-2">All clear</p>
+            <h3 className="text-xl font-black tracking-[-0.02em] mb-2">You're all caught up</h3>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+              When matches, messages, or new gigs land — they'll show up right here.
             </p>
           </div>
         ) : (

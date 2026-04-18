@@ -16,6 +16,7 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
 import { PageTransition } from "@/components/PageTransition";
+import { PageHeader } from "@/components/ui/page-header";
 
 interface WidgetProps {
   title: string;
@@ -153,38 +154,34 @@ const BrandWorkHome = () => {
       </Helmet>
 
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 space-y-4">
-        {/* Header */}
-        <div className="mb-2 flex items-start justify-between">
-          <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-[hsl(var(--mode-accent))]" />
-              Hiring Dashboard
-            </h1>
-            <p className="text-sm text-muted-foreground">Find, hire & manage creative talent</p>
-          </div>
-          {/* Company accounts don't need cross-mode nudge */}
-        </div>
+        <PageHeader
+          eyebrow="Hiring HQ"
+          title="Find, hire & manage talent"
+          subtitle="Your command center for creative recruitment."
+          icon={Building2}
+          size="sm"
+        />
 
         {/* Stats Row */}
         <div className="grid grid-cols-4 gap-2">
-          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
-            <p className="text-xl font-bold">{stats.posted}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Posted</p>
+          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
+            <p className="text-xl font-black tracking-tight">{stats.posted}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Posted</p>
           </Card>
-          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
-            <p className="text-xl font-bold">{stats.active}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Active</p>
+          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
+            <p className="text-xl font-black tracking-tight text-energy">{stats.active}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Active</p>
           </Card>
-          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all">
-            <p className="text-xl font-bold">{stats.hired}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Hired</p>
+          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all">
+            <p className="text-xl font-black tracking-tight">{stats.hired}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Hired</p>
           </Card>
-          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all">
-            <p className="text-xl font-bold flex items-center justify-center gap-0.5">
+          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all">
+            <p className="text-xl font-black tracking-tight flex items-center justify-center gap-0.5">
               {stats.avgRating > 0 ? stats.avgRating.toFixed(1) : "—"}
               {stats.avgRating > 0 && <Star className="h-3 w-3 fill-amber-500 text-amber-500" />}
             </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rating</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Rating</p>
           </Card>
         </div>
 
@@ -364,30 +361,28 @@ const CreatorWorkHome = () => {
       </Helmet>
 
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 space-y-4">
-        <div className="mb-2 flex items-start justify-between">
-          <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <FolderKanban className="h-5 w-5 text-[hsl(var(--mode-accent))]" />
-              Creative HQ
-            </h1>
-            <p className="text-sm text-muted-foreground">At a glance</p>
-          </div>
-          <CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />
-        </div>
+        <PageHeader
+          eyebrow="Creative HQ"
+          title="Your business, in focus"
+          subtitle="Projects, gigs, and payments — all in one command center."
+          icon={FolderKanban}
+          size="sm"
+          actions={<CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />}
+        />
 
         {/* At-a-glance stats */}
         <div className="grid grid-cols-3 gap-3">
-          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/desk/projects")}>
-            <p className="text-2xl font-bold">{activeProjects.length}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Active</p>
+          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/desk/projects")}>
+            <p className="text-2xl font-black tracking-tight text-energy">{activeProjects.length}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Active</p>
           </Card>
-          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
-            <p className="text-2xl font-bold">{activeGigs.length}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Open Gigs</p>
+          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
+            <p className="text-2xl font-black tracking-tight">{activeGigs.length}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Open Gigs</p>
           </Card>
-          <Card className="p-3 text-center cursor-pointer hover:bg-accent/30 transition-all" onClick={() => navigate("/thrivepay")}>
-            <p className="text-2xl font-bold">{pendingMilestones}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pending</p>
+          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/thrivepay")}>
+            <p className="text-2xl font-black tracking-tight">{pendingMilestones}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Pending</p>
           </Card>
         </div>
 

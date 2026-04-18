@@ -491,9 +491,10 @@ const Messages = () => {
           selectedConversation ? "hidden md:flex" : "flex"
         } w-full md:w-[340px] lg:w-96 flex-col border-r border-border bg-card`}
       >
-        <div className="p-3 sm:p-4 border-b border-border space-y-2.5 sm:space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-2xl font-bold">Messages</h2>
+        <div className="p-3 sm:p-4 border-b-2 border-primary/20 space-y-2.5 sm:space-y-4">
+          <div className="space-y-1">
+            <p className="brand-eyebrow">Your inbox</p>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-[-0.03em]">Messages</h2>
           </div>
           <PageTip
             id="messages"
@@ -542,20 +543,21 @@ const Messages = () => {
             <ConversationListSkeleton />
           ) : filteredConversations.length === 0 ? (
             <div className="p-8 text-center">
-              <div className="mb-4 mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <MessageCircle className="h-8 w-8 text-primary" />
+              <div className="mb-5 mx-auto w-20 h-20 rounded-2xl bg-energy/10 border-2 border-energy/30 flex items-center justify-center shadow-glow-lime">
+                <MessageCircle className="h-10 w-10 text-energy" />
               </div>
-              <p className="text-lg font-semibold mb-2">
-                {searchQuery ? "No messages found" : "No messages yet"}
+              <p className="brand-eyebrow mb-2">{searchQuery ? "No matches" : "Inbox zero"}</p>
+              <p className="text-xl font-black tracking-[-0.02em] mb-2">
+                {searchQuery ? "Nothing matches that" : "Your conversations live here"}
               </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                {searchQuery 
-                  ? "Try adjusting your search"
-                  : "Start by discovering and connecting with other creators!"}
+              <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
+                {searchQuery
+                  ? "Try a different name or keyword."
+                  : "Match with creators in Circle, then come back to start the conversation."}
               </p>
               {!searchQuery && (
                 <>
-                  <Button onClick={() => navigate("/circle")} size="sm" className="gap-2">
+                  <Button onClick={() => navigate("/circle")} variant="lime" size="sm" className="gap-2">
                     Discover Creators
                     <ArrowRight className="h-4 w-4" />
                   </Button>

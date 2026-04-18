@@ -719,11 +719,26 @@ export function ProfileEditDialog({
             </FieldWrapper>
 
             <FieldWrapper label="IMDb" isIncomplete={false}>
-              <Input
-                value={formData.imdb_url}
-                onChange={(e) => handleInputChange('imdb_url', e.target.value)}
-                placeholder="https://imdb.com/name/..."
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.imdb_url}
+                  onChange={(e) => handleInputChange('imdb_url', e.target.value)}
+                  placeholder="https://imdb.com/name/..."
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.imdb_url?.trim() || syncing.imdb}
+                  onClick={() => triggerCreditSync('imdb', formData.imdb_url)}
+                  title="Import credits from this IMDb profile"
+                >
+                  {syncing.imdb ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
             </FieldWrapper>
 
             <FieldWrapper label="SoundCloud" isIncomplete={false}>

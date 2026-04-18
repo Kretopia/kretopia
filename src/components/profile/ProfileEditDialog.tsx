@@ -370,14 +370,17 @@ export function ProfileEditDialog({
       });
 
       // Auto-import credits when external profile URLs are added/changed
-      const prevImdb = (profile as any).imdb_url || "";
-      const prevYt = (profile as any).youtube_url || "";
-      if (formData.imdb_url && formData.imdb_url !== prevImdb) {
-        triggerCreditSync('imdb', formData.imdb_url, true);
-      }
-      if (formData.youtube_url && formData.youtube_url !== prevYt) {
-        triggerCreditSync('youtube', formData.youtube_url, true);
-      }
+      const prev = profile as any;
+      const autoSyncPairs: Array<[SyncablePlatform, string, string]> = [
+        ['imdb', formData.imdb_url, prev.imdb_url || ""],
+        ['youtube', formData.youtube_url, prev.youtube_url || ""],
+        ['spotify', formData.spotify_url, prev.spotify_url || ""],
+        ['behance', formData.behance_url, prev.behance_url || ""],
+        ['soundcloud', formData.soundcloud_url, prev.soundcloud_url || ""],
+      ];
+      autoSyncPairs.forEach(([p, next, before]) => {
+        if (next && next !== before) triggerCreditSync(p, next, true);
+      });
 
       onProfileUpdate();
       onOpenChange(false);

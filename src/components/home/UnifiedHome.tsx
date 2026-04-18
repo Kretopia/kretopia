@@ -519,6 +519,8 @@ export const UnifiedHome = () => {
             ))}
           </div>
 
+          <InviteCircleCard variant="home" className="mb-4" />
+
           <div className="grid grid-cols-4 gap-2 mb-5">
             {[
               { icon: PlusCircle, label: t("home.postHire"), action: () => setQuickPostType("gig"), color: "text-success" },

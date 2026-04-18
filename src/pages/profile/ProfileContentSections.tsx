@@ -125,7 +125,7 @@ export const ProfileContentSections = ({
               <CollaborationHistory userId={profile.user_id} isOwnProfile={true} />
             </div>
 
-            {/* Press & Awards */}
+            {/* Press & Awards — now available to ALL tiers (was Pro-only) */}
             <div className="space-y-6">
               {(profile.achievement_badges?.length > 0) && (
                 <AchievementBadges achievements={profile.achievement_badges || []} showAll={false} />
@@ -135,45 +135,15 @@ export const ProfileContentSections = ({
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
                     <Newspaper className="h-4 w-4 text-primary" />
                     Press Coverage
-                    {!hasAdvancedProfile && (
-                      <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                        <Crown className="h-3 w-3" /> Pro
-                      </Badge>
-                    )}
                   </h3>
-                  {hasAdvancedProfile ? (
-                    <PressLinksSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-                  ) : (
-                    <div className="text-center py-6">
-                      <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                      <p className="text-sm text-muted-foreground mb-3">Showcase your press mentions</p>
-                      <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                        <Crown className="h-3 w-3" /> Unlock
-                      </Button>
-                    </div>
-                  )}
+                  <PressLinksSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
                 </div>
                 <div>
                   <h3 className="font-semibold mb-3 flex items-center gap-2">
                     <Award className="h-4 w-4 text-primary" />
                     Awards
-                    {!hasAdvancedProfile && (
-                      <Badge variant="secondary" className="bg-primary/10 text-primary gap-1 text-xs">
-                        <Crown className="h-3 w-3" /> Pro
-                      </Badge>
-                    )}
                   </h3>
-                  {hasAdvancedProfile ? (
-                    <AwardsSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-                  ) : (
-                    <div className="text-center py-6">
-                      <Lock className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
-                      <p className="text-sm text-muted-foreground mb-3">Display your achievements</p>
-                      <Button size="sm" variant="outline" onClick={() => navigate("/subscription")} className="gap-1">
-                        <Crown className="h-3 w-3" /> Unlock
-                      </Button>
-                    </div>
-                  )}
+                  <AwardsSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
                 </div>
               </div>
               {industryStats.length > 0 && (

@@ -45,6 +45,11 @@ const IGNORED_PATTERNS = [
   /Non-Error promise rejection captured/i,
   /Document is not focused/i, // clipboard noise
   /Load failed$/i, // generic Safari fetch noise
+  /^Rejected$/i, // generic abort/cancel from in-flight fetches on navigation
+  /_leaflet_pos/i, // leaflet race condition on rapid unmount — cosmetic
+  /Failed to fetch dynamically imported module/i, // stale chunk after deploy — auto-recovers on reload
+  /Importing a module script failed/i, // same as above (Safari variant)
+  /AbortError/i, // user-initiated cancellations
 ];
 
 function shouldIgnore(message: string): boolean {

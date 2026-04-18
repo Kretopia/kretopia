@@ -160,16 +160,19 @@ export default function Circle() {
         />
       </div>
       
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b">
+      {/* Header — cinematic brand */}
+      <div className="sticky top-0 z-10 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                <h1 className="text-xl sm:text-2xl font-bold">Match</h1>
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-energy/10 border border-energy/30">
+                  <Sparkles className="h-4 w-4 text-energy" />
+                </span>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] text-foreground">Match</h1>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 uppercase tracking-wider font-semibold">
                 {activeTab === 'foryou' ? 'Like what catches your eye' :
                  `${connections.length} collaborator${connections.length !== 1 ? 's' : ''} in your circle`}
               </p>

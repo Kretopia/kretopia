@@ -75,6 +75,7 @@ All colors MUST be HSL.
     --shadow-lg: 0 8px 24px hsl(252 30% 10% / 0.10);
     --shadow-xl: 0 16px 48px hsl(252 30% 10% / 0.14);
     --shadow-glow: 0 0 40px hsl(252 100% 68% / 0.35);
+    --shadow-glow-lime: 0 0 14px hsl(327 82% 51% / 0.18), 0 0 4px hsl(327 82% 51% / 0.14);
     --shadow-card: 0 1px 3px hsl(252 30% 10% / 0.06), 0 4px 16px -4px hsl(252 30% 10% / 0.08);
     --shadow-card-hover: 0 4px 8px hsl(252 30% 10% / 0.08), 0 8px 24px -4px hsl(252 30% 10% / 0.12);
 

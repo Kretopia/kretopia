@@ -822,11 +822,26 @@ export function ProfileEditDialog({
             </FieldWrapper>
 
             <FieldWrapper label="SoundCloud" isIncomplete={false}>
-              <Input
-                value={formData.soundcloud_url}
-                onChange={(e) => handleInputChange('soundcloud_url', e.target.value)}
-                placeholder="https://soundcloud.com/username"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.soundcloud_url}
+                  onChange={(e) => handleInputChange('soundcloud_url', e.target.value)}
+                  placeholder="https://soundcloud.com/username"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.soundcloud_url?.trim() || syncing.soundcloud}
+                  onClick={() => triggerCreditSync('soundcloud', formData.soundcloud_url)}
+                  title="Import tracks from SoundCloud"
+                >
+                  {syncing.soundcloud ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
             </FieldWrapper>
           </div>
         </div>

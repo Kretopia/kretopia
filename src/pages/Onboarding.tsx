@@ -615,16 +615,17 @@ export default function Onboarding() {
                 {/* Photo + Name row */}
                 <div className="flex items-start gap-4">
                   <div className="relative shrink-0">
-                    <Avatar className={`h-16 w-16 ring-2 transition-all ${avatarUrl ? "ring-primary shadow-lg shadow-primary/20" : "ring-muted"}`}>
+                    <Avatar className={`h-20 w-20 ring-2 transition-all ${avatarUrl ? "ring-primary shadow-lg shadow-primary/20" : "ring-energy/60 ring-offset-2 ring-offset-background animate-pulse"}`}>
                       <AvatarImage src={avatarUrl} className="object-cover" />
-                      <AvatarFallback className="bg-primary/5"><Camera className="h-6 w-6 text-muted-foreground" /></AvatarFallback>
+                      <AvatarFallback className="bg-primary/5"><Camera className="h-7 w-7 text-muted-foreground" /></AvatarFallback>
                     </Avatar>
                     <input type="file" id="avatar-upload" accept="image/*" className="hidden" onChange={e => { const file = e.target.files?.[0]; if (file) handleFileSelect(file); }} />
                     <button
                       onClick={() => document.getElementById("avatar-upload")?.click()}
-                      className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:opacity-90 transition-opacity"
+                      className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:opacity-90 transition-opacity"
+                      aria-label={avatarUrl ? "Change photo" : "Add a profile photo"}
                     >
-                      {uploadingAvatar ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+                      {uploadingAvatar ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
                     </button>
                   </div>
                   <div className="flex-1 space-y-2">
@@ -632,6 +633,16 @@ export default function Onboarding() {
                       <Label htmlFor="review-name" className="text-xs text-muted-foreground">Name</Label>
                       <Input id="review-name" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" className="h-10" />
                     </div>
+                    {!avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById("avatar-upload")?.click()}
+                        className="text-xs text-energy hover:text-energy-glow font-medium inline-flex items-center gap-1.5 transition-colors text-left"
+                      >
+                        <Sparkles className="h-3 w-3 shrink-0" />
+                        <span>Add a photo — profiles with photos get 3× more matches</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 

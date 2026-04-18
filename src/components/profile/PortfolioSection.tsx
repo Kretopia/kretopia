@@ -507,6 +507,13 @@ export const PortfolioSection = ({ items, isOwnProfile, onRefresh, subscriptionT
                     {/* Show compact fields after upload */}
                     {newItem.media_url && (
                       <div className="space-y-3 animate-fade-in">
+                        {/* Video thumbnail picker — only for video uploads */}
+                        {newItem.media_type === "video" && (
+                          <VideoThumbnailPicker
+                            videoUrl={newItem.media_url}
+                            onCapture={handleThumbnailCapture}
+                          />
+                        )}
                         <Input
                           value={newItem.title}
                           onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}

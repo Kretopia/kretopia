@@ -776,11 +776,26 @@ export function ProfileEditDialog({
             </FieldWrapper>
 
             <FieldWrapper label="Behance" isIncomplete={false}>
-              <Input
-                value={formData.behance_url}
-                onChange={(e) => handleInputChange('behance_url', e.target.value)}
-                placeholder="https://behance.net/username"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.behance_url}
+                  onChange={(e) => handleInputChange('behance_url', e.target.value)}
+                  placeholder="https://behance.net/username"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.behance_url?.trim() || syncing.behance}
+                  onClick={() => triggerCreditSync('behance', formData.behance_url)}
+                  title="Import projects from Behance"
+                >
+                  {syncing.behance ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
             </FieldWrapper>
 
             <FieldWrapper label="IMDb" isIncomplete={false}>

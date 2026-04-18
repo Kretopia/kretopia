@@ -151,7 +151,7 @@ export const RescanAllLinksCard = ({ profile, onRefresh }: RescanAllLinksCardPro
               <span className="font-medium">{r.label}</span>
               <span className="flex items-center gap-1 text-muted-foreground">
                 {r.status === 'syncing' && <Loader2 className="h-3 w-3 animate-spin" />}
-                {r.status === 'done' && <CheckCircle2 className="h-3 w-3 text-green-500" />}
+                {r.status === 'done' && <CheckCircle2 className="h-3 w-3 text-success" />}
                 {r.status === 'error' && <AlertCircle className="h-3 w-3 text-destructive" />}
                 {r.status === 'syncing' && 'Syncing…'}
                 {r.status === 'done' && `+${r.count ?? 0}`}

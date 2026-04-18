@@ -91,6 +91,7 @@ const BrandVerify = lazy(() => import("./pages/BrandVerify"));
 const WorkHome = lazy(() => import("./pages/WorkHome"));
 const Explore = lazy(() => import("./pages/Explore"));
 const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
+const Ambassadors = lazy(() => import("./pages/Ambassadors"));
 const CreatorSite = lazy(() => import("./pages/CreatorSite"));
 const CreatorSiteByUsername = lazy(() => import("./pages/CreatorSiteByUsername"));
 const WebsiteBuilder = lazy(() => import("./pages/WebsiteBuilder"));
@@ -265,6 +266,8 @@ const AppContent = () => {
             <Route path="/market/:listingId" element={<Navigate to="/opportunities" replace />} />
             <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
             <Route path="/creative-circle" element={<ProtectedRoute><CreativeCircle /></ProtectedRoute>} />
+            <Route path="/ambassadors" element={<Ambassadors />}
+            />
             <Route path="/checkin" element={<Navigate to="/" replace />} />
             
             {/* Public Browsable Routes */}

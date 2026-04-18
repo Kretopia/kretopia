@@ -250,10 +250,16 @@ export default function Subscription() {
   const hasPaidSub = currentTier !== "free" && (subscriptionStatus === "active" || subscriptionStatus === "trialing") && currentTier !== "founder";
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
-        <p className="text-xl text-muted-foreground mb-4">
+    <div className="container mx-auto px-4 py-12 sm:py-16">
+      <div className="text-center mb-8 max-w-2xl mx-auto">
+        <p className="brand-eyebrow inline-flex items-center gap-2 mb-4">
+          <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+          Pricing
+        </p>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.95] mb-4">
+          Choose Your <span className="text-energy-glow">Plan</span>
+        </h1>
+        <p className="text-base sm:text-lg text-muted-foreground mb-6">
           {viewMode === "brand"
             ? "Find, hire & manage top creative talent"
             : "Unlock the full potential of ThriveIN"}

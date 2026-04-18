@@ -139,18 +139,6 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
             </div>
           )}
 
-          {/* Level Badge */}
-          {profile.level > 1 && (
-            <div className={cn(
-              "absolute top-3 sm:top-4",
-              isIndustryVerified ? "left-32 sm:left-36" : "left-16 sm:left-20"
-            )}>
-              <Badge variant="outline" className="bg-primary/20 text-purple-200 border-primary/50 backdrop-blur-sm text-xs">
-                Lvl {profile.level}
-              </Badge>
-            </div>
-          )}
-
           {/* Main Info */}
           <div className="space-y-2 sm:space-y-3">
             {/* Name & Role */}

@@ -415,8 +415,9 @@ const CreatorEPK = () => {
 
           {/* Name & Role */}
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight">{profile.full_name}</h1>
-            <p className="text-primary font-medium">{profile.job_title || profile.role || 'Creator'}</p>
+            <p className="brand-eyebrow">Verified Creator EPK</p>
+            <h1 className="text-3xl font-black tracking-[-0.03em]">{profile.full_name}</h1>
+            <p className="text-primary font-bold uppercase tracking-wider text-xs">{profile.job_title || profile.role || 'Creator'}</p>
             {profile.location && (
               <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                 <MapPin className="h-3 w-3" />

@@ -34,10 +34,11 @@ const Notifications = () => {
     <div className="min-h-screen bg-background pb-20">
       <SEO title="Notifications - ThriveIN" description="View all your notifications" />
       <div className="container mx-auto max-w-2xl px-4 py-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b-2 border-primary/20 pb-4">
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold flex items-center gap-3">
-              <Bell className="h-7 w-7" />
+            <p className="brand-eyebrow">Your inbox</p>
+            <h1 className="text-3xl font-black tracking-[-0.03em] flex items-center gap-3">
+              <Bell className="h-7 w-7 text-primary" />
               Notifications
               {unreadCount > 0 && (
                 <Badge variant="destructive" className="text-xs">{unreadCount} unread</Badge>

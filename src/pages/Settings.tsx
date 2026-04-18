@@ -422,8 +422,9 @@ const Settings = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
-                <SettingsIcon className="h-8 w-8" />
+              <p className="brand-eyebrow mb-1">Account</p>
+              <h1 className="text-3xl font-black tracking-[-0.03em] mb-2 flex items-center gap-2">
+                <SettingsIcon className="h-8 w-8 text-primary" />
                 Settings
               </h1>
               <p className="text-muted-foreground">

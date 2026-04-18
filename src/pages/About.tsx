@@ -43,17 +43,21 @@ const About = () => {
         description="From a weekly gathering in Dubai to a global creative platform — ThriveIN connects creatives across music, film, fashion, art, content, and culture worldwide."
       />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
+      {/* Hero — cinematic editorial */}
+      <section className="relative overflow-hidden border-b border-border/50">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,hsl(var(--primary)/0.08),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,hsl(var(--accent)/0.06),transparent_50%)]" />
-        <div className="container relative mx-auto max-w-4xl px-4 py-16 sm:py-24 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary mb-5">About ThriveIN</p>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-6 leading-[1.15]">
-            A Global Community{" "}
-            <span className="text-primary">Built for Creatives</span>
+        <div className="container relative mx-auto max-w-4xl px-4 py-14 sm:py-20">
+          <p className="brand-eyebrow mb-4 inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
+            <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+            Since 2013
+          </p>
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] text-foreground mb-5 leading-[0.95]">
+            A Global Community<br />
+            <span className="text-energy-glow">Built for Creatives</span>
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed">
             What started in 2013 as a weekly after-work gathering in Dubai has grown into an international network
             connecting creatives across music, film, fashion, art, content, and culture.
           </p>

@@ -196,27 +196,25 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are an expert at extracting professional profile and portfolio data from any website or platform.
-
-YOUR PRIMARY GOAL: Extract EVERY portfolio project, work, or content item visible on the page. This is critical — creators use this tool to import their entire body of work to avoid re-uploading. Missing items = bad user experience.
+            content: `You are a STRICT EXTRACTIVE parser for professional portfolio data. You DO NOT invent, summarize, or guess.
 
 PLATFORM-SPECIFIC INSTRUCTIONS:
 ${instruction}
 
-UNIVERSAL RULES:
-- Extract ALL portfolio projects/works/content with their URLs, titles, descriptions, and thumbnail images
-- For media_url: use the direct link to the project page (NOT the thumbnail image). This URL will be used for embedding/linking.
-- For thumbnail_url: use the image preview/cover of the work
-- Set media_type: "image" for visual/design work, "video" for video content, "audio" for music/audio
-- Extract profile info: full_name, bio, role/title, location
-- Extract skills from tags, tools used, or explicit skill lists
-- Extract credits (work history), awards, and press/features if visible
-- If the page shows follower counts, project counts, or similar stats, note them in the bio
-- Be thorough and extract EVERYTHING visible — do not truncate or skip items`
+CRITICAL RULES — VIOLATING THESE = FAILED EXTRACTION:
+1. EVERY portfolio_item.media_url MUST be copied verbatim from the LINKS LIST or IMAGES LIST below. Never fabricate, abbreviate, or guess URLs.
+2. EVERY thumbnail_url MUST be from the IMAGES LIST or be empty. Never invent image URLs.
+3. If you can't find a real URL for an item in the lists, OMIT THE ITEM. Better to return 5 real items than 20 hallucinated ones.
+4. Titles must be copied from text near the link in the page content — do NOT generate creative titles.
+5. Skip navigation links (home, about, contact, login, signup, terms, privacy, etc.).
+6. Skip social profile links — those go in social_links, not portfolio_items.
+7. For media_type: inspect the URL itself. .mp4/.mov/youtube/vimeo/tiktok = video. .mp3/.wav/spotify/soundcloud = audio. Otherwise image.
+
+Be conservative. Quality > quantity. The user will see a checkbox preview and can deselect — but only if items are real.`
           },
           {
             role: "user",
-            content: `Analyze this ${platform} page and extract ALL profile and portfolio data.\n\nURL: ${url}\n\nContent (first 80000 chars):\n${contentToAnalyze.substring(0, 80000)}`
+            content: `Source URL: ${url}\nPlatform: ${platform}\n\n=== ALL LINKS ON PAGE (use ONLY these for media_url) ===\n${pageLinks.slice(0, 200).join("\n")}\n\n=== ALL IMAGES ON PAGE (use ONLY these for thumbnail_url) ===\n${pageImages.slice(0, 100).join("\n")}\n\n=== PAGE CONTENT (for context only) ===\n${contentToAnalyze.substring(0, 60000)}`
           }
         ],
         tools: [

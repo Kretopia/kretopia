@@ -40,9 +40,10 @@ All colors MUST be HSL.
     --accent: 252 40% 94%;
     --accent-foreground: 252 60% 20%;
 
-    /* Lime — toned down for light mode (deeper, less neon).
-       Dark mode overrides this back to electric #C6FF00 below. */
-    --energy: 72 70% 38%;
+    /* Energy accent — Electric Magenta in light mode (lime is too neon on cream).
+       Dark mode overrides this back to electric lime #C6FF00 below.
+       Magenta #E91E8C ≈ hsl(327 82% 51%) — pulls from the violet→magenta gradient. */
+    --energy: 327 82% 51%;
     --energy-foreground: 0 0% 100%;
 
     --destructive: 0 75% 55%;

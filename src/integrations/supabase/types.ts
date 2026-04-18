@@ -11035,6 +11035,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      recompute_verification_tier: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       record_referral: {
         Args: { p_referred_id: string; p_referrer_id: string }
         Returns: undefined

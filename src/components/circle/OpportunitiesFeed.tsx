@@ -149,16 +149,7 @@ export const OpportunitiesFeed = () => {
     <div className="space-y-4">
       {/* Header */}
       <div className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold flex items-center gap-2.5 text-foreground">
-              <Briefcase className="h-6 w-6 text-primary" />
-              Browse Gigs
-            </h1>
-            <p className="text-sm text-[hsl(220,10%,45%)]">
-              Productions, barters, collabs & creative work
-            </p>
-          </div>
+        <div className="flex items-center justify-end gap-3">
           <PostOpportunityDialog
             open={postDialogOpen}
             onOpenChange={setPostDialogOpen}

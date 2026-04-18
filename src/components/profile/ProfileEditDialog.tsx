@@ -737,11 +737,26 @@ export function ProfileEditDialog({
             </FieldWrapper>
 
             <FieldWrapper label="Spotify" isIncomplete={false}>
-              <Input
-                value={formData.spotify_url}
-                onChange={(e) => handleInputChange('spotify_url', e.target.value)}
-                placeholder="https://open.spotify.com/artist/..."
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.spotify_url}
+                  onChange={(e) => handleInputChange('spotify_url', e.target.value)}
+                  placeholder="https://open.spotify.com/artist/..."
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.spotify_url?.trim() || syncing.spotify}
+                  onClick={() => triggerCreditSync('spotify', formData.spotify_url)}
+                  title="Import discography from Spotify"
+                >
+                  {syncing.spotify ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
             </FieldWrapper>
 
             <FieldWrapper label="Twitter/X" isIncomplete={false}>

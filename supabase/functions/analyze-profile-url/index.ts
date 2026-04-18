@@ -113,6 +113,8 @@ serve(async (req) => {
 
     let html = "";
     let pageMarkdown = "";
+    let pageLinks: string[] = [];
+    let pageImages: string[] = [];
 
     // Use Firecrawl for JS-rendered pages
     if (FIRECRAWL_API_KEY) {
@@ -134,8 +136,13 @@ serve(async (req) => {
 
         if (fcResponse.ok) {
           const fcData = await fcResponse.json();
-          pageMarkdown = fcData.data?.markdown || fcData.markdown || "";
-          console.log("Firecrawl success, markdown length:", pageMarkdown.length);
+          const payload = fcData.data || fcData;
+          pageMarkdown = payload.markdown || "";
+          pageLinks = Array.isArray(payload.links) ? payload.links : [];
+          // Extract image URLs from markdown ![alt](url) syntax
+          const imgMatches = [...pageMarkdown.matchAll(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/g)];
+          pageImages = imgMatches.map(m => m[1]);
+          console.log("Firecrawl success — markdown:", pageMarkdown.length, "links:", pageLinks.length, "images:", pageImages.length);
         } else {
           console.log("Firecrawl failed:", fcResponse.status);
         }

@@ -6179,6 +6179,7 @@ export type Database = {
           verified_credentials: Json | null
           verified_metrics: boolean | null
           video_intro_url: string | null
+          vimeo_url: string | null
           website: string | null
           xp: number | null
           youtube_subscribers: number | null
@@ -6332,6 +6333,7 @@ export type Database = {
           verified_credentials?: Json | null
           verified_metrics?: boolean | null
           video_intro_url?: string | null
+          vimeo_url?: string | null
           website?: string | null
           xp?: number | null
           youtube_subscribers?: number | null
@@ -6485,6 +6487,7 @@ export type Database = {
           verified_credentials?: Json | null
           verified_metrics?: boolean | null
           video_intro_url?: string | null
+          vimeo_url?: string | null
           website?: string | null
           xp?: number | null
           youtube_subscribers?: number | null

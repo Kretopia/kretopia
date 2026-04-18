@@ -656,11 +656,26 @@ export function ProfileEditDialog({
             </FieldWrapper>
 
             <FieldWrapper label="YouTube" isIncomplete={false}>
-              <Input
-                value={formData.youtube_url}
-                onChange={(e) => handleInputChange('youtube_url', e.target.value)}
-                placeholder="https://youtube.com/@yourchannel"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.youtube_url}
+                  onChange={(e) => handleInputChange('youtube_url', e.target.value)}
+                  placeholder="https://youtube.com/@yourchannel"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.youtube_url?.trim() || syncing.youtube}
+                  onClick={() => triggerCreditSync('youtube', formData.youtube_url)}
+                  title="Import credits from this channel"
+                >
+                  {syncing.youtube ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
             </FieldWrapper>
 
             <FieldWrapper label="TikTok" isIncomplete={false}>

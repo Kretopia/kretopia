@@ -6,6 +6,7 @@ import { BookOpen, Headphones, Sparkles } from "lucide-react";
 import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
 import { useLocation } from "react-router-dom";
+import { PageHeader } from "@/components/ui/page-header";
 
 const Spotlight = () => {
   const location = useLocation();
@@ -49,14 +50,13 @@ const Spotlight = () => {
 
       <div className="min-h-screen bg-background">
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-24">
-          {/* Header */}
-          <div className="mb-4">
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Spotlight
-            </h1>
-            <p className="text-xs text-muted-foreground">Inspiration, features & stories about Thrivers</p>
-          </div>
+          <PageHeader
+            eyebrow="The Spotlight"
+            title="Stories worth pressing play on"
+            subtitle="Features, interviews, and sounds from the Thriver universe."
+            icon={Sparkles}
+            size="sm"
+          />
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>

@@ -491,9 +491,10 @@ const Messages = () => {
           selectedConversation ? "hidden md:flex" : "flex"
         } w-full md:w-[340px] lg:w-96 flex-col border-r border-border bg-card`}
       >
-        <div className="p-3 sm:p-4 border-b border-border space-y-2.5 sm:space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-2xl font-bold">Messages</h2>
+        <div className="p-3 sm:p-4 border-b-2 border-primary/20 space-y-2.5 sm:space-y-4">
+          <div className="space-y-1">
+            <p className="brand-eyebrow">Your inbox</p>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-[-0.03em]">Messages</h2>
           </div>
           <PageTip
             id="messages"

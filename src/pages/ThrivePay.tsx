@@ -264,17 +264,24 @@ export default function ThrivePay() {
 
       <div className="mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
         {/* Header */}
-        <div className="mb-4 sm:mb-6 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold">ThrivePay</h1>
-            {getStatusBadge()}
+        <div className="mb-4 sm:mb-6 flex flex-wrap items-start justify-between gap-3 border-b-2 border-primary/20 pb-4">
+          <div className="space-y-1 min-w-0">
+            <p className="brand-eyebrow">Wallet & Payments</p>
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <h1 className="text-3xl md:text-4xl font-black tracking-[-0.03em] flex items-center gap-3 leading-[1.05]">
+                <Wallet className="h-7 w-7 md:h-8 md:w-8 text-primary" />
+                ThrivePay
+              </h1>
+              {getStatusBadge()}
+            </div>
+            <p className="text-sm text-muted-foreground">Earnings, status, and payouts in one place.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <Button size="sm" variant="outline" className="gap-1.5 h-9 px-3" onClick={() => setTransferDialogOpen(true)}>
               <Send className="h-4 w-4" />
               Send
             </Button>
-            <Button size="sm" className="gap-1.5 h-9 px-3" onClick={() => setTopUpDialogOpen(true)}>
+            <Button size="sm" variant="lime" className="gap-1.5 h-9 px-3" onClick={() => setTopUpDialogOpen(true)}>
               <Plus className="h-4 w-4" />
               Top Up
             </Button>

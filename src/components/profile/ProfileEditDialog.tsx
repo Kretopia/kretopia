@@ -369,6 +369,16 @@ export function ProfileEditDialog({
           : `Profile ${newCompletion.percentage}% complete`,
       });
 
+      // Auto-import credits when external profile URLs are added/changed
+      const prevImdb = (profile as any).imdb_url || "";
+      const prevYt = (profile as any).youtube_url || "";
+      if (formData.imdb_url && formData.imdb_url !== prevImdb) {
+        triggerCreditSync('imdb', formData.imdb_url, true);
+      }
+      if (formData.youtube_url && formData.youtube_url !== prevYt) {
+        triggerCreditSync('youtube', formData.youtube_url, true);
+      }
+
       onProfileUpdate();
       onOpenChange(false);
       hasShownToastRef.current = false;
@@ -383,6 +393,46 @@ export function ProfileEditDialog({
       setIsSaving(false);
     }
   };
+
+  const [syncing, setSyncing] = useState<Record<string, boolean>>({});
+  const triggerCreditSync = useCallback(async (
+    platform: 'imdb' | 'youtube',
+    url: string,
+    silent = false,
+  ) => {
+    if (!url?.trim()) {
+      toast({ title: "Add the link first", variant: "destructive" });
+      return;
+    }
+    setSyncing(prev => ({ ...prev, [platform]: true }));
+    if (!silent) {
+      toast({ title: `Syncing ${platform.toUpperCase()} credits…`, description: "We'll import what we can verify." });
+    }
+    try {
+      const fnName = platform === 'imdb' ? 'fetch-imdb-credits' : 'fetch-youtube-credits';
+      const body = platform === 'imdb'
+        ? { imdbUrl: url, autoImport: true }
+        : { channelUrl: url, autoImport: true, defaultRole: 'Cinematographer & Steadicam Operator' };
+      const { data, error } = await supabase.functions.invoke(fnName, { body });
+      if (error) throw error;
+      const count = (data?.imported ?? data?.credits?.length ?? 0) as number;
+      toast({
+        title: `${platform.toUpperCase()} sync complete`,
+        description: count > 0 ? `Imported ${count} verified credits.` : "No new credits found.",
+      });
+    } catch (e: any) {
+      console.error(`[ProfileEdit] ${platform} sync failed`, e);
+      if (!silent) {
+        toast({
+          title: `${platform.toUpperCase()} sync failed`,
+          description: e?.message || "Try again in a moment.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setSyncing(prev => ({ ...prev, [platform]: false }));
+    }
+  }, [toast]);
 
   const handleInputChange = useCallback((field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

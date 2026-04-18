@@ -430,8 +430,8 @@ CRITICAL RULES:
               credit_category: c.credit_category || null,
               platform: c.platform || null,
               url: c.url || null,
-              source: 'web_verified',  // Changed from 'ai_discovered' to reflect validation
-              verification_status: 'unverified',
+              source: 'web_verified',
+              verification_status: 'pending_review', // Hidden from public profile until owner confirms
             });
             if (insertErr) console.log(`Credit insert skipped: ${c.project_name} - ${insertErr.message}`);
             existingCredits.add(key);

@@ -532,7 +532,11 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
 
       if (error) throw error;
 
-      const allCredits: ICDBCredit[] = (data || []).map((c: any) => ({
+      // Hide pending_review (auto-imported, unconfirmed) from the public timeline
+      // Owners review them via the ImportReviewBanner before they appear publicly.
+      const visible = (data || []).filter((c: any) => c.verification_status !== 'pending_review');
+
+      const allCredits: ICDBCredit[] = visible.map((c: any) => ({
         ...c,
         endorsement_count: c.endorsement_count || 0,
         source: c.source || 'manual',

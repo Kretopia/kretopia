@@ -460,7 +460,7 @@ export function ProfileEditDialog({
             url: p.media_url || null,
             thumbnail_url: p.thumbnail_url || null,
             primary_media_url: p.thumbnail_url || p.media_url || null,
-            media_type: p.media_type || (platform === 'soundcloud' ? 'audio' : 'image'),
+            media_type: p.media_type || (platform === 'soundcloud' ? 'audio' : platform === 'vimeo' ? 'video' : 'image'),
             platform: platformLabel,
             source: platformLabel,
             verification_status: 'auto_discovered',

@@ -323,9 +323,42 @@ Be conservative. Quality > quantity. The user will see a checkbox preview and ca
 
     const profileData = JSON.parse(toolCall.function.arguments);
     
+    // ============ ANTI-HALLUCINATION VALIDATION ============
+    // Filter portfolio_items: media_url MUST exist in pageLinks (or be the source URL itself)
+    // This stops the AI from inventing URLs.
+    const linkSet = new Set(pageLinks.map(l => l.split("#")[0].replace(/\/$/, "")));
+    const imageSet = new Set(pageImages);
+    const SKIP_PATHS = /\/(login|signup|sign-in|sign-up|register|terms|privacy|cookie|contact|about|help|support|faq|pricing|subscribe|cart|checkout|account|settings)(\/|$|\?)/i;
+
+    if (Array.isArray(profileData.portfolio_items)) {
+      const before = profileData.portfolio_items.length;
+      profileData.portfolio_items = profileData.portfolio_items.filter((item: any) => {
+        if (!item?.media_url || typeof item.media_url !== "string") return false;
+        const normalized = item.media_url.split("#")[0].replace(/\/$/, "");
+        // Must be in scraped links OR be the source page itself
+        const isReal = linkSet.has(normalized) || pageLinks.some(l => l.startsWith(item.media_url));
+        if (!isReal) {
+          console.log("Filtered hallucinated item:", item.title, "→", item.media_url);
+          return false;
+        }
+        // Skip nav/auth pages
+        if (SKIP_PATHS.test(normalized)) {
+          console.log("Filtered nav link:", item.media_url);
+          return false;
+        }
+        // Strip thumbnail if AI invented one not in image list
+        if (item.thumbnail_url && !imageSet.has(item.thumbnail_url) && !item.thumbnail_url.startsWith("https://img.youtube.com")) {
+          item.thumbnail_url = "";
+        }
+        return true;
+      });
+      console.log(`Validation: ${before} items → ${profileData.portfolio_items.length} real items`);
+    }
+    
     // Add source platform metadata
     profileData._source_platform = platform;
     profileData._source_url = url;
+    profileData._scraped_links_count = pageLinks.length;
 
     console.log("Extracted:", JSON.stringify({
       platform,

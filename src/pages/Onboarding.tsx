@@ -695,9 +695,38 @@ export default function Onboarding() {
                 </div>
 
                 {/* Bio */}
-                <div className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">Bio</Label>
-                  <Textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="A brief professional summary..." className="min-h-[60px] resize-none text-sm" />
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-muted-foreground">Bio</Label>
+                    <button
+                      type="button"
+                      disabled={!fullName || !role || generatingBio}
+                      onClick={async () => {
+                        setGeneratingBio(true);
+                        try {
+                          const { data, error } = await supabase.functions.invoke("generate-bio", {
+                            body: { fullName, role, location, skills },
+                          });
+                          if (error) throw error;
+                          if (data?.bio) {
+                            setBio(data.bio);
+                            toast({ title: "Bio drafted ✨", description: "Tweak anything you like." });
+                          } else {
+                            throw new Error("No bio returned");
+                          }
+                        } catch (err) {
+                          toast({ title: "Couldn't draft bio", description: "Add one manually below.", variant: "destructive" });
+                        } finally {
+                          setGeneratingBio(false);
+                        }
+                      }}
+                      className="text-xs font-medium inline-flex items-center gap-1 text-primary hover:text-primary/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {generatingBio ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                      {bio ? "Rewrite with AI" : "Suggest with AI"}
+                    </button>
+                  </div>
+                  <Textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="A brief professional summary — or tap ✨ above to draft one." className="min-h-[60px] resize-none text-sm" />
                 </div>
 
                 {/* Skills */}

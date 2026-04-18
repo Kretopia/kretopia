@@ -13,6 +13,7 @@ import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
 import { SEO } from "@/components/SEO";
 import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { InviteDialog } from "@/components/InviteDialog";
+import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
 import { Users, Sparkles, UserPlus } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -218,6 +219,7 @@ export default function Circle() {
           <TabsContent value="network" className="space-y-6">
             {user ? (
               <>
+                <InviteCircleCard variant="match" />
                 <NetworkVisualization onInvite={() => setShowInvite(true)} />
                 {connections.length > 0 && (
                   <div className="border-t pt-6">

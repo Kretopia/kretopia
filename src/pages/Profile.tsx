@@ -25,6 +25,7 @@ import { ProfileDashboardDrawer } from "@/components/profile/ProfileDashboardDra
 // Refactored sections
 import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
 import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
+import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
@@ -432,6 +433,11 @@ const ProfileContent = () => {
             </div>
           ) : null;
         })()}
+
+        {/* Creative Circle invite prompt — drives viral loop */}
+        <div className="mt-4">
+          <InviteCircleCard variant="profile" />
+        </div>
 
         {/* Content Sections — immediately after hero, Instagram-style */}
         <div className="mt-4">

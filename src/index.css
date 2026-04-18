@@ -225,7 +225,10 @@ All colors MUST be HSL.
     min-height: 100vh;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1, h2 {
+    @apply font-black tracking-[-0.02em];
+  }
+  h3, h4, h5, h6 {
     @apply font-bold tracking-tight;
   }
 
@@ -293,6 +296,34 @@ All colors MUST be HSL.
 
   .shadow-glow {
     box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-glow-lime {
+    box-shadow: var(--shadow-glow-lime, 0 0 40px hsl(75 100% 50% / 0.5));
+  }
+
+  /* Lime accent text + halo — for match %, highlights, key CTAs */
+  .text-energy {
+    color: hsl(var(--energy));
+  }
+  .bg-energy {
+    background-color: hsl(var(--energy));
+    color: hsl(var(--energy-foreground));
+  }
+  .border-energy {
+    border-color: hsl(var(--energy));
+  }
+  .text-energy-glow {
+    color: hsl(var(--energy));
+    text-shadow: 0 0 18px hsl(var(--energy) / 0.55), 0 0 4px hsl(var(--energy) / 0.4);
+  }
+
+  /* Cinematic hero backdrop — layered radial purple glow on deep black */
+  .bg-cinematic {
+    background:
+      radial-gradient(ellipse 70% 50% at 25% 0%, hsl(248 100% 69% / 0.18), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 85% 100%, hsl(282 95% 60% / 0.10), transparent 60%),
+      hsl(var(--background));
   }
 
   .shadow-card {

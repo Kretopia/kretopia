@@ -185,10 +185,13 @@ const NearbyCreators = () => {
           {/* Title row */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <MapPin className="h-5 w-5 text-primary shrink-0" />
-              <h1 className="text-lg font-bold truncate">Discover</h1>
+              <div className="relative shrink-0">
+                <MapPin className="h-5 w-5 text-primary" />
+                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-energy shadow-glow-lime animate-pulse" />
+              </div>
+              <h1 className="text-xl font-black tracking-tight truncate">Discover</h1>
               {userLocation && discoverMode === 'nearby' && (
-                <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                <span className="text-[10px] text-energy font-black uppercase tracking-wider whitespace-nowrap">
                   {totalResults} nearby
                 </span>
               )}

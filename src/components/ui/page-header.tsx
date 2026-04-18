@@ -36,16 +36,16 @@ export function PageHeader({
         className,
       )}
     >
-      <div className="space-y-1 min-w-0">
+      <div className="space-y-1 min-w-0 flex-1">
         {eyebrow && <p className="brand-eyebrow">{eyebrow}</p>}
         <h1
           className={cn(
-            "font-black tracking-[-0.03em] flex items-center gap-3 leading-[1.05]",
+            "font-black tracking-[-0.03em] flex items-start gap-3 leading-[1.05] break-words",
             titleSize,
           )}
         >
-          {Icon && <Icon className={cn("text-primary shrink-0", iconSize)} />}
-          <span className="truncate">{title}</span>
+          {Icon && <Icon className={cn("text-primary shrink-0 mt-1", iconSize)} />}
+          <span className="min-w-0">{title}</span>
         </h1>
         {subtitle && (
           <p className="text-sm text-muted-foreground max-w-xl">{subtitle}</p>

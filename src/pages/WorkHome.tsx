@@ -367,6 +367,7 @@ const CreatorWorkHome = () => {
           subtitle="Projects, gigs, and payments — all in one command center."
           icon={FolderKanban}
           size="sm"
+          size="sm"
           actions={<CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />}
         />
 

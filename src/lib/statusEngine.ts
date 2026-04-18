@@ -101,9 +101,13 @@ interface TierMeta {
   perks: string[];
 }
 
+// Consolidated to 3 effective tiers: Verified / Industry / Elite
+// hobbyist + freelancer → Verified
+// thriver + professional → Industry
+// celebrity + icon → Elite
 const TIER_META: Record<StatusTier, TierMeta> = {
   hobbyist: {
-    label: "Hobbyist",
+    label: "Verified",
     socialProofLabel: null,
     color: "text-muted-foreground",
     ringClass: "ring-2 ring-border",
@@ -111,23 +115,23 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     perks: ["Basic profile", "Claim credits", "Join communities"],
   },
   freelancer: {
-    label: "Freelancer",
-    socialProofLabel: "Active Creator",
+    label: "Verified",
+    socialProofLabel: "Verified Creator",
     color: "text-[hsl(0,0%,70%)]",
     ringClass: "ring-2 ring-[hsl(0,0%,75%)]",
     gradient: "from-[hsl(0,0%,75%)]/25 to-[hsl(0,0%,70%)]/5",
-    perks: ["Basic visibility", "Connection requests", "Profile dashboard"],
+    perks: ["Verified profile", "Connection requests", "Profile dashboard"],
   },
   thriver: {
-    label: "Thriver",
-    socialProofLabel: "Rising Talent",
+    label: "Industry",
+    socialProofLabel: "Industry Verified",
     color: "text-primary",
     ringClass: "ring-2 ring-primary",
     gradient: "from-primary/25 to-primary/5",
-    perks: ["AI recommendations", "Limited boosts", "Priority in matching"],
+    perks: ["AI recommendations", "Priority matching", "Advanced analytics"],
   },
   professional: {
-    label: "Professional",
+    label: "Industry",
     socialProofLabel: "Industry Pro",
     color: "text-accent",
     ringClass: "ring-2 ring-accent",
@@ -135,15 +139,15 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     perks: ["Advanced analytics", "Priority matching", "Profile-as-website"],
   },
   celebrity: {
-    label: "Celebrity",
-    socialProofLabel: "Top 1% Creator",
+    label: "Elite",
+    socialProofLabel: "Elite Creator",
     color: "text-foreground",
     ringClass: "ring-2 ring-foreground",
     gradient: "from-foreground/20 to-foreground/5",
     perks: ["Featured placement", "Reduced platform fees", "Bulk messaging"],
   },
   icon: {
-    label: "Icon",
+    label: "Elite",
     socialProofLabel: "Industry Icon",
     color: "text-primary",
     ringClass: "ring-2 ring-primary shadow-glow",

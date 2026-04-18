@@ -411,8 +411,8 @@ export function ProfileEditDialog({
     try {
       const fnName = platform === 'imdb' ? 'fetch-imdb-credits' : 'fetch-youtube-credits';
       const body = platform === 'imdb'
-        ? { imdbUrl: url, autoImport: true }
-        : { channelUrl: url, autoImport: true, defaultRole: 'Cinematographer & Steadicam Operator' };
+        ? { imdbUrl: url }
+        : { channelUrl: url, role: 'Cinematographer & Steadicam Operator' };
       const { data, error } = await supabase.functions.invoke(fnName, { body });
       if (error) throw error;
       const count = (data?.imported ?? data?.credits?.length ?? 0) as number;

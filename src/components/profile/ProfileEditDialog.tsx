@@ -433,17 +433,39 @@ export function ProfileEditDialog({
       } else {
         // Generic Firecrawl-based scraper handles Vimeo, Behance, SoundCloud, personal sites
         fnName = 'analyze-profile-url';
-        body = { url, autoImportCredits: true };
+        body = { url };
       }
       const { data, error } = await supabase.functions.invoke(fnName, { body });
       if (error) throw error;
-      // Generic scraper returns { data: { portfolio_items: [...] } } — count those
-      const count = (
-        data?.imported ??
-        data?.credits?.length ??
-        data?.data?.portfolio_items?.length ??
-        0
-      ) as number;
+
+      // For the generic scraper we need to insert portfolio_items as credits client-side
+      let count = 0;
+      if (fnName === 'analyze-profile-url') {
+        const items = (data?.data?.portfolio_items ?? []) as any[];
+        if (items.length > 0 && profile?.user_id) {
+          const role = data?.data?.role || formData.role || 'Creator';
+          const platformLabel = platform; // vimeo | behance | soundcloud | website
+          const rows = items.slice(0, 30).map((p) => ({
+            user_id: profile.user_id,
+            project_name: String(p.title || 'Untitled').slice(0, 200),
+            role,
+            url: p.media_url || null,
+            thumbnail_url: p.thumbnail_url || null,
+            primary_media_url: p.thumbnail_url || p.media_url || null,
+            media_type: p.media_type || (platform === 'soundcloud' ? 'audio' : 'image'),
+            platform: platformLabel,
+            source: platformLabel,
+            verification_status: 'auto_discovered',
+          }));
+          const { error: insErr, count: inserted } = await supabase
+            .from('credits')
+            .insert(rows, { count: 'exact' });
+          if (insErr) throw insErr;
+          count = inserted ?? rows.length;
+        }
+      } else {
+        count = (data?.imported ?? data?.credits?.length ?? 0) as number;
+      }
       toast({
         title: `${niceName} sync complete`,
         description: count > 0 ? `Imported ${count} verified items.` : "No new items found.",

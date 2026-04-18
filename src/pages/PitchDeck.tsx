@@ -611,7 +611,7 @@ export default function PitchDeck() {
   const SlideComponent = SLIDES[current];
 
   return (
-    <div className={`flex flex-col h-screen bg-[#08080f] ${isFullscreen ? 'fixed inset-0 z-[9999]' : ''}`}>
+    <div className={`pitch-deck dark-surface flex flex-col h-screen bg-[#08080f] ${isFullscreen ? 'fixed inset-0 z-[9999]' : ''}`}>
       {/* Toolbar */}
       {!isFullscreen && (
         <div className="flex items-center justify-between px-6 py-3 bg-[#0d0d1a] border-b border-white/10 shrink-0">

@@ -109,7 +109,10 @@ Thank you so much!`;
   return (
     <div className="space-y-3 md:space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-lg md:text-xl font-semibold">Reviews</h3>
+        <div className="space-y-0.5">
+          <p className="brand-eyebrow">Social Proof</p>
+          <h3 className="text-xl md:text-2xl font-black tracking-[-0.02em]">Reviews</h3>
+        </div>
         {isOwnProfile && (
           <Dialog open={isRequestOpen} onOpenChange={setIsRequestOpen}>
             <DialogTrigger asChild>

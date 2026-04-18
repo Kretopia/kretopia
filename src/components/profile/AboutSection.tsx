@@ -36,7 +36,8 @@ export function AboutSection({
     <div className="space-y-6">
       {/* About Section */}
       <div>
-        <h2 className="text-2xl font-bold mb-4">About</h2>
+        <p className="brand-eyebrow mb-1">The Story</p>
+        <h2 className="text-2xl font-black tracking-[-0.02em] mb-4">About</h2>
         <div className="space-y-4">
           {bio ? (
             <p className="text-muted-foreground leading-relaxed">{bio}</p>

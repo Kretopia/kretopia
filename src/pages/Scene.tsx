@@ -67,7 +67,7 @@ const Scene = () => {
             <div className="space-y-1 min-w-0 flex-1">
               <p className="brand-eyebrow">For you</p>
               <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] flex items-center gap-2 leading-[1.05]">
-                <Flame className="h-6 w-6 text-primary shrink-0" />
+                <Flame className="h-6 w-6 text-energy shrink-0" />
                 <span className="min-w-0 break-words">{t("scene.title")}</span>
               </h1>
               <p className="text-xs text-muted-foreground">{t("scene.subtitle")}</p>
@@ -87,14 +87,14 @@ const Scene = () => {
               to="/circle"
               className="flex items-center gap-3 p-3 mb-4 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 hover:border-primary/40 transition-all group"
             >
-              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Users className="h-4.5 w-4.5 text-primary" />
+              <div className="h-9 w-9 rounded-lg bg-energy/15 flex items-center justify-center shrink-0">
+                <Users className="h-4.5 w-4.5 text-energy" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">{t("scene.findMatch")}</p>
                 <p className="text-[11px] text-muted-foreground">{t("scene.findMatchDesc")}</p>
               </div>
-              <ArrowRight className="h-4 w-4 text-primary opacity-50 group-hover:opacity-100 transition-opacity shrink-0" />
+              <ArrowRight className="h-4 w-4 text-energy opacity-60 group-hover:opacity-100 transition-opacity shrink-0" />
             </Link>
           )}
 
@@ -106,19 +106,19 @@ const Scene = () => {
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full mb-4 grid grid-cols-4 h-10 rounded-xl bg-muted/60 p-1">
-              <TabsTrigger value="spark" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TabsTrigger value="spark" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-energy">
                 <Flame className="h-3.5 w-3.5" />
                 {t("scene.spark")}
               </TabsTrigger>
-              <TabsTrigger value="magazine" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TabsTrigger value="magazine" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-energy">
                 <BookOpen className="h-3.5 w-3.5" />
                 {t("scene.magazine")}
               </TabsTrigger>
-              <TabsTrigger value="podcast" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TabsTrigger value="podcast" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-energy">
                 <Headphones className="h-3.5 w-3.5" />
                 {t("scene.podcast")}
               </TabsTrigger>
-              <TabsTrigger value="events" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TabsTrigger value="events" className="gap-1.5 text-[11px] rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-energy">
                 <CalendarDays className="h-3.5 w-3.5" />
                 {t("scene.events")}
               </TabsTrigger>

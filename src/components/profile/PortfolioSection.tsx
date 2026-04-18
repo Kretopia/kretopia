@@ -14,6 +14,7 @@ import { MediaPlayerModal } from "./MediaPlayerModal";
 import { useNavigate } from "react-router-dom";
 import { TIER_LIMITS, canAddPortfolioItem, SubscriptionTier } from "@/lib/subscriptionLimits";
 import { getMediaThumbnail, parseMediaUrl } from "@/lib/mediaUtils";
+import { VideoThumbnailPicker } from "./VideoThumbnailPicker";
 
 // Platform color and icon mapping
 const PLATFORM_STYLES: Record<string, { bg: string; text: string; icon: string }> = {

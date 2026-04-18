@@ -370,14 +370,17 @@ export function ProfileEditDialog({
       });
 
       // Auto-import credits when external profile URLs are added/changed
-      const prevImdb = (profile as any).imdb_url || "";
-      const prevYt = (profile as any).youtube_url || "";
-      if (formData.imdb_url && formData.imdb_url !== prevImdb) {
-        triggerCreditSync('imdb', formData.imdb_url, true);
-      }
-      if (formData.youtube_url && formData.youtube_url !== prevYt) {
-        triggerCreditSync('youtube', formData.youtube_url, true);
-      }
+      const prev = profile as any;
+      const autoSyncPairs: Array<[SyncablePlatform, string, string]> = [
+        ['imdb', formData.imdb_url, prev.imdb_url || ""],
+        ['youtube', formData.youtube_url, prev.youtube_url || ""],
+        ['spotify', formData.spotify_url, prev.spotify_url || ""],
+        ['behance', formData.behance_url, prev.behance_url || ""],
+        ['soundcloud', formData.soundcloud_url, prev.soundcloud_url || ""],
+      ];
+      autoSyncPairs.forEach(([p, next, before]) => {
+        if (next && next !== before) triggerCreditSync(p, next, true);
+      });
 
       onProfileUpdate();
       onOpenChange(false);
@@ -395,8 +398,16 @@ export function ProfileEditDialog({
   };
 
   const [syncing, setSyncing] = useState<Record<string, boolean>>({});
+
+  // Maps a platform key to (edge function, request body builder).
+  // Spotify uses dedicated music scraper. Vimeo/Behance/SoundCloud/Website fall back to
+  // the generic analyze-profile-url scraper which already understands these domains.
+  type SyncablePlatform =
+    | 'imdb' | 'youtube' | 'spotify'
+    | 'vimeo' | 'behance' | 'soundcloud' | 'website';
+
   const triggerCreditSync = useCallback(async (
-    platform: 'imdb' | 'youtube',
+    platform: SyncablePlatform,
     url: string,
     silent = false,
   ) => {
@@ -405,26 +416,68 @@ export function ProfileEditDialog({
       return;
     }
     setSyncing(prev => ({ ...prev, [platform]: true }));
+    const niceName = platform === 'imdb' ? 'IMDb' : platform === 'youtube' ? 'YouTube'
+      : platform[0].toUpperCase() + platform.slice(1);
     if (!silent) {
-      toast({ title: `Syncing ${platform.toUpperCase()} credits…`, description: "We'll import what we can verify." });
+      toast({ title: `Syncing ${niceName}…`, description: "We'll import what we can verify." });
     }
     try {
-      const fnName = platform === 'imdb' ? 'fetch-imdb-credits' : 'fetch-youtube-credits';
-      const body = platform === 'imdb'
-        ? { imdbUrl: url }
-        : { channelUrl: url, role: 'Cinematographer & Steadicam Operator' };
+      let fnName: string;
+      let body: Record<string, any>;
+      if (platform === 'imdb') {
+        fnName = 'fetch-imdb-credits';
+        body = { imdbUrl: url };
+      } else if (platform === 'youtube') {
+        fnName = 'fetch-youtube-credits';
+        body = { channelUrl: url, role: 'Cinematographer & Steadicam Operator' };
+      } else if (platform === 'spotify') {
+        fnName = 'fetch-spotify-credits';
+        body = { spotifyUrl: url };
+      } else {
+        // Generic Firecrawl-based scraper handles Vimeo, Behance, SoundCloud, personal sites
+        fnName = 'analyze-profile-url';
+        body = { url };
+      }
       const { data, error } = await supabase.functions.invoke(fnName, { body });
       if (error) throw error;
-      const count = (data?.imported ?? data?.credits?.length ?? 0) as number;
+
+      // For the generic scraper we need to insert portfolio_items as credits client-side
+      let count = 0;
+      if (fnName === 'analyze-profile-url') {
+        const items = (data?.data?.portfolio_items ?? []) as any[];
+        if (items.length > 0 && profile?.user_id) {
+          const role = data?.data?.role || formData.role || 'Creator';
+          const platformLabel = platform; // vimeo | behance | soundcloud | website
+          const rows = items.slice(0, 30).map((p) => ({
+            user_id: profile.user_id,
+            project_name: String(p.title || 'Untitled').slice(0, 200),
+            role,
+            url: p.media_url || null,
+            thumbnail_url: p.thumbnail_url || null,
+            primary_media_url: p.thumbnail_url || p.media_url || null,
+            media_type: p.media_type || (platform === 'soundcloud' ? 'audio' : 'image'),
+            platform: platformLabel,
+            source: platformLabel,
+            verification_status: 'auto_discovered',
+          }));
+          const { error: insErr, count: inserted } = await supabase
+            .from('credits')
+            .insert(rows, { count: 'exact' });
+          if (insErr) throw insErr;
+          count = inserted ?? rows.length;
+        }
+      } else {
+        count = (data?.imported ?? data?.credits?.length ?? 0) as number;
+      }
       toast({
-        title: `${platform.toUpperCase()} sync complete`,
-        description: count > 0 ? `Imported ${count} verified credits.` : "No new credits found.",
+        title: `${niceName} sync complete`,
+        description: count > 0 ? `Imported ${count} verified items.` : "No new items found.",
       });
     } catch (e: any) {
       console.error(`[ProfileEdit] ${platform} sync failed`, e);
       if (!silent) {
         toast({
-          title: `${platform.toUpperCase()} sync failed`,
+          title: `${niceName} sync failed`,
           description: e?.message || "Try again in a moment.",
           variant: "destructive",
         });
@@ -687,11 +740,26 @@ export function ProfileEditDialog({
             </FieldWrapper>
 
             <FieldWrapper label="Spotify" isIncomplete={false}>
-              <Input
-                value={formData.spotify_url}
-                onChange={(e) => handleInputChange('spotify_url', e.target.value)}
-                placeholder="https://open.spotify.com/artist/..."
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.spotify_url}
+                  onChange={(e) => handleInputChange('spotify_url', e.target.value)}
+                  placeholder="https://open.spotify.com/artist/..."
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.spotify_url?.trim() || syncing.spotify}
+                  onClick={() => triggerCreditSync('spotify', formData.spotify_url)}
+                  title="Import discography from Spotify"
+                >
+                  {syncing.spotify ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
             </FieldWrapper>
 
             <FieldWrapper label="Twitter/X" isIncomplete={false}>
@@ -711,11 +779,26 @@ export function ProfileEditDialog({
             </FieldWrapper>
 
             <FieldWrapper label="Behance" isIncomplete={false}>
-              <Input
-                value={formData.behance_url}
-                onChange={(e) => handleInputChange('behance_url', e.target.value)}
-                placeholder="https://behance.net/username"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.behance_url}
+                  onChange={(e) => handleInputChange('behance_url', e.target.value)}
+                  placeholder="https://behance.net/username"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.behance_url?.trim() || syncing.behance}
+                  onClick={() => triggerCreditSync('behance', formData.behance_url)}
+                  title="Import projects from Behance"
+                >
+                  {syncing.behance ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
             </FieldWrapper>
 
             <FieldWrapper label="IMDb" isIncomplete={false}>
@@ -742,11 +825,26 @@ export function ProfileEditDialog({
             </FieldWrapper>
 
             <FieldWrapper label="SoundCloud" isIncomplete={false}>
-              <Input
-                value={formData.soundcloud_url}
-                onChange={(e) => handleInputChange('soundcloud_url', e.target.value)}
-                placeholder="https://soundcloud.com/username"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.soundcloud_url}
+                  onChange={(e) => handleInputChange('soundcloud_url', e.target.value)}
+                  placeholder="https://soundcloud.com/username"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  disabled={!formData.soundcloud_url?.trim() || syncing.soundcloud}
+                  onClick={() => triggerCreditSync('soundcloud', formData.soundcloud_url)}
+                  title="Import tracks from SoundCloud"
+                >
+                  {syncing.soundcloud ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                  Sync
+                </Button>
+              </div>
             </FieldWrapper>
           </div>
         </div>

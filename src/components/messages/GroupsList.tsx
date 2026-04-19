@@ -62,7 +62,7 @@ export const GroupsList = ({ currentUserId, selectedGroupId, onSelect, onCreate,
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUserId]);
+  }, [currentUserId, refreshKey]);
 
   return (
     <div>

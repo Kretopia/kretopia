@@ -147,29 +147,25 @@ export const OpportunitiesFeed = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-end gap-3">
-          <PostOpportunityDialog
-            open={postDialogOpen}
-            onOpenChange={setPostDialogOpen}
-            onSuccess={() => { setPostDialogOpen(false); fetchOpportunities(); }}
-            trigger={
-              <Button size="sm" className="gap-1.5 shrink-0">
-                <Plus className="h-4 w-4" />
-                Post
-              </Button>
-            }
-          />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <SavedOpportunitiesDialog />
-          <ScoutGigDialog />
-          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/opportunity-dashboard')}>
-            <Briefcase className="h-4 w-4" />
-            <span className="hidden sm:inline">My Listings</span>
-          </Button>
-        </div>
+      {/* Header — actions on a single row */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <SavedOpportunitiesDialog />
+        <ScoutGigDialog />
+        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/opportunity-dashboard')}>
+          <Briefcase className="h-4 w-4" />
+          <span className="hidden sm:inline">My Listings</span>
+        </Button>
+        <PostOpportunityDialog
+          open={postDialogOpen}
+          onOpenChange={setPostDialogOpen}
+          onSuccess={() => { setPostDialogOpen(false); fetchOpportunities(); }}
+          trigger={
+            <Button size="sm" className="gap-1.5 shrink-0 ml-auto">
+              <Plus className="h-4 w-4" />
+              Post
+            </Button>
+          }
+        />
       </div>
 
       {/* Search & Filters */}

@@ -50,7 +50,7 @@ const Fund = () => {
             <Button
               size="lg"
               onClick={() => navigate(user ? "/fund/new" : "/auth?redirect=/fund/new")}
-              className="gap-2"
+              className="gap-2 bg-energy text-energy-foreground hover:bg-energy/90 shadow-[0_0_30px_hsl(var(--energy)/0.4)]"
             >
               <Plus className="h-4 w-4" />
               Launch a Campaign

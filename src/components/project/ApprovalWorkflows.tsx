@@ -117,15 +117,14 @@ export const ApprovalWorkflows = ({ projectId, currentUserId, collaborators, use
     if (!newTitle.trim()) return;
     setUploading(true);
     try {
-      let fileUrl = null;
+      let fileUrl: string | null = null;
       let mediaType = 'document';
       if (file) {
         const ext = file.name.split('.').pop();
         const path = `${projectId}/deliverables/${Date.now()}.${ext}`;
         const { error: upErr } = await supabase.storage.from('project-files').upload(path, file);
         if (upErr) throw upErr;
-        const { data: { publicUrl } } = supabase.storage.from('project-files').getPublicUrl(path);
-        fileUrl = publicUrl;
+        fileUrl = path;
         if (file.type.startsWith('image/')) mediaType = 'image';
         else if (file.type.startsWith('video/')) mediaType = 'video';
         else if (file.type.startsWith('audio/')) mediaType = 'audio';

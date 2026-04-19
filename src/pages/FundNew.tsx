@@ -408,14 +408,9 @@ const FundNew = () => {
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
               >
-                <option>Film</option>
-                <option>Music</option>
-                <option>Photography</option>
-                <option>Art & Design</option>
-                <option>Writing</option>
-                <option>Theater</option>
-                <option>Podcast</option>
-                <option>Other</option>
+                {FUND_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
               </select>
             </div>
           </Card>

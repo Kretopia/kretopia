@@ -126,6 +126,39 @@ const FundNew = () => {
           </p>
         </div>
 
+        {gated && (
+          <Card className="p-5 mb-5 border-primary/40 bg-gradient-to-br from-primary/10 to-accent/10">
+            <div className="flex items-start gap-3">
+              <div className="rounded-full bg-primary/15 p-2">
+                <Lock className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">
+                  {tierBlocked
+                    ? "Launching campaigns is a Creator feature"
+                    : "You've reached your campaign limit"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {tierBlocked
+                    ? "Upgrade to Creator to run 1 active ThriveFund campaign at a time, or Creator+ for unlimited campaigns."
+                    : "Creator tier supports 1 active campaign. Upgrade to Creator+ for unlimited concurrent campaigns."}
+                </p>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <Button size="sm" asChild className="gap-1">
+                    <Link to="/subscription">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      {tierBlocked ? "Upgrade to Creator" : "Upgrade to Creator+"}
+                    </Link>
+                  </Button>
+                  <Button size="sm" variant="ghost" asChild>
+                    <Link to="/fund">Browse campaigns instead</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         <Card className="p-5 space-y-4">
           <div>
             <Label>Title *</Label>

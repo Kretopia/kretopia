@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
-  DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2,
+  DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2, Rocket,
   MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus
 } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
@@ -300,6 +300,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Explore</p>
                       <MenuButton icon={Globe} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
                       <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} />
+                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
                     </>
                   ) : (
                     /* ====== WORK MODE MENU ====== */
@@ -310,6 +311,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
+                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund/manage")} />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                       )}

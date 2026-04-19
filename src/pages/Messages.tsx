@@ -535,7 +535,14 @@ const Messages = () => {
         </div>
         
         <ScrollArea className="flex-1">
-          {activeTab === 'requests' ? (
+          {activeTab === 'groups' ? (
+            <GroupsList
+              currentUserId={currentUserId}
+              selectedGroupId={selectedGroup?.id || null}
+              onSelect={(g) => setSelectedGroup(g)}
+              onCreate={() => setCreateGroupOpen(true)}
+            />
+          ) : activeTab === 'requests' ? (
             <MessageRequests 
               currentUserId={currentUserId}
               onAccept={() => {

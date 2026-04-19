@@ -468,7 +468,7 @@ const Messages = () => {
 
     if (senderProfile) {
       const { notifyMessage } = await import("@/lib/pushNotifications");
-      const preview = attachment ? (attachment.type === 'image' ? '📷 Sent an image' : '📎 Sent a file') : messageContent;
+      const preview = attachment ? (attachment.type === 'image' ? '📷 Sent an image' : '📎 Sent a file') : (newMessage.trim() || 'New message');
       await notifyMessage(
         selectedConversation,
         senderProfile.full_name || 'Someone',
@@ -490,6 +490,19 @@ const Messages = () => {
     setNewMessage("");
     setAttachment(null);
     setReplyTo(null);
+  };
+
+  const sendVoiceNote = async (url: string, duration: number) => {
+    if (!selectedConversation) return;
+    await supabase.from("messages").insert({
+      sender_id: currentUserId,
+      receiver_id: selectedConversation,
+      content: '🎙️ Voice note',
+      attachment_url: url,
+      attachment_type: 'voice',
+      attachment_duration: duration,
+      read: false,
+    });
   };
 
   const getConversationPartner = (conv: Conversation) => {

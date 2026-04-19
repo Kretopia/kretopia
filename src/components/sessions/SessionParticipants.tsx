@@ -3,9 +3,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, UserMinus, MessageCircle, UserPlus, Crown, Download } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, UserMinus, MessageCircle, UserPlus, Crown, Download, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
@@ -23,6 +25,7 @@ interface Participant {
   user_id: string;
   status: string;
   joined_at: string;
+  is_visible?: boolean;
   profile: {
     full_name: string;
     avatar_url: string | null;
@@ -45,11 +48,13 @@ export const SessionParticipants = ({
 }: SessionParticipantsProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [creator, setCreator] = useState<{ full_name: string; avatar_url: string | null; role: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<Participant | null>(null);
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
 
   useEffect(() => {
     loadParticipants();
@@ -61,7 +66,7 @@ export const SessionParticipants = ({
     // Fetch participants
     const { data: participantsData, error } = await supabase
       .from('jam_participants')
-      .select('id, user_id, status, joined_at')
+      .select('id, user_id, status, joined_at, is_visible')
       .eq('jam_id', sessionId)
       .in('status', ['going', 'interested', 'maybe'])
       .order('joined_at', { ascending: true });

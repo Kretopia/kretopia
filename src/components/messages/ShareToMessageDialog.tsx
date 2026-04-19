@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Send, Loader2, Check, Link2, Share2, MessageCircle } from "lucide-react";
 import type { SharedContentType } from "./SharedContentCard";
+import { getShareUrl } from "@/lib/constants";
 
 interface ShareToMessageDialogProps {
   open: boolean;
@@ -126,7 +127,7 @@ export const ShareToMessageDialog = ({
 
   const buildExternalText = () => {
     const title = contentMeta?.title || `Check this ${LABELS[contentType]}`;
-    const url = externalUrl || (typeof window !== "undefined" ? window.location.href : "");
+    const url = externalUrl || getShareUrl();
     return externalText || `${title}\n\n${url}`;
   };
 
@@ -136,7 +137,7 @@ export const ShareToMessageDialog = ({
   };
 
   const shareNative = async () => {
-    const url = externalUrl || (typeof window !== "undefined" ? window.location.href : "");
+    const url = externalUrl || getShareUrl();
     const title = contentMeta?.title || `ThriveIN ${LABELS[contentType]}`;
     if (navigator.share) {
       try {
@@ -150,7 +151,7 @@ export const ShareToMessageDialog = ({
   };
 
   const copyLink = async () => {
-    const url = externalUrl || (typeof window !== "undefined" ? window.location.href : "");
+    const url = externalUrl || getShareUrl();
     try {
       await navigator.clipboard.writeText(url);
       toast({ title: "Link copied", description: "Paste it anywhere." });

@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { getShareUrl } from '@/lib/constants';
 
 interface SEOProps {
   title?: string;

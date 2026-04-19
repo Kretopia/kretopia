@@ -16,6 +16,7 @@ import {
   CheckCircle2, Sparkles, Database, Link2, Plus, Camera, Palette,
   Megaphone, PartyPopper, ChevronDown, ChevronUp, Play,
 } from "lucide-react";
+import { getShareUrl } from "@/lib/constants";
 import { AuthPrompt, useAuthPrompt } from "@/components/AuthPrompt";
 import { parseMediaUrl } from "@/lib/mediaUtils";
 
@@ -216,7 +217,7 @@ const ProductionPage = () => {
         <meta property="og:title" content={`${projectName} — ThriveCredits™`} />
         <meta property="og:description" content={`${production.total_roles} roles · ${totalClaimed} claimed · See full production credits and claim yours on ThriveIN`} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:url" content={getShareUrl()} />
         {production.image_url && <meta property="og:image" content={production.image_url} />}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${projectName} — ThriveCredits™`} />
@@ -474,7 +475,7 @@ const ProductionPage = () => {
               size="sm"
               className="gap-2"
               onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
+                navigator.clipboard.writeText(getShareUrl());
                 toast.success("Link copied!");
               }}
             >

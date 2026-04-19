@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { formatDistanceToNow } from "date-fns";
 import type { GroupRoom } from "./GroupsList";
+import { getShareUrl } from "@/lib/constants";
 
 interface GroupMessage {
   id: string;

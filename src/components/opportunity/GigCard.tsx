@@ -5,7 +5,7 @@ import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
 import {
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock,
   DollarSign, Zap, Target, GraduationCap, AlertTriangle,
-  Gift, ArrowRight, Shield, User, Verified, Percent, Radar,
+  Gift, ArrowRight, Shield, User, Verified, Radar, Sparkles,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
@@ -40,25 +40,25 @@ export interface GigCreatorProfile {
   role: string | null;
 }
 
-const TYPE_CONFIG: Record<string, { label: string; color: string; bgColor: string; icon: typeof Briefcase }> = {
-  job: { label: "Paid Gig", color: "text-[hsl(152,60%,50%)]", bgColor: "bg-[hsl(152,60%,42%,0.15)] border-[hsl(152,60%,42%,0.3)]", icon: Briefcase },
-  paid: { label: "Paid Gig", color: "text-[hsl(152,60%,50%)]", bgColor: "bg-[hsl(152,60%,42%,0.15)] border-[hsl(152,60%,42%,0.3)]", icon: DollarSign },
-  collab: { label: "Collaboration", color: "text-primary", bgColor: "bg-primary/15 border-primary/30", icon: Handshake },
-  collaboration: { label: "Collaboration", color: "text-primary", bgColor: "bg-primary/15 border-primary/30", icon: Handshake },
-  gig: { label: "Quick Gig", color: "text-[hsl(45,90%,60%)]", bgColor: "bg-[hsl(45,90%,55%,0.15)] border-[hsl(45,90%,55%,0.3)]", icon: Zap },
-  project: { label: "Project", color: "text-[hsl(200,70%,60%)]", bgColor: "bg-[hsl(200,70%,50%,0.15)] border-[hsl(200,70%,50%,0.3)]", icon: Target },
-  internship: { label: "Internship", color: "text-[hsl(30,80%,60%)]", bgColor: "bg-[hsl(30,80%,50%,0.15)] border-[hsl(30,80%,50%,0.3)]", icon: GraduationCap },
-  barter: { label: "Barter", color: "text-[hsl(270,60%,70%)]", bgColor: "bg-[hsl(270,60%,60%,0.15)] border-[hsl(270,60%,60%,0.3)]", icon: ArrowRightLeft },
+const TYPE_CONFIG: Record<string, { label: string; chip: string; icon: typeof Briefcase }> = {
+  job:            { label: "Paid",          chip: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25", icon: Briefcase },
+  paid:           { label: "Paid",          chip: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25", icon: DollarSign },
+  collab:         { label: "Collab",        chip: "bg-primary/20 text-primary border-primary/30",             icon: Handshake },
+  collaboration:  { label: "Collab",        chip: "bg-primary/20 text-primary border-primary/30",             icon: Handshake },
+  gig:            { label: "Quick Gig",     chip: "bg-amber-500/15 text-amber-400 border-amber-500/25",       icon: Zap },
+  project:        { label: "Project",       chip: "bg-sky-500/15 text-sky-400 border-sky-500/25",             icon: Target },
+  internship:     { label: "Internship",    chip: "bg-orange-500/15 text-orange-400 border-orange-500/25",    icon: GraduationCap },
+  barter:         { label: "Barter",        chip: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/25", icon: ArrowRightLeft },
 };
 
-// Generate a deterministic "AI Match" score from the opportunity ID
+// Deterministic AI Match score
 const getAiMatchScore = (id: string): number => {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = ((hash << 5) - hash) + id.charCodeAt(i);
     hash |= 0;
   }
-  return 70 + Math.abs(hash % 28); // 70-97%
+  return 70 + Math.abs(hash % 28);
 };
 
 interface GigCardProps {
@@ -74,161 +74,252 @@ const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
   const isBarter = opp.type === "barter";
   const isPaid = ["job", "paid", "gig", "project"].includes(opp.type);
   const matchScore = getAiMatchScore(opp.id);
+  const hasImage = !!opp.image_url;
 
-  return (
-    <div
-      className="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/40 transition-all cursor-pointer group"
-      onClick={() => navigate(`/opportunity/${opp.id}`)}
-    >
-      {/* Barter Exchange Banner */}
-      {isBarter && (opp.barter_offering || opp.barter_requesting) && (
-        <div className="px-3 py-2 bg-[hsl(270,60%,60%,0.08)] border-b border-[hsl(270,60%,60%,0.15)]">
-          <div className="flex items-center gap-2 text-xs">
-            <Gift className="h-3.5 w-3.5 text-[hsl(270,60%,70%)] shrink-0" />
-            <span className="font-medium text-[hsl(270,60%,75%)] truncate">
-              {opp.barter_offering || "Trade offer"}
-            </span>
-            <ArrowRight className="h-3 w-3 text-[hsl(270,60%,60%)] shrink-0" />
-            <span className="text-[hsl(270,60%,65%)] truncate">
-              {opp.barter_requesting || "Content needed"}
-            </span>
+  const goToDetail = () => navigate(`/opportunity/${opp.id}`);
+
+  // Compensation display: short + bold
+  const compensationLabel = isBarter
+    ? "Trade"
+    : (opp.compensation || (isPaid ? "Paid" : "—"));
+
+  // ============= POSTER VARIANT (with image) =============
+  if (hasImage) {
+    return (
+      <div
+        className="relative rounded-2xl overflow-hidden border border-border bg-card cursor-pointer group transition-all hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10"
+        onClick={goToDetail}
+      >
+        {/* Aspect-controlled hero */}
+        <div className="relative aspect-[16/10] sm:aspect-[16/9] overflow-hidden">
+          <img
+            src={opp.image_url!}
+            alt={opp.title}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          {/* Cinematic gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-background/40" />
+
+          {/* Top row: type chip + match + bookmark */}
+          <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Badge variant="outline" className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 ${config.chip}`}>
+                <TypeIcon className="h-3 w-3 mr-1" />
+                {config.label}
+              </Badge>
+              {isClosingSoon && (
+                <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border-amber-500/30">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Closing
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+              <span className="px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm border border-border text-[10px] font-bold text-energy flex items-center gap-1">
+                <Sparkles className="h-2.5 w-2.5" />
+                {matchScore}%
+              </span>
+              <BookmarkButton opportunityId={opp.id} size="sm" />
+            </div>
+          </div>
+
+          {/* Bottom: company + title */}
+          <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5">
+            {creator && !opp.scouted_by && (
+              <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/90 font-semibold mb-1.5 flex items-center gap-1.5">
+                {creator.avatar_url ? (
+                  <Avatar className="h-4 w-4">
+                    <AvatarImage src={creator.avatar_url} />
+                    <AvatarFallback className="text-[8px]">{creator.full_name?.[0]}</AvatarFallback>
+                  </Avatar>
+                ) : null}
+                <span className="truncate">{creator.full_name || "Anonymous"}</span>
+                <Verified className="h-3 w-3 text-primary" />
+              </div>
+            )}
+            {opp.scouted_by && (
+              <div className="text-[10px] uppercase tracking-[0.2em] text-primary/90 font-semibold mb-1.5 flex items-center gap-1.5">
+                <Radar className="h-3 w-3" />
+                Scouted
+              </div>
+            )}
+            <h3 className="text-lg sm:text-xl font-black tracking-tight leading-[1.1] text-foreground line-clamp-2">
+              {opp.title}
+            </h3>
           </div>
         </div>
-      )}
 
-      <div className="p-3 sm:p-4">
-        {/* Top row: badge + match + bookmark */}
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-            <Badge variant="outline" className={`text-[11px] shrink-0 ${config.bgColor} ${config.color}`}>
+        {/* Footer: comp + meta + apply */}
+        <div className="p-3 sm:p-4 flex items-center justify-between gap-3 border-t border-border/60">
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+              {isBarter ? "Exchange" : "Budget"}
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-base font-black text-foreground truncate">{compensationLabel}</span>
+              {isPaid && (
+                <Shield className="h-3.5 w-3.5 text-primary shrink-0" aria-label="Escrow Protected" />
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
+              {opp.location && (
+                <span className="flex items-center gap-0.5 truncate">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{opp.location}</span>
+                </span>
+              )}
+              {opp.created_at && (
+                <span className="flex items-center gap-0.5 shrink-0">
+                  <Clock className="h-3 w-3" />
+                  {formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+            <EasyApplyButton opportunityId={opp.id} opportunityTitle={opp.title} />
+          </div>
+        </div>
+
+        {/* Barter exchange strip */}
+        {isBarter && (opp.barter_offering || opp.barter_requesting) && (
+          <div className="px-4 py-2 bg-fuchsia-500/[0.06] border-t border-fuchsia-500/15 flex items-center gap-2 text-[11px]">
+            <Gift className="h-3 w-3 text-fuchsia-300 shrink-0" />
+            <span className="truncate text-fuchsia-200">{opp.barter_offering || "Trade offer"}</span>
+            <ArrowRight className="h-3 w-3 text-fuchsia-400 shrink-0" />
+            <span className="truncate text-fuchsia-300/80">{opp.barter_requesting || "Content needed"}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ============= EDITORIAL VARIANT (no image) =============
+  return (
+    <div
+      className="rounded-2xl border border-border bg-card overflow-hidden cursor-pointer group transition-all hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5"
+      onClick={goToDetail}
+    >
+      <div className="p-5">
+        {/* Top row */}
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="outline" className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 ${config.chip}`}>
               <TypeIcon className="h-3 w-3 mr-1" />
               {config.label}
             </Badge>
-            {creator && (
-              <Badge variant="outline" className="text-[10px] shrink-0 bg-primary/10 border-primary/25 text-primary">
-                <Verified className="h-2.5 w-2.5 mr-1" />
-                Verified Client
-              </Badge>
-            )}
             {isClosingSoon && (
-              <Badge variant="outline" className="text-[11px] shrink-0 bg-[hsl(38,92%,50%,0.15)] text-[hsl(38,92%,60%)] border-[hsl(38,92%,50%,0.3)]">
+              <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400 border-amber-500/25">
                 <AlertTriangle className="h-3 w-3 mr-1" />
-                Closing Soon
+                Closing
               </Badge>
             )}
           </div>
-          <BookmarkButton opportunityId={opp.id} size="sm" />
-        </div>
-
-        {/* Main content row */}
-        <div className="flex gap-3">
-          {/* AI Match Ring */}
-          <div className="shrink-0 relative">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden">
-              {opp.image_url ? (
-                <img src={opp.image_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-[hsl(230,15%,15%)] flex items-center justify-center">
-                  <TypeIcon className="h-6 w-6 text-[hsl(220,10%,35%)]" />
-                </div>
-              )}
-            </div>
-            {/* AI Match badge */}
-            <div className="absolute -bottom-1 -right-1 bg-[hsl(152,60%,42%)] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-lg">
-              {matchScore}%
-            </div>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm leading-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors">
-              {opp.title}
-            </h4>
-            <p className="text-xs text-[hsl(220,10%,45%)] line-clamp-1 mt-0.5">
-              {opp.description}
-            </p>
-          </div>
-        </div>
-
-        {/* Compensation / Escrow */}
-        {opp.compensation && !isBarter && (
-          <div className="mt-2 flex items-center gap-1.5">
-            <Badge variant="outline" className="text-[11px] bg-[hsl(152,60%,42%,0.15)] text-[hsl(152,60%,55%)] border-[hsl(152,60%,42%,0.3)]">
-              <DollarSign className="h-3 w-3 mr-0.5" />
-              Budgets {opp.compensation}
-            </Badge>
-            {isPaid && (
-              <Badge variant="outline" className="text-[11px] bg-primary/10 text-primary border-primary/25 gap-0.5">
-                <Shield className="h-3 w-3" />
-                Escrow Protected
-              </Badge>
-            )}
-          </div>
-        )}
-
-        {/* Platform badges for barter */}
-        {isBarter && opp.platform_requirements && opp.platform_requirements.length > 0 && (
-          <div className="flex gap-1 mt-2">
-            {opp.platform_requirements.map(p => (
-              <Badge key={p} variant="outline" className="text-[10px] capitalize border-[hsl(230,15%,22%)] text-[hsl(220,10%,55%)]">
-                {p}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Meta Row */}
-        <div className="flex items-center gap-3 mt-2 text-[11px] text-[hsl(220,10%,45%)] overflow-x-auto">
-          {opp.scouted_by ? (
-            <span className="flex items-center gap-1 shrink-0">
-              <Radar className="h-3 w-3 text-primary" />
-              <span className="truncate max-w-[140px] text-primary/80 italic">
-                Scouted for {opp.title?.split(' ').slice(0, 3).join(' ')}
-              </span>
+          <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+            <span className="text-[10px] font-bold text-energy flex items-center gap-1">
+              <Sparkles className="h-2.5 w-2.5" />
+              {matchScore}% match
             </span>
-          ) : creator && (
-            <span className="flex items-center gap-1 shrink-0">
+            <BookmarkButton opportunityId={opp.id} size="sm" />
+          </div>
+        </div>
+
+        {/* Title — editorial sculptural */}
+        <h3 className="text-xl sm:text-2xl font-black tracking-[-0.02em] leading-[1.1] text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+          {opp.title}
+        </h3>
+
+        {/* Description */}
+        {opp.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2 mt-2 leading-relaxed">
+            {opp.description}
+          </p>
+        )}
+
+        {/* Poster row */}
+        {opp.scouted_by ? (
+          <div className="flex items-center gap-2 mt-4 text-[11px] text-primary/90">
+            <Radar className="h-3.5 w-3.5" />
+            <span className="italic">Scouted opportunity</span>
+          </div>
+        ) : creator && (
+          <div className="flex items-center gap-2 mt-4">
+            <Avatar className="h-7 w-7 border border-border">
               {creator.avatar_url ? (
-                <Avatar className="h-4 w-4">
-                  <AvatarImage src={creator.avatar_url} />
-                  <AvatarFallback className="text-[8px] bg-[hsl(230,15%,15%)]">{creator.full_name?.[0]}</AvatarFallback>
-                </Avatar>
-              ) : (
-                <User className="h-3 w-3" />
-              )}
-              <span className="truncate max-w-[100px]">{creator.full_name || "Anonymous"}</span>
-            </span>
-          )}
-          {opp.location && (
-            <span className="flex items-center gap-0.5 shrink-0">
-              <MapPin className="h-3 w-3" />
-              <span className="truncate max-w-[80px]">{opp.location}</span>
-            </span>
-          )}
-          {opp.created_at && (
-            <span className="flex items-center gap-0.5 shrink-0">
-              <Clock className="h-3 w-3" />
-              {formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}
-            </span>
-          )}
-        </div>
-
-        {/* Skills + Apply */}
-        <div className="flex items-end justify-between gap-2 mt-2">
-          {opp.skills && opp.skills.length > 0 ? (
-            <div className="flex flex-wrap gap-1 min-w-0 flex-1">
-              {opp.skills.slice(0, 3).map(skill => (
-                <Badge key={skill} className="text-[10px] px-1.5 py-0 truncate max-w-[100px] bg-[hsl(230,15%,15%)] border-[hsl(230,15%,22%)] text-[hsl(220,10%,60%)]">
-                  {skill}
-                </Badge>
-              ))}
-              {opp.skills.length > 3 && (
-                <span className="text-[10px] text-[hsl(220,10%,40%)] self-center">+{opp.skills.length - 3}</span>
+                <AvatarImage src={creator.avatar_url} />
+              ) : null}
+              <AvatarFallback className="text-[10px] bg-muted">
+                {creator.full_name?.[0] || <User className="h-3 w-3" />}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-semibold text-foreground truncate flex items-center gap-1">
+                {creator.full_name || "Anonymous"}
+                <Verified className="h-3 w-3 text-primary shrink-0" />
+              </div>
+              {creator.role && (
+                <div className="text-[10px] text-muted-foreground truncate">{creator.role}</div>
               )}
             </div>
-          ) : <div />}
-          <div className="shrink-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            <EasyApplyButton opportunityId={opp.id} opportunityTitle={opp.title} />
           </div>
+        )}
+
+        {/* Barter exchange */}
+        {isBarter && (opp.barter_offering || opp.barter_requesting) && (
+          <div className="mt-4 px-3 py-2 rounded-lg bg-fuchsia-500/[0.06] border border-fuchsia-500/15 flex items-center gap-2 text-[11px]">
+            <Gift className="h-3 w-3 text-fuchsia-300 shrink-0" />
+            <span className="truncate text-fuchsia-200">{opp.barter_offering || "Trade"}</span>
+            <ArrowRight className="h-3 w-3 text-fuchsia-400 shrink-0" />
+            <span className="truncate text-fuchsia-300/80">{opp.barter_requesting || "For"}</span>
+          </div>
+        )}
+
+        {/* Skills */}
+        {opp.skills && opp.skills.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-4">
+            {opp.skills.slice(0, 4).map(skill => (
+              <span key={skill} className="text-[10px] px-2 py-0.5 rounded-md bg-muted/50 text-muted-foreground border border-border/60">
+                {skill}
+              </span>
+            ))}
+            {opp.skills.length > 4 && (
+              <span className="text-[10px] text-muted-foreground self-center">+{opp.skills.length - 4}</span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="px-5 py-4 flex items-center justify-between gap-3 border-t border-border/60 bg-muted/20">
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+            {isBarter ? "Exchange" : "Budget"}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-base font-black text-foreground truncate">{compensationLabel}</span>
+            {isPaid && (
+              <Shield className="h-3.5 w-3.5 text-primary shrink-0" aria-label="Escrow Protected" />
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
+            {opp.location && (
+              <span className="flex items-center gap-0.5 truncate">
+                <MapPin className="h-3 w-3 shrink-0" />
+                <span className="truncate">{opp.location}</span>
+              </span>
+            )}
+            {opp.created_at && (
+              <span className="flex items-center gap-0.5 shrink-0">
+                <Clock className="h-3 w-3" />
+                {formatDistanceToNow(new Date(opp.created_at), { addSuffix: true })}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+          <EasyApplyButton opportunityId={opp.id} opportunityTitle={opp.title} />
         </div>
       </div>
     </div>

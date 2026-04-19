@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -152,10 +152,55 @@ const FundNew = () => {
     }
   };
 
+  // ── Age / ID verification gating ──
+  const [profile, setProfile] = useState<{ age_verified?: boolean; id_verified?: boolean; date_of_birth?: string | null; email_verified?: boolean } | null>(null);
+  const [dob, setDob] = useState("");
+  const [savingDob, setSavingDob] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("age_verified, id_verified, date_of_birth, email_verified").eq("user_id", user.id).maybeSingle().then(({ data }: any) => {
+      if (data) {
+        setProfile(data);
+        if (data.date_of_birth) setDob(data.date_of_birth);
+      }
+    });
+  }, [user]);
+
+  const yearsOld = (d: string) => {
+    if (!d) return 0;
+    return Math.floor((Date.now() - new Date(d).getTime()) / (365.25 * 86400000));
+  };
+
+  const saveDob = async () => {
+    if (!user) return;
+    if (yearsOld(dob) < 18) {
+      toast.error("You must be 18 or older to launch a campaign.");
+      return;
+    }
+    setSavingDob(true);
+    try {
+      const { error } = await supabase.from("profiles").update({ date_of_birth: dob, age_verified: true }).eq("user_id", user.id);
+      if (error) throw error;
+      setProfile((p) => ({ ...(p ?? {}), date_of_birth: dob, age_verified: true }));
+      toast.success("Age verified");
+    } catch (e: any) {
+      toast.error(e.message || "Couldn't save");
+    } finally {
+      setSavingDob(false);
+    }
+  };
+
+  const ageVerified = !!profile?.age_verified;
+
   // ── Submit ──
   const handleSubmit = async (publish: boolean) => {
     if (!user) {
       navigate("/auth?redirect=/fund/new");
+      return;
+    }
+    if (publish && !ageVerified) {
+      toast.error("Confirm your date of birth (18+) before launching.");
       return;
     }
     if (publish && gated) {
@@ -196,7 +241,14 @@ const FundNew = () => {
             is_active: true,
           })),
       });
-      toast.success(publish ? "Campaign launched!" : "Draft saved");
+      const mod = (campaign as any).moderation as { decision: string; reason: string } | null;
+      if (publish && mod) {
+        if (mod.decision === "block") toast.error(`Blocked: ${mod.reason}`);
+        else if (mod.decision === "review") toast.success("Submitted for review — we'll publish once approved.");
+        else toast.success("Campaign launched and live!");
+      } else {
+        toast.success(publish ? "Campaign launched!" : "Draft saved");
+      }
       navigate(`/fund/${campaign.slug}`);
     } catch (e: any) {
       toast.error(e.message || "Failed to create campaign");
@@ -542,9 +594,50 @@ const FundNew = () => {
               </div>
             </div>
 
+            {/* Verification gate */}
+            <div className={cn(
+              "rounded-lg border p-4 space-y-3",
+              ageVerified ? "border-energy/40 bg-energy/5" : "border-destructive/40 bg-destructive/5"
+            )}>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider">
+                  {ageVerified ? "✓ Identity & age verified" : "Age verification required (18+)"}
+                </p>
+                {profile?.id_verified && (
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-energy">ID ✓</span>
+                )}
+              </div>
+              {!ageVerified ? (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    Crowdfunding requires you to be at least 18. Confirm your date of birth to continue.
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
+                      max={new Date().toISOString().split("T")[0]}
+                      className="flex-1"
+                    />
+                    <Button onClick={saveDob} disabled={!dob || savingDob} size="sm">
+                      {savingDob ? <Loader2 className="h-3 w-3 animate-spin" /> : "Confirm"}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">
+                  {profile?.id_verified
+                    ? "Verified creators get auto-approved campaigns. Nice."
+                    : "Tip: complete ID verification on your profile to skip the human review step."}
+                </p>
+              )}
+            </div>
+
             <p className="text-[11px] text-muted-foreground">
-              Platform fee 5% on funded campaigns. Stripe processing fees apply. You'll need to complete
-              payout setup before backers can pledge.
+              Platform fee 5% on funded campaigns. Stripe processing fees apply. All campaigns are
+              screened by our AI moderator for fraud, prohibited content, and policy compliance —
+              flagged campaigns go to human review before going live.
             </p>
           </Card>
         )}
@@ -583,11 +676,11 @@ const FundNew = () => {
               <Button
                 size="lg"
                 onClick={() => handleSubmit(true)}
-                disabled={createMut.isPending || gated}
+                disabled={createMut.isPending || gated || !ageVerified}
                 className="gap-2"
               >
                 {createMut.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                {gated ? <><Lock className="h-4 w-4" /> Upgrade to launch</> : <>Launch <Rocket className="h-4 w-4" /></>}
+                {gated ? <><Lock className="h-4 w-4" /> Upgrade to launch</> : !ageVerified ? <><Lock className="h-4 w-4" /> Verify age to launch</> : <>Launch <Rocket className="h-4 w-4" /></>}
               </Button>
             </div>
           )}

@@ -179,7 +179,21 @@ export const useCreateCampaign = () => {
         if (tErr) throw tErr;
       }
 
-      return (campaign as unknown) as Campaign;
+      // Run AI moderation when publishing
+      let moderation: { decision: "approve" | "review" | "block"; reason: string; risk_score: number } | null = null;
+      if (input.publish) {
+        try {
+          const { data: mod, error: mErr } = await supabase.functions.invoke("moderate-campaign", {
+            body: { campaignId: campaign.id },
+          });
+          if (mErr) throw mErr;
+          moderation = mod as typeof moderation;
+        } catch (e) {
+          console.error("Moderation invoke failed", e);
+        }
+      }
+
+      return { ...(campaign as unknown as Campaign), moderation };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["thrivefund"] });

@@ -641,6 +641,59 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_moderation_queue: {
+        Row: {
+          ai_reason: string | null
+          ai_summary: string | null
+          campaign_id: string
+          created_at: string
+          id: string
+          reviewed_at: string | null
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          risk_categories: string[] | null
+          risk_score: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ai_reason?: string | null
+          ai_summary?: string | null
+          campaign_id: string
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          risk_categories?: string[] | null
+          risk_score?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_reason?: string | null
+          ai_summary?: string | null
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          risk_categories?: string[] | null
+          risk_score?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_moderation_queue_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_recipients: {
         Row: {
           campaign_id: string
@@ -747,6 +800,12 @@ export type Database = {
           id: string
           launched_at: string | null
           milestone_split: Json
+          moderated_by: string | null
+          moderation_categories: string[] | null
+          moderation_reason: string | null
+          moderation_reviewed_at: string | null
+          moderation_score: number | null
+          moderation_status: string
           platform_fee_pct: number
           project_id: string | null
           slug: string
@@ -773,6 +832,12 @@ export type Database = {
           id?: string
           launched_at?: string | null
           milestone_split?: Json
+          moderated_by?: string | null
+          moderation_categories?: string[] | null
+          moderation_reason?: string | null
+          moderation_reviewed_at?: string | null
+          moderation_score?: number | null
+          moderation_status?: string
           platform_fee_pct?: number
           project_id?: string | null
           slug: string
@@ -799,6 +864,12 @@ export type Database = {
           id?: string
           launched_at?: string | null
           milestone_split?: Json
+          moderated_by?: string | null
+          moderation_categories?: string[] | null
+          moderation_reason?: string | null
+          moderation_reviewed_at?: string | null
+          moderation_score?: number | null
+          moderation_status?: string
           platform_fee_pct?: number
           project_id?: string | null
           slug?: string
@@ -6350,6 +6421,7 @@ export type Database = {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
           achievement_badges: string[] | null
+          age_verified: boolean
           availability_note: string | null
           availability_status: string | null
           available_from: string | null
@@ -6383,6 +6455,7 @@ export type Database = {
           credit_score: number | null
           current_streak: number | null
           daily_swipes: number | null
+          date_of_birth: string | null
           discogs_verified: boolean | null
           double_xp_expires_at: string | null
           email_verified: boolean
@@ -6505,6 +6578,7 @@ export type Database = {
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"]
           achievement_badges?: string[] | null
+          age_verified?: boolean
           availability_note?: string | null
           availability_status?: string | null
           available_from?: string | null
@@ -6538,6 +6612,7 @@ export type Database = {
           credit_score?: number | null
           current_streak?: number | null
           daily_swipes?: number | null
+          date_of_birth?: string | null
           discogs_verified?: boolean | null
           double_xp_expires_at?: string | null
           email_verified?: boolean
@@ -6660,6 +6735,7 @@ export type Database = {
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
           achievement_badges?: string[] | null
+          age_verified?: boolean
           availability_note?: string | null
           availability_status?: string | null
           available_from?: string | null
@@ -6693,6 +6769,7 @@ export type Database = {
           credit_score?: number | null
           current_streak?: number | null
           daily_swipes?: number | null
+          date_of_birth?: string | null
           discogs_verified?: boolean | null
           double_xp_expires_at?: string | null
           email_verified?: boolean

@@ -53,6 +53,7 @@ const EventPage = () => {
   const [joining, setJoining] = useState(false);
   const [participation, setParticipation] = useState<string | null>(null);
   const [showShareKit, setShowShareKit] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showCohosts, setShowCohosts] = useState(false);
@@ -583,6 +584,20 @@ const EventPage = () => {
           {isAuthenticated && (
             <EventShareKit event={event} open={showShareKit} onOpenChange={setShowShareKit} />
           )}
+
+          <ShareToMessageDialog
+            open={showShareDialog}
+            onOpenChange={setShowShareDialog}
+            contentType="event"
+            contentId={event.id}
+            contentMeta={{
+              title: event.title,
+              subtitle: event.venue_name || undefined,
+              image_url: event.cover_image_url,
+            }}
+            externalUrl={`${APP_URL}/share/event/${event.id}/`}
+            externalText={`🎉 ${event.title}\n\nRSVP now on ThriveIN 👇\n${APP_URL}/share/event/${event.id}/`}
+          />
           
           {isCreator && (
             <EditEventDialog 

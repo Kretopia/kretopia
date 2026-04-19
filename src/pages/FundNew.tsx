@@ -40,10 +40,16 @@ const FundNew = () => {
   const isPro = hasProAccess(tier);
   const isCreatorPro = hasCreatorProAccess(tier);
   const { data: myCampaigns } = useMyCampaigns();
-  const activeCount = (myCampaigns ?? []).filter((c) => c.status === "active" || c.status === "draft").length;
-  const tierBlocked = !isPro;
-  const limitReached = isPro && !isCreatorPro && activeCount >= 1;
-  const gated = tierBlocked || limitReached;
+  // Yearly campaign caps: Spark 1, Creator 3, Creator+/Founder unlimited
+  const yearlyCap = isCreatorPro ? -1 : isPro ? 3 : 1;
+  const currentYear = new Date().getFullYear();
+  const yearlyCount = (myCampaigns ?? []).filter((c) => {
+    if (c.status === "cancelled") return false;
+    return new Date(c.created_at).getFullYear() === currentYear;
+  }).length;
+  const limitReached = yearlyCap !== -1 && yearlyCount >= yearlyCap;
+  const tierBlocked = false; // Spark now gets 1 free/year — no hard tier block
+  const gated = limitReached;
 
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState(params.get("title") || "");
@@ -311,6 +317,19 @@ const FundNew = () => {
           </div>
         </div>
 
+        {!gated && yearlyCap !== -1 && (
+          <Card className="p-3 mb-4 border-primary/20 bg-primary/5">
+            <p className="text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">{yearlyCount} of {yearlyCap}</span> ThriveFund campaigns used this year on the {isPro ? "Creator" : "Spark"} plan.
+              {!isCreatorPro && (
+                <Link to="/subscription" className="ml-1 text-primary font-medium hover:underline">
+                  {isPro ? "Go Creator+ for unlimited →" : "Upgrade for more →"}
+                </Link>
+              )}
+            </p>
+          </Card>
+        )}
+
         {gated && (
           <Card className="p-5 mb-5 border-primary/40 bg-gradient-to-br from-primary/10 to-energy/10">
             <div className="flex items-start gap-3">
@@ -319,18 +338,18 @@ const FundNew = () => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm">
-                  {tierBlocked ? "Launching campaigns is a Creator feature" : "You've reached your campaign limit"}
+                  You've used your {yearlyCap} ThriveFund campaign{yearlyCap > 1 ? "s" : ""} for {currentYear}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {tierBlocked
-                    ? "Upgrade to Creator to run 1 active ThriveFund campaign at a time, or Creator+ for unlimited."
-                    : "Creator tier supports 1 active campaign. Upgrade to Creator+ for unlimited concurrent campaigns."}
+                  {!isPro
+                    ? "Spark includes 1 free campaign per year. Upgrade to Creator for 3 per year, or Creator+ for unlimited."
+                    : "Creator includes 3 campaigns per year. Upgrade to Creator+ for unlimited concurrent campaigns."}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-3">
                   <Button size="sm" asChild className="gap-1">
                     <Link to="/subscription">
                       <Sparkles className="h-3.5 w-3.5" />
-                      {tierBlocked ? "Upgrade to Creator" : "Upgrade to Creator+"}
+                      {!isPro ? "Upgrade to Creator" : "Upgrade to Creator+"}
                     </Link>
                   </Button>
                   <Button size="sm" variant="ghost" asChild>

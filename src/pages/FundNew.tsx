@@ -308,11 +308,11 @@ const FundNew = () => {
           <Button
             size="lg"
             onClick={() => handleSubmit(true)}
-            disabled={createMut.isPending}
+            disabled={createMut.isPending || gated}
             className="gap-2"
           >
             {createMut.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Launch campaign
+            {gated ? <><Lock className="h-4 w-4" /> Upgrade to launch</> : "Launch campaign"}
           </Button>
           <Button
             size="lg"

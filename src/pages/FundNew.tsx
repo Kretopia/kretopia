@@ -20,10 +20,19 @@ interface TierDraft {
 }
 
 const FundNew = () => {
-  const { user } = useAuth();
+  const { user, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const projectId = params.get("project") || null;
+  const tier = (subscriptionInfo.tier || "free") as SubscriptionTier;
+  const isPro = hasProAccess(tier);
+  const isCreatorPro = hasCreatorProAccess(tier);
+  const { data: myCampaigns } = useMyCampaigns();
+  const activeCount = (myCampaigns ?? []).filter((c) => c.status === "active" || c.status === "draft").length;
+  // Gating: free users cannot launch. Creator (pro) = 1 active. Creator+ = unlimited.
+  const tierBlocked = !isPro;
+  const limitReached = isPro && !isCreatorPro && activeCount >= 1;
+  const gated = tierBlocked || limitReached;
 
   const [title, setTitle] = useState("");
   const [tagline, setTagline] = useState("");

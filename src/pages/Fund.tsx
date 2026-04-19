@@ -25,16 +25,21 @@ const Fund = () => {
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-energy/15" />
+        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-energy/20 blur-3xl pointer-events-none" />
         <div className="relative max-w-6xl mx-auto px-4 py-12 md:py-20">
           <div className="flex items-center gap-2 mb-4">
-            <Rocket className="h-5 w-5 text-primary" />
-            <span className="text-xs uppercase tracking-widest text-primary font-semibold">
+            <Rocket className="h-5 w-5 text-energy" />
+            <span className="text-xs uppercase tracking-widest text-energy font-semibold">
               ThriveFund
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-energy/15 border border-energy/50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-energy">
+              <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse shadow-[0_0_8px_hsl(var(--energy))]" />
+              Live
             </span>
           </div>
           <h1 className="text-3xl md:text-5xl font-bold leading-tight max-w-3xl">
-            Fund creatives you can <span className="text-primary">verify</span>.
+            Fund creatives you can <span className="text-energy">verify</span>.
           </h1>
           <p className="text-base md:text-lg text-muted-foreground mt-4 max-w-2xl">
             Crowdfunding built on verified credits, vouches, and a track record. Back music, film,

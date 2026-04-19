@@ -617,32 +617,30 @@ const Messages = () => {
                         </AvatarFallback>
                       </Avatar>
                       <OnlineDot isOnline={isOnline} />
-                      {unreadCount > 0 && (
-                        <div className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-primary flex items-center justify-center">
-                          <span className="text-[10px] sm:text-xs font-bold text-primary-foreground">
-                            {unreadCount}
-                          </span>
-                        </div>
-                      )}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <div className="flex items-center gap-1.5">
-                          <p className="font-semibold text-sm sm:text-base truncate">{partner.name || 'Unknown'}</p>
+                      <div className="flex items-center justify-between mb-0.5 gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <p className={`truncate text-sm sm:text-base ${unreadCount > 0 ? "font-bold" : "font-semibold"}`}>{partner.name || 'Unknown'}</p>
                           {isOnline && (
-                            <span className="text-[10px] text-success font-medium">online</span>
+                            <span className="text-[10px] text-success font-medium flex-shrink-0">online</span>
                           )}
                         </div>
-                        <span className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0 ml-2">
-                          {formatDistanceToNow(new Date(conv.created_at), {
-                            addSuffix: true,
-                          }).replace('about ', '')}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(conv.created_at), {
+                              addSuffix: true,
+                            }).replace('about ', '')}
+                          </span>
+                          {unreadCount > 0 && (
+                            <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-glow-purple" aria-label={`${unreadCount} unread`} />
+                          )}
+                        </div>
                       </div>
                       
                       <p className={`text-xs sm:text-sm truncate ${
-                        unreadCount > 0 ? "font-medium text-foreground" : "text-muted-foreground"
+                        unreadCount > 0 ? "font-semibold text-foreground" : "text-muted-foreground"
                       }`}>
                         {conv.sender_id === currentUserId ? (
                           <span className="inline-flex items-center gap-1">

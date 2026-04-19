@@ -46,7 +46,10 @@ const ClaimGig = () => {
   const handleClaim = async () => {
     if (!user) {
       sessionStorage.setItem("pending_claim_token", token!);
-      navigate(`/auth?redirect=/claim-gig/${token}`);
+      // Send guests through the unified Search → Claim → Email flow
+      navigate(
+        `/claim?source=gig&gig=${encodeURIComponent(token!)}&redirect=${encodeURIComponent(`/claim-gig/${token}`)}`,
+      );
       return;
     }
 

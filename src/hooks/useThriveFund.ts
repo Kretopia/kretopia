@@ -63,7 +63,7 @@ export const useActiveCampaigns = () => {
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
-      return (data ?? []) as Campaign[];
+      return (data ?? []) as unknown as Campaign[];
     },
   });
 };
@@ -79,7 +79,7 @@ export const useCampaignBySlug = (slug: string | undefined) => {
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
-      return data as Campaign | null;
+      return (data as unknown) as Campaign | null;
     },
     enabled: !!slug,
   });
@@ -97,7 +97,7 @@ export const useMyCampaigns = () => {
         .eq("creator_id", user.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as Campaign[];
+      return (data ?? []) as unknown as Campaign[];
     },
     enabled: !!user,
   });
@@ -179,7 +179,7 @@ export const useCreateCampaign = () => {
         if (tErr) throw tErr;
       }
 
-      return campaign as Campaign;
+      return (campaign as unknown) as Campaign;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["thrivefund"] });

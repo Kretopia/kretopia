@@ -23,7 +23,7 @@ export const TrustPanel = ({ creatorId }: TrustPanelProps) => {
         supabase
           .from("profiles")
           .select(
-            "user_id, full_name, avatar_url, role, location, verification_status, verification_tier, badge"
+            "user_id, full_name, avatar_url, role, location, verification_status, verification_tier, badge, id_verified"
           )
           .eq("user_id", creatorId)
           .maybeSingle(),
@@ -57,7 +57,8 @@ export const TrustPanel = ({ creatorId }: TrustPanelProps) => {
   }
 
   const { profile, credits, verifiedCredits, vouches } = data;
-  const isVerified = profile.verification_status === "verified" || profile.id_verified;
+  const isVerified =
+    profile.verification_status === "verified" || (profile as any).id_verified;
 
   return (
     <Card className="p-6 border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5">

@@ -671,6 +671,9 @@ export const UnifiedHome = () => {
           </section>
         )}
 
+        {/* ── 2.5 BACK A CREATOR (auth only) ── */}
+        {user && <ThriveFundFeedRow />}
+
         {/* ── 3. WHAT'S HAPPENING NEAR YOU (auth only) ── */}
         {user && (
           <section className="mb-8 scroll-mt-14">

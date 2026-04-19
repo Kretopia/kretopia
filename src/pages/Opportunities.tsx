@@ -11,9 +11,9 @@ const Opportunities = () => {
       />
 
       {/* Cinematic header */}
-      <div className="relative border-b border-border/50 bg-cinematic overflow-hidden">
+      <div className="relative border-b border-border/50 bg-cinematic overflow-hidden pt-[env(safe-area-inset-top)]">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
-        <div className="relative container mx-auto max-w-5xl px-4 py-7 sm:py-10">
+        <div className="relative container mx-auto max-w-5xl px-4 pt-6 pb-7 sm:pt-8 sm:pb-10">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-3 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">

@@ -62,6 +62,14 @@ const FundNew = () => {
       navigate("/auth?redirect=/fund/new");
       return;
     }
+    if (publish && gated) {
+      toast.error(
+        tierBlocked
+          ? "Upgrade to Creator to launch a ThriveFund campaign"
+          : "Creator tier allows 1 active campaign. Upgrade to Creator+ for unlimited."
+      );
+      return;
+    }
     if (!title.trim() || !goal || Number(goal) <= 0) {
       toast.error("Please add a title and a positive funding goal");
       return;

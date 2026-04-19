@@ -11311,6 +11311,7 @@ export type Database = {
         Args: { opportunity_id_param: string }
         Returns: undefined
       }
+      thrivefund_auto_finalize_due: { Args: never; Returns: undefined }
       update_my_location: {
         Args: { lat: number; lon: number }
         Returns: boolean

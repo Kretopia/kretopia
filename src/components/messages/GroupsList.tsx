@@ -22,9 +22,10 @@ interface GroupsListProps {
   selectedGroupId: string | null;
   onSelect: (group: GroupRoom) => void;
   onCreate: () => void;
+  refreshKey?: number;
 }
 
-export const GroupsList = ({ currentUserId, selectedGroupId, onSelect, onCreate }: GroupsListProps) => {
+export const GroupsList = ({ currentUserId, selectedGroupId, onSelect, onCreate, refreshKey = 0 }: GroupsListProps) => {
   const [groups, setGroups] = useState<GroupRoom[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -61,7 +62,7 @@ export const GroupsList = ({ currentUserId, selectedGroupId, onSelect, onCreate 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUserId]);
+  }, [currentUserId, refreshKey]);
 
   return (
     <div>

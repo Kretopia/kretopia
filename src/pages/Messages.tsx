@@ -113,6 +113,7 @@ const Messages = () => {
   const [requestCount, setRequestCount] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState<GroupRoom | null>(null);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
+  const [groupsRefreshKey, setGroupsRefreshKey] = useState(0);
   const [otherUser, setOtherUser] = useState<{
     id: string;
     name: string;
@@ -613,6 +614,7 @@ const Messages = () => {
               selectedGroupId={selectedGroup?.id || null}
               onSelect={(g) => setSelectedGroup(g)}
               onCreate={() => setCreateGroupOpen(true)}
+              refreshKey={groupsRefreshKey}
             />
           ) : activeTab === 'requests' ? (
             <MessageRequests 
@@ -1132,7 +1134,7 @@ const Messages = () => {
         currentUserId={currentUserId}
         onCreated={(roomId) => {
           setActiveTab('groups');
-          // Trigger reload by switching tab; GroupsList realtime will pick it up
+          setGroupsRefreshKey((k) => k + 1);
         }}
       />
     </div>

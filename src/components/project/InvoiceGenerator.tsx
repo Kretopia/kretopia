@@ -826,11 +826,11 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                   const isQuote = (inv.document_type || "invoice") === "quote";
                   return (
                     <Card key={inv.id} className="p-3 hover:bg-accent/30 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="w-1 h-12 rounded-full" style={{ backgroundColor: inv.brand_color || "#6366f1" }} />
+                      <div className="flex items-start gap-3">
+                        <div className="w-1 self-stretch rounded-full shrink-0" style={{ backgroundColor: inv.brand_color || "#6366f1" }} />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="font-mono text-xs font-medium">{inv.invoice_number}</p>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="font-mono text-xs font-medium truncate max-w-[140px]">{inv.invoice_number}</p>
                             {getStatusBadge(inv.status)}
                             {isQuote && (
                               <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800">
@@ -838,7 +838,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground truncate">
+                          <p className="text-sm text-muted-foreground truncate mt-0.5">
                             {inv.recipient_name || inv.issued_to_profile?.full_name || "Client"}
                           </p>
                           {inv.due_date && (
@@ -854,8 +854,10 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
                             </p>
                           )}
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-lg">{getCurrencySymbol(inv.currency || "USD")}{Number(inv.total_amount).toFixed(2)}</p>
+                        <div className="text-right shrink-0 max-w-[40%]">
+                          <p className="font-bold text-base sm:text-lg break-all leading-tight">
+                            {getCurrencySymbol(inv.currency || "USD")}{Number(inv.total_amount).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          </p>
                           <p className="text-[10px] text-muted-foreground">{inv.currency || "USD"}</p>
                         </div>
                       </div>

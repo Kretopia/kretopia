@@ -199,14 +199,14 @@ export const OpportunitiesFeed = () => {
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="rounded-t-2xl max-h-[70vh]">
+          <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] flex flex-col pb-[calc(env(safe-area-inset-bottom)+9rem)]">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <SlidersHorizontal className="h-4 w-4" />
                 Filter Gigs
               </SheetTitle>
             </SheetHeader>
-            <div className="space-y-5 py-4">
+            <div className="space-y-5 py-4 overflow-y-auto flex-1 min-h-0">
               {/* Type Filter */}
               <div>
                 <label className="text-sm font-medium flex items-center gap-1.5 mb-2">

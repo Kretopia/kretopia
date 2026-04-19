@@ -388,7 +388,7 @@ const OpportunityDetail = () => {
   const isActive = opportunity.status === 'active';
 
   return (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-4 md:p-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-32">
       <SEO
         title={`${opportunity.title} — Gig on ThriveIN`}
         description={opportunity.description?.slice(0, 155) || `${opportunity.type} gig: ${opportunity.title}`}
@@ -535,10 +535,10 @@ const OpportunityDetail = () => {
               </div>
             )}
             {opportunity.compensation && (
-              <div className={`flex items-center gap-2 ${!user ? 'relative' : 'text-accent'}`}>
-                <DollarSign className="h-4 w-4" />
+              <div className={`flex items-center gap-2 font-semibold text-foreground ${!user ? 'relative' : ''}`}>
+                <DollarSign className="h-4 w-4 text-primary" />
                 {user ? (
-                  opportunity.compensation
+                  <span>{opportunity.compensation}</span>
                 ) : (
                   <span className="blur-sm select-none" aria-hidden>$2,500 - $5,000</span>
                 )}

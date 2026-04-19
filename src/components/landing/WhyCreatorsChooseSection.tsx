@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Award, Brain, MessageSquare, Verified, DollarSign, Crown, Globe, FileText, FolderKanban, FileSignature, Fingerprint } from "lucide-react";
+import { ArrowRight, Award, Brain, MessageSquare, Verified, DollarSign, Crown, Globe, FileText, FolderKanban, FileSignature, Fingerprint, Rocket } from "lucide-react";
 
 export const WhyCreatorsChooseSection = () => {
   const features = [

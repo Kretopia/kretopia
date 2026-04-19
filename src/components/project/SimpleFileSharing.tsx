@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFiles";
 
 interface ProjectFile {
   id: string;
@@ -66,13 +67,12 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
       const { error: uploadError } = await supabase.storage.from('project-files').upload(fileName, file);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from('project-files').getPublicUrl(fileName);
-
+      // Store the storage path (not a public URL); signed URLs are generated on access
       const { error: dbError } = await supabase.from('project_files').insert({
         project_id: projectId,
         user_id: user.id,
         file_name: file.name,
-        file_url: publicUrl,
+        file_url: fileName,
         file_size: file.size,
         file_type: file.type,
       });
@@ -92,9 +92,7 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
   const handleDeleteFile = async (file: ProjectFile) => {
     try {
       // Delete from storage
-      const url = new URL(file.file_url);
-      const pathParts = url.pathname.split('/');
-      const filePath = pathParts.slice(pathParts.indexOf('project-files') + 1).join('/');
+      const filePath = extractProjectFilePath(file.file_url);
       await supabase.storage.from('project-files').remove([filePath]);
 
       // Delete from DB
@@ -128,11 +126,9 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
       const { error: uploadError } = await supabase.storage.from('project-files').upload(fileName, file);
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from('project-files').getPublicUrl(fileName);
-
       const { error: dbError } = await supabase.from('project_files').update({
         file_name: file.name,
-        file_url: publicUrl,
+        file_url: fileName,
         file_size: file.size,
         file_type: file.type,
       }).eq('id', replacingFileId);
@@ -151,22 +147,17 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
 
   const handleFileClick = async (file: ProjectFile, forceDownload = false) => {
     try {
-      const url = new URL(file.file_url);
-      const pathParts = url.pathname.split('/');
-      const filePath = pathParts.slice(pathParts.indexOf('project-files') + 1).join('/');
-      
-      const { data, error } = await supabase.storage
-        .from('project-files')
-        .createSignedUrl(filePath, 3600, {
-          download: forceDownload ? file.file_name : undefined,
-        });
-      if (error) throw error;
+      const signedUrl = await getProjectFileSignedUrl(file.file_url, {
+        expiresIn: 3600,
+        download: forceDownload ? file.file_name : undefined,
+      });
+      if (!signedUrl) throw new Error("Could not generate file URL");
 
       if (file.file_type?.startsWith('image/') && !forceDownload) {
-        window.open(data.signedUrl, '_blank');
+        window.open(signedUrl, '_blank');
         return;
       }
-      window.location.href = data.signedUrl;
+      window.location.href = signedUrl;
     } catch (error) {
       console.error('Error accessing file:', error);
       toast({ title: "Error", description: "Failed to access file. Please try again.", variant: "destructive" });

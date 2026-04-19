@@ -27,6 +27,7 @@ import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
 import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
+import { ClaimedProfileGlow } from "@/components/onboarding/claim-flow/ClaimedProfileGlow";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
@@ -350,6 +351,7 @@ const ProfileContent = () => {
 
   return (
     <div className="min-h-screen pb-24 sm:pb-20 md:pb-6 bg-background">
+      <ClaimedProfileGlow />
       {/* Hidden file input */}
       <input
         ref={fileInputRef}

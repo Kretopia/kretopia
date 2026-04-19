@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { formatDistanceToNow } from "date-fns";
 import type { GroupRoom } from "./GroupsList";
+import { getShareUrl } from "@/lib/constants";
 
 interface GroupMessage {
   id: string;
@@ -179,7 +180,7 @@ export const GroupChatPanel = ({ group, currentUserId, onBack }: GroupChatPanelP
       toast({ title: "No invite link available", variant: "destructive" });
       return;
     }
-    const url = `${window.location.origin}/messages?groupInvite=${group.invite_code}`;
+    const url = getShareUrl(`/messages?groupInvite=${group.invite_code}`);
     const shareData = {
       title: `Join "${group.title}" on ThriveIN`,
       text: `You're invited to join the "${group.title}" group chat on ThriveIN.`,
@@ -209,7 +210,7 @@ export const GroupChatPanel = ({ group, currentUserId, onBack }: GroupChatPanelP
       toast({ title: "No invite link available", variant: "destructive" });
       return;
     }
-    const url = `${window.location.origin}/messages?groupInvite=${group.invite_code}`;
+    const url = getShareUrl(`/messages?groupInvite=${group.invite_code}`);
     await navigator.clipboard.writeText(url);
     toast({ title: "Link copied", description: url });
   };

@@ -15,6 +15,7 @@ import {
   ExternalLink, Users, UserPlus, Film, Loader2, Globe,
   CheckCircle2, Sparkles, Database, Link2,
 } from "lucide-react";
+import { getShareUrl } from "@/lib/constants";
 
 interface ProjectRole {
   id: string;
@@ -297,7 +298,7 @@ const ICDBProjectPage = () => {
               size="sm"
               className="gap-2"
               onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
+                navigator.clipboard.writeText(getShareUrl());
                 toast.success("Link copied!");
               }}
             >

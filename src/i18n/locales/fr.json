@@ -58,7 +58,20 @@
     "startTrial": "Commencer l'essai de 7 jours",
     "joinNow": "Rejoindre — C'est Gratuit",
     "builtByCreatives": "Construit par des créatifs, pour des créatifs",
-    "verified": "Vérifié"
+    "verified": "Vérifié",
+    "fundEyebrow": "Disponible · ThriveFund",
+    "fundTitle1": "Finance le projet.",
+    "fundTitle2": "Soutiens le créateur.",
+    "fundSubtitle": "Crowdfunding pour films, albums, collections de mode, événements et projets créatifs — pensé pour les créatifs, protégé par modération IA, paiements par jalons et identités vérifiées.",
+    "fundPillar1Title": "Filtré par IA",
+    "fundPillar1Desc": "Chaque campagne est analysée par IA pour détecter arnaques, contenu interdit et faisabilité avant publication.",
+    "fundPillar2Title": "Créateurs Vérifiés Uniquement",
+    "fundPillar2Desc": "Âge 18+ et vérification d'identité requis pour lancer — pas de financement anonyme.",
+    "fundPillar3Title": "Paiements par Jalons",
+    "fundPillar3Desc": "Les fonds sont versés quand les créateurs atteignent leurs jalons — les contributeurs sont protégés.",
+    "fundCtaExplore": "Explorer les Campagnes",
+    "fundCtaLaunch": "Lancer une Campagne",
+    "fundFinePrint": "18+ · ID vérifiée · Modéré par IA · Paiements par jalons"
   },
   "home": {
     "searchHint": "Vous avez déjà des travaux ? Cherchez votre nom",

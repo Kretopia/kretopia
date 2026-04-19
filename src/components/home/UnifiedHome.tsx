@@ -23,6 +23,7 @@ import { PricingPreviewSection } from "@/components/landing/PricingPreviewSectio
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
+import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -562,6 +563,8 @@ export const UnifiedHome = () => {
 
 
         {!user && <WhyCreatorsChooseSection />}
+
+        {!user && <ThriveFundShowcase />}
 
         {!user && <PricingPreviewSection />}
 

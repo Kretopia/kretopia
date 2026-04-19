@@ -58,7 +58,20 @@
     "startTrial": "Start 7-Day Trial",
     "joinNow": "Join Now — It's Free",
     "builtByCreatives": "Built by creatives, for creatives",
-    "verified": "Verified"
+    "verified": "Verified",
+    "fundEyebrow": "Now Live · ThriveFund",
+    "fundTitle1": "Fund the work.",
+    "fundTitle2": "Back the creator.",
+    "fundSubtitle": "Crowdfund films, albums, fashion drops, events & creator projects — built for creatives, protected by AI moderation, milestone-based payouts and verified identities.",
+    "fundPillar1Title": "AI-Screened & Safe",
+    "fundPillar1Desc": "Every campaign is reviewed by AI for scams, prohibited content & feasibility before going live.",
+    "fundPillar2Title": "Verified Creators Only",
+    "fundPillar2Desc": "Age 18+ and identity verification required to launch — no anonymous fundraising.",
+    "fundPillar3Title": "Milestone-Based Payouts",
+    "fundPillar3Desc": "Funds release as creators hit milestones — backers stay protected, projects stay accountable.",
+    "fundCtaExplore": "Explore Campaigns",
+    "fundCtaLaunch": "Launch a Campaign",
+    "fundFinePrint": "18+ · ID verified · AI-moderated · Milestone payouts"
   },
   "home": {
     "searchHint": "Already have work? Search your name",

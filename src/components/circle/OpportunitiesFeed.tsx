@@ -167,7 +167,6 @@ export const OpportunitiesFeed = () => {
           }
         />
       </div>
-      </div>
 
       {/* Search & Filters */}
       <div className="flex gap-2">

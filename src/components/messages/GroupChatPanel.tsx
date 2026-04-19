@@ -281,12 +281,54 @@ export const GroupChatPanel = ({ group, currentUserId, onBack }: GroupChatPanelP
                 <DropdownMenuSeparator className="sm:hidden" />
               </>
             )}
+            <DropdownMenuItem onClick={shareInvite}>
+              <Share2 className="h-4 w-4 mr-2" /> Share invite
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={copyInviteLink}>
+              <Link2 className="h-4 w-4 mr-2" /> Copy invite link
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem disabled className="text-xs text-muted-foreground">
               {memberList.length} members
             </DropdownMenuItem>
+            {isOwner && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setConfirmDelete(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" /> Delete group
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this group?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes "{group.title}", all of its messages and member list. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                deleteGroup();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete group"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Members strip */}
       {memberList.length > 0 && (

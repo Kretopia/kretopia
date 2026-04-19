@@ -16,11 +16,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Clock, Users, Target, Loader2, Heart } from "lucide-react";
+import { Clock, Users, Target, Loader2, Heart, Share2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCampaignBySlug, useCampaignTiers, useCreatePledge } from "@/hooks/useThriveFund";
 import { TrustPanel } from "@/components/thrivefund/TrustPanel";
-import { SocialShareButtons } from "@/components/SocialShareButtons";
+import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
+import { APP_URL } from "@/lib/constants";
 import { toast } from "sonner";
 
 const formatCurrency = (amount: number, currency: string) =>
@@ -171,16 +172,10 @@ const FundCampaign = () => {
                   )}
                 </div>
                 <div className="shrink-0">
-                  <SocialShareButtons
-                    url={`/fund/${campaign.slug}`}
-                    socialUrl={`/share/fund/${campaign.slug}/`}
-                    title={`${campaign.title} on ThriveFund`}
-                    description={
-                      campaign.status === "funded"
-                        ? `🎉 Funded! ${campaign.backer_count} backers helped make this happen.`
-                        : `${pct}% funded · ${days} day${days === 1 ? "" : "s"} left · only charged if it hits goal. ${campaign.tagline || "Back this creative project."}`
-                    }
-                  />
+                  <Button variant="outline" size="sm" onClick={() => setShowShareDialog(true)} className="gap-2 rounded-full">
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </Button>
                 </div>
               </div>
             </div>

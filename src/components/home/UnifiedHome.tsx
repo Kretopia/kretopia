@@ -22,7 +22,6 @@ import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChoose
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
-import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -670,9 +669,6 @@ export const UnifiedHome = () => {
             )}
           </section>
         )}
-
-        {/* ── 2.5 BACK A CREATOR (auth only) ── */}
-        {user && <ThriveFundFeedRow />}
 
         {/* ── 3. WHAT'S HAPPENING NEAR YOU (auth only) ── */}
         {user && (

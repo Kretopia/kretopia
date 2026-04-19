@@ -29,7 +29,7 @@ serve(async (req) => {
 
     const { data: campaign, error: cErr } = await supabaseAdmin
       .from("campaigns")
-      .select("id, title, status, goal_amount, total_raised, deadline, creator_id, milestone_split")
+      .select("id, slug, title, status, goal_amount, total_raised, deadline, creator_id, milestone_split")
       .eq("id", campaignId)
       .single();
     if (cErr || !campaign) throw new Error("Campaign not found");
@@ -121,6 +121,78 @@ serve(async (req) => {
       .eq("id", campaignId);
 
     log("done", { newStatus, captured, cancelled, errors });
+
+    // Fire-and-forget result emails to creator + all backers
+    try {
+      const templateName = goalMet ? "thrivefund-campaign-funded" : "thrivefund-campaign-failed";
+      const origin = "https://www.thrivein.io";
+      const campaignUrl = `${origin}/fund/${(campaign as any).slug || campaignId}`;
+      const exploreUrl = `${origin}/fund`;
+      const totalRaised = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 0,
+      }).format(Number(campaign.total_raised));
+
+      // Creator email (lookup via auth admin)
+      const { data: creatorAuth } = await supabaseAdmin.auth.admin.getUserById(campaign.creator_id);
+      const { data: creatorProfile } = await supabaseAdmin
+        .from("profiles").select("full_name").eq("user_id", campaign.creator_id).maybeSingle();
+      if (creatorAuth?.user?.email) {
+        await supabaseAdmin.functions.invoke("send-transactional-email", {
+          body: {
+            templateName,
+            recipientEmail: creatorAuth.user.email,
+            idempotencyKey: `thrivefund-final-${campaignId}-creator`,
+            templateData: {
+              recipientName: creatorProfile?.full_name?.split(" ")[0] || null,
+              campaignTitle: (campaign as any).title,
+              totalRaised,
+              backerCount: (pledges?.length ?? 0),
+              isCreator: true,
+              campaignUrl,
+              exploreUrl,
+            },
+          },
+        });
+      }
+
+      // Backer emails — pull distinct backers
+      const { data: backerRows } = await supabaseAdmin
+        .from("pledges")
+        .select("backer_id")
+        .eq("campaign_id", campaignId)
+        .eq("is_anonymous", false);
+      const backerIds = Array.from(new Set((backerRows ?? []).map((r: any) => r.backer_id))).filter(Boolean);
+      for (const bId of backerIds) {
+        try {
+          const { data: bAuth } = await supabaseAdmin.auth.admin.getUserById(bId);
+          if (!bAuth?.user?.email) continue;
+          const { data: bProf } = await supabaseAdmin
+            .from("profiles").select("full_name").eq("user_id", bId).maybeSingle();
+          await supabaseAdmin.functions.invoke("send-transactional-email", {
+            body: {
+              templateName,
+              recipientEmail: bAuth.user.email,
+              idempotencyKey: `thrivefund-final-${campaignId}-${bId}`,
+              templateData: {
+                recipientName: bProf?.full_name?.split(" ")[0] || null,
+                campaignTitle: (campaign as any).title,
+                totalRaised,
+                backerCount: (pledges?.length ?? 0),
+                isCreator: false,
+                campaignUrl,
+                exploreUrl,
+              },
+            },
+          });
+        } catch (e) {
+          log("backer_email_err", { bId, err: String(e) });
+        }
+      }
+    } catch (e) {
+      log("email_block_err", { err: String(e) });
+    }
 
     return new Response(
       JSON.stringify({ status: newStatus, captured, cancelled, errors }),

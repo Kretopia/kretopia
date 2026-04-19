@@ -164,6 +164,34 @@ serve(async (req) => {
 
     log("session_created", { sessionId: session.id, pledgeId: pledge.id });
 
+    // Fire-and-forget pledge confirmation email
+    try {
+      const { data: backerProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const deadlineDate = new Date(campaign.deadline).toLocaleDateString("en-US", {
+        month: "long", day: "numeric", year: "numeric",
+      });
+      await supabaseAdmin.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "thrivefund-pledge-confirmed",
+          recipientEmail: user.email,
+          idempotencyKey: `thrivefund-pledge-${pledge.id}`,
+          templateData: {
+            backerName: backerProfile?.full_name?.split(" ")[0] || null,
+            campaignTitle: campaign.title,
+            pledgeAmount: new Intl.NumberFormat("en-US", { style: "currency", currency: campaign.currency || "USD" }).format(Number(amount)),
+            campaignUrl: `${origin}/fund/${campaign.slug}`,
+            deadlineDate,
+          },
+        },
+      });
+    } catch (e) {
+      log("email_skipped", { err: String(e) });
+    }
+
     return new Response(
       JSON.stringify({ url: session.url, sessionId: session.id, pledgeId: pledge.id }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }

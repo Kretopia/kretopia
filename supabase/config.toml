@@ -139,5 +139,3 @@ project_id = "kwmcocsitwssrtzkdojh"
     verify_jwt = false
   [functions.handle-email-suppression]
     verify_jwt = false
-  [functions.thrivefund-stripe-webhook]
-    verify_jwt = false

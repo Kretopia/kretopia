@@ -750,6 +750,20 @@ const ViewProfile = () => {
           profileUrl={`https://www.thrivein.io/profile/${profile.user_id}`}
         />
       )}
+
+      <ShareToMessageDialog
+        open={showShareToChat}
+        onOpenChange={setShowShareToChat}
+        contentType="profile"
+        contentId={profile.user_id}
+        contentMeta={{
+          title: profile.full_name,
+          subtitle: profile.role || undefined,
+          image_url: profile.avatar_url,
+        }}
+        externalUrl={`${APP_URL}/profile/${profile.user_id}`}
+        externalText={`Check out ${profile.full_name} on ThriveIN — ${APP_URL}/profile/${profile.user_id}`}
+      />
     </>
   );
 };

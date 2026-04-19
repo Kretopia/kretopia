@@ -98,6 +98,10 @@ const CreatorSiteByUsername = lazy(() => import("./pages/CreatorSiteByUsername")
 const WebsiteBuilder = lazy(() => import("./pages/WebsiteBuilder"));
 const ShareGigRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareGigRedirect })));
 const ShareProfileRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareProfileRedirect })));
+const Fund = lazy(() => import("./pages/Fund"));
+const FundNew = lazy(() => import("./pages/FundNew"));
+const FundCampaign = lazy(() => import("./pages/FundCampaign"));
+const FundManage = lazy(() => import("./pages/FundManage"));
 const ShareEventRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareEventRedirect })));
 const ShareMagazineRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareMagazineRedirect })));
 const queryClient = new QueryClient({
@@ -244,6 +248,12 @@ const AppContent = () => {
             <Route path="/desk" element={<ProtectedRoute><WorkHome /></ProtectedRoute>} />
             <Route path="/desk/projects" element={<ProtectedRoute><ProjectsList /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
+
+            {/* ThriveFund — Crowdfunding */}
+            <Route path="/fund" element={<Fund />} />
+            <Route path="/fund/new" element={<ProtectedRoute><FundNew /></ProtectedRoute>} />
+            <Route path="/fund/manage" element={<ProtectedRoute><FundManage /></ProtectedRoute>} />
+            <Route path="/fund/:slug" element={<FundCampaign />} />
             
             {/* Subscription & Payment Routes */}
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />

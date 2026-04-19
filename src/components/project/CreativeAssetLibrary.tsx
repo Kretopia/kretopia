@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { getProjectFileSignedUrl } from "@/lib/projectFiles";
 
 interface AssetFolder {
   id: string;
@@ -99,7 +100,6 @@ export const CreativeAssetLibrary = ({ projectId, currentUserId }: CreativeAsset
         const path = `${projectId}/assets/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
         const { error: upErr } = await supabase.storage.from('project-files').upload(path, file);
         if (upErr) throw upErr;
-        const { data: { publicUrl } } = supabase.storage.from('project-files').getPublicUrl(path);
 
         let mediaType = 'document';
         if (file.type.startsWith('image/')) mediaType = 'image';
@@ -110,7 +110,7 @@ export const CreativeAssetLibrary = ({ projectId, currentUserId }: CreativeAsset
           project_id: projectId,
           folder_id: currentFolder,
           name: file.name,
-          file_url: publicUrl,
+          file_url: path,
           file_size: file.size,
           file_type: file.type,
           media_type: mediaType,

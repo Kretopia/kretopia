@@ -70,8 +70,8 @@ export const DocumentCollaboration = ({ projectId }: DocumentCollaborationProps)
 
       if (uploadError) throw uploadError;
 
-      // Store the file path, not a public URL (will generate signed URLs on access)
-      const fileUrl = `project-files/${fileName}`;
+      // Store the storage path; signed URLs are generated on access
+      const fileUrl = fileName;
 
       const { error: insertError } = await supabase
         .from("project_documents" as any)

@@ -15,6 +15,7 @@ export interface GroupRoom {
   updated_at: string;
   created_by: string;
   circle_type: string | null;
+  invite_code?: string | null;
 }
 
 interface GroupsListProps {

@@ -1743,6 +1743,7 @@ export type Database = {
       }
       creative_jams: {
         Row: {
+          attendee_list_visibility: string
           category: string
           circle_id: string | null
           cover_image_url: string | null
@@ -1770,6 +1771,7 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          attendee_list_visibility?: string
           category?: string
           circle_id?: string | null
           cover_image_url?: string | null
@@ -1797,6 +1799,7 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          attendee_list_visibility?: string
           category?: string
           circle_id?: string | null
           cover_image_url?: string | null
@@ -4001,6 +4004,7 @@ export type Database = {
           check_in_token: string
           checked_in_at: string | null
           id: string
+          is_visible: boolean
           jam_id: string
           joined_at: string
           status: string | null
@@ -4010,6 +4014,7 @@ export type Database = {
           check_in_token?: string
           checked_in_at?: string | null
           id?: string
+          is_visible?: boolean
           jam_id: string
           joined_at?: string
           status?: string | null
@@ -4019,6 +4024,7 @@ export type Database = {
           check_in_token?: string
           checked_in_at?: string | null
           id?: string
+          is_visible?: boolean
           jam_id?: string
           joined_at?: string
           status?: string | null
@@ -8437,6 +8443,7 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           id: string
+          is_announcement: boolean
           is_deleted: boolean | null
           session_id: string
           updated_at: string
@@ -8448,6 +8455,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           id?: string
+          is_announcement?: boolean
           is_deleted?: boolean | null
           session_id: string
           updated_at?: string
@@ -8459,6 +8467,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           id?: string
+          is_announcement?: boolean
           is_deleted?: boolean | null
           session_id?: string
           updated_at?: string

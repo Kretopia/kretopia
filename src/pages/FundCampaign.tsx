@@ -173,7 +173,7 @@ const FundCampaign = () => {
                 <div className="shrink-0">
                   <SocialShareButtons
                     url={`/fund/${campaign.slug}`}
-                    socialUrl={`https://kwmcocsitwssrtzkdojh.supabase.co/functions/v1/og-campaign?slug=${campaign.slug}`}
+                    socialUrl={`/share/fund/${campaign.slug}/`}
                     title={`${campaign.title} on ThriveFund`}
                     description={
                       campaign.status === "funded"

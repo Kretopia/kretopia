@@ -23,6 +23,9 @@ import { IceBreakers } from "@/components/messages/IceBreakers";
 import { TypingIndicator, useTypingStatus } from "@/components/messages/TypingIndicator";
 import { MessageAttachments, AttachmentPreview } from "@/components/messages/MessageAttachments";
 import { MessageRequests } from "@/components/messages/MessageRequests";
+import { GroupsList, type GroupRoom } from "@/components/messages/GroupsList";
+import { GroupChatPanel } from "@/components/messages/GroupChatPanel";
+import { CreateGroupDialog } from "@/components/messages/CreateGroupDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOnlinePresence, OnlineDot } from "@/components/messages/OnlinePresence";
 import { MessageReplyBanner, InlineReply } from "@/components/messages/MessageReply";
@@ -97,8 +100,10 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [connections, setConnections] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox');
+  const [activeTab, setActiveTab] = useState<'inbox' | 'groups' | 'requests'>('inbox');
   const [requestCount, setRequestCount] = useState(0);
+  const [selectedGroup, setSelectedGroup] = useState<GroupRoom | null>(null);
+  const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [otherUser, setOtherUser] = useState<{
     id: string;
     name: string;
@@ -488,7 +493,7 @@ const Messages = () => {
       {/* Conversations List */}
       <div
         className={`${
-          selectedConversation ? "hidden md:flex" : "flex"
+          selectedConversation || selectedGroup ? "hidden md:flex" : "flex"
         } w-full md:w-[340px] lg:w-96 flex-col border-r border-border bg-card`}
       >
         <div className="p-3 sm:p-4 border-b-2 border-primary/20 space-y-2.5 sm:space-y-4">
@@ -502,17 +507,20 @@ const Messages = () => {
             message="Match with creators in Circle first, then come here to chat. Tip: mention something specific from their profile to break the ice!"
           />
           
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'inbox' | 'requests')}>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'inbox' | 'groups' | 'requests')}>
             <TabsList className="w-full">
-              <TabsTrigger value="inbox" className="flex-1">
-                Inbox {conversationCount > 0 && <Badge variant="secondary" className="ml-1">{conversationCount}</Badge>}
+              <TabsTrigger value="inbox" className="flex-1 text-xs sm:text-sm">
+                Direct {conversationCount > 0 && <Badge variant="secondary" className="ml-1">{conversationCount}</Badge>}
               </TabsTrigger>
-              <TabsTrigger value="requests" className="flex-1">
+              <TabsTrigger value="groups" className="flex-1 text-xs sm:text-sm">
+                Groups
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="flex-1 text-xs sm:text-sm">
                 Requests {requestCount > 0 && <Badge variant="destructive" className="ml-1">{requestCount}</Badge>}
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          
+
           {activeTab === 'inbox' && (
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -527,7 +535,14 @@ const Messages = () => {
         </div>
         
         <ScrollArea className="flex-1">
-          {activeTab === 'requests' ? (
+          {activeTab === 'groups' ? (
+            <GroupsList
+              currentUserId={currentUserId}
+              selectedGroupId={selectedGroup?.id || null}
+              onSelect={(g) => setSelectedGroup(g)}
+              onCreate={() => setCreateGroupOpen(true)}
+            />
+          ) : activeTab === 'requests' ? (
             <MessageRequests 
               currentUserId={currentUserId}
               onAccept={() => {
@@ -641,7 +656,13 @@ const Messages = () => {
       </div>
 
       {/* Chat Area */}
-      {selectedConversation ? (
+      {selectedGroup ? (
+        <GroupChatPanel
+          group={selectedGroup}
+          currentUserId={currentUserId}
+          onBack={() => setSelectedGroup(null)}
+        />
+      ) : selectedConversation ? (
         <div className="flex-1 flex flex-col bg-background pb-20 lg:pb-0">
           {/* Chat Header */}
           <div className="p-3 sm:p-4 border-b border-border flex items-center gap-2.5 sm:gap-3 bg-card">
@@ -971,6 +992,16 @@ const Messages = () => {
           currentUserRole={currentUserRole}
         />
       )}
+
+      <CreateGroupDialog
+        open={createGroupOpen}
+        onOpenChange={setCreateGroupOpen}
+        currentUserId={currentUserId}
+        onCreated={(roomId) => {
+          setActiveTab('groups');
+          // Trigger reload by switching tab; GroupsList realtime will pick it up
+        }}
+      />
     </div>
     </PageTransition>
   );

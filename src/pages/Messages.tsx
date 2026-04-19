@@ -126,6 +126,8 @@ const Messages = () => {
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [replyTo, setReplyTo] = useState<ReplyTo | null>(null);
+  const [reactionsByMsg, setReactionsByMsg] = useState<Map<string, ReactionRow[]>>(new Map());
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -519,7 +521,7 @@ const Messages = () => {
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'inbox' | 'groups' | 'requests')}>
             <TabsList className="w-full">
               <TabsTrigger value="inbox" className="flex-1 text-xs sm:text-sm">
-                Direct {conversationCount > 0 && <Badge variant="secondary" className="ml-1">{conversationCount}</Badge>}
+                Direct
               </TabsTrigger>
               <TabsTrigger value="groups" className="flex-1 text-xs sm:text-sm">
                 Groups

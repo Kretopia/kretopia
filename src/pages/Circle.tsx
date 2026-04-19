@@ -174,7 +174,7 @@ export default function Circle() {
                 <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] text-foreground">Match</h1>
               </div>
               <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 uppercase tracking-wider font-semibold">
-                {activeTab === 'foryou' ? 'Like what catches your eye' :
+                {activeTab === 'foryou' ? 'Build your creative circle' :
                  `${connections.length} collaborator${connections.length !== 1 ? 's' : ''} in your circle`}
               </p>
             </div>

@@ -14,6 +14,9 @@ import { template as newApplicantNotification } from './new-applicant-notificati
 import { template as eventRegistrationConfirmation } from './event-registration-confirmation.tsx'
 import { template as onboardingReminder } from './onboarding-reminder.tsx'
 import { template as eventReminder } from './event-reminder.tsx'
+import { template as thrivefundPledgeConfirmed } from './thrivefund-pledge-confirmed.tsx'
+import { template as thrivefundCampaignFunded } from './thrivefund-campaign-funded.tsx'
+import { template as thrivefundCampaignFailed } from './thrivefund-campaign-failed.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-confirmation': applicationConfirmation,
@@ -21,4 +24,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'event-registration-confirmation': eventRegistrationConfirmation,
   'onboarding-reminder': onboardingReminder,
   'event-reminder': eventReminder,
+  'thrivefund-pledge-confirmed': thrivefundPledgeConfirmed,
+  'thrivefund-campaign-funded': thrivefundCampaignFunded,
+  'thrivefund-campaign-failed': thrivefundCampaignFailed,
 }

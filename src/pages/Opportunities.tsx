@@ -6,8 +6,8 @@ const Opportunities = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <SEO
-        title="Productions — Find Creative Work | ThriveIN"
-        description="Browse and apply for creative productions, paid gigs, collaborations, and barter opportunities on ThriveIN"
+        title="Gigs — Find Creative Work | ThriveIN"
+        description="Browse and apply for creative gigs — paid jobs, collaborations, and barter opportunities across film, music, fashion, events and more."
       />
 
       {/* Cinematic header */}
@@ -18,14 +18,14 @@ const Opportunities = () => {
             <div>
               <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-3 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
                 <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                Live productions
+                Live gigs
               </p>
               <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-foreground leading-[0.95]">
-                Productions.<br />
-                <span className="text-energy-glow">Find your next gig.</span>
+                Gigs.<br />
+                <span className="text-energy-glow">Find your next one.</span>
               </h1>
               <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-md">
-                Paid gigs, collabs, barter, and full-scale productions across every creative industry.
+                Paid jobs, collabs, and barter across every creative industry — film, music, fashion, events and more.
               </p>
             </div>
             <div className="hidden sm:flex items-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-3 py-2">

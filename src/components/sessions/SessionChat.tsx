@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Trash2, MessageCircle } from "lucide-react";
+import { Loader2, Send, Trash2, MessageCircle, Megaphone, Pin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,6 +26,7 @@ interface Message {
   content: string;
   created_at: string;
   is_deleted: boolean;
+  is_announcement?: boolean;
   profile: {
     full_name: string;
     avatar_url: string | null;
@@ -45,6 +46,7 @@ export const SessionChat = ({ sessionId, isCreator }: SessionChatProps) => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [deleteMessage, setDeleteMessage] = useState<Message | null>(null);
+  const [broadcastMode, setBroadcastMode] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -102,7 +104,7 @@ export const SessionChat = ({ sessionId, isCreator }: SessionChatProps) => {
     
     const { data, error } = await supabase
       .from('session_messages')
-      .select('id, user_id, content, created_at, is_deleted')
+      .select('id, user_id, content, created_at, is_deleted, is_announcement')
       .eq('session_id', sessionId)
       .eq('is_deleted', false)
       .order('created_at', { ascending: true });
@@ -136,7 +138,7 @@ export const SessionChat = ({ sessionId, isCreator }: SessionChatProps) => {
   const fetchNewMessage = async (messageId: string) => {
     const { data } = await supabase
       .from('session_messages')
-      .select('id, user_id, content, created_at, is_deleted')
+      .select('id, user_id, content, created_at, is_deleted, is_announcement')
       .eq('id', messageId)
       .single();
 
@@ -185,6 +187,7 @@ export const SessionChat = ({ sessionId, isCreator }: SessionChatProps) => {
         session_id: sessionId,
         user_id: user.id,
         content: sanitizedContent,
+        is_announcement: broadcastMode && isCreator,
       });
 
     if (error) {
@@ -195,6 +198,9 @@ export const SessionChat = ({ sessionId, isCreator }: SessionChatProps) => {
       });
     } else {
       setNewMessage("");
+      if (broadcastMode) {
+        toast({ title: "📣 Announcement sent", description: "Pinned to the top of the chat." });
+      }
     }
 
     setSending(false);

@@ -56,12 +56,17 @@ interface Message {
   created_at: string;
   read: boolean;
   match_id: string | null;
-  attachment_url?: string;
-  attachment_type?: 'image' | 'file';
-  attachment_name?: string;
+  attachment_url?: string | null;
+  attachment_type?: string | null;
+  attachment_name?: string | null;
+  attachment_size?: number | null;
+  attachment_duration?: number | null;
   reply_to_id?: string | null;
   reply_to_content?: string | null;
   reply_to_sender_name?: string | null;
+  shared_content_type?: string | null;
+  shared_content_id?: string | null;
+  shared_content_meta?: any;
 }
 
 interface Attachment {

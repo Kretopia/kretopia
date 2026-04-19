@@ -676,11 +676,11 @@ const FundNew = () => {
               <Button
                 size="lg"
                 onClick={() => handleSubmit(true)}
-                disabled={createMut.isPending || gated}
+                disabled={createMut.isPending || gated || !ageVerified}
                 className="gap-2"
               >
                 {createMut.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                {gated ? <><Lock className="h-4 w-4" /> Upgrade to launch</> : <>Launch <Rocket className="h-4 w-4" /></>}
+                {gated ? <><Lock className="h-4 w-4" /> Upgrade to launch</> : !ageVerified ? <><Lock className="h-4 w-4" /> Verify age to launch</> : <>Launch <Rocket className="h-4 w-4" /></>}
               </Button>
             </div>
           )}

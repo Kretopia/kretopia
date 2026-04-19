@@ -61,7 +61,7 @@ const TYPE_META = {
 
 export function UnifiedSearchDropdown({
   variant = "navbar",
-  placeholder = "Search creators, productions, gigs...",
+  placeholder = "Search creators, gigs, credits...",
   value,
   onValueChange,
   autoFocus = false,

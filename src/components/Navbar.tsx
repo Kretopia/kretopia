@@ -300,6 +300,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Explore</p>
                       <MenuButton icon={Globe} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
                       <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} />
+                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
                     </>
                   ) : (
                     /* ====== WORK MODE MENU ====== */
@@ -313,6 +314,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                       )}
+                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund/manage")} />
                     </>
                   )}
 

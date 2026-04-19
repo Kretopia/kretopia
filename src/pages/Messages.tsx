@@ -100,8 +100,10 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [connections, setConnections] = useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox');
+  const [activeTab, setActiveTab] = useState<'inbox' | 'groups' | 'requests'>('inbox');
   const [requestCount, setRequestCount] = useState(0);
+  const [selectedGroup, setSelectedGroup] = useState<GroupRoom | null>(null);
+  const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [otherUser, setOtherUser] = useState<{
     id: string;
     name: string;

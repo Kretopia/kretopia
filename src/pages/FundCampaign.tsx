@@ -123,6 +123,21 @@ const FundCampaign = () => {
         </div>
       )}
 
+      {!user && isLive && (
+        <div className="bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 border-b border-primary/20 py-3 px-4">
+          <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2 text-sm">
+            <p className="font-medium">
+              <span className="text-primary">New here?</span>{" "}
+              <span className="text-muted-foreground">Create a free account to back this campaign — no charge unless it funds.</span>
+            </p>
+            <Button size="sm" onClick={() => navigate(`/auth?redirect=/fund/${slug}`)} className="gap-1">
+              <Heart className="h-3.5 w-3.5" />
+              Sign up to back
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main column */}

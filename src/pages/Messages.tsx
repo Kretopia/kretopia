@@ -1134,7 +1134,7 @@ const Messages = () => {
         currentUserId={currentUserId}
         onCreated={(roomId) => {
           setActiveTab('groups');
-          // Trigger reload by switching tab; GroupsList realtime will pick it up
+          setGroupsRefreshKey((k) => k + 1);
         }}
       />
     </div>

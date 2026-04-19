@@ -1077,6 +1077,7 @@ const Messages = () => {
                 onAttach={(url, type, fileName) => setAttachment({ url, type, fileName })}
                 disabled={!!attachment}
               />
+              <VoiceNoteRecorder onSend={sendVoiceNote} disabled={!!attachment} />
               <div className="flex-1 relative">
                 <Input
                   ref={inputRef}
@@ -1106,6 +1107,8 @@ const Messages = () => {
           </div>
         </div>
       )}
+
+      <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
 
       {/* Start Project Dialog */}
       {otherUser && (

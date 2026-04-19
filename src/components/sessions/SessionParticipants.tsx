@@ -140,6 +140,33 @@ export const SessionParticipants = ({
     navigate(`/profile/${userId}`);
   };
 
+  const myParticipation = participants.find(p => p.user_id === user?.id);
+  const isMyVisible = myParticipation ? myParticipation.is_visible !== false : true;
+
+  const handleToggleVisibility = async (visible: boolean) => {
+    if (!myParticipation) return;
+    setUpdatingVisibility(true);
+    const { error } = await supabase
+      .from('jam_participants')
+      .update({ is_visible: visible })
+      .eq('id', myParticipation.id);
+    if (error) {
+      toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
+    } else {
+      setParticipants(prev => prev.map(p => p.id === myParticipation.id ? { ...p, is_visible: visible } : p));
+      toast({
+        title: visible ? "You're visible to other attendees" : "You're hidden from attendees",
+        description: visible ? "Others can see you in the attendee list." : "Only the host can see you.",
+      });
+    }
+    setUpdatingVisibility(false);
+  };
+
+  // Filter visible participants — host sees all, others see only opt-in
+  const visibleParticipants = isCreator
+    ? participants
+    : participants.filter(p => p.is_visible !== false || p.user_id === user?.id);
+
   const handleDownloadGuestList = () => {
     const rows: string[][] = [["Name", "Role", "Status", "Joined At"]];
 

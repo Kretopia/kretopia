@@ -7558,6 +7558,7 @@ export type Database = {
           description: string | null
           id: string
           match_id: string | null
+          spark_room_id: string | null
           status: string | null
           title: string
           updated_at: string | null
@@ -7570,6 +7571,7 @@ export type Database = {
           description?: string | null
           id?: string
           match_id?: string | null
+          spark_room_id?: string | null
           status?: string | null
           title: string
           updated_at?: string | null
@@ -7582,6 +7584,7 @@ export type Database = {
           description?: string | null
           id?: string
           match_id?: string | null
+          spark_room_id?: string | null
           status?: string | null
           title?: string
           updated_at?: string | null
@@ -7592,6 +7595,13 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_spark_room_id_fkey"
+            columns: ["spark_room_id"]
+            isOneToOne: false
+            referencedRelation: "spark_rooms"
             referencedColumns: ["id"]
           },
         ]

@@ -26,6 +26,8 @@ import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
 import { EventComments } from "@/components/sessions/EventComments";
 import { EventCohosts } from "@/components/sessions/EventCohosts";
 import { EventRecapButton } from "@/components/sessions/EventRecapButton";
+import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
+import { APP_URL } from "@/lib/constants";
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
@@ -150,14 +152,7 @@ const EventPage = () => {
   };
 
   const handleShare = () => {
-    const shareUrl = `https://www.thrivein.io/share/event/${eventId}/`;
-    const eventDate = event ? new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : '';
-    const shareText = `🎉 ${event?.title}\n📅 ${eventDate}${event?.venue_name ? `\n📍 ${event.venue_name}` : ''}\n\nRSVP now on ThriveIN 👇\n${shareUrl}`;
-    if (navigator.share) {
-      navigator.share({ title: event?.title, text: shareText, url: shareUrl }).catch(() => {});
-    } else {
-      setShowShareKit(true);
-    }
+    setShowShareDialog(true);
   };
 
   if (loading) {

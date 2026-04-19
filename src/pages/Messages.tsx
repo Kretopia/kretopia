@@ -507,17 +507,20 @@ const Messages = () => {
             message="Match with creators in Circle first, then come here to chat. Tip: mention something specific from their profile to break the ice!"
           />
           
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'inbox' | 'requests')}>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'inbox' | 'groups' | 'requests')}>
             <TabsList className="w-full">
-              <TabsTrigger value="inbox" className="flex-1">
-                Inbox {conversationCount > 0 && <Badge variant="secondary" className="ml-1">{conversationCount}</Badge>}
+              <TabsTrigger value="inbox" className="flex-1 text-xs sm:text-sm">
+                Direct {conversationCount > 0 && <Badge variant="secondary" className="ml-1">{conversationCount}</Badge>}
               </TabsTrigger>
-              <TabsTrigger value="requests" className="flex-1">
+              <TabsTrigger value="groups" className="flex-1 text-xs sm:text-sm">
+                Groups
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="flex-1 text-xs sm:text-sm">
                 Requests {requestCount > 0 && <Badge variant="destructive" className="ml-1">{requestCount}</Badge>}
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          
+
           {activeTab === 'inbox' && (
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

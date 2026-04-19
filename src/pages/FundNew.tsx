@@ -152,10 +152,55 @@ const FundNew = () => {
     }
   };
 
+  // ── Age / ID verification gating ──
+  const [profile, setProfile] = useState<{ age_verified?: boolean; id_verified?: boolean; date_of_birth?: string | null; email_verified?: boolean } | null>(null);
+  const [dob, setDob] = useState("");
+  const [savingDob, setSavingDob] = useState(false);
+
+  useState(() => {
+    if (!user) return;
+    supabase.from("profiles").select("age_verified, id_verified, date_of_birth, email_verified").eq("user_id", user.id).maybeSingle().then(({ data }: any) => {
+      if (data) {
+        setProfile(data);
+        if (data.date_of_birth) setDob(data.date_of_birth);
+      }
+    });
+  });
+
+  const yearsOld = (d: string) => {
+    if (!d) return 0;
+    return Math.floor((Date.now() - new Date(d).getTime()) / (365.25 * 86400000));
+  };
+
+  const saveDob = async () => {
+    if (!user) return;
+    if (yearsOld(dob) < 18) {
+      toast.error("You must be 18 or older to launch a campaign.");
+      return;
+    }
+    setSavingDob(true);
+    try {
+      const { error } = await supabase.from("profiles").update({ date_of_birth: dob, age_verified: true }).eq("user_id", user.id);
+      if (error) throw error;
+      setProfile((p) => ({ ...(p ?? {}), date_of_birth: dob, age_verified: true }));
+      toast.success("Age verified");
+    } catch (e: any) {
+      toast.error(e.message || "Couldn't save");
+    } finally {
+      setSavingDob(false);
+    }
+  };
+
+  const ageVerified = !!profile?.age_verified;
+
   // ── Submit ──
   const handleSubmit = async (publish: boolean) => {
     if (!user) {
       navigate("/auth?redirect=/fund/new");
+      return;
+    }
+    if (publish && !ageVerified) {
+      toast.error("Confirm your date of birth (18+) before launching.");
       return;
     }
     if (publish && gated) {
@@ -196,7 +241,14 @@ const FundNew = () => {
             is_active: true,
           })),
       });
-      toast.success(publish ? "Campaign launched!" : "Draft saved");
+      const mod = (campaign as any).moderation as { decision: string; reason: string } | null;
+      if (publish && mod) {
+        if (mod.decision === "block") toast.error(`Blocked: ${mod.reason}`);
+        else if (mod.decision === "review") toast.success("Submitted for review — we'll publish once approved.");
+        else toast.success("Campaign launched and live!");
+      } else {
+        toast.success(publish ? "Campaign launched!" : "Draft saved");
+      }
       navigate(`/fund/${campaign.slug}`);
     } catch (e: any) {
       toast.error(e.message || "Failed to create campaign");

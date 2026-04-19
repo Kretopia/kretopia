@@ -113,6 +113,7 @@ const Messages = () => {
   const [requestCount, setRequestCount] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState<GroupRoom | null>(null);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
+  const [groupsRefreshKey, setGroupsRefreshKey] = useState(0);
   const [otherUser, setOtherUser] = useState<{
     id: string;
     name: string;

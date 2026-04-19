@@ -688,6 +688,139 @@ export type Database = {
           },
         ]
       }
+      campaign_updates: {
+        Row: {
+          author_id: string
+          backers_only: boolean
+          campaign_id: string
+          content: string
+          created_at: string
+          id: string
+          media_urls: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          backers_only?: boolean
+          campaign_id: string
+          content: string
+          created_at?: string
+          id?: string
+          media_urls?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          backers_only?: boolean
+          campaign_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          media_urls?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_updates_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          backer_count: number
+          category: string | null
+          cover_image_url: string | null
+          created_at: string
+          creator_id: string
+          currency: string
+          deadline: string
+          ended_at: string | null
+          funding_model: string
+          goal_amount: number
+          id: string
+          launched_at: string | null
+          milestone_split: Json
+          platform_fee_pct: number
+          project_id: string | null
+          slug: string
+          status: string
+          story: string | null
+          stripe_account_id: string | null
+          tagline: string | null
+          title: string
+          total_raised: number
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          backer_count?: number
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          creator_id: string
+          currency?: string
+          deadline: string
+          ended_at?: string | null
+          funding_model?: string
+          goal_amount: number
+          id?: string
+          launched_at?: string | null
+          milestone_split?: Json
+          platform_fee_pct?: number
+          project_id?: string | null
+          slug: string
+          status?: string
+          story?: string | null
+          stripe_account_id?: string | null
+          tagline?: string | null
+          title: string
+          total_raised?: number
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          backer_count?: number
+          category?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          creator_id?: string
+          currency?: string
+          deadline?: string
+          ended_at?: string | null
+          funding_model?: string
+          goal_amount?: number
+          id?: string
+          launched_at?: string | null
+          milestone_split?: Json
+          platform_fee_pct?: number
+          project_id?: string | null
+          slug?: string
+          status?: string
+          story?: string | null
+          stripe_account_id?: string | null
+          tagline?: string | null
+          title?: string
+          total_raised?: number
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_suggestions: {
         Row: {
           created_at: string
@@ -5714,6 +5847,134 @@ export type Database = {
           },
         ]
       }
+      pledge_tiers: {
+        Row: {
+          amount: number
+          campaign_id: string
+          claimed_count: number
+          created_at: string
+          description: string | null
+          display_order: number
+          estimated_delivery: string | null
+          id: string
+          is_active: boolean
+          max_backers: number | null
+          reward_type: string | null
+          title: string
+        }
+        Insert: {
+          amount: number
+          campaign_id: string
+          claimed_count?: number
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          estimated_delivery?: string | null
+          id?: string
+          is_active?: boolean
+          max_backers?: number | null
+          reward_type?: string | null
+          title: string
+        }
+        Update: {
+          amount?: number
+          campaign_id?: string
+          claimed_count?: number
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          estimated_delivery?: string | null
+          id?: string
+          is_active?: boolean
+          max_backers?: number | null
+          reward_type?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pledge_tiers_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pledges: {
+        Row: {
+          amount: number
+          backer_id: string
+          backer_message: string | null
+          campaign_id: string
+          capture_status: string
+          captured_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          is_anonymous: boolean
+          pledged_at: string
+          refunded_at: string | null
+          shipping_address: Json | null
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          tier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          backer_id: string
+          backer_message?: string | null
+          campaign_id: string
+          capture_status?: string
+          captured_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_anonymous?: boolean
+          pledged_at?: string
+          refunded_at?: string | null
+          shipping_address?: Json | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          tier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          backer_id?: string
+          backer_message?: string | null
+          campaign_id?: string
+          capture_status?: string
+          captured_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_anonymous?: boolean
+          pledged_at?: string
+          refunded_at?: string | null
+          shipping_address?: Json | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          tier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pledges_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pledges_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "pledge_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       podcast_episodes: {
         Row: {
           audio_url: string | null
@@ -6143,6 +6404,7 @@ export type Database = {
           invite_code_used: string | null
           invited_by: string | null
           is_claimed: boolean | null
+          is_hidden_backer: boolean
           is_manager_mode: boolean | null
           job_title: string | null
           last_active_date: string | null
@@ -6297,6 +6559,7 @@ export type Database = {
           invite_code_used?: string | null
           invited_by?: string | null
           is_claimed?: boolean | null
+          is_hidden_backer?: boolean
           is_manager_mode?: boolean | null
           job_title?: string | null
           last_active_date?: string | null
@@ -6451,6 +6714,7 @@ export type Database = {
           invite_code_used?: string | null
           invited_by?: string | null
           is_claimed?: boolean | null
+          is_hidden_backer?: boolean
           is_manager_mode?: boolean | null
           job_title?: string | null
           last_active_date?: string | null

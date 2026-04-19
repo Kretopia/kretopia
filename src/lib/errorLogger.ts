@@ -40,6 +40,11 @@ export async function logClientError(
  */
 const IGNORED_PATTERNS = [
   /Failed to register a ServiceWorker/i,
+  /ServiceWorker.*register/i,
+  /registerSW\.js/i,
+  /sw\.js.*load failed/i,
+  /Operation has been aborted/i,
+  /Failed to access storage/i,
   /ResizeObserver loop/i,
   /ResizeObserver loop completed with undelivered notifications/i,
   /Non-Error promise rejection captured/i,
@@ -52,8 +57,17 @@ const IGNORED_PATTERNS = [
   /AbortError/i, // user-initiated cancellations
 ];
 
-function shouldIgnore(message: string): boolean {
-  return IGNORED_PATTERNS.some((re) => re.test(message));
+/** Also check the stack trace for known noisy sources. */
+const IGNORED_STACK_PATTERNS = [
+  /registerSW\.js/i,
+  /serviceWorker\.register/i,
+  /sw\.js/i,
+];
+
+function shouldIgnore(message: string, stack?: string): boolean {
+  if (IGNORED_PATTERNS.some((re) => re.test(message))) return true;
+  if (stack && IGNORED_STACK_PATTERNS.some((re) => re.test(stack))) return true;
+  return false;
 }
 
 /**
@@ -62,7 +76,10 @@ function shouldIgnore(message: string): boolean {
 export function setupGlobalErrorLogging() {
   window.addEventListener("error", (event) => {
     const msg = String(event.error?.message || event.message || "");
-    if (shouldIgnore(msg)) return;
+    const stack = event.error?.stack || "";
+    if (shouldIgnore(msg, stack)) return;
+    // Also ignore by filename
+    if (event.filename && /registerSW\.js|sw\.js/i.test(event.filename)) return;
     logClientError(
       event.error || event.message,
       "GlobalErrorHandler",
@@ -73,7 +90,8 @@ export function setupGlobalErrorLogging() {
   window.addEventListener("unhandledrejection", (event) => {
     const reason = event.reason;
     const msg = reason instanceof Error ? reason.message : String(reason || "");
-    if (shouldIgnore(msg)) return;
+    const stack = reason instanceof Error ? (reason.stack || "") : "";
+    if (shouldIgnore(msg, stack)) return;
     const errorMsg = reason instanceof Error 
       ? reason 
       : String(reason || 'Unknown rejection');

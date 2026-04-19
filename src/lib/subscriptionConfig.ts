@@ -94,6 +94,7 @@ export const FREE_FEATURES: Record<AccountType, string[]> = {
     "🔓 1 contract/month",
     "🔓 1 approval request/month",
     "🔓 1 template use/month",
+    "💸 ThriveFund — launch your first campaign on us (1/year)",
     "Higher commission on transactions",
   ],
   company: [
@@ -128,6 +129,7 @@ export const PRO_FEATURES: Record<AccountType, string[]> = {
     "Advanced search filters",
     "Undo swipes (3/day)",
     "Press, credits & awards sections",
+    "💸 ThriveFund — 3 campaigns/year",
     "Priority support",
   ],
   company: [
@@ -160,6 +162,7 @@ export const CREATOR_PRO_FEATURES: Record<AccountType, string[]> = {
     "⏰ Scheduled email sends",
     "🤖 Priority AI processing",
     "🔓 Advanced reporting & exports",
+    "💸 ThriveFund — unlimited campaigns",
     "White-glove onboarding",
     "Dedicated account manager",
   ],

@@ -43,3 +43,12 @@ export const ShareMagazineRedirect = () => {
   }, [slug, navigate]);
   return null;
 };
+
+export const ShareCampaignRedirect = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate(slug ? `/fund/${slug}` : "/fund", { replace: true });
+  }, [slug, navigate]);
+  return null;
+};

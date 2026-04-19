@@ -103,10 +103,10 @@ const OutreachTab = () => {
   ) => {
     setMediaUploading(true);
     try {
-      const path = `outreach/${user!.id}/${Date.now()}_${file.name}`;
-      const { error: uploadError } = await supabase.storage.from("project-files").upload(path, file);
+      const path = `${user!.id}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage.from("outreach-media").upload(path, file);
       if (uploadError) { toast.error(`Upload failed: ${uploadError.message}`); return; }
-      const { data: urlData } = supabase.storage.from("project-files").getPublicUrl(path);
+      const { data: urlData } = supabase.storage.from("outreach-media").getPublicUrl(path);
       const marker = type === "image"
         ? `[image:${urlData.publicUrl}|${file.name}]`
         : `[video:${urlData.publicUrl}|${file.name}]`;
@@ -377,10 +377,10 @@ const OutreachTab = () => {
       let attachmentUrls: { name: string; url: string }[] = [];
       if (attachments.length > 0) {
         for (const file of attachments) {
-          const path = `outreach/${user!.id}/${Date.now()}_${file.name}`;
-          const { error: uploadError } = await supabase.storage.from("project-files").upload(path, file);
+          const path = `${user!.id}/${Date.now()}_${file.name}`;
+          const { error: uploadError } = await supabase.storage.from("outreach-media").upload(path, file);
           if (uploadError) { toast.error(`Failed to upload ${file.name}`); continue; }
-          const { data: urlData } = supabase.storage.from("project-files").getPublicUrl(path);
+          const { data: urlData } = supabase.storage.from("outreach-media").getPublicUrl(path);
           attachmentUrls.push({ name: file.name, url: urlData.publicUrl });
         }
       }
@@ -532,10 +532,10 @@ const OutreachTab = () => {
     let bulkAttachmentUrls: { name: string; url: string }[] = [];
     if (bulkAttachments.length > 0) {
       for (const file of bulkAttachments) {
-        const path = `outreach/${user!.id}/${Date.now()}_${file.name}`;
-        const { error: uploadError } = await supabase.storage.from("project-files").upload(path, file);
+        const path = `${user!.id}/${Date.now()}_${file.name}`;
+        const { error: uploadError } = await supabase.storage.from("outreach-media").upload(path, file);
         if (uploadError) { toast.error(`Failed to upload ${file.name}`); continue; }
-        const { data: urlData } = supabase.storage.from("project-files").getPublicUrl(path);
+        const { data: urlData } = supabase.storage.from("outreach-media").getPublicUrl(path);
         bulkAttachmentUrls.push({ name: file.name, url: urlData.publicUrl });
       }
     }

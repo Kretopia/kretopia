@@ -38,6 +38,8 @@ import { useConnectionDegree } from "@/hooks/useNetworkStats";
 import { calculateStatusFromCredits } from "@/lib/statusEngine";
 import { checkConnectionGate, type GateCheckResult } from "@/lib/connectionGate";
 import { StatusBadge } from "@/components/StatusBadge";
+import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
+import { APP_URL } from "@/lib/constants";
 import { ConnectionGateBanner } from "@/components/ConnectionGateBanner";
 
 // Import profile section components
@@ -102,6 +104,7 @@ const ViewProfile = () => {
   const [connectionStatus, setConnectionStatus] = useState<'none' | 'pending' | 'connected'>('none');
   const [isConnecting, setIsConnecting] = useState(false);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [isStartProjectOpen, setIsStartProjectOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(searchParams.get('showClaim') === 'true');
@@ -597,6 +600,9 @@ const ViewProfile = () => {
                       <Rocket className="h-4 w-4" />
                       Start Project
                     </Button>
+                    <Button variant="outline" size="icon" onClick={() => setShowShareDialog(true)} aria-label="Share profile">
+                      <Share2 className="h-4 w-4" />
+                    </Button>
                   </>
                 ) : connectionStatus === 'connected' ? (
                   <>
@@ -607,6 +613,9 @@ const ViewProfile = () => {
                     <Button variant="outline" onClick={() => setIsStartProjectOpen(true)} className="gap-2">
                       <Rocket className="h-4 w-4" />
                       Collaborate
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => setShowShareDialog(true)} aria-label="Share profile">
+                      <Share2 className="h-4 w-4" />
                     </Button>
                   </>
                 ) : connectionStatus === 'pending' ? (

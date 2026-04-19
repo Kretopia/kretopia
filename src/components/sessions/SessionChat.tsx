@@ -239,11 +239,31 @@ export const SessionChat = ({ sessionId, isCreator }: SessionChatProps) => {
     );
   }
 
+  const announcements = messages.filter(m => m.is_announcement).slice(-3);
+  const regularMessages = messages.filter(m => !m.is_announcement);
+
   return (
     <>
       <div className="flex flex-col h-full min-h-0">
+        {announcements.length > 0 && (
+          <div className="px-4 sm:px-6 pt-3 space-y-2 shrink-0">
+            {announcements.map(a => (
+              <div key={a.id} className="rounded-xl border border-primary/30 bg-primary/5 p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Pin className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-semibold text-primary uppercase tracking-wide">Host announcement</span>
+                  <span className="text-xs text-muted-foreground ml-auto">
+                    {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
+                  </span>
+                </div>
+                <p className="text-sm break-words">{a.content}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
         <ScrollArea className="flex-1 min-h-0 px-4 sm:px-6" ref={scrollRef}>
-          {messages.length === 0 ? (
+          {regularMessages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <MessageCircle className="h-12 w-12 mb-4 text-muted-foreground/50" />
               <h3 className="font-medium mb-1">No messages yet</h3>
@@ -254,7 +274,7 @@ export const SessionChat = ({ sessionId, isCreator }: SessionChatProps) => {
             </div>
           ) : (
             <div className="space-y-4 py-4">
-              {messages.map((message) => {
+              {regularMessages.map((message) => {
                 const isOwn = message.user_id === user?.id;
                 return (
                   <div
@@ -305,7 +325,21 @@ export const SessionChat = ({ sessionId, isCreator }: SessionChatProps) => {
           )}
         </ScrollArea>
 
-        <div className="p-4 border-t shrink-0">
+        <div className="p-4 border-t shrink-0 space-y-2">
+          {isCreator && (
+            <button
+              type="button"
+              onClick={() => setBroadcastMode(v => !v)}
+              className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                broadcastMode
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:bg-muted"
+              }`}
+            >
+              <Megaphone className="h-3 w-3" />
+              {broadcastMode ? "Broadcasting as host" : "Send as announcement"}
+            </button>
+          )}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -316,7 +350,7 @@ export const SessionChat = ({ sessionId, isCreator }: SessionChatProps) => {
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
+              placeholder={broadcastMode ? "Write an announcement to all attendees…" : "Type a message..."}
               disabled={sending}
               className="flex-1"
             />

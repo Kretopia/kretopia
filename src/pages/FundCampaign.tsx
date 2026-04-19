@@ -313,6 +313,20 @@ const FundCampaign = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ShareToMessageDialog
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+        contentType="campaign"
+        contentId={campaign.id}
+        contentMeta={{
+          title: campaign.title,
+          subtitle: campaign.tagline || undefined,
+          image_url: campaign.cover_image_url,
+        }}
+        externalUrl={`${APP_URL}/share/fund/${campaign.slug}/`}
+        externalText={`💜 Back "${campaign.title}" on ThriveFund\n${APP_URL}/share/fund/${campaign.slug}/`}
+      />
     </div>
   );
 };

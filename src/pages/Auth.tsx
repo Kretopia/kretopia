@@ -15,12 +15,14 @@ import {
 import { AuthBrandingPanel } from "@/components/auth/AuthBrandingPanel";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { SignUpWizard } from "@/components/auth/SignUpWizard";
+import { UniversalClaimFlow } from "@/components/onboarding/claim-flow/UniversalClaimFlow";
 import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/BrandLogo";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<string>("signup");
+  const [signupMode, setSignupMode] = useState<"claim" | "classic">("claim");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -386,16 +388,42 @@ const Auth = () => {
               </TabsContent>
 
               <TabsContent value="signup">
-                <SignUpWizard
-                  email={email} setEmail={setEmail}
-                  password={password} setPassword={setPassword}
-                  confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword}
-                  accountType={accountType} setAccountType={setAccountType}
-                  loading={loading} onSubmit={handleSignUp}
-                  onGoogleSignIn={() => handleOAuthSignIn("google")}
-                  onAppleSignIn={() => handleOAuthSignIn("apple")}
-                  googleLoading={googleLoading} appleLoading={appleLoading}
-                />
+                {signupMode === "claim" ? (
+                  <>
+                    <UniversalClaimFlow source="auth" />
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setSignupMode("classic")}
+                        className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                      >
+                        Use email & password instead
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <SignUpWizard
+                      email={email} setEmail={setEmail}
+                      password={password} setPassword={setPassword}
+                      confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword}
+                      accountType={accountType} setAccountType={setAccountType}
+                      loading={loading} onSubmit={handleSignUp}
+                      onGoogleSignIn={() => handleOAuthSignIn("google")}
+                      onAppleSignIn={() => handleOAuthSignIn("apple")}
+                      googleLoading={googleLoading} appleLoading={appleLoading}
+                    />
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => setSignupMode("claim")}
+                        className="text-xs text-primary hover:underline font-semibold"
+                      >
+                        ← Back to one-tap claim
+                      </button>
+                    </div>
+                  </>
+                )}
               </TabsContent>
             </Tabs>
           )}

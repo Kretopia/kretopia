@@ -59,6 +59,7 @@ const EmailUnsubscribe = lazy(() => import("./pages/EmailUnsubscribe"));
 const CommunityGuidelines = lazy(() => import("./pages/CommunityGuidelines"));
 const About = lazy(() => import("./pages/About"));
 const ClaimProfile = lazy(() => import("./pages/ClaimProfile"));
+const Claim = lazy(() => import("./pages/Claim"));
 
 const Search = lazy(() => import("./pages/Search"));
 const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
@@ -219,6 +220,7 @@ const AppContent = () => {
             <Route path="/" element={<DefaultRoute />} />
             <Route path="/landing" element={<Navigate to="/" replace />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/claim" element={<Claim />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/company-onboarding" element={<ProtectedRoute><CompanyOnboarding /></ProtectedRoute>} />
             

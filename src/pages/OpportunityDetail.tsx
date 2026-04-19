@@ -14,6 +14,7 @@ import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { SEO } from "@/components/SEO";
 import { APP_URL } from "@/lib/constants";
+import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
 
 interface Opportunity {
   id: string;
@@ -53,6 +54,7 @@ const OpportunityDetail = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const isOwner = user && (opportunity?.created_by === user.id || opportunity?.scouted_by === user.id);
@@ -286,27 +288,8 @@ const OpportunityDetail = () => {
       });
   }, [id, user?.id]);
 
-  const handleShare = async () => {
-    const shareUrl = `https://www.thrivein.io/share/gig/${id}/`;
-    const typeLabel = opportunity?.type === 'barter' ? 'Barter' : opportunity?.type === 'collab' ? 'Collab' : 'Paid';
-    const parts = [typeLabel];
-    if (opportunity?.location) parts.push(opportunity.location);
-    if (opportunity?.compensation) parts.push(opportunity.compensation);
-    const details = parts.join(' · ');
-    const shareText = `🎯 ${opportunity?.title}\n${details}\n\nApply now on ThriveIN — the Creative OS 👇\n${shareUrl}`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: opportunity?.title, text: shareText, url: shareUrl });
-        return;
-      } catch {}
-    }
-    
-    navigator.clipboard.writeText(shareText);
-    toast({
-      title: "Link Copied!",
-      description: "Share text copied — paste it anywhere!",
-    });
+  const handleShare = () => {
+    setShowShareDialog(true);
   };
 
   const handleApply = () => {
@@ -726,6 +709,22 @@ const OpportunityDetail = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {opportunity && (
+        <ShareToMessageDialog
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          contentType="gig"
+          contentId={opportunity.id}
+          contentMeta={{
+            title: opportunity.title,
+            subtitle: [opportunity.location, opportunity.compensation].filter(Boolean).join(" · "),
+            image_url: opportunity.image_url,
+          }}
+          externalUrl={`${APP_URL}/share/gig/${opportunity.id}/`}
+          externalText={`🎯 ${opportunity.title}\n\nApply now on ThriveIN — the Creative OS 👇\n${APP_URL}/share/gig/${opportunity.id}/`}
+        />
+      )}
     </div>
   );
 };

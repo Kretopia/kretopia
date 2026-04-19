@@ -38,6 +38,8 @@ import { useConnectionDegree } from "@/hooks/useNetworkStats";
 import { calculateStatusFromCredits } from "@/lib/statusEngine";
 import { checkConnectionGate, type GateCheckResult } from "@/lib/connectionGate";
 import { StatusBadge } from "@/components/StatusBadge";
+import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
+import { APP_URL } from "@/lib/constants";
 import { ConnectionGateBanner } from "@/components/ConnectionGateBanner";
 
 // Import profile section components
@@ -102,10 +104,11 @@ const ViewProfile = () => {
   const [connectionStatus, setConnectionStatus] = useState<'none' | 'pending' | 'connected'>('none');
   const [isConnecting, setIsConnecting] = useState(false);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [isStartProjectOpen, setIsStartProjectOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(searchParams.get('showClaim') === 'true');
-  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showShareToChat, setShowShareToChat] = useState(false);
   const [gateResult, setGateResult] = useState<GateCheckResult | null>(null);
   
   const isFromMatch = searchParams.get('from') === 'match';
@@ -597,6 +600,9 @@ const ViewProfile = () => {
                       <Rocket className="h-4 w-4" />
                       Start Project
                     </Button>
+                    <Button variant="outline" size="icon" onClick={() => setShowShareToChat(true)} aria-label="Share profile">
+                      <Share2 className="h-4 w-4" />
+                    </Button>
                   </>
                 ) : connectionStatus === 'connected' ? (
                   <>
@@ -607,6 +613,9 @@ const ViewProfile = () => {
                     <Button variant="outline" onClick={() => setIsStartProjectOpen(true)} className="gap-2">
                       <Rocket className="h-4 w-4" />
                       Collaborate
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => setShowShareToChat(true)} aria-label="Share profile">
+                      <Share2 className="h-4 w-4" />
                     </Button>
                   </>
                 ) : connectionStatus === 'pending' ? (
@@ -741,6 +750,20 @@ const ViewProfile = () => {
           profileUrl={`https://www.thrivein.io/profile/${profile.user_id}`}
         />
       )}
+
+      <ShareToMessageDialog
+        open={showShareToChat}
+        onOpenChange={setShowShareToChat}
+        contentType="profile"
+        contentId={profile.user_id}
+        contentMeta={{
+          title: profile.full_name,
+          subtitle: profile.role || undefined,
+          image_url: profile.avatar_url,
+        }}
+        externalUrl={`${APP_URL}/profile/${profile.user_id}`}
+        externalText={`Check out ${profile.full_name} on ThriveIN — ${APP_URL}/profile/${profile.user_id}`}
+      />
     </>
   );
 };

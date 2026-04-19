@@ -594,9 +594,50 @@ const FundNew = () => {
               </div>
             </div>
 
+            {/* Verification gate */}
+            <div className={cn(
+              "rounded-lg border p-4 space-y-3",
+              ageVerified ? "border-energy/40 bg-energy/5" : "border-destructive/40 bg-destructive/5"
+            )}>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider">
+                  {ageVerified ? "✓ Identity & age verified" : "Age verification required (18+)"}
+                </p>
+                {profile?.id_verified && (
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-energy">ID ✓</span>
+                )}
+              </div>
+              {!ageVerified ? (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    Crowdfunding requires you to be at least 18. Confirm your date of birth to continue.
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
+                      max={new Date().toISOString().split("T")[0]}
+                      className="flex-1"
+                    />
+                    <Button onClick={saveDob} disabled={!dob || savingDob} size="sm">
+                      {savingDob ? <Loader2 className="h-3 w-3 animate-spin" /> : "Confirm"}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">
+                  {profile?.id_verified
+                    ? "Verified creators get auto-approved campaigns. Nice."
+                    : "Tip: complete ID verification on your profile to skip the human review step."}
+                </p>
+              )}
+            </div>
+
             <p className="text-[11px] text-muted-foreground">
-              Platform fee 5% on funded campaigns. Stripe processing fees apply. You'll need to complete
-              payout setup before backers can pledge.
+              Platform fee 5% on funded campaigns. Stripe processing fees apply. All campaigns are
+              screened by our AI moderator for fraud, prohibited content, and policy compliance —
+              flagged campaigns go to human review before going live.
             </p>
           </Card>
         )}

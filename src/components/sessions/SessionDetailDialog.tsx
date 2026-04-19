@@ -24,6 +24,7 @@ import { EditEventDialog } from "./EditEventDialog";
 import { EventCohosts } from "./EventCohosts";
 import { EventRecapButton } from "./EventRecapButton";
 import { EventCheckInDialog } from "./EventCheckInDialog";
+import { ContinueAsCircle } from "./ContinueAsCircle";
 
 interface Session {
   id: string;
@@ -48,6 +49,7 @@ interface Session {
   external_ticket_url?: string;
   status?: string;
   status_note?: string;
+  circle_id?: string | null;
 }
 
 interface SessionDetailDialogProps {
@@ -327,6 +329,18 @@ export const SessionDetailDialog = ({
             <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
               <TabsContent value="details" className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 m-0 data-[state=inactive]:hidden">
                 <div className="space-y-5">
+                  {isPast && (
+                    <ContinueAsCircle
+                      eventId={session.id}
+                      eventTitle={session.title}
+                      isCreator={isCreator}
+                      circleId={session.circle_id}
+                      category={session.category}
+                      coverImageUrl={session.cover_image_url}
+                      onLinked={onRefresh}
+                    />
+                  )}
+
                   {session.description && (
                     <div>
                       <h4 className="font-semibold mb-2">About</h4>

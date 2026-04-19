@@ -174,6 +174,59 @@ export const GroupChatPanel = ({ group, currentUserId, onBack }: GroupChatPanelP
     }
   };
 
+  const shareInvite = async () => {
+    if (!group.invite_code) {
+      toast({ title: "No invite link available", variant: "destructive" });
+      return;
+    }
+    const url = `${window.location.origin}/messages?groupInvite=${group.invite_code}`;
+    const shareData = {
+      title: `Join "${group.title}" on ThriveIN`,
+      text: `You're invited to join the "${group.title}" group chat on ThriveIN.`,
+      url,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast({ title: "Invite link copied", description: url });
+      }
+    } catch (e: any) {
+      if (e?.name !== "AbortError") {
+        try {
+          await navigator.clipboard.writeText(url);
+          toast({ title: "Invite link copied", description: url });
+        } catch {
+          toast({ title: "Couldn't share", description: e.message, variant: "destructive" });
+        }
+      }
+    }
+  };
+
+  const copyInviteLink = async () => {
+    if (!group.invite_code) {
+      toast({ title: "No invite link available", variant: "destructive" });
+      return;
+    }
+    const url = `${window.location.origin}/messages?groupInvite=${group.invite_code}`;
+    await navigator.clipboard.writeText(url);
+    toast({ title: "Link copied", description: url });
+  };
+
+  const deleteGroup = async () => {
+    setDeleting(true);
+    const { error } = await supabase.rpc("delete_group_room", { _room_id: group.id });
+    setDeleting(false);
+    if (error) {
+      toast({ title: "Couldn't delete group", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Group deleted" });
+    setConfirmDelete(false);
+    onBack();
+  };
+
   const memberList = Object.values(members);
 
   return (

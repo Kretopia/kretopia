@@ -134,7 +134,10 @@ export const HeroSection = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+    const q = query.trim();
+    if (!q) return;
+    // Route to unified Claim flow: Search → Disambiguate → Preview → Email
+    navigate(`/claim?source=landing&q=${encodeURIComponent(q)}`);
   };
 
   const handleSuggestionClick = (s: Suggestion) => {

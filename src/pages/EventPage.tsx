@@ -101,7 +101,10 @@ const EventPage = () => {
   const handleJoinOrSignup = () => {
     if (!user) {
       sessionStorage.setItem('pending_event_join', eventId!);
-      navigate('/auth?event=' + eventId);
+      // Send guests through the unified Search → Claim → Email flow
+      navigate(
+        `/claim?source=event&event=${encodeURIComponent(eventId!)}&redirect=${encodeURIComponent(`/event/${eventId}?joined=true`)}`,
+      );
       return;
     }
     // If external ticket URL, redirect there

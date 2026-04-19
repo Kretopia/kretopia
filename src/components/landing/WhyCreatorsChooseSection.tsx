@@ -12,6 +12,7 @@ export const WhyCreatorsChooseSection = () => {
     { icon: <Fingerprint className="h-5 w-5" />, title: "Creator Passport", text: "One verified identity across industries — embed it anywhere, carry your reputation with you" },
     { icon: <FileSignature className="h-5 w-5" />, title: "Contracts & Agreements", text: "Create contracts from templates, get e-signatures & protect your work — no lawyer needed" },
     { icon: <MessageSquare className="h-5 w-5" />, title: "Real Gigs & Collabs", text: "Post paid gigs, find collaborators, apply to opportunities — all in one place" },
+    { icon: <Rocket className="h-5 w-5" />, title: "ThriveFund", text: "Crowdfund films, albums, fashion drops & creative projects — AI-moderated, milestone payouts, verified creators only" },
   ];
 
   return (

@@ -29,7 +29,7 @@ serve(async (req) => {
 
     const { data: campaign, error: cErr } = await supabaseAdmin
       .from("campaigns")
-      .select("id, title, status, goal_amount, total_raised, deadline, creator_id, milestone_split")
+      .select("id, slug, title, status, goal_amount, total_raised, deadline, creator_id, milestone_split")
       .eq("id", campaignId)
       .single();
     if (cErr || !campaign) throw new Error("Campaign not found");

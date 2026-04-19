@@ -25,6 +25,7 @@ interface EventItem {
   venue_name?: string;
   venue_address?: string;
   start_time: string;
+  end_time?: string;
   max_participants: number;
   participant_count: number;
   creator_name: string;
@@ -206,6 +207,22 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
   const [activeTab, setActiveTab] = useState("browse");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [hostingTime, setHostingTime] = useState<"upcoming" | "past">("upcoming");
+  const [joinedTime, setJoinedTime] = useState<"upcoming" | "past">("upcoming");
+
+  const splitByTime = (list: EventItem[]) => {
+    const now = Date.now();
+    const upcoming: EventItem[] = [];
+    const past: EventItem[] = [];
+    list.forEach(e => {
+      const t = new Date(e.end_time || e.start_time).getTime();
+      if (t >= now) upcoming.push(e); else past.push(e);
+    });
+    // sort: upcoming asc, past desc
+    upcoming.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+    past.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+    return { upcoming, past };
+  };
 
   const handleEventClick = (event: EventItem) => {
     // For non-authenticated users, navigate to public event page
@@ -257,7 +274,7 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
       // Only fetch user-specific data if logged in
       if (!user) return;
 
-      // My created events
+      // My created events (all — past + upcoming)
       const { data: mine } = await supabase
         .from('creative_jams')
         .select('*')
@@ -433,44 +450,88 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
             </TabsContent>
 
             <TabsContent value="joined" className="mt-0">
-              {joinedEvents.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Calendar className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
-                    <p className="font-semibold mb-1">No events joined yet</p>
-                    <p className="text-sm text-muted-foreground">Browse events and join creative gatherings</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-2">
-                  {joinedEvents.map(event => (
-                    <EventCard key={event.id} event={event} onClick={() => setSelectedEvent(event)} />
-                  ))}
-                </div>
-              )}
+              {(() => {
+                const { upcoming, past } = splitByTime(joinedEvents);
+                const list = joinedTime === "upcoming" ? upcoming : past;
+                return (
+                  <div className="space-y-3">
+                    <div className="inline-flex rounded-full border bg-muted/40 p-0.5">
+                      <button
+                        onClick={() => setJoinedTime("upcoming")}
+                        className={`text-xs px-3 py-1 rounded-full transition-colors ${joinedTime === "upcoming" ? "bg-background shadow-sm font-medium" : "text-muted-foreground"}`}
+                      >Upcoming ({upcoming.length})</button>
+                      <button
+                        onClick={() => setJoinedTime("past")}
+                        className={`text-xs px-3 py-1 rounded-full transition-colors ${joinedTime === "past" ? "bg-background shadow-sm font-medium" : "text-muted-foreground"}`}
+                      >Past ({past.length})</button>
+                    </div>
+                    {list.length === 0 ? (
+                      <Card>
+                        <CardContent className="py-12 text-center">
+                          <Calendar className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+                          <p className="font-semibold mb-1">
+                            {joinedTime === "upcoming" ? "No upcoming events joined" : "No past events"}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {joinedTime === "upcoming" ? "Browse events and join creative gatherings" : "Events you attend will show up here"}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <div className="space-y-2">
+                        {list.map(event => (
+                          <EventCard key={event.id} event={event} onClick={() => setSelectedEvent(event)} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </TabsContent>
 
             <TabsContent value="hosting" className="mt-0">
-              {myEvents.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Sparkles className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
-                    <p className="font-semibold mb-1">No events hosted yet</p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Create your first event and grow your community
-                    </p>
-                    <Button variant="gradient" onClick={() => setShowCreate(true)}>
-                      <Plus className="h-4 w-4 mr-2" /> Host an Event
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-2">
-                  {myEvents.map(event => (
-                    <EventCard key={event.id} event={event} onClick={() => setSelectedEvent(event)} />
-                  ))}
-                </div>
-              )}
+              {(() => {
+                const { upcoming, past } = splitByTime(myEvents);
+                const list = hostingTime === "upcoming" ? upcoming : past;
+                return (
+                  <div className="space-y-3">
+                    <div className="inline-flex rounded-full border bg-muted/40 p-0.5">
+                      <button
+                        onClick={() => setHostingTime("upcoming")}
+                        className={`text-xs px-3 py-1 rounded-full transition-colors ${hostingTime === "upcoming" ? "bg-background shadow-sm font-medium" : "text-muted-foreground"}`}
+                      >Upcoming ({upcoming.length})</button>
+                      <button
+                        onClick={() => setHostingTime("past")}
+                        className={`text-xs px-3 py-1 rounded-full transition-colors ${hostingTime === "past" ? "bg-background shadow-sm font-medium" : "text-muted-foreground"}`}
+                      >Past ({past.length})</button>
+                    </div>
+                    {list.length === 0 ? (
+                      <Card>
+                        <CardContent className="py-12 text-center">
+                          <Sparkles className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+                          <p className="font-semibold mb-1">
+                            {hostingTime === "upcoming" ? "No upcoming events" : "No past events yet"}
+                          </p>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            {hostingTime === "upcoming" ? "Create your first event and grow your community" : "Once you wrap an event, it'll show up here"}
+                          </p>
+                          {hostingTime === "upcoming" && (
+                            <Button variant="gradient" onClick={() => setShowCreate(true)}>
+                              <Plus className="h-4 w-4 mr-2" /> Host an Event
+                            </Button>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <div className="space-y-2">
+                        {list.map(event => (
+                          <EventCard key={event.id} event={event} onClick={() => setSelectedEvent(event)} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </TabsContent>
           </Tabs>
         </div>

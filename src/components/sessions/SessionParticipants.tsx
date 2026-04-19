@@ -3,9 +3,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, UserMinus, MessageCircle, UserPlus, Crown, Download } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, UserMinus, MessageCircle, UserPlus, Crown, Download, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
@@ -23,6 +25,7 @@ interface Participant {
   user_id: string;
   status: string;
   joined_at: string;
+  is_visible?: boolean;
   profile: {
     full_name: string;
     avatar_url: string | null;
@@ -45,11 +48,13 @@ export const SessionParticipants = ({
 }: SessionParticipantsProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [creator, setCreator] = useState<{ full_name: string; avatar_url: string | null; role: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [confirmRemove, setConfirmRemove] = useState<Participant | null>(null);
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
 
   useEffect(() => {
     loadParticipants();
@@ -61,7 +66,7 @@ export const SessionParticipants = ({
     // Fetch participants
     const { data: participantsData, error } = await supabase
       .from('jam_participants')
-      .select('id, user_id, status, joined_at')
+      .select('id, user_id, status, joined_at, is_visible')
       .eq('jam_id', sessionId)
       .in('status', ['going', 'interested', 'maybe'])
       .order('joined_at', { ascending: true });
@@ -134,6 +139,33 @@ export const SessionParticipants = ({
   const handleMessage = (userId: string) => {
     navigate(`/profile/${userId}`);
   };
+
+  const myParticipation = participants.find(p => p.user_id === user?.id);
+  const isMyVisible = myParticipation ? myParticipation.is_visible !== false : true;
+
+  const handleToggleVisibility = async (visible: boolean) => {
+    if (!myParticipation) return;
+    setUpdatingVisibility(true);
+    const { error } = await supabase
+      .from('jam_participants')
+      .update({ is_visible: visible })
+      .eq('id', myParticipation.id);
+    if (error) {
+      toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
+    } else {
+      setParticipants(prev => prev.map(p => p.id === myParticipation.id ? { ...p, is_visible: visible } : p));
+      toast({
+        title: visible ? "You're visible to other attendees" : "You're hidden from attendees",
+        description: visible ? "Others can see you in the attendee list." : "Only the host can see you.",
+      });
+    }
+    setUpdatingVisibility(false);
+  };
+
+  // Filter visible participants — host sees all, others see only opt-in
+  const visibleParticipants = isCreator
+    ? participants
+    : participants.filter(p => p.is_visible !== false || p.user_id === user?.id);
 
   const handleDownloadGuestList = () => {
     const rows: string[][] = [["Name", "Role", "Status", "Joined At"]];
@@ -213,11 +245,31 @@ export const SessionParticipants = ({
             </div>
           )}
 
+          {/* Visibility opt-in for current attendee */}
+          {myParticipation && !isCreator && (
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border">
+              <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                <EyeOff className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-medium">Show me to other attendees</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isMyVisible ? "Other attendees can see your profile here." : "Only the host can see you."}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={isMyVisible}
+                disabled={updatingVisibility}
+                onCheckedChange={handleToggleVisibility}
+              />
+            </div>
+          )}
+
           {/* Participants Section */}
           <div>
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium text-muted-foreground">
-              Participants ({participants.length})
+              Participants ({visibleParticipants.length}{!isCreator && participants.length > visibleParticipants.length ? ` of ${participants.length}` : ''})
             </h4>
             {isCreator && participants.length > 0 && (
               <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5" onClick={handleDownloadGuestList}>
@@ -227,7 +279,7 @@ export const SessionParticipants = ({
             )}
           </div>
             
-            {participants.length === 0 ? (
+            {visibleParticipants.length === 0 ? (
               <div className="text-center py-8">
                 <UserPlus className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
                 <p className="text-muted-foreground">No one has joined yet</p>
@@ -235,7 +287,7 @@ export const SessionParticipants = ({
               </div>
             ) : (
               <div className="space-y-2">
-                {participants.map((participant) => (
+                {visibleParticipants.map((participant) => (
                   <div 
                     key={participant.id}
                     className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted transition-colors"
@@ -259,6 +311,9 @@ export const SessionParticipants = ({
                       <Badge variant="outline" className="text-xs capitalize">
                         {participant.status}
                       </Badge>
+                      {isCreator && participant.is_visible === false && (
+                        <Badge variant="secondary" className="text-[10px] gap-1"><EyeOff className="h-2.5 w-2.5" /> Hidden</Badge>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"

@@ -41,7 +41,7 @@ export const SEO = ({
       "@context": "https://schema.org",
       "@type": "Person",
       "name": profile.name,
-      "url": url || window.location.href,
+      "url": url || getShareUrl(),
     };
 
     if (profile.role) {
@@ -93,7 +93,7 @@ export const SEO = ({
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type === 'profile' ? 'profile' : type} />
-      <meta property="og:url" content={url || window.location.href} />
+      <meta property="og:url" content={url || getShareUrl()} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={image} />
@@ -112,7 +112,7 @@ export const SEO = ({
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@thrivein_io" />
-      <meta name="twitter:url" content={url || window.location.href} />
+      <meta name="twitter:url" content={url || getShareUrl()} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />

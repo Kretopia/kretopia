@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Rocket, Loader2 } from "lucide-react";
-import { useCreateCampaign } from "@/hooks/useThriveFund";
+import { Plus, Trash2, Rocket, Loader2, Lock, Sparkles } from "lucide-react";
+import { useCreateCampaign, useMyCampaigns } from "@/hooks/useThriveFund";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasProAccess, hasCreatorProAccess, type SubscriptionTier } from "@/lib/subscriptionConfig";
 import { toast } from "sonner";
 
 interface TierDraft {

@@ -8,6 +8,7 @@ import { magazineSharePagesPlugin } from "./plugins/magazine-share-pages";
 import { profileSharePagesPlugin } from "./plugins/profile-share-pages";
 import { gigSharePagesPlugin } from "./plugins/gig-share-pages";
 import { eventSharePagesPlugin } from "./plugins/event-share-pages";
+import { campaignSharePagesPlugin } from "./plugins/campaign-share-pages";
 
 const { hash: buildHash, plugin: versionJsonPlugin } = versionPlugin();
 
@@ -124,6 +125,11 @@ export default defineConfig(({ mode }) => {
         siteUrl: "https://www.thrivein.io",
       }),
       eventSharePagesPlugin({
+        projectUrl: env.VITE_SUPABASE_URL,
+        publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        siteUrl: "https://www.thrivein.io",
+      }),
+      campaignSharePagesPlugin({
         projectUrl: env.VITE_SUPABASE_URL,
         publishableKey: env.VITE_SUPABASE_PUBLISHABLE_KEY,
         siteUrl: "https://www.thrivein.io",

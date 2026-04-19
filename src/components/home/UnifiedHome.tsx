@@ -114,10 +114,10 @@ export const UnifiedHome = () => {
 
       let gigsQuery = supabase
         .from("opportunities")
-        .select("id, title, type, location, created_at, skills")
+        .select("id, title, description, type, location, created_at, skills, tags, compensation, duration, image_url, status, barter_offering, barter_requesting, platform_requirements, min_followers, is_priority, priority_expires_at, scouted_by, created_by")
         .eq("status", "active")
         .order("created_at", { ascending: false })
-        .limit(10);
+        .limit(12);
 
       let creatorsQuery = supabase
         .from("profiles")
@@ -183,9 +183,9 @@ export const UnifiedHome = () => {
             return { ...g, _relevance: relevance };
           })
           .sort((a: any, b: any) => b._relevance - a._relevance)
-          .slice(0, 3);
+          .slice(0, 8);
       } else {
-        gigs = gigs.slice(0, 3);
+        gigs = gigs.slice(0, 8);
       }
       setActiveGigs(gigs);
 

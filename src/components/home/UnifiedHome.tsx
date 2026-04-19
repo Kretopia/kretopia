@@ -24,6 +24,7 @@ import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
+import GigCard from "@/components/opportunity/GigCard";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -114,10 +115,10 @@ export const UnifiedHome = () => {
 
       let gigsQuery = supabase
         .from("opportunities")
-        .select("id, title, type, location, created_at, skills")
+        .select("id, title, description, type, location, created_at, skills, tags, compensation, duration, image_url, status, barter_offering, barter_requesting, platform_requirements, min_followers, is_priority, priority_expires_at, scouted_by, created_by")
         .eq("status", "active")
         .order("created_at", { ascending: false })
-        .limit(10);
+        .limit(12);
 
       let creatorsQuery = supabase
         .from("profiles")
@@ -183,9 +184,9 @@ export const UnifiedHome = () => {
             return { ...g, _relevance: relevance };
           })
           .sort((a: any, b: any) => b._relevance - a._relevance)
-          .slice(0, 3);
+          .slice(0, 8);
       } else {
-        gigs = gigs.slice(0, 3);
+        gigs = gigs.slice(0, 8);
       }
       setActiveGigs(gigs);
 
@@ -634,31 +635,17 @@ export const UnifiedHome = () => {
               </div>
             </div>
             {activeGigs.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 snap-x snap-mandatory">
                 {activeGigs.map((g, i) => (
-                  <motion.button
+                  <motion.div
                     key={g.id}
-                    initial={{ opacity: 0, x: -12 }}
+                    initial={{ opacity: 0, x: 12 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    onClick={() => navigate(`/opportunity/${g.id}`)}
-                    className="w-full text-left group"
+                    transition={{ delay: i * 0.05 }}
+                    className="shrink-0 w-[88%] sm:w-[360px] snap-start"
                   >
-                    <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/30 hover:shadow-md transition-all">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <Badge className="text-[8px] mb-2 bg-success/15 text-success border-success/25 font-semibold">{g.type}</Badge>
-                          <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{g.title}</p>
-                          {g.location && (
-                            <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1">
-                              <MapPin className="h-3 w-3" /> {g.location}
-                            </p>
-                          )}
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0 mt-1 group-hover:text-primary transition-colors" />
-                      </div>
-                    </div>
-                  </motion.button>
+                    <GigCard opportunity={g} />
+                  </motion.div>
                 ))}
               </div>
             ) : (

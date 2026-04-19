@@ -992,6 +992,16 @@ const Messages = () => {
           currentUserRole={currentUserRole}
         />
       )}
+
+      <CreateGroupDialog
+        open={createGroupOpen}
+        onOpenChange={setCreateGroupOpen}
+        currentUserId={currentUserId}
+        onCreated={(roomId) => {
+          setActiveTab('groups');
+          // Trigger reload by switching tab; GroupsList realtime will pick it up
+        }}
+      />
     </div>
     </PageTransition>
   );

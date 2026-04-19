@@ -428,17 +428,18 @@ const Messages = () => {
   const sendMessage = async () => {
     if ((!newMessage.trim() && !attachment) || !selectedConversation) return;
 
-    const messageContent = attachment 
-      ? (newMessage.trim() ? `${newMessage.trim()}\n[${attachment.type === 'image' ? '📷 Image' : '📎 ' + (attachment.fileName || 'File')}](${attachment.url})`
-        : `[${attachment.type === 'image' ? '📷 Image' : '📎 ' + (attachment.fileName || 'File')}](${attachment.url})`)
-      : newMessage.trim();
-
     const insertData: any = {
       sender_id: currentUserId,
       receiver_id: selectedConversation,
-      content: messageContent,
+      content: newMessage.trim() || (attachment ? (attachment.type === 'image' ? '📷 Image' : `📎 ${attachment.fileName || 'File'}`) : ''),
       read: false,
     };
+
+    if (attachment) {
+      insertData.attachment_url = attachment.url;
+      insertData.attachment_type = attachment.type;
+      insertData.attachment_name = attachment.fileName;
+    }
 
     // Add reply metadata if replying
     if (replyTo) {

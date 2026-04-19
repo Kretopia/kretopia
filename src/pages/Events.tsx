@@ -206,6 +206,22 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
   const [activeTab, setActiveTab] = useState("browse");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [hostingTime, setHostingTime] = useState<"upcoming" | "past">("upcoming");
+  const [joinedTime, setJoinedTime] = useState<"upcoming" | "past">("upcoming");
+
+  const splitByTime = (list: EventItem[]) => {
+    const now = Date.now();
+    const upcoming: EventItem[] = [];
+    const past: EventItem[] = [];
+    list.forEach(e => {
+      const t = new Date(e.end_time || e.start_time).getTime();
+      if (t >= now) upcoming.push(e); else past.push(e);
+    });
+    // sort: upcoming asc, past desc
+    upcoming.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+    past.sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+    return { upcoming, past };
+  };
 
   const handleEventClick = (event: EventItem) => {
     // For non-authenticated users, navigate to public event page
@@ -257,7 +273,7 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
       // Only fetch user-specific data if logged in
       if (!user) return;
 
-      // My created events
+      // My created events (all — past + upcoming)
       const { data: mine } = await supabase
         .from('creative_jams')
         .select('*')

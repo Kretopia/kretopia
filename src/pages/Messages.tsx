@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Trash2, MessageCircle, ArrowRight, Briefcase, Reply } from "lucide-react";
+import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Trash2, MessageCircle, ArrowRight, Briefcase, Reply, Heart } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +29,10 @@ import { CreateGroupDialog } from "@/components/messages/CreateGroupDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOnlinePresence, OnlineDot } from "@/components/messages/OnlinePresence";
 import { MessageReplyBanner, InlineReply } from "@/components/messages/MessageReply";
+import { MessageReactions, ReactionPicker, type ReactionRow } from "@/components/messages/MessageReactions";
+import { VoiceNoteRecorder, VoiceNotePlayer } from "@/components/messages/VoiceNoteRecorder";
+import { SharedContentCard, type SharedContentType } from "@/components/messages/SharedContentCard";
+import { ImageLightbox } from "@/components/messages/ImageLightbox";
 import { FileText } from "lucide-react";
 import { ConversationListSkeleton } from "@/components/skeletons/MessagesSkeletons";
 import { PageTransition } from "@/components/PageTransition";

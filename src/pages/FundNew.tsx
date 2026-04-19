@@ -157,7 +157,7 @@ const FundNew = () => {
   const [dob, setDob] = useState("");
   const [savingDob, setSavingDob] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     if (!user) return;
     supabase.from("profiles").select("age_verified, id_verified, date_of_birth, email_verified").eq("user_id", user.id).maybeSingle().then(({ data }: any) => {
       if (data) {
@@ -165,7 +165,7 @@ const FundNew = () => {
         if (data.date_of_birth) setDob(data.date_of_birth);
       }
     });
-  });
+  }, [user]);
 
   const yearsOld = (d: string) => {
     if (!d) return 0;

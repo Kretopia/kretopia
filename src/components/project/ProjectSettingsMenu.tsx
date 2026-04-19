@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MoreVertical, Settings, Trash2, StickyNote, Library, LayoutTemplate, Sparkles, Crown, Archive } from "lucide-react";
+import { MoreVertical, Settings, Trash2, StickyNote, Library, LayoutTemplate, Sparkles, Crown, Archive, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -168,6 +168,20 @@ export function ProjectSettingsMenu({
 
           <DropdownMenuSeparator />
           <DropdownMenuLabel className="text-xs text-muted-foreground">Project</DropdownMenuLabel>
+
+          {isOwner && (
+            <DropdownMenuItem
+              onClick={() =>
+                navigate(
+                  `/fund/new?project=${project.id}&title=${encodeURIComponent(project.title)}`
+                )
+              }
+              className="gap-2"
+            >
+              <Rocket className="h-4 w-4 text-primary" />
+              Turn into Campaign
+            </DropdownMenuItem>
+          )}
 
           {isOwner && (
             <DropdownMenuItem

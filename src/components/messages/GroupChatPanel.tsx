@@ -58,6 +58,8 @@ export const GroupChatPanel = ({ group, currentUserId, onBack }: GroupChatPanelP
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [promoting, setPromoting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   const isOwner = group.created_by === currentUserId;

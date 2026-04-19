@@ -15,7 +15,17 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Send, ArrowLeft, MoreVertical, Briefcase, Users, Crown, Loader2 } from "lucide-react";
+import { Send, ArrowLeft, MoreVertical, Briefcase, Users, Crown, Loader2, Trash2, Share2, Link2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { formatDistanceToNow } from "date-fns";
 import type { GroupRoom } from "./GroupsList";
 

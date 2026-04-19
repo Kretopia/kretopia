@@ -614,6 +614,7 @@ const Messages = () => {
               selectedGroupId={selectedGroup?.id || null}
               onSelect={(g) => setSelectedGroup(g)}
               onCreate={() => setCreateGroupOpen(true)}
+              refreshKey={groupsRefreshKey}
             />
           ) : activeTab === 'requests' ? (
             <MessageRequests 

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Trash2, MessageCircle, ArrowRight, Briefcase, Reply } from "lucide-react";
+import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Trash2, MessageCircle, ArrowRight, Briefcase, Reply, Heart } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +29,10 @@ import { CreateGroupDialog } from "@/components/messages/CreateGroupDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOnlinePresence, OnlineDot } from "@/components/messages/OnlinePresence";
 import { MessageReplyBanner, InlineReply } from "@/components/messages/MessageReply";
+import { MessageReactions, ReactionPicker, type ReactionRow } from "@/components/messages/MessageReactions";
+import { VoiceNoteRecorder, VoiceNotePlayer } from "@/components/messages/VoiceNoteRecorder";
+import { SharedContentCard, type SharedContentType } from "@/components/messages/SharedContentCard";
+import { ImageLightbox } from "@/components/messages/ImageLightbox";
 import { FileText } from "lucide-react";
 import { ConversationListSkeleton } from "@/components/skeletons/MessagesSkeletons";
 import { PageTransition } from "@/components/PageTransition";
@@ -56,12 +60,17 @@ interface Message {
   created_at: string;
   read: boolean;
   match_id: string | null;
-  attachment_url?: string;
-  attachment_type?: 'image' | 'file';
-  attachment_name?: string;
+  attachment_url?: string | null;
+  attachment_type?: string | null;
+  attachment_name?: string | null;
+  attachment_size?: number | null;
+  attachment_duration?: number | null;
   reply_to_id?: string | null;
   reply_to_content?: string | null;
   reply_to_sender_name?: string | null;
+  shared_content_type?: string | null;
+  shared_content_id?: string | null;
+  shared_content_meta?: any;
 }
 
 interface Attachment {
@@ -117,6 +126,8 @@ const Messages = () => {
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [replyTo, setReplyTo] = useState<ReplyTo | null>(null);
+  const [reactionsByMsg, setReactionsByMsg] = useState<Map<string, ReactionRow[]>>(new Map());
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -294,7 +305,26 @@ const Messages = () => {
         return;
       }
 
-      setMessages(messagesResult.data || []);
+      const msgs = messagesResult.data || [];
+      setMessages(msgs as Message[]);
+
+      // Load reactions for all visible messages
+      if (msgs.length > 0) {
+        const ids = msgs.map(m => m.id);
+        const { data: reactRows } = await supabase
+          .from("message_reactions")
+          .select("*")
+          .in("message_id", ids);
+        const map = new Map<string, ReactionRow[]>();
+        (reactRows || []).forEach(r => {
+          const arr = map.get(r.message_id) || [];
+          arr.push(r as ReactionRow);
+          map.set(r.message_id, arr);
+        });
+        setReactionsByMsg(map);
+      } else {
+        setReactionsByMsg(new Map());
+      }
 
       if (profileResult.data) {
         setOtherUser({
@@ -345,8 +375,36 @@ const Messages = () => {
       )
       .subscribe();
 
+    const reactionsChannel = supabase
+      .channel("message-reactions-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "message_reactions" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const r = payload.new as ReactionRow;
+            setReactionsByMsg(prev => {
+              const next = new Map(prev);
+              const arr = [...(next.get(r.message_id) || []), r];
+              next.set(r.message_id, arr);
+              return next;
+            });
+          } else if (payload.eventType === "DELETE") {
+            const r = payload.old as ReactionRow;
+            setReactionsByMsg(prev => {
+              const next = new Map(prev);
+              const arr = (next.get(r.message_id) || []).filter(x => x.id !== r.id);
+              next.set(r.message_id, arr);
+              return next;
+            });
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(reactionsChannel);
     };
   };
 
@@ -370,17 +428,18 @@ const Messages = () => {
   const sendMessage = async () => {
     if ((!newMessage.trim() && !attachment) || !selectedConversation) return;
 
-    const messageContent = attachment 
-      ? (newMessage.trim() ? `${newMessage.trim()}\n[${attachment.type === 'image' ? '📷 Image' : '📎 ' + (attachment.fileName || 'File')}](${attachment.url})`
-        : `[${attachment.type === 'image' ? '📷 Image' : '📎 ' + (attachment.fileName || 'File')}](${attachment.url})`)
-      : newMessage.trim();
-
     const insertData: any = {
       sender_id: currentUserId,
       receiver_id: selectedConversation,
-      content: messageContent,
+      content: newMessage.trim() || (attachment ? (attachment.type === 'image' ? '📷 Image' : `📎 ${attachment.fileName || 'File'}`) : ''),
       read: false,
     };
+
+    if (attachment) {
+      insertData.attachment_url = attachment.url;
+      insertData.attachment_type = attachment.type;
+      insertData.attachment_name = attachment.fileName;
+    }
 
     // Add reply metadata if replying
     if (replyTo) {
@@ -409,7 +468,7 @@ const Messages = () => {
 
     if (senderProfile) {
       const { notifyMessage } = await import("@/lib/pushNotifications");
-      const preview = attachment ? (attachment.type === 'image' ? '📷 Sent an image' : '📎 Sent a file') : messageContent;
+      const preview = attachment ? (attachment.type === 'image' ? '📷 Sent an image' : '📎 Sent a file') : (newMessage.trim() || 'New message');
       await notifyMessage(
         selectedConversation,
         senderProfile.full_name || 'Someone',
@@ -431,6 +490,19 @@ const Messages = () => {
     setNewMessage("");
     setAttachment(null);
     setReplyTo(null);
+  };
+
+  const sendVoiceNote = async (url: string, duration: number) => {
+    if (!selectedConversation) return;
+    await supabase.from("messages").insert({
+      sender_id: currentUserId,
+      receiver_id: selectedConversation,
+      content: '🎙️ Voice note',
+      attachment_url: url,
+      attachment_type: 'voice',
+      attachment_duration: duration,
+      read: false,
+    });
   };
 
   const getConversationPartner = (conv: Conversation) => {
@@ -510,7 +582,7 @@ const Messages = () => {
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'inbox' | 'groups' | 'requests')}>
             <TabsList className="w-full">
               <TabsTrigger value="inbox" className="flex-1 text-xs sm:text-sm">
-                Direct {conversationCount > 0 && <Badge variant="secondary" className="ml-1">{conversationCount}</Badge>}
+                Direct
               </TabsTrigger>
               <TabsTrigger value="groups" className="flex-1 text-xs sm:text-sm">
                 Groups
@@ -606,32 +678,30 @@ const Messages = () => {
                         </AvatarFallback>
                       </Avatar>
                       <OnlineDot isOnline={isOnline} />
-                      {unreadCount > 0 && (
-                        <div className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-primary flex items-center justify-center">
-                          <span className="text-[10px] sm:text-xs font-bold text-primary-foreground">
-                            {unreadCount}
-                          </span>
-                        </div>
-                      )}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <div className="flex items-center gap-1.5">
-                          <p className="font-semibold text-sm sm:text-base truncate">{partner.name || 'Unknown'}</p>
+                      <div className="flex items-center justify-between mb-0.5 gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <p className={`truncate text-sm sm:text-base ${unreadCount > 0 ? "font-bold" : "font-semibold"}`}>{partner.name || 'Unknown'}</p>
                           {isOnline && (
-                            <span className="text-[10px] text-success font-medium">online</span>
+                            <span className="text-[10px] text-success font-medium flex-shrink-0">online</span>
                           )}
                         </div>
-                        <span className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0 ml-2">
-                          {formatDistanceToNow(new Date(conv.created_at), {
-                            addSuffix: true,
-                          }).replace('about ', '')}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(conv.created_at), {
+                              addSuffix: true,
+                            }).replace('about ', '')}
+                          </span>
+                          {unreadCount > 0 && (
+                            <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-glow-purple" aria-label={`${unreadCount} unread`} />
+                          )}
+                        </div>
                       </div>
                       
                       <p className={`text-xs sm:text-sm truncate ${
-                        unreadCount > 0 ? "font-medium text-foreground" : "text-muted-foreground"
+                        unreadCount > 0 ? "font-semibold text-foreground" : "text-muted-foreground"
                       }`}>
                         {conv.sender_id === currentUserId ? (
                           <span className="inline-flex items-center gap-1">
@@ -796,7 +866,37 @@ const Messages = () => {
                   const isOwn = msg.sender_id === currentUserId;
                   const showAvatar = index === messages.length - 1 || 
                     messages[index + 1]?.sender_id !== msg.sender_id;
-                  
+                  const reactions = reactionsByMsg.get(msg.id) || [];
+
+                  // Double-tap handler (mobile + desktop)
+                  let lastTap = 0;
+                  const handleDoubleTap = async () => {
+                    const now = Date.now();
+                    if (now - lastTap < 350) {
+                      const existing = reactions.find(r => r.user_id === currentUserId && r.emoji === "❤️");
+                      if (!existing) {
+                        await supabase.from("message_reactions").insert({
+                          message_id: msg.id,
+                          user_id: currentUserId,
+                          emoji: "❤️",
+                        });
+                      }
+                    }
+                    lastTap = now;
+                  };
+
+                  // Detect attachment type — prefer native columns, fall back to legacy markdown
+                  const nativeImage = msg.attachment_type === 'image' && msg.attachment_url;
+                  const nativeFile = msg.attachment_type === 'file' && msg.attachment_url;
+                  const nativeVoice = msg.attachment_type === 'voice' && msg.attachment_url;
+                  const legacyImageMatch = !nativeImage && !nativeFile && msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/);
+                  const legacyFileMatch = !nativeImage && !nativeFile && msg.content.match(/\[📎 ([^\]]+)\]\((https?:\/\/[^\)]+)\)/);
+                  const cleanText = msg.content
+                    .replace(/\[📷 Image\]\([^\)]+\)/, '')
+                    .replace(/\[📎 [^\]]+\]\([^\)]+\)/, '')
+                    .trim();
+                  const showText = !nativeVoice && cleanText && cleanText !== '📷 Image' && !cleanText.startsWith('📎 ') && cleanText !== '🎙️ Voice note';
+
                   return (
                     <div
                       key={msg.id}
@@ -821,64 +921,86 @@ const Messages = () => {
                             isOwn={isOwn}
                           />
                         )}
-                        
-                        {/* Check if message contains an attachment link */}
-                        {msg.content.includes('](http') ? (
-                          <div className="space-y-2">
-                            {msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/) && (
-                              <a 
-                                href={msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/)?.[1]} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="block"
-                              >
-                                <img 
-                                  src={msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/)?.[1]} 
-                                  alt="Shared image" 
-                                  className="max-w-[200px] max-h-[200px] rounded-lg object-cover border border-border"
-                                />
-                              </a>
-                            )}
-                            {msg.content.match(/\[📎 ([^\]]+)\]\((https?:\/\/[^\)]+)\)/) && (
-                              <a 
-                                href={msg.content.match(/\[📎 ([^\]]+)\]\((https?:\/\/[^\)]+)\)/)?.[2]} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                                  isOwn ? "bg-primary/80 text-primary-foreground" : "bg-muted"
-                                }`}
-                              >
-                                <FileText className="h-4 w-4" />
-                                <span className="text-sm underline">
-                                  {msg.content.match(/\[📎 ([^\]]+)\]\(/)?.[1] || 'Download file'}
-                                </span>
-                              </a>
-                            )}
-                            {msg.content.replace(/\[📷 Image\]\([^\)]+\)/, '').replace(/\[📎 [^\]]+\]\([^\)]+\)/, '').trim() && (
-                              <div
-                                className={`rounded-2xl px-4 py-2.5 ${
-                                  isOwn
-                                    ? "bg-primary text-primary-foreground rounded-br-sm"
-                                    : "bg-muted rounded-bl-sm"
-                                }`}
-                              >
-                                <p className="text-sm break-words whitespace-pre-wrap">
-                                  {msg.content.replace(/\[📷 Image\]\([^\)]+\)/, '').replace(/\[📎 [^\]]+\]\([^\)]+\)/, '').trim()}
-                                </p>
+
+                        <div
+                          className="space-y-1.5 cursor-pointer select-none"
+                          onClick={handleDoubleTap}
+                        >
+                          {/* Shared content card */}
+                          {msg.shared_content_type && msg.shared_content_id && (
+                            <SharedContentCard
+                              type={msg.shared_content_type as SharedContentType}
+                              id={msg.shared_content_id}
+                              meta={msg.shared_content_meta}
+                              isOwn={isOwn}
+                            />
+                          )}
+
+                          {/* Voice note */}
+                          {nativeVoice && (
+                            <VoiceNotePlayer url={msg.attachment_url!} duration={msg.attachment_duration || undefined} isOwn={isOwn} />
+                          )}
+
+                          {/* Native image */}
+                          {nativeImage && (
+                            <button onClick={(e) => { e.stopPropagation(); setLightboxUrl(msg.attachment_url!); }} className="block">
+                              <img
+                                src={msg.attachment_url!}
+                                alt="Shared image"
+                                className="max-w-[240px] max-h-[280px] rounded-2xl object-cover border border-border"
+                              />
+                            </button>
+                          )}
+
+                          {/* Native file */}
+                          {nativeFile && (
+                            <a
+                              href={msg.attachment_url!}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl ${isOwn ? "bg-primary/80 text-primary-foreground" : "bg-muted"}`}
+                            >
+                              <FileText className="h-4 w-4 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate underline">{msg.attachment_name || 'Download file'}</p>
                               </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div
-                            className={`rounded-2xl px-4 py-2.5 ${
-                              isOwn
-                                ? "bg-primary text-primary-foreground rounded-br-sm"
-                                : "bg-muted rounded-bl-sm"
-                            }`}
-                          >
-                            <p className="text-sm break-words whitespace-pre-wrap">{msg.content}</p>
-                          </div>
-                        )}
+                            </a>
+                          )}
+
+                          {/* Legacy image link */}
+                          {legacyImageMatch && (
+                            <button onClick={(e) => { e.stopPropagation(); setLightboxUrl(legacyImageMatch[1]); }} className="block">
+                              <img src={legacyImageMatch[1]} alt="Shared image" className="max-w-[240px] max-h-[280px] rounded-2xl object-cover border border-border" />
+                            </button>
+                          )}
+
+                          {/* Legacy file link */}
+                          {legacyFileMatch && (
+                            <a href={legacyFileMatch[2]} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-2xl ${isOwn ? "bg-primary/80 text-primary-foreground" : "bg-muted"}`}>
+                              <FileText className="h-4 w-4" />
+                              <span className="text-sm underline">{legacyFileMatch[1]}</span>
+                            </a>
+                          )}
+
+                          {/* Text bubble */}
+                          {showText && (
+                            <div
+                              className={`rounded-2xl px-4 py-2.5 ${
+                                isOwn
+                                  ? "bg-primary text-primary-foreground rounded-br-sm"
+                                  : "bg-muted rounded-bl-sm"
+                              }`}
+                            >
+                              <p className="text-sm break-words whitespace-pre-wrap">{cleanText}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Reactions display */}
+                        <MessageReactions messageId={msg.id} currentUserId={currentUserId} reactions={reactions} isOwn={isOwn} />
+
                         <div className="flex items-center gap-1 mt-1 px-1">
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(msg.created_at), {
@@ -892,14 +1014,22 @@ const Messages = () => {
                               <Check className="h-3 w-3 text-muted-foreground" />
                             )
                           )}
-                          {/* Reply button */}
-                          <button
-                            onClick={() => handleReply(msg)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 p-0.5 rounded hover:bg-muted"
-                            title="Reply"
-                          >
-                            <Reply className="h-3 w-3 text-muted-foreground" />
-                          </button>
+                          {/* Quick action buttons (hover) */}
+                          <div className="flex items-center gap-0.5 ml-1">
+                            <ReactionPicker
+                              messageId={msg.id}
+                              currentUserId={currentUserId}
+                              reactions={reactions}
+                              align={isOwn ? "end" : "start"}
+                            />
+                            <button
+                              onClick={() => handleReply(msg)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                              title="Reply"
+                            >
+                              <Reply className="h-3 w-3 text-muted-foreground" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -947,6 +1077,7 @@ const Messages = () => {
                 onAttach={(url, type, fileName) => setAttachment({ url, type, fileName })}
                 disabled={!!attachment}
               />
+              <VoiceNoteRecorder onSend={sendVoiceNote} disabled={!!attachment} />
               <div className="flex-1 relative">
                 <Input
                   ref={inputRef}
@@ -976,6 +1107,8 @@ const Messages = () => {
           </div>
         </div>
       )}
+
+      <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
 
       {/* Start Project Dialog */}
       {otherUser && (

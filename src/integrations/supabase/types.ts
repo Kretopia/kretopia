@@ -4790,6 +4790,11 @@ export type Database = {
       }
       messages: {
         Row: {
+          attachment_duration: number | null
+          attachment_name: string | null
+          attachment_size: number | null
+          attachment_type: string | null
+          attachment_url: string | null
           content: string
           created_at: string | null
           id: string
@@ -4801,10 +4806,18 @@ export type Database = {
           reply_to_id: string | null
           reply_to_sender_name: string | null
           sender_id: string
+          shared_content_id: string | null
+          shared_content_meta: Json | null
+          shared_content_type: string | null
           typing_at: string | null
           updated_at: string | null
         }
         Insert: {
+          attachment_duration?: number | null
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           content: string
           created_at?: string | null
           id?: string
@@ -4816,10 +4829,18 @@ export type Database = {
           reply_to_id?: string | null
           reply_to_sender_name?: string | null
           sender_id: string
+          shared_content_id?: string | null
+          shared_content_meta?: Json | null
+          shared_content_type?: string | null
           typing_at?: string | null
           updated_at?: string | null
         }
         Update: {
+          attachment_duration?: number | null
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           content?: string
           created_at?: string | null
           id?: string
@@ -4831,6 +4852,9 @@ export type Database = {
           reply_to_id?: string | null
           reply_to_sender_name?: string | null
           sender_id?: string
+          shared_content_id?: string | null
+          shared_content_meta?: Json | null
+          shared_content_type?: string | null
           typing_at?: string | null
           updated_at?: string | null
         }

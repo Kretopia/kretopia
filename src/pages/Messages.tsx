@@ -375,8 +375,36 @@ const Messages = () => {
       )
       .subscribe();
 
+    const reactionsChannel = supabase
+      .channel("message-reactions-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "message_reactions" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const r = payload.new as ReactionRow;
+            setReactionsByMsg(prev => {
+              const next = new Map(prev);
+              const arr = [...(next.get(r.message_id) || []), r];
+              next.set(r.message_id, arr);
+              return next;
+            });
+          } else if (payload.eventType === "DELETE") {
+            const r = payload.old as ReactionRow;
+            setReactionsByMsg(prev => {
+              const next = new Map(prev);
+              const arr = (next.get(r.message_id) || []).filter(x => x.id !== r.id);
+              next.set(r.message_id, arr);
+              return next;
+            });
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(reactionsChannel);
     };
   };
 

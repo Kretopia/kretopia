@@ -866,7 +866,37 @@ const Messages = () => {
                   const isOwn = msg.sender_id === currentUserId;
                   const showAvatar = index === messages.length - 1 || 
                     messages[index + 1]?.sender_id !== msg.sender_id;
-                  
+                  const reactions = reactionsByMsg.get(msg.id) || [];
+
+                  // Double-tap handler (mobile + desktop)
+                  let lastTap = 0;
+                  const handleDoubleTap = async () => {
+                    const now = Date.now();
+                    if (now - lastTap < 350) {
+                      const existing = reactions.find(r => r.user_id === currentUserId && r.emoji === "❤️");
+                      if (!existing) {
+                        await supabase.from("message_reactions").insert({
+                          message_id: msg.id,
+                          user_id: currentUserId,
+                          emoji: "❤️",
+                        });
+                      }
+                    }
+                    lastTap = now;
+                  };
+
+                  // Detect attachment type — prefer native columns, fall back to legacy markdown
+                  const nativeImage = msg.attachment_type === 'image' && msg.attachment_url;
+                  const nativeFile = msg.attachment_type === 'file' && msg.attachment_url;
+                  const nativeVoice = msg.attachment_type === 'voice' && msg.attachment_url;
+                  const legacyImageMatch = !nativeImage && !nativeFile && msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/);
+                  const legacyFileMatch = !nativeImage && !nativeFile && msg.content.match(/\[📎 ([^\]]+)\]\((https?:\/\/[^\)]+)\)/);
+                  const cleanText = msg.content
+                    .replace(/\[📷 Image\]\([^\)]+\)/, '')
+                    .replace(/\[📎 [^\]]+\]\([^\)]+\)/, '')
+                    .trim();
+                  const showText = !nativeVoice && cleanText && cleanText !== '📷 Image' && !cleanText.startsWith('📎 ') && cleanText !== '🎙️ Voice note';
+
                   return (
                     <div
                       key={msg.id}
@@ -891,64 +921,86 @@ const Messages = () => {
                             isOwn={isOwn}
                           />
                         )}
-                        
-                        {/* Check if message contains an attachment link */}
-                        {msg.content.includes('](http') ? (
-                          <div className="space-y-2">
-                            {msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/) && (
-                              <a 
-                                href={msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/)?.[1]} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="block"
-                              >
-                                <img 
-                                  src={msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/)?.[1]} 
-                                  alt="Shared image" 
-                                  className="max-w-[200px] max-h-[200px] rounded-lg object-cover border border-border"
-                                />
-                              </a>
-                            )}
-                            {msg.content.match(/\[📎 ([^\]]+)\]\((https?:\/\/[^\)]+)\)/) && (
-                              <a 
-                                href={msg.content.match(/\[📎 ([^\]]+)\]\((https?:\/\/[^\)]+)\)/)?.[2]} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                                  isOwn ? "bg-primary/80 text-primary-foreground" : "bg-muted"
-                                }`}
-                              >
-                                <FileText className="h-4 w-4" />
-                                <span className="text-sm underline">
-                                  {msg.content.match(/\[📎 ([^\]]+)\]\(/)?.[1] || 'Download file'}
-                                </span>
-                              </a>
-                            )}
-                            {msg.content.replace(/\[📷 Image\]\([^\)]+\)/, '').replace(/\[📎 [^\]]+\]\([^\)]+\)/, '').trim() && (
-                              <div
-                                className={`rounded-2xl px-4 py-2.5 ${
-                                  isOwn
-                                    ? "bg-primary text-primary-foreground rounded-br-sm"
-                                    : "bg-muted rounded-bl-sm"
-                                }`}
-                              >
-                                <p className="text-sm break-words whitespace-pre-wrap">
-                                  {msg.content.replace(/\[📷 Image\]\([^\)]+\)/, '').replace(/\[📎 [^\]]+\]\([^\)]+\)/, '').trim()}
-                                </p>
+
+                        <div
+                          className="space-y-1.5 cursor-pointer select-none"
+                          onClick={handleDoubleTap}
+                        >
+                          {/* Shared content card */}
+                          {msg.shared_content_type && msg.shared_content_id && (
+                            <SharedContentCard
+                              type={msg.shared_content_type as SharedContentType}
+                              id={msg.shared_content_id}
+                              meta={msg.shared_content_meta}
+                              isOwn={isOwn}
+                            />
+                          )}
+
+                          {/* Voice note */}
+                          {nativeVoice && (
+                            <VoiceNotePlayer url={msg.attachment_url!} duration={msg.attachment_duration || undefined} isOwn={isOwn} />
+                          )}
+
+                          {/* Native image */}
+                          {nativeImage && (
+                            <button onClick={(e) => { e.stopPropagation(); setLightboxUrl(msg.attachment_url!); }} className="block">
+                              <img
+                                src={msg.attachment_url!}
+                                alt="Shared image"
+                                className="max-w-[240px] max-h-[280px] rounded-2xl object-cover border border-border"
+                              />
+                            </button>
+                          )}
+
+                          {/* Native file */}
+                          {nativeFile && (
+                            <a
+                              href={msg.attachment_url!}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl ${isOwn ? "bg-primary/80 text-primary-foreground" : "bg-muted"}`}
+                            >
+                              <FileText className="h-4 w-4 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate underline">{msg.attachment_name || 'Download file'}</p>
                               </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div
-                            className={`rounded-2xl px-4 py-2.5 ${
-                              isOwn
-                                ? "bg-primary text-primary-foreground rounded-br-sm"
-                                : "bg-muted rounded-bl-sm"
-                            }`}
-                          >
-                            <p className="text-sm break-words whitespace-pre-wrap">{msg.content}</p>
-                          </div>
-                        )}
+                            </a>
+                          )}
+
+                          {/* Legacy image link */}
+                          {legacyImageMatch && (
+                            <button onClick={(e) => { e.stopPropagation(); setLightboxUrl(legacyImageMatch[1]); }} className="block">
+                              <img src={legacyImageMatch[1]} alt="Shared image" className="max-w-[240px] max-h-[280px] rounded-2xl object-cover border border-border" />
+                            </button>
+                          )}
+
+                          {/* Legacy file link */}
+                          {legacyFileMatch && (
+                            <a href={legacyFileMatch[2]} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-2xl ${isOwn ? "bg-primary/80 text-primary-foreground" : "bg-muted"}`}>
+                              <FileText className="h-4 w-4" />
+                              <span className="text-sm underline">{legacyFileMatch[1]}</span>
+                            </a>
+                          )}
+
+                          {/* Text bubble */}
+                          {showText && (
+                            <div
+                              className={`rounded-2xl px-4 py-2.5 ${
+                                isOwn
+                                  ? "bg-primary text-primary-foreground rounded-br-sm"
+                                  : "bg-muted rounded-bl-sm"
+                              }`}
+                            >
+                              <p className="text-sm break-words whitespace-pre-wrap">{cleanText}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Reactions display */}
+                        <MessageReactions messageId={msg.id} currentUserId={currentUserId} reactions={reactions} isOwn={isOwn} />
+
                         <div className="flex items-center gap-1 mt-1 px-1">
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(msg.created_at), {
@@ -962,14 +1014,22 @@ const Messages = () => {
                               <Check className="h-3 w-3 text-muted-foreground" />
                             )
                           )}
-                          {/* Reply button */}
-                          <button
-                            onClick={() => handleReply(msg)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 p-0.5 rounded hover:bg-muted"
-                            title="Reply"
-                          >
-                            <Reply className="h-3 w-3 text-muted-foreground" />
-                          </button>
+                          {/* Quick action buttons (hover) */}
+                          <div className="flex items-center gap-0.5 ml-1">
+                            <ReactionPicker
+                              messageId={msg.id}
+                              currentUserId={currentUserId}
+                              reactions={reactions}
+                              align={isOwn ? "end" : "start"}
+                            />
+                            <button
+                              onClick={() => handleReply(msg)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                              title="Reply"
+                            >
+                              <Reply className="h-3 w-3 text-muted-foreground" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

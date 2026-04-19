@@ -33,23 +33,13 @@ export const GroupsList = ({ currentUserId, selectedGroupId, onSelect, onCreate,
     if (!currentUserId) return;
     const load = async () => {
       setLoading(true);
-      const { data: memberships } = await supabase
-        .from("spark_room_members")
-        .select("room_id")
-        .eq("user_id", currentUserId);
-      const ids = memberships?.map((m) => m.room_id) || [];
-      if (ids.length === 0) {
+      const { data, error } = await supabase.rpc("get_my_group_rooms");
+      if (error) {
+        console.error("[GroupsList] failed to load groups", error);
         setGroups([]);
-        setLoading(false);
-        return;
+      } else {
+        setGroups((data as GroupRoom[]) || []);
       }
-      const { data: rooms } = await supabase
-        .from("spark_rooms")
-        .select("id,title,icon_emoji,member_count,message_count,updated_at,created_by,circle_type")
-        .in("id", ids)
-        .eq("is_active", true)
-        .order("updated_at", { ascending: false });
-      setGroups((rooms as GroupRoom[]) || []);
       setLoading(false);
     };
     load();

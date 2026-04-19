@@ -16,6 +16,7 @@ import { hasProAccess, hasCreatorProAccess, type SubscriptionTier } from "@/lib/
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { FUND_CATEGORIES } from "@/lib/fundCategories";
 
 interface TierDraft {
   amount: string;

@@ -709,6 +709,22 @@ const OpportunityDetail = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {opportunity && (
+        <ShareToMessageDialog
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
+          contentType="gig"
+          contentId={opportunity.id}
+          contentMeta={{
+            title: opportunity.title,
+            subtitle: [opportunity.location, opportunity.compensation].filter(Boolean).join(" · "),
+            image_url: opportunity.image_url,
+          }}
+          externalUrl={`${APP_URL}/share/gig/${opportunity.id}/`}
+          externalText={`🎯 ${opportunity.title}\n\nApply now on ThriveIN — the Creative OS 👇\n${APP_URL}/share/gig/${opportunity.id}/`}
+        />
+      )}
     </div>
   );
 };

@@ -1,94 +1,28 @@
 import { useEffect, useState, useRef } from "react";
-import { PageTip } from "@/components/PageTip";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Send, ArrowLeft, Search, CheckCheck, Check, MoreVertical, Trash2, MessageCircle, ArrowRight, Briefcase, Reply, Heart } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { formatDistanceToNow } from "date-fns";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
-import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { IceBreakers } from "@/components/messages/IceBreakers";
 import { TypingIndicator, useTypingStatus } from "@/components/messages/TypingIndicator";
-import { MessageAttachments, AttachmentPreview } from "@/components/messages/MessageAttachments";
-import { MessageRequests } from "@/components/messages/MessageRequests";
-import { GroupsList, type GroupRoom } from "@/components/messages/GroupsList";
 import { GroupChatPanel } from "@/components/messages/GroupChatPanel";
 import { CreateGroupDialog } from "@/components/messages/CreateGroupDialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useOnlinePresence, OnlineDot } from "@/components/messages/OnlinePresence";
-import { MessageReplyBanner, InlineReply } from "@/components/messages/MessageReply";
-import { MessageReactions, ReactionPicker, type ReactionRow } from "@/components/messages/MessageReactions";
-import { VoiceNoteRecorder, VoiceNotePlayer } from "@/components/messages/VoiceNoteRecorder";
-import { SharedContentCard, type SharedContentType } from "@/components/messages/SharedContentCard";
+import { useOnlinePresence } from "@/components/messages/OnlinePresence";
 import { ImageLightbox } from "@/components/messages/ImageLightbox";
-import { FileText } from "lucide-react";
-import { ConversationListSkeleton } from "@/components/skeletons/MessagesSkeletons";
 import { PageTransition } from "@/components/PageTransition";
+import type { GroupRoom } from "@/components/messages/GroupsList";
 
-interface Conversation {
-  conversation_id: string;
-  message_id: string;
-  sender_id: string;
-  receiver_id: string;
-  content: string;
-  created_at: string;
-  read: boolean;
-  sender_name: string;
-  sender_avatar: string;
-  receiver_name: string;
-  receiver_avatar: string;
-  match_id: string | null;
-}
-
-interface Message {
-  id: string;
-  sender_id: string;
-  receiver_id: string;
-  content: string;
-  created_at: string;
-  read: boolean;
-  match_id: string | null;
-  attachment_url?: string | null;
-  attachment_type?: string | null;
-  attachment_name?: string | null;
-  attachment_size?: number | null;
-  attachment_duration?: number | null;
-  reply_to_id?: string | null;
-  reply_to_content?: string | null;
-  reply_to_sender_name?: string | null;
-  shared_content_type?: string | null;
-  shared_content_id?: string | null;
-  shared_content_meta?: any;
-}
-
-interface Attachment {
-  url: string;
-  type: 'image' | 'file';
-  fileName?: string;
-}
-
-interface ReplyTo {
-  id: string;
-  content: string;
-  senderName: string;
-}
-
-interface Connection {
-  id: string;
-  status: string;
-}
+import { useConversations } from "./messages/useConversations";
+import { useChatMessages } from "./messages/useChatMessages";
+import { useSendMessage } from "./messages/useSendMessage";
+import { ConversationListPanel } from "./messages/ConversationListPanel";
+import { ChatHeader } from "./messages/ChatHeader";
+import { MessageBubble } from "./messages/MessageBubble";
+import { MessageComposer } from "./messages/MessageComposer";
+import { EmptyChatState } from "./messages/EmptyChatState";
+import type { Attachment, ReplyTo, Message } from "./messages/types";
 
 const Messages = () => {
   const [searchParams] = useSearchParams();
@@ -97,56 +31,54 @@ const Messages = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [currentUserId, setCurrentUserId] = useState<string>("");
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [conversationsLoading, setConversationsLoading] = useState(true);
-  const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
-  
+
   const navigationState = location.state as { receiverId?: string; receiverName?: string } | null;
   const [selectedConversation, setSelectedConversation] = useState<string | null>(
     navigationState?.receiverId || searchParams.get("user") || searchParams.get("userId")
   );
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [connections, setConnections] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<'inbox' | 'groups' | 'requests'>('inbox');
-  const [requestCount, setRequestCount] = useState(0);
+  const [requestCount] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState<GroupRoom | null>(null);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [groupsRefreshKey, setGroupsRefreshKey] = useState(0);
-  const [otherUser, setOtherUser] = useState<{
-    id: string;
-    name: string;
-    avatar: string;
-    role?: string;
-  } | null>(null);
   const [showProjectDialog, setShowProjectDialog] = useState(false);
-  const [matchId, setMatchId] = useState<string | null>(null);
+  const [matchId] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string>('');
   const [currentUserName, setCurrentUserName] = useState<string>('');
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [replyTo, setReplyTo] = useState<ReplyTo | null>(null);
-  const [reactionsByMsg, setReactionsByMsg] = useState<Map<string, ReactionRow[]>>(new Map());
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  
-  // Online presence
+
   const onlineUsers = useOnlinePresence(currentUserId);
-  
-  // Typing status hook
   const { setTyping } = useTypingStatus(selectedConversation || '', currentUserId);
 
-  // Sync URL params with selected conversation when they change
+  const {
+    conversations, conversationsLoading, unreadCounts, connections,
+    fetchConnections, fetchConversations, clearUnread,
+  } = useConversations(currentUserId);
+
+  const { messages, otherUser, reactionsByMsg } = useChatMessages({
+    currentUserId,
+    selectedConversation,
+    onConversationsRefresh: fetchConversations,
+    onClearUnread: clearUnread,
+  });
+
+  const { sendMessage, sendVoiceNote } = useSendMessage({ currentUserId, selectedConversation });
+
+  // Sync URL params
   useEffect(() => {
     const userIdFromUrl = navigationState?.receiverId || searchParams.get("user") || searchParams.get("userId");
     if (userIdFromUrl && userIdFromUrl !== selectedConversation) {
       setSelectedConversation(userIdFromUrl);
     }
   }, [searchParams, navigationState]);
-  
-  // Track page view
+
   useEffect(() => {
     const trackPageView = async () => {
       const { analytics } = await import("@/lib/analytics");
@@ -158,7 +90,6 @@ const Messages = () => {
   useEffect(() => {
     if (user?.id) {
       setCurrentUserId(user.id);
-      
       supabase
         .from('profiles')
         .select('role, full_name')
@@ -173,7 +104,7 @@ const Messages = () => {
     }
   }, [user]);
 
-  // Auto-join a group when opened with ?groupInvite=CODE
+  // Auto-join group via invite
   useEffect(() => {
     const code = searchParams.get("groupInvite");
     if (!code || !currentUserId) return;
@@ -201,31 +132,8 @@ const Messages = () => {
   }, [searchParams, currentUserId, toast]);
 
   useEffect(() => {
-    let isMounted = true;
-    
-    const loadData = async () => {
-      if (currentUserId && isMounted) {
-        await Promise.all([
-          fetchConnections(),
-          fetchConversations(),
-          subscribeToMessages()
-        ]);
-      }
-    };
-    
-    loadData();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [currentUserId]);
-
-  useEffect(() => {
     if (selectedConversation && currentUserId) {
-      fetchMessages(selectedConversation);
-      markMessagesAsRead(selectedConversation);
       setReplyTo(null);
-      
       const trackConversation = async () => {
         const { analytics } = await import("@/lib/analytics");
         analytics.featureUsed("conversation_opened", { partner_id: selectedConversation });
@@ -234,937 +142,178 @@ const Messages = () => {
     }
   }, [selectedConversation, currentUserId]);
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const fetchConnections = async () => {
-    try {
-      const [outgoingResult, incomingResult, matchesResult] = await Promise.all([
-        supabase
-          .from("connections")
-          .select("connected_user_id")
-          .eq("user_id", currentUserId)
-          .eq("status", "accepted"),
-        supabase
-          .from("connections")
-          .select("user_id")
-          .eq("connected_user_id", currentUserId)
-          .eq("status", "accepted"),
-        supabase
-          .from("matches")
-          .select("user1_id, user2_id")
-          .or(`user1_id.eq.${currentUserId},user2_id.eq.${currentUserId}`)
-          .eq("status", "active"),
-      ]);
-
-      const connectedIds = new Set<string>();
-      outgoingResult.data?.forEach((c) => connectedIds.add(c.connected_user_id));
-      incomingResult.data?.forEach((c) => connectedIds.add(c.user_id));
-      matchesResult.data?.forEach((m) => {
-        connectedIds.add(m.user1_id === currentUserId ? m.user2_id : m.user1_id);
-      });
-
-      setConnections(connectedIds);
-    } catch (error) {
-      console.error('[Messages] Error fetching connections:', error);
-    }
-  };
-
-  const fetchConversations = async () => {
-    setConversationsLoading(true);
-    try {
-      const [conversationsResult, unreadResult] = await Promise.all([
-        supabase
-          .from("conversation_list")
-          .select("*")
-          .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("messages")
-          .select("sender_id")
-          .eq("receiver_id", currentUserId)
-          .eq("read", false)
-      ]);
-
-      if (conversationsResult.error) {
-        console.error("Error fetching conversations:", conversationsResult.error);
-        return;
-      }
-
-      setConversations(conversationsResult.data || []);
-
-      if (unreadResult.data) {
-        const counts = new Map<string, number>();
-        unreadResult.data.forEach((msg) => {
-          const current = counts.get(msg.sender_id) || 0;
-          counts.set(msg.sender_id, current + 1);
-        });
-        setUnreadCounts(counts);
-      }
-    } catch (error) {
-      console.error('[Messages] Error fetching conversations:', error);
-      setConversations([]);
-    } finally {
-      setConversationsLoading(false);
-    }
-  };
-
-  const fetchMessages = async (userId: string) => {
-    try {
-      const [messagesResult, profileResult] = await Promise.all([
-        supabase
-          .from("messages")
-          .select("*")
-          .or(
-            `and(sender_id.eq.${currentUserId},receiver_id.eq.${userId}),and(sender_id.eq.${userId},receiver_id.eq.${currentUserId})`
-          )
-          .order("created_at", { ascending: true }),
-        supabase
-          .from("profiles")
-          .select("full_name, avatar_url, role")
-          .eq("user_id", userId)
-          .maybeSingle(),
-      ]);
-
-      if (messagesResult.error) {
-        console.error("Error fetching messages:", messagesResult.error);
-        return;
-      }
-
-      const msgs = messagesResult.data || [];
-      setMessages(msgs as Message[]);
-
-      // Load reactions for all visible messages
-      if (msgs.length > 0) {
-        const ids = msgs.map(m => m.id);
-        const { data: reactRows } = await supabase
-          .from("message_reactions")
-          .select("*")
-          .in("message_id", ids);
-        const map = new Map<string, ReactionRow[]>();
-        (reactRows || []).forEach(r => {
-          const arr = map.get(r.message_id) || [];
-          arr.push(r as ReactionRow);
-          map.set(r.message_id, arr);
-        });
-        setReactionsByMsg(map);
-      } else {
-        setReactionsByMsg(new Map());
-      }
-
-      if (profileResult.data) {
-        setOtherUser({
-          id: userId,
-          name: profileResult.data.full_name,
-          avatar: profileResult.data.avatar_url,
-          role: profileResult.data.role,
-        });
-      }
-    } catch (error) {
-      console.error('[Messages] Error fetching messages:', error);
-      setMessages([]);
-    }
-  };
-
-  const subscribeToMessages = () => {
-    const channel = supabase
-      .channel("messages-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "messages",
-          filter: `or(sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId})`,
-        },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            const newMsg = payload.new as Message;
-            if (
-              selectedConversation &&
-              (newMsg.sender_id === selectedConversation ||
-                newMsg.receiver_id === selectedConversation)
-            ) {
-              setMessages((prev) => [...prev, newMsg]);
-              markMessagesAsRead(selectedConversation);
-            }
-            fetchConversations();
-          } else if (payload.eventType === "UPDATE") {
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === payload.new.id ? (payload.new as Message) : msg
-              )
-            );
-            fetchConversations();
-          }
-        }
-      )
-      .subscribe();
-
-    const reactionsChannel = supabase
-      .channel("message-reactions-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "message_reactions" },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            const r = payload.new as ReactionRow;
-            setReactionsByMsg(prev => {
-              const next = new Map(prev);
-              const arr = [...(next.get(r.message_id) || []), r];
-              next.set(r.message_id, arr);
-              return next;
-            });
-          } else if (payload.eventType === "DELETE") {
-            const r = payload.old as ReactionRow;
-            setReactionsByMsg(prev => {
-              const next = new Map(prev);
-              const arr = (next.get(r.message_id) || []).filter(x => x.id !== r.id);
-              next.set(r.message_id, arr);
-              return next;
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-      supabase.removeChannel(reactionsChannel);
-    };
-  };
-
-  const markMessagesAsRead = async (userId: string) => {
-    const { error } = await supabase
-      .from("messages")
-      .update({ read: true })
-      .eq("receiver_id", currentUserId)
-      .eq("sender_id", userId)
-      .eq("read", false);
-    
-    if (!error) {
-      setUnreadCounts(prev => {
-        const newCounts = new Map(prev);
-        newCounts.delete(userId);
-        return newCounts;
-      });
-    }
-  };
-
-  const sendMessage = async () => {
-    if ((!newMessage.trim() && !attachment) || !selectedConversation) return;
-
-    const insertData: any = {
-      sender_id: currentUserId,
-      receiver_id: selectedConversation,
-      content: newMessage.trim() || (attachment ? (attachment.type === 'image' ? '📷 Image' : `📎 ${attachment.fileName || 'File'}`) : ''),
-      read: false,
-    };
-
-    if (attachment) {
-      insertData.attachment_url = attachment.url;
-      insertData.attachment_type = attachment.type;
-      insertData.attachment_name = attachment.fileName;
-    }
-
-    // Add reply metadata if replying
-    if (replyTo) {
-      insertData.reply_to_id = replyTo.id;
-      insertData.reply_to_content = replyTo.content.substring(0, 200);
-      insertData.reply_to_sender_name = replyTo.senderName;
-    }
-
-    const { error } = await supabase.from("messages").insert(insertData);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Send push notification to receiver
-    const { data: senderProfile } = await supabase
-      .from('profiles')
-      .select('full_name')
-      .eq('user_id', currentUserId)
-      .single();
-
-    if (senderProfile) {
-      const { notifyMessage } = await import("@/lib/pushNotifications");
-      const preview = attachment ? (attachment.type === 'image' ? '📷 Sent an image' : '📎 Sent a file') : (newMessage.trim() || 'New message');
-      await notifyMessage(
-        selectedConversation,
-        senderProfile.full_name || 'Someone',
-        preview
-      );
-
-      supabase.functions.invoke('send-user-email', {
-        body: {
-          type: 'message',
-          recipientId: selectedConversation,
-          data: { messagePreview: preview }
-        }
-      }).catch(err => console.error('[Messages] Email notification failed:', err));
-    }
-
-    const { analytics } = await import("@/lib/analytics");
-    analytics.messageSent(selectedConversation, 'direct');
-
-    setNewMessage("");
-    setAttachment(null);
-    setReplyTo(null);
-  };
-
-  const sendVoiceNote = async (url: string, duration: number) => {
-    if (!selectedConversation) return;
-    await supabase.from("messages").insert({
-      sender_id: currentUserId,
-      receiver_id: selectedConversation,
-      content: '🎙️ Voice note',
-      attachment_url: url,
-      attachment_type: 'voice',
-      attachment_duration: duration,
-      read: false,
-    });
-  };
-
-  const getConversationPartner = (conv: Conversation) => {
-    return conv.sender_id === currentUserId
-      ? {
-          id: conv.receiver_id,
-          name: conv.receiver_name,
-          avatar: conv.receiver_avatar,
-        }
-      : {
-          id: conv.sender_id,
-          name: conv.sender_name,
-          avatar: conv.sender_avatar,
-        };
-  };
-
-  const getUnreadCount = (userId: string) => {
-    return unreadCounts.get(userId) || 0;
-  };
-
-  const isConnectionAccepted = (userId: string) => connections.has(userId);
-
   const filteredConversations = conversations.filter((conv) => {
-    const partner = getConversationPartner(conv);
-    const partnerName = partner.name || '';
-    const matchesSearch = partnerName.toLowerCase().includes(searchQuery.toLowerCase());
-    const isConnected = isConnectionAccepted(partner.id);
-    return matchesSearch && isConnected;
+    const partnerId = conv.sender_id === currentUserId ? conv.receiver_id : conv.sender_id;
+    const partnerName = (conv.sender_id === currentUserId ? conv.receiver_name : conv.sender_name) || '';
+    return partnerName.toLowerCase().includes(searchQuery.toLowerCase()) && connections.has(partnerId);
   });
 
-  const conversationCount = filteredConversations.length;
-  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
     setTyping(true);
-    
-    if (typingTimeout) {
-      clearTimeout(typingTimeout);
-    }
-    
-    const timeout = setTimeout(() => {
-      setTyping(false);
-    }, 2000);
+    if (typingTimeout) clearTimeout(typingTimeout);
+    const timeout = setTimeout(() => setTyping(false), 2000);
     setTypingTimeout(timeout);
   };
 
   const handleReply = (msg: Message) => {
     const senderName = msg.sender_id === currentUserId ? currentUserName : (otherUser?.name || 'Unknown');
-    setReplyTo({
-      id: msg.id,
-      content: msg.content,
-      senderName,
-    });
+    setReplyTo({ id: msg.id, content: msg.content, senderName });
     inputRef.current?.focus();
+  };
+
+  const handleSubmit = async () => {
+    setTyping(false);
+    const ok = await sendMessage({ text: newMessage, attachment, replyTo });
+    if (ok) {
+      setNewMessage("");
+      setAttachment(null);
+      setReplyTo(null);
+    }
   };
 
   return (
     <PageTransition>
-    <div className="flex h-[calc(100dvh-4rem)] max-w-7xl mx-auto overflow-hidden pb-20 lg:pb-0">
-      {/* Conversations List */}
-      <div
-        className={`${
-          selectedConversation || selectedGroup ? "hidden md:flex" : "flex"
-        } w-full md:w-[340px] lg:w-96 flex-col border-r border-border bg-card`}
-      >
-        <div className="p-3 sm:p-4 border-b-2 border-primary/20 space-y-2.5 sm:space-y-4">
-          <div className="space-y-1">
-            <p className="brand-eyebrow">Your inbox</p>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-[-0.03em]">Messages</h2>
-          </div>
-          <PageTip
-            id="messages"
-            title="Your conversations live here"
-            message="Match with creators in Circle first, then come here to chat. Tip: mention something specific from their profile to break the ice!"
-          />
-          
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'inbox' | 'groups' | 'requests')}>
-            <TabsList className="w-full">
-              <TabsTrigger value="inbox" className="flex-1 text-xs sm:text-sm">
-                Direct
-              </TabsTrigger>
-              <TabsTrigger value="groups" className="flex-1 text-xs sm:text-sm">
-                Groups
-              </TabsTrigger>
-              <TabsTrigger value="requests" className="flex-1 text-xs sm:text-sm">
-                Requests {requestCount > 0 && <Badge variant="destructive" className="ml-1">{requestCount}</Badge>}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {activeTab === 'inbox' && (
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search messages..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 rounded-full h-9 sm:h-10 text-sm"
-              />
-            </div>
-          )}
-        </div>
-        
-        <ScrollArea className="flex-1">
-          {activeTab === 'groups' ? (
-            <GroupsList
-              currentUserId={currentUserId}
-              selectedGroupId={selectedGroup?.id || null}
-              onSelect={(g) => setSelectedGroup(g)}
-              onCreate={() => setCreateGroupOpen(true)}
-              refreshKey={groupsRefreshKey}
-            />
-          ) : activeTab === 'requests' ? (
-            <MessageRequests 
-              currentUserId={currentUserId}
-              onAccept={() => {
-                fetchConnections();
-                fetchConversations();
-              }}
-              onSelectConversation={(userId) => {
-                setActiveTab('inbox');
-                setSelectedConversation(userId);
-              }}
-            />
-          ) : conversationsLoading ? (
-            <ConversationListSkeleton />
-          ) : filteredConversations.length === 0 ? (
-            <div className="p-8 text-center">
-              <div className="mb-5 mx-auto w-20 h-20 rounded-2xl bg-energy/10 border-2 border-energy/30 flex items-center justify-center shadow-glow-lime">
-                <MessageCircle className="h-10 w-10 text-energy" />
-              </div>
-              <p className="brand-eyebrow mb-2">{searchQuery ? "No matches" : "Inbox zero"}</p>
-              <p className="text-xl font-black tracking-[-0.02em] mb-2">
-                {searchQuery ? "Nothing matches that" : "Your conversations live here"}
-              </p>
-              <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
-                {searchQuery
-                  ? "Try a different name or keyword."
-                  : "Match with creators in Circle, then come back to start the conversation."}
-              </p>
-              {!searchQuery && (
-                <>
-                  <Button onClick={() => navigate("/circle")} variant="lime" size="sm" className="gap-2">
-                    Discover Creators
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                  <PushNotificationPrompt trigger="message" className="mt-4" />
-                </>
-              )}
-            </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {filteredConversations.map((conv) => {
-                const partner = getConversationPartner(conv);
-                const unreadCount = getUnreadCount(partner.id);
-                const isOnline = onlineUsers.has(partner.id);
-                
-                return (
-                  <div
-                    key={conv.conversation_id}
-                    onClick={() => setSelectedConversation(partner.id)}
-                    className={`flex items-start gap-2.5 sm:gap-3 p-3 sm:p-4 cursor-pointer hover:bg-accent/50 transition-colors active:bg-accent/70 ${
-                      selectedConversation === partner.id ? "bg-accent" : ""
-                    }`}
-                  >
-                    <div className="relative flex-shrink-0">
-                      <Avatar className="h-11 w-11 sm:h-14 sm:w-14 border-2 border-background">
-                        <AvatarImage src={partner.avatar} />
-                        <AvatarFallback className="text-base sm:text-lg">
-                          {(partner.name || 'U')
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <OnlineDot isOnline={isOnline} />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-0.5 gap-2">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <p className={`truncate text-sm sm:text-base ${unreadCount > 0 ? "font-bold" : "font-semibold"}`}>{partner.name || 'Unknown'}</p>
-                          {isOnline && (
-                            <span className="text-[10px] text-success font-medium flex-shrink-0">online</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <span className="text-[10px] sm:text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(conv.created_at), {
-                              addSuffix: true,
-                            }).replace('about ', '')}
-                          </span>
-                          {unreadCount > 0 && (
-                            <span className="h-2.5 w-2.5 rounded-full bg-primary shadow-glow-purple" aria-label={`${unreadCount} unread`} />
-                          )}
-                        </div>
-                      </div>
-                      
-                      <p className={`text-xs sm:text-sm truncate ${
-                        unreadCount > 0 ? "font-semibold text-foreground" : "text-muted-foreground"
-                      }`}>
-                        {conv.sender_id === currentUserId ? (
-                          <span className="inline-flex items-center gap-1">
-                            {conv.read ? (
-                              <CheckCheck className="h-3 w-3 text-primary" />
-                            ) : (
-                              <Check className="h-3 w-3" />
-                            )}
-                            {conv.content}
-                          </span>
-                        ) : (
-                          conv.content
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </ScrollArea>
-      </div>
-
-      {/* Chat Area */}
-      {selectedGroup ? (
-        <GroupChatPanel
-          group={selectedGroup}
+      <div className="flex h-[calc(100dvh-4rem)] max-w-7xl mx-auto overflow-hidden pb-20 lg:pb-0">
+        <ConversationListPanel
+          hidden={!!(selectedConversation || selectedGroup)}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          requestCount={requestCount}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          conversationsLoading={conversationsLoading}
+          filteredConversations={filteredConversations}
           currentUserId={currentUserId}
-          onBack={() => setSelectedGroup(null)}
+          selectedConversation={selectedConversation}
+          setSelectedConversation={setSelectedConversation}
+          selectedGroupId={selectedGroup?.id || null}
+          onSelectGroup={setSelectedGroup}
+          onCreateGroup={() => setCreateGroupOpen(true)}
+          groupsRefreshKey={groupsRefreshKey}
+          onlineUsers={onlineUsers}
+          unreadCounts={unreadCounts}
+          onAcceptRequest={() => { fetchConnections(); fetchConversations(); }}
+          navigate={navigate}
         />
-      ) : selectedConversation ? (
-        <div className="flex-1 flex flex-col bg-background pb-20 lg:pb-0">
-          {/* Chat Header */}
-          <div className="p-3 sm:p-4 border-b border-border flex items-center gap-2.5 sm:gap-3 bg-card">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden h-9 w-9"
-              onClick={() => setSelectedConversation(null)}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            {otherUser && (
-              <>
-                <div className="relative">
-                  <Avatar
-                    className="h-9 w-9 sm:h-11 sm:w-11 cursor-pointer border-2 border-background"
-                    onClick={() => navigate(`/profile/${otherUser.id}`)}
-                  >
-                    <AvatarImage src={otherUser.avatar} />
-                    <AvatarFallback className="text-sm sm:text-lg">
-                      {(otherUser.name || 'U')
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <OnlineDot isOnline={onlineUsers.has(otherUser.id)} />
-                </div>
-                <div className="flex-1 cursor-pointer" onClick={() => navigate(`/profile/${otherUser.id}`)}>
-                  <h3 className="font-semibold hover:underline">
-                    {otherUser.name || 'Unknown'}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    {onlineUsers.has(otherUser.id) ? (
-                      <span className="text-success">Online</span>
-                    ) : (
-                      otherUser.role || ''
-                    )}
-                  </p>
-                </div>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden sm:flex gap-2"
-                  onClick={() => setShowProjectDialog(true)}
-                >
-                  <Briefcase className="h-4 w-4" />
-                  Start Project
-                </Button>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-5 w-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => navigate(`/profile/${otherUser.id}`)}>
-                      View Profile
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setShowProjectDialog(true)} className="sm:hidden">
-                      <Briefcase className="h-4 w-4 mr-2" />
-                      Start Project Together
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Conversation
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            )}
-          </div>
 
-          {/* Ice Breakers for new conversations */}
-          {otherUser && messages.length === 0 && (
-            <IceBreakers
-              recipientId={otherUser.id}
-              recipientName={otherUser.name || 'Creator'}
-              recipientRole={otherUser.role}
-              currentUserRole={currentUserRole}
-              onSelectIceBreaker={(message) => setNewMessage(message)}
+        {selectedGroup ? (
+          <GroupChatPanel
+            group={selectedGroup}
+            currentUserId={currentUserId}
+            onBack={() => setSelectedGroup(null)}
+          />
+        ) : selectedConversation && otherUser ? (
+          <div className="flex-1 flex flex-col bg-background pb-20 lg:pb-0">
+            <ChatHeader
+              otherUser={otherUser}
+              isOnline={onlineUsers.has(otherUser.id)}
+              onBack={() => setSelectedConversation(null)}
+              onViewProfile={() => navigate(`/profile/${otherUser.id}`)}
+              onStartProject={() => setShowProjectDialog(true)}
             />
-          )}
 
-          {/* Messages */}
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-3">
-              {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center py-12">
-                  <div className="relative mb-4">
-                    <Avatar className="h-20 w-20 ring-4 ring-primary/10">
-                      <AvatarImage src={otherUser?.avatar} />
-                      <AvatarFallback className="text-2xl bg-gradient-to-br from-primary/20 to-accent/20">
-                        {(otherUser?.name || 'U').split(" ").map((n) => n[0]).join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    {onlineUsers.has(otherUser?.id || '') && (
-                      <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-emerald-500 border-2 border-background" />
-                    )}
-                  </div>
-                  <h3 className="text-lg font-semibold mb-1">{otherUser?.name || 'Unknown'}</h3>
-                  {otherUser?.role && (
-                    <Badge variant="secondary" className="mb-3 text-xs">{otherUser.role}</Badge>
-                  )}
-                  <div className="flex gap-2 mb-4">
-                    <Button
-                      onClick={() => navigate(`/profile/${otherUser?.id}`)}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full text-xs"
-                    >
-                      View Profile
-                    </Button>
-                    <Button
-                      onClick={() => setShowProjectDialog(true)}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full text-xs gap-1"
-                    >
-                      <Briefcase className="h-3 w-3" /> Start Project
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground max-w-[240px]">
-                    Pick a conversation starter above or type your own message to connect
-                  </p>
-                </div>
-              ) : (
-                messages.map((msg, index) => {
-                  const isOwn = msg.sender_id === currentUserId;
-                  const showAvatar = index === messages.length - 1 || 
-                    messages[index + 1]?.sender_id !== msg.sender_id;
-                  const reactions = reactionsByMsg.get(msg.id) || [];
-
-                  // Double-tap handler (mobile + desktop)
-                  let lastTap = 0;
-                  const handleDoubleTap = async () => {
-                    const now = Date.now();
-                    if (now - lastTap < 350) {
-                      const existing = reactions.find(r => r.user_id === currentUserId && r.emoji === "❤️");
-                      if (!existing) {
-                        await supabase.from("message_reactions").insert({
-                          message_id: msg.id,
-                          user_id: currentUserId,
-                          emoji: "❤️",
-                        });
-                      }
-                    }
-                    lastTap = now;
-                  };
-
-                  // Detect attachment type — prefer native columns, fall back to legacy markdown
-                  const nativeImage = msg.attachment_type === 'image' && msg.attachment_url;
-                  const nativeFile = msg.attachment_type === 'file' && msg.attachment_url;
-                  const nativeVoice = msg.attachment_type === 'voice' && msg.attachment_url;
-                  const legacyImageMatch = !nativeImage && !nativeFile && msg.content.match(/\[📷 Image\]\((https?:\/\/[^\)]+)\)/);
-                  const legacyFileMatch = !nativeImage && !nativeFile && msg.content.match(/\[📎 ([^\]]+)\]\((https?:\/\/[^\)]+)\)/);
-                  const cleanText = msg.content
-                    .replace(/\[📷 Image\]\([^\)]+\)/, '')
-                    .replace(/\[📎 [^\]]+\]\([^\)]+\)/, '')
-                    .trim();
-                  const showText = !nativeVoice && cleanText && cleanText !== '📷 Image' && !cleanText.startsWith('📎 ') && cleanText !== '🎙️ Voice note';
-
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex gap-2 group ${isOwn ? "justify-end" : "justify-start"}`}
-                    >
-                      {!isOwn && showAvatar && (
-                        <Avatar className="h-8 w-8 flex-shrink-0">
-                          <AvatarImage src={otherUser?.avatar} />
-                          <AvatarFallback className="text-xs">
-                            {(otherUser?.name || 'U').split(" ").map((n) => n[0]).join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                      {!isOwn && !showAvatar && <div className="w-8" />}
-                      
-                      <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"} max-w-[75%]`}>
-                        {/* Inline reply reference */}
-                        {msg.reply_to_content && (
-                          <InlineReply
-                            content={msg.reply_to_content}
-                            senderName={msg.reply_to_sender_name || 'Unknown'}
-                            isOwn={isOwn}
-                          />
-                        )}
-
-                        <div
-                          className="space-y-1.5 cursor-pointer select-none"
-                          onClick={handleDoubleTap}
-                        >
-                          {/* Shared content card */}
-                          {msg.shared_content_type && msg.shared_content_id && (
-                            <SharedContentCard
-                              type={msg.shared_content_type as SharedContentType}
-                              id={msg.shared_content_id}
-                              meta={msg.shared_content_meta}
-                              isOwn={isOwn}
-                            />
-                          )}
-
-                          {/* Voice note */}
-                          {nativeVoice && (
-                            <VoiceNotePlayer url={msg.attachment_url!} duration={msg.attachment_duration || undefined} isOwn={isOwn} />
-                          )}
-
-                          {/* Native image */}
-                          {nativeImage && (
-                            <button onClick={(e) => { e.stopPropagation(); setLightboxUrl(msg.attachment_url!); }} className="block">
-                              <img
-                                src={msg.attachment_url!}
-                                alt="Shared image"
-                                className="max-w-[240px] max-h-[280px] rounded-2xl object-cover border border-border"
-                              />
-                            </button>
-                          )}
-
-                          {/* Native file */}
-                          {nativeFile && (
-                            <a
-                              href={msg.attachment_url!}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl ${isOwn ? "bg-primary/80 text-primary-foreground" : "bg-muted"}`}
-                            >
-                              <FileText className="h-4 w-4 flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate underline">{msg.attachment_name || 'Download file'}</p>
-                              </div>
-                            </a>
-                          )}
-
-                          {/* Legacy image link */}
-                          {legacyImageMatch && (
-                            <button onClick={(e) => { e.stopPropagation(); setLightboxUrl(legacyImageMatch[1]); }} className="block">
-                              <img src={legacyImageMatch[1]} alt="Shared image" className="max-w-[240px] max-h-[280px] rounded-2xl object-cover border border-border" />
-                            </button>
-                          )}
-
-                          {/* Legacy file link */}
-                          {legacyFileMatch && (
-                            <a href={legacyFileMatch[2]} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-2xl ${isOwn ? "bg-primary/80 text-primary-foreground" : "bg-muted"}`}>
-                              <FileText className="h-4 w-4" />
-                              <span className="text-sm underline">{legacyFileMatch[1]}</span>
-                            </a>
-                          )}
-
-                          {/* Text bubble */}
-                          {showText && (
-                            <div
-                              className={`rounded-2xl px-4 py-2.5 ${
-                                isOwn
-                                  ? "bg-primary text-primary-foreground rounded-br-sm"
-                                  : "bg-muted rounded-bl-sm"
-                              }`}
-                            >
-                              <p className="text-sm break-words whitespace-pre-wrap">{cleanText}</p>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Reactions display */}
-                        <MessageReactions messageId={msg.id} currentUserId={currentUserId} reactions={reactions} isOwn={isOwn} />
-
-                        <div className="flex items-center gap-1 mt-1 px-1">
-                          <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(msg.created_at), {
-                              addSuffix: true,
-                            }).replace('about ', '')}
-                          </span>
-                          {isOwn && (
-                            msg.read ? (
-                              <CheckCheck className="h-3 w-3 text-primary" />
-                            ) : (
-                              <Check className="h-3 w-3 text-muted-foreground" />
-                            )
-                          )}
-                          {/* Quick action buttons (hover) */}
-                          <div className="flex items-center gap-0.5 ml-1">
-                            <ReactionPicker
-                              messageId={msg.id}
-                              currentUserId={currentUserId}
-                              reactions={reactions}
-                              align={isOwn ? "end" : "start"}
-                            />
-                            <button
-                              onClick={() => handleReply(msg)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
-                              title="Reply"
-                            >
-                              <Reply className="h-3 w-3 text-muted-foreground" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-            
-            {/* Typing Indicator */}
-            {selectedConversation && currentUserId && (
-              <TypingIndicator 
-                recipientId={selectedConversation} 
-                currentUserId={currentUserId} 
+            {messages.length === 0 && (
+              <IceBreakers
+                recipientId={otherUser.id}
+                recipientName={otherUser.name || 'Creator'}
+                recipientRole={otherUser.role}
+                currentUserRole={currentUserRole}
+                onSelectIceBreaker={(message) => setNewMessage(message)}
               />
             )}
-          </ScrollArea>
 
-          {/* Message Input */}
-          <div className="p-3 sm:p-4 border-t border-border bg-card/95 backdrop-blur-sm space-y-2">
-            {/* Reply Banner */}
-            {replyTo && (
-              <MessageReplyBanner replyTo={replyTo} onCancel={() => setReplyTo(null)} />
-            )}
-            
-            {/* Attachment Preview */}
-            {attachment && (
-              <AttachmentPreview
-                url={attachment.url}
-                type={attachment.type}
-                fileName={attachment.fileName}
-                onRemove={() => setAttachment(null)}
-              />
-            )}
-            
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setTyping(false);
-                sendMessage();
-              }}
-              className="flex items-center gap-2"
-            >
-              <MessageAttachments
-                onAttach={(url, type, fileName) => setAttachment({ url, type, fileName })}
-                disabled={!!attachment}
-              />
-              <VoiceNoteRecorder onSend={sendVoiceNote} disabled={!!attachment} />
-              <div className="flex-1 relative">
-                <Input
-                  ref={inputRef}
-                  value={newMessage}
-                  onChange={handleInputChange}
-                  placeholder={replyTo ? "Reply..." : "Type a message..."}
-                  className="flex-1 rounded-full pr-10 bg-muted/50"
-                />
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-3">
+                {messages.length === 0 ? (
+                  <EmptyChatState
+                    otherUser={otherUser}
+                    isOnline={onlineUsers.has(otherUser.id)}
+                    onViewProfile={() => navigate(`/profile/${otherUser.id}`)}
+                    onStartProject={() => setShowProjectDialog(true)}
+                  />
+                ) : (
+                  messages.map((msg, index) => {
+                    const isOwn = msg.sender_id === currentUserId;
+                    const showAvatar =
+                      index === messages.length - 1 || messages[index + 1]?.sender_id !== msg.sender_id;
+                    const reactions = reactionsByMsg.get(msg.id) || [];
+                    return (
+                      <MessageBubble
+                        key={msg.id}
+                        msg={msg}
+                        isOwn={isOwn}
+                        showAvatar={showAvatar}
+                        reactions={reactions}
+                        currentUserId={currentUserId}
+                        otherUser={otherUser}
+                        onReply={handleReply}
+                        onOpenLightbox={setLightboxUrl}
+                      />
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
               </div>
-              <Button 
-                type="submit" 
-                size="icon" 
-                disabled={!newMessage.trim() && !attachment}
-                className="rounded-full h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 shadow-sm"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </form>
-          </div>
-        </div>
-      ) : (
-        <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground bg-background">
-          <div className="text-center space-y-2">
-            <div className="text-4xl mb-4"></div>
-            <p className="text-xl font-semibold">Your Messages</p>
-            <p className="text-sm">Send messages to creators you've connected with</p>
-          </div>
-        </div>
-      )}
 
-      <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
+              {selectedConversation && currentUserId && (
+                <TypingIndicator recipientId={selectedConversation} currentUserId={currentUserId} />
+              )}
+            </ScrollArea>
 
-      {/* Start Project Dialog */}
-      {otherUser && (
-        <StartProjectFromMatchDialog
-          open={showProjectDialog}
-          onOpenChange={setShowProjectDialog}
-          matchedUser={{
-            id: otherUser.id,
-            name: otherUser.name || 'Unknown',
-            role: otherUser.role || 'Creator',
-            avatar: otherUser.avatar
+            <MessageComposer
+              ref={inputRef}
+              newMessage={newMessage}
+              onChange={handleInputChange}
+              onSubmit={handleSubmit}
+              attachment={attachment}
+              setAttachment={setAttachment}
+              replyTo={replyTo}
+              clearReply={() => setReplyTo(null)}
+              onSendVoice={sendVoiceNote}
+            />
+          </div>
+        ) : (
+          <div className="hidden md:flex flex-1 items-center justify-center text-muted-foreground bg-background">
+            <div className="text-center space-y-2">
+              <div className="text-4xl mb-4"></div>
+              <p className="text-xl font-semibold">Your Messages</p>
+              <p className="text-sm">Send messages to creators you've connected with</p>
+            </div>
+          </div>
+        )}
+
+        <ImageLightbox url={lightboxUrl} onClose={() => setLightboxUrl(null)} />
+
+        {otherUser && (
+          <StartProjectFromMatchDialog
+            open={showProjectDialog}
+            onOpenChange={setShowProjectDialog}
+            matchedUser={{
+              id: otherUser.id,
+              name: otherUser.name || 'Unknown',
+              role: otherUser.role || 'Creator',
+              avatar: otherUser.avatar,
+            }}
+            matchId={matchId}
+            currentUserRole={currentUserRole}
+          />
+        )}
+
+        <CreateGroupDialog
+          open={createGroupOpen}
+          onOpenChange={setCreateGroupOpen}
+          currentUserId={currentUserId}
+          onCreated={() => {
+            setActiveTab('groups');
+            setGroupsRefreshKey((k) => k + 1);
           }}
-          matchId={matchId}
-          currentUserRole={currentUserRole}
         />
-      )}
-
-      <CreateGroupDialog
-        open={createGroupOpen}
-        onOpenChange={setCreateGroupOpen}
-        currentUserId={currentUserId}
-        onCreated={(roomId) => {
-          setActiveTab('groups');
-          setGroupsRefreshKey((k) => k + 1);
-        }}
-      />
-    </div>
+      </div>
     </PageTransition>
   );
 };

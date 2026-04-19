@@ -173,6 +173,33 @@ const Messages = () => {
     }
   }, [user]);
 
+  // Auto-join a group when opened with ?groupInvite=CODE
+  useEffect(() => {
+    const code = searchParams.get("groupInvite");
+    if (!code || !currentUserId) return;
+    (async () => {
+      const { data, error } = await supabase.rpc("join_group_by_invite", { _invite_code: code });
+      if (error) {
+        toast({ title: "Couldn't join group", description: error.message, variant: "destructive" });
+        return;
+      }
+      toast({ title: "Joined group", description: "You're in! Welcome." });
+      setActiveTab('groups');
+      setGroupsRefreshKey((k) => k + 1);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("groupInvite");
+      window.history.replaceState({}, "", url.toString());
+      if (data) {
+        const { data: room } = await supabase
+          .from("spark_rooms")
+          .select("id,title,icon_emoji,member_count,message_count,updated_at,created_by,circle_type")
+          .eq("id", data as string)
+          .maybeSingle();
+        if (room) setSelectedGroup(room as GroupRoom);
+      }
+    })();
+  }, [searchParams, currentUserId, toast]);
+
   useEffect(() => {
     let isMounted = true;
     

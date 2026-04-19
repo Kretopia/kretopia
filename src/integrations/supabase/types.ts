@@ -11130,6 +11130,7 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      delete_group_room: { Args: { _room_id: string }; Returns: boolean }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
@@ -11199,6 +11200,25 @@ export type Database = {
           connection_id: string
           full_name: string
           role: string
+        }[]
+      }
+      get_my_group_rooms: {
+        Args: never
+        Returns: {
+          circle_type: string
+          cover_image_url: string
+          created_at: string
+          created_by: string
+          description: string
+          icon_emoji: string
+          id: string
+          invite_code: string
+          is_private: boolean
+          member_count: number
+          message_count: number
+          my_role: string
+          title: string
+          updated_at: string
         }[]
       }
       get_nearby_creators: {
@@ -11402,6 +11422,11 @@ export type Database = {
         Returns: undefined
       }
       is_profile_owner: { Args: { _profile_user_id: string }; Returns: boolean }
+      is_room_member: {
+        Args: { _room_id: string; _user_id: string }
+        Returns: boolean
+      }
+      join_group_by_invite: { Args: { _invite_code: string }; Returns: string }
       move_to_dlq: {
         Args: {
           dlq_name: string

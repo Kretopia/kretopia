@@ -15,7 +15,17 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Send, ArrowLeft, MoreVertical, Briefcase, Users, Crown, Loader2 } from "lucide-react";
+import { Send, ArrowLeft, MoreVertical, Briefcase, Users, Crown, Loader2, Trash2, Share2, Link2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { formatDistanceToNow } from "date-fns";
 import type { GroupRoom } from "./GroupsList";
 
@@ -48,6 +58,8 @@ export const GroupChatPanel = ({ group, currentUserId, onBack }: GroupChatPanelP
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [promoting, setPromoting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   const isOwner = group.created_by === currentUserId;
@@ -162,6 +174,59 @@ export const GroupChatPanel = ({ group, currentUserId, onBack }: GroupChatPanelP
     }
   };
 
+  const shareInvite = async () => {
+    if (!group.invite_code) {
+      toast({ title: "No invite link available", variant: "destructive" });
+      return;
+    }
+    const url = `${window.location.origin}/messages?groupInvite=${group.invite_code}`;
+    const shareData = {
+      title: `Join "${group.title}" on ThriveIN`,
+      text: `You're invited to join the "${group.title}" group chat on ThriveIN.`,
+      url,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast({ title: "Invite link copied", description: url });
+      }
+    } catch (e: any) {
+      if (e?.name !== "AbortError") {
+        try {
+          await navigator.clipboard.writeText(url);
+          toast({ title: "Invite link copied", description: url });
+        } catch {
+          toast({ title: "Couldn't share", description: e.message, variant: "destructive" });
+        }
+      }
+    }
+  };
+
+  const copyInviteLink = async () => {
+    if (!group.invite_code) {
+      toast({ title: "No invite link available", variant: "destructive" });
+      return;
+    }
+    const url = `${window.location.origin}/messages?groupInvite=${group.invite_code}`;
+    await navigator.clipboard.writeText(url);
+    toast({ title: "Link copied", description: url });
+  };
+
+  const deleteGroup = async () => {
+    setDeleting(true);
+    const { error } = await supabase.rpc("delete_group_room", { _room_id: group.id });
+    setDeleting(false);
+    if (error) {
+      toast({ title: "Couldn't delete group", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Group deleted" });
+    setConfirmDelete(false);
+    onBack();
+  };
+
   const memberList = Object.values(members);
 
   return (
@@ -216,12 +281,54 @@ export const GroupChatPanel = ({ group, currentUserId, onBack }: GroupChatPanelP
                 <DropdownMenuSeparator className="sm:hidden" />
               </>
             )}
+            <DropdownMenuItem onClick={shareInvite}>
+              <Share2 className="h-4 w-4 mr-2" /> Share invite
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={copyInviteLink}>
+              <Link2 className="h-4 w-4 mr-2" /> Copy invite link
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem disabled className="text-xs text-muted-foreground">
               {memberList.length} members
             </DropdownMenuItem>
+            {isOwner && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setConfirmDelete(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" /> Delete group
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this group?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes "{group.title}", all of its messages and member list. This can't be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                deleteGroup();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete group"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Members strip */}
       {memberList.length > 0 && (

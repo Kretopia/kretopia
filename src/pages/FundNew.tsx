@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,9 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Rocket, Loader2 } from "lucide-react";
+import { Plus, Trash2, Rocket, Loader2, ImagePlus, X } from "lucide-react";
 import { useCreateCampaign } from "@/hooks/useThriveFund";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface TierDraft {
@@ -23,12 +24,15 @@ const FundNew = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const projectId = params.get("project") || null;
+  const prefillTitle = params.get("title") || "";
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(prefillTitle);
   const [tagline, setTagline] = useState("");
   const [story, setStory] = useState("");
   const [category, setCategory] = useState("Film");
   const [coverUrl, setCoverUrl] = useState("");
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [goal, setGoal] = useState("5000");
   const [days, setDays] = useState("30");
   const [tiers, setTiers] = useState<TierDraft[]>([
@@ -38,6 +42,34 @@ const FundNew = () => {
   ]);
 
   const createMut = useCreateCampaign();
+
+  const handleCoverUpload = async (file: File) => {
+    if (!user) {
+      toast.error("Please sign in first");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Image must be under 8MB");
+      return;
+    }
+    setUploadingCover(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/covers/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("campaign-media").upload(path, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from("campaign-media").getPublicUrl(path);
+      setCoverUrl(data.publicUrl);
+      toast.success("Cover uploaded");
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setUploadingCover(false);
+    }
+  };
 
   const updateTier = (i: number, patch: Partial<TierDraft>) =>
     setTiers((prev) => prev.map((t, idx) => (idx === i ? { ...t, ...patch } : t)));
@@ -158,12 +190,47 @@ const FundNew = () => {
               </select>
             </div>
             <div>
-              <Label>Cover image URL</Label>
-              <Input
-                value={coverUrl}
-                onChange={(e) => setCoverUrl(e.target.value)}
-                placeholder="https://..."
+              <Label>Cover image</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleCoverUpload(f);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
               />
+              {coverUrl ? (
+                <div className="relative rounded-md overflow-hidden border border-border h-10 flex items-center gap-2 px-2 bg-muted/30">
+                  <img src={coverUrl} alt="Cover" className="h-7 w-12 rounded object-cover" />
+                  <span className="text-xs truncate flex-1 text-muted-foreground">Cover ready</span>
+                  <button
+                    type="button"
+                    onClick={() => setCoverUrl("")}
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label="Remove cover"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-10 gap-2"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingCover}
+                >
+                  {uploadingCover ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ImagePlus className="h-4 w-4" />
+                  )}
+                  {uploadingCover ? "Uploading..." : "Upload image"}
+                </Button>
+              )}
             </div>
           </div>
 

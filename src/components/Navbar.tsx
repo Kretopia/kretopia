@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2,
-  MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus
+  MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, Rocket
 } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { cn } from "@/lib/utils";
@@ -300,6 +300,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Explore</p>
                       <MenuButton icon={Globe} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
                       <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} />
+                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
                     </>
                   ) : (
                     /* ====== WORK MODE MENU ====== */
@@ -313,6 +314,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                       )}
+                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund/manage")} />
                     </>
                   )}
 

@@ -51,6 +51,7 @@ const FundCampaign = () => {
   const [amount, setAmount] = useState<string>("");
   const [message, setMessage] = useState("");
   const [anonymous, setAnonymous] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   if (isLoading) {
     return (

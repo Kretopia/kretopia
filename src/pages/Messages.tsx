@@ -305,7 +305,26 @@ const Messages = () => {
         return;
       }
 
-      setMessages(messagesResult.data || []);
+      const msgs = messagesResult.data || [];
+      setMessages(msgs as Message[]);
+
+      // Load reactions for all visible messages
+      if (msgs.length > 0) {
+        const ids = msgs.map(m => m.id);
+        const { data: reactRows } = await supabase
+          .from("message_reactions")
+          .select("*")
+          .in("message_id", ids);
+        const map = new Map<string, ReactionRow[]>();
+        (reactRows || []).forEach(r => {
+          const arr = map.get(r.message_id) || [];
+          arr.push(r as ReactionRow);
+          map.set(r.message_id, arr);
+        });
+        setReactionsByMsg(map);
+      } else {
+        setReactionsByMsg(new Map());
+      }
 
       if (profileResult.data) {
         setOtherUser({

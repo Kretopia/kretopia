@@ -20,6 +20,7 @@ import { Clock, Users, Target, Loader2, Heart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCampaignBySlug, useCampaignTiers, useCreatePledge } from "@/hooks/useThriveFund";
 import { TrustPanel } from "@/components/thrivefund/TrustPanel";
+import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { toast } from "sonner";
 
 const formatCurrency = (amount: number, currency: string) =>
@@ -157,15 +158,31 @@ const FundCampaign = () => {
             </div>
 
             <div>
-              {campaign.category && (
-                <Badge variant="secondary" className="mb-2">
-                  {campaign.category}
-                </Badge>
-              )}
-              <h1 className="text-2xl md:text-4xl font-bold">{campaign.title}</h1>
-              {campaign.tagline && (
-                <p className="text-base md:text-lg text-muted-foreground mt-2">{campaign.tagline}</p>
-              )}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  {campaign.category && (
+                    <Badge variant="secondary" className="mb-2">
+                      {campaign.category}
+                    </Badge>
+                  )}
+                  <h1 className="text-2xl md:text-4xl font-bold">{campaign.title}</h1>
+                  {campaign.tagline && (
+                    <p className="text-base md:text-lg text-muted-foreground mt-2">{campaign.tagline}</p>
+                  )}
+                </div>
+                <div className="shrink-0">
+                  <SocialShareButtons
+                    url={`/fund/${campaign.slug}`}
+                    socialUrl={`/share/fund/${campaign.slug}/`}
+                    title={`${campaign.title} on ThriveFund`}
+                    description={
+                      campaign.status === "funded"
+                        ? `🎉 Funded! ${campaign.backer_count} backers helped make this happen.`
+                        : `${pct}% funded · ${days} day${days === 1 ? "" : "s"} left · only charged if it hits goal. ${campaign.tagline || "Back this creative project."}`
+                    }
+                  />
+                </div>
+              </div>
             </div>
 
             {campaign.story && (

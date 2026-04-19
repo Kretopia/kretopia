@@ -104,6 +104,7 @@ const FundCampaign = lazy(() => import("./pages/FundCampaign"));
 const FundManage = lazy(() => import("./pages/FundManage"));
 const ShareEventRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareEventRedirect })));
 const ShareMagazineRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareMagazineRedirect })));
+const ShareCampaignRedirect = lazy(() => import("./pages/ShareRedirects").then(m => ({ default: m.ShareCampaignRedirect })));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -328,6 +329,7 @@ const AppContent = () => {
             <Route path="/share/profile/:id" element={<ShareProfileRedirect />} />
             <Route path="/share/event/:id" element={<ShareEventRedirect />} />
             <Route path="/share/magazine/:slug" element={<ShareMagazineRedirect />} />
+            <Route path="/share/fund/:slug" element={<ShareCampaignRedirect />} />
 
             {/* Partner Pages — redirected */}
             <Route path="/partner-directory" element={<Navigate to="/" replace />} />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,11 +6,16 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Rocket, Loader2, Lock, Sparkles } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import {
+  Plus, Trash2, Rocket, Loader2, Lock, Sparkles, Wand2, ImagePlus, ChevronLeft, ChevronRight, Upload, Check,
+} from "lucide-react";
 import { useCreateCampaign, useMyCampaigns } from "@/hooks/useThriveFund";
 import { useAuth } from "@/contexts/AuthContext";
 import { hasProAccess, hasCreatorProAccess, type SubscriptionTier } from "@/lib/subscriptionConfig";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface TierDraft {
   amount: string;
@@ -18,6 +23,13 @@ interface TierDraft {
   description: string;
   max_backers: string;
 }
+
+const STEPS = [
+  { key: "basics", label: "Basics" },
+  { key: "story", label: "Story & Cover" },
+  { key: "tiers", label: "Pledge Tiers" },
+  { key: "goal", label: "Goal & Launch" },
+] as const;
 
 const FundNew = () => {
   const { user, subscriptionInfo } = useAuth();
@@ -29,34 +41,118 @@ const FundNew = () => {
   const isCreatorPro = hasCreatorProAccess(tier);
   const { data: myCampaigns } = useMyCampaigns();
   const activeCount = (myCampaigns ?? []).filter((c) => c.status === "active" || c.status === "draft").length;
-  // Gating: free users cannot launch. Creator (pro) = 1 active. Creator+ = unlimited.
   const tierBlocked = !isPro;
   const limitReached = isPro && !isCreatorPro && activeCount >= 1;
   const gated = tierBlocked || limitReached;
 
-  const [title, setTitle] = useState("");
+  const [step, setStep] = useState(0);
+  const [title, setTitle] = useState(params.get("title") || "");
   const [tagline, setTagline] = useState("");
   const [story, setStory] = useState("");
   const [category, setCategory] = useState("Film");
   const [coverUrl, setCoverUrl] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
   const [goal, setGoal] = useState("5000");
   const [days, setDays] = useState("30");
   const [tiers, setTiers] = useState<TierDraft[]>([
-    { amount: "10", title: "Supporter", description: "Early access + a thank you in the credits.", max_backers: "" },
+    { amount: "10", title: "Supporter", description: "Early access + a thank-you in the credits.", max_backers: "" },
     { amount: "50", title: "Backer", description: "Everything above + signed digital asset.", max_backers: "" },
-    { amount: "250", title: "Producer Credit", description: "Everything above + Executive Producer credit on the work.", max_backers: "20" },
+    { amount: "250", title: "Producer Credit", description: "Everything above + Executive Producer credit.", max_backers: "20" },
   ]);
+  const [aiBusy, setAiBusy] = useState<null | "tagline" | "story" | "tiers" | "image">(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const createMut = useCreateCampaign();
 
   const updateTier = (i: number, patch: Partial<TierDraft>) =>
     setTiers((prev) => prev.map((t, idx) => (idx === i ? { ...t, ...patch } : t)));
-
-  const addTier = () =>
-    setTiers((prev) => [...prev, { amount: "", title: "", description: "", max_backers: "" }]);
-
+  const addTier = () => setTiers((prev) => [...prev, { amount: "", title: "", description: "", max_backers: "" }]);
   const removeTier = (i: number) => setTiers((prev) => prev.filter((_, idx) => idx !== i));
 
+  // ── AI assist ──
+  const callAI = async (action: "tagline" | "story" | "tiers" | "image") => {
+    if (!title.trim()) {
+      toast.error("Add a title first so the AI has context");
+      return;
+    }
+    setAiBusy(action);
+    try {
+      const { data, error } = await supabase.functions.invoke("thrivefund-ai-assist", {
+        body: { action, title, category, tagline, story, goal: Number(goal) || 0 },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      if (action === "tagline" && data.text) setTagline(data.text);
+      if (action === "story" && data.text) setStory(data.text);
+      if (action === "tiers" && Array.isArray(data.tiers)) {
+        setTiers(
+          data.tiers.map((t: any) => ({
+            amount: String(t.amount ?? ""),
+            title: t.title ?? "",
+            description: t.description ?? "",
+            max_backers: t.max_backers ? String(t.max_backers) : "",
+          }))
+        );
+        toast.success(`AI suggested ${data.tiers.length} tiers`);
+      }
+      if (action === "image" && data.imageDataUrl) {
+        await uploadDataUrl(data.imageDataUrl);
+        toast.success("AI cover image generated");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "AI assist failed");
+    } finally {
+      setAiBusy(null);
+    }
+  };
+
+  const uploadDataUrl = async (dataUrl: string) => {
+    if (!user) return;
+    setCoverUploading(true);
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      const path = `${user.id}/${Date.now()}.png`;
+      const { error } = await supabase.storage.from("campaign-media").upload(path, blob, {
+        contentType: "image/png",
+        upsert: false,
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from("campaign-media").getPublicUrl(path);
+      setCoverUrl(data.publicUrl);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to save image");
+    } finally {
+      setCoverUploading(false);
+    }
+  };
+
+  const onUploadFile = async (file: File) => {
+    if (!user) return;
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Max 8MB");
+      return;
+    }
+    setCoverUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("campaign-media").upload(path, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from("campaign-media").getPublicUrl(path);
+      setCoverUrl(data.publicUrl);
+      toast.success("Cover uploaded");
+    } catch (e: any) {
+      toast.error(e?.message || "Upload failed");
+    } finally {
+      setCoverUploading(false);
+    }
+  };
+
+  // ── Submit ──
   const handleSubmit = async (publish: boolean) => {
     if (!user) {
       navigate("/auth?redirect=/fund/new");
@@ -107,40 +203,75 @@ const FundNew = () => {
     }
   };
 
+  // ── Validation per step ──
+  const canAdvance = () => {
+    if (step === 0) return title.trim().length > 0;
+    if (step === 1) return story.trim().length > 0;
+    if (step === 2) return tiers.some((t) => t.title.trim() && Number(t.amount) > 0);
+    return true;
+  };
+
+  const progressPct = ((step + 1) / STEPS.length) * 100;
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24">
       <Helmet>
         <title>Launch Your Campaign · ThriveFund</title>
       </Helmet>
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="mb-6">
+        {/* Header */}
+        <div className="mb-5">
           <div className="flex items-center gap-2 mb-2">
             <Rocket className="h-5 w-5 text-primary" />
             <span className="text-xs uppercase tracking-widest text-primary font-semibold">
               ThriveFund · New Campaign
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold">Tell backers what you're building</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Launch your campaign</h1>
           <p className="text-sm text-muted-foreground mt-1">
             All-or-nothing: cards are only charged if you hit your goal by the deadline.
           </p>
         </div>
 
+        {/* Stepper */}
+        <div className="mb-6">
+          <Progress value={progressPct} className="h-1.5" />
+          <div className="flex justify-between mt-2">
+            {STEPS.map((s, i) => (
+              <div
+                key={s.key}
+                className={cn(
+                  "flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider",
+                  i < step ? "text-energy" : i === step ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                {i < step ? (
+                  <Check className="h-3 w-3" />
+                ) : (
+                  <span className={cn(
+                    "h-4 w-4 rounded-full border flex items-center justify-center text-[9px]",
+                    i === step ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30"
+                  )}>{i + 1}</span>
+                )}
+                <span className="hidden sm:inline">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {gated && (
-          <Card className="p-5 mb-5 border-primary/40 bg-gradient-to-br from-primary/10 to-accent/10">
+          <Card className="p-5 mb-5 border-primary/40 bg-gradient-to-br from-primary/10 to-energy/10">
             <div className="flex items-start gap-3">
               <div className="rounded-full bg-primary/15 p-2">
                 <Lock className="h-4 w-4 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm">
-                  {tierBlocked
-                    ? "Launching campaigns is a Creator feature"
-                    : "You've reached your campaign limit"}
+                  {tierBlocked ? "Launching campaigns is a Creator feature" : "You've reached your campaign limit"}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {tierBlocked
-                    ? "Upgrade to Creator to run 1 active ThriveFund campaign at a time, or Creator+ for unlimited campaigns."
+                    ? "Upgrade to Creator to run 1 active ThriveFund campaign at a time, or Creator+ for unlimited."
                     : "Creator tier supports 1 active campaign. Upgrade to Creator+ for unlimited concurrent campaigns."}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-3">
@@ -159,38 +290,45 @@ const FundNew = () => {
           </Card>
         )}
 
-        <Card className="p-5 space-y-4">
-          <div>
-            <Label>Title *</Label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="My Debut Album"
-              maxLength={120}
-            />
-          </div>
+        {/* ── STEP 0: Basics ── */}
+        {step === 0 && (
+          <Card className="p-5 space-y-4">
+            <div>
+              <Label>Title *</Label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="My Debut Album"
+                maxLength={120}
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">
+                The hook backers see first. Keep it specific.
+              </p>
+            </div>
 
-          <div>
-            <Label>Tagline</Label>
-            <Input
-              value={tagline}
-              onChange={(e) => setTagline(e.target.value)}
-              placeholder="A one-line hook"
-              maxLength={140}
-            />
-          </div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <Label>Tagline</Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 gap-1 text-energy hover:text-energy hover:bg-energy/10"
+                  disabled={aiBusy === "tagline" || !title.trim()}
+                  onClick={() => callAI("tagline")}
+                >
+                  {aiBusy === "tagline" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                  AI write
+                </Button>
+              </div>
+              <Input
+                value={tagline}
+                onChange={(e) => setTagline(e.target.value)}
+                placeholder="A one-line hook"
+                maxLength={140}
+              />
+            </div>
 
-          <div>
-            <Label>Story</Label>
-            <Textarea
-              value={story}
-              onChange={(e) => setStory(e.target.value)}
-              placeholder="What you're building, who it's for, and why it matters."
-              rows={6}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Category</Label>
               <select
@@ -208,125 +346,252 @@ const FundNew = () => {
                 <option>Other</option>
               </select>
             </div>
-            <div>
-              <Label>Cover image URL</Label>
-              <Input
-                value={coverUrl}
-                onChange={(e) => setCoverUrl(e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
-          </div>
+          </Card>
+        )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Funding goal (USD) *</Label>
-              <Input
-                type="number"
-                min={1}
-                value={goal}
-                onChange={(e) => setGoal(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Duration (days) *</Label>
-              <Input
-                type="number"
-                min={1}
-                max={60}
-                value={days}
-                onChange={(e) => setDays(e.target.value)}
-              />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-5 space-y-3 mt-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold">Pledge tiers</h2>
-              <p className="text-xs text-muted-foreground">Rewards backers can choose from</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={addTier} className="gap-1">
-              <Plus className="h-4 w-4" /> Add tier
-            </Button>
-          </div>
-
-          {tiers.map((t, i) => (
-            <Card key={i} className="p-3 bg-muted/30">
-              <div className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
-                <div>
-                  <Label className="text-[10px]">Amount</Label>
-                  <Input
-                    type="number"
-                    value={t.amount}
-                    onChange={(e) => updateTier(i, { amount: e.target.value })}
-                    placeholder="25"
-                  />
+        {/* ── STEP 1: Story + Cover ── */}
+        {step === 1 && (
+          <div className="space-y-4">
+            <Card className="p-5 space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <Label>Cover image</Label>
+                  <div className="flex gap-1">
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && onUploadFile(e.target.files[0])}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 gap-1"
+                      onClick={() => fileRef.current?.click()}
+                      disabled={coverUploading}
+                    >
+                      {coverUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                      Upload
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 gap-1 text-energy hover:text-energy hover:bg-energy/10"
+                      onClick={() => callAI("image")}
+                      disabled={aiBusy === "image" || !title.trim()}
+                    >
+                      {aiBusy === "image" ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
+                      AI generate
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-[10px]">Title</Label>
-                  <Input
-                    value={t.title}
-                    onChange={(e) => updateTier(i, { title: e.target.value })}
-                    placeholder="Backer"
-                  />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeTier(i)}
-                  className="mt-5"
-                  aria-label="Remove tier"
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
+                {coverUrl ? (
+                  <div className="relative rounded-lg overflow-hidden border border-border aspect-video bg-muted">
+                    <img src={coverUrl} alt="Campaign cover" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-border aspect-video bg-muted/30 flex items-center justify-center">
+                    <p className="text-xs text-muted-foreground">Upload an image or let AI generate one</p>
+                  </div>
+                )}
               </div>
-              <div className="mt-2">
-                <Label className="text-[10px]">Description</Label>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <Label>Story *</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 gap-1 text-energy hover:text-energy hover:bg-energy/10"
+                    onClick={() => callAI("story")}
+                    disabled={aiBusy === "story" || !title.trim()}
+                  >
+                    {aiBusy === "story" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                    AI write
+                  </Button>
+                </div>
                 <Textarea
-                  value={t.description}
-                  onChange={(e) => updateTier(i, { description: e.target.value })}
-                  rows={2}
-                  placeholder="What backers get at this tier"
+                  value={story}
+                  onChange={(e) => setStory(e.target.value)}
+                  placeholder="What you're building, who it's for, and why it matters. Markdown supported."
+                  rows={10}
                 />
-              </div>
-              <div className="mt-2">
-                <Label className="text-[10px]">Max backers (optional)</Label>
-                <Input
-                  type="number"
-                  value={t.max_backers}
-                  onChange={(e) => updateTier(i, { max_backers: e.target.value })}
-                  placeholder="Leave blank for unlimited"
-                />
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Markdown supported. AI uses your title, tagline & goal as context.
+                </p>
               </div>
             </Card>
-          ))}
-        </Card>
+          </div>
+        )}
 
-        <div className="flex flex-wrap gap-3 mt-6">
+        {/* ── STEP 2: Tiers ── */}
+        {step === 2 && (
+          <Card className="p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-semibold">Pledge tiers</h2>
+                <p className="text-xs text-muted-foreground">Rewards backers can choose from</p>
+              </div>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 text-energy hover:text-energy hover:bg-energy/10"
+                  onClick={() => callAI("tiers")}
+                  disabled={aiBusy === "tiers" || !title.trim()}
+                >
+                  {aiBusy === "tiers" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                  AI suggest
+                </Button>
+                <Button variant="outline" size="sm" onClick={addTier} className="gap-1">
+                  <Plus className="h-4 w-4" /> Add
+                </Button>
+              </div>
+            </div>
+
+            {tiers.map((t, i) => (
+              <Card key={i} className="p-3 bg-muted/30">
+                <div className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
+                  <div>
+                    <Label className="text-[10px]">Amount $</Label>
+                    <Input
+                      type="number"
+                      value={t.amount}
+                      onChange={(e) => updateTier(i, { amount: e.target.value })}
+                      placeholder="25"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[10px]">Title</Label>
+                    <Input
+                      value={t.title}
+                      onChange={(e) => updateTier(i, { title: e.target.value })}
+                      placeholder="Backer"
+                    />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeTier(i)}
+                    className="mt-5"
+                    aria-label="Remove tier"
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+                <div className="mt-2">
+                  <Label className="text-[10px]">Description</Label>
+                  <Textarea
+                    value={t.description}
+                    onChange={(e) => updateTier(i, { description: e.target.value })}
+                    rows={2}
+                    placeholder="What backers get at this tier"
+                  />
+                </div>
+                <div className="mt-2">
+                  <Label className="text-[10px]">Max backers (optional)</Label>
+                  <Input
+                    type="number"
+                    value={t.max_backers}
+                    onChange={(e) => updateTier(i, { max_backers: e.target.value })}
+                    placeholder="Leave blank for unlimited"
+                  />
+                </div>
+              </Card>
+            ))}
+          </Card>
+        )}
+
+        {/* ── STEP 3: Goal & Launch ── */}
+        {step === 3 && (
+          <Card className="p-5 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Funding goal (USD) *</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={goal}
+                  onChange={(e) => setGoal(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label>Duration (days) *</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={60}
+                  value={days}
+                  onChange={(e) => setDays(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-energy/30 bg-energy/5 p-4">
+              <p className="text-xs font-semibold text-energy uppercase tracking-wider mb-2">Review</p>
+              <div className="space-y-1 text-sm">
+                <p><span className="text-muted-foreground">Title:</span> <span className="font-medium">{title || "—"}</span></p>
+                <p><span className="text-muted-foreground">Category:</span> {category}</p>
+                <p><span className="text-muted-foreground">Goal:</span> ${Number(goal).toLocaleString()} · <span className="text-muted-foreground">Duration:</span> {days} days</p>
+                <p><span className="text-muted-foreground">Tiers:</span> {tiers.filter((t) => t.title.trim() && Number(t.amount) > 0).length}</p>
+                <p><span className="text-muted-foreground">Cover:</span> {coverUrl ? "✓ Set" : "Not set"}</p>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground">
+              Platform fee 5% on funded campaigns. Stripe processing fees apply. You'll need to complete
+              payout setup before backers can pledge.
+            </p>
+          </Card>
+        )}
+
+        {/* ── Footer nav ── */}
+        <div className="flex flex-wrap gap-3 mt-6 items-center">
           <Button
-            size="lg"
-            onClick={() => handleSubmit(true)}
-            disabled={createMut.isPending || gated}
-            className="gap-2"
-          >
-            {createMut.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            {gated ? <><Lock className="h-4 w-4" /> Upgrade to launch</> : "Launch campaign"}
-          </Button>
-          <Button
-            size="lg"
             variant="outline"
-            onClick={() => handleSubmit(false)}
-            disabled={createMut.isPending}
+            size="lg"
+            disabled={step === 0}
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            className="gap-1"
           >
-            Save as draft
+            <ChevronLeft className="h-4 w-4" /> Back
           </Button>
+
+          {step < STEPS.length - 1 ? (
+            <Button
+              size="lg"
+              onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}
+              disabled={!canAdvance()}
+              className="gap-1 ml-auto"
+            >
+              Next <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <div className="flex gap-2 ml-auto">
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => handleSubmit(false)}
+                disabled={createMut.isPending}
+              >
+                Save draft
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => handleSubmit(true)}
+                disabled={createMut.isPending || gated}
+                className="gap-2"
+              >
+                {createMut.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {gated ? <><Lock className="h-4 w-4" /> Upgrade to launch</> : <>Launch <Rocket className="h-4 w-4" /></>}
+              </Button>
+            </div>
+          )}
         </div>
-        <p className="text-[11px] text-muted-foreground mt-3">
-          Platform fee 5% on funded campaigns. Stripe processing fees apply. You'll need to
-          complete payout setup before backers can pledge.
-        </p>
       </div>
     </div>
   );

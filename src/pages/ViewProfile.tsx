@@ -108,7 +108,7 @@ const ViewProfile = () => {
   const [isStartProjectOpen, setIsStartProjectOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(searchParams.get('showClaim') === 'true');
-  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showShareToChat, setShowShareToChat] = useState(false);
   const [gateResult, setGateResult] = useState<GateCheckResult | null>(null);
   
   const isFromMatch = searchParams.get('from') === 'match';
@@ -600,7 +600,7 @@ const ViewProfile = () => {
                       <Rocket className="h-4 w-4" />
                       Start Project
                     </Button>
-                    <Button variant="outline" size="icon" onClick={() => setShowShareDialog(true)} aria-label="Share profile">
+                    <Button variant="outline" size="icon" onClick={() => setShowShareToChat(true)} aria-label="Share profile">
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </>
@@ -614,7 +614,7 @@ const ViewProfile = () => {
                       <Rocket className="h-4 w-4" />
                       Collaborate
                     </Button>
-                    <Button variant="outline" size="icon" onClick={() => setShowShareDialog(true)} aria-label="Share profile">
+                    <Button variant="outline" size="icon" onClick={() => setShowShareToChat(true)} aria-label="Share profile">
                       <Share2 className="h-4 w-4" />
                     </Button>
                   </>

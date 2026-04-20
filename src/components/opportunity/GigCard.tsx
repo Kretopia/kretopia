@@ -278,7 +278,7 @@ const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) =
         )}
 
         {/* Skills */}
-        {opp.skills && opp.skills.length > 0 && (
+        {!compact && opp.skills && opp.skills.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-4">
             {opp.skills.slice(0, 4).map(skill => (
               <span key={skill} className="text-[10px] px-2 py-0.5 rounded-md bg-muted/50 text-muted-foreground border border-border/60">

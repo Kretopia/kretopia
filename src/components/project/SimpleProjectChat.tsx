@@ -269,6 +269,33 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     }
   };
 
+  const handleFilesSelected = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploadingFiles(true);
+    try {
+      const uploaded: Attachment[] = [];
+      for (const file of Array.from(files)) {
+        if (file.size > 25 * 1024 * 1024) {
+          toast({ title: `${file.name} is too large`, description: "Max 25MB per file", variant: "destructive" });
+          continue;
+        }
+        const ext = file.name.split(".").pop();
+        const path = `${projectId}/chat/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("project-files").upload(path, file);
+        if (upErr) {
+          toast({ title: `Upload failed: ${file.name}`, description: upErr.message, variant: "destructive" });
+          continue;
+        }
+        const { data: pub } = supabase.storage.from("project-files").getPublicUrl(path);
+        uploaded.push({ url: pub.publicUrl, name: file.name, type: file.type || "application/octet-stream", size: file.size });
+      }
+      setPendingAttachments(prev => [...prev, ...uploaded]);
+    } finally {
+      setUploadingFiles(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const getReplyMessage = (replyToId: string | null | undefined) => {
     if (!replyToId) return null;
     return messages.find(m => m.id === replyToId);

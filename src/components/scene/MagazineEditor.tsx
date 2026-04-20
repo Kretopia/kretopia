@@ -176,21 +176,7 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
       });
       if (error) throw error;
       if (data?.subtitle) setSubtitle(data.subtitle);
-      if (data?.content) {
-        // Parse AI markdown into blocks
-        const sections = data.content.split(/\n\n+/);
-        const newBlocks: ContentBlock[] = [];
-        for (const section of sections) {
-          const trimmed = section.trim();
-          if (!trimmed) continue;
-          if (trimmed.startsWith("> ")) {
-            newBlocks.push({ id: genId(), type: "quote", content: trimmed.replace(/^> /gm, "") });
-          } else {
-            newBlocks.push({ id: genId(), type: "text", content: trimmed });
-          }
-        }
-        if (newBlocks.length > 0) setBlocks(newBlocks);
-      }
+      if (data?.content) setBlocks(parseMarkdownToBlocks(data.content));
       toast.success("Article generated! Review, add images, and edit before publishing.");
     } catch {
       toast.error("Generation failed, try again");
@@ -291,20 +277,31 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
 
   return (
     <div className="space-y-4 animate-in fade-in duration-200">
+      {loadingArticle && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      )}
+      {!loadingArticle && (
+      <>
       {/* Top bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <Button variant="ghost" size="sm" onClick={onClose} className="gap-1.5 -ml-2">
           <ArrowLeft className="h-4 w-4" />
-          Back
+          {isEditing ? "Cancel" : "Back"}
         </Button>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handlePolish} disabled={polishing}>
+            {polishing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5 text-primary" />}
+            <span className="hidden sm:inline">Polish</span>
+          </Button>
           <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setPreview(true)}>
             <Eye className="h-3.5 w-3.5" />
-            Preview
+            <span className="hidden sm:inline">Preview</span>
           </Button>
           <Button onClick={handlePublish} disabled={publishing || !title.trim()} size="sm" className="gap-1.5">
             {publishing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-            Publish
+            {isEditing ? "Save" : "Publish"}
           </Button>
         </div>
       </div>

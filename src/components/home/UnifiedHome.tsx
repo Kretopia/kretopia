@@ -23,6 +23,7 @@ import { PricingPreviewSection } from "@/components/landing/PricingPreviewSectio
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
+import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
 import GigCard from "@/components/opportunity/GigCard";
 
@@ -609,6 +610,9 @@ export const UnifiedHome = () => {
             </div>
           </section>
         )}
+
+        {/* ── Spotlight (magazine + podcast teaser) ── */}
+        <SpotlightFeedRow />
 
         {/* ── ThriveFund (auth only) ── */}
         {user && <ThriveFundFeedRow />}

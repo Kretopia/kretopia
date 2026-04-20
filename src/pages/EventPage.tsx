@@ -605,6 +605,17 @@ const EventPage = () => {
             externalUrl={`${APP_URL}/share/event/${event.id}/`}
             externalText={`🎉 ${event.title}\n\nRSVP now on ThriveIN 👇\n${APP_URL}/share/event/${event.id}/`}
           />
+
+          <TicketPurchaseDialog
+            open={showTicketDialog}
+            onOpenChange={setShowTicketDialog}
+            eventId={event.id}
+            eventTitle={event.title}
+            onSuccess={() => {
+              setParticipation('going');
+              setParticipantCount(prev => prev + 1);
+            }}
+          />
           
           {isCreator && (
             <EditEventDialog 

@@ -158,7 +158,7 @@ const Meetup = () => {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => navigate("/event/new")} size="sm" variant="gradient" className="gap-1.5 rounded-full">
+              <Button onClick={() => setShowCreate(true)} size="sm" variant="gradient" className="gap-1.5 rounded-full">
                 <Plus className="h-4 w-4" /> Host Event
               </Button>
               {hostingCount > 0 && (
@@ -233,7 +233,7 @@ const Meetup = () => {
                 {railThisWeek.length > 0 && <Rail title="This Week" icon={<Calendar className="h-4 w-4 text-energy" />} events={railThisWeek} />}
                 {railNearYou.length > 0 && <Rail title={`In ${myCountry}`} icon={<Globe className="h-4 w-4 text-energy" />} events={railNearYou} />}
                 {railFree.length > 0 && <Rail title="Free Events" icon={<Sparkles className="h-4 w-4 text-energy" />} events={railFree} />}
-                {events.length === 0 && <EmptyState onHost={() => navigate("/event/new")} />}
+                {events.length === 0 && <EmptyState onHost={() => setShowCreate(true)} />}
               </>
             )}
           </TabsContent>
@@ -243,7 +243,7 @@ const Meetup = () => {
               {loading ? (
                 <SkeletonGrid />
               ) : filtered.length === 0 ? (
-                <EmptyState onHost={() => navigate("/event/new")} />
+                <EmptyState onHost={() => setShowCreate(true)} />
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filtered.map((e) => <EventCard key={e.id} ev={e} />)}
@@ -253,6 +253,8 @@ const Meetup = () => {
           ))}
         </Tabs>
       </div>
+
+      <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={load} />
     </div>
   );
 };

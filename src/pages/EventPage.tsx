@@ -27,6 +27,7 @@ import { EventComments } from "@/components/sessions/EventComments";
 import { EventCohosts } from "@/components/sessions/EventCohosts";
 import { EventRecapButton } from "@/components/sessions/EventRecapButton";
 import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
+import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";
 import { APP_URL } from "@/lib/constants";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -54,6 +55,7 @@ const EventPage = () => {
   const [participation, setParticipation] = useState<string | null>(null);
   const [showShareKit, setShowShareKit] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showTicketDialog, setShowTicketDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showCohosts, setShowCohosts] = useState(false);
@@ -113,6 +115,11 @@ const EventPage = () => {
     // If external ticket URL, redirect there
     if (event?.external_ticket_url) {
       window.open(event.external_ticket_url, '_blank');
+      return;
+    }
+    // Ticketed event → open multi-tier ticket dialog
+    if (event?.is_ticketed) {
+      setShowTicketDialog(true);
       return;
     }
     handleJoin();
@@ -597,6 +604,17 @@ const EventPage = () => {
             }}
             externalUrl={`${APP_URL}/share/event/${event.id}/`}
             externalText={`🎉 ${event.title}\n\nRSVP now on ThriveIN 👇\n${APP_URL}/share/event/${event.id}/`}
+          />
+
+          <TicketPurchaseDialog
+            open={showTicketDialog}
+            onOpenChange={setShowTicketDialog}
+            eventId={event.id}
+            eventTitle={event.title}
+            onSuccess={() => {
+              setParticipation('going');
+              setParticipantCount(prev => prev + 1);
+            }}
           />
           
           {isCreator && (

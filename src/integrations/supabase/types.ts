@@ -11962,6 +11962,7 @@ export type Database = {
         Args: { amount_input: number; manager_id_input: string }
         Returns: undefined
       }
+      increment_promo_use: { Args: { _id: string }; Returns: undefined }
       increment_template_usage: {
         Args: { template_id: string }
         Returns: undefined

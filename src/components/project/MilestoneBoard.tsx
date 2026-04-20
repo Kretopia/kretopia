@@ -368,7 +368,21 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between">
+      {userRole === 'client' && talentConnectActive === false && collaborators.find(c => c.id !== projectOwnerId) && (
+        <div className="flex items-start gap-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10">
+          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">Creator hasn't set up payouts yet</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              You can still create milestones, but payments will fail until they connect their payout account. Send them a Get Paid link below.
+            </p>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => setGetPaidDialogOpen(true)} className="shrink-0">
+            Send link
+          </Button>
+        </div>
+      )}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold">Milestones & Payments</h3>
           <div className="flex gap-4 mt-2 text-sm">

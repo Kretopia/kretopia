@@ -65,6 +65,37 @@ const EventPage = () => {
     if (eventId) fetchEvent();
   }, [eventId, user]);
 
+  // Handle Stripe redirect: verify ticket purchase and refresh
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ticketStatus = params.get("ticket");
+    const sessionId = params.get("session_id");
+    const orderId = params.get("order");
+    if (ticketStatus === "success" && (sessionId || orderId)) {
+      (async () => {
+        try {
+          const { data } = await supabase.functions.invoke("verify-event-ticket", {
+            body: { sessionId, orderId },
+          });
+          if (data?.status === "paid") {
+            toast({ title: "Ticket confirmed! 🎟️", description: "You're on the guest list." });
+            fetchEvent();
+          } else {
+            toast({ title: "Processing payment…", description: "We'll confirm shortly." });
+          }
+        } catch {
+          // silent
+        } finally {
+          // Clean URL
+          window.history.replaceState({}, "", `/event/${eventId}`);
+        }
+      })();
+    } else if (ticketStatus === "cancelled") {
+      toast({ title: "Checkout cancelled", variant: "destructive" });
+      window.history.replaceState({}, "", `/event/${eventId}`);
+    }
+  }, [eventId]);
+
   const fetchEvent = async () => {
     if (!eventId) return;
     setLoading(true);

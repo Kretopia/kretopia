@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar, MapPin, Search, Plus, Sparkles, Ticket, Users, TrendingUp, Globe, Settings as SettingsIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 
 interface EventRow {
   id: string;
@@ -44,6 +45,7 @@ const Meetup = () => {
   const [tab, setTab] = useState<"discover" | "this-week" | "free" | "paid" | "trending">("discover");
   const [myCountry, setMyCountry] = useState<string | null>(null);
   const [hostingCount, setHostingCount] = useState(0);
+  const [showCreate, setShowCreate] = useState(false);
 
   useEffect(() => {
     const load = async () => {

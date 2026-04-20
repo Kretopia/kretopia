@@ -101,6 +101,24 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
     } else {
       toast({ title: "Milestone created!" });
       analytics.milestoneCreated(projectId, parseFloat(newMilestone.amount));
+      // Notify the talent
+      try {
+        const talent = collaborators.find(c => c.id !== projectOwnerId);
+        if (talent) {
+          const { data: project } = await supabase.from('projects').select('title').eq('id', projectId).single();
+          await supabase.from('notifications').insert({
+            user_id: talent.id,
+            title: 'New milestone created',
+            message: `A $${parseFloat(newMilestone.amount).toFixed(2)} milestone "${newMilestone.title}" was added to ${project?.title || 'your project'}.`,
+            type: 'project',
+            category: 'project',
+            priority: 'normal',
+            link: `/desk/${projectId}?tab=finance`,
+            action_url: `/desk/${projectId}?tab=finance`,
+            action_text: 'View milestone',
+          });
+        }
+      } catch (e) { console.error('notify create milestone failed', e); }
       setNewMilestone({ title: '', description: '', amount: '', due_date: '' });
       setCreateDialogOpen(false);
       onUpdate();
@@ -122,6 +140,31 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
       } else {
         toast({ title: "Milestone updated!" });
       }
+      // Notify the other party of status changes
+      try {
+        const milestone = milestones.find(m => m.id === milestoneId);
+        const { data: { user } } = await supabase.auth.getUser();
+        const recipientId = userRole === 'creator' ? projectOwnerId : collaborators.find(c => c.id !== projectOwnerId)?.id;
+        if (recipientId && user && milestone) {
+          const labelMap: Record<string, string> = {
+            in_progress: 'started work on',
+            review: 'submitted for review:',
+            completed: 'marked as completed:',
+            paid: 'marked as paid:',
+          };
+          await supabase.from('notifications').insert({
+            user_id: recipientId,
+            title: newStatus === 'review' ? 'Milestone ready for review' : 'Milestone updated',
+            message: `${labelMap[newStatus] || 'updated'} "${milestone.title}"`,
+            type: 'project',
+            category: 'project',
+            priority: newStatus === 'review' ? 'high' : 'normal',
+            link: `/desk/${projectId}?tab=finance`,
+            action_url: `/desk/${projectId}?tab=finance`,
+            action_text: 'Open milestone',
+          });
+        }
+      } catch (e) { console.error('notify status change failed', e); }
       onUpdate();
     }
   };

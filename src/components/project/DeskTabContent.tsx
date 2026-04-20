@@ -106,7 +106,14 @@ export const DeskTabContent = memo(({
         {activeTab === "finance" && (
           <FreeTierGate feature="milestones" featureLabel="Finance Tools" description="Upgrade to Pro for unlimited milestones, invoices, and project payments.">
             <div className="space-y-6">
-              <MilestoneBoard milestones={milestones} projectId={projectId} onUpdate={onUpdate} userRole={userRole} />
+              <MilestoneBoard
+                milestones={milestones}
+                projectId={projectId}
+                onUpdate={onUpdate}
+                userRole={userRole}
+                collaborators={collaborators}
+                projectOwnerId={project?.created_by}
+              />
               <div className="flex justify-end">
                 <InvoiceGenerator projectId={projectId} />
               </div>

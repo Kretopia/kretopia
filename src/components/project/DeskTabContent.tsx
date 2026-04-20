@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { TodayWorkspace } from "@/components/project/today/TodayWorkspace";
 import { FileBrowser } from "@/components/project/files/FileBrowser";
-import { TaskBoard } from "@/components/project/TaskBoard";
+import { TasksWorkspace } from "@/components/project/tasks/TasksWorkspace";
 import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
@@ -86,7 +86,13 @@ export const DeskTabContent = memo(({
         {activeTab === "tasks" && (
           <>
             <UsageLimitBanner current={tasks.length} limit={FREE_LIMITS.tasks} itemName="tasks" isPro={isPro} />
-            <TaskBoard projectId={projectId} tasks={tasks} onUpdate={onUpdate} collaborators={collaborators} />
+            <TasksWorkspace
+              projectId={projectId}
+              tasks={tasks}
+              onUpdate={onUpdate}
+              collaborators={collaborators}
+              currentUserId={currentUserId}
+            />
           </>
         )}
 

@@ -209,14 +209,14 @@ const Meetup = () => {
               <TabsTrigger
                 key={v}
                 value={v}
-                className="data-[state=active]:bg-energy data-[state=active]:text-energy-foreground data-[state=active]:shadow-glow-lime rounded-full px-4 text-xs font-bold uppercase tracking-wider"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 text-xs font-bold uppercase tracking-wider"
               >
                 {l}
               </TabsTrigger>
             ))}
             <TabsTrigger
               value="trending"
-              className="data-[state=active]:bg-energy data-[state=active]:text-energy-foreground data-[state=active]:shadow-glow-lime rounded-full px-4 text-xs font-bold uppercase tracking-wider"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 text-xs font-bold uppercase tracking-wider"
             >
               <TrendingUp className="h-3.5 w-3.5 mr-1" /> Trending
             </TabsTrigger>

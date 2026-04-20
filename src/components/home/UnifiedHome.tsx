@@ -139,7 +139,29 @@ export const UnifiedHome = () => {
         supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
         supabase.from("credits").select("id", { count: "exact", head: true }),
         supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("creative_jams").select("id, title, start_time, venue_name, category, cover_image_url, created_by").eq("is_public", true).gte("start_time", new Date().toISOString()).order("start_time", { ascending: true }).limit(4),
+        (async () => {
+          // Country-filtered upcoming events (derive country from profile.location: "City, Country")
+          const loc = (myProfile as any)?.location || "";
+          const parts = String(loc).split(",").map((s: string) => s.trim()).filter(Boolean);
+          const userCountry = parts.length > 1 ? parts[parts.length - 1] : null;
+          let q = supabase.from("creative_jams")
+            .select("id, title, start_time, venue_name, category, cover_image_url, created_by, country")
+            .eq("is_public", true)
+            .gte("start_time", new Date().toISOString())
+            .order("start_time", { ascending: true })
+            .limit(8);
+          if (userCountry) q = q.eq("country", userCountry);
+          const res = await q;
+          if (userCountry && (!res.data || res.data.length === 0)) {
+            return await supabase.from("creative_jams")
+              .select("id, title, start_time, venue_name, category, cover_image_url, created_by, country")
+              .eq("is_public", true)
+              .gte("start_time", new Date().toISOString())
+              .order("start_time", { ascending: true })
+              .limit(4);
+          }
+          return res;
+        })(),
       ]);
 
       let credits = creditsRes.data || [];

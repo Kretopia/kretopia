@@ -1743,9 +1743,11 @@ export type Database = {
       }
       creative_jams: {
         Row: {
+          approval_required: boolean
           attendee_list_visibility: string
           category: string
           circle_id: string | null
+          country: string | null
           cover_image_url: string | null
           created_at: string
           created_by: string
@@ -1753,27 +1755,36 @@ export type Database = {
           end_time: string | null
           event_type: string | null
           external_ticket_url: string | null
+          host_response_hours: number | null
           id: string
           is_public: boolean | null
+          is_recurring_parent: boolean
           is_ticketed: boolean | null
           latitude: number | null
           longitude: number | null
           max_participants: number | null
+          parent_event_id: string | null
+          refund_policy: string | null
           start_time: string
           status: string | null
           status_note: string | null
           tags: string[] | null
           ticket_currency: string | null
           ticket_price: number | null
+          timezone: string | null
           title: string
+          total_views: number
           updated_at: string
           venue_address: string | null
           venue_name: string | null
+          waitlist_enabled: boolean
         }
         Insert: {
+          approval_required?: boolean
           attendee_list_visibility?: string
           category?: string
           circle_id?: string | null
+          country?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by: string
@@ -1781,27 +1792,36 @@ export type Database = {
           end_time?: string | null
           event_type?: string | null
           external_ticket_url?: string | null
+          host_response_hours?: number | null
           id?: string
           is_public?: boolean | null
+          is_recurring_parent?: boolean
           is_ticketed?: boolean | null
           latitude?: number | null
           longitude?: number | null
           max_participants?: number | null
+          parent_event_id?: string | null
+          refund_policy?: string | null
           start_time: string
           status?: string | null
           status_note?: string | null
           tags?: string[] | null
           ticket_currency?: string | null
           ticket_price?: number | null
+          timezone?: string | null
           title: string
+          total_views?: number
           updated_at?: string
           venue_address?: string | null
           venue_name?: string | null
+          waitlist_enabled?: boolean
         }
         Update: {
+          approval_required?: boolean
           attendee_list_visibility?: string
           category?: string
           circle_id?: string | null
+          country?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by?: string
@@ -1809,22 +1829,29 @@ export type Database = {
           end_time?: string | null
           event_type?: string | null
           external_ticket_url?: string | null
+          host_response_hours?: number | null
           id?: string
           is_public?: boolean | null
+          is_recurring_parent?: boolean
           is_ticketed?: boolean | null
           latitude?: number | null
           longitude?: number | null
           max_participants?: number | null
+          parent_event_id?: string | null
+          refund_policy?: string | null
           start_time?: string
           status?: string | null
           status_note?: string | null
           tags?: string[] | null
           ticket_currency?: string | null
           ticket_price?: number | null
+          timezone?: string | null
           title?: string
+          total_views?: number
           updated_at?: string
           venue_address?: string | null
           venue_name?: string | null
+          waitlist_enabled?: boolean
         }
         Relationships: [
           {
@@ -1875,6 +1902,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "creative_jams_parent_event_id_fkey"
+            columns: ["parent_event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2993,6 +3027,165 @@ export type Database = {
         }
         Relationships: []
       }
+      event_analytics_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_type: string
+          id: string
+          metadata: Json
+          source: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          source?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          source?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_analytics_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_blast_recipients: {
+        Row: {
+          blast_id: string
+          clicked_at: string | null
+          created_at: string
+          email: string
+          error_message: string | null
+          id: string
+          opened_at: string | null
+          sent_at: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          blast_id: string
+          clicked_at?: string | null
+          created_at?: string
+          email: string
+          error_message?: string | null
+          id?: string
+          opened_at?: string | null
+          sent_at?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          blast_id?: string
+          clicked_at?: string | null
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          id?: string
+          opened_at?: string | null
+          sent_at?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_blast_recipients_blast_id_fkey"
+            columns: ["blast_id"]
+            isOneToOne: false
+            referencedRelation: "event_blasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_blasts: {
+        Row: {
+          body_html: string
+          body_text: string | null
+          clicked_count: number
+          created_at: string
+          created_by: string
+          delivered_count: number
+          event_id: string
+          failed_count: number
+          id: string
+          metadata: Json
+          opened_count: number
+          recipient_count: number
+          scheduled_for: string | null
+          segment: string
+          sent_at: string | null
+          status: string
+          subject: string
+          template: string
+          updated_at: string
+        }
+        Insert: {
+          body_html: string
+          body_text?: string | null
+          clicked_count?: number
+          created_at?: string
+          created_by: string
+          delivered_count?: number
+          event_id: string
+          failed_count?: number
+          id?: string
+          metadata?: Json
+          opened_count?: number
+          recipient_count?: number
+          scheduled_for?: string | null
+          segment?: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template?: string
+          updated_at?: string
+        }
+        Update: {
+          body_html?: string
+          body_text?: string | null
+          clicked_count?: number
+          created_at?: string
+          created_by?: string
+          delivered_count?: number
+          event_id?: string
+          failed_count?: number
+          id?: string
+          metadata?: Json
+          opened_count?: number
+          recipient_count?: number
+          scheduled_for?: string | null
+          segment?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_blasts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_cohosts: {
         Row: {
           added_by: string
@@ -3056,6 +3249,358 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_feedback: {
+        Row: {
+          comment: string | null
+          created_at: string
+          event_id: string
+          id: string
+          is_public: boolean
+          rating: number
+          updated_at: string
+          user_id: string
+          would_recommend: boolean | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          is_public?: boolean
+          rating: number
+          updated_at?: string
+          user_id: string
+          would_recommend?: boolean | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          is_public?: boolean
+          rating?: number
+          updated_at?: string
+          user_id?: string
+          would_recommend?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_feedback_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_host_stats: {
+        Row: {
+          avg_attendance_pct: number
+          avg_rating: number
+          avg_response_hours: number | null
+          events_completed: number
+          events_hosted: number
+          is_verified_host: boolean
+          rating_count: number
+          total_attendees: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_attendance_pct?: number
+          avg_rating?: number
+          avg_response_hours?: number | null
+          events_completed?: number
+          events_hosted?: number
+          is_verified_host?: boolean
+          rating_count?: number
+          total_attendees?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_attendance_pct?: number
+          avg_rating?: number
+          avg_response_hours?: number | null
+          events_completed?: number
+          events_hosted?: number
+          is_verified_host?: boolean
+          rating_count?: number
+          total_attendees?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      event_orders: {
+        Row: {
+          buyer_email: string
+          buyer_id: string
+          buyer_name: string | null
+          created_at: string
+          currency: string
+          discount_amount: number
+          event_id: string
+          id: string
+          metadata: Json
+          platform_fee: number
+          promo_code_id: string | null
+          quantity: number
+          refund_amount: number | null
+          refunded_at: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          subtotal: number
+          tier_id: string | null
+          total_amount: number
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          buyer_email: string
+          buyer_id: string
+          buyer_name?: string | null
+          created_at?: string
+          currency?: string
+          discount_amount?: number
+          event_id: string
+          id?: string
+          metadata?: Json
+          platform_fee?: number
+          promo_code_id?: string | null
+          quantity?: number
+          refund_amount?: number | null
+          refunded_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal: number
+          tier_id?: string | null
+          total_amount: number
+          unit_price: number
+          updated_at?: string
+        }
+        Update: {
+          buyer_email?: string
+          buyer_id?: string
+          buyer_name?: string | null
+          created_at?: string
+          currency?: string
+          discount_amount?: number
+          event_id?: string
+          id?: string
+          metadata?: Json
+          platform_fee?: number
+          promo_code_id?: string | null
+          quantity?: number
+          refund_amount?: number | null
+          refunded_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal?: number
+          tier_id?: string | null
+          total_amount?: number
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_orders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_orders_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "event_promo_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_orders_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "event_ticket_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_promo_codes: {
+        Row: {
+          applies_to_tier_ids: string[] | null
+          code: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          event_id: string
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          updated_at: string
+          uses_count: number
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          applies_to_tier_ids?: string[] | null
+          code: string
+          created_at?: string
+          discount_type?: string
+          discount_value: number
+          event_id: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          updated_at?: string
+          uses_count?: number
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          applies_to_tier_ids?: string[] | null
+          code?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          event_id?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          updated_at?: string
+          uses_count?: number
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_promo_codes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_ticket_tiers: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          display_order: number
+          event_id: string
+          id: string
+          is_hidden: boolean
+          max_per_order: number
+          min_per_order: number
+          name: string
+          price: number
+          quantity_sold: number
+          quantity_total: number | null
+          sale_ends_at: string | null
+          sale_starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          display_order?: number
+          event_id: string
+          id?: string
+          is_hidden?: boolean
+          max_per_order?: number
+          min_per_order?: number
+          name: string
+          price?: number
+          quantity_sold?: number
+          quantity_total?: number | null
+          sale_ends_at?: string | null
+          sale_starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          display_order?: number
+          event_id?: string
+          id?: string
+          is_hidden?: boolean
+          max_per_order?: number
+          min_per_order?: number
+          name?: string
+          price?: number
+          quantity_sold?: number
+          quantity_total?: number | null
+          sale_ends_at?: string | null
+          sale_starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_ticket_tiers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_waitlist: {
+        Row: {
+          created_at: string
+          event_id: string
+          expires_at: string | null
+          id: string
+          offered_at: string | null
+          position: number
+          status: string
+          tier_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          expires_at?: string | null
+          id?: string
+          offered_at?: string | null
+          position: number
+          status?: string
+          tier_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          expires_at?: string | null
+          id?: string
+          offered_at?: string | null
+          position?: number
+          status?: string
+          tier_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_waitlist_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_waitlist_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "event_ticket_tiers"
             referencedColumns: ["id"]
           },
         ]

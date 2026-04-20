@@ -79,6 +79,7 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const blockFileRef = useRef<HTMLInputElement>(null);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
+  const [magicOpen, setMagicOpen] = useState(false);
 
   // Load existing article when editing
   useEffect(() => {

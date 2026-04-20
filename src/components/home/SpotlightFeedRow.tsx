@@ -10,6 +10,7 @@ interface Article {
   slug: string | null;
   title: string;
   subtitle: string | null;
+  content: string | null;
   category: string | null;
   cover_image_url: string | null;
   read_time_minutes: number | null;
@@ -26,7 +27,7 @@ export const SpotlightFeedRow = () => {
       try {
         const { data } = await supabase
           .from("magazine_articles")
-          .select("id, slug, title, subtitle, category, cover_image_url, read_time_minutes, created_at, is_featured")
+          .select("id, slug, title, subtitle, content, category, cover_image_url, read_time_minutes, created_at, is_featured")
           .eq("is_published", true)
           .order("is_featured", { ascending: false })
           .order("created_at", { ascending: false })

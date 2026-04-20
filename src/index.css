@@ -459,6 +459,18 @@ All colors MUST be HSL.
   width: 100%;
   background: hsl(var(--muted));
   font-family: inherit;
+  /* Create stacking context so leaflet panes don't escape over headers/sheets/dialogs */
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+}
+
+/* Cap all leaflet internal panes/controls below shadcn overlays (sheet/dialog use z-50) */
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-control {
+  z-index: auto !important;
 }
 
 .leaflet-control-zoom a,

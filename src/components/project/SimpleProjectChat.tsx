@@ -440,6 +440,28 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                                 </p>
                               )}
 
+                              {/* Attachments */}
+                              {msg.attachments && msg.attachments.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {msg.attachments.map((att, i) => {
+                                    const isImg = att.type?.startsWith("image/");
+                                    if (isImg) {
+                                      return (
+                                        <a key={i} href={att.url} target="_blank" rel="noreferrer" className="block rounded-lg overflow-hidden border border-border max-w-[240px] hover:border-primary transition-colors">
+                                          <img src={att.url} alt={att.name} className="max-h-48 object-cover" loading="lazy" />
+                                        </a>
+                                      );
+                                    }
+                                    return (
+                                      <a key={i} href={att.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border bg-muted/40 hover:bg-accent transition-colors max-w-[240px]">
+                                        <FileIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                        <span className="text-xs truncate">{att.name}</span>
+                                      </a>
+                                    );
+                                  })}
+                                </div>
+                              )}
+
                               {/* Reactions display */}
                               {msgReactions.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1.5">

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Loader2, ImagePlus, Sparkles, Upload, Plus, Type, Image, Quote, Trash2, GripVertical, MoveUp, MoveDown, Eye } from "lucide-react";
+import { ArrowLeft, Loader2, ImagePlus, Sparkles, Upload, Plus, Type, Image, Quote, Trash2, GripVertical, MoveUp, MoveDown, Eye, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ import { CoverImageEditor, coverImageStyle } from "./CoverImageEditor";
 interface Props {
   onClose: () => void;
   onPublished: () => void;
+  articleId?: string | null;
 }
 
 type BlockType = "text" | "image" | "quote";
@@ -33,8 +34,31 @@ const CATEGORIES = ["fashion", "art-culture", "music", "film", "events-festivals
 
 const genId = () => Math.random().toString(36).slice(2, 9);
 
-export const MagazineEditor = ({ onClose, onPublished }: Props) => {
+// Parse a markdown article string into editable blocks
+const parseMarkdownToBlocks = (md: string): ContentBlock[] => {
+  const sections = md.split(/\n\n+/);
+  const result: ContentBlock[] = [];
+  for (const raw of sections) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    if (trimmed.startsWith("> ")) {
+      result.push({ id: genId(), type: "quote", content: trimmed.replace(/^> /gm, "") });
+    } else {
+      // Detect a pure image markdown line: ![cap](url)
+      const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)\s*\n?\*?([^*]*)\*?$/);
+      if (imgMatch) {
+        result.push({ id: genId(), type: "image", content: "", imageUrl: imgMatch[2], caption: imgMatch[3] || imgMatch[1] });
+      } else {
+        result.push({ id: genId(), type: "text", content: trimmed });
+      }
+    }
+  }
+  return result.length > 0 ? result : [{ id: genId(), type: "text", content: md }];
+};
+
+export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
   const { user } = useAuth();
+  const isEditing = !!articleId;
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [category, setCategory] = useState("inspiration");
@@ -45,6 +69,8 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
   const [isFeatured, setIsFeatured] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [polishing, setPolishing] = useState(false);
+  const [loadingArticle, setLoadingArticle] = useState(isEditing);
   const [preview, setPreview] = useState(false);
   const [blocks, setBlocks] = useState<ContentBlock[]>([
     { id: genId(), type: "text", content: "" },
@@ -52,6 +78,36 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const blockFileRef = useRef<HTMLInputElement>(null);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
+
+  // Load existing article when editing
+  useEffect(() => {
+    if (!articleId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("magazine_articles")
+        .select("*")
+        .eq("id", articleId)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) {
+        toast.error("Could not load article");
+        setLoadingArticle(false);
+        return;
+      }
+      setTitle(data.title || "");
+      setSubtitle(data.subtitle || "");
+      setCategory(data.category || "inspiration");
+      setCoverUrl(data.cover_image_url || "");
+      setCoverPosX(Number(data.cover_position_x) || 50);
+      setCoverPosY(Number(data.cover_position_y) || 50);
+      setCoverZoom(Number(data.cover_zoom) || 1);
+      setIsFeatured(!!data.is_featured);
+      setBlocks(parseMarkdownToBlocks(data.content || ""));
+      setLoadingArticle(false);
+    })();
+    return () => { cancelled = true; };
+  }, [articleId]);
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -143,6 +199,29 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
     }
   };
 
+  const handlePolish = async () => {
+    const currentMd = blocksToMarkdown().trim();
+    if (!currentMd) { toast.error("Write some content first"); return; }
+    setPolishing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("polish-magazine-article", {
+        body: { content: currentMd, title, subtitle },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.content) {
+        setBlocks(parseMarkdownToBlocks(data.content));
+        toast.success("Polished! Review the new formatting before publishing.");
+      } else {
+        throw new Error("No polished content returned");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Polish failed, try again");
+    } finally {
+      setPolishing(false);
+    }
+  };
+
   const handlePublish = async () => {
     if (!title.trim() || blocks.every(b => !b.content.trim() && !b.imageUrl) || !user) {
       toast.error("Title and content are required");
@@ -153,7 +232,7 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
     const wordCount = content.split(/\s+/).length;
     const readTime = Math.max(1, Math.round(wordCount / 200));
 
-    const { error } = await supabase.from("magazine_articles").insert({
+    const payload = {
       title: title.trim(),
       subtitle: subtitle.trim() || null,
       content: content.trim(),
@@ -163,17 +242,23 @@ export const MagazineEditor = ({ onClose, onPublished }: Props) => {
       cover_zoom: coverZoom,
       category,
       is_featured: isFeatured,
-      author_user_id: user.id,
-      author_name: "ThriveIN Magazine",
       read_time_minutes: readTime,
-    });
+    };
+
+    const { error } = isEditing
+      ? await supabase.from("magazine_articles").update(payload).eq("id", articleId!)
+      : await supabase.from("magazine_articles").insert({
+          ...payload,
+          author_user_id: user.id,
+          author_name: "ThriveIN Magazine",
+        });
 
     if (error) {
-      toast.error("Failed to publish");
+      toast.error(isEditing ? "Failed to save changes" : "Failed to publish");
       setPublishing(false);
       return;
     }
-    toast.success("Article published!");
+    toast.success(isEditing ? "Changes saved!" : "Article published!");
     onPublished();
   };
 

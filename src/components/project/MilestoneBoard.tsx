@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard, Send, Users, Loader2 } from "lucide-react";
+import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard, Send, Users, Loader2, AlertTriangle } from "lucide-react";
 // XP system removed
 import { analytics } from "@/lib/analytics";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
@@ -32,6 +32,8 @@ interface MilestoneBoardProps {
   projectId: string;
   onUpdate: () => void;
   userRole: 'creator' | 'client';
+  collaborators?: Array<{ id: string; full_name: string }>;
+  projectOwnerId?: string;
 }
 
 const STATUS_CONFIG = {
@@ -42,7 +44,7 @@ const STATUS_CONFIG = {
   paid: { label: 'Paid', icon: DollarSign, color: 'bg-emerald-500/10 text-emerald-600' },
 };
 
-export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: MilestoneBoardProps) {
+export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, collaborators = [], projectOwnerId }: MilestoneBoardProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [getPaidDialogOpen, setGetPaidDialogOpen] = useState(false);
   const [batchLoading, setBatchLoading] = useState(false);
@@ -50,6 +52,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
   const [getPaidEmail, setGetPaidEmail] = useState('');
   const [getPaidName, setGetPaidName] = useState('');
   const [getPaidMessage, setGetPaidMessage] = useState('');
+  const [talentConnectActive, setTalentConnectActive] = useState<boolean | null>(null);
   const [newMilestone, setNewMilestone] = useState({
     title: '',
     description: '',
@@ -58,6 +61,21 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
   });
   const { toast } = useToast();
   const { guard: guardMilestone, remaining: milestonesRemaining, cap: milestonesCap } = useFeatureGate("milestones");
+
+  // Check the talent's (non-owner collaborator) Stripe Connect status — soft-gate on Pay
+  useEffect(() => {
+    if (userRole !== 'client') return;
+    const talent = collaborators.find(c => c.id !== projectOwnerId);
+    if (!talent) { setTalentConnectActive(null); return; }
+    supabase
+      .from('profiles')
+      .select('stripe_account_status')
+      .eq('user_id', talent.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setTalentConnectActive(data?.stripe_account_status === 'active');
+      });
+  }, [userRole, collaborators, projectOwnerId]);
 
   const handleCreateMilestone = async () => {
     if (!newMilestone.title.trim() || !newMilestone.amount) {

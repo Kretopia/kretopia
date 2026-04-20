@@ -207,7 +207,7 @@ const MeetupManage = () => {
 
                     <TabsContent value="overview"><OverviewTab eventId={selected.id} stats={stats} /></TabsContent>
                     <TabsContent value="attendees"><AttendeesTab eventId={selected.id} /></TabsContent>
-                    <TabsContent value="blasts"><BlastsTab eventId={selected.id} /></TabsContent>
+                    <TabsContent value="blasts"><BlastsTab eventId={selected.id} eventTitle={selected.title} /></TabsContent>
                     <TabsContent value="messages"><Placeholder title="Group Messages" body="Broadcast in-app messages to attendees. Coming next." /></TabsContent>
                     <TabsContent value="tickets"><TicketsTab eventId={selected.id} /></TabsContent>
                     <TabsContent value="promotion"><Placeholder title="Promotion" body="Promo codes, share kit, embed widget. Coming next." /></TabsContent>

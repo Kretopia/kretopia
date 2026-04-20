@@ -49,14 +49,16 @@ const Meetup = () => {
     const load = async () => {
       setLoading(true);
 
-      // Load user country for "Near You" affinity
+      // Load user country (derived from profile.location: "City, Country")
       if (user) {
         const { data: prof } = await supabase
           .from("profiles")
-          .select("country, location")
+          .select("location")
           .eq("user_id", user.id)
           .maybeSingle();
-        setMyCountry(prof?.country || null);
+        const loc = prof?.location || "";
+        const parts = loc.split(",").map(s => s.trim()).filter(Boolean);
+        setMyCountry(parts.length > 1 ? parts[parts.length - 1] : null);
 
         const { count } = await supabase
           .from("creative_jams")

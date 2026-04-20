@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { motion } from "framer-motion";
 import { coverImageStyle } from "./CoverImageEditor";
+import { cn } from "@/lib/utils";
 
 interface Article {
   id: string;
@@ -161,32 +162,52 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
         </div>
       </header>
 
-      <div className="px-5 pb-8">
+      <div className="px-5 sm:px-6 pb-8">
         {contentSections.map((section, i) => (
           <div key={i}>
-            <article className="prose prose-sm dark:prose-invert max-w-none
-              prose-headings:font-semibold prose-headings:tracking-tight prose-headings:mt-10 prose-headings:mb-4
-              prose-h2:text-lg prose-h2:border-b prose-h2:border-border/30 prose-h2:pb-2.5
-              prose-p:text-sm prose-p:leading-[1.85] prose-p:text-muted-foreground prose-p:mb-5
-              prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline
-              prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:not-italic prose-blockquote:text-foreground prose-blockquote:font-medium prose-blockquote:text-sm prose-blockquote:my-6
-              prose-strong:text-foreground
-              prose-li:text-sm prose-li:text-muted-foreground prose-li:leading-[1.85]
-              prose-ul:my-4 prose-ol:my-4
-              [&>*+*]:mt-5
-            ">
+            <article className={cn(
+              "prose prose-sm sm:prose-base dark:prose-invert max-w-none font-serif",
+              // Magazine typography
+              "prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-foreground",
+              "prose-headings:mt-12 prose-headings:mb-4",
+              "prose-h2:text-xl sm:prose-h2:text-2xl prose-h2:leading-tight",
+              "prose-h2:relative prose-h2:pb-3 prose-h2:after:content-[''] prose-h2:after:absolute prose-h2:after:bottom-0 prose-h2:after:left-0 prose-h2:after:w-12 prose-h2:after:h-[2px] prose-h2:after:bg-primary",
+              "prose-h3:text-lg prose-h3:text-foreground/90",
+              // Body text — serif, generous spacing
+              "prose-p:text-[15px] sm:prose-p:text-[17px] prose-p:leading-[1.8] prose-p:text-foreground/85 prose-p:mb-6",
+              // Drop cap on the very first paragraph of the very first section
+              i === 0 && "first-paragraph-dropcap",
+              // Links
+              "prose-a:text-primary prose-a:font-medium prose-a:underline prose-a:decoration-primary/40 prose-a:underline-offset-4 hover:prose-a:decoration-primary",
+              // Pull quotes
+              "prose-blockquote:not-italic prose-blockquote:border-0 prose-blockquote:p-0 prose-blockquote:my-10",
+              "prose-blockquote:text-xl sm:prose-blockquote:text-2xl prose-blockquote:font-sans prose-blockquote:font-semibold",
+              "prose-blockquote:leading-snug prose-blockquote:tracking-tight prose-blockquote:text-foreground",
+              "prose-blockquote:relative prose-blockquote:pl-5 prose-blockquote:border-l-[3px] prose-blockquote:border-primary",
+              "[&_blockquote_p]:before:content-none [&_blockquote_p]:after:content-none [&_blockquote_p]:m-0",
+              // Strong & emphasis
+              "prose-strong:text-foreground prose-strong:font-bold",
+              "prose-em:text-foreground/90",
+              // Lists
+              "prose-li:text-[15px] sm:prose-li:text-[17px] prose-li:text-foreground/85 prose-li:leading-[1.8] prose-li:my-1",
+              "prose-ul:my-5 prose-ol:my-5",
+              // Images
+              "prose-img:rounded-xl prose-img:my-8",
+              // Hr as fancy separator
+              "prose-hr:my-10 prose-hr:border-border/40"
+            )}>
               <ReactMarkdown>{section}</ReactMarkdown>
             </article>
 
             {(i === 0 || i === 2) && categoryImages[i === 0 ? 0 : 1] && (
-              <figure className="my-8 rounded-xl overflow-hidden">
+              <figure className="my-10 rounded-xl overflow-hidden">
                 <img
                   src={categoryImages[i === 0 ? 0 : 1]}
                   alt={`Visual for ${article.category} — ${article.title}`}
                   className="w-full aspect-[16/9] object-cover"
                   loading="lazy"
                 />
-                <figcaption className="text-[11px] text-muted-foreground mt-2 text-center italic">
+                <figcaption className="text-[11px] text-muted-foreground mt-2 text-center italic font-sans">
                   ThriveIN Magazine — {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
                 </figcaption>
               </figure>

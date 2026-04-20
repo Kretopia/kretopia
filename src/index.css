@@ -272,6 +272,10 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Magazine drop cap — first letter of first paragraph in an article */
+  .first-paragraph-dropcap > p:first-of-type::first-letter {
+    @apply float-left text-6xl sm:text-7xl font-sans font-black leading-[0.85] mr-2 mt-1 text-primary;
+  }
   .gradient-primary {
     background: var(--gradient-primary);
   }

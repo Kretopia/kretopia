@@ -8035,6 +8035,7 @@ export type Database = {
       }
       project_messages: {
         Row: {
+          attachments: Json
           created_at: string | null
           file_name: string | null
           file_size: number | null
@@ -8048,6 +8049,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachments?: Json
           created_at?: string | null
           file_name?: string | null
           file_size?: number | null
@@ -8061,6 +8063,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachments?: Json
           created_at?: string | null
           file_name?: string | null
           file_size?: number | null
@@ -8178,6 +8181,8 @@ export type Database = {
           description: string | null
           due_date: string | null
           id: string
+          labels: string[]
+          priority: string
           project_id: string
           status: string | null
           title: string
@@ -8190,6 +8195,8 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          labels?: string[]
+          priority?: string
           project_id: string
           status?: string | null
           title: string
@@ -8202,6 +8209,8 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          labels?: string[]
+          priority?: string
           project_id?: string
           status?: string | null
           title?: string

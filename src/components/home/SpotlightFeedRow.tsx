@@ -23,17 +23,20 @@ export const SpotlightFeedRow = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
-        .from("magazine_articles")
-        .select("id, slug, title, subtitle, category, cover_image_url, read_time_minutes, created_at, is_featured")
-        .eq("is_published", true)
-        .order("is_featured", { ascending: false })
-        .order("created_at", { ascending: false })
-        .limit(8)
-        .then((r) => r)
-        .catch(() => ({ data: [] as any }));
-      setArticles((data || []) as Article[]);
-      setLoading(false);
+      try {
+        const { data } = await supabase
+          .from("magazine_articles")
+          .select("id, slug, title, subtitle, category, cover_image_url, read_time_minutes, created_at, is_featured")
+          .eq("is_published", true)
+          .order("is_featured", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(8);
+        setArticles((data || []) as Article[]);
+      } catch {
+        setArticles([]);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);

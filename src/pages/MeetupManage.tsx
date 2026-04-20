@@ -13,6 +13,7 @@ import {
   Settings as SettingsIcon, BarChart3, Plus, ArrowLeft, ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
+import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
 
 interface EventRow {
   id: string;
@@ -206,7 +207,7 @@ const MeetupManage = () => {
 
                     <TabsContent value="overview"><OverviewTab eventId={selected.id} stats={stats} /></TabsContent>
                     <TabsContent value="attendees"><AttendeesTab eventId={selected.id} /></TabsContent>
-                    <TabsContent value="blasts"><BlastsTab eventId={selected.id} /></TabsContent>
+                    <TabsContent value="blasts"><BlastsTab eventId={selected.id} eventTitle={selected.title} /></TabsContent>
                     <TabsContent value="messages"><Placeholder title="Group Messages" body="Broadcast in-app messages to attendees. Coming next." /></TabsContent>
                     <TabsContent value="tickets"><TicketsTab eventId={selected.id} /></TabsContent>
                     <TabsContent value="promotion"><Placeholder title="Promotion" body="Promo codes, share kit, embed widget. Coming next." /></TabsContent>
@@ -290,20 +291,22 @@ const AttendeesTab = ({ eventId }: { eventId: string }) => {
   );
 };
 
-const BlastsTab = ({ eventId }: { eventId: string }) => {
+const BlastsTab = ({ eventId, eventTitle }: { eventId: string; eventTitle: string }) => {
   const [blasts, setBlasts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("event_blasts" as any)
-        .select("*")
-        .eq("event_id", eventId)
-        .order("created_at", { ascending: false });
-      setBlasts((data as any[]) || []);
-      setLoading(false);
-    })();
-  }, [eventId]);
+  const [composerOpen, setComposerOpen] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("event_blasts" as any)
+      .select("*")
+      .eq("event_id", eventId)
+      .order("created_at", { ascending: false });
+    setBlasts((data as any[]) || []);
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, [eventId]);
 
   return (
     <div className="space-y-3">
@@ -313,7 +316,7 @@ const BlastsTab = ({ eventId }: { eventId: string }) => {
             <p className="brand-eyebrow mb-1">Email Blasts</p>
             <p className="text-sm text-muted-foreground">Send announcements, reminders, and thank-you notes to attendees.</p>
           </div>
-          <Button variant="lime" size="sm" disabled>
+          <Button variant="lime" size="sm" onClick={() => setComposerOpen(true)}>
             <Plus className="h-4 w-4 mr-1.5" /> New Blast
           </Button>
         </div>
@@ -327,14 +330,23 @@ const BlastsTab = ({ eventId }: { eventId: string }) => {
           {blasts.map(b => (
             <div key={b.id} className="p-3">
               <div className="flex items-center justify-between gap-2">
-                <p className="font-bold text-sm">{b.subject}</p>
+                <p className="font-bold text-sm line-clamp-1">{b.subject}</p>
                 <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{b.status}</Badge>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{b.template_type} · {format(new Date(b.created_at), "MMM d, h:mm a")}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {b.template} · {b.delivered_count ?? 0}/{b.recipient_count ?? 0} · {format(new Date(b.created_at), "MMM d, h:mm a")}
+              </p>
             </div>
           ))}
         </Card>
       )}
+      <BlastComposerDialog
+        open={composerOpen}
+        onOpenChange={setComposerOpen}
+        eventId={eventId}
+        eventTitle={eventTitle}
+        onSent={load}
+      />
     </div>
   );
 };

@@ -361,14 +361,21 @@ const CreatorWorkHome = () => {
       </Helmet>
 
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 space-y-4">
-        <PageHeader
-          eyebrow="ThriveDesk"
-          title="Run your projects"
-          subtitle="Workspaces, milestones, and clients — all in one focused desk."
-          icon={FolderKanban}
-          size="sm"
-          actions={<CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />}
-        />
+        {/* Hero header — ThrivePay-style */}
+        <div className="border-b-2 border-primary/20 pb-4">
+          <p className="brand-eyebrow mb-2">Projects & Workspaces</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <FolderKanban className="h-9 w-9 md:h-10 md:w-10 text-primary shrink-0" strokeWidth={2.5} />
+            <h1 className="text-4xl md:text-5xl font-black tracking-[-0.04em] leading-none">ThriveDesk</h1>
+            <Badge className="bg-energy text-energy-foreground hover:bg-energy gap-1 font-bold border-0">
+              <CheckCircle2 className="h-3 w-3" /> {activeProjects.length} Active
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mt-2">Run your projects, milestones & clients — all in one place.</p>
+          <div className="mt-3">
+            <CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />
+          </div>
+        </div>
 
         {/* At-a-glance stats — project focused */}
         <div className="grid grid-cols-3 gap-3">

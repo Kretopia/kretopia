@@ -26,6 +26,7 @@ import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
 import GigCard from "@/components/opportunity/GigCard";
+import { GigRailCard } from "@/components/opportunity/GigRailCard";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -668,11 +669,9 @@ export const UnifiedHome = () => {
                     initial={{ opacity: 0, x: 12 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="shrink-0 w-[88%] sm:w-[360px] snap-start flex"
+                    className="shrink-0 w-[78%] sm:w-[300px] snap-start flex"
                   >
-                    <div className="flex-1 rounded-2xl [&>div]:h-full [&>div]:flex [&>div]:flex-col [&>div>div:last-child]:mt-auto">
-                      <GigCard opportunity={g} compact />
-                    </div>
+                    <GigRailCard opportunity={g} />
                   </motion.div>
                 ))}
               </div>

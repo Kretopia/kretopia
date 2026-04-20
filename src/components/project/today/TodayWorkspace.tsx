@@ -28,7 +28,7 @@ export const TodayWorkspace = ({
   onUpdate,
   onNavigateToTab,
 }: TodayWorkspaceProps) => (
-  <div className="h-full min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-3 p-3">
+  <div className="h-full min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-3 p-3 overflow-y-auto lg:overflow-hidden">
     {/* Left: Today / Up Next tasks + AI suggestions on top */}
     <div className="flex flex-col gap-3 min-h-[60vh] lg:min-h-0">
       <DeskAISuggestions projectId={projectId} isPro={isPro} />

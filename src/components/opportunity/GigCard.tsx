@@ -64,9 +64,10 @@ const getAiMatchScore = (id: string): number => {
 interface GigCardProps {
   opportunity: GigOpportunity;
   creator?: GigCreatorProfile | null;
+  compact?: boolean;
 }
 
-const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
+const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) => {
   const navigate = useNavigate();
   const config = TYPE_CONFIG[opp.type] || TYPE_CONFIG.job;
   const TypeIcon = config.icon;

@@ -8,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Loader2, ImagePlus, Sparkles, Upload, Plus, Type, Image, Quote, Trash2, GripVertical, MoveUp, MoveDown, Eye, Wand2 } from "lucide-react";
+import { ArrowLeft, Loader2, ImagePlus, Sparkles, Upload, Plus, Type, Image, Quote, Trash2, GripVertical, MoveUp, MoveDown, Eye, Wand2, Wand, X } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { CoverImageEditor, coverImageStyle } from "./CoverImageEditor";
+import { MagicComposeDialog } from "./MagicComposeDialog";
 
 interface Props {
   onClose: () => void;
@@ -78,6 +79,7 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const blockFileRef = useRef<HTMLInputElement>(null);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
+  const [magicOpen, setMagicOpen] = useState(false);
 
   // Load existing article when editing
   useEffect(() => {
@@ -375,7 +377,16 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
         </div>
       </div>
 
-      {/* AI Generate */}
+      {/* Magic Compose — paste doc + drop images, AI lays it all out */}
+      <Button
+        className="w-full gap-2 text-xs h-10 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:opacity-90"
+        onClick={() => setMagicOpen(true)}
+      >
+        <Wand2 className="h-4 w-4" />
+        Magic Compose — paste doc + drop images
+      </Button>
+
+      {/* AI Generate (from title only) */}
       <Button
         variant="outline"
         className="w-full gap-2 text-xs h-9 border-dashed"
@@ -383,7 +394,7 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
         disabled={generating || !title.trim()}
       >
         {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 text-primary" />}
-        {generating ? "Generating article..." : "AI Generate from title"}
+        {generating ? "Generating article..." : "AI Generate from title only"}
       </Button>
 
       {/* Content Blocks */}
@@ -483,6 +494,25 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
       <input type="file" accept="image/*" className="hidden" ref={blockFileRef} onChange={handleBlockImageUpload} />
       </>
       )}
+
+      <MagicComposeDialog
+        open={magicOpen}
+        onOpenChange={setMagicOpen}
+        initialTitle={title}
+        initialCategory={category}
+        onComposed={(result) => {
+          setTitle(result.title);
+          setSubtitle(result.subtitle);
+          setCategory(result.category);
+          if (result.coverImageUrl) {
+            setCoverUrl(result.coverImageUrl);
+            setCoverPosX(50);
+            setCoverPosY(50);
+            setCoverZoom(1);
+          }
+          setBlocks(parseMarkdownToBlocks(result.content));
+        }}
+      />
     </div>
   );
 };

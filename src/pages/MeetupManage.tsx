@@ -65,21 +65,8 @@ const MeetupManage = () => {
   };
 
   useEffect(() => {
-    if (!user) return;
-    const load = async () => {
-      setLoading(true);
-      const { data } = await supabase
-        .from("creative_jams")
-        .select("id, title, start_time, venue_name, cover_image_url, is_ticketed, ticket_price, status, total_views, max_participants")
-        .eq("created_by", user.id)
-        .order("start_time", { ascending: false })
-        .limit(50);
-      const list = (data as EventRow[]) || [];
-      setEvents(list);
-      if (list.length && !selectedId) setSelectedId(list[0].id);
-      setLoading(false);
-    };
-    load();
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   useEffect(() => {
@@ -146,7 +133,7 @@ const MeetupManage = () => {
             <Calendar className="h-12 w-12 mx-auto text-energy/40 mb-3" />
             <h3 className="font-black text-lg mb-1 tracking-tight">No events yet</h3>
             <p className="text-sm text-muted-foreground mb-4">Host your first event to unlock the Command Center.</p>
-            <Button onClick={() => navigate("/event/new")} variant="lime">
+            <Button onClick={() => setShowCreate(true)} variant="gradient" className="rounded-full">
               <Plus className="h-4 w-4 mr-1.5" /> Host an Event
             </Button>
           </Card>

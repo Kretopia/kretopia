@@ -28,6 +28,7 @@ import { EventCohosts } from "@/components/sessions/EventCohosts";
 import { EventRecapButton } from "@/components/sessions/EventRecapButton";
 import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
 import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";
+import { GuestRsvpDialog } from "@/components/sessions/GuestRsvpDialog";
 import { APP_URL } from "@/lib/constants";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -56,6 +57,7 @@ const EventPage = () => {
   const [showShareKit, setShowShareKit] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showTicketDialog, setShowTicketDialog] = useState(false);
+  const [showGuestRsvp, setShowGuestRsvp] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showCohosts, setShowCohosts] = useState(false);
@@ -135,25 +137,18 @@ const EventPage = () => {
   };
 
   const handleJoinOrSignup = () => {
-    if (!user) {
-      sessionStorage.setItem('pending_event_join', eventId!);
-      // Send guests through the unified Search → Claim → Email flow
-      navigate(
-        `/claim?source=event&event=${encodeURIComponent(eventId!)}&redirect=${encodeURIComponent(`/event/${eventId}?joined=true`)}`,
-      );
-      return;
-    }
-    // If external ticket URL, redirect there
+    // External ticketing → redirect
     if (event?.external_ticket_url) {
       window.open(event.external_ticket_url, '_blank');
       return;
     }
-    // Ticketed event → open multi-tier ticket dialog
+    // Paid ticketed event → ticket dialog (Stripe collects email)
     if (event?.is_ticketed) {
       setShowTicketDialog(true);
       return;
     }
-    handleJoin();
+    // Free event: frictionless inline RSVP (works for guests AND logged-in users)
+    setShowGuestRsvp(true);
   };
 
   const handleJoin = async () => {
@@ -643,6 +638,17 @@ const EventPage = () => {
             eventId={event.id}
             eventTitle={event.title}
             onSuccess={() => {
+              setParticipation('going');
+              setParticipantCount(prev => prev + 1);
+            }}
+          />
+
+          <GuestRsvpDialog
+            open={showGuestRsvp}
+            onOpenChange={setShowGuestRsvp}
+            eventId={event.id}
+            eventTitle={event.title}
+            onRsvpComplete={() => {
               setParticipation('going');
               setParticipantCount(prev => prev + 1);
             }}

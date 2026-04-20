@@ -377,7 +377,16 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
         </div>
       </div>
 
-      {/* AI Generate */}
+      {/* Magic Compose — paste doc + drop images, AI lays it all out */}
+      <Button
+        className="w-full gap-2 text-xs h-10 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:opacity-90"
+        onClick={() => setMagicOpen(true)}
+      >
+        <Wand2 className="h-4 w-4" />
+        Magic Compose — paste doc + drop images
+      </Button>
+
+      {/* AI Generate (from title only) */}
       <Button
         variant="outline"
         className="w-full gap-2 text-xs h-9 border-dashed"
@@ -385,7 +394,7 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
         disabled={generating || !title.trim()}
       >
         {generating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 text-primary" />}
-        {generating ? "Generating article..." : "AI Generate from title"}
+        {generating ? "Generating article..." : "AI Generate from title only"}
       </Button>
 
       {/* Content Blocks */}

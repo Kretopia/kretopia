@@ -1,3 +1,4 @@
+// Organizer Command Center — /meetup/manage
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";

@@ -5,12 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MessageSquare, Send, Reply, Pin, PinOff, SmilePlus, X, ChevronDown, Pencil, Trash2, MoreVertical } from "lucide-react";
+import { MessageSquare, Send, Reply, Pin, PinOff, SmilePlus, X, ChevronDown, Pencil, Trash2, MoreVertical, Paperclip, FileIcon, ImageIcon, Loader2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+
+interface Attachment {
+  url: string;
+  name: string;
+  type: string;
+  size?: number;
+}
 
 interface Message {
   id: string;
@@ -19,6 +26,7 @@ interface Message {
   created_at: string;
   reply_to?: string | null;
   is_pinned?: boolean;
+  attachments?: Attachment[] | null;
   profiles?: {
     full_name: string;
     avatar_url: string | null;
@@ -61,8 +69,11 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   const [mentionIndex, setMentionIndex] = useState(0);
   const [showPinned, setShowPinned] = useState(false);
   const [hoveredMessage, setHoveredMessage] = useState<string | null>(null);
+  const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -156,13 +167,14 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || sending) return;
+    if ((!newMessage.trim() && pendingAttachments.length === 0) || sending) return;
     setSending(true);
     try {
       const insertData: any = {
         project_id: projectId,
         user_id: currentUserId,
-        message: newMessage.trim(),
+        message: newMessage.trim() || (pendingAttachments.length ? `📎 ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""),
+        attachments: pendingAttachments,
       };
       if (replyTo) {
         insertData.reply_to = replyTo.id;
@@ -209,6 +221,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
 
       setNewMessage("");
       setReplyTo(null);
+      setPendingAttachments([]);
       onMessageSent();
     } catch (error: any) {
       toast({ title: "Failed to send message", description: error.message, variant: "destructive" });
@@ -253,6 +266,33 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
       toast({ title: "Failed to delete message", variant: "destructive" });
     } else {
       onMessageSent();
+    }
+  };
+
+  const handleFilesSelected = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploadingFiles(true);
+    try {
+      const uploaded: Attachment[] = [];
+      for (const file of Array.from(files)) {
+        if (file.size > 25 * 1024 * 1024) {
+          toast({ title: `${file.name} is too large`, description: "Max 25MB per file", variant: "destructive" });
+          continue;
+        }
+        const ext = file.name.split(".").pop();
+        const path = `${projectId}/chat/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("project-files").upload(path, file);
+        if (upErr) {
+          toast({ title: `Upload failed: ${file.name}`, description: upErr.message, variant: "destructive" });
+          continue;
+        }
+        const { data: pub } = supabase.storage.from("project-files").getPublicUrl(path);
+        uploaded.push({ url: pub.publicUrl, name: file.name, type: file.type || "application/octet-stream", size: file.size });
+      }
+      setPendingAttachments(prev => [...prev, ...uploaded]);
+    } finally {
+      setUploadingFiles(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -400,6 +440,28 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                                 </p>
                               )}
 
+                              {/* Attachments */}
+                              {msg.attachments && msg.attachments.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {msg.attachments.map((att, i) => {
+                                    const isImg = att.type?.startsWith("image/");
+                                    if (isImg) {
+                                      return (
+                                        <a key={i} href={att.url} target="_blank" rel="noreferrer" className="block rounded-lg overflow-hidden border border-border max-w-[240px] hover:border-primary transition-colors">
+                                          <img src={att.url} alt={att.name} className="max-h-48 object-cover" loading="lazy" />
+                                        </a>
+                                      );
+                                    }
+                                    return (
+                                      <a key={i} href={att.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border bg-muted/40 hover:bg-accent transition-colors max-w-[240px]">
+                                        <FileIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                        <span className="text-xs truncate">{att.name}</span>
+                                      </a>
+                                    );
+                                  })}
+                                </div>
+                              )}
+
                               {/* Reactions display */}
                               {msgReactions.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1.5">
@@ -511,6 +573,20 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
 
         {/* Message Input */}
         <div className="border-t border-border p-3 mt-auto shrink-0 bg-background">
+          {/* Pending attachments preview */}
+          {pendingAttachments.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {pendingAttachments.map((att, i) => (
+                <div key={i} className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg border border-border bg-muted/40 text-xs">
+                  {att.type?.startsWith("image/") ? <ImageIcon className="h-3 w-3 text-muted-foreground" /> : <FileIcon className="h-3 w-3 text-muted-foreground" />}
+                  <span className="truncate max-w-[140px]">{att.name}</span>
+                  <button onClick={() => setPendingAttachments(p => p.filter((_, idx) => idx !== i))} className="p-0.5 hover:bg-accent rounded">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="relative">
             {/* @Mention autocomplete */}
             {showMentions && filteredCollaborators.length > 0 && (
@@ -535,6 +611,23 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
             )}
 
             <div className="flex gap-2 items-end">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => handleFilesSelected(e.target.files)}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-xl shrink-0"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingFiles}
+                aria-label="Attach files"
+              >
+                {uploadingFiles ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+              </Button>
               <div className="flex-1 relative">
                 <Input
                   ref={inputRef}
@@ -548,7 +641,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
               </div>
               <Button
                 onClick={handleSendMessage}
-                disabled={sending || !newMessage.trim()}
+                disabled={sending || (!newMessage.trim() && pendingAttachments.length === 0)}
                 size="icon"
                 className="rounded-xl shrink-0"
               >

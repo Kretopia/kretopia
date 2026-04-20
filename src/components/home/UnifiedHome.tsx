@@ -26,6 +26,7 @@ import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
 import GigCard from "@/components/opportunity/GigCard";
+import { GigRailCard } from "@/components/opportunity/GigRailCard";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];

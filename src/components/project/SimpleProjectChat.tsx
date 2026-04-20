@@ -5,12 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MessageSquare, Send, Reply, Pin, PinOff, SmilePlus, X, ChevronDown, Pencil, Trash2, MoreVertical } from "lucide-react";
+import { MessageSquare, Send, Reply, Pin, PinOff, SmilePlus, X, ChevronDown, Pencil, Trash2, MoreVertical, Paperclip, FileIcon, ImageIcon, Loader2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+
+interface Attachment {
+  url: string;
+  name: string;
+  type: string;
+  size?: number;
+}
 
 interface Message {
   id: string;
@@ -19,6 +26,7 @@ interface Message {
   created_at: string;
   reply_to?: string | null;
   is_pinned?: boolean;
+  attachments?: Attachment[] | null;
   profiles?: {
     full_name: string;
     avatar_url: string | null;

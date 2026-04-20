@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard, Send, Users, Loader2 } from "lucide-react";
+import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCard, Send, Users, Loader2, AlertTriangle } from "lucide-react";
 // XP system removed
 import { analytics } from "@/lib/analytics";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
@@ -32,6 +32,8 @@ interface MilestoneBoardProps {
   projectId: string;
   onUpdate: () => void;
   userRole: 'creator' | 'client';
+  collaborators?: Array<{ id: string; full_name: string }>;
+  projectOwnerId?: string;
 }
 
 const STATUS_CONFIG = {
@@ -42,7 +44,7 @@ const STATUS_CONFIG = {
   paid: { label: 'Paid', icon: DollarSign, color: 'bg-emerald-500/10 text-emerald-600' },
 };
 
-export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: MilestoneBoardProps) {
+export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, collaborators = [], projectOwnerId }: MilestoneBoardProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [getPaidDialogOpen, setGetPaidDialogOpen] = useState(false);
   const [batchLoading, setBatchLoading] = useState(false);
@@ -50,6 +52,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
   const [getPaidEmail, setGetPaidEmail] = useState('');
   const [getPaidName, setGetPaidName] = useState('');
   const [getPaidMessage, setGetPaidMessage] = useState('');
+  const [talentConnectActive, setTalentConnectActive] = useState<boolean | null>(null);
   const [newMilestone, setNewMilestone] = useState({
     title: '',
     description: '',
@@ -58,6 +61,21 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
   });
   const { toast } = useToast();
   const { guard: guardMilestone, remaining: milestonesRemaining, cap: milestonesCap } = useFeatureGate("milestones");
+
+  // Check the talent's (non-owner collaborator) Stripe Connect status — soft-gate on Pay
+  useEffect(() => {
+    if (userRole !== 'client') return;
+    const talent = collaborators.find(c => c.id !== projectOwnerId);
+    if (!talent) { setTalentConnectActive(null); return; }
+    supabase
+      .from('profiles')
+      .select('stripe_account_status')
+      .eq('user_id', talent.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setTalentConnectActive(data?.stripe_account_status === 'active');
+      });
+  }, [userRole, collaborators, projectOwnerId]);
 
   const handleCreateMilestone = async () => {
     if (!newMilestone.title.trim() || !newMilestone.amount) {
@@ -83,6 +101,24 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
     } else {
       toast({ title: "Milestone created!" });
       analytics.milestoneCreated(projectId, parseFloat(newMilestone.amount));
+      // Notify the talent
+      try {
+        const talent = collaborators.find(c => c.id !== projectOwnerId);
+        if (talent) {
+          const { data: project } = await supabase.from('projects').select('title').eq('id', projectId).single();
+          await supabase.from('notifications').insert({
+            user_id: talent.id,
+            title: 'New milestone created',
+            message: `A $${parseFloat(newMilestone.amount).toFixed(2)} milestone "${newMilestone.title}" was added to ${project?.title || 'your project'}.`,
+            type: 'project',
+            category: 'project',
+            priority: 'normal',
+            link: `/desk/${projectId}?tab=finance`,
+            action_url: `/desk/${projectId}?tab=finance`,
+            action_text: 'View milestone',
+          });
+        }
+      } catch (e) { console.error('notify create milestone failed', e); }
       setNewMilestone({ title: '', description: '', amount: '', due_date: '' });
       setCreateDialogOpen(false);
       onUpdate();
@@ -104,6 +140,31 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
       } else {
         toast({ title: "Milestone updated!" });
       }
+      // Notify the other party of status changes
+      try {
+        const milestone = milestones.find(m => m.id === milestoneId);
+        const { data: { user } } = await supabase.auth.getUser();
+        const recipientId = userRole === 'creator' ? projectOwnerId : collaborators.find(c => c.id !== projectOwnerId)?.id;
+        if (recipientId && user && milestone) {
+          const labelMap: Record<string, string> = {
+            in_progress: 'started work on',
+            review: 'submitted for review:',
+            completed: 'marked as completed:',
+            paid: 'marked as paid:',
+          };
+          await supabase.from('notifications').insert({
+            user_id: recipientId,
+            title: newStatus === 'review' ? 'Milestone ready for review' : 'Milestone updated',
+            message: `${labelMap[newStatus] || 'updated'} "${milestone.title}"`,
+            type: 'project',
+            category: 'project',
+            priority: newStatus === 'review' ? 'high' : 'normal',
+            link: `/desk/${projectId}?tab=finance`,
+            action_url: `/desk/${projectId}?tab=finance`,
+            action_text: 'Open milestone',
+          });
+        }
+      } catch (e) { console.error('notify status change failed', e); }
       onUpdate();
     }
   };
@@ -307,7 +368,21 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole }: Mi
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between">
+      {userRole === 'client' && talentConnectActive === false && collaborators.find(c => c.id !== projectOwnerId) && (
+        <div className="flex items-start gap-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10">
+          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">Creator hasn't set up payouts yet</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              You can still create milestones, but payments will fail until they connect their payout account. Send them a Get Paid link below.
+            </p>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => setGetPaidDialogOpen(true)} className="shrink-0">
+            Send link
+          </Button>
+        </div>
+      )}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold">Milestones & Payments</h3>
           <div className="flex gap-4 mt-2 text-sm">

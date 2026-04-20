@@ -250,7 +250,7 @@ serve(async (req) => {
             talent_rate: talentRate,
             platform_fee: platformFee,
             manager_commission: managerCommission,
-            manager_user_id: managerUserId,
+            manager_table_id: managerTableId,
           },
           line_items: lineItems,
           notes: `Auto-generated invoice for milestone "${milestone.title}" on project "${milestone.projects?.title || 'Project'}". Talent received $${talentRate.toFixed(2)} (100% of rate). Service fee and commissions charged to brand.`,
@@ -270,6 +270,57 @@ serve(async (req) => {
       } catch (invoiceErr) {
         logStep("WARNING: Auto-invoice generation failed", { error: String(invoiceErr) });
       }
+    }
+
+    // Notifications: notify creator + client of capture/cancel outcome
+    try {
+      const projectTitle = milestone.projects?.title || 'Project';
+      const link = `/desk/${milestone.project_id}?tab=finance`;
+      if (action === 'capture') {
+        // Pay creator notif
+        await supabaseAdmin.from('notifications').insert([
+          {
+            user_id: milestone.created_by,
+            title: 'Payment released! 💰',
+            message: `$${Number(milestone.amount).toFixed(2)} for "${milestone.title}" was released to you on ${projectTitle}.`,
+            type: 'payment',
+            category: 'payment',
+            priority: 'high',
+            link,
+            action_url: link,
+            action_text: 'View milestone',
+          },
+          {
+            user_id: user.id,
+            title: 'Escrow released ✓',
+            message: `You released $${Number(milestone.amount).toFixed(2)} for "${milestone.title}".`,
+            type: 'payment',
+            category: 'payment',
+            priority: 'normal',
+            link,
+            action_url: link,
+            action_text: 'View milestone',
+          },
+        ]);
+      } else {
+        // Cancel/refund notif
+        await supabaseAdmin.from('notifications').insert([
+          {
+            user_id: milestone.created_by,
+            title: 'Escrow refunded',
+            message: `The client cancelled the escrow for "${milestone.title}" — funds were refunded.`,
+            type: 'payment',
+            category: 'payment',
+            priority: 'high',
+            link,
+            action_url: link,
+            action_text: 'View milestone',
+          },
+        ]);
+      }
+      logStep("Notifications dispatched", { action });
+    } catch (notifErr) {
+      logStep("WARNING: notification dispatch failed", { error: String(notifErr) });
     }
 
     return new Response(JSON.stringify({ 

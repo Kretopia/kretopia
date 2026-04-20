@@ -336,6 +336,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <Separator className="my-3" />
 
                   <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">ThriveIN</p>
+                  <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />
                   <MenuButton icon={Globe} label="About Us" onClick={() => handleNavigation("/about")} />
                   <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} />
 

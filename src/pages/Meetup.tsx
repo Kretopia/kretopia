@@ -49,35 +49,39 @@ const Meetup = () => {
     const load = async () => {
       setLoading(true);
 
-      // Load user country (derived from profile.location: "City, Country")
-      if (user) {
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("location")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        const loc = prof?.location || "";
-        const parts = loc.split(",").map(s => s.trim()).filter(Boolean);
-        setMyCountry(parts.length > 1 ? parts[parts.length - 1] : null);
+      try {
+        if (user) {
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("location")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          const loc = prof?.location || "";
+          const parts = loc.split(",").map((s: string) => s.trim()).filter(Boolean);
+          setMyCountry(parts.length > 1 ? parts[parts.length - 1] : null);
 
-        const { count } = await supabase
+          const { count } = await supabase
+            .from("creative_jams")
+            .select("id", { count: "exact", head: true })
+            .eq("created_by", user.id)
+            .gte("start_time", new Date().toISOString());
+          setHostingCount(count || 0);
+        }
+
+        const { data } = await supabase
           .from("creative_jams")
-          .select("id", { count: "exact", head: true })
-          .eq("created_by", user.id)
-          .gte("start_time", new Date().toISOString());
-        setHostingCount(count || 0);
+          .select("id, title, description, start_time, end_time, venue_name, venue_address, category, cover_image_url, is_ticketed, ticket_price, ticket_currency, max_participants, country, created_by, tags")
+          .eq("is_public", true)
+          .gte("start_time", new Date().toISOString())
+          .order("start_time", { ascending: true })
+          .limit(100);
+
+        setEvents((data as EventRow[]) || []);
+      } catch (err) {
+        console.error("[Meetup] load failed", err);
+      } finally {
+        setLoading(false);
       }
-
-      const { data } = await supabase
-        .from("creative_jams")
-        .select("id, title, description, start_time, end_time, venue_name, venue_address, category, cover_image_url, is_ticketed, ticket_price, ticket_currency, max_participants, country, created_by, tags")
-        .eq("is_public", true)
-        .gte("start_time", new Date().toISOString())
-        .order("start_time", { ascending: true })
-        .limit(100);
-
-      setEvents((data as EventRow[]) || []);
-      setLoading(false);
     };
     load();
   }, [user?.id]);
@@ -104,13 +108,11 @@ const Meetup = () => {
     } else if (tab === "paid") {
       list = list.filter(e => e.is_ticketed && e.ticket_price && e.ticket_price > 0);
     } else if (tab === "trending") {
-      // Trending = most participants soon (placeholder: by start_time proximity)
       list = [...list].sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
     }
     return list;
   }, [events, search, category, tab]);
 
-  // Group rails for "discover" tab
   const railThisWeek = useMemo(() => {
     const weekFromNow = Date.now() + 7 * 24 * 60 * 60 * 1000;
     return events.filter(e => new Date(e.start_time).getTime() <= weekFromNow).slice(0, 8);
@@ -134,23 +136,26 @@ const Meetup = () => {
         <link rel="canonical" href="https://thrivein.io/meetup" />
       </Helmet>
 
-      {/* Hero */}
-      <div className="relative overflow-hidden border-b border-border/40 bg-gradient-to-br from-primary/10 via-background to-accent/5">
-        <div className="container max-w-6xl mx-auto px-4 py-8 md:py-12">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+      {/* Cinematic header — matches Gigs brand system */}
+      <div className="relative border-b border-border/50 bg-cinematic overflow-hidden pt-[env(safe-area-inset-top)]">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
+        <div className="relative container mx-auto max-w-5xl px-4 pt-6 pb-7 sm:pt-8 sm:pb-10">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
             <div>
-              <Badge variant="secondary" className="mb-3 bg-primary/10 text-primary border-primary/20">
-                <Sparkles className="h-3 w-3 mr-1" /> Events
-              </Badge>
-              <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-2">
-                Where creators <span className="text-primary">meet</span>.
+              <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-3 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
+                <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+                Live events
+              </p>
+              <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-foreground leading-[0.95]">
+                Events.<br />
+                <span className="text-energy-glow">Where creators meet.</span>
               </h1>
-              <p className="text-sm md:text-base text-muted-foreground max-w-xl">
+              <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-md">
                 Workshops, meetups, jams, screenings, premieres. Real-world moments built for the creative industry.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => navigate("/event/new")} size="sm" variant="gradient">
+              <Button onClick={() => navigate("/event/new")} size="sm" variant="lime">
                 <Plus className="h-4 w-4 mr-1.5" /> Host Event
               </Button>
               {hostingCount > 0 && (
@@ -169,7 +174,7 @@ const Meetup = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search events, venues, topics…"
-                className="pl-9 h-11 bg-card/80 backdrop-blur"
+                className="pl-9 h-11 bg-card/60 border-border/60"
               />
             </div>
             <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
@@ -178,10 +183,10 @@ const Meetup = () => {
                   key={c}
                   onClick={() => setCategory(c)}
                   className={cn(
-                    "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider border transition-all",
+                    "shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] border transition-all",
                     category === c
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-card/50 text-muted-foreground border-border/50 hover:border-primary/40"
+                      ? "bg-energy text-energy-foreground border-energy shadow-glow-lime"
+                      : "bg-card/40 text-muted-foreground border-border/50 hover:border-energy/40 hover:text-foreground"
                   )}
                 >
                   {c}
@@ -192,33 +197,44 @@ const Meetup = () => {
         </div>
       </div>
 
-      <div className="container max-w-6xl mx-auto px-4 py-6">
+      <div className="container mx-auto max-w-5xl px-4 py-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full">
-          <TabsList className="w-full justify-start overflow-x-auto bg-transparent p-0 h-auto gap-2 mb-4">
-            <TabsTrigger value="discover" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4">Discover</TabsTrigger>
-            <TabsTrigger value="this-week" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4">This Week</TabsTrigger>
-            <TabsTrigger value="free" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4">Free</TabsTrigger>
-            <TabsTrigger value="paid" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4">Paid</TabsTrigger>
-            <TabsTrigger value="trending" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4">
+          <TabsList className="w-full justify-start overflow-x-auto bg-transparent p-0 h-auto gap-2 mb-6">
+            {[
+              { v: "discover", l: "Discover" },
+              { v: "this-week", l: "This Week" },
+              { v: "free", l: "Free" },
+              { v: "paid", l: "Paid" },
+            ].map(({ v, l }) => (
+              <TabsTrigger
+                key={v}
+                value={v}
+                className="data-[state=active]:bg-energy data-[state=active]:text-energy-foreground data-[state=active]:shadow-glow-lime rounded-full px-4 text-xs font-bold uppercase tracking-wider"
+              >
+                {l}
+              </TabsTrigger>
+            ))}
+            <TabsTrigger
+              value="trending"
+              className="data-[state=active]:bg-energy data-[state=active]:text-energy-foreground data-[state=active]:shadow-glow-lime rounded-full px-4 text-xs font-bold uppercase tracking-wider"
+            >
               <TrendingUp className="h-3.5 w-3.5 mr-1" /> Trending
             </TabsTrigger>
           </TabsList>
 
-          {/* DISCOVER tab — rails */}
           <TabsContent value="discover" className="mt-0 space-y-8">
             {loading ? (
               <SkeletonGrid />
             ) : (
               <>
-                {railThisWeek.length > 0 && <Rail title="This Week" icon={<Calendar className="h-4 w-4 text-primary" />} events={railThisWeek} />}
-                {railNearYou.length > 0 && <Rail title={`In ${myCountry}`} icon={<Globe className="h-4 w-4 text-accent" />} events={railNearYou} />}
-                {railFree.length > 0 && <Rail title="Free Events" icon={<Sparkles className="h-4 w-4 text-success" />} events={railFree} />}
+                {railThisWeek.length > 0 && <Rail title="This Week" icon={<Calendar className="h-4 w-4 text-energy" />} events={railThisWeek} />}
+                {railNearYou.length > 0 && <Rail title={`In ${myCountry}`} icon={<Globe className="h-4 w-4 text-energy" />} events={railNearYou} />}
+                {railFree.length > 0 && <Rail title="Free Events" icon={<Sparkles className="h-4 w-4 text-energy" />} events={railFree} />}
                 {events.length === 0 && <EmptyState onHost={() => navigate("/event/new")} />}
               </>
             )}
           </TabsContent>
 
-          {/* Other tabs share the filtered grid */}
           {(["this-week", "free", "paid", "trending"] as const).map((t) => (
             <TabsContent key={t} value={t} className="mt-0">
               {loading ? (
@@ -241,10 +257,10 @@ const Meetup = () => {
 const Rail = ({ title, icon, events }: { title: string; icon: React.ReactNode; events: EventRow[] }) => (
   <section>
     <div className="flex items-center justify-between mb-3">
-      <h2 className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider">
+      <h2 className="brand-eyebrow flex items-center gap-2">
         {icon} {title}
       </h2>
-      <span className="text-xs text-muted-foreground">{events.length}</span>
+      <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{events.length}</span>
     </div>
     <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
       {events.map((e) => (
@@ -261,7 +277,7 @@ const EventCard = ({ ev }: { ev: EventRow }) => {
   const isPaid = !!(ev.is_ticketed && ev.ticket_price && ev.ticket_price > 0);
   return (
     <Link to={`/event/${ev.id}`}>
-      <Card className="overflow-hidden group hover:border-primary/40 transition-all hover:-translate-y-0.5 hover:shadow-lg h-full flex flex-col">
+      <Card className="overflow-hidden group hover:border-energy/50 transition-all hover:-translate-y-0.5 hover:shadow-glow-lime h-full flex flex-col bg-card/60">
         <div className="relative aspect-[4/3] bg-gradient-to-br from-primary/20 to-accent/10 overflow-hidden">
           {ev.cover_image_url ? (
             <img
@@ -276,20 +292,20 @@ const EventCard = ({ ev }: { ev: EventRow }) => {
             </div>
           )}
           <div className="absolute top-2 left-2 bg-background/90 backdrop-blur rounded-lg px-2 py-1 shadow">
-            <div className="text-[9px] font-bold text-primary uppercase leading-none">{format(date, "MMM")}</div>
-            <div className="text-base font-bold leading-none">{format(date, "dd")}</div>
+            <div className="text-[9px] font-black text-energy uppercase leading-none tracking-wider">{format(date, "MMM")}</div>
+            <div className="text-base font-black leading-none">{format(date, "dd")}</div>
           </div>
           {isPaid ? (
-            <Badge className="absolute top-2 right-2 bg-accent text-accent-foreground">
+            <Badge className="absolute top-2 right-2 bg-energy text-energy-foreground font-bold uppercase tracking-wider text-[10px]">
               <Ticket className="h-3 w-3 mr-1" />
               {ev.ticket_currency || "USD"} {ev.ticket_price}
             </Badge>
           ) : (
-            <Badge className="absolute top-2 right-2 bg-success/90 text-success-foreground">Free</Badge>
+            <Badge className="absolute top-2 right-2 bg-success/90 text-success-foreground font-bold uppercase tracking-wider text-[10px]">Free</Badge>
           )}
         </div>
         <div className="p-3 flex-1 flex flex-col">
-          <h3 className="font-semibold text-sm line-clamp-2 leading-tight mb-1.5">{ev.title}</h3>
+          <h3 className="font-bold text-sm line-clamp-2 leading-tight mb-1.5 tracking-tight">{ev.title}</h3>
           <div className="text-[11px] text-muted-foreground space-y-0.5 mt-auto">
             <div className="flex items-center gap-1">
               <Calendar className="h-3 w-3 shrink-0" />
@@ -323,11 +339,11 @@ const SkeletonGrid = () => (
 );
 
 const EmptyState = ({ onHost }: { onHost: () => void }) => (
-  <Card className="p-8 text-center border-dashed">
-    <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-    <h3 className="font-semibold mb-1">No events yet</h3>
+  <Card className="p-8 text-center border-dashed bg-card/40">
+    <Calendar className="h-12 w-12 mx-auto text-energy/40 mb-3" />
+    <h3 className="font-black text-lg mb-1 tracking-tight">No events yet</h3>
     <p className="text-sm text-muted-foreground mb-4">Be the first to host one in your city.</p>
-    <Button onClick={onHost} variant="gradient">
+    <Button onClick={onHost} variant="lime">
       <Plus className="h-4 w-4 mr-1.5" /> Host an Event
     </Button>
   </Card>

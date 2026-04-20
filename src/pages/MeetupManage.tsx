@@ -1,0 +1,375 @@
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Calendar, Users, Mail, MessageSquare, Ticket, Megaphone,
+  Settings as SettingsIcon, BarChart3, Plus, ArrowLeft, ExternalLink,
+} from "lucide-react";
+import { format } from "date-fns";
+
+interface EventRow {
+  id: string;
+  title: string;
+  start_time: string;
+  venue_name: string | null;
+  cover_image_url: string | null;
+  is_ticketed: boolean | null;
+  ticket_price: number | null;
+  status: string | null;
+  total_views: number | null;
+  max_participants: number | null;
+}
+
+const TABS = [
+  { v: "overview", l: "Overview", icon: BarChart3 },
+  { v: "attendees", l: "Attendees", icon: Users },
+  { v: "blasts", l: "Blasts", icon: Megaphone },
+  { v: "messages", l: "Messages", icon: MessageSquare },
+  { v: "tickets", l: "Tickets", icon: Ticket },
+  { v: "promotion", l: "Promotion", icon: Mail },
+  { v: "settings", l: "Settings", icon: SettingsIcon },
+] as const;
+
+const MeetupManage = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [events, setEvents] = useState<EventRow[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [tab, setTab] = useState<typeof TABS[number]["v"]>("overview");
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ rsvps: 0, tickets: 0, revenue: 0, views: 0 });
+
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("creative_jams")
+        .select("id, title, start_time, venue_name, cover_image_url, is_ticketed, ticket_price, status, total_views, max_participants")
+        .eq("created_by", user.id)
+        .order("start_time", { ascending: false })
+        .limit(50);
+      const list = (data as EventRow[]) || [];
+      setEvents(list);
+      if (list.length && !selectedId) setSelectedId(list[0].id);
+      setLoading(false);
+    };
+    load();
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    const loadStats = async () => {
+      const [{ count: rsvps }, { count: tickets }, sel] = await Promise.all([
+        supabase.from("jam_participants").select("id", { count: "exact", head: true }).eq("jam_id", selectedId),
+        supabase.from("event_orders" as any).select("id", { count: "exact", head: true }).eq("event_id", selectedId).eq("status", "paid"),
+        supabase.from("event_orders" as any).select("amount_total").eq("event_id", selectedId).eq("status", "paid"),
+      ]);
+      const revenue = ((sel as any).data || []).reduce((a: number, r: any) => a + (Number(r.amount_total) || 0), 0);
+      const ev = events.find(e => e.id === selectedId);
+      setStats({ rsvps: rsvps || 0, tickets: tickets || 0, revenue, views: ev?.total_views || 0 });
+    };
+    loadStats();
+  }, [selectedId, events]);
+
+  const selected = events.find(e => e.id === selectedId);
+
+  return (
+    <div className="min-h-screen bg-background pb-24">
+      <Helmet>
+        <title>Organizer Command Center | ThriveIN Events</title>
+        <meta name="description" content="Manage your events, attendees, blasts, tickets and analytics in one place." />
+      </Helmet>
+
+      {/* Cinematic header */}
+      <div className="relative border-b border-border/50 bg-cinematic overflow-hidden pt-[env(safe-area-inset-top)]">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
+        <div className="relative container mx-auto max-w-6xl px-4 pt-5 pb-6 sm:pt-7 sm:pb-8">
+          <button
+            onClick={() => navigate("/meetup")}
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-energy transition mb-3 uppercase tracking-wider font-bold"
+          >
+            <ArrowLeft className="h-3 w-3" /> Back to Events
+          </button>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-3 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
+                <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+                Organizer mode
+              </p>
+              <h1 className="text-2xl sm:text-4xl font-black tracking-[-0.035em] text-foreground leading-[0.95]">
+                Command Center.<br />
+                <span className="text-energy-glow">Run your event like a pro.</span>
+              </h1>
+            </div>
+            <Button onClick={() => navigate("/event/new")} variant="lime" size="sm">
+              <Plus className="h-4 w-4 mr-1.5" /> New Event
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto max-w-6xl px-4 py-6">
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-20 rounded-lg bg-muted/40 animate-pulse" />
+            ))}
+          </div>
+        ) : events.length === 0 ? (
+          <Card className="p-10 text-center border-dashed bg-card/40">
+            <Calendar className="h-12 w-12 mx-auto text-energy/40 mb-3" />
+            <h3 className="font-black text-lg mb-1 tracking-tight">No events yet</h3>
+            <p className="text-sm text-muted-foreground mb-4">Host your first event to unlock the Command Center.</p>
+            <Button onClick={() => navigate("/event/new")} variant="lime">
+              <Plus className="h-4 w-4 mr-1.5" /> Host an Event
+            </Button>
+          </Card>
+        ) : (
+          <div className="grid lg:grid-cols-[280px_1fr] gap-6">
+            {/* Event picker */}
+            <aside className="space-y-2">
+              <p className="brand-eyebrow mb-2">Your Events</p>
+              {events.map(e => (
+                <button
+                  key={e.id}
+                  onClick={() => setSelectedId(e.id)}
+                  className={`w-full text-left p-3 rounded-lg border transition-all ${
+                    selectedId === e.id
+                      ? "border-energy bg-energy/5 shadow-glow-lime"
+                      : "border-border/50 bg-card/40 hover:border-energy/40"
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="shrink-0 w-10 h-10 rounded bg-gradient-to-br from-primary/20 to-energy/10 overflow-hidden flex items-center justify-center">
+                      {e.cover_image_url ? (
+                        <img src={e.cover_image_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <Calendar className="h-4 w-4 text-energy" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-sm line-clamp-1 leading-tight">{e.title}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{format(new Date(e.start_time), "MMM d, yyyy")}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </aside>
+
+            {/* Detail */}
+            <div>
+              {selected && (
+                <>
+                  <Card className="p-4 mb-4 bg-card/60 border-border/50">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div>
+                        <h2 className="font-black text-lg tracking-tight">{selected.title}</h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {format(new Date(selected.start_time), "EEE, MMM d, yyyy · h:mm a")}
+                          {selected.venue_name && ` · ${selected.venue_name}`}
+                        </p>
+                      </div>
+                      <Button asChild variant="outline" size="sm">
+                        <Link to={`/event/${selected.id}`}>
+                          <ExternalLink className="h-3 w-3 mr-1.5" /> View Page
+                        </Link>
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                      <Stat label="RSVPs" value={stats.rsvps} />
+                      <Stat label="Tickets Sold" value={stats.tickets} />
+                      <Stat label="Revenue" value={`$${stats.revenue.toFixed(0)}`} />
+                      <Stat label="Page Views" value={stats.views} />
+                    </div>
+                  </Card>
+
+                  <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+                    <TabsList className="w-full justify-start overflow-x-auto bg-transparent p-0 h-auto gap-2 mb-4">
+                      {TABS.map(({ v, l, icon: Icon }) => (
+                        <TabsTrigger
+                          key={v}
+                          value={v}
+                          className="data-[state=active]:bg-energy data-[state=active]:text-energy-foreground data-[state=active]:shadow-glow-lime rounded-full px-3 text-[11px] font-bold uppercase tracking-wider"
+                        >
+                          <Icon className="h-3.5 w-3.5 mr-1" /> {l}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+
+                    <TabsContent value="overview"><OverviewTab eventId={selected.id} stats={stats} /></TabsContent>
+                    <TabsContent value="attendees"><AttendeesTab eventId={selected.id} /></TabsContent>
+                    <TabsContent value="blasts"><BlastsTab eventId={selected.id} /></TabsContent>
+                    <TabsContent value="messages"><Placeholder title="Group Messages" body="Broadcast in-app messages to attendees. Coming next." /></TabsContent>
+                    <TabsContent value="tickets"><TicketsTab eventId={selected.id} /></TabsContent>
+                    <TabsContent value="promotion"><Placeholder title="Promotion" body="Promo codes, share kit, embed widget. Coming next." /></TabsContent>
+                    <TabsContent value="settings"><Placeholder title="Event Settings" body="Edit event details, refund policy, waitlist." actionLabel="Edit Event" actionTo={`/event/${selected.id}/edit`} /></TabsContent>
+                  </Tabs>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const Stat = ({ label, value }: { label: string; value: number | string }) => (
+  <div className="rounded-lg border border-border/50 bg-card/40 p-3">
+    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">{label}</p>
+    <p className="text-2xl font-black tracking-tight text-energy">{value}</p>
+  </div>
+);
+
+const Placeholder = ({ title, body, actionLabel, actionTo }: { title: string; body: string; actionLabel?: string; actionTo?: string }) => (
+  <Card className="p-8 text-center border-dashed bg-card/40">
+    <h3 className="font-black text-lg tracking-tight mb-1">{title}</h3>
+    <p className="text-sm text-muted-foreground mb-4">{body}</p>
+    {actionLabel && actionTo && (
+      <Button asChild variant="outline" size="sm">
+        <Link to={actionTo}>{actionLabel}</Link>
+      </Button>
+    )}
+  </Card>
+);
+
+const OverviewTab = ({ eventId, stats }: { eventId: string; stats: any }) => (
+  <div className="space-y-3">
+    <Card className="p-4 bg-card/60 border-border/50">
+      <p className="brand-eyebrow mb-2">Quick Actions</p>
+      <div className="flex flex-wrap gap-2">
+        <Button asChild size="sm" variant="outline"><Link to={`/event/${eventId}/check-in`}>Open Check-In</Link></Button>
+        <Button asChild size="sm" variant="outline"><Link to={`/event/${eventId}`}>Share Page</Link></Button>
+      </div>
+    </Card>
+  </div>
+);
+
+const AttendeesTab = ({ eventId }: { eventId: string }) => {
+  const [list, setList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("jam_participants")
+        .select("id, user_id, status, created_at, profiles:user_id(full_name, avatar_url, username)")
+        .eq("jam_id", eventId)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      setList((data as any[]) || []);
+      setLoading(false);
+    })();
+  }, [eventId]);
+
+  if (loading) return <div className="h-32 rounded bg-muted/40 animate-pulse" />;
+  if (list.length === 0) return <Placeholder title="No attendees yet" body="Share your event to get the first RSVPs." />;
+
+  return (
+    <Card className="bg-card/60 border-border/50 divide-y divide-border/50">
+      {list.map((p: any) => (
+        <div key={p.id} className="flex items-center gap-3 p-3">
+          <div className="w-9 h-9 rounded-full bg-muted overflow-hidden shrink-0">
+            {p.profiles?.avatar_url && <img src={p.profiles.avatar_url} alt="" className="w-full h-full object-cover" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm line-clamp-1">{p.profiles?.full_name || "Member"}</p>
+            <p className="text-[10px] text-muted-foreground">{format(new Date(p.created_at), "MMM d")}</p>
+          </div>
+          <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{p.status || "going"}</Badge>
+        </div>
+      ))}
+    </Card>
+  );
+};
+
+const BlastsTab = ({ eventId }: { eventId: string }) => {
+  const [blasts, setBlasts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("event_blasts" as any)
+        .select("*")
+        .eq("event_id", eventId)
+        .order("created_at", { ascending: false });
+      setBlasts((data as any[]) || []);
+      setLoading(false);
+    })();
+  }, [eventId]);
+
+  return (
+    <div className="space-y-3">
+      <Card className="p-4 bg-card/60 border-border/50">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <p className="brand-eyebrow mb-1">Email Blasts</p>
+            <p className="text-sm text-muted-foreground">Send announcements, reminders, and thank-you notes to attendees.</p>
+          </div>
+          <Button variant="lime" size="sm" disabled>
+            <Plus className="h-4 w-4 mr-1.5" /> New Blast
+          </Button>
+        </div>
+      </Card>
+      {loading ? (
+        <div className="h-20 rounded bg-muted/40 animate-pulse" />
+      ) : blasts.length === 0 ? (
+        <Placeholder title="No blasts sent" body="Send your first email blast — announcement, reminder, or thank-you." />
+      ) : (
+        <Card className="bg-card/60 border-border/50 divide-y divide-border/50">
+          {blasts.map(b => (
+            <div key={b.id} className="p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-bold text-sm">{b.subject}</p>
+                <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{b.status}</Badge>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{b.template_type} · {format(new Date(b.created_at), "MMM d, h:mm a")}</p>
+            </div>
+          ))}
+        </Card>
+      )}
+    </div>
+  );
+};
+
+const TicketsTab = ({ eventId }: { eventId: string }) => {
+  const [tiers, setTiers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("event_ticket_tiers" as any)
+        .select("*")
+        .eq("event_id", eventId)
+        .order("position", { ascending: true });
+      setTiers((data as any[]) || []);
+      setLoading(false);
+    })();
+  }, [eventId]);
+
+  if (loading) return <div className="h-32 rounded bg-muted/40 animate-pulse" />;
+  if (tiers.length === 0)
+    return <Placeholder title="No ticket tiers" body="Create tiered tickets — Early Bird, GA, VIP — with custom pricing and limits." />;
+
+  return (
+    <Card className="bg-card/60 border-border/50 divide-y divide-border/50">
+      {tiers.map(t => (
+        <div key={t.id} className="p-3 flex items-center justify-between gap-3">
+          <div>
+            <p className="font-bold text-sm">{t.name}</p>
+            <p className="text-[10px] text-muted-foreground">{t.sold_count || 0} / {t.quantity || "∞"} sold</p>
+          </div>
+          <p className="font-black text-energy">${t.price}</p>
+        </div>
+      ))}
+    </Card>
+  );
+};
+
+export default MeetupManage;

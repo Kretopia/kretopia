@@ -670,8 +670,8 @@ export const UnifiedHome = () => {
                     transition={{ delay: i * 0.05 }}
                     className="shrink-0 w-[88%] sm:w-[360px] snap-start"
                   >
-                    <div className="h-[360px] rounded-2xl [&>div]:h-full [&>div]:flex [&>div]:flex-col [&>div>div:last-child]:mt-auto">
-                      <GigCard opportunity={g} />
+                    <div className="h-[340px] overflow-hidden rounded-2xl [&>div]:h-full [&>div]:flex [&>div]:flex-col [&>div>div:last-child]:mt-auto">
+                      <GigCard opportunity={g} compact />
                     </div>
                   </motion.div>
                 ))}

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
+import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 
 interface EventRow {
   id: string;
@@ -46,6 +47,22 @@ const MeetupManage = () => {
   const [tab, setTab] = useState<typeof TABS[number]["v"]>("overview");
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ rsvps: 0, tickets: 0, revenue: 0, views: 0 });
+  const [showCreate, setShowCreate] = useState(false);
+
+  const reload = async () => {
+    if (!user) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from("creative_jams")
+      .select("id, title, start_time, venue_name, cover_image_url, is_ticketed, ticket_price, status, total_views, max_participants")
+      .eq("created_by", user.id)
+      .order("start_time", { ascending: false })
+      .limit(50);
+    const list = (data as EventRow[]) || [];
+    setEvents(list);
+    if (list.length && !selectedId) setSelectedId(list[0].id);
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -110,7 +127,7 @@ const MeetupManage = () => {
                 <span className="text-energy-glow">Run your event like a pro.</span>
               </h1>
             </div>
-            <Button onClick={() => navigate("/event/new")} variant="lime" size="sm">
+            <Button onClick={() => setShowCreate(true)} variant="gradient" size="sm" className="rounded-full">
               <Plus className="h-4 w-4 mr-1.5" /> New Event
             </Button>
           </div>

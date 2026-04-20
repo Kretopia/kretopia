@@ -80,6 +80,7 @@ const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 
 const EventPage = lazy(() => import("./pages/EventPage"));
+const EventConfirmed = lazy(() => import("./pages/EventConfirmed"));
 const Meetup = lazy(() => import("./pages/Meetup"));
 const MeetupManage = lazy(() => import("./pages/MeetupManage"));
 
@@ -358,6 +359,7 @@ const AppContent = () => {
 
             {/* Public Event Page */}
             <Route path="/event/:eventId" element={<EventPage />} />
+            <Route path="/event/:eventId/confirmed" element={<EventConfirmed />} />
 
             {/* Meetup Hub — dedicated events discovery */}
             <Route path="/meetup" element={<Meetup />} />

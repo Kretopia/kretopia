@@ -661,16 +661,16 @@ export const UnifiedHome = () => {
               </div>
             </div>
             {activeGigs.length > 0 ? (
-              <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 snap-x snap-mandatory">
+              <div className="flex items-stretch gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 snap-x snap-mandatory">
                 {activeGigs.map((g, i) => (
                   <motion.div
                     key={g.id}
                     initial={{ opacity: 0, x: 12 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="shrink-0 w-[88%] sm:w-[360px] snap-start"
+                    className="shrink-0 w-[88%] sm:w-[360px] snap-start flex"
                   >
-                    <div className="h-[340px] overflow-hidden rounded-2xl [&>div]:h-full [&>div]:flex [&>div]:flex-col [&>div>div:last-child]:mt-auto">
+                    <div className="flex-1 rounded-2xl [&>div]:h-full [&>div]:flex [&>div]:flex-col [&>div>div:last-child]:mt-auto">
                       <GigCard opportunity={g} compact />
                     </div>
                   </motion.div>

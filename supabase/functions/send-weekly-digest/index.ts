@@ -91,12 +91,11 @@ const handler = async (req: Request): Promise<Response> => {
       .limit(1)
       .maybeSingle();
 
-    // 2. Latest magazine articles (last 14 days, top 4)
+    // 2. Latest magazine articles (most recent published, top 4 — no date cutoff so digest always has content)
     const { data: articles } = await supabaseAdmin
       .from("magazine_articles")
       .select("id, slug, title, subtitle, cover_image_url, category, read_time_minutes, author_name")
       .eq("is_published", true)
-      .gte("created_at", new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
       .order("created_at", { ascending: false })
       .limit(4);
 

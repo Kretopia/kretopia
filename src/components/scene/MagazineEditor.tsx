@@ -486,4 +486,3 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
     </div>
   );
 };
-};

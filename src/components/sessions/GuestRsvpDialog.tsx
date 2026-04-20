@@ -69,8 +69,10 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
           idempotencyKey: `guest-rsvp-${eventId}-${parsed.data.guest_email}`,
           templateData: {
             attendeeName: parsed.data.guest_name,
+            attendeeEmail: parsed.data.guest_email,
             eventTitle,
             eventUrl: `${window.location.origin}/event/${eventId}`,
+            isGuest: !user,
           },
         },
       }).catch(() => {});

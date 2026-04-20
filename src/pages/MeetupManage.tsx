@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
+import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 
 interface EventRow {
   id: string;
@@ -46,23 +47,26 @@ const MeetupManage = () => {
   const [tab, setTab] = useState<typeof TABS[number]["v"]>("overview");
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ rsvps: 0, tickets: 0, revenue: 0, views: 0 });
+  const [showCreate, setShowCreate] = useState(false);
+
+  const reload = async () => {
+    if (!user) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from("creative_jams")
+      .select("id, title, start_time, venue_name, cover_image_url, is_ticketed, ticket_price, status, total_views, max_participants")
+      .eq("created_by", user.id)
+      .order("start_time", { ascending: false })
+      .limit(50);
+    const list = (data as EventRow[]) || [];
+    setEvents(list);
+    if (list.length && !selectedId) setSelectedId(list[0].id);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    if (!user) return;
-    const load = async () => {
-      setLoading(true);
-      const { data } = await supabase
-        .from("creative_jams")
-        .select("id, title, start_time, venue_name, cover_image_url, is_ticketed, ticket_price, status, total_views, max_participants")
-        .eq("created_by", user.id)
-        .order("start_time", { ascending: false })
-        .limit(50);
-      const list = (data as EventRow[]) || [];
-      setEvents(list);
-      if (list.length && !selectedId) setSelectedId(list[0].id);
-      setLoading(false);
-    };
-    load();
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   useEffect(() => {
@@ -110,7 +114,7 @@ const MeetupManage = () => {
                 <span className="text-energy-glow">Run your event like a pro.</span>
               </h1>
             </div>
-            <Button onClick={() => navigate("/event/new")} variant="lime" size="sm">
+            <Button onClick={() => setShowCreate(true)} variant="gradient" size="sm" className="rounded-full">
               <Plus className="h-4 w-4 mr-1.5" /> New Event
             </Button>
           </div>
@@ -129,7 +133,7 @@ const MeetupManage = () => {
             <Calendar className="h-12 w-12 mx-auto text-energy/40 mb-3" />
             <h3 className="font-black text-lg mb-1 tracking-tight">No events yet</h3>
             <p className="text-sm text-muted-foreground mb-4">Host your first event to unlock the Command Center.</p>
-            <Button onClick={() => navigate("/event/new")} variant="lime">
+            <Button onClick={() => setShowCreate(true)} variant="gradient" className="rounded-full">
               <Plus className="h-4 w-4 mr-1.5" /> Host an Event
             </Button>
           </Card>
@@ -219,6 +223,8 @@ const MeetupManage = () => {
           </div>
         )}
       </div>
+
+      <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={reload} />
     </div>
   );
 };

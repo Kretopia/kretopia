@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar, MapPin, Search, Plus, Sparkles, Ticket, Users, TrendingUp, Globe, Settings as SettingsIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 
 interface EventRow {
   id: string;
@@ -44,46 +45,48 @@ const Meetup = () => {
   const [tab, setTab] = useState<"discover" | "this-week" | "free" | "paid" | "trending">("discover");
   const [myCountry, setMyCountry] = useState<string | null>(null);
   const [hostingCount, setHostingCount] = useState(0);
+  const [showCreate, setShowCreate] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      if (user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("location")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const loc = prof?.location || "";
+        const parts = loc.split(",").map((s: string) => s.trim()).filter(Boolean);
+        setMyCountry(parts.length > 1 ? parts[parts.length - 1] : null);
+
+        const { count } = await supabase
+          .from("creative_jams")
+          .select("id", { count: "exact", head: true })
+          .eq("created_by", user.id)
+          .gte("start_time", new Date().toISOString());
+        setHostingCount(count || 0);
+      }
+
+      const { data } = await supabase
+        .from("creative_jams")
+        .select("id, title, description, start_time, end_time, venue_name, venue_address, category, cover_image_url, is_ticketed, ticket_price, ticket_currency, max_participants, country, created_by, tags")
+        .eq("is_public", true)
+        .gte("start_time", new Date().toISOString())
+        .order("start_time", { ascending: true })
+        .limit(100);
+
+      setEvents((data as EventRow[]) || []);
+    } catch (err) {
+      console.error("[Meetup] load failed", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-
-      try {
-        if (user) {
-          const { data: prof } = await supabase
-            .from("profiles")
-            .select("location")
-            .eq("user_id", user.id)
-            .maybeSingle();
-          const loc = prof?.location || "";
-          const parts = loc.split(",").map((s: string) => s.trim()).filter(Boolean);
-          setMyCountry(parts.length > 1 ? parts[parts.length - 1] : null);
-
-          const { count } = await supabase
-            .from("creative_jams")
-            .select("id", { count: "exact", head: true })
-            .eq("created_by", user.id)
-            .gte("start_time", new Date().toISOString());
-          setHostingCount(count || 0);
-        }
-
-        const { data } = await supabase
-          .from("creative_jams")
-          .select("id, title, description, start_time, end_time, venue_name, venue_address, category, cover_image_url, is_ticketed, ticket_price, ticket_currency, max_participants, country, created_by, tags")
-          .eq("is_public", true)
-          .gte("start_time", new Date().toISOString())
-          .order("start_time", { ascending: true })
-          .limit(100);
-
-        setEvents((data as EventRow[]) || []);
-      } catch (err) {
-        console.error("[Meetup] load failed", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const filtered = useMemo(() => {
@@ -155,7 +158,7 @@ const Meetup = () => {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => navigate("/event/new")} size="sm" variant="gradient" className="gap-1.5 rounded-full">
+              <Button onClick={() => setShowCreate(true)} size="sm" variant="gradient" className="gap-1.5 rounded-full">
                 <Plus className="h-4 w-4" /> Host Event
               </Button>
               {hostingCount > 0 && (
@@ -230,7 +233,7 @@ const Meetup = () => {
                 {railThisWeek.length > 0 && <Rail title="This Week" icon={<Calendar className="h-4 w-4 text-energy" />} events={railThisWeek} />}
                 {railNearYou.length > 0 && <Rail title={`In ${myCountry}`} icon={<Globe className="h-4 w-4 text-energy" />} events={railNearYou} />}
                 {railFree.length > 0 && <Rail title="Free Events" icon={<Sparkles className="h-4 w-4 text-energy" />} events={railFree} />}
-                {events.length === 0 && <EmptyState onHost={() => navigate("/event/new")} />}
+                {events.length === 0 && <EmptyState onHost={() => setShowCreate(true)} />}
               </>
             )}
           </TabsContent>
@@ -240,7 +243,7 @@ const Meetup = () => {
               {loading ? (
                 <SkeletonGrid />
               ) : filtered.length === 0 ? (
-                <EmptyState onHost={() => navigate("/event/new")} />
+                <EmptyState onHost={() => setShowCreate(true)} />
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filtered.map((e) => <EventCard key={e.id} ev={e} />)}
@@ -250,6 +253,8 @@ const Meetup = () => {
           ))}
         </Tabs>
       </div>
+
+      <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={load} />
     </div>
   );
 };
@@ -343,7 +348,7 @@ const EmptyState = ({ onHost }: { onHost: () => void }) => (
     <Calendar className="h-12 w-12 mx-auto text-energy/40 mb-3" />
     <h3 className="font-black text-lg mb-1 tracking-tight">No events yet</h3>
     <p className="text-sm text-muted-foreground mb-4">Be the first to host one in your city.</p>
-    <Button onClick={onHost} variant="lime">
+    <Button onClick={onHost} variant="gradient" className="rounded-full">
       <Plus className="h-4 w-4 mr-1.5" /> Host an Event
     </Button>
   </Card>

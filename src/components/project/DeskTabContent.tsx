@@ -81,7 +81,7 @@ export const DeskTabContent = memo(({
       />
     )}
 
-    {activeTab !== "messages" && (
+    {activeTab !== "messages" && activeTab !== "today" && (
       <div className="p-4 md:p-6 pb-24 md:pb-6">
         {activeTab === "tasks" && (
           <>

@@ -3,7 +3,24 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock, Eye, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import { Link } from "react-router-dom";
+
+// Ensure paragraphs are separated by blank lines so ReactMarkdown produces
+// distinct <p> tags (with margin) instead of one giant paragraph with <br>.
+const normalizeMarkdown = (raw: string): string => {
+  if (!raw) return "";
+  // Normalize line endings
+  let s = raw.replace(/\r\n?/g, "\n");
+  // Collapse 3+ newlines to 2
+  s = s.replace(/\n{3,}/g, "\n\n");
+  // Promote single newlines to double newlines BETWEEN non-empty lines that
+  // aren't already part of a list / quote / heading / table. This converts
+  // pasted prose with single \n breaks into proper markdown paragraphs.
+  s = s.replace(/([^\n])\n(?!\n|#|>|[-*+] |\d+\. |\||!\[|```)/g, "$1\n\n");
+  return s.trim();
+};
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { motion } from "framer-motion";
 import { coverImageStyle } from "./CoverImageEditor";
@@ -41,7 +58,8 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
   const shareTitle = article.title;
   const shareDescription = article.subtitle || "";
 
-  const contentSections = article.content.split(/\n(?=##\s)/).filter(Boolean);
+  const normalizedContent = normalizeMarkdown(article.content || "");
+  const contentSections = normalizedContent.split(/\n(?=##\s)/).filter(Boolean);
 
   const inlineImages: Record<string, string[]> = {
     fashion: [
@@ -196,7 +214,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
               // Hr as fancy separator
               "prose-hr:my-10 prose-hr:border-border/40"
             )}>
-              <ReactMarkdown>{section}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{section}</ReactMarkdown>
             </article>
 
             {(i === 0 || i === 2) && categoryImages[i === 0 ? 0 : 1] && (

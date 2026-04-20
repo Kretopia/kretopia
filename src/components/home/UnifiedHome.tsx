@@ -676,16 +676,42 @@ export const UnifiedHome = () => {
                 ))}
               </div>
             ) : (
-              <div
-                className="rounded-xl border border-border bg-card/50 p-5 text-center cursor-pointer hover:border-primary/30 transition-all"
-                onClick={() => navigate("/opportunities")}
-              >
-                <Zap className="h-6 w-6 text-warning/40 mx-auto mb-2" />
-                <p className="text-sm font-medium text-foreground mb-1">No matched gigs yet</p>
-                <p className="text-xs text-muted-foreground mb-3">We haven't found gigs tailored to your profile — but new ones drop daily.</p>
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                  Browse all gigs <ArrowRight className="h-3 w-3" />
-                </span>
+              <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/[0.06] via-card to-warning/[0.04] p-5">
+                <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-warning/10 blur-2xl" aria-hidden />
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-9 w-9 rounded-xl bg-warning/15 flex items-center justify-center">
+                      <Zap className="h-4.5 w-4.5 text-warning" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground leading-tight">No matched gigs yet</p>
+                      <p className="text-[11px] text-muted-foreground">New opportunities drop daily.</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Strengthen your profile to get matched faster, or post your own gig to find collaborators.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => navigate("/opportunities")}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+                    >
+                      Browse gigs <ArrowRight className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => setQuickPostType("gig")}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground hover:border-primary/40 transition-colors"
+                    >
+                      <PlusCircle className="h-3 w-3" /> Post a gig
+                    </button>
+                    <button
+                      onClick={() => navigate("/profile/edit")}
+                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Improve profile →
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </section>
@@ -761,16 +787,42 @@ export const UnifiedHome = () => {
                 })}
               </div>
             ) : (
-              <div
-                className="rounded-xl border border-border bg-card/50 p-5 text-center cursor-pointer hover:border-warning/30 transition-all"
-                onClick={() => setQuickPostType("event")}
-              >
-                <CalendarDays className="h-6 w-6 text-warning/40 mx-auto mb-2" />
-                <p className="text-sm font-medium text-foreground mb-1">Nothing happening near you yet</p>
-                <p className="text-xs text-muted-foreground mb-3">Be the first to bring creatives together — host a casual meetup or jam session.</p>
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-warning">
-                  Create a meetup <ArrowRight className="h-3 w-3" />
-                </span>
+              <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-warning/[0.07] via-card to-primary/[0.05] p-5">
+                <div className="absolute -bottom-8 -left-8 h-28 w-28 rounded-full bg-primary/10 blur-2xl" aria-hidden />
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="h-9 w-9 rounded-xl bg-warning/15 flex items-center justify-center">
+                      <CalendarDays className="h-4.5 w-4.5 text-warning" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground leading-tight">No events near you yet</p>
+                      <p className="text-[11px] text-muted-foreground">Be the spark — start the scene.</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Host a casual meetup, jam session, or open mic. Most successful scenes start with one creator showing up.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setQuickPostType("event")}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-warning px-3 py-1.5 text-[11px] font-semibold text-warning-foreground hover:bg-warning/90 transition-colors"
+                    >
+                      <PlusCircle className="h-3 w-3" /> Host an event
+                    </button>
+                    <button
+                      onClick={() => navigate("/nearby")}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground hover:border-primary/40 transition-colors"
+                    >
+                      Explore map <ArrowRight className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => navigate("/sessions")}
+                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Browse all events →
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </section>

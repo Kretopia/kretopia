@@ -10,6 +10,7 @@ interface Article {
   slug: string | null;
   title: string;
   subtitle: string | null;
+  content: string | null;
   category: string | null;
   cover_image_url: string | null;
   read_time_minutes: number | null;
@@ -26,7 +27,7 @@ export const SpotlightFeedRow = () => {
       try {
         const { data } = await supabase
           .from("magazine_articles")
-          .select("id, slug, title, subtitle, category, cover_image_url, read_time_minutes, created_at, is_featured")
+          .select("id, slug, title, subtitle, content, category, cover_image_url, read_time_minutes, created_at, is_featured")
           .eq("is_published", true)
           .order("is_featured", { ascending: false })
           .order("created_at", { ascending: false })
@@ -148,11 +149,14 @@ export const SpotlightFeedRow = () => {
                 </div>
               </div>
               <div className="p-3">
-                {a.subtitle && (
-                  <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                    {a.subtitle}
-                  </p>
-                )}
+                {(() => {
+                  const preview = a.subtitle?.trim() || (a.content ? a.content.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 140) : "");
+                  return preview ? (
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                      {preview}
+                    </p>
+                  ) : null;
+                })()}
                 <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3 w-3" />

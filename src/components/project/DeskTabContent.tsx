@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { SimpleFileSharing } from "@/components/project/SimpleFileSharing";
+import { FileBrowser } from "@/components/project/files/FileBrowser";
 import { TaskBoard } from "@/components/project/TaskBoard";
 import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
@@ -72,7 +72,7 @@ export const DeskTabContent = memo(({
         {activeTab === "files" && (
           <>
             <UsageLimitBanner current={files.length} limit={FREE_LIMITS.files} itemName="files" isPro={isPro} />
-            <SimpleFileSharing projectId={projectId} files={files} onFileUploaded={onUpdate} />
+            <FileBrowser projectId={projectId} files={files} onFileUploaded={onUpdate} />
           </>
         )}
 

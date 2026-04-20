@@ -30,9 +30,9 @@ export const TodayWorkspace = ({
 }: TodayWorkspaceProps) => (
   <div className="h-full min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-3 p-3 overflow-y-auto lg:overflow-hidden">
     {/* Left: Today / Up Next tasks + AI suggestions on top */}
-    <div className="flex flex-col gap-3 min-h-[60vh] lg:min-h-0">
+    <div className="flex flex-col gap-3 lg:min-h-0">
       <DeskAISuggestions projectId={projectId} isPro={isPro} />
-      <div className="rounded-xl border border-border bg-card/40 overflow-hidden flex-1 min-h-[40vh] lg:min-h-0">
+      <div className="rounded-xl border border-border bg-card/40 overflow-hidden lg:flex-1 lg:min-h-0">
         <TodayTasksPanel
           projectId={projectId}
           tasks={tasks}
@@ -45,7 +45,7 @@ export const TodayWorkspace = ({
     </div>
 
     {/* Right: Activity feed */}
-    <div className="rounded-xl border border-border bg-card/40 overflow-hidden min-h-[60vh] lg:min-h-0">
+    <div className="rounded-xl border border-border bg-card/40 overflow-hidden lg:min-h-0">
       <TodayActivityFeed
         messages={messages}
         files={files}

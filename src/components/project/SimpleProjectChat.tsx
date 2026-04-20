@@ -69,8 +69,11 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   const [mentionIndex, setMentionIndex] = useState(0);
   const [showPinned, setShowPinned] = useState(false);
   const [hoveredMessage, setHoveredMessage] = useState<string | null>(null);
+  const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -164,13 +167,14 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || sending) return;
+    if ((!newMessage.trim() && pendingAttachments.length === 0) || sending) return;
     setSending(true);
     try {
       const insertData: any = {
         project_id: projectId,
         user_id: currentUserId,
-        message: newMessage.trim(),
+        message: newMessage.trim() || (pendingAttachments.length ? `📎 ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""),
+        attachments: pendingAttachments,
       };
       if (replyTo) {
         insertData.reply_to = replyTo.id;
@@ -217,6 +221,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
 
       setNewMessage("");
       setReplyTo(null);
+      setPendingAttachments([]);
       onMessageSent();
     } catch (error: any) {
       toast({ title: "Failed to send message", description: error.message, variant: "destructive" });

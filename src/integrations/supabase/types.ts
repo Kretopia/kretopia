@@ -7838,6 +7838,51 @@ export type Database = {
           },
         ]
       }
+      project_file_folders: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          parent_id: string | null
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          parent_id?: string | null
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          parent_id?: string | null
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_file_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "project_file_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_file_folders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_files: {
         Row: {
           created_at: string | null
@@ -7845,6 +7890,7 @@ export type Database = {
           file_size: number | null
           file_type: string | null
           file_url: string
+          folder_id: string | null
           id: string
           project_id: string
           user_id: string
@@ -7855,6 +7901,7 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           file_url: string
+          folder_id?: string | null
           id?: string
           project_id: string
           user_id: string
@@ -7865,11 +7912,19 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           file_url?: string
+          folder_id?: string | null
           id?: string
           project_id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "project_files_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "project_file_folders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_files_project_id_fkey"
             columns: ["project_id"]

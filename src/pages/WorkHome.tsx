@@ -356,35 +356,44 @@ const CreatorWorkHome = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>Creative HQ | ThriveIN</title>
-        <meta name="description" content="Your creative business command center — projects, gigs, payments, and tools all in one place." />
+        <title>ThriveDesk | ThriveIN</title>
+        <meta name="description" content="ThriveDesk — your project command center. Manage workspaces, milestones, and clients in one place." />
       </Helmet>
 
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 space-y-4">
         <PageHeader
-          eyebrow="Creative HQ"
-          title="Your business, in focus"
-          subtitle="Projects, gigs, and payments — all in one command center."
+          eyebrow="ThriveDesk"
+          title="Run your projects"
+          subtitle="Workspaces, milestones, and clients — all in one focused desk."
           icon={FolderKanban}
           size="sm"
           actions={<CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />}
         />
 
-        {/* At-a-glance stats */}
+        {/* At-a-glance stats — project focused */}
         <div className="grid grid-cols-3 gap-3">
           <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/desk/projects")}>
             <p className="text-2xl font-black tracking-tight text-energy">{activeProjects.length}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Active</p>
           </Card>
-          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
-            <p className="text-2xl font-black tracking-tight">{activeGigs.length}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Open Gigs</p>
-          </Card>
-          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/thrivepay")}>
+          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/desk/projects")}>
             <p className="text-2xl font-black tracking-tight">{pendingMilestones}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Pending</p>
           </Card>
+          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/desk/projects")}>
+            <p className="text-2xl font-black tracking-tight">{completedProjects.length}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Done</p>
+          </Card>
         </div>
+
+        {/* Primary CTA — create workspace */}
+        <Button
+          size="lg"
+          onClick={() => setShowCreateProject(true)}
+          className="w-full h-12 gap-2 font-bold"
+        >
+          <Plus className="h-4 w-4" /> New Project Workspace
+        </Button>
 
         {/* Active Projects */}
         <Widget title="Active Projects" icon={FolderKanban} action={{ label: "All", path: "/desk/projects" }}>

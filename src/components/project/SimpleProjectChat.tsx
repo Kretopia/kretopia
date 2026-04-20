@@ -573,6 +573,20 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
 
         {/* Message Input */}
         <div className="border-t border-border p-3 mt-auto shrink-0 bg-background">
+          {/* Pending attachments preview */}
+          {pendingAttachments.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {pendingAttachments.map((att, i) => (
+                <div key={i} className="inline-flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-lg border border-border bg-muted/40 text-xs">
+                  {att.type?.startsWith("image/") ? <ImageIcon className="h-3 w-3 text-muted-foreground" /> : <FileIcon className="h-3 w-3 text-muted-foreground" />}
+                  <span className="truncate max-w-[140px]">{att.name}</span>
+                  <button onClick={() => setPendingAttachments(p => p.filter((_, idx) => idx !== i))} className="p-0.5 hover:bg-accent rounded">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="relative">
             {/* @Mention autocomplete */}
             {showMentions && filteredCollaborators.length > 0 && (
@@ -597,6 +611,23 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
             )}
 
             <div className="flex gap-2 items-end">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={(e) => handleFilesSelected(e.target.files)}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-xl shrink-0"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingFiles}
+                aria-label="Attach files"
+              >
+                {uploadingFiles ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+              </Button>
               <div className="flex-1 relative">
                 <Input
                   ref={inputRef}
@@ -610,7 +641,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
               </div>
               <Button
                 onClick={handleSendMessage}
-                disabled={sending || !newMessage.trim()}
+                disabled={sending || (!newMessage.trim() && pendingAttachments.length === 0)}
                 size="icon"
                 className="rounded-xl shrink-0"
               >

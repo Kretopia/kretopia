@@ -149,11 +149,14 @@ export const SpotlightFeedRow = () => {
                 </div>
               </div>
               <div className="p-3">
-                {a.subtitle && (
-                  <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                    {a.subtitle}
-                  </p>
-                )}
+                {(() => {
+                  const preview = a.subtitle?.trim() || (a.content ? a.content.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 140) : "");
+                  return preview ? (
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                      {preview}
+                    </p>
+                  ) : null;
+                })()}
                 <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3 w-3" />

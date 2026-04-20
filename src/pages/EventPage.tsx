@@ -55,6 +55,7 @@ const EventPage = () => {
   const [participation, setParticipation] = useState<string | null>(null);
   const [showShareKit, setShowShareKit] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showTicketDialog, setShowTicketDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showCohosts, setShowCohosts] = useState(false);
@@ -114,6 +115,11 @@ const EventPage = () => {
     // If external ticket URL, redirect there
     if (event?.external_ticket_url) {
       window.open(event.external_ticket_url, '_blank');
+      return;
+    }
+    // Ticketed event → open multi-tier ticket dialog
+    if (event?.is_ticketed) {
+      setShowTicketDialog(true);
       return;
     }
     handleJoin();

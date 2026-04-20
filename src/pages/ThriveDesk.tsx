@@ -167,6 +167,11 @@ const ThriveDesk = () => {
           )}
         </div>
       </div>
+
+      {/* Floating AI Assistant — available on every tab */}
+      {user && projectId && (
+        <DeskAILauncher projectId={projectId} userId={user.id} isPro={isPro} />
+      )}
     </div>
   );
 };

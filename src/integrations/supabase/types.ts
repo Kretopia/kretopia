@@ -3949,6 +3949,8 @@ export type Database = {
       guest_rsvps: {
         Row: {
           check_in_token: string
+          claimed_at: string | null
+          claimed_by_user_id: string | null
           created_at: string
           event_id: string
           guest_email: string
@@ -3959,6 +3961,8 @@ export type Database = {
         }
         Insert: {
           check_in_token?: string
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
           created_at?: string
           event_id: string
           guest_email: string
@@ -3969,6 +3973,8 @@ export type Database = {
         }
         Update: {
           check_in_token?: string
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
           created_at?: string
           event_id?: string
           guest_email?: string

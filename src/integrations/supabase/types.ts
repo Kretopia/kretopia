@@ -3946,6 +3946,47 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_rsvps: {
+        Row: {
+          check_in_token: string
+          created_at: string
+          event_id: string
+          guest_email: string
+          guest_name: string
+          id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          check_in_token?: string
+          created_at?: string
+          event_id: string
+          guest_email: string
+          guest_name: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          check_in_token?: string
+          created_at?: string
+          event_id?: string
+          guest_email?: string
+          guest_name?: string
+          id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       icdb_brand_verifications: {
         Row: {
           brand_email: string

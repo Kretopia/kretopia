@@ -642,6 +642,17 @@ const EventPage = () => {
               setParticipantCount(prev => prev + 1);
             }}
           />
+
+          <GuestRsvpDialog
+            open={showGuestRsvp}
+            onOpenChange={setShowGuestRsvp}
+            eventId={event.id}
+            eventTitle={event.title}
+            onRsvpComplete={() => {
+              setParticipation('going');
+              setParticipantCount(prev => prev + 1);
+            }}
+          />
           
           {isCreator && (
             <EditEventDialog 

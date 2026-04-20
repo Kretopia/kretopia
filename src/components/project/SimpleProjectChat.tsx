@@ -171,36 +171,38 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
       const { error } = await supabase.from('project_messages').insert(insertData);
       if (error) throw error;
 
-      // Send notifications (detect @mentions)
+      // Send notifications (in-app + push + email) — detect @mentions
       try {
-        const { data: senderProfile } = await supabase.from('profiles').select('full_name').eq('user_id', currentUserId).single();
-        const { data: project } = await supabase.from('projects').select('created_by, title').eq('id', projectId).single();
-        const { data: collabData } = await supabase.from('project_collaborators').select('user_id').eq('project_id', projectId).neq('user_id', currentUserId);
+        const { sendPushNotification } = await import('@/lib/pushNotifications');
+        const [{ data: senderProfile }, { data: project }, { data: collabData }] = await Promise.all([
+          supabase.from('profiles').select('full_name').eq('user_id', currentUserId).single(),
+          supabase.from('projects').select('created_by, title').eq('id', projectId).single(),
+          supabase.from('project_collaborators').select('user_id').eq('project_id', projectId).neq('user_id', currentUserId),
+        ]);
 
         const usersToNotify = new Set<string>();
         collabData?.forEach(c => usersToNotify.add(c.user_id));
         if (project?.created_by && project.created_by !== currentUserId) usersToNotify.add(project.created_by);
 
-        // Check for @mentions and send priority notifications
         const mentionedUsers = collaborators.filter(c => newMessage.includes(`@${c.full_name}`));
         const senderName = senderProfile?.full_name || 'Someone';
         const projectTitle = project?.title || 'Project';
         const preview = newMessage.trim().length > 50 ? newMessage.trim().substring(0, 50) + '...' : newMessage.trim();
+        const link = `/desk/${projectId}?tab=messages`;
 
-        for (const userId of usersToNotify) {
-          const isMentioned = mentionedUsers.some(m => m.id === userId);
-          await supabase.from('notifications').insert({
-            user_id: userId,
-            title: isMentioned ? `${senderName} mentioned you` : `New message in ${projectTitle}`,
-            message: `${senderName}: ${preview}`,
-            type: 'project',
-            category: 'project',
-            priority: isMentioned ? 'high' : 'normal',
-            link: `/desk/${projectId}?tab=messages`,
-            action_url: `/desk/${projectId}?tab=messages`,
-            action_text: 'View Messages',
-          });
-        }
+        await Promise.all(
+          Array.from(usersToNotify).map((userId) => {
+            const isMentioned = mentionedUsers.some(m => m.id === userId);
+            return sendPushNotification({
+              userId,
+              title: isMentioned ? `${senderName} mentioned you` : `New message in ${projectTitle}`,
+              body: `${senderName}: ${preview}`,
+              type: 'message',
+              link,
+              data: { projectId, mentioned: isMentioned },
+            });
+          })
+        );
       } catch (notifError) {
         console.error('Error sending notifications:', notifError);
       }

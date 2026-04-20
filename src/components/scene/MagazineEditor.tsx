@@ -494,6 +494,25 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
       <input type="file" accept="image/*" className="hidden" ref={blockFileRef} onChange={handleBlockImageUpload} />
       </>
       )}
+
+      <MagicComposeDialog
+        open={magicOpen}
+        onOpenChange={setMagicOpen}
+        initialTitle={title}
+        initialCategory={category}
+        onComposed={(result) => {
+          setTitle(result.title);
+          setSubtitle(result.subtitle);
+          setCategory(result.category);
+          if (result.coverImageUrl) {
+            setCoverUrl(result.coverImageUrl);
+            setCoverPosX(50);
+            setCoverPosY(50);
+            setCoverZoom(1);
+          }
+          setBlocks(parseMarkdownToBlocks(result.content));
+        }}
+      />
     </div>
   );
 };

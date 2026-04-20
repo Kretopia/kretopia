@@ -233,7 +233,7 @@ const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) =
         </h3>
 
         {/* Description */}
-        {opp.description && (
+        {!compact && opp.description && (
           <p className="text-sm text-muted-foreground line-clamp-2 mt-2 leading-relaxed">
             {opp.description}
           </p>

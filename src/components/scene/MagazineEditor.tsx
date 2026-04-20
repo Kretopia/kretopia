@@ -481,6 +481,9 @@ export const MagazineEditor = ({ onClose, onPublished, articleId }: Props) => {
       </div>
 
       <input type="file" accept="image/*" className="hidden" ref={blockFileRef} onChange={handleBlockImageUpload} />
+      </>
+      )}
     </div>
   );
+};
 };

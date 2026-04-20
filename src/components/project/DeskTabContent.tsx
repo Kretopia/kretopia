@@ -160,6 +160,7 @@ export const DeskTabContent = memo(({
       </div>
     )}
   </div>
-));
+  );
+});
 
 DeskTabContent.displayName = "DeskTabContent";

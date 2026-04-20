@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Loader2, Menu, X, PanelRightOpen, FolderKanban } from "lucide-react";
 import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";

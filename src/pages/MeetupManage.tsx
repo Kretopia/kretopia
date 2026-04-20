@@ -13,6 +13,7 @@ import {
   Settings as SettingsIcon, BarChart3, Plus, ArrowLeft, ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
+import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
 
 interface EventRow {
   id: string;

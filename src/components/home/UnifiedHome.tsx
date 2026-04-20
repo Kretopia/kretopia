@@ -140,8 +140,10 @@ export const UnifiedHome = () => {
         supabase.from("credits").select("id", { count: "exact", head: true }),
         supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "active"),
         (async () => {
-          // Country-filtered upcoming events when we know user's country
-          const userCountry = (myProfile as any)?.country || null;
+          // Country-filtered upcoming events (derive country from profile.location: "City, Country")
+          const loc = (myProfile as any)?.location || "";
+          const parts = String(loc).split(",").map((s: string) => s.trim()).filter(Boolean);
+          const userCountry = parts.length > 1 ? parts[parts.length - 1] : null;
           let q = supabase.from("creative_jams")
             .select("id, title, start_time, venue_name, category, cover_image_url, created_by, country")
             .eq("is_public", true)
@@ -150,7 +152,6 @@ export const UnifiedHome = () => {
             .limit(8);
           if (userCountry) q = q.eq("country", userCountry);
           const res = await q;
-          // Fallback to global if country filter returns nothing
           if (userCountry && (!res.data || res.data.length === 0)) {
             return await supabase.from("creative_jams")
               .select("id, title, start_time, venue_name, category, cover_image_url, created_by, country")

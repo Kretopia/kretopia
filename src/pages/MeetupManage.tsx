@@ -54,8 +54,7 @@ const MeetupManage = () => {
         .select("id, title, start_time, venue_name, cover_image_url, is_ticketed, ticket_price, status, total_views, max_participants")
         .eq("created_by", user.id)
         .order("start_time", { ascending: false })
-        .limit(50)
-        .catch(() => ({ data: [] } as any));
+        .limit(50);
       const list = (data as EventRow[]) || [];
       setEvents(list);
       if (list.length && !selectedId) setSelectedId(list[0].id);
@@ -68,9 +67,9 @@ const MeetupManage = () => {
     if (!selectedId) return;
     const loadStats = async () => {
       const [{ count: rsvps }, { count: tickets }, sel] = await Promise.all([
-        supabase.from("jam_participants").select("id", { count: "exact", head: true }).eq("jam_id", selectedId).catch(() => ({ count: 0 } as any)),
-        supabase.from("event_orders" as any).select("id", { count: "exact", head: true }).eq("event_id", selectedId).eq("status", "paid").catch(() => ({ count: 0 } as any)),
-        supabase.from("event_orders" as any).select("amount_total").eq("event_id", selectedId).eq("status", "paid").catch(() => ({ data: [] } as any)),
+        supabase.from("jam_participants").select("id", { count: "exact", head: true }).eq("jam_id", selectedId),
+        supabase.from("event_orders" as any).select("id", { count: "exact", head: true }).eq("event_id", selectedId).eq("status", "paid"),
+        supabase.from("event_orders" as any).select("amount_total").eq("event_id", selectedId).eq("status", "paid"),
       ]);
       const revenue = ((sel as any).data || []).reduce((a: number, r: any) => a + (Number(r.amount_total) || 0), 0);
       const ev = events.find(e => e.id === selectedId);
@@ -263,8 +262,7 @@ const AttendeesTab = ({ eventId }: { eventId: string }) => {
         .select("id, user_id, status, created_at, profiles:user_id(full_name, avatar_url, username)")
         .eq("jam_id", eventId)
         .order("created_at", { ascending: false })
-        .limit(200)
-        .catch(() => ({ data: [] } as any));
+        .limit(200);
       setList((data as any[]) || []);
       setLoading(false);
     })();
@@ -300,8 +298,7 @@ const BlastsTab = ({ eventId }: { eventId: string }) => {
         .from("event_blasts" as any)
         .select("*")
         .eq("event_id", eventId)
-        .order("created_at", { ascending: false })
-        .catch(() => ({ data: [] } as any));
+        .order("created_at", { ascending: false });
       setBlasts((data as any[]) || []);
       setLoading(false);
     })();
@@ -350,8 +347,7 @@ const TicketsTab = ({ eventId }: { eventId: string }) => {
         .from("event_ticket_tiers" as any)
         .select("*")
         .eq("event_id", eventId)
-        .order("position", { ascending: true })
-        .catch(() => ({ data: [] } as any));
+        .order("position", { ascending: true });
       setTiers((data as any[]) || []);
       setLoading(false);
     })();

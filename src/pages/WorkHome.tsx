@@ -420,40 +420,31 @@ const CreatorWorkHome = () => {
           )}
         </Widget>
 
-        {/* Your Gigs - summary only, manage is on the Gigs tab */}
-        <Widget title="Your Gigs" icon={Briefcase}>
-          {activeGigs.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-2">No open gig listings</p>
-          ) : (
-            <div className="space-y-2">
-              {activeGigs.slice(0, 3).map((g) => (
-                <div key={g.id} className="flex flex-col gap-1 p-2.5 rounded-lg hover:bg-accent/30 cursor-pointer transition-all" onClick={() => navigate(`/opportunity/${g.id}`)}>
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="h-3.5 w-3.5 text-[hsl(var(--mode-accent))] shrink-0" />
-                    <span className="text-sm font-medium truncate">{g.title}</span>
-                  </div>
-                  {g.compensation && (
-                    <p className="text-[10px] text-muted-foreground truncate pl-5.5">{g.compensation}</p>
-                  )}
-                </div>
-              ))}
+        {/* Compact shortcuts to Gigs & ThrivePay — sub to projects */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card
+            className="p-3 cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all"
+            onClick={() => navigate("/manage-opportunities")}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Briefcase className="h-3.5 w-3.5 text-[hsl(var(--mode-accent))]" />
+              <span className="text-xs font-bold uppercase tracking-wider">Gigs</span>
             </div>
-          )}
-        </Widget>
-
-        {/* ThrivePay Glance */}
-        <Widget title="ThrivePay" icon={Wallet} action={{ label: "Details", path: "/thrivepay" }}>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="text-center p-2 rounded-lg bg-accent/20">
-              <p className="text-lg font-bold">${earnings.pending.toLocaleString()}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Pending</p>
+            <p className="text-xl font-black tracking-tight">{activeGigs.length}</p>
+            <p className="text-[10px] text-muted-foreground">Open listings</p>
+          </Card>
+          <Card
+            className="p-3 cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all"
+            onClick={() => navigate("/thrivepay")}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <Wallet className="h-3.5 w-3.5 text-[hsl(var(--mode-accent))]" />
+              <span className="text-xs font-bold uppercase tracking-wider">ThrivePay</span>
             </div>
-            <div className="text-center p-2 rounded-lg bg-accent/20">
-              <p className="text-lg font-bold">${earnings.total.toLocaleString()}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Earned</p>
-            </div>
-          </div>
-        </Widget>
+            <p className="text-xl font-black tracking-tight">${earnings.pending.toLocaleString()}</p>
+            <p className="text-[10px] text-muted-foreground">Pending payout</p>
+          </Card>
+        </div>
 
         {/* Recent Activity */}
         {recentActivity.length > 0 && (

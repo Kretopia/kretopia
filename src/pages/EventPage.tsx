@@ -27,6 +27,7 @@ import { EventComments } from "@/components/sessions/EventComments";
 import { EventCohosts } from "@/components/sessions/EventCohosts";
 import { EventRecapButton } from "@/components/sessions/EventRecapButton";
 import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
+import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";
 import { APP_URL } from "@/lib/constants";
 
 const CATEGORY_LABELS: Record<string, string> = {

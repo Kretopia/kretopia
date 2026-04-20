@@ -223,6 +223,8 @@ const MeetupManage = () => {
           </div>
         )}
       </div>
+
+      <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={reload} />
     </div>
   );
 };

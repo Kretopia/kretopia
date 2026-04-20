@@ -59,6 +59,7 @@ export const DeskTabContent = memo(({
     {activeTab === "today" && (
       <TodayWorkspace
         projectId={projectId}
+        isPro={isPro}
         tasks={tasks}
         messages={messages}
         files={files}

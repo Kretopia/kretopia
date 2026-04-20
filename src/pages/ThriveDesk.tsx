@@ -8,6 +8,7 @@ import { WorkspaceQuickPanel } from "@/components/project/WorkspaceQuickPanel";
 import { DeskTabBar } from "@/components/project/DeskTabBar";
 import { ConfirmCreditBanner } from "@/components/project/ConfirmCreditBanner";
 import { DeskTabContent } from "@/components/project/DeskTabContent";
+import { DeskAILauncher } from "@/components/project/ai/DeskAILauncher";
 import { useProjectData } from "@/hooks/useProjectData";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -166,6 +167,11 @@ const ThriveDesk = () => {
           )}
         </div>
       </div>
+
+      {/* Floating AI Assistant — available on every tab */}
+      {user && projectId && (
+        <DeskAILauncher projectId={projectId} userId={user.id} isPro={isPro} />
+      )}
     </div>
   );
 };

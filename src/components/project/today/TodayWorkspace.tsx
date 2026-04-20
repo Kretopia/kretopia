@@ -1,9 +1,11 @@
 import { TodayTasksPanel } from "./TodayTasksPanel";
 import { TodayActivityFeed } from "./TodayActivityFeed";
+import { DeskAISuggestions } from "@/components/project/ai/DeskAISuggestions";
 import type { Collaborator } from "@/hooks/useProjectData";
 
 interface TodayWorkspaceProps {
   projectId: string;
+  isPro: boolean;
   tasks: any[];
   messages: any[];
   files: any[];
@@ -16,6 +18,7 @@ interface TodayWorkspaceProps {
 
 export const TodayWorkspace = ({
   projectId,
+  isPro,
   tasks,
   messages,
   files,
@@ -26,16 +29,19 @@ export const TodayWorkspace = ({
   onNavigateToTab,
 }: TodayWorkspaceProps) => (
   <div className="h-full min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-3 p-3">
-    {/* Left: Today / Up Next tasks */}
-    <div className="rounded-xl border border-border bg-card/40 overflow-hidden min-h-[60vh] lg:min-h-0">
-      <TodayTasksPanel
-        projectId={projectId}
-        tasks={tasks}
-        collaborators={collaborators}
-        currentUserId={currentUserId}
-        onUpdate={onUpdate}
-        onSeeAll={() => onNavigateToTab("tasks")}
-      />
+    {/* Left: Today / Up Next tasks + AI suggestions on top */}
+    <div className="flex flex-col gap-3 min-h-[60vh] lg:min-h-0">
+      <DeskAISuggestions projectId={projectId} isPro={isPro} />
+      <div className="rounded-xl border border-border bg-card/40 overflow-hidden flex-1 min-h-[40vh] lg:min-h-0">
+        <TodayTasksPanel
+          projectId={projectId}
+          tasks={tasks}
+          collaborators={collaborators}
+          currentUserId={currentUserId}
+          onUpdate={onUpdate}
+          onSeeAll={() => onNavigateToTab("tasks")}
+        />
+      </div>
     </div>
 
     {/* Right: Activity feed */}

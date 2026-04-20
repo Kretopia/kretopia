@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Loader2, Menu, X, PanelRightOpen, FolderKanban } from "lucide-react";
 import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";
@@ -19,9 +19,18 @@ const ThriveDesk = () => {
     projects, userRole, isPro, user, fetchProjectData,
   } = useProjectData(projectId);
 
-  const [activeTab, setActiveTab] = useState("messages");
+  const [activeTab, setActiveTab] = useState("today");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (typeof detail === "string") setActiveTab(detail);
+    };
+    window.addEventListener("thrivedesk:set-tab", handler);
+    return () => window.removeEventListener("thrivedesk:set-tab", handler);
+  }, []);
 
   if (loading) {
     return (

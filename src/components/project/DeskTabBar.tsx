@@ -1,9 +1,10 @@
 import { memo } from "react";
-import { MessageSquare, CheckSquare, FolderOpen, LayoutGrid, CheckCircle2, Wallet, Shield, FileSignature, StickyNote } from "lucide-react";
+import { Sparkles, MessageSquare, CheckSquare, FolderOpen, LayoutGrid, CheckCircle2, Wallet, Shield, FileSignature, StickyNote } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const DESK_TABS = [
-  { id: "messages", label: "Chat", icon: MessageSquare, accent: true },
+  { id: "today", label: "Today", icon: Sparkles, accent: true },
+  { id: "messages", label: "Chat", icon: MessageSquare },
   { id: "tasks", label: "Tasks", icon: CheckSquare },
   { id: "files", label: "Files", icon: FolderOpen },
   { id: "notes", label: "Notes", icon: StickyNote },

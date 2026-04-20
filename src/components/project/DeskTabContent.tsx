@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { TodayWorkspace } from "@/components/project/today/TodayWorkspace";
 import { FileBrowser } from "@/components/project/files/FileBrowser";
 import { TaskBoard } from "@/components/project/TaskBoard";
 import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
@@ -48,8 +49,27 @@ export const DeskTabContent = memo(({
   userRole,
   isPro,
   onUpdate,
-}: DeskTabContentProps) => (
-  <div className={cn("flex-1 min-h-0 min-w-0", activeTab === "messages" ? "flex flex-col" : "overflow-y-auto")}>
+}: DeskTabContentProps) => {
+  const setTab = (tab: string) => {
+    // dispatch via custom event so parent can pick it up without prop drilling
+    window.dispatchEvent(new CustomEvent("thrivedesk:set-tab", { detail: tab }));
+  };
+  return (
+  <div className={cn("flex-1 min-h-0 min-w-0", activeTab === "messages" || activeTab === "today" ? "flex flex-col" : "overflow-y-auto")}>
+    {activeTab === "today" && (
+      <TodayWorkspace
+        projectId={projectId}
+        tasks={tasks}
+        messages={messages}
+        files={files}
+        milestones={milestones}
+        collaborators={collaborators}
+        currentUserId={currentUserId}
+        onUpdate={onUpdate}
+        onNavigateToTab={setTab}
+      />
+    )}
+
     {activeTab === "messages" && (
       <SimpleProjectChat
         projectId={projectId}
@@ -140,6 +160,7 @@ export const DeskTabContent = memo(({
       </div>
     )}
   </div>
-));
+  );
+});
 
 DeskTabContent.displayName = "DeskTabContent";

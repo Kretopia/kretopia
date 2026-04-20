@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { SocialShareButtons } from "@/components/SocialShareButtons";
 import { motion } from "framer-motion";
 import { coverImageStyle } from "./CoverImageEditor";
+import { cn } from "@/lib/utils";
 
 interface Article {
   id: string;

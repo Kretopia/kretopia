@@ -64,6 +64,41 @@ export const SpotlightFeedRow = () => {
       </div>
 
       <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 snap-x snap-mandatory">
+        {/* Podcast CTA card — shown first for visibility */}
+        <motion.div
+          initial={{ opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="shrink-0 w-[78%] sm:w-[300px] snap-start"
+        >
+          <Link
+            to="/spotlight?tab=podcast"
+            className="block h-full rounded-2xl overflow-hidden border border-primary/40 bg-gradient-to-br from-primary/30 via-primary/15 to-accent/20 hover:border-primary transition-all shadow-sm hover:shadow-md group relative"
+          >
+            <div className="aspect-[16/10] relative flex items-center justify-center overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.4),transparent_70%)]" />
+              <div className="h-14 w-14 rounded-full bg-primary/30 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform border border-primary/50 relative z-10">
+                <Headphones className="h-7 w-7 text-primary-foreground" />
+              </div>
+              <div className="absolute top-2 left-2">
+                <Badge className="bg-background/90 backdrop-blur-sm text-foreground border-0 text-[10px] font-semibold gap-1">
+                  <Headphones className="h-2.5 w-2.5" />
+                  Podcast
+                </Badge>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-background via-background/80 to-transparent">
+                <p className="text-foreground text-sm font-bold leading-tight">Discover A Thriver</p>
+                <p className="text-[11px] text-muted-foreground line-clamp-1">Conversations with creators making it happen</p>
+              </div>
+            </div>
+            <div className="p-3 flex items-center justify-between">
+              <span className="text-[10px] text-muted-foreground">New episodes weekly</span>
+              <span className="inline-flex items-center gap-1 text-[10px] text-primary font-semibold group-hover:gap-1.5 transition-all">
+                Listen <ArrowRight className="h-3 w-3" />
+              </span>
+            </div>
+          </Link>
+        </motion.div>
+
         {articles.map((a, i) => (
           <motion.div
             key={a.id}
@@ -132,34 +167,6 @@ export const SpotlightFeedRow = () => {
           </motion.div>
         ))}
 
-        {/* Podcast CTA card */}
-        <motion.div
-          initial={{ opacity: 0, x: 12 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: articles.length * 0.05 }}
-          className="shrink-0 w-[60%] sm:w-[220px] snap-start"
-        >
-          <Link
-            to="/spotlight?tab=podcast"
-            className="block h-full rounded-2xl overflow-hidden border border-border/50 bg-gradient-to-br from-primary/80 via-primary/60 to-accent/50 hover:border-primary transition-all shadow-sm hover:shadow-md group relative"
-          >
-            <div className="aspect-[16/10] relative flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-              <div className="h-12 w-12 rounded-full bg-white/25 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Headphones className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="p-3 bg-card">
-              <p className="text-xs font-bold text-foreground mb-0.5">Discover A Thriver</p>
-              <p className="text-[10px] text-muted-foreground line-clamp-2 mb-1.5">
-                Conversations with creators making it happen.
-              </p>
-              <span className="inline-flex items-center gap-1 text-[10px] text-primary font-semibold">
-                Listen <ArrowRight className="h-3 w-3" />
-              </span>
-            </div>
-          </Link>
-        </motion.div>
       </div>
     </section>
   );

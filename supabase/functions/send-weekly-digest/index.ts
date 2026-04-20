@@ -262,11 +262,23 @@ const handler = async (req: Request): Promise<Response> => {
       if (!recipient) {
         return new Response(JSON.stringify({ error: "No recipient" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+      // Look up recipient's first name from profiles (same as full send)
+      let previewName = "Creative";
+      const { data: recipientUser } = await supabaseAdmin.auth.admin.listUsers();
+      const matchedUser = recipientUser?.users?.find((u: any) => u.email?.toLowerCase() === recipient.toLowerCase());
+      if (matchedUser) {
+        const { data: prof } = await supabaseAdmin
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", matchedUser.id)
+          .maybeSingle();
+        if (prof?.full_name) previewName = prof.full_name.split(" ")[0];
+      }
       const { error } = await resend.emails.send({
         from: "ThriveIN <noreply@thrivein.io>",
         to: [recipient],
         subject: `[PREVIEW] ${subjectLine}`,
-        html: buildEmailHtml("Founder"),
+        html: buildEmailHtml(previewName),
       });
       if (error) throw error;
       return new Response(JSON.stringify({ success: true, preview: true, sent_to: recipient }), {

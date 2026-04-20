@@ -64,9 +64,10 @@ const getAiMatchScore = (id: string): number => {
 interface GigCardProps {
   opportunity: GigOpportunity;
   creator?: GigCreatorProfile | null;
+  compact?: boolean;
 }
 
-const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
+const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) => {
   const navigate = useNavigate();
   const config = TYPE_CONFIG[opp.type] || TYPE_CONFIG.job;
   const TypeIcon = config.icon;
@@ -232,7 +233,7 @@ const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
         </h3>
 
         {/* Description */}
-        {opp.description && (
+        {!compact && opp.description && (
           <p className="text-sm text-muted-foreground line-clamp-2 mt-2 leading-relaxed">
             {opp.description}
           </p>
@@ -277,7 +278,7 @@ const GigCard = ({ opportunity: opp, creator }: GigCardProps) => {
         )}
 
         {/* Skills */}
-        {opp.skills && opp.skills.length > 0 && (
+        {!compact && opp.skills && opp.skills.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-4">
             {opp.skills.slice(0, 4).map(skill => (
               <span key={skill} className="text-[10px] px-2 py-0.5 rounded-md bg-muted/50 text-muted-foreground border border-border/60">

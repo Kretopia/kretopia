@@ -8,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Loader2, ImagePlus, Sparkles, Upload, Plus, Type, Image, Quote, Trash2, GripVertical, MoveUp, MoveDown, Eye, Wand2 } from "lucide-react";
+import { ArrowLeft, Loader2, ImagePlus, Sparkles, Upload, Plus, Type, Image, Quote, Trash2, GripVertical, MoveUp, MoveDown, Eye, Wand2, Wand, X } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { CoverImageEditor, coverImageStyle } from "./CoverImageEditor";
+import { MagicComposeDialog } from "./MagicComposeDialog";
 
 interface Props {
   onClose: () => void;

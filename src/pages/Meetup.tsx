@@ -47,45 +47,46 @@ const Meetup = () => {
   const [hostingCount, setHostingCount] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
+  const load = async () => {
+    setLoading(true);
+    try {
+      if (user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("location")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const loc = prof?.location || "";
+        const parts = loc.split(",").map((s: string) => s.trim()).filter(Boolean);
+        setMyCountry(parts.length > 1 ? parts[parts.length - 1] : null);
 
-      try {
-        if (user) {
-          const { data: prof } = await supabase
-            .from("profiles")
-            .select("location")
-            .eq("user_id", user.id)
-            .maybeSingle();
-          const loc = prof?.location || "";
-          const parts = loc.split(",").map((s: string) => s.trim()).filter(Boolean);
-          setMyCountry(parts.length > 1 ? parts[parts.length - 1] : null);
-
-          const { count } = await supabase
-            .from("creative_jams")
-            .select("id", { count: "exact", head: true })
-            .eq("created_by", user.id)
-            .gte("start_time", new Date().toISOString());
-          setHostingCount(count || 0);
-        }
-
-        const { data } = await supabase
+        const { count } = await supabase
           .from("creative_jams")
-          .select("id, title, description, start_time, end_time, venue_name, venue_address, category, cover_image_url, is_ticketed, ticket_price, ticket_currency, max_participants, country, created_by, tags")
-          .eq("is_public", true)
-          .gte("start_time", new Date().toISOString())
-          .order("start_time", { ascending: true })
-          .limit(100);
-
-        setEvents((data as EventRow[]) || []);
-      } catch (err) {
-        console.error("[Meetup] load failed", err);
-      } finally {
-        setLoading(false);
+          .select("id", { count: "exact", head: true })
+          .eq("created_by", user.id)
+          .gte("start_time", new Date().toISOString());
+        setHostingCount(count || 0);
       }
-    };
+
+      const { data } = await supabase
+        .from("creative_jams")
+        .select("id, title, description, start_time, end_time, venue_name, venue_address, category, cover_image_url, is_ticketed, ticket_price, ticket_currency, max_participants, country, created_by, tags")
+        .eq("is_public", true)
+        .gte("start_time", new Date().toISOString())
+        .order("start_time", { ascending: true })
+        .limit(100);
+
+      setEvents((data as EventRow[]) || []);
+    } catch (err) {
+      console.error("[Meetup] load failed", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const filtered = useMemo(() => {

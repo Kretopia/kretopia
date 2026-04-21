@@ -1,11 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Eye, ExternalLink } from "lucide-react";
+import { ArrowLeft, Clock, Eye, ExternalLink, Pencil } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import { Link } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useState } from "react";
+import { MagazineEditor } from "./MagazineEditor";
 
 // Ensure paragraphs are separated by blank lines so ReactMarkdown produces
 // distinct <p> tags (with margin) instead of one giant paragraph with <br>.

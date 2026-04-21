@@ -152,8 +152,9 @@ async function checkAndProvisionUser(
           } else {
             console.error("[claim] credit insert error:", insErr);
           }
+        }
+      }
     }
-  }
   }
 
   // 5. Send magic link (works for both new + existing users)
@@ -167,7 +168,7 @@ async function checkAndProvisionUser(
     throw new Error("Couldn't send magic link");
   }
 
-  return isNewUser;
+  return { is_new_user: isNewUser, conflicts: conflicts.length ? conflicts : undefined };
 }
 
 function json(body: unknown, status = 200) {

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, ArrowRight, Loader2, Sparkles, X, ExternalLink, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CreditThumb } from "./CreditThumb";
+import { cn } from "@/lib/utils";
 import type { ClaimedCredit, DraftProfile } from "./types";
 
 /** Heuristic: looks like a real person name (2+ capitalized words, no slashes/dashes). */

@@ -1,8 +1,7 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Image as ImageIcon, Link2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Image as ImageIcon, Link2, ExternalLink, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CreditThumb } from "./CreditThumb";
 import type { ClaimedCredit, WebCreditResult } from "./types";
@@ -15,13 +14,13 @@ interface Props {
   onPasteLink: () => void;
 }
 
-/** Step 2: hybrid card+list selector. Top 3 as posters, rest as checklist. */
+/** Step 2: Larger verifiable cards (2 per row) with thumbnail, source URL, and external link. */
 export const DisambiguationStep = ({ results, query, onBack, onConfirm, onPasteLink }: Props) => {
   const items: ClaimedCredit[] = useMemo(
     () => results.map((r, i) => ({ ...r, _id: `${i}-${r.title}` })),
     [results]
   );
-  const [selected, setSelected] = useState<Set<string>>(new Set(items.slice(0, 3).map((i) => i._id)));
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const toggle = (id: string) =>
     setSelected((prev) => {
@@ -56,12 +55,18 @@ export const DisambiguationStep = ({ results, query, onBack, onConfirm, onPasteL
     );
   }
 
-  const top = items.slice(0, 3);
-  const rest = items.slice(3);
-
   const confirm = () => {
     const chosen = items.filter((i) => selected.has(i._id));
     onConfirm(chosen);
+  };
+
+  const prettyHost = (url?: string) => {
+    if (!url) return null;
+    try {
+      return new URL(url).hostname.replace(/^www\./, "");
+    } catch {
+      return null;
+    }
   };
 
   return (
@@ -69,91 +74,96 @@ export const DisambiguationStep = ({ results, query, onBack, onConfirm, onPasteL
       <div className="space-y-1">
         <h2 className="text-xl font-bold">Which of these are yours?</h2>
         <p className="text-sm text-muted-foreground">
-          We'll only add what you confirm — no fake credits.
+          Tap to verify each one is really you — open the source link if unsure. We only add what you confirm.
         </p>
       </div>
 
-      {/* Poster cards — top 3 */}
-      <div className="grid grid-cols-3 gap-2">
-        {top.map((item) => {
+      <div className="grid grid-cols-2 gap-3">
+        {items.map((item) => {
           const isSel = selected.has(item._id);
+          const host = prettyHost(item.url);
           return (
-            <button
+            <div
               key={item._id}
-              type="button"
-              onClick={() => toggle(item._id)}
               className={cn(
-                "relative aspect-[2/3] rounded-lg overflow-hidden border-2 text-left transition-all",
-                isSel ? "border-primary ring-2 ring-primary/30" : "border-border opacity-70"
+                "relative rounded-xl overflow-hidden border-2 bg-card transition-all flex flex-col",
+                isSel ? "border-primary ring-2 ring-primary/30" : "border-border"
               )}
             >
-              <CreditThumb
-                src={item.thumbnail}
-                title={item.title}
-                platform={item.platform || item.source_name}
-                className="absolute inset-0 w-full h-full"
-                iconClassName="h-7 w-7"
-              />
-              {item.platform && (
-                <span className="absolute top-1.5 left-1.5 text-[9px] font-semibold uppercase tracking-wide bg-background/70 backdrop-blur px-1.5 py-0.5 rounded">
-                  {item.platform}
-                </span>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-2">
-                <p className="text-xs font-semibold line-clamp-2 leading-tight">{item.title}</p>
+              <button
+                type="button"
+                onClick={() => toggle(item._id)}
+                className="relative aspect-video w-full overflow-hidden text-left"
+                aria-pressed={isSel}
+              >
+                <CreditThumb
+                  src={item.thumbnail}
+                  title={item.title}
+                  platform={item.platform || item.source_name}
+                  className="absolute inset-0 w-full h-full"
+                  iconClassName="h-8 w-8"
+                />
+                {item.platform && (
+                  <span className="absolute top-1.5 left-1.5 text-[9px] font-semibold uppercase tracking-wide bg-background/80 backdrop-blur px-1.5 py-0.5 rounded">
+                    {item.platform}
+                  </span>
+                )}
+                <div
+                  className={cn(
+                    "absolute top-1.5 right-1.5 h-6 w-6 rounded-full flex items-center justify-center transition-all",
+                    isSel
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-background/80 backdrop-blur border border-border"
+                  )}
+                >
+                  {isSel && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => toggle(item._id)}
+                className="flex-1 p-2.5 text-left space-y-1"
+              >
+                <p className="text-sm font-semibold leading-tight line-clamp-2">{item.title}</p>
                 {item.role_suggestion && (
-                  <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
+                  <p className="text-[11px] text-muted-foreground line-clamp-1">
                     {item.role_suggestion}
                     {item.year ? ` · ${item.year}` : ""}
                   </p>
                 )}
-              </div>
-              {isSel && (
-                <div className="absolute top-1.5 right-1.5 h-5 w-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-                  ✓
+                {item.description && (
+                  <p className="text-[11px] text-muted-foreground/80 line-clamp-2 leading-snug">
+                    {item.description}
+                  </p>
+                )}
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  {item.source_name && (
+                    <Badge variant="outline" className="text-[9px] py-0 h-4 px-1.5">
+                      via {item.source_name}
+                    </Badge>
+                  )}
                 </div>
+              </button>
+
+              {item.url && (
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center justify-between gap-1 px-2.5 py-1.5 border-t border-border bg-muted/30 hover:bg-muted/60 text-[11px] font-medium text-primary transition-colors"
+                >
+                  <span className="truncate">{host || "Open source"}</span>
+                  <ExternalLink className="h-3 w-3 shrink-0" />
+                </a>
               )}
-            </button>
+            </div>
           );
         })}
       </div>
 
-      {/* Checklist — rest */}
-      {rest.length > 0 && (
-        <div className="space-y-1.5 max-h-64 overflow-y-auto rounded-lg border border-border bg-card/50 p-2">
-          {rest.map((item) => {
-            const isSel = selected.has(item._id);
-            return (
-              <label
-                key={item._id}
-                className={cn(
-                  "flex items-start gap-3 p-2 rounded-md cursor-pointer transition-colors hover:bg-muted/50",
-                  isSel && "bg-primary/5"
-                )}
-              >
-                <Checkbox checked={isSel} onCheckedChange={() => toggle(item._id)} className="mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium line-clamp-1">{item.title}</p>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    {item.role_suggestion && (
-                      <span className="text-xs text-muted-foreground line-clamp-1">
-                        {item.role_suggestion}
-                      </span>
-                    )}
-                    {item.year && <Badge variant="outline" className="text-[10px] py-0 h-4">{item.year}</Badge>}
-                    {item.source_name && (
-                      <span className="text-[10px] text-muted-foreground/70">via {item.source_name}</span>
-                    )}
-                  </div>
-                </div>
-              </label>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="flex gap-2 pt-1">
+      <div className="flex gap-2 pt-1 sticky bottom-0 bg-background pb-1">
         <Button variant="outline" onClick={onBack} size="lg">
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -163,8 +173,10 @@ export const DisambiguationStep = ({ results, query, onBack, onConfirm, onPasteL
           className="flex-1"
           size="lg"
         >
-          Continue with {selected.size} {selected.size === 1 ? "credit" : "credits"}
-          <ArrowRight className="ml-2 h-4 w-4" />
+          {selected.size === 0
+            ? "Select what's yours"
+            : `Continue with ${selected.size} ${selected.size === 1 ? "credit" : "credits"}`}
+          {selected.size > 0 && <ArrowRight className="ml-2 h-4 w-4" />}
         </Button>
       </div>
     </div>

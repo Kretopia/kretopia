@@ -1,11 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Eye, ExternalLink } from "lucide-react";
+import { ArrowLeft, Clock, Eye, ExternalLink, Pencil } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import { Link } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useState } from "react";
+import { MagazineEditor } from "./MagazineEditor";
 
 // Ensure paragraphs are separated by blank lines so ReactMarkdown produces
 // distinct <p> tags (with margin) instead of one giant paragraph with <br>.
@@ -52,6 +55,19 @@ interface Props {
 }
 
 export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, isAuthenticated = true }: Props) => {
+  const { isEditorOrAdmin } = useUserRole();
+  const [showEditor, setShowEditor] = useState(false);
+
+  if (showEditor) {
+    return (
+      <MagazineEditor
+        articleId={article.id}
+        onClose={() => setShowEditor(false)}
+        onPublished={() => { setShowEditor(false); onBack(); }}
+      />
+    );
+  }
+
   const articleSlugOrId = article.slug || article.id;
   const shareUrl = `https://www.thrivein.io/magazine/${articleSlugOrId}`;
   const socialShareUrl = `https://www.thrivein.io/share/magazine/${articleSlugOrId}/`;
@@ -119,6 +135,18 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
           Back
         </Button>
         <div className="flex items-center gap-1">
+          {isEditorOrAdmin && !isPublicPage && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setShowEditor(true)}
+              title="Edit article"
+              aria-label="Edit article"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
           {article.slug && (
             <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
               <a href={shareUrl} target="_blank" rel="noopener noreferrer">

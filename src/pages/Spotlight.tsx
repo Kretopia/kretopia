@@ -53,7 +53,7 @@ const Spotlight = () => {
           <PageHeader
             eyebrow="The Spotlight"
             title="Stories worth pressing play on"
-            subtitle="Features, interviews, and sounds from the Thriver universe."
+            subtitle="Articles and podcast episodes from the Thriver universe."
             icon={Sparkles}
             size="sm"
           />

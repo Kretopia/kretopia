@@ -35,7 +35,6 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
   const [building, setBuilding] = useState(true);
   const [profile, setProfile] = useState<DraftProfile>({});
   const [credits, setCredits] = useState<ClaimedCredit[]>(selectedCredits);
-  const [editingName, setEditingName] = useState(false);
 
   // Best guess at a person name: only accept the query itself if it looks like one.
   // Never fall back to a role word ("Artist", "DJ/Producer").

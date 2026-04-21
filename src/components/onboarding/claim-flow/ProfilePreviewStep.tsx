@@ -91,10 +91,21 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-primary" />
-        <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-          Your profile preview
+      {/* Clear instruction header */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+            Step 3 of 4 · Review &amp; edit
+          </p>
+        </div>
+        <h2 className="text-xl font-bold leading-tight">
+          {needsName ? "Add your name to continue" : "Does this look right?"}
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          {needsName
+            ? "We couldn't detect your name from the search — type it below. You can also tweak your role, bio, and credits."
+            : "Edit anything by tapping it. When you're happy, save and we'll send a magic link to your email."}
         </p>
       </div>
 
@@ -103,37 +114,46 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
         <div className="flex items-start gap-3">
           <Avatar className="h-16 w-16 ring-2 ring-primary/20">
             <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
-            <AvatarFallback>{profile.full_name?.charAt(0) || "?"}</AvatarFallback>
+            <AvatarFallback className="text-lg font-bold">
+              {profile.full_name?.trim().charAt(0).toUpperCase() || "?"}
+            </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0 space-y-1">
-            {editingName ? (
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="space-y-1">
+              <Label className="text-[11px] uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+                Your name
+                {needsName && <span className="text-destructive">*</span>}
+              </Label>
+              <div className="relative">
+                <Input
+                  value={profile.full_name || ""}
+                  onChange={(e) => setProfile((p) => ({ ...p, full_name: e.target.value }))}
+                  placeholder="e.g. Fernando Lavado"
+                  className={cn(
+                    "h-9 text-base font-semibold pr-8",
+                    needsName && "border-primary ring-2 ring-primary/30"
+                  )}
+                  autoFocus={needsName}
+                />
+                <Pencil className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Your role
+              </Label>
               <Input
-                value={profile.full_name || ""}
-                onChange={(e) => setProfile((p) => ({ ...p, full_name: e.target.value }))}
-                onBlur={() => setEditingName(false)}
-                autoFocus
-                className="h-8 text-base font-bold"
+                value={profile.role || ""}
+                onChange={(e) => setProfile((p) => ({ ...p, role: e.target.value }))}
+                placeholder="e.g. Director, Producer, Designer"
+                className="h-9 text-sm"
               />
-            ) : (
-              <button
-                type="button"
-                onClick={() => setEditingName(true)}
-                className="text-left font-bold text-lg leading-tight hover:underline decoration-dotted"
-              >
-                {profile.full_name || "Your name"}
-              </button>
-            )}
-            <Input
-              value={profile.role || ""}
-              onChange={(e) => setProfile((p) => ({ ...p, role: e.target.value }))}
-              placeholder="Your role (e.g. Director, Producer, Designer)"
-              className="h-8 text-sm"
-            />
+            </div>
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Bio</Label>
+        <div className="space-y-1">
+          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Bio</Label>
           <Textarea
             value={profile.bio || ""}
             onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
@@ -157,7 +177,7 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
       {/* Credits */}
       <div className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {credits.length} verified credit{credits.length === 1 ? "" : "s"}
+          {credits.length} verified credit{credits.length === 1 ? "" : "s"} · tap × to remove
         </p>
         <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
           {credits.map((c) => (
@@ -165,15 +185,17 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
               key={c._id}
               className="flex items-center gap-2 rounded-lg border border-border bg-card/60 p-2"
             >
-              {c.thumbnail ? (
-                <img src={c.thumbnail} className="h-10 w-10 rounded object-cover shrink-0" alt="" />
-              ) : (
-                <div className="h-10 w-10 rounded bg-muted shrink-0" />
-              )}
+              <CreditThumb
+                src={c.thumbnail}
+                title={c.title}
+                platform={c.platform || c.source_name}
+                className="h-10 w-10 rounded shrink-0"
+                iconClassName="h-4 w-4"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium line-clamp-1">{c.title}</p>
                 <p className="text-xs text-muted-foreground line-clamp-1">
-                  {c.role_suggestion || "Credit"}
+                  {c.role_suggestion || c.platform || "Credit"}
                   {c.year ? ` · ${c.year}` : ""}
                 </p>
               </div>
@@ -211,11 +233,11 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
         </Button>
         <Button
           onClick={() => onConfirm(profile, credits)}
-          disabled={!profile.full_name?.trim()}
+          disabled={needsName}
           className="flex-1"
           size="lg"
         >
-          Looks good — save it
+          {needsName ? "Add your name to continue" : "Save & send magic link"}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>

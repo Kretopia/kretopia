@@ -55,9 +55,9 @@ Deno.serve(async (req) => {
     }
 
     const cleanRedirect = redirect_to || `${SUPABASE_URL}/profile?claimed=true`;
-    const isNewUser = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect);
+    const result = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect);
 
-    return json({ success: true, is_new_user: isNewUser });
+    return json({ success: true, ...result });
   } catch (err) {
     console.error("[claim-and-create-profile] error:", err);
     return json({ error: err instanceof Error ? err.message : "Unknown error" }, 500);
@@ -70,13 +70,14 @@ async function checkAndProvisionUser(
   profile: DraftProfile,
   credits: ClaimedCredit[],
   redirectTo: string,
-): Promise<boolean> {
+): Promise<{ is_new_user: boolean; conflicts?: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> }> {
   // 1. Check if user already exists
   const { data: existing } = await admin.auth.admin.listUsers();
   const found = existing?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());
 
   let userId: string;
   let isNewUser = false;
+  const conflicts: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> = [];
 
   if (found) {
     // Existing user — DO NOT overwrite their profile. Just send magic link to sign in.
@@ -111,26 +112,48 @@ async function checkAndProvisionUser(
     );
     if (profileErr) console.error("[claim] profile upsert error:", profileErr);
 
-    // 4. Insert credits (verified via web)
+    // 4. Insert credits (verified via web) — one-by-one so we can detect dup conflicts
     if (credits?.length) {
-      const rows = credits.slice(0, 20).map((c) => ({
-        user_id: userId,
-        project_name: c.title.slice(0, 200),
-        role: c.role_suggestion?.slice(0, 100) || profile.role || "Creator",
-        project_type: c.type || null,
-        year: c.year || null,
-        url: c.url || null,
-        thumbnail_url: c.thumbnail || null,
-        primary_media_url: c.thumbnail || null,
-        description: c.description?.slice(0, 500) || null,
-        location: c.location || null,
-        platform: c.platform || null,
-        client_brand: c.client_brand || null,
-        source: "web_verified",
-        verification_status: "verified",
-      }));
-      const { error: creditsErr } = await admin.from("credits").insert(rows);
-      if (creditsErr) console.error("[claim] credits insert error:", creditsErr);
+      for (const c of credits.slice(0, 20)) {
+        const role = c.role_suggestion?.slice(0, 100) || profile.role || "Creator";
+        const row = {
+          user_id: userId,
+          project_name: c.title.slice(0, 200),
+          role,
+          project_type: c.type || null,
+          year: c.year || null,
+          url: c.url || null,
+          thumbnail_url: c.thumbnail || null,
+          primary_media_url: c.thumbnail || null,
+          description: c.description?.slice(0, 500) || null,
+          location: c.location || null,
+          platform: c.platform || null,
+          client_brand: c.client_brand || null,
+          source: "web_verified",
+          verification_status: "verified",
+        };
+        const { error: insErr } = await admin.from("credits").insert(row);
+        if (insErr) {
+          // 23505 = unique_violation → already claimed by someone else
+          if ((insErr as { code?: string }).code === "23505" && c.url) {
+            const { data: existing } = await admin
+              .from("credits")
+              .select("user_id")
+              .ilike("url", c.url)
+              .ilike("role", role)
+              .maybeSingle();
+            conflicts.push({
+              url: c.url,
+              role,
+              title: c.title,
+              existing_owner_id: existing?.user_id as string | undefined,
+            });
+            console.warn(`[claim] duplicate claim blocked for ${c.url} (${role})`);
+          } else {
+            console.error("[claim] credit insert error:", insErr);
+          }
+        }
+      }
     }
   }
 
@@ -145,7 +168,7 @@ async function checkAndProvisionUser(
     throw new Error("Couldn't send magic link");
   }
 
-  return isNewUser;
+  return { is_new_user: isNewUser, conflicts: conflicts.length ? conflicts : undefined };
 }
 
 function json(body: unknown, status = 200) {

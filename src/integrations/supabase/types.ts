@@ -2168,6 +2168,7 @@ export type Database = {
       }
       credit_claim_disputes: {
         Row: {
+          auto_resolve_at: string | null
           challenger_evidence: string | null
           challenger_id: string
           challenger_role: string | null
@@ -2186,6 +2187,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auto_resolve_at?: string | null
           challenger_evidence?: string | null
           challenger_id: string
           challenger_role?: string | null
@@ -2204,6 +2206,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auto_resolve_at?: string | null
           challenger_evidence?: string | null
           challenger_id?: string
           challenger_role?: string | null

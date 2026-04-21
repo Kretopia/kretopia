@@ -2176,6 +2176,8 @@ export type Database = {
           current_owner_id: string
           evidence_urls: string[] | null
           id: string
+          owner_responded_at: string | null
+          owner_response: string | null
           resolution_note: string | null
           resolved_at: string | null
           resolved_by: string | null
@@ -2192,6 +2194,8 @@ export type Database = {
           current_owner_id: string
           evidence_urls?: string[] | null
           id?: string
+          owner_responded_at?: string | null
+          owner_response?: string | null
           resolution_note?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
@@ -2208,6 +2212,8 @@ export type Database = {
           current_owner_id?: string
           evidence_urls?: string[] | null
           id?: string
+          owner_responded_at?: string | null
+          owner_response?: string | null
           resolution_note?: string | null
           resolved_at?: string | null
           resolved_by?: string | null

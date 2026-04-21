@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SearchOrPasteStep } from "./SearchOrPasteStep";
 import { DisambiguationStep } from "./DisambiguationStep";
+import { VerifyMatchesStep } from "./VerifyMatchesStep";
 import { ProfilePreviewStep } from "./ProfilePreviewStep";
 import { EmailSaveStep } from "./EmailSaveStep";
 import type { ClaimContext, ClaimedCredit, DraftProfile, FlowStep, WebCreditResult } from "./types";
@@ -9,8 +10,7 @@ interface Props extends ClaimContext {}
 
 /**
  * Universal Claim Flow orchestrator.
- * One funnel for /auth signup, landing search, gig claim, and event claim.
- * Steps: search → disambiguate → preview → email.
+ * Steps: search → disambiguate → verify → preview → email.
  */
 export const UniversalClaimFlow = ({
   source,
@@ -32,6 +32,20 @@ export const UniversalClaimFlow = ({
 
   const handleConfirmCredits = (chosen: ClaimedCredit[]) => {
     setSelected(chosen);
+    setStep("verify");
+  };
+
+  const handleVerified = (verified: ClaimedCredit[], reportedIds: string[]) => {
+    setSelected(verified);
+    if (reportedIds.length > 0) {
+      try {
+        console.info("[claim-flow] reported wrong matches", {
+          count: reportedIds.length,
+          query,
+          source,
+        });
+      } catch {}
+    }
     setStep("preview");
   };
 
@@ -41,7 +55,6 @@ export const UniversalClaimFlow = ({
     setStep("email");
   };
 
-  // Append context for analytics + post-claim routing
   const finalRedirect =
     redirectAfter ||
     (source === "gig" && contextId
@@ -64,11 +77,18 @@ export const UniversalClaimFlow = ({
           onPasteLink={() => setStep("search")}
         />
       )}
+      {step === "verify" && (
+        <VerifyMatchesStep
+          credits={selected}
+          onBack={() => setStep("disambiguate")}
+          onConfirm={handleVerified}
+        />
+      )}
       {step === "preview" && (
         <ProfilePreviewStep
           query={query}
           selectedCredits={selected}
-          onBack={() => setStep("disambiguate")}
+          onBack={() => setStep("verify")}
           onConfirm={handleConfirmProfile}
         />
       )}

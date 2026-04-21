@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight, Image as ImageIcon, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CreditThumb } from "./CreditThumb";
 import type { ClaimedCredit, WebCreditResult } from "./types";
 
 interface Props {
@@ -86,17 +87,17 @@ export const DisambiguationStep = ({ results, query, onBack, onConfirm, onPasteL
                 isSel ? "border-primary ring-2 ring-primary/30" : "border-border opacity-70"
               )}
             >
-              {item.thumbnail ? (
-                <img
-                  src={item.thumbnail}
-                  alt={item.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
-                  <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
-                </div>
+              <CreditThumb
+                src={item.thumbnail}
+                title={item.title}
+                platform={item.platform || item.source_name}
+                className="absolute inset-0 w-full h-full"
+                iconClassName="h-7 w-7"
+              />
+              {item.platform && (
+                <span className="absolute top-1.5 left-1.5 text-[9px] font-semibold uppercase tracking-wide bg-background/70 backdrop-blur px-1.5 py-0.5 rounded">
+                  {item.platform}
+                </span>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-2">

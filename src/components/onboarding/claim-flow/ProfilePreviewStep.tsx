@@ -1,13 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, X, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, X, ExternalLink, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { CreditThumb } from "./CreditThumb";
 import type { ClaimedCredit, DraftProfile } from "./types";
+
+/** Heuristic: looks like a real person name (2+ capitalized words, no slashes/dashes). */
+const looksLikePersonName = (s?: string) => {
+  if (!s) return false;
+  const t = s.trim();
+  if (t.length < 3 || t.length > 60) return false;
+  if (/[/\\|]/.test(t)) return false;
+  // At least two whitespace-separated words, each starting with a letter
+  const parts = t.split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return false;
+  return parts.every((p) => /^[A-Za-zÀ-ÿ'’\-]{2,}$/.test(p));
+};
 
 interface Props {
   query: string;

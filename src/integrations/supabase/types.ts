@@ -2166,6 +2166,62 @@ export type Database = {
           },
         ]
       }
+      credit_claim_disputes: {
+        Row: {
+          challenger_evidence: string | null
+          challenger_id: string
+          challenger_role: string | null
+          created_at: string
+          credit_id: string
+          current_owner_id: string
+          id: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          source_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          challenger_evidence?: string | null
+          challenger_id: string
+          challenger_role?: string | null
+          created_at?: string
+          credit_id: string
+          current_owner_id: string
+          id?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          challenger_evidence?: string | null
+          challenger_id?: string
+          challenger_role?: string | null
+          created_at?: string
+          credit_id?: string
+          current_owner_id?: string
+          id?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_claim_disputes_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: false
+            referencedRelation: "credits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_comments: {
         Row: {
           content: string

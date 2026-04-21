@@ -51,6 +51,7 @@ const ProjectsList = lazy(() => import("./pages/ProjectsList"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminWeeklyNote = lazy(() => import("./pages/AdminWeeklyNote"));
+const AdminDisputes = lazy(() => import("./pages/AdminDisputes"));
 const Settings = lazy(() => import("./pages/Settings"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentCanceled = lazy(() => import("./pages/PaymentCanceled"));
@@ -314,6 +315,7 @@ const AppContent = () => {
             {/* Admin Routes */}
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/admin/weekly-note" element={<ProtectedRoute><AdminWeeklyNote /></ProtectedRoute>} />
+            <Route path="/admin/disputes" element={<ProtectedRoute><AdminDisputes /></ProtectedRoute>} />
             <Route path="/analytics" element={<Navigate to="/admin" replace />} />
             <Route path="/admin-broadcast" element={<Navigate to="/admin" replace />} />
             <Route path="/waitlist-admin" element={<Navigate to="/admin" replace />} />

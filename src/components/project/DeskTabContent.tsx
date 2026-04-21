@@ -3,8 +3,7 @@ import { TodayWorkspace } from "@/components/project/today/TodayWorkspace";
 import { FileBrowser } from "@/components/project/files/FileBrowser";
 import { TasksWorkspace } from "@/components/project/tasks/TasksWorkspace";
 import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
-import { MilestoneBoard } from "@/components/project/MilestoneBoard";
-import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
+import { FinanceHub } from "@/components/project/finance/FinanceHub";
 import { ProjectNotes } from "@/components/project/ProjectNotes";
 import { AIBriefBuilder } from "@/components/project/AIBriefBuilder";
 import { AIAutomation } from "@/components/project/AIAutomation";
@@ -132,19 +131,15 @@ export const DeskTabContent = memo(({
 
         {activeTab === "finance" && (
           <FreeTierGate feature="milestones" featureLabel="Finance Tools" description="Upgrade to Pro for unlimited milestones, invoices, and project payments.">
-            <div className="space-y-6">
-              <MilestoneBoard
-                milestones={milestones}
-                projectId={projectId}
-                onUpdate={onUpdate}
-                userRole={userRole}
-                collaborators={collaborators}
-                projectOwnerId={project?.created_by}
-              />
-              <div className="flex justify-end">
-                <InvoiceGenerator projectId={projectId} />
-              </div>
-            </div>
+            <FinanceHub
+              projectId={projectId}
+              project={project}
+              milestones={milestones}
+              collaborators={collaborators}
+              currentUserId={currentUserId}
+              userRole={userRole}
+              onUpdate={onUpdate}
+            />
           </FreeTierGate>
         )}
 

@@ -2174,6 +2174,7 @@ export type Database = {
           created_at: string
           credit_id: string
           current_owner_id: string
+          evidence_urls: string[] | null
           id: string
           resolution_note: string | null
           resolved_at: string | null
@@ -2189,6 +2190,7 @@ export type Database = {
           created_at?: string
           credit_id: string
           current_owner_id: string
+          evidence_urls?: string[] | null
           id?: string
           resolution_note?: string | null
           resolved_at?: string | null
@@ -2204,6 +2206,7 @@ export type Database = {
           created_at?: string
           credit_id?: string
           current_owner_id?: string
+          evidence_urls?: string[] | null
           id?: string
           resolution_note?: string | null
           resolved_at?: string | null

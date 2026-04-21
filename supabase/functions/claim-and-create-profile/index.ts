@@ -55,9 +55,9 @@ Deno.serve(async (req) => {
     }
 
     const cleanRedirect = redirect_to || `${SUPABASE_URL}/profile?claimed=true`;
-    const isNewUser = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect);
+    const result = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect);
 
-    return json({ success: true, is_new_user: isNewUser });
+    return json({ success: true, ...result });
   } catch (err) {
     console.error("[claim-and-create-profile] error:", err);
     return json({ error: err instanceof Error ? err.message : "Unknown error" }, 500);

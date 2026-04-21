@@ -70,7 +70,7 @@ async function checkAndProvisionUser(
   profile: DraftProfile,
   credits: ClaimedCredit[],
   redirectTo: string,
-): Promise<boolean> {
+): Promise<{ is_new_user: boolean; conflicts?: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> }> {
   // 1. Check if user already exists
   const { data: existing } = await admin.auth.admin.listUsers();
   const found = existing?.users?.find((u) => u.email?.toLowerCase() === email.toLowerCase());

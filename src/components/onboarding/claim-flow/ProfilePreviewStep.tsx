@@ -36,21 +36,24 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
   const [credits, setCredits] = useState<ClaimedCredit[]>(selectedCredits);
   const [editingName, setEditingName] = useState(false);
 
+  // Best guess at a person name: only accept the query itself if it looks like one.
+  // Never fall back to a role word ("Artist", "DJ/Producer").
+  const seedName = useMemo(() => (looksLikePersonName(query) ? query.trim() : ""), [query]);
+  const needsName = !profile.full_name?.trim();
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        // Use ai-autofill-profile (extractive, web-grounded, no fabrication).
-        const inferredName =
-          /^[A-Z][a-z]+ [A-Z][a-z]+/.test(query) ? query : selectedCredits[0]?.role_suggestion?.split(" ").slice(-2).join(" ") || query;
         const url = selectedCredits.find((c) => c.url && /^https?:\/\//.test(c.url))?.url;
         const { data } = await supabase.functions.invoke("ai-autofill-profile", {
-          body: { full_name: inferredName, url, current_role: selectedCredits[0]?.role_suggestion },
+          body: { full_name: seedName || query, url, current_role: selectedCredits[0]?.role_suggestion },
         });
         if (cancelled) return;
         const p = data?.profile || {};
+        const aiName = looksLikePersonName(p.full_name) ? p.full_name.trim() : "";
         setProfile({
-          full_name: inferredName,
+          full_name: aiName || seedName || "",
           role: p.role || selectedCredits[0]?.role_suggestion || "",
           bio: p.bio || "",
           location: p.location || selectedCredits[0]?.location || "",
@@ -60,7 +63,7 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
         });
       } catch (e) {
         console.warn("[ClaimFlow] enrichment soft-failed", e);
-        setProfile({ full_name: query, role: selectedCredits[0]?.role_suggestion || "" });
+        setProfile({ full_name: seedName, role: selectedCredits[0]?.role_suggestion || "" });
       } finally {
         if (!cancelled) setBuilding(false);
       }
@@ -68,7 +71,7 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
     return () => {
       cancelled = true;
     };
-  }, [query, selectedCredits]);
+  }, [query, selectedCredits, seedName]);
 
   const removeCredit = (id: string) => setCredits((prev) => prev.filter((c) => c._id !== id));
 

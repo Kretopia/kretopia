@@ -1132,6 +1132,66 @@ export type Database = {
           },
         ]
       }
+      circle_guest_rsvps: {
+        Row: {
+          circle_id: string
+          confirm_token: string
+          confirmed_at: string | null
+          created_at: string
+          email: string
+          event_id: string
+          full_name: string | null
+          id: string
+          status: string
+          token_expires_at: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          circle_id: string
+          confirm_token?: string
+          confirmed_at?: string | null
+          created_at?: string
+          email: string
+          event_id: string
+          full_name?: string | null
+          id?: string
+          status?: string
+          token_expires_at?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          circle_id?: string
+          confirm_token?: string
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string
+          event_id?: string
+          full_name?: string | null
+          id?: string
+          status?: string
+          token_expires_at?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_guest_rsvps_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "circle_guest_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       circle_subscriptions: {
         Row: {
           amount: number | null
@@ -9612,6 +9672,20 @@ export type Database = {
           message_count: number
           price_monthly: number | null
           rules: string | null
+          site_about: string | null
+          site_accent_color: string | null
+          site_bio: string | null
+          site_cover_url: string | null
+          site_custom_blocks: Json
+          site_enabled: boolean
+          site_guest_rsvp_enabled: boolean
+          site_headline: string | null
+          site_logo_url: string | null
+          site_show_members: boolean
+          site_show_past_events: boolean
+          site_slug: string | null
+          site_template: string | null
+          site_view_count: number
           title: string
           updated_at: string
           welcome_message: string | null
@@ -9635,6 +9709,20 @@ export type Database = {
           message_count?: number
           price_monthly?: number | null
           rules?: string | null
+          site_about?: string | null
+          site_accent_color?: string | null
+          site_bio?: string | null
+          site_cover_url?: string | null
+          site_custom_blocks?: Json
+          site_enabled?: boolean
+          site_guest_rsvp_enabled?: boolean
+          site_headline?: string | null
+          site_logo_url?: string | null
+          site_show_members?: boolean
+          site_show_past_events?: boolean
+          site_slug?: string | null
+          site_template?: string | null
+          site_view_count?: number
           title: string
           updated_at?: string
           welcome_message?: string | null
@@ -9658,6 +9746,20 @@ export type Database = {
           message_count?: number
           price_monthly?: number | null
           rules?: string | null
+          site_about?: string | null
+          site_accent_color?: string | null
+          site_bio?: string | null
+          site_cover_url?: string | null
+          site_custom_blocks?: Json
+          site_enabled?: boolean
+          site_guest_rsvp_enabled?: boolean
+          site_headline?: string | null
+          site_logo_url?: string | null
+          site_show_members?: boolean
+          site_show_past_events?: boolean
+          site_slug?: string | null
+          site_template?: string | null
+          site_view_count?: number
           title?: string
           updated_at?: string
           welcome_message?: string | null

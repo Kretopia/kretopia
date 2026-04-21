@@ -77,6 +77,7 @@ async function checkAndProvisionUser(
 
   let userId: string;
   let isNewUser = false;
+  const conflicts: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> = [];
 
   if (found) {
     // Existing user — DO NOT overwrite their profile. Just send magic link to sign in.

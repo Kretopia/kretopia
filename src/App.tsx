@@ -40,6 +40,7 @@ const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ViewProfile = lazy(() => import("./pages/ViewProfile"));
 const DisputeCredit = lazy(() => import("./pages/DisputeCredit"));
+const DisputeManage = lazy(() => import("./pages/DisputeManage"));
 
 const Circle = lazy(() => import("./pages/Circle"));
 const CircleDetailPage = lazy(() => import("./pages/CircleDetail"));
@@ -242,6 +243,7 @@ const AppContent = () => {
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}
             <Route path="/profile/:userId" element={<ViewProfile />} />
             <Route path="/dispute/:creditId" element={<ProtectedRoute><DisputeCredit /></ProtectedRoute>} />
+            <Route path="/dispute-manage/:disputeId" element={<ProtectedRoute><DisputeManage /></ProtectedRoute>} />
             <Route path="/epk/:userId" element={<CreatorEPK />} />
             <Route path="/site/:userId" element={<CreatorSite />} />
             <Route path="/website-builder" element={<ProtectedRoute><WebsiteBuilder /></ProtectedRoute>} />

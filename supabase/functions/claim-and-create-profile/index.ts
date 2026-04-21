@@ -39,14 +39,15 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { email, profile, credits, redirect_to } = (await req.json()) as {
+    const { email: rawEmail, profile, credits, redirect_to } = (await req.json()) as {
       email: string;
       profile: DraftProfile;
       credits: ClaimedCredit[];
       redirect_to: string;
     };
 
-    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    const email = (rawEmail || "").trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return json({ error: "Valid email required" }, 400);
     }
     if (!profile?.full_name?.trim()) {

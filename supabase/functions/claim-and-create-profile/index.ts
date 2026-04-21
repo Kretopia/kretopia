@@ -152,15 +152,8 @@ async function checkAndProvisionUser(
           } else {
             console.error("[claim] credit insert error:", insErr);
           }
-        }
-      }
-      // Stash conflicts on user metadata so the client can offer dispute
-      if (conflicts.length) {
-        await admin.auth.admin.updateUserById(userId, {
-          user_metadata: { pending_claim_conflicts: conflicts },
-        });
-      }
     }
+  }
   }
 
   // 5. Send magic link (works for both new + existing users)

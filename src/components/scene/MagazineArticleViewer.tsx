@@ -77,51 +77,6 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
   const normalizedContent = normalizeMarkdown(article.content || "");
   const contentSections = normalizedContent.split(/\n(?=##\s)/).filter(Boolean);
 
-  const inlineImages: Record<string, string[]> = {
-    fashion: [
-      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=80",
-      "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80",
-    ],
-    "art-culture": [
-      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80",
-      "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800&q=80",
-    ],
-    music: [
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&q=80",
-      "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800&q=80",
-    ],
-    film: [
-      "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&q=80",
-      "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&q=80",
-    ],
-    "events-festivals": [
-      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80",
-      "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80",
-    ],
-    photography: [
-      "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=800&q=80",
-      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&q=80",
-    ],
-    business: [
-      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80",
-      "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&q=80",
-    ],
-    inspiration: [
-      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80",
-      "https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&q=80",
-    ],
-    "how-to": [
-      "https://images.unsplash.com/photo-1531545514256-b1400bc00f31?w=800&q=80",
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80",
-    ],
-    spotlight: [
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&q=80",
-      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80",
-    ],
-  };
-
-  const categoryImages = inlineImages[article.category] || inlineImages.inspiration;
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -244,20 +199,6 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
             )}>
               <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{section}</ReactMarkdown>
             </article>
-
-            {(i === 0 || i === 2) && categoryImages[i === 0 ? 0 : 1] && (
-              <figure className="my-10 rounded-xl overflow-hidden">
-                <img
-                  src={categoryImages[i === 0 ? 0 : 1]}
-                  alt={`Visual for ${article.category} — ${article.title}`}
-                  className="w-full aspect-[16/9] object-cover"
-                  loading="lazy"
-                />
-                <figcaption className="text-[11px] text-muted-foreground mt-2 text-center italic font-sans">
-                  ThriveIN Magazine — {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
-                </figcaption>
-              </figure>
-            )}
           </div>
         ))}
 

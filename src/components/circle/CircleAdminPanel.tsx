@@ -38,6 +38,8 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
   const { toast } = useToast();
   const [members, setMembers] = useState<CircleMember[]>([]);
   const [stats, setStats] = useState({ messagesThisWeek: 0, newMembersThisWeek: 0, totalReactions: 0, messagesLastWeek: 0, newMembersLastWeek: 0 });
+  const [eventCount, setEventCount] = useState(0);
+  const [projectCount, setProjectCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<'analytics' | 'members' | 'settings' | 'events' | 'invite'>('analytics');
   const [welcomeMessage, setWelcomeMessage] = useState("");

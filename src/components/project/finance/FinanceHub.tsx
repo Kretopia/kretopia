@@ -322,7 +322,7 @@ export function FinanceHub({
       )}
 
       {/* ============= MILESTONES SECTION ============= */}
-      <div>
+      <div ref={milestonesRef}>
         <SectionHeader
           icon={<DollarSign className="h-4 w-4" />}
           title="Milestones"
@@ -341,7 +341,7 @@ export function FinanceHub({
       </div>
 
       {/* ============= INVOICES SECTION ============= */}
-      <div>
+      <div ref={invoiceTriggerRef}>
         <SectionHeader
           icon={<Receipt className="h-4 w-4" />}
           title="Invoices & Quotes"
@@ -350,12 +350,20 @@ export function FinanceHub({
         />
 
         {invoices.length === 0 ? (
-          <Card className="p-8 text-center mt-3 border-dashed">
+          <Card className="p-8 text-center mt-3 border-2 border-dashed">
             <Receipt className="h-10 w-10 mx-auto mb-3 text-muted-foreground/40" />
-            <p className="font-medium text-sm">No invoices yet</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Bill a milestone above or create one from scratch using the Invoice button.
+            <p className="font-semibold text-sm">Get paid faster</p>
+            <p className="text-xs text-muted-foreground mt-1 mb-4 max-w-sm mx-auto">
+              Request a deposit, set milestones, or send a branded invoice — clients can pay via a share link.
             </p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              <Button size="sm" variant="outline" onClick={() => milestonesRef.current?.scrollIntoView({ behavior: "smooth" })} className="gap-1.5">
+                <DollarSign className="h-3.5 w-3.5" /> Add milestone
+              </Button>
+              <Button size="sm" onClick={() => invoiceTriggerRef.current?.querySelector("button")?.click()} className="gap-1.5">
+                <Receipt className="h-3.5 w-3.5" /> Request deposit
+              </Button>
+            </div>
           </Card>
         ) : (
           <div className="space-y-2 mt-3">

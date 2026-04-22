@@ -6,6 +6,7 @@ import App from "./App.tsx";
 import { initSWUpdateListener } from "./lib/sw-update";
 import { checkForNewVersion } from "./lib/version-check";
 import { setupGlobalErrorLogging } from "./lib/errorLogger";
+import { clearAppServiceWorkerData, isStandalonePWA } from "./lib/serviceWorker";
 import "./i18n";
 import "./index.css";
 
@@ -45,13 +46,14 @@ Sentry.init({
 });
 
 if (!isInIframe && !isPreviewHost) {
-  // VitePWA handles SW registration via registerType: "autoUpdate"
-  // Our listener detects when a new SW activates and force-reloads for freshness
-  initSWUpdateListener();
-
-  // Nuclear cache-bust: compare embedded build hash vs server version.json
-  // If stale, purge ALL caches + unregister SW + hard reload
-  checkForNewVersion();
+  if (isStandalonePWA()) {
+    // Installed app keeps the service worker for offline/push support.
+    initSWUpdateListener();
+    checkForNewVersion();
+  } else {
+    // Browser sessions should never get stuck on stale precached builds after publish.
+    clearAppServiceWorkerData();
+  }
 }
 
 // Log unhandled errors to the database for monitoring

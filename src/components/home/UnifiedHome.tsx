@@ -532,25 +532,29 @@ export const UnifiedHome = () => {
         </div>
       )}
 
-      {/* ═══════════ AUTH HEADER ═══════════ */}
+      {/* ═══════════ AUTH HUB ═══════════ */}
       {user && profile && (
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-11 w-11 border-2 border-primary/30 shadow-md">
-                <AvatarImage src={profile.avatar_url || ""} />
-                <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">{firstName[0]}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-base font-bold text-foreground leading-tight">{greeting}, {firstName}</p>
-                <p className="text-xs text-muted-foreground">{profile.role || "Creative Professional"}</p>
-              </div>
-            </div>
-            <Link to="/messages" className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors">
+          {/* Compact greeting + messages shortcut */}
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-bold text-foreground">{greeting}</span>, {firstName}
+            </p>
+            <Link to="/messages" className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors">
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </Link>
           </div>
 
+          {/* Wave 3: Profile Hub Card */}
+          <ProfileHubCard
+            userId={user.id}
+            profile={profileFull || profile}
+            creditsCount={myCredits}
+            connectionsCount={myConnections}
+            className="mb-4"
+          />
+
+          {/* Search */}
           <p className="text-[11px] text-muted-foreground/70 mb-1.5">
             {t("home.searchHint")}
           </p>
@@ -560,6 +564,7 @@ export const UnifiedHome = () => {
             placeholder={t("landing.searchPlaceholder")}
           />
 
+          {/* Quick stats: live network signals */}
           <div className="grid grid-cols-3 gap-2.5 mb-4">
             {[
               { label: t("home.credits"), value: myCredits, to: "/profile", icon: Database, color: "text-primary" },
@@ -596,15 +601,6 @@ export const UnifiedHome = () => {
               </button>
             ))}
           </div>
-
-          {profileFull && (() => {
-            const completion = checkProfileCompletion(profileFull, myCredits);
-            return completion.percentage < 100 ? (
-              <div className="mb-4">
-                <ProfileCompletionCard completion={completion} />
-              </div>
-            ) : null;
-          })()}
 
           <PushNotificationPrompt trigger="default" className="mb-4" />
         </div>

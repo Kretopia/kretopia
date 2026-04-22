@@ -169,6 +169,35 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
         {/* Analytics View */}
         {activeView === 'analytics' && (
           <div className="space-y-3">
+            {/* Leader Next Steps — guided activation */}
+            {(() => {
+              const steps: Array<{ done: boolean; label: string; cta: string; onClick: () => void }> = [
+                { done: circle.member_count >= 10, label: "Invite 10 members", cta: "Invite", onClick: () => setActiveView('invite') },
+                { done: eventCount > 0, label: "Host your first event", cta: "Create", onClick: () => setActiveView('events') },
+                { done: projectCount > 0, label: "Start a collaboration", cta: "Open Desk", onClick: () => window.location.assign('/desk?new=project') },
+                { done: stats.messagesThisWeek >= 5, label: "Get the chat moving (5 msgs/week)", cta: "Post", onClick: () => onClose() },
+              ];
+              const next = steps.find(s => !s.done);
+              if (!next) return null;
+              return (
+                <Card className="p-3 border-primary/30 bg-primary/5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-primary">Next step</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold leading-tight flex-1">{next.label}</p>
+                    <Button size="sm" className="h-7 text-xs shrink-0" onClick={next.onClick}>{next.cta}</Button>
+                  </div>
+                  <div className="flex gap-1 mt-2.5">
+                    {steps.map((s, i) => (
+                      <div key={i} className={cn("h-1 flex-1 rounded-full", s.done ? "bg-primary" : "bg-muted")} />
+                    ))}
+                  </div>
+                </Card>
+              );
+            })()}
+
             <div className="grid grid-cols-3 gap-2">
               <Card className="p-3 text-center">
                 <p className="text-2xl font-bold">{circle.member_count}</p>

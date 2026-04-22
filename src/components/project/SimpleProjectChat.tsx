@@ -483,6 +483,12 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                                   ))}
                                 </div>
                               )}
+
+                              {/* Contextual action chips (approve/contract/invoice/task/upload) */}
+                              <ChatActionChips
+                                message={msg.message}
+                                hasAttachments={!!msg.attachments && msg.attachments.length > 0}
+                              />
                             </div>
 
                             {/* Hover action bar */}

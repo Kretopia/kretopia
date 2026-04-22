@@ -354,6 +354,7 @@ const AppContent = () => {
 
             {/* Rewards - hidden for now */}
             <Route path="/rewards" element={<Navigate to="/" replace />} />
+            <Route path="/rewards-shop" element={<Navigate to="/" replace />} />
             
             {/* Credit Database & Discover - Public browsable */}
             <Route path="/credits" element={<CreditDatabase />} />

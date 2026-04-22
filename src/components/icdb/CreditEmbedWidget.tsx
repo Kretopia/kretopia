@@ -18,7 +18,7 @@ export const CreditEmbedWidget = ({ creatorId, fullName }: CreditEmbedWidgetProp
 
   const embedCodes: Record<string, string> = {
     badge: `<a href="${baseUrl}/epk/${creatorId}" target="_blank" rel="noopener">
-  <img src="${baseUrl}/api/badge/${creatorId}" alt="${fullName} - ICDB Verified" height="28" />
+  <img src="${baseUrl}/api/badge/${creatorId}" alt="${fullName} - ThriveIN Verified" height="28" />
 </a>`,
     card: `<iframe 
   src="${baseUrl}/embed/credit-card/${creatorId}" 
@@ -34,7 +34,7 @@ export const CreditEmbedWidget = ({ creatorId, fullName }: CreditEmbedWidgetProp
 ></iframe>`,
   };
 
-  const markdownBadge = `[![${fullName} - ICDB Verified](${baseUrl}/api/badge/${creatorId})](${baseUrl}/epk/${creatorId})`;
+  const markdownBadge = `[![${fullName} - ThriveIN Verified](${baseUrl}/api/badge/${creatorId})](${baseUrl}/epk/${creatorId})`;
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -48,7 +48,7 @@ export const CreditEmbedWidget = ({ creatorId, fullName }: CreditEmbedWidgetProp
           <Code className="h-4 w-4 text-primary" />
           Embed Your Credits
         </CardTitle>
-        <p className="text-[11px] text-muted-foreground">Add your verified ICDB credits to any website</p>
+        <p className="text-[11px] text-muted-foreground">Add your verified credits to any website</p>
       </CardHeader>
       <CardContent className="space-y-3">
         <Tabs value={style} onValueChange={(v) => setStyle(v as any)}>
@@ -64,7 +64,7 @@ export const CreditEmbedWidget = ({ creatorId, fullName }: CreditEmbedWidgetProp
           {style === "badge" && (
             <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-xs border-primary/30">
               <ShieldCheck className="h-3 w-3 text-primary" />
-              {fullName} · ICDB Verified
+              {fullName} · ThriveIN Verified
               <ExternalLink className="h-2.5 w-2.5 ml-1" />
             </Badge>
           )}
@@ -73,7 +73,7 @@ export const CreditEmbedWidget = ({ creatorId, fullName }: CreditEmbedWidgetProp
               <p className="font-semibold text-xs">{fullName}</p>
               <p className="text-[10px] text-muted-foreground">{creatorId}</p>
               <Badge variant="outline" className="text-[9px] mt-2 gap-0.5">
-                <ShieldCheck className="h-2 w-2" /> ICDB Verified
+                <ShieldCheck className="h-2 w-2" /> ThriveIN Verified
               </Badge>
             </div>
           )}

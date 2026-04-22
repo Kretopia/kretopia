@@ -152,27 +152,22 @@ export function TrustSignals({ emailVerified, phoneVerified, idVerified, payment
   };
 
   if (compact) {
+    // Only render verified signals — hide empty/inactive states for a cleaner profile
+    const verifiedSignals = signals.filter((s) => verifiedMap[s.key]);
+    if (verifiedSignals.length === 0) return null;
     return (
       <TooltipProvider delayDuration={200}>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="flex items-center gap-1">
-              {signals.map((s) => {
-                const verified = verifiedMap[s.key];
-                return (
-                  <div
-                    key={s.key}
-                    className={cn(
-                      "h-5 w-5 rounded-full flex items-center justify-center transition-colors",
-                      verified
-                        ? "bg-green-500/15 text-green-600 dark:text-green-400"
-                        : "bg-muted text-muted-foreground/40"
-                    )}
-                  >
-                    <s.icon className="h-3 w-3" />
-                  </div>
-                );
-              })}
+              {verifiedSignals.map((s) => (
+                <div
+                  key={s.key}
+                  className="h-5 w-5 rounded-full flex items-center justify-center bg-success/15 text-success"
+                >
+                  <s.icon className="h-3 w-3" />
+                </div>
+              ))}
             </div>
           </TooltipTrigger>
           <TooltipContent>

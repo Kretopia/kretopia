@@ -6,7 +6,7 @@ import App from "./App.tsx";
 import { initSWUpdateListener } from "./lib/sw-update";
 import { checkForNewVersion } from "./lib/version-check";
 import { setupGlobalErrorLogging } from "./lib/errorLogger";
-import { clearAppServiceWorkerData, isStandalonePWA } from "./lib/serviceWorker";
+import { clearAppServiceWorkerData, ensureAppServiceWorkerRegistered, isStandalonePWA } from "./lib/serviceWorker";
 import "./i18n";
 import "./index.css";
 
@@ -48,8 +48,10 @@ Sentry.init({
 if (!isInIframe && !isPreviewHost) {
   if (isStandalonePWA()) {
     // Installed app keeps the service worker for offline/push support.
-    initSWUpdateListener();
-    checkForNewVersion();
+    ensureAppServiceWorkerRegistered().then(() => {
+      initSWUpdateListener();
+      checkForNewVersion();
+    });
   } else {
     // Browser sessions should never get stuck on stale precached builds after publish.
     clearAppServiceWorkerData();

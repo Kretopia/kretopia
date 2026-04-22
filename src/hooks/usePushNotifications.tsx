@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { ensureAppServiceWorkerRegistered } from '@/lib/serviceWorker';
 
 const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
 
@@ -23,7 +24,8 @@ export function usePushNotifications() {
 
   const checkSubscription = async () => {
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await ensureAppServiceWorkerRegistered();
+      if (!registration) return;
       const subscription = await (registration as any).pushManager.getSubscription();
       setIsSubscribed(!!subscription);
     } catch (error) {
@@ -45,7 +47,8 @@ export function usePushNotifications() {
 
     try {
       setLoading(true);
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await ensureAppServiceWorkerRegistered();
+      if (!registration) throw new Error('Service worker unavailable');
       
       const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
@@ -84,7 +87,8 @@ export function usePushNotifications() {
   const unsubscribe = async () => {
     try {
       setLoading(true);
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await ensureAppServiceWorkerRegistered();
+      if (!registration) return;
       const subscription = await (registration as any).pushManager.getSubscription();
       
       if (subscription) {

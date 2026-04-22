@@ -31,13 +31,14 @@ export function CircleOverviewTab({ circle, members, events, isMember, onSwitchT
           .eq("room_id", circle.id)
           .neq("message_type", "system")
           .order("created_at", { ascending: false })
-          .limit(5),
+          .limit(5)
+          .then(r => r, () => ({ data: [] as any[] })),
         supabase.from("projects")
           .select("id, title, status, budget")
           .eq("spark_room_id", circle.id)
           .order("created_at", { ascending: false })
           .limit(3)
-          .catch(() => ({ data: [] })) as any,
+          .then(r => r, () => ({ data: [] as any[] })),
       ]);
 
       if (msgRes.data?.length) {

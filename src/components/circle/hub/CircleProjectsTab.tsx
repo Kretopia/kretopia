@@ -22,7 +22,7 @@ export function CircleProjectsTab({ circleId, isMember }: ProjectsTabProps) {
         .select("id, title, status, budget, created_at")
         .eq("spark_room_id", circleId)
         .order("created_at", { ascending: false })
-        .catch(err => { console.error("Projects load failed:", err); return { data: [] }; }) as any;
+        .then(r => r, (err) => { console.error("Projects load failed:", err); return { data: [] as any[] }; });
       setProjects(data || []);
       setLoading(false);
     };

@@ -42,6 +42,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [isManagerMode, setIsManagerMode] = useState(false);
+  const [myCirclesCount, setMyCirclesCount] = useState(0);
   const isLandingPage = location.pathname === "/" && !user;
   const isPro = subscriptionInfo.subscribed;
   const tierName = getTierDisplayName(subscriptionInfo.tier as any);
@@ -58,6 +59,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
       if (data?.account_type) setAccountType(data.account_type);
       if (data?.is_manager_mode) setIsManagerMode(true);
     }).catch(err => console.warn('[Navbar] Error loading profile:', err));
+
+    // My Circles count — gates the "My Circles" menu item
+    Promise.resolve(
+      supabase
+        .from("spark_room_members")
+        .select("room_id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+    ).then(({ count }) => {
+      setMyCirclesCount(count || 0);
+    }).catch(err => console.warn('[Navbar] Error loading circles count:', err));
   }, [user?.id]);
 
   const handleSignOut = async () => {

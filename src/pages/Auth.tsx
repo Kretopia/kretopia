@@ -205,19 +205,33 @@ const Auth = () => {
 
       if (error) {
         const { analytics: errAnalytics } = await import("@/lib/analytics");
-        const errorType = error.message.includes("Invalid login") ? "invalid_credentials"
-          : error.message.includes("Email not confirmed") ? "email_not_confirmed"
-          : error.message.includes("Failed to fetch") ? "network_error" : "other";
+        const msg = error.message || "";
+        const errorType = msg.includes("Invalid login") ? "invalid_credentials"
+          : msg.includes("Email not confirmed") ? "email_not_confirmed"
+          : msg.includes("Failed to fetch") ? "network_error"
+          : msg.toLowerCase().includes("rate") ? "rate_limited"
+          : "other";
+        // Always include the raw message so we can debug the 'other' bucket
         errAnalytics.errorOccurred('signin_failed', errorType, 'auth');
 
-        if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+        if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
           toast({ title: "Connection Error", description: "Please check your internet connection and try again.", variant: "destructive" });
-        } else if (error.message.includes("Email not confirmed")) {
-          toast({ title: "Email Not Verified", description: "Please check your inbox and click the verification link before signing in.", variant: "destructive" });
-        } else if (error.message.includes("Invalid login credentials")) {
-          toast({ title: "Login Failed", description: "Invalid email or password. Please try again.", variant: "destructive" });
+        } else if (msg.includes("Email not confirmed")) {
+          toast({
+            title: "Email Not Verified",
+            description: "Check your inbox for the verification link, or use 'Email me a sign-in link' to skip verification.",
+            variant: "destructive",
+          });
+        } else if (msg.includes("Invalid login credentials")) {
+          toast({
+            title: "Wrong email or password",
+            description: "Try 'Email me a sign-in link' above — no password needed.",
+            variant: "destructive",
+          });
+        } else if (msg.toLowerCase().includes("rate")) {
+          toast({ title: "Too many attempts", description: "Please wait a moment and try again.", variant: "destructive" });
         } else {
-          toast({ title: "Error", description: error.message, variant: "destructive" });
+          toast({ title: "Sign-in failed", description: msg || "Something went wrong. Try the magic-link option above.", variant: "destructive" });
         }
       } else {
         const { analytics } = await import("@/lib/analytics");
@@ -297,13 +311,24 @@ const Auth = () => {
 
     if (error) {
       const { analytics: errAnalytics } = await import("@/lib/analytics");
-      errAnalytics.errorOccurred('signup_failed', error.message.includes("already registered") ? "already_registered" : "other", 'auth');
+      const msg = error.message || "";
+      const errorType = msg.includes("already registered") ? "already_registered"
+        : msg.toLowerCase().includes("password") ? "weak_password"
+        : msg.toLowerCase().includes("email") ? "invalid_email"
+        : msg.toLowerCase().includes("rate") ? "rate_limited"
+        : msg.includes("Failed to fetch") ? "network_error"
+        : "other";
+      errAnalytics.errorOccurred('signup_failed', errorType, 'auth');
 
-      if (error.message.includes("already registered")) {
+      if (msg.includes("already registered")) {
         toast({ title: "Account Exists", description: "This email is already registered. Switching to sign in.", variant: "destructive" });
         setActiveTab("signin");
+      } else if (msg.toLowerCase().includes("password")) {
+        toast({ title: "Password too weak", description: "Use at least 8 characters with a mix of letters and numbers.", variant: "destructive" });
+      } else if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+        toast({ title: "Connection Error", description: "Please check your internet and try again.", variant: "destructive" });
       } else {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
+        toast({ title: "Sign-up failed", description: msg || "Something went wrong. Try a different email or sign in instead.", variant: "destructive" });
       }
     } else {
       // Detect Supabase "fake user" when email already exists (identities is empty)

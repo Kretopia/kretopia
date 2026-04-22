@@ -54,7 +54,7 @@ export const UnifiedHome = () => {
   const [featuredCreators, setFeaturedCreators] = useState<any[]>([]);
   const [activeGigs, setActiveGigs] = useState<any[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
-  const [stats, setStats] = useState({ creators: 0, credits: 0, gigs: 0 });
+  const [stats, setStats] = useState({ creators: 0, credits: 0, gigs: 0, connections: 0 });
 
   // Auth-only data
   const [profile, setProfile] = useState<any>(null);
@@ -135,13 +135,14 @@ export const UnifiedHome = () => {
         creatorsQuery = creatorsQuery.neq("user_id", user.id);
       }
 
-      const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs, eventsRes] = await Promise.all([
+      const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs, statsConnections, eventsRes] = await Promise.all([
         creditsQuery.limit(20),
         creatorsQuery,
         gigsQuery,
         supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
         supabase.from("credits").select("id", { count: "exact", head: true }),
         supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("connections").select("id", { count: "exact", head: true }).eq("status", "accepted"),
         (async () => {
           // Country-filtered upcoming events (derive country from profile.location: "City, Country")
           const loc = (myProfile as any)?.location || "";
@@ -244,7 +245,7 @@ export const UnifiedHome = () => {
       setFeaturedCreators(creators);
 
       setUpcomingEvents(eventsRes.data || []);
-      setStats({ creators: statsCreators.count || 0, credits: statsCredits.count || 0, gigs: statsGigs.count || 0 });
+      setStats({ creators: statsCreators.count || 0, credits: statsCredits.count || 0, gigs: statsGigs.count || 0, connections: statsConnections.count || 0 });
 
       setActivityNames(creators.filter((c: any) => c.full_name).map((c: any) => c.full_name.split(" ")[0]));
 
@@ -372,10 +373,10 @@ export const UnifiedHome = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-background/10" />
 
-                  {/* Signature 94% MATCH card */}
+                  {/* Signature Smart Match card */}
                   <div className="absolute top-3 right-3 sm:top-5 sm:right-5 animate-fade-in">
                     <div className="rounded-2xl border-2 border-energy/60 bg-background/85 backdrop-blur-md p-3 sm:p-4 shadow-glow-lime min-w-[140px] sm:min-w-[160px]">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">AI Match</p>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Smart Match</p>
                       <p className="text-3xl sm:text-4xl font-black text-energy-glow tracking-tighter leading-none">94%</p>
                       <p className="text-[10px] text-foreground/80 mt-1.5 leading-tight">Photographer × Producer<br/>2.3km away</p>
                     </div>
@@ -445,10 +446,15 @@ export const UnifiedHome = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-6 sm:gap-8 mb-4">
+            <div className="flex items-center justify-center gap-4 sm:gap-6 mb-4 flex-wrap">
               <div className="text-center">
                 <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.creators.toLocaleString()}+</p>
                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCreators")}</p>
+              </div>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-center">
+                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.connections.toLocaleString()}+</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Connections</p>
               </div>
               <div className="w-px h-8 bg-border" />
               <div className="text-center">
@@ -952,8 +958,7 @@ export const UnifiedHome = () => {
 
         <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />
       </div>
-      {/* Sticky mobile CTA */}
-      <StickyMobileCTA />
+      {/* Sticky mobile CTA removed — dismissible popup banner handles guest CTA */}
     </div>
   );
 };

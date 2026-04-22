@@ -140,7 +140,7 @@ export const ProfileHero = ({
       )}
 
       {/* Header Card */}
-      <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 space-y-4">
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-3">
 
         {/* Top: Avatar + Identity */}
         <div className="flex items-start gap-3 sm:gap-4">

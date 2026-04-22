@@ -19,6 +19,7 @@ import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow"
 import heroCreators from "@/assets/hero-creators.jpg";
 
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
+import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
@@ -590,6 +591,8 @@ export const UnifiedHome = () => {
 
 
         {!user && <WhyCreatorsChooseSection />}
+
+        {!user && <SocialProofSection />}
 
         {!user && <ThriveFundShowcase />}
 

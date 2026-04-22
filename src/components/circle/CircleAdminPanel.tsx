@@ -12,12 +12,13 @@ import {
 } from "@/components/ui/dialog";
 import {
   BarChart3, Users, MessageSquare, TrendingUp, Crown, Shield, User,
-  Settings, Calendar, DollarSign, Mail, Sparkles, Check, Loader2, UserPlus,
+  Settings, Calendar, DollarSign, Mail, Sparkles, Check, Loader2, UserPlus, ShieldCheck,
 } from "lucide-react";
 import { CircleInviteTools } from "./CircleInviteTools";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
 import type { CircleData } from "./CircleCard";
 
 interface CircleMember {
@@ -36,6 +37,7 @@ interface CircleAdminPanelProps {
 export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isAdmin: isPlatformAdmin } = useUserRole();
   const [members, setMembers] = useState<CircleMember[]>([]);
   const [stats, setStats] = useState({ messagesThisWeek: 0, newMembersThisWeek: 0, totalReactions: 0, messagesLastWeek: 0, newMembersLastWeek: 0 });
   const [eventCount, setEventCount] = useState(0);
@@ -44,6 +46,9 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
   const [activeView, setActiveView] = useState<'analytics' | 'members' | 'settings' | 'events' | 'invite'>('analytics');
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [welcomeDmEnabled, setWelcomeDmEnabled] = useState(false);
+  const [tagline, setTagline] = useState("");
+  const [isVerified, setIsVerified] = useState(!!(circle as any).is_verified);
+  const [verificationRequested, setVerificationRequested] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -54,24 +59,37 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
   const fetchSettings = async () => {
     const { data } = await supabase
       .from("spark_rooms")
-      .select("welcome_message")
+      .select("welcome_message, tagline, is_verified")
       .eq("id", circle.id)
       .single();
     if (data?.welcome_message) {
       setWelcomeMessage(data.welcome_message);
       setWelcomeDmEnabled(true);
     }
+    if ((data as any)?.tagline) setTagline((data as any).tagline);
+    if ((data as any)?.is_verified !== undefined) setIsVerified(!!(data as any).is_verified);
   };
 
   const saveSettings = async () => {
     setSaving(true);
     const msg = welcomeDmEnabled ? welcomeMessage.trim() || null : null;
-    await supabase
-      .from("spark_rooms")
-      .update({ welcome_message: msg } as any)
-      .eq("id", circle.id);
+    const updates: any = { welcome_message: msg, tagline: tagline.trim() || null };
+    if (isPlatformAdmin) updates.is_verified = isVerified;
+    await supabase.from("spark_rooms").update(updates).eq("id", circle.id);
     setSaving(false);
     toast({ title: "Settings saved" });
+  };
+
+  const requestVerification = async () => {
+    if (!user) return;
+    await supabase.from("spark_room_messages").insert({
+      room_id: circle.id,
+      user_id: user.id,
+      content: `[Verification request] Owner has requested the Verified badge for "${circle.title}".`,
+      message_type: "system",
+    });
+    setVerificationRequested(true);
+    toast({ title: "Request sent", description: "Our team will review your circle within 48 hours." });
   };
 
   const fetchData = async () => {
@@ -331,6 +349,61 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
         {/* Settings View */}
         {activeView === 'settings' && (
           <div className="space-y-4">
+            {/* Tagline */}
+            <Card className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h4 className="font-semibold text-sm">Tagline</h4>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                A one-liner shown under your circle name. Keep it short — like a creative manifesto.
+              </p>
+              <Input
+                placeholder="e.g. Build, collaborate, and grow together"
+                value={tagline}
+                onChange={e => setTagline(e.target.value)}
+                maxLength={80}
+                className="text-sm"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1.5 text-right">{tagline.length}/80</p>
+            </Card>
+
+            {/* Verified Badge */}
+            <Card className={cn("p-4", isVerified && "border-primary/40 bg-primary/5")}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className={cn("h-4 w-4", isVerified ? "text-primary" : "text-muted-foreground")} />
+                  <h4 className="font-semibold text-sm">Verified Circle</h4>
+                </div>
+                {isVerified && <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">Verified</Badge>}
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Verified circles are reviewed by ThriveIN for authenticity, active leadership, and quality content.
+              </p>
+              {isPlatformAdmin ? (
+                <Button
+                  variant={isVerified ? "outline" : "default"}
+                  size="sm"
+                  className="h-8 text-xs w-full"
+                  onClick={() => setIsVerified(!isVerified)}
+                >
+                  {isVerified ? "Remove verification" : "Grant verified badge"}
+                </Button>
+              ) : isVerified ? (
+                <p className="text-[11px] text-primary font-medium">✓ This circle is officially verified.</p>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs w-full"
+                  onClick={requestVerification}
+                  disabled={verificationRequested}
+                >
+                  {verificationRequested ? "Request submitted" : "Request verification"}
+                </Button>
+              )}
+            </Card>
+
             {/* Welcome DM */}
             <Card className="p-4">
               <div className="flex items-center justify-between mb-3">

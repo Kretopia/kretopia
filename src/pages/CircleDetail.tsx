@@ -6,12 +6,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, MessageSquare, Home, Users, Calendar, FolderKanban, Hash, Info } from "lucide-react";
+import { Loader2, MessageSquare, Home, Users, Calendar, FolderKanban, Hash, Info, Sparkles } from "lucide-react";
 import { CircleHubHeader } from "@/components/circle/hub/CircleHubHeader";
 import { CircleOverviewTab } from "@/components/circle/hub/CircleOverviewTab";
 import { CircleAboutTab } from "@/components/circle/hub/CircleAboutTab";
 import { CircleEventsTab } from "@/components/circle/hub/CircleEventsTab";
 import { CircleProjectsTab } from "@/components/circle/hub/CircleProjectsTab";
+import { CircleMediaTab } from "@/components/circle/hub/CircleMediaTab";
 import { CircleWelcomeModal } from "@/components/circle/hub/CircleWelcomeModal";
 import { CircleMemberDirectory } from "@/components/circle/CircleMemberDirectory";
 import { CircleAdminPanel } from "@/components/circle/CircleAdminPanel";
@@ -22,6 +23,7 @@ const TABS = [
   { value: "members", label: "Members", icon: Users },
   { value: "events", label: "Events", icon: Calendar },
   { value: "projects", label: "Projects", icon: FolderKanban },
+  { value: "media", label: "Spotlight", icon: Sparkles },
   { value: "chat", label: "Chat", icon: Hash },
   { value: "about", label: "About", icon: Info },
 ];
@@ -249,6 +251,10 @@ const CircleDetail = () => {
 
         <TabsContent value="projects" className="mt-4">
           <CircleProjectsTab circleId={circleId!} isMember={isMember} />
+        </TabsContent>
+
+        <TabsContent value="media" className="mt-4">
+          <CircleMediaTab circleId={circleId!} members={members} />
         </TabsContent>
 
         <TabsContent value="about" className="mt-4">

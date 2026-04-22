@@ -38,10 +38,8 @@ export const SignInForm = ({
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [mode, setMode] = useState<"choose" | "password">("choose");
   const [magicLoading, setMagicLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
-  const [showRecovery, setShowRecovery] = useState(false);
 
   const sendMagicLink = async () => {
     const ev = validateEmail(email);

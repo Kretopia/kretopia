@@ -32,11 +32,11 @@ export const AIMatchBadge = ({ score, size = "md", showLocked = false }: AIMatch
             className={`${size === "sm" ? "text-xs px-2 py-0.5" : "text-sm px-3 py-1"} border-primary/30 bg-primary/10 cursor-help`}
           >
             <Lock className={`${size === "sm" ? "h-3 w-3" : "h-4 w-4"} mr-1`} />
-            AI Match
+            Smart Match
           </Badge>
         </TooltipTrigger>
         <TooltipContent>
-          <p className="text-sm">Upgrade to Creator+ for unlimited AI match scores</p>
+          <p className="text-sm">Upgrade to Creator+ for unlimited match scores</p>
         </TooltipContent>
       </Tooltip>
     );

@@ -99,7 +99,7 @@ export const DeskAISuggestions = ({ projectId, isPro, onOpenAssistant }: DeskAIS
           <div className="h-6 w-6 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
             <Sparkles className="h-3.5 w-3.5" />
           </div>
-          <h4 className="text-xs font-bold uppercase tracking-wider">AI Project Manager</h4>
+          <h4 className="text-xs font-bold uppercase tracking-wider">Project Copilot</h4>
         </div>
         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={fetchSuggestions} disabled={loading} title="Refresh">
           {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}

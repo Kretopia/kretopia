@@ -73,7 +73,7 @@ export function DiscoveryUpsell({ totalItems, freePreviewCount, itemLabel }: Dis
           {remaining}+ more {itemLabel} to explore
         </h3>
         <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-          Upgrade to Pro for unlimited access to {itemLabel}, advanced filters, and AI-powered matching.
+          Upgrade to Pro for unlimited access to {itemLabel}, advanced filters, and smart matching.
         </p>
         <Button
           onClick={() => navigate("/subscription")}

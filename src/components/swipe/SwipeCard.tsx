@@ -87,7 +87,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
               }}
             >
               <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5" />
-              AI Match
+              Smart Match
             </Badge>
           </div>
 

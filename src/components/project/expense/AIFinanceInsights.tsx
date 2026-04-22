@@ -67,7 +67,7 @@ export function AIFinanceInsights({ expenses, invoices }: AIFinanceInsightsProps
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">AI Financial Advisor</h3>
+            <h3 className="font-semibold text-sm">Finance Copilot</h3>
             <p className="text-xs text-muted-foreground mt-1">
               Get personalized insights on spending, tax deductions, and cash flow optimization
             </p>
@@ -89,7 +89,7 @@ export function AIFinanceInsights({ expenses, invoices }: AIFinanceInsightsProps
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" /> AI Insights
+            <Sparkles className="h-4 w-4 text-primary" /> Smart Insights
           </CardTitle>
           <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={generateInsights} disabled={loading}>
             {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}

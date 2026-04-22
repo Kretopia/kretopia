@@ -76,52 +76,32 @@ export const SignUpWizard = ({
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium">Step {step} of {totalSteps}</span>
           <span className="text-sm text-muted-foreground">
-            {step === 1 && "I am a..."}
-            {step === 2 && "Your email"}
-            {step === 3 && "Create password"}
+            {step === 1 && "Your email"}
+            {step === 2 && "Create password"}
           </span>
         </div>
         <Progress value={(step / totalSteps) * 100} className="h-2" />
       </div>
 
-      {/* Step 1: Account Type */}
+      {/* Step 1: Email (with social login on top) */}
       {step === 1 && (
         <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
           <SocialLoginButtons onGoogleSignIn={onGoogleSignIn} onAppleSignIn={onAppleSignIn} googleLoading={googleLoading} appleLoading={appleLoading} />
           <OrDivider text="or sign up with email" />
 
-          <div className="space-y-3">
-            <Label className="text-base">I am a...</Label>
-            <div className="space-y-3">
-              <Card
-                className={`p-4 cursor-pointer transition-all hover:shadow-md border-2 ${accountType === 'individual' ? 'border-primary bg-primary/5' : 'border-border'}`}
-                onClick={() => setAccountType('individual')}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2.5"><User className="h-6 w-6 text-primary" /></div>
-                  <div className="flex-1">
-                    <div className="font-semibold mb-1">Creator / Creative</div>
-                    <div className="text-sm text-muted-foreground">Find collaborators, showcase your portfolio, and match with other creators</div>
-                  </div>
-                </div>
-              </Card>
-              <Card
-                className={`p-4 cursor-pointer transition-all hover:shadow-md border-2 ${accountType === 'company' ? 'border-primary bg-primary/5' : 'border-border'}`}
-                onClick={() => setAccountType('company')}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2.5"><Briefcase className="h-6 w-6 text-primary" /></div>
-                  <div className="flex-1">
-                    <div className="font-semibold mb-1">Brand / Venue / Company</div>
-                    <div className="text-sm text-muted-foreground">Discover and connect with talented creators for your projects</div>
-                  </div>
-                </div>
-              </Card>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="signup-email">Email Address</Label>
+            <Input
+              id="signup-email" type="email" placeholder="you@example.com"
+              value={email} onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+              required className={`h-11 text-base ${emailError ? "border-destructive" : ""}`}
+              autoComplete="email" autoFocus
+            />
+            {emailError && <p className="text-sm text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {emailError}</p>}
           </div>
 
           <Button onClick={handleNextStep} variant="gradient" className="w-full">
-            Continue with Email <ArrowRight className="ml-2 h-4 w-4" />
+            Continue<ArrowRight className="ml-2 h-4 w-4" />
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
@@ -133,28 +113,8 @@ export const SignUpWizard = ({
         </div>
       )}
 
-      {/* Step 2: Email */}
+      {/* Step 2: Password */}
       {step === 2 && (
-        <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
-          <div className="space-y-2">
-            <Label htmlFor="signup-email">Email Address</Label>
-            <Input
-              id="signup-email" type="email" placeholder="you@example.com"
-              value={email} onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
-              required className={`h-11 text-base ${emailError ? "border-destructive" : ""}`}
-              autoComplete="email" autoFocus
-            />
-            {emailError && <p className="text-sm text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {emailError}</p>}
-          </div>
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1"><ArrowLeft className="mr-2 h-4 w-4" />Back</Button>
-            <Button onClick={handleNextStep} variant="gradient" className="flex-1">Continue<ArrowRight className="ml-2 h-4 w-4" /></Button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Password */}
-      {step === 3 && (
         <form onSubmit={handleSubmit} className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
           <div className="space-y-2">
             <Label htmlFor="signup-password">Create Password</Label>
@@ -190,7 +150,7 @@ export const SignUpWizard = ({
           </div>
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={() => setStep(2)} className="flex-1" disabled={loading}>
+            <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1" disabled={loading}>
               <ArrowLeft className="mr-2 h-4 w-4" />Back
             </Button>
             <Button type="submit" variant="gradient" className="flex-1" disabled={loading}>

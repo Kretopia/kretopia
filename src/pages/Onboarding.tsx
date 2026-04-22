@@ -527,11 +527,11 @@ export default function Onboarding() {
               <div className="text-center space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
                   <Sparkles className="h-3 w-3" />
-                  Quick Setup — Under 60 seconds
+                  Step 1 of 3 · Find your work
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight">Welcome! Let's set you up</h1>
+                <h1 className="text-2xl font-bold tracking-tight">We're building your creative identity</h1>
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                  We can auto-fill your profile from the web, or you can fill it in yourself.
+                  Drop your name (and a portfolio link if you have one) — we'll search the web for your work.
                 </p>
               </div>
 
@@ -643,8 +643,9 @@ export default function Onboarding() {
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-primary" />
                   <div>
-                    <h2 className="text-lg font-bold">Review your profile</h2>
-                    <p className="text-xs text-muted-foreground">Confirm the details below — you can edit anything.</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Step 2 of 3 · Confirm your credits</p>
+                    <h2 className="text-lg font-bold">Make it yours</h2>
+                    <p className="text-xs text-muted-foreground">Confirm what's yours — edit anything, then launch your profile.</p>
                   </div>
                 </div>
               </div>

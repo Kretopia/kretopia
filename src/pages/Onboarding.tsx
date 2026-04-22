@@ -72,6 +72,9 @@ export default function Onboarding() {
   const [emailToVerify, setEmailToVerify] = useState("");
   const [resendingEmail, setResendingEmail] = useState(false);
 
+  // Primary intent — what the user is here to do
+  const [primaryIntent, setPrimaryIntent] = useState<import("@/lib/intents").PrimaryIntent | null>(null);
+
   useEffect(() => {
     if (user) checkOnboardingStatus();
   }, [user]);
@@ -342,6 +345,12 @@ export default function Onboarding() {
 
       // Save profile
       const skillObjects = skills.map(skill => ({ skill, level: 3, category: "General" }));
+      const weekStart = (() => {
+        const d = new Date();
+        const day = d.getDay() || 7;
+        d.setDate(d.getDate() - day + 1);
+        return d.toISOString().slice(0, 10);
+      })();
       await supabase.from("profiles").update({
         full_name: fullName.trim(),
         role: role.trim(),
@@ -350,7 +359,12 @@ export default function Onboarding() {
         professional_skills: skillObjects.length > 0 ? skillObjects as any : null,
         onboarding_completed: true,
         onboarding_step: 6,
-      }).eq("user_id", user.id);
+        ...(primaryIntent ? {
+          primary_intent: primaryIntent,
+          intent_set_at: new Date().toISOString(),
+          intent_week_start: weekStart,
+        } : {}),
+      } as any).eq("user_id", user.id);
 
       // Insert selected discovered credits
       const creditsToInsert = discoveredCredits
@@ -386,7 +400,7 @@ export default function Onboarding() {
       // After-Claim Engagement Loop — seed personalized in-app nudges (non-blocking)
       try {
         const { seedAfterClaimNudges } = await import("@/lib/afterClaimNudges");
-        await seedAfterClaimNudges(user.id, { role, location });
+        await seedAfterClaimNudges(user.id, { role, location, intent: primaryIntent });
       } catch (e) { console.error("[Onboarding] after-claim nudges:", e); }
 
       // Process pending event join

@@ -161,7 +161,7 @@ export const ProfileHubCard = ({
                 </Link>
                 {nextItem && ringPct < 100 && (
                   <Link
-                    to="/profile?edit=1"
+                    to="/profile"
                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-energy/15 hover:bg-energy/25 text-[10px] font-semibold text-energy-foreground/90 dark:text-energy transition-colors"
                   >
                     <Sparkles className="h-2.5 w-2.5" /> Add {nextItem.label.toLowerCase()}
@@ -188,7 +188,7 @@ export const ProfileHubCard = ({
                 <p className="text-[9px] uppercase tracking-wider font-bold text-primary flex items-center gap-1">
                   <ShieldCheck className="h-2.5 w-2.5" /> Creator Passport
                 </p>
-                <Link to="/icdb" className="text-[9px] font-semibold text-primary/80 hover:text-primary flex items-center gap-0.5">
+                <Link to="/credits" className="text-[9px] font-semibold text-primary/80 hover:text-primary flex items-center gap-0.5">
                   Manage <ArrowRight className="h-2 w-2" />
                 </Link>
               </div>
@@ -238,14 +238,14 @@ export const ProfileHubCard = ({
               label="Profile views"
               value={viewsWeek}
               color="text-primary"
-              to="/profile?tab=insights"
+              to="/profile"
             />
             <ReachStat
               icon={Search}
               label="Search hits"
               value={searchAppearances}
               color="text-accent"
-              to="/profile?tab=insights"
+              to="/profile"
             />
             <ReachStat
               icon={ShieldCheck}

@@ -9736,6 +9736,7 @@ export type Database = {
           is_active: boolean
           is_paid: boolean | null
           is_private: boolean
+          is_verified: boolean
           member_count: number
           message_count: number
           price_monthly: number | null
@@ -9754,6 +9755,7 @@ export type Database = {
           site_slug: string | null
           site_template: string | null
           site_view_count: number
+          tagline: string | null
           title: string
           updated_at: string
           welcome_message: string | null
@@ -9773,6 +9775,7 @@ export type Database = {
           is_active?: boolean
           is_paid?: boolean | null
           is_private?: boolean
+          is_verified?: boolean
           member_count?: number
           message_count?: number
           price_monthly?: number | null
@@ -9791,6 +9794,7 @@ export type Database = {
           site_slug?: string | null
           site_template?: string | null
           site_view_count?: number
+          tagline?: string | null
           title: string
           updated_at?: string
           welcome_message?: string | null
@@ -9810,6 +9814,7 @@ export type Database = {
           is_active?: boolean
           is_paid?: boolean | null
           is_private?: boolean
+          is_verified?: boolean
           member_count?: number
           message_count?: number
           price_monthly?: number | null
@@ -9828,6 +9833,7 @@ export type Database = {
           site_slug?: string | null
           site_template?: string | null
           site_view_count?: number
+          tagline?: string | null
           title?: string
           updated_at?: string
           welcome_message?: string | null

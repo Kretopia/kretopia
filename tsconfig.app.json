@@ -19,15 +19,7 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "react": ["./node_modules/react"],
-      "react/*": ["./node_modules/react/*"],
-      "react-dom": ["./node_modules/react-dom"],
-      "react-dom/*": ["./node_modules/react-dom/*"],
-      "@types/react": ["./node_modules/@types/react"],
-      "@types/react/*": ["./node_modules/@types/react/*"],
-      "@types/react-dom": ["./node_modules/@types/react-dom"],
-      "@types/react-dom/*": ["./node_modules/@types/react-dom/*"]
+      ]
     },
     "skipLibCheck": true,
     "strict": false,

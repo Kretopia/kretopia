@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ConnectionInsightCard } from "./ConnectionInsightCard";
 import { EmptyState } from "@/components/ui/empty-state";
+import { intentBoostForCreator } from "@/lib/intentMatching";
 
 export const SmartConnectionSuggestions = () => {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ export const SmartConnectionSuggestions = () => {
       // Get potential matches - users with profiles
       let query = supabase
         .from('profiles')
-        .select('user_id, full_name, role, bio, avatar_url, location, level, xp, professional_skills')
+        .select('user_id, full_name, role, bio, avatar_url, location, level, xp, professional_skills, primary_intent, primary_intents')
         .neq('user_id', user.id)
         .eq('onboarding_completed', true)
         .not('avatar_url', 'is', null)
@@ -127,6 +128,16 @@ export const SmartConnectionSuggestions = () => {
         // Active user bonus
         if (match.xp && match.xp > 500) {
           score += 5;
+        }
+
+        // Intent boost — complementary intents (gigs↔hire, collab↔collab, fund↔collab)
+        const intentResult = intentBoostForCreator(
+          (currentProfile as any).primary_intents ?? (currentProfile as any).primary_intent,
+          (match as any).primary_intents ?? (match as any).primary_intent
+        );
+        if (intentResult.boost > 0) {
+          score += intentResult.boost;
+          if (intentResult.reason) reasons.unshift(intentResult.reason);
         }
 
         if (reasons.length === 0) {

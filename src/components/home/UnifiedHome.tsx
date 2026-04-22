@@ -33,6 +33,8 @@ import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
 import GigCard from "@/components/opportunity/GigCard";
 import { GigRailCard } from "@/components/opportunity/GigRailCard";
+import { intentBoostForCreator, intentBoostForGig, intentBoostForEvent } from "@/lib/intentMatching";
+import { normalizeIntents } from "@/lib/intents";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -92,7 +94,7 @@ export const UnifiedHome = () => {
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("role, professional_skills, passion_skills, location")
+          .select("role, professional_skills, passion_skills, location, primary_intent, primary_intents")
           .eq("user_id", user.id)
           .single();
         myProfile = data;
@@ -110,6 +112,7 @@ export const UnifiedHome = () => {
       }
       const myRole = myProfile?.role || "";
       const myLocation = myProfile?.location || "";
+      const myIntents = normalizeIntents(myProfile?.primary_intents ?? myProfile?.primary_intent);
 
       let creditsQuery = supabase
         .from("credits")
@@ -130,7 +133,7 @@ export const UnifiedHome = () => {
 
       let creatorsQuery = supabase
         .from("profiles")
-        .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills")
+        .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills, primary_intent, primary_intents")
         .eq("onboarding_completed", true)
         .not("avatar_url", "is", null)
         .order("created_at", { ascending: false })
@@ -209,6 +212,8 @@ export const UnifiedHome = () => {
             });
             if (roleLower && (title.includes(roleLower) || type.includes(roleLower))) relevance += 2;
             if (myLocation && g.location && g.location.toLowerCase().includes(myLocation.toLowerCase().split(",")[0].trim())) relevance += 1;
+            // Intent boost — viewers with "gigs" intent see paid work first
+            relevance += intentBoostForGig(myIntents);
             return { ...g, _relevance: relevance };
           })
           .sort((a: any, b: any) => b._relevance - a._relevance)
@@ -238,7 +243,10 @@ export const UnifiedHome = () => {
             if (roleLower && cRole && cRole !== roleLower) relevance += 1;
             if (locationCity && cLocation.includes(locationCity)) relevance += 3;
             if (c.verification_tier === "verified" || c.verification_tier === "pro") relevance += 1;
-            return { ...c, _relevance: relevance };
+            // Intent boost — complementary intents (gigs↔hire, collab↔collab, fund↔collab)
+            const { boost, reason } = intentBoostForCreator(myIntents, c.primary_intents ?? c.primary_intent);
+            relevance += boost;
+            return { ...c, _relevance: relevance, _intentReason: reason };
           })
           .sort((a: any, b: any) => b._relevance - a._relevance)
           .slice(0, 10);

@@ -3,18 +3,46 @@ import { lovable } from "@/integrations/lovable/index";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
+interface OAuthQuickButtonsProps {
+  /** Optional external handler — if provided, internal sign-in logic is skipped */
+  onGoogle?: () => void;
+  onApple?: () => void;
+  googleLoading?: boolean;
+  appleLoading?: boolean;
+  /** Optional divider/header label */
+  label?: string;
+  /** Hide divider entirely */
+  hideDivider?: boolean;
+  /** Optional analytics suffix when using built-in handler */
+  analyticsSuffix?: string;
+}
+
 /**
- * One-tap OAuth buttons for the landing hero.
- * Mirrors /auth page logic so converted users land in the same flow.
+ * One-tap OAuth buttons.
+ * - Standalone mode (no props): handles sign-in internally for landing/hero use.
+ * - Controlled mode (onGoogle/onApple): defers to parent (e.g. Auth page).
  */
-export const OAuthQuickButtons = () => {
-  const [loading, setLoading] = useState<"google" | "apple" | null>(null);
+export const OAuthQuickButtons = ({
+  onGoogle,
+  onApple,
+  googleLoading: extGoogleLoading,
+  appleLoading: extAppleLoading,
+  label = "Or join in one tap",
+  hideDivider = false,
+  analyticsSuffix = "hero",
+}: OAuthQuickButtonsProps = {}) => {
+  const [internalLoading, setInternalLoading] = useState<"google" | "apple" | null>(null);
+  const controlled = !!(onGoogle || onApple);
 
   const handle = async (provider: "google" | "apple") => {
-    setLoading(provider);
+    if (controlled) {
+      provider === "google" ? onGoogle?.() : onApple?.();
+      return;
+    }
+    setInternalLoading(provider);
     try {
       const { analytics } = await import("@/lib/analytics");
-      analytics.featureUsed(`${provider}_signin_attempt_hero`);
+      analytics.featureUsed(`${provider}_signin_attempt_${analyticsSuffix}`);
 
       const siteUrl = import.meta.env.VITE_SITE_URL || "https://thrivein.io";
       const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: siteUrl });
@@ -23,7 +51,7 @@ export const OAuthQuickButtons = () => {
 
       if (result.error) {
         const msg = result.error.message || "";
-        if (msg.includes("cancelled")) { setLoading(null); return; }
+        if (msg.includes("cancelled")) { setInternalLoading(null); return; }
         toast({
           title: `${provider === "google" ? "Google" : "Apple"} sign-in unavailable`,
           description: msg.includes("blocked")
@@ -31,33 +59,39 @@ export const OAuthQuickButtons = () => {
             : "Try again or use email sign-up.",
           variant: "destructive",
         });
-        setLoading(null);
+        setInternalLoading(null);
       }
     } catch (err) {
       console.error(`[Hero OAuth ${provider}]`, err);
-      setLoading(null);
+      setInternalLoading(null);
     }
   };
 
+  const googleLoading = controlled ? !!extGoogleLoading : internalLoading === "google";
+  const appleLoading = controlled ? !!extAppleLoading : internalLoading === "apple";
+  const anyLoading = googleLoading || appleLoading;
+
   return (
     <div className="max-w-xl mx-auto mt-3">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="flex-1 h-px bg-border" />
-        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
-          Or join in one tap
-        </span>
-        <div className="flex-1 h-px bg-border" />
-      </div>
+      {!hideDivider && (
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
+            {label}
+          </span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-2.5">
         <button
           type="button"
           onClick={() => handle("google")}
-          disabled={loading !== null}
+          disabled={anyLoading}
           className="inline-flex items-center justify-center gap-2 h-12 rounded-xl border border-border bg-card hover:bg-card/80 hover:border-primary/40 transition-all text-sm font-semibold text-foreground disabled:opacity-50"
           aria-label="Continue with Google"
         >
-          {loading === "google" ? (
+          {googleLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -73,11 +107,11 @@ export const OAuthQuickButtons = () => {
         <button
           type="button"
           onClick={() => handle("apple")}
-          disabled={loading !== null}
+          disabled={anyLoading}
           className="inline-flex items-center justify-center gap-2 h-12 rounded-xl border border-border bg-card hover:bg-card/80 hover:border-primary/40 transition-all text-sm font-semibold text-foreground disabled:opacity-50"
           aria-label="Continue with Apple"
         >
-          {loading === "apple" ? (
+          {appleLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -88,9 +122,11 @@ export const OAuthQuickButtons = () => {
         </button>
       </div>
 
-      <p className="text-center text-[11px] text-muted-foreground/70 mt-3">
-        Free to join · We'll auto-find your work after sign-in
-      </p>
+      {!controlled && (
+        <p className="text-center text-[11px] text-muted-foreground/70 mt-3">
+          Free to join · We'll auto-find your work after sign-in
+        </p>
+      )}
     </div>
   );
 };

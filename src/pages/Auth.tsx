@@ -19,6 +19,7 @@ import { UniversalClaimFlow } from "@/components/onboarding/claim-flow/Universal
 import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/BrandLogo";
+import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<string>("signup");
@@ -415,6 +416,20 @@ const Auth = () => {
               <TabsContent value="signup">
                 {signupMode === "claim" ? (
                   <>
+                    <OAuthQuickButtons
+                      onGoogle={() => handleOAuthSignIn("google")}
+                      onApple={() => handleOAuthSignIn("apple")}
+                      googleLoading={googleLoading}
+                      appleLoading={appleLoading}
+                      label="Sign up in one tap"
+                    />
+                    <div className="my-5 flex items-center gap-2">
+                      <div className="flex-1 h-px bg-border" />
+                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
+                        Or find your work
+                      </span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
                     <UniversalClaimFlow source="auth" />
                     <div className="mt-4 text-center">
                       <button

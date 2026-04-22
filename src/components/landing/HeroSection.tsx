@@ -299,26 +299,47 @@ export const HeroSection = () => {
             <OAuthQuickButtons hideDivider />
           </div>
 
-          {/* SECONDARY: Search */}
-          <p className="text-center text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-3">
-            Or search the creative economy
-          </p>
+          {/* SECONDARY: Search yourself — highlighted */}
+          <div className="flex items-center gap-3 max-w-xl mx-auto my-5">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
           <div ref={wrapperRef} className="relative max-w-xl mx-auto">
+            {/* Highlighted call-to-action above search */}
+            <div className="text-center mb-3">
+              <p className="inline-flex items-center gap-2 text-sm sm:text-base font-black text-energy-glow">
+                <Sparkles className="h-4 w-4 text-energy" />
+                Already have work? Search your name
+                <Sparkles className="h-4 w-4 text-energy" />
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                We'll find your verified credits across the web
+              </p>
+            </div>
+
             <form onSubmit={handleSubmit}>
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
-                  onFocus={() => setShowSuggestions(true)}
-                  placeholder="Try 'Beyoncé', 'Squid Game', 'Photographer in Lagos'..."
-                  className="w-full h-13 rounded-2xl border border-border bg-card pl-12 pr-14 text-sm text-foreground shadow-lg focus:outline-none focus:border-primary focus:shadow-[var(--shadow-glow)] transition-all placeholder:text-muted-foreground/50"
-                />
-                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors">
-                  <Search className="h-4 w-4" />
-                </button>
+              {/* Lime-glow frame to make search pop */}
+              <div className="relative rounded-2xl p-[2px] bg-gradient-to-r from-energy via-primary to-energy shadow-glow-lime">
+                <div className="relative rounded-[14px] bg-card">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-energy" />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
+                    onFocus={() => setShowSuggestions(true)}
+                    placeholder="Search your name (e.g. 'Beyoncé', 'Squid Game')"
+                    className="w-full h-14 rounded-[14px] bg-transparent pl-12 pr-28 text-sm font-medium text-foreground focus:outline-none placeholder:text-muted-foreground/60"
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 h-11 px-4 rounded-xl bg-energy text-energy-foreground flex items-center gap-1.5 font-black text-xs uppercase tracking-wider hover:scale-[1.03] transition-transform shadow-glow-lime"
+                  >
+                    Search <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             </form>
 

@@ -9,7 +9,13 @@ import { DeskTabBar } from "@/components/project/DeskTabBar";
 import { ConfirmCreditBanner } from "@/components/project/ConfirmCreditBanner";
 import { DeskTabContent } from "@/components/project/DeskTabContent";
 import { DeskAILauncher } from "@/components/project/ai/DeskAILauncher";
+import { ProjectFlowTimeline } from "@/components/project/flow/ProjectFlowTimeline";
+import { NextStepBar } from "@/components/project/flow/NextStepBar";
 import { useProjectData } from "@/hooks/useProjectData";
+import { useProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
+import { useProjectFlowExtras } from "@/hooks/useProjectFlowExtras";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +30,24 @@ const ThriveDesk = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
 
+  const flowExtras = useProjectFlowExtras(projectId, project?.updated_at);
+  const flow = useProjectFlow({
+    messageCount: messages.length,
+    noteCount: flowExtras.noteCount,
+    taskCount: tasks.length,
+    taskDoneCount: tasks.filter((t) => t.status === "done").length,
+    fileCount: files.length,
+    approvalApprovedCount: flowExtras.approvalApprovedCount,
+    approvalPendingCount: flowExtras.approvalPendingCount,
+    contractCount: flowExtras.contractCount,
+    contractSignedCount: flowExtras.contractSignedCount,
+    invoiceCount: flowExtras.invoiceCount,
+    invoicePaidCount: flowExtras.invoicePaidCount,
+    milestoneCount: milestones.length,
+    projectStatus: project?.status,
+    pinnedStage: project?.pinned_stage,
+  });
+
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<string>).detail;
@@ -32,6 +56,32 @@ const ThriveDesk = () => {
     window.addEventListener("thrivedesk:set-tab", handler);
     return () => window.removeEventListener("thrivedesk:set-tab", handler);
   }, []);
+
+  // Navigate to a tab and optionally broadcast an "intent" so the target tab
+  // can pre-fill (e.g. open create dialog). Listeners are added in target components.
+  const goToTabWithIntent = (tab: string, intent?: string) => {
+    setActiveTab(tab);
+    if (intent) {
+      // Defer so the tab mounts first
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("thrivedesk:intent", { detail: { tab, intent } }));
+      }, 50);
+    }
+  };
+
+  const handlePinStage = async (stageId: ProjectFlowStageId | null) => {
+    if (!projectId) return;
+    const { error } = await supabase
+      .from("projects")
+      .update({ pinned_stage: stageId })
+      .eq("id", projectId);
+    if (error) {
+      toast.error("Couldn't update stage");
+      return;
+    }
+    toast.success(stageId ? "Stage pinned" : "Stage unpinned");
+    fetchProjectData();
+  };
 
   if (loading) {
     return (
@@ -103,6 +153,16 @@ const ThriveDesk = () => {
             onNavigateToTab={setActiveTab}
           />
         </header>
+
+        {/* Project Flow Timeline — visualizes lifecycle stages */}
+        <ProjectFlowTimeline
+          flow={flow}
+          onStageClick={(_stageId, tab) => setActiveTab(tab)}
+          onPinStage={handlePinStage}
+        />
+
+        {/* Persistent Next Step bar — drives users forward across all tabs */}
+        <NextStepBar nextStep={flow.nextStep} onAction={goToTabWithIntent} />
 
         {/* Tab Bar */}
         <DeskTabBar

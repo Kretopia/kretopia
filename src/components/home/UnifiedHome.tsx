@@ -283,12 +283,12 @@ export const UnifiedHome = () => {
     if (!user) return;
     const fetchAuth = async () => {
       const [profileRes, profileFullRes, creditsCount, connectionsCount] = await Promise.all([
-        supabase.from("profiles").select("full_name, avatar_url, role, verification_tier, thrive_id").eq("user_id", user.id).single(),
-        supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+        supabase.from("profiles").select("full_name, avatar_url, role, verification_tier").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
         supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("connections").select("id", { count: "exact", head: true }).or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`).eq("status", "accepted"),
       ]);
-      setProfile(profileRes.data);
+      setProfile(profileRes.data ?? profileFullRes.data);
       setProfileFull(profileFullRes.data);
       setMyCredits(creditsCount.count || 0);
       setMyConnections(connectionsCount.count || 0);

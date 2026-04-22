@@ -19,6 +19,7 @@ import { UniversalClaimFlow } from "@/components/onboarding/claim-flow/Universal
 import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/BrandLogo";
+import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<string>("signup");

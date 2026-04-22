@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { OnboardingCelebration } from "@/components/onboarding/OnboardingCelebration";
+import { ProfileLaunchScreen } from "@/components/onboarding/ProfileLaunchScreen";
 import { useAuth } from "@/hooks/useAuth";
 import { ROLE_OPTIONS } from "@/components/profile/ProfileEditDialog";
 import { LOCATION_HIERARCHY } from "@/lib/locationGroups";
@@ -594,24 +595,67 @@ export default function Onboarding() {
                 )}
               </Button>
 
-              {/* Not found state */}
+              {/* Wave 2: Empty-search fallback — turn failure into guided success */}
               {notFound && (
-                <div className="border border-amber-500/20 rounded-xl p-4 bg-amber-500/5 space-y-3">
+                <div className="rounded-xl border border-energy/30 bg-gradient-to-br from-energy/5 via-card to-primary/5 p-4 space-y-4 animate-fade-in">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">We couldn't find a match</p>
+                    <div className="h-9 w-9 rounded-lg bg-energy/15 flex items-center justify-center shrink-0">
+                      <Sparkles className="h-4 w-4 text-energy" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-bold">We couldn't find your work yet — let's build it together.</p>
                       <p className="text-xs text-muted-foreground">
-                        Try adding a professional URL above (LinkedIn, IMDb, Spotify, etc.) for better results, or set up your profile manually.
+                        Pick the fastest path to your first credit:
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => { setNotFound(false); document.querySelector<HTMLInputElement>('input[placeholder*="LinkedIn"]')?.focus(); }}>
-                      <Link2 className="h-3.5 w-3.5" /> Add a URL & retry
+
+                  {/* Import options */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { label: "YouTube", icon: "📺", url: "https://youtube.com/@" },
+                      { label: "Instagram", icon: "📸", url: "https://instagram.com/" },
+                      { label: "Portfolio", icon: "🌐", url: "https://" },
+                    ].map(opt => (
+                      <button
+                        key={opt.label}
+                        type="button"
+                        onClick={() => {
+                          setNotFound(false);
+                          setProfileUrl(opt.url);
+                          setTimeout(() => {
+                            const input = document.querySelector<HTMLInputElement>('input[placeholder*="LinkedIn"]');
+                            input?.focus();
+                            input?.setSelectionRange(opt.url.length, opt.url.length);
+                          }, 30);
+                        }}
+                        className="flex flex-col items-center gap-1 p-2.5 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-all"
+                      >
+                        <span className="text-lg leading-none">{opt.icon}</span>
+                        <span className="text-[11px] font-semibold">{opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="gap-1.5 h-9"
+                      onClick={() => {
+                        setNotFound(false);
+                        handleSkipToManual();
+                      }}
+                    >
+                      <Edit3 className="h-3.5 w-3.5" /> Add first project
                     </Button>
-                    <Button variant="secondary" size="sm" className="flex-1 gap-1.5" onClick={handleSkipToManual}>
-                      <Edit3 className="h-3.5 w-3.5" /> Set up manually
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 h-9 text-muted-foreground"
+                      onClick={handleSkipToManual}
+                    >
+                      Skip for now →
                     </Button>
                   </div>
                 </div>
@@ -871,11 +915,17 @@ export default function Onboarding() {
           <ImageCropDialog imageUrl={tempImageUrl} open={showCropDialog} onClose={() => { setShowCropDialog(false); setTempImageUrl(""); }} onCropComplete={uploadAvatar} loading={uploadingAvatar} />
         </Card>
 
-        <OnboardingCelebration
+        <ProfileLaunchScreen
           open={showCelebration}
           onOpenChange={setShowCelebration}
-          userName={fullName}
-          userRole={role}
+          userId={userId}
+          fullName={fullName}
+          role={role}
+          avatarUrl={avatarUrl}
+          topCredit={
+            discoveredCredits.find((_, i) => selectedCredits.has(i))?.project_name || null
+          }
+          creditsCount={selectedCredits.size}
           pendingConnect={pendingConnectForCelebration}
         />
       </div>

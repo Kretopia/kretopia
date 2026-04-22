@@ -113,22 +113,10 @@ export const SignInForm = ({
         )}
       </div>
 
-      {/* Primary: Google (one-tap) */}
-      <Button
-        type="button"
-        size="lg"
-        className="w-full h-12 gap-2 bg-foreground text-background hover:bg-foreground/90"
-        onClick={onGoogleSignIn}
-        disabled={googleLoading}
-      >
-        {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Chrome className="h-4 w-4" />}
-        Continue with Google
-      </Button>
-
-      {/* Primary: Magic link */}
+      {/* PRIMARY: Magic link (loudest, brand lime — no password recall needed) */}
       {magicSent ? (
-        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">
-          <Mail className="h-5 w-5 text-primary mx-auto mb-2" />
+        <div className="rounded-xl border border-energy/40 bg-energy/5 p-4 text-center">
+          <Mail className="h-5 w-5 text-energy mx-auto mb-2" />
           <p className="text-sm font-semibold">Sign-in link sent</p>
           <p className="text-xs text-muted-foreground mt-1">Check {email} (and your spam folder)</p>
           <button
@@ -143,23 +131,47 @@ export const SignInForm = ({
       ) : (
         <Button
           type="button"
-          variant="outline"
+          variant="hero"
           size="lg"
-          className="w-full h-12 gap-2 border-primary/30 hover:bg-primary/5"
+          className="w-full h-12 gap-2"
           onClick={sendMagicLink}
           disabled={magicLoading}
         >
-          {magicLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
+          {magicLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
           Email me a sign-in link
         </Button>
       )}
 
-      {/* Apple (smaller, tertiary) */}
+      {/* OR divider */}
+      <div className="relative py-1">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-background px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Or
+          </span>
+        </div>
+      </div>
+
+      {/* SECONDARY: Google (outlined, brand-friendly on dark) */}
       <Button
         type="button"
-        variant="ghost"
+        variant="outline"
         size="lg"
-        className="w-full h-11 gap-2 text-muted-foreground hover:text-foreground"
+        className="w-full h-12 gap-2 bg-card hover:bg-muted/40"
+        onClick={onGoogleSignIn}
+        disabled={googleLoading}
+      >
+        {googleLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Chrome className="h-4 w-4" />}
+        Continue with Google
+      </Button>
+
+      {/* TERTIARY: Apple (real iOS-black pill, not faded ghost) */}
+      <Button
+        type="button"
+        size="lg"
+        className="w-full h-12 gap-2 bg-foreground text-background hover:bg-foreground/90"
         onClick={onAppleSignIn}
         disabled={appleLoading}
       >

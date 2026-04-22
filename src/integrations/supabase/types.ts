@@ -7263,6 +7263,8 @@ export type Database = {
           current_streak: number | null
           daily_swipes: number | null
           date_of_birth: string | null
+          day2_engagement_sent_at: string | null
+          day5_engagement_sent_at: string | null
           discogs_verified: boolean | null
           double_xp_expires_at: string | null
           email_verified: boolean
@@ -7420,6 +7422,8 @@ export type Database = {
           current_streak?: number | null
           daily_swipes?: number | null
           date_of_birth?: string | null
+          day2_engagement_sent_at?: string | null
+          day5_engagement_sent_at?: string | null
           discogs_verified?: boolean | null
           double_xp_expires_at?: string | null
           email_verified?: boolean
@@ -7577,6 +7581,8 @@ export type Database = {
           current_streak?: number | null
           daily_swipes?: number | null
           date_of_birth?: string | null
+          day2_engagement_sent_at?: string | null
+          day5_engagement_sent_at?: string | null
           discogs_verified?: boolean | null
           double_xp_expires_at?: string | null
           email_verified?: boolean

@@ -383,6 +383,12 @@ export default function Onboarding() {
         catch (e) { console.error("[Onboarding] Welcome match:", e); }
       }
 
+      // After-Claim Engagement Loop — seed personalized in-app nudges (non-blocking)
+      try {
+        const { seedAfterClaimNudges } = await import("@/lib/afterClaimNudges");
+        await seedAfterClaimNudges(user.id, { role, location });
+      } catch (e) { console.error("[Onboarding] after-claim nudges:", e); }
+
       // Process pending event join
       const pendingEventJoin = sessionStorage.getItem("pending_event_join");
       if (pendingEventJoin && user) {

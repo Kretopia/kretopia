@@ -555,16 +555,6 @@ export const UnifiedHome = () => {
             className="mb-4"
           />
 
-          {/* Search */}
-          <p className="text-[11px] text-muted-foreground/70 mb-1.5">
-            {t("home.searchHint")}
-          </p>
-          <UnifiedSearchDropdown
-            variant="inline"
-            className="mb-4"
-            placeholder={t("landing.searchPlaceholder")}
-          />
-
           <InviteCircleCard variant="home" className="mb-4" />
           <StartCircleNudgeCard className="mb-4" />
 

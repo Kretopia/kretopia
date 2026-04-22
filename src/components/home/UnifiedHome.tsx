@@ -349,14 +349,7 @@ export const UnifiedHome = () => {
                   build verified credits, connect with collaborators, and get paid.
                 </p>
 
-                <div className="flex items-center justify-center lg:justify-start gap-3 flex-wrap">
-                  <Link to="/auth?tab=signup" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-7 py-3.5 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
-                    Find Your People <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                  <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-5 py-3.5 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
-                    <Briefcase className="h-4 w-4 text-primary" /> Browse Gigs
-                  </Link>
-                </div>
+                {/* Primary CTAs moved below the social-proof row for stronger conversion */}
               </div>
 
               {/* RIGHT — Cinematic creator image with overlays */}

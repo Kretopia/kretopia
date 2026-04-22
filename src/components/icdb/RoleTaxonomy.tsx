@@ -80,7 +80,7 @@ export const RoleTaxonomy = ({ onSelect, selectedIndustry }: RoleTaxonomyProps) 
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-primary" />
-          ICDB Role Taxonomy
+          Role Taxonomy
           <Badge variant="secondary" className="text-[10px] ml-auto">{roles.length} roles</Badge>
         </CardTitle>
       </CardHeader>

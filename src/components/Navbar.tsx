@@ -346,6 +346,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                   <Separator className="my-3" />
 
+                  <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Circles</p>
+                  <MenuButton icon={UserPlus} label="Create a Circle" onClick={() => handleNavigation("/circles?create=1")} />
+                  {myCirclesCount > 0 && (
+                    <MenuButton icon={MessageSquareMore} label={`My Circles (${myCirclesCount})`} onClick={() => handleNavigation("/circles?tab=mine")} />
+                  )}
+
+                  <Separator className="my-3" />
+
                   <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">ThriveIN</p>
                   <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />
                   <MenuButton icon={Globe} label="About Us" onClick={() => handleNavigation("/about")} />

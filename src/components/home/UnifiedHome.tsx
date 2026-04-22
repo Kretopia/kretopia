@@ -405,14 +405,33 @@ export const UnifiedHome = () => {
               </div>
             </div>
 
+            {/* Highlighted "Search yourself" block — lime-glowing frame to make it pop */}
             <div className="max-w-xl mx-auto mb-5">
-              <p className="text-[11px] sm:text-xs text-muted-foreground/70 mb-1.5 text-center">
-                {t("landing.searchHint")}
-              </p>
-              <UnifiedSearchDropdown
-                variant="hero"
-                placeholder={t("landing.searchPlaceholder")}
-              />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Or</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
+              <div className="text-center mb-3">
+                <p className="inline-flex items-center gap-2 text-sm sm:text-base font-black text-energy">
+                  <Sparkles className="h-4 w-4 text-energy" />
+                  Already have work? Search your name
+                  <Sparkles className="h-4 w-4 text-energy" />
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  We'll find your verified credits across the web
+                </p>
+              </div>
+
+              <div className="relative rounded-2xl p-[2px] bg-gradient-to-r from-energy via-primary to-energy shadow-[0_0_30px_-5px_hsl(var(--energy)/0.5)]">
+                <div className="rounded-[14px] bg-card">
+                  <UnifiedSearchDropdown
+                    variant="hero"
+                    placeholder={t("landing.searchPlaceholder")}
+                  />
+                </div>
+              </div>
             </div>
             <div className="mb-6">
               <DiscoverCreativesRow />

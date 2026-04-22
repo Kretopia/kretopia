@@ -135,14 +135,11 @@ export const UnifiedHome = () => {
         creatorsQuery = creatorsQuery.neq("user_id", user.id);
       }
 
-      const [creditsRes, creatorsRes, gigsRes, statsCreators, statsCredits, statsGigs, statsConnections, eventsRes] = await Promise.all([
+      const [creditsRes, creatorsRes, gigsRes, publicStatsRes, eventsRes] = await Promise.all([
         creditsQuery.limit(20),
         creatorsQuery,
         gigsQuery,
-        supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
-        supabase.from("credits").select("id", { count: "exact", head: true }),
-        supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("status", "active"),
-        supabase.from("connections").select("id", { count: "exact", head: true }).eq("status", "accepted"),
+        supabase.functions.invoke("public-stats"),
         (async () => {
           // Country-filtered upcoming events (derive country from profile.location: "City, Country")
           const loc = (myProfile as any)?.location || "";

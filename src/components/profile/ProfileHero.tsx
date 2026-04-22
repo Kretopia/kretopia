@@ -287,29 +287,29 @@ export const ProfileHero = ({
                 )}
               </div>
             )}
+
+            {/* Primary actions — inline under identity to fill avatar height */}
+            {isOwnProfile && (
+              <div className="flex gap-1.5 flex-wrap pt-1.5">
+                <Button variant="outline" size="sm" className="h-8 px-2.5" onClick={onShare} aria-label="Share profile">
+                  <Share2 className="h-3.5 w-3.5" />
+                </Button>
+                {onEPKEditor && (
+                  <Button variant="outline" size="sm" className="h-8 gap-1 px-2.5 text-xs" onClick={onEPKEditor}>
+                    <FileDown className="h-3.5 w-3.5" />
+                    EPK
+                  </Button>
+                )}
+                {dashboardTrigger}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Primary actions — moved above the fold */}
+        {/* Non-owner actions */}
+        {!isOwnProfile && (
         <div className="flex gap-2 flex-wrap">
-          {isOwnProfile ? (
-            <>
-              <Button variant="default" size="sm" onClick={onEdit} className="gap-1.5 h-9 flex-1 min-w-0">
-                <Edit className="h-3.5 w-3.5" />
-                Edit Profile
-              </Button>
-              <Button variant="outline" size="sm" className="h-9 px-3" onClick={onShare} aria-label="Share profile">
-                <Share2 className="h-3.5 w-3.5" />
-              </Button>
-              {onEPKEditor && (
-                <Button variant="outline" size="sm" className="h-9 gap-1.5 px-3" onClick={onEPKEditor}>
-                  <FileDown className="h-3.5 w-3.5" />
-                  EPK
-                </Button>
-              )}
-              {dashboardTrigger}
-            </>
-          ) : isUnclaimedProfile ? (
+          {isUnclaimedProfile ? (
             <>
               <Button 
                 size="sm" 
@@ -354,6 +354,7 @@ export const ProfileHero = ({
             </>
           )}
         </div>
+        )}
 
         {/* Thrive Status Bar — only show if there's progress to display */}
         {(hasProgress || profile.badge) && (

@@ -51,7 +51,7 @@ export const SocialProofSection = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10 sm:mb-14">
-          <Badge variant="outline" className="mb-4 gap-1.5 border-accent/40 text-accent bg-accent/5">
+          <Badge variant="outline" className="mb-4 gap-1.5 border-energy/40 text-energy bg-energy/5">
             <Sparkles className="w-3 h-3" />
             Live network signal
           </Badge>
@@ -69,9 +69,9 @@ export const SocialProofSection = () => {
           {headlineStats.map((s) => (
             <div
               key={s.label}
-              className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm p-5 sm:p-6 text-center hover:border-accent/40 transition-colors"
+              className="rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6 text-center hover:border-energy/40 transition-colors"
             >
-              <s.icon className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 text-accent" />
+              <s.icon className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 text-energy" />
               <p className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">{s.value}</p>
               <p className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground mt-1 font-medium">
                 {s.label}

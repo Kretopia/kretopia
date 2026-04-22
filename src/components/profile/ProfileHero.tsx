@@ -220,7 +220,18 @@ export const ProfileHero = ({
               </div>
             )}
 
-            {/* Meta row */}
+            {/* Intent badges — public signal of what they're here to do */}
+            {(profile.primary_intents || profile.primary_intent) && (
+              <div className="pt-1">
+                <IntentBadge
+                  intents={profile.primary_intents ?? profile.primary_intent}
+                  size="sm"
+                  showAll
+                />
+              </div>
+            )}
+
+
             <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
               {displayLocation && (
                 <span className="flex items-center gap-1">

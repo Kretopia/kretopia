@@ -16,7 +16,10 @@ const EMBEDDED_VERSION = __BUILD_VERSION__;
 
 const isCapacitor = typeof (window as any)?.Capacitor !== 'undefined';
 
+import { clearAppServiceWorkerData, isStandalonePWA } from './serviceWorker';
+
 export async function checkForNewVersion() {
+  if (!isStandalonePWA()) return;
   // In dev the embedded version is "dev" and version.json also says "dev" — no-op
   if (EMBEDDED_VERSION === 'dev') return;
 
@@ -66,17 +69,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 async function purgeAllCaches() {
-  // 1. Delete every Cache Storage entry (Workbox precache, runtime, etc.)
-  if ('caches' in window) {
-    const keys = await caches.keys();
-    await Promise.all(keys.map((k) => caches.delete(k)));
-  }
-
-  // 2. Unregister all service workers so the next load fetches fresh SW
-  if ('serviceWorker' in navigator) {
-    const regs = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(regs.map((r) => r.unregister()));
-  }
+  await clearAppServiceWorkerData();
 }
 
 // TypeScript: declare the global injected by Vite define

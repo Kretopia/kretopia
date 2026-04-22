@@ -9,9 +9,12 @@
  * where visibilitychange doesn't always fire reliably.
  */
 
+import { getAppServiceWorkerRegistration, isStandalonePWA } from './serviceWorker';
+
 const isCapacitor = typeof (window as any)?.Capacitor !== 'undefined';
 
 export function initSWUpdateListener() {
+  if (!isStandalonePWA()) return;
   if (!('serviceWorker' in navigator)) return;
 
   // When a new SW takes control, reload to get fresh assets
@@ -56,7 +59,7 @@ export function initSWUpdateListener() {
 
 async function checkForUpdate() {
   try {
-    const reg = await navigator.serviceWorker.getRegistration();
+    const reg = await getAppServiceWorkerRegistration();
     if (reg) {
       await reg.update();
       // If there's a waiting SW, force it to activate

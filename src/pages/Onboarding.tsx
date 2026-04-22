@@ -882,16 +882,11 @@ export default function Onboarding() {
                 {/* Primary intent — what brings them here */}
                 <div className="space-y-2 pt-1">
                   <Label className="text-xs text-muted-foreground">What are you here to do?</Label>
-                  {(() => {
-                    const { IntentPicker } = require("@/components/intent/IntentPicker");
-                    return (
-                      <IntentPicker
-                        value={primaryIntent ?? undefined}
-                        onChange={(v: any) => setPrimaryIntent(v)}
-                        compact
-                      />
-                    );
-                  })()}
+                  <IntentPicker
+                    value={primaryIntent ?? undefined}
+                    onChange={(v) => setPrimaryIntent(v)}
+                    compact
+                  />
                   <p className="text-[11px] text-muted-foreground">
                     We'll tune your home, matches, and nudges around this. You can switch any time.
                   </p>

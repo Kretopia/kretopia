@@ -139,8 +139,16 @@ const Messages = () => {
         analytics.featureUsed("conversation_opened", { partner_id: selectedConversation });
       };
       trackConversation();
+
+      // Prefill greeting when arriving from a fresh match — removes blank-page friction
+      const fromMatch = searchParams.get("from") === "match";
+      if (fromMatch && !newMessage) {
+        const firstName = otherUser?.name?.split(" ")[0] || "there";
+        setNewMessage(`Hey ${firstName}! Excited we matched 👋 `);
+        setTimeout(() => inputRef.current?.focus(), 200);
+      }
     }
-  }, [selectedConversation, currentUserId]);
+  }, [selectedConversation, currentUserId, otherUser?.name]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

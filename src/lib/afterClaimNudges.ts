@@ -1,16 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { PrimaryIntent } from "./intents";
 
 /**
  * After-Claim Engagement Loop — Day 0 in-app nudges.
- * Fires immediately after onboarding completes. Inserts up to 3 personalized
+ * Fires immediately after onboarding completes. Inserts personalized
  * notifications so the user opens the app to actual signal, not silence.
  *
+ * Intent-aware: seeds 1-2 extra nudges per selected intent.
  * Idempotent: skips if user already has any of these category notifications.
  */
 export async function seedAfterClaimNudges(userId: string, opts: {
   role?: string | null;
   location?: string | null;
-  intent?: "collaborate" | "gigs" | "fund" | "manage" | null;
+  /** Multi-select intents (max 2). Legacy single `intent` still accepted. */
+  intents?: PrimaryIntent[] | null;
+  intent?: PrimaryIntent | null;
 }): Promise<void> {
   try {
     // Idempotency — skip if we've already seeded
@@ -26,9 +30,12 @@ export async function seedAfterClaimNudges(userId: string, opts: {
 
     const role = (opts.role || "").trim();
     const location = (opts.location || "").trim();
+    const intents: PrimaryIntent[] = opts.intents?.length
+      ? opts.intents
+      : (opts.intent ? [opts.intent] : []);
     const notifications: any[] = [];
 
-    // 1. Matching gigs (by role keyword)
+    // 1. Matching gigs (by role keyword) — universal but boosted for "gigs" intent
     if (role) {
       const { data: gigs } = await supabase
         .from("opportunities")
@@ -42,7 +49,7 @@ export async function seedAfterClaimNudges(userId: string, opts: {
           user_id: userId,
           type: "gig_match",
           category: "after_claim",
-          priority: "high",
+          priority: intents.includes("gigs") ? "high" : "normal",
           title: `${gigs.length} gig${gigs.length > 1 ? "s" : ""} match your role`,
           message: `Active opportunities matching "${role}". Apply with one tap using your verified profile.`,
           action_text: "Browse matching gigs",
@@ -70,7 +77,7 @@ export async function seedAfterClaimNudges(userId: string, opts: {
         user_id: userId,
         type: "creator_match",
         category: "after_claim",
-        priority: "normal",
+        priority: intents.includes("collaborate") ? "high" : "normal",
         title: location
           ? `${nearbyCount} creator${nearbyCount === 1 ? "" : "s"} in ${location}`
           : `${nearbyCount} creator${nearbyCount === 1 ? "" : "s"} like you`,
@@ -83,7 +90,72 @@ export async function seedAfterClaimNudges(userId: string, opts: {
       });
     }
 
-    // 3. EPK / share nudge — universal
+    // 3. Intent-specific power nudges
+    for (const intent of intents) {
+      if (intent === "gigs") {
+        notifications.push({
+          user_id: userId,
+          type: "intent_nudge",
+          category: "after_claim",
+          priority: "high",
+          title: "🎯 Get hired faster",
+          message: "Profiles with 3+ credits get hired 4x more. Add your work history now.",
+          action_text: "Add credits",
+          action_url: "/profile/edit",
+          read: false,
+        });
+      } else if (intent === "collaborate") {
+        notifications.push({
+          user_id: userId,
+          type: "intent_nudge",
+          category: "after_claim",
+          priority: "high",
+          title: "🤝 Find your circle",
+          message: "Message 3 creators this week — collaborations start with hello.",
+          action_text: "Browse Match",
+          action_url: "/circle",
+          read: false,
+        });
+      } else if (intent === "fund") {
+        notifications.push({
+          user_id: userId,
+          type: "intent_nudge",
+          category: "after_claim",
+          priority: "high",
+          title: "🚀 Launch your campaign",
+          message: "Draft your first ThriveFund campaign — no platform fee on first $1k raised.",
+          action_text: "Start a campaign",
+          action_url: "/thrivefund/new",
+          read: false,
+        });
+      } else if (intent === "hire") {
+        notifications.push({
+          user_id: userId,
+          type: "intent_nudge",
+          category: "after_claim",
+          priority: "high",
+          title: "🧑‍💼 Post your first gig",
+          message: "Reach verified creators in minutes. The top profiles are already on ThriveIN.",
+          action_text: "Post opportunity",
+          action_url: "/post-opportunity",
+          read: false,
+        });
+      } else if (intent === "manage") {
+        notifications.push({
+          user_id: userId,
+          type: "intent_nudge",
+          category: "after_claim",
+          priority: "high",
+          title: "🗂️ Set up your workspace",
+          message: "Spin up your first project workspace — invoices, files, and tasks in one place.",
+          action_text: "Open Desk",
+          action_url: "/projects",
+          read: false,
+        });
+      }
+    }
+
+    // 4. EPK / share nudge — universal
     notifications.push({
       user_id: userId,
       type: "share_profile",

@@ -73,8 +73,8 @@ export default function Onboarding() {
   const [emailToVerify, setEmailToVerify] = useState("");
   const [resendingEmail, setResendingEmail] = useState(false);
 
-  // Primary intent — what the user is here to do
-  const [primaryIntent, setPrimaryIntent] = useState<import("@/lib/intents").PrimaryIntent | null>(null);
+  // Primary intents — what the user is here to do (multi-select max 2)
+  const [primaryIntents, setPrimaryIntents] = useState<import("@/lib/intents").PrimaryIntent[]>([]);
 
   useEffect(() => {
     if (user) checkOnboardingStatus();
@@ -360,8 +360,9 @@ export default function Onboarding() {
         professional_skills: skillObjects.length > 0 ? skillObjects as any : null,
         onboarding_completed: true,
         onboarding_step: 6,
-        ...(primaryIntent ? {
-          primary_intent: primaryIntent,
+        ...(primaryIntents.length > 0 ? {
+          primary_intents: primaryIntents,
+          primary_intent: primaryIntents[0], // legacy mirror for back-compat
           intent_set_at: new Date().toISOString(),
           intent_week_start: weekStart,
         } : {}),
@@ -401,7 +402,7 @@ export default function Onboarding() {
       // After-Claim Engagement Loop — seed personalized in-app nudges (non-blocking)
       try {
         const { seedAfterClaimNudges } = await import("@/lib/afterClaimNudges");
-        await seedAfterClaimNudges(user.id, { role, location, intent: primaryIntent });
+        await seedAfterClaimNudges(user.id, { role, location, intents: primaryIntents });
       } catch (e) { console.error("[Onboarding] after-claim nudges:", e); }
 
       // Process pending event join
@@ -883,8 +884,8 @@ export default function Onboarding() {
                 <div className="space-y-2 pt-1">
                   <Label className="text-xs text-muted-foreground">What are you here to do?</Label>
                   <IntentPicker
-                    value={primaryIntent ?? undefined}
-                    onChange={(v) => setPrimaryIntent(v)}
+                    value={primaryIntents}
+                    onChange={(v) => setPrimaryIntents(v)}
                     compact
                   />
                   <p className="text-[11px] text-muted-foreground">

@@ -1,18 +1,28 @@
 ---
 name: Primary Intent System
-description: 4-intent personalization (collaborate/gigs/fund/manage) drives onboarding final question, weekly Home card, starter checklist steps, and after-claim nudges
+description: Multi-select intent (max 2, 5 options) drives onboarding, weekly Home card, starter checklist, intent-based nudges, and public profile badges
 type: feature
 ---
-Users pick one of 4 primary intents during onboarding (and can refresh weekly on Home).
+Users pick up to 2 of 5 primary intents during onboarding. Editable weekly on Home.
 
-**Intents** (`src/lib/intents.ts`): collaborate · gigs · fund · manage
+**Intents** (`src/lib/intents.ts`): gigs · collaborate · fund · hire · manage
+- 💰 gigs — Find paid work
+- 🤝 collaborate — Collaborate
+- 🚀 fund — Fund a project (ThriveFund)
+- 🧑‍💼 hire — Hire creatives (brands)
+- 🗂️ manage — Manage my work
 
-**Storage** (profiles): `primary_intent`, `intent_set_at`, `intent_week_start` (Monday YYYY-MM-DD). Constraint enforces enum values.
+**Storage** (profiles): `primary_intents text[]` (max 2, validated by trigger), `primary_intent` (legacy mirror = first item), `intent_set_at`, `intent_week_start` (Monday YYYY-MM-DD).
 
 **Where it shows**:
-- `src/components/intent/IntentPicker.tsx` — reusable 4-card picker (compact mode for Home)
-- `src/pages/Onboarding.tsx` review phase, just above Launch button
-- `src/components/home/WeeklyIntentCard.tsx` — appears on Home when `intent_week_start !== current Monday`
-- `src/components/home/NewMemberStarterCard.tsx` — 4 starter steps swap based on intent (collaborate→browse Match, gigs→apply, fund→ThriveFund, manage→projects/invoices)
+- `src/components/intent/IntentPicker.tsx` — multi-select picker (compact for Home), auto-replaces oldest when 3rd tapped
+- `src/components/intent/IntentBadge.tsx` — public lime-dot badge ("Looking for paid work" etc) — used on ProfileHero
+- `src/pages/Onboarding.tsx` review phase, just above Launch
+- `src/components/home/WeeklyIntentCard.tsx` — appears on Home when `intent_week_start !== current Monday`. Has Save/Cancel.
+- `src/components/home/NewMemberStarterCard.tsx` — 4 starter steps swap based on FIRST intent (gigs→apply, collaborate→Match, fund→ThriveFund, hire→post gig, manage→projects/invoices)
+- `src/lib/afterClaimNudges.ts` — seeds 1 high-priority intent_nudge per selected intent on Day 0 (multi-intent aware, accepts `intents[]` or legacy `intent`)
+- `src/components/profile/ProfileHero.tsx` — IntentBadge below role/sub-roles
 
-**Brand**: purple primary border on selected card, lime energy dot accent. Emojis: 🤝 🎯 🚀 🗂️.
+**Phase 2 (deferred)**: Home feed re-ordering by intent, matching boost (gigs↔hire complementary), profile settings edit page, badges on creator cards.
+
+**Brand**: purple primary border on selected card, lime energy dot accent + check icon. Emojis above.

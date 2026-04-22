@@ -565,43 +565,8 @@ export const UnifiedHome = () => {
             placeholder={t("landing.searchPlaceholder")}
           />
 
-          {/* Quick stats: live network signals */}
-          <div className="grid grid-cols-3 gap-2.5 mb-4">
-            {[
-              { label: t("home.credits"), value: myCredits, to: "/profile", icon: Database, color: "text-primary" },
-              { label: t("home.connections"), value: myConnections, to: "/circle", icon: Users, color: "text-accent" },
-              { label: t("home.liveGigs"), value: stats.gigs, to: "/opportunities", icon: Briefcase, color: "text-success" },
-            ].map(s => (
-              <Link key={s.label} to={s.to} className="group relative overflow-hidden rounded-xl border border-border bg-card p-3 hover:border-primary/30 transition-all text-center">
-                <s.icon className={`h-3.5 w-3.5 ${s.color} mx-auto mb-1 opacity-60`} />
-                <p className="text-lg font-bold text-foreground">{s.value}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">{s.label}</p>
-              </Link>
-            ))}
-          </div>
-
           <InviteCircleCard variant="home" className="mb-4" />
           <StartCircleNudgeCard className="mb-4" />
-
-          <div className="grid grid-cols-4 gap-2 mb-5">
-            {[
-              { icon: PlusCircle, label: t("home.postHire"), action: () => setQuickPostType("gig"), color: "text-success" },
-              { icon: Database, label: t("home.credits"), to: "/credits", color: "text-primary" },
-              { icon: CalendarDays, label: t("home.events"), action: () => setQuickPostType("event"), color: "text-warning" },
-              { icon: Briefcase, label: t("home.desk"), to: "/desk", color: "text-accent" },
-            ].map((a) => (
-              <button
-                key={a.label}
-                onClick={() => a.action ? a.action() : navigate(a.to!)}
-                className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl hover:bg-muted/50 transition-colors"
-              >
-                <div className="h-10 w-10 rounded-xl bg-muted/60 flex items-center justify-center">
-                  <a.icon className={`h-5 w-5 ${a.color}`} />
-                </div>
-                <span className="text-[10px] font-medium text-muted-foreground">{a.label}</span>
-              </button>
-            ))}
-          </div>
 
           <PushNotificationPrompt trigger="default" className="mb-4" />
         </div>

@@ -140,10 +140,10 @@ export const ProfileHero = ({
       )}
 
       {/* Header Card */}
-      <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 space-y-5">
-        
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 space-y-4">
+
         {/* Top: Avatar + Identity */}
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           {/* Avatar */}
           <div className="relative group flex-shrink-0">
             <FramedAvatar
@@ -156,9 +156,10 @@ export const ProfileHero = ({
               <Button
                 size="icon"
                 variant="secondary"
-                className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                 onClick={onAvatarClick}
                 disabled={isUploadingAvatar}
+                aria-label="Change avatar"
               >
                 {isUploadingAvatar ? (
                   <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-background border-t-foreground" />
@@ -171,73 +172,64 @@ export const ProfileHero = ({
 
           {/* Identity */}
           <div className="flex-1 min-w-0 space-y-1.5">
-            {/* Name + Badges */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight line-clamp-1">{displayName}</h1>
-              
-              {profile.verification_status === 'verified' && (
-                <div className="flex items-center justify-center h-5 w-5 rounded-full bg-primary">
-                  <Shield className="h-3 w-3 text-primary-foreground" />
-                </div>
-              )}
-              
-              {isIndustryVerified && !isOwnProfile && (
-                <Badge className="h-5 px-2 bg-energy text-energy-foreground border-0 text-[10px] font-black uppercase tracking-wider gap-0.5 shadow-glow-lime">
-                  <Star className="h-2.5 w-2.5 fill-current" />
-                  Industry
-                </Badge>
-              )}
-              
-              {isUnclaimedProfile && (
-                <Badge variant="secondary" className="h-5 text-[10px] bg-accent/10 text-accent-foreground border-accent/20">
-                  Unclaimed
-                </Badge>
-              )}
-
-              {!isOwnProfile && !degreeLoading && degree && degree > 0 && (
-                <DegreeBadge degree={degree} size="sm" />
-              )}
-
-              <CreativeCircleBadge userId={profile.user_id} />
-            </div>
-
-            {/* Role + Sub-roles (specialties) */}
-            {displayRole && (
-              <p className="text-sm text-muted-foreground font-medium">{displayRole}</p>
-            )}
-            {Array.isArray(profile.sub_roles) && profile.sub_roles.length > 0 && (
-              <div className="flex flex-wrap gap-1 pt-0.5">
-                {profile.sub_roles.slice(0, 4).map((r: string) => (
-                  <Badge key={r} variant="outline" className="text-[10px] h-5 px-1.5 font-medium">
-                    {r}
-                  </Badge>
-                ))}
-                {profile.sub_roles.length > 4 && (
-                  <Badge variant="outline" className="text-[10px] h-5 px-1.5">
-                    +{profile.sub_roles.length - 4}
+            {/* Name + verification + quick edit */}
+            <div className="flex items-start gap-2">
+              <div className="flex-1 min-w-0 flex items-center gap-1.5 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-tight line-clamp-2 break-words">{displayName}</h1>
+                {profile.verification_status === 'verified' && (
+                  <div className="flex items-center justify-center h-5 w-5 rounded-full bg-primary shrink-0" title="Verified">
+                    <Shield className="h-3 w-3 text-primary-foreground" />
+                  </div>
+                )}
+                {isIndustryVerified && !isOwnProfile && (
+                  <Badge className="h-5 px-2 bg-energy text-energy-foreground border-0 text-[10px] font-black uppercase tracking-wider gap-0.5 shadow-glow-lime">
+                    <Star className="h-2.5 w-2.5 fill-current" />
+                    Industry
                   </Badge>
                 )}
+                {isUnclaimedProfile && (
+                  <Badge variant="secondary" className="h-5 text-[10px] bg-accent/10 text-accent-foreground border-accent/20">
+                    Unclaimed
+                  </Badge>
+                )}
+                {!isOwnProfile && !degreeLoading && degree && degree > 0 && (
+                  <DegreeBadge degree={degree} size="sm" />
+                )}
+                <CreativeCircleBadge userId={profile.user_id} />
               </div>
+              {isOwnProfile && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 shrink-0 -mt-1 -mr-1 text-muted-foreground hover:text-foreground"
+                  onClick={onEdit}
+                  aria-label="Edit profile"
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+
+            {/* Role */}
+            {displayRole && (
+              <p className="text-sm text-muted-foreground font-medium leading-tight">{displayRole}</p>
             )}
 
-            {/* Intent badges — public signal of what they're here to do */}
-            {(profile.primary_intents || profile.primary_intent) && (
-              <div className="pt-1">
-                <IntentBadge
-                  intents={profile.primary_intents ?? profile.primary_intent}
-                  size="sm"
-                  showAll
-                />
-              </div>
-            )}
-
-
-            <div className="flex items-center gap-2.5 text-xs text-muted-foreground flex-wrap">
+            {/* Location · availability · rating · response — single condensed meta row */}
+            <div className="flex items-center gap-x-2 gap-y-1 text-xs text-muted-foreground flex-wrap">
               {displayLocation && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  {displayLocation}
+                <span className="flex items-center gap-1 min-w-0">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{displayLocation}</span>
                 </span>
+              )}
+              {(isOwnProfile || profile.availability_status || profile.availability) && (
+                <AvailabilityIndicator
+                  status={profile.availability_status || profile.availability}
+                  note={profile.availability_note}
+                  isOwnProfile={isOwnProfile}
+                  onRefresh={isOwnProfile ? onRefresh : undefined}
+                />
               )}
               {profile.average_rating != null && profile.average_rating > 0 && (
                 <span className="flex items-center gap-1 text-foreground font-medium">
@@ -248,160 +240,74 @@ export const ProfileHero = ({
               {profile.avg_response_hours != null && profile.avg_response_hours > 0 && (
                 <span className="flex items-center gap-1 text-primary font-medium">
                   <Clock className="h-3 w-3" />
-                  {profile.avg_response_hours < 1 
-                    ? '< 1hr' 
-                    : profile.avg_response_hours < 24 
-                      ? `~${Math.round(profile.avg_response_hours)}hr` 
+                  {profile.avg_response_hours < 1
+                    ? '< 1hr'
+                    : profile.avg_response_hours < 24
+                      ? `~${Math.round(profile.avg_response_hours)}hr`
                       : `~${Math.round(profile.avg_response_hours / 24)}d`}
                 </span>
               )}
-              {/* Availability */}
-              {isOwnProfile ? (
-                <AvailabilityIndicator
-                  status={profile.availability_status || profile.availability}
-                  note={profile.availability_note}
-                  isOwnProfile={true}
-                  onRefresh={onRefresh}
-                />
-              ) : (profile.availability_status || profile.availability) && (
-                <AvailabilityIndicator
-                  status={profile.availability_status || profile.availability}
-                  note={profile.availability_note}
-                  isOwnProfile={false}
-                />
-              )}
             </div>
 
-            {/* Rate Card */}
-            {(profile.hourly_rate || profile.project_rate) ? (
-              <div className="flex items-center gap-2 flex-wrap">
+            {/* Specialties (sub-roles) */}
+            {Array.isArray(profile.sub_roles) && profile.sub_roles.length > 0 && (
+              <div className="flex flex-wrap gap-1 pt-0.5">
+                {profile.sub_roles.slice(0, 3).map((r: string) => (
+                  <Badge key={r} variant="outline" className="text-[10px] h-5 px-1.5 font-medium">
+                    {r}
+                  </Badge>
+                ))}
+                {profile.sub_roles.length > 3 && (
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5">
+                    +{profile.sub_roles.length - 3}
+                  </Badge>
+                )}
+              </div>
+            )}
+
+            {/* Intent + rates — secondary signal row */}
+            {((profile.primary_intents || profile.primary_intent) || profile.hourly_rate || profile.project_rate) && (
+              <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                {(profile.primary_intents || profile.primary_intent) && (
+                  <IntentBadge
+                    intents={profile.primary_intents ?? profile.primary_intent}
+                    size="sm"
+                    showAll
+                  />
+                )}
                 {profile.hourly_rate && (
-                  <Badge variant="outline" className="text-[10px] font-medium bg-success/5 border-success/25 text-success">
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-medium bg-success/5 border-success/25 text-success">
                     {currencySymbol}{profile.hourly_rate}/hr
                   </Badge>
                 )}
                 {profile.project_rate && (
-                  <Badge variant="outline" className="text-[10px] font-medium bg-success/5 border-success/25 text-success">
-                    From {currencySymbol}{profile.project_rate}/project
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-medium bg-success/5 border-success/25 text-success">
+                    From {currencySymbol}{profile.project_rate}
                   </Badge>
                 )}
               </div>
-            ) : null}
-          </div>
-        </div>
-
-        {/* Thrive Status Bar */}
-        <div className="rounded-xl bg-muted/50 p-3 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className={`text-xs font-bold tracking-wide uppercase ${statusResult.color}`}>{statusResult.label}</span>
-              {profile.badge && (
-                <Badge variant="secondary" className="h-4 text-[9px] px-1.5">
-                  {profile.badge === 'founder' ? '👑 Founder' : 
-                   profile.badge === 'og' ? 'OG' : 
-                   profile.badge === 'odos' ? '🌿 ODOS' :
-                   profile.badge === 'official' ? '✓ Official' : 'Beta'}
-                </Badge>
-              )}
-            </div>
-            {statusResult.nextTier && hasProgress && (
-              <span className="text-[10px] text-muted-foreground">
-                {statusResult.progress[0]?.needed - statusResult.progress[0]?.current} more {statusResult.progress[0]?.label.toLowerCase()} to {nextTierLabel}
-              </span>
             )}
           </div>
-          {statusResult.progress.length > 0 && (
-            <div className="h-1.5 rounded-full bg-border overflow-hidden">
-              <div 
-                className={cn("h-full rounded-full bg-gradient-to-r transition-all duration-500 from-primary to-primary/70")}
-                style={{ width: `${Math.min(100, (statusResult.progress[0].current / statusResult.progress[0].needed) * 100)}%` }}
-              />
-            </div>
-          )}
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-4 gap-3">
-          <div className="text-center">
-            <span className="text-lg font-bold block leading-tight">{stats.circle}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Circle</span>
-          </div>
-          <div className="text-center">
-            <span className="text-lg font-bold block leading-tight">{stats.projects}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Projects</span>
-          </div>
-          <div className="text-center">
-            <span className="text-lg font-black block leading-tight">{creditsCount}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Credits</span>
-            {verifiedCreditsCount > 0 && (
-              <span className="text-[9px] text-energy font-black uppercase tracking-wider block">{verifiedCreditsCount} verified</span>
-            )}
-          </div>
-          <div className="text-center">
-            <span className="text-lg font-bold block leading-tight">{stats.responseRate}%</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Response</span>
-          </div>
-        </div>
-
-        {/* Trust Signals */}
-        <TrustSignals
-          emailVerified={(profile as any).email_verified}
-          phoneVerified={(profile as any).phone_verified}
-          idVerified={(profile as any).id_verified}
-          paymentVerified={(profile as any).payment_verified}
-          compact
-        />
-
-        {/* Connection Path */}
-        {!isOwnProfile && !degreeLoading && degree === 2 && path.length > 0 && (
-          <ConnectionPathDisplay path={path} />
-        )}
-        
-        {/* Achievement Badges */}
-        {profile.achievement_badges?.length > 0 && (
-          <AchievementBadges 
-            achievements={profile.achievement_badges || []}
-            size="sm"
-            maxDisplay={3}
-          />
-        )}
-
-        {/* Bio */}
-        {profile.bio && (
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {profile.bio}
-          </p>
-        )}
-
-        {/* Social Stats — inline under bio */}
-        <SocialStatsInline
-          youtubeSubscribers={profile.youtube_subscribers}
-          instagramFollowers={profile.instagram_followers}
-          tiktokFollowers={profile.tiktok_followers}
-          spotifyListeners={profile.spotify_listeners}
-          twitterFollowers={profile.twitter_followers}
-          linkedinConnections={profile.linkedin_connections}
-          verifiedMetrics={profile.verified_metrics}
-        />
-
-        {/* Action Buttons */}
-        <div className="flex gap-2 flex-wrap pt-1">
+        {/* Primary actions — moved above the fold */}
+        <div className="flex gap-2 flex-wrap">
           {isOwnProfile ? (
             <>
-              <Button variant="default" size="sm" onClick={onEdit} className="gap-1.5 h-9 flex-1">
+              <Button variant="default" size="sm" onClick={onEdit} className="gap-1.5 h-9 flex-1 min-w-0">
                 <Edit className="h-3.5 w-3.5" />
                 Edit Profile
               </Button>
-               <Button variant="outline" size="sm" className="h-9" onClick={onShare}>
-                 <Share2 className="h-3.5 w-3.5" />
-               </Button>
-               {onEPKEditor && (
-                 <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={onEPKEditor}>
-                   <FileDown className="h-3.5 w-3.5" />
-                   EPK
-                 </Button>
-               )}
-               {dashboardTrigger}
+              <Button variant="outline" size="sm" className="h-9 px-3" onClick={onShare} aria-label="Share profile">
+                <Share2 className="h-3.5 w-3.5" />
+              </Button>
+              {onEPKEditor && (
+                <Button variant="outline" size="sm" className="h-9 gap-1.5 px-3" onClick={onEPKEditor}>
+                  <FileDown className="h-3.5 w-3.5" />
+                  EPK
+                </Button>
+              )}
+              {dashboardTrigger}
             </>
           ) : isUnclaimedProfile ? (
             <>
@@ -448,8 +354,104 @@ export const ProfileHero = ({
             </>
           )}
         </div>
+
+        {/* Thrive Status Bar */}
+        <div className="rounded-xl bg-muted/40 p-3 space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={cn("text-xs font-bold tracking-wide uppercase truncate", statusResult.color)}>{statusResult.label}</span>
+              {profile.badge && (
+                <Badge variant="secondary" className="h-4 text-[9px] px-1.5 shrink-0">
+                  {profile.badge === 'founder' ? '👑 Founder' :
+                   profile.badge === 'og' ? 'OG' :
+                   profile.badge === 'odos' ? '🌿 ODOS' :
+                   profile.badge === 'official' ? '✓ Official' : 'Beta'}
+                </Badge>
+              )}
+            </div>
+            {statusResult.nextTier && hasProgress && (
+              <span className="text-[10px] text-muted-foreground text-right shrink-0">
+                +{statusResult.progress[0]?.needed - statusResult.progress[0]?.current} to {nextTierLabel}
+              </span>
+            )}
+          </div>
+          {statusResult.progress.length > 0 && (
+            <div className="h-1.5 rounded-full bg-border overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r transition-all duration-500 from-primary to-primary/70"
+                style={{ width: `${Math.min(100, (statusResult.progress[0].current / statusResult.progress[0].needed) * 100)}%` }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Stats Grid — equal-height cells; verified shown as compact chip */}
+        <div className="grid grid-cols-4 gap-2 sm:gap-3">
+          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
+            <span className="text-lg font-bold block leading-tight">{stats.circle}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Circle</span>
+          </div>
+          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
+            <span className="text-lg font-bold block leading-tight">{stats.projects}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Projects</span>
+          </div>
+          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
+            <span className="text-lg font-black block leading-tight">{creditsCount}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Credits</span>
+            {verifiedCreditsCount > 0 && (
+              <span className="mt-0.5 inline-flex items-center gap-0.5 text-[8px] text-energy font-black uppercase tracking-wider">
+                <Shield className="h-2 w-2" /> {verifiedCreditsCount}
+              </span>
+            )}
+          </div>
+          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
+            <span className="text-lg font-bold block leading-tight">{stats.responseRate}%</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Response</span>
+          </div>
+        </div>
+
+        {/* Trust Signals + Achievements — combined quiet row */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <TrustSignals
+            emailVerified={(profile as any).email_verified}
+            phoneVerified={(profile as any).phone_verified}
+            idVerified={(profile as any).id_verified}
+            paymentVerified={(profile as any).payment_verified}
+            compact
+          />
+          {profile.achievement_badges?.length > 0 && (
+            <AchievementBadges
+              achievements={profile.achievement_badges || []}
+              size="sm"
+              maxDisplay={3}
+            />
+          )}
+        </div>
+
+        {/* Connection Path */}
+        {!isOwnProfile && !degreeLoading && degree === 2 && path.length > 0 && (
+          <ConnectionPathDisplay path={path} />
+        )}
+
+        {/* Bio */}
+        {profile.bio && (
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {profile.bio}
+          </p>
+        )}
+
+        {/* Social Stats */}
+        <SocialStatsInline
+          youtubeSubscribers={profile.youtube_subscribers}
+          instagramFollowers={profile.instagram_followers}
+          tiktokFollowers={profile.tiktok_followers}
+          spotifyListeners={profile.spotify_listeners}
+          twitterFollowers={profile.twitter_followers}
+          linkedinConnections={profile.linkedin_connections}
+          verifiedMetrics={profile.verified_metrics}
+        />
       </div>
-      
+
       {/* Claim Profile Dialog */}
       <ClaimProfileDialog
         open={showClaimDialog}

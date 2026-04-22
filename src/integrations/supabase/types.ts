@@ -7325,6 +7325,7 @@ export type Database = {
           preferred_currency: string
           press_links: Json | null
           primary_intent: string | null
+          primary_intents: string[] | null
           professional_skills: Json | null
           profile_frame: string | null
           profile_source: string | null
@@ -7487,6 +7488,7 @@ export type Database = {
           preferred_currency?: string
           press_links?: Json | null
           primary_intent?: string | null
+          primary_intents?: string[] | null
           professional_skills?: Json | null
           profile_frame?: string | null
           profile_source?: string | null
@@ -7649,6 +7651,7 @@ export type Database = {
           preferred_currency?: string
           press_links?: Json | null
           primary_intent?: string | null
+          primary_intents?: string[] | null
           professional_skills?: Json | null
           profile_frame?: string | null
           profile_source?: string | null

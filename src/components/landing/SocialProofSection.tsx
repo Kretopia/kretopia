@@ -55,14 +55,9 @@ export const SocialProofSection = () => {
             <Sparkles className="w-3 h-3" />
             Live network signal
           </Badge>
-          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight mb-3 text-foreground">
-            Built by creators.{" "}
-            <span
-              className="block sm:inline bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent"
-              style={{ filter: "drop-shadow(0 0 24px hsl(var(--primary) / 0.4))" }}
-            >
-              Proven by data.
-            </span>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.95] text-foreground mb-5">
+            Built by creators.<br />
+            <span className="text-energy-glow">Proven by data.</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
             Real numbers from the network — updated automatically. No vanity metrics.

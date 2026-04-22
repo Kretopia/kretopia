@@ -18,6 +18,7 @@ import { template as thrivefundPledgeConfirmed } from './thrivefund-pledge-confi
 import { template as thrivefundCampaignFunded } from './thrivefund-campaign-funded.tsx'
 import { template as thrivefundCampaignFailed } from './thrivefund-campaign-failed.tsx'
 import { template as eventBlast } from './event-blast.tsx'
+import { template as day2Engagement } from './day2-engagement.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-confirmation': applicationConfirmation,
@@ -29,4 +30,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'thrivefund-campaign-funded': thrivefundCampaignFunded,
   'thrivefund-campaign-failed': thrivefundCampaignFailed,
   'event-blast': eventBlast,
+  'day2-engagement': day2Engagement,
 }

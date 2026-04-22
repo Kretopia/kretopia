@@ -238,14 +238,14 @@ export const ProfileHubCard = ({
               label="Profile views"
               value={viewsWeek}
               color="text-primary"
-              to="/profile?tab=insights"
+              to="/profile"
             />
             <ReachStat
               icon={Search}
               label="Search hits"
               value={searchAppearances}
               color="text-accent"
-              to="/profile?tab=insights"
+              to="/profile"
             />
             <ReachStat
               icon={ShieldCheck}

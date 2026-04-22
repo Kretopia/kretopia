@@ -21,7 +21,7 @@ import heroCreators from "@/assets/hero-creators.jpg";
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
-import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
+// StickyMobileCTA removed — dismissible popup handles guest CTA
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";

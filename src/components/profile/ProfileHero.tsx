@@ -354,8 +354,104 @@ export const ProfileHero = ({
             </>
           )}
         </div>
+
+        {/* Thrive Status Bar */}
+        <div className="rounded-xl bg-muted/40 p-3 space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={cn("text-xs font-bold tracking-wide uppercase truncate", statusResult.color)}>{statusResult.label}</span>
+              {profile.badge && (
+                <Badge variant="secondary" className="h-4 text-[9px] px-1.5 shrink-0">
+                  {profile.badge === 'founder' ? '👑 Founder' :
+                   profile.badge === 'og' ? 'OG' :
+                   profile.badge === 'odos' ? '🌿 ODOS' :
+                   profile.badge === 'official' ? '✓ Official' : 'Beta'}
+                </Badge>
+              )}
+            </div>
+            {statusResult.nextTier && hasProgress && (
+              <span className="text-[10px] text-muted-foreground text-right shrink-0">
+                +{statusResult.progress[0]?.needed - statusResult.progress[0]?.current} to {nextTierLabel}
+              </span>
+            )}
+          </div>
+          {statusResult.progress.length > 0 && (
+            <div className="h-1.5 rounded-full bg-border overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r transition-all duration-500 from-primary to-primary/70"
+                style={{ width: `${Math.min(100, (statusResult.progress[0].current / statusResult.progress[0].needed) * 100)}%` }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Stats Grid — equal-height cells; verified shown as compact chip */}
+        <div className="grid grid-cols-4 gap-2 sm:gap-3">
+          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
+            <span className="text-lg font-bold block leading-tight">{stats.circle}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Circle</span>
+          </div>
+          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
+            <span className="text-lg font-bold block leading-tight">{stats.projects}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Projects</span>
+          </div>
+          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
+            <span className="text-lg font-black block leading-tight">{creditsCount}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Credits</span>
+            {verifiedCreditsCount > 0 && (
+              <span className="mt-0.5 inline-flex items-center gap-0.5 text-[8px] text-energy font-black uppercase tracking-wider">
+                <Shield className="h-2 w-2" /> {verifiedCreditsCount}
+              </span>
+            )}
+          </div>
+          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
+            <span className="text-lg font-bold block leading-tight">{stats.responseRate}%</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Response</span>
+          </div>
+        </div>
+
+        {/* Trust Signals + Achievements — combined quiet row */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <TrustSignals
+            emailVerified={(profile as any).email_verified}
+            phoneVerified={(profile as any).phone_verified}
+            idVerified={(profile as any).id_verified}
+            paymentVerified={(profile as any).payment_verified}
+            compact
+          />
+          {profile.achievement_badges?.length > 0 && (
+            <AchievementBadges
+              achievements={profile.achievement_badges || []}
+              size="sm"
+              maxDisplay={3}
+            />
+          )}
+        </div>
+
+        {/* Connection Path */}
+        {!isOwnProfile && !degreeLoading && degree === 2 && path.length > 0 && (
+          <ConnectionPathDisplay path={path} />
+        )}
+
+        {/* Bio */}
+        {profile.bio && (
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {profile.bio}
+          </p>
+        )}
+
+        {/* Social Stats */}
+        <SocialStatsInline
+          youtubeSubscribers={profile.youtube_subscribers}
+          instagramFollowers={profile.instagram_followers}
+          tiktokFollowers={profile.tiktok_followers}
+          spotifyListeners={profile.spotify_listeners}
+          twitterFollowers={profile.twitter_followers}
+          linkedinConnections={profile.linkedin_connections}
+          verifiedMetrics={profile.verified_metrics}
+        />
       </div>
-      
+
       {/* Claim Profile Dialog */}
       <ClaimProfileDialog
         open={showClaimDialog}

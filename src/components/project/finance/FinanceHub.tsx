@@ -67,6 +67,20 @@ export function FinanceHub({
   const navigate = useNavigate();
   const [invoices, setInvoices] = useState<InvoiceLite[]>([]);
   const [loading, setLoading] = useState(false);
+  const invoiceTriggerRef = useRef<HTMLDivElement>(null);
+  const milestonesRef = useRef<HTMLDivElement>(null);
+
+  // Intent: scroll to relevant section / nudge invoice creation
+  useDeskIntent("finance", useCallback((intent) => {
+    if (intent === "create-invoice") {
+      invoiceTriggerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Trigger the InvoiceGenerator dialog button if present
+      const btn = invoiceTriggerRef.current?.querySelector("button");
+      btn?.click();
+    } else if (intent === "create-milestone" || intent === "request-deposit") {
+      milestonesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []));
 
   const fetchInvoices = async () => {
     const { data } = await supabase

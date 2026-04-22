@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2, Eye, EyeOff, Mail, Sparkles, Chrome, KeyRound } from "lucide-react";
+import { AlertCircle, Loader2, Eye, EyeOff, Mail, Sparkles, Chrome } from "lucide-react";
 import { validateEmail, validatePassword } from "@/lib/validation";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";

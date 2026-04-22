@@ -416,21 +416,21 @@ const Auth = () => {
               <TabsContent value="signup">
                 {signupMode === "claim" ? (
                   <>
+                    <UniversalClaimFlow source="auth" />
+                    <div className="my-5 flex items-center gap-2">
+                      <div className="flex-1 h-px bg-border" />
+                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
+                        Or sign up in one tap
+                      </span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
                     <OAuthQuickButtons
                       onGoogle={() => handleOAuthSignIn("google")}
                       onApple={() => handleOAuthSignIn("apple")}
                       googleLoading={googleLoading}
                       appleLoading={appleLoading}
-                      label="Sign up in one tap"
+                      label=""
                     />
-                    <div className="my-5 flex items-center gap-2">
-                      <div className="flex-1 h-px bg-border" />
-                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">
-                        Or find your work
-                      </span>
-                      <div className="flex-1 h-px bg-border" />
-                    </div>
-                    <UniversalClaimFlow source="auth" />
                     <div className="mt-4 text-center">
                       <button
                         type="button"

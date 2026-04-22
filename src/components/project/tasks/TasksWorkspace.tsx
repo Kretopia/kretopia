@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useDeskIntent } from "@/hooks/useDeskIntent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -165,8 +166,18 @@ export const TasksWorkspace = ({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const openNew = (status = "todo") => { setEditingTask(null); setDefaultStatus(status); setEditorOpen(true); };
+  const openNew = useCallback((status = "todo") => { setEditingTask(null); setDefaultStatus(status); setEditorOpen(true); }, []);
   const openEdit = (t: Task) => { setEditingTask(t); setEditorOpen(true); };
+
+  // Listen for "create-task" intent from NextStepBar / AI / chat
+  useDeskIntent("tasks", useCallback((intent, payload) => {
+    if (intent === "create-task") {
+      setEditingTask(null);
+      setDefaultStatus(payload?.status || "todo");
+      // Note: TaskEditorDialog accepts task prop only; prefill via initial state on dialog open
+      setEditorOpen(true);
+    }
+  }, []));
 
   const toggleDone = async (t: Task) => {
     const next = t.status === "done" ? "todo" : "done";

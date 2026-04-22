@@ -9,7 +9,7 @@ export const DESK_TABS = [
   { id: "files", label: "Files", icon: FolderOpen },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "board", label: "Board", icon: LayoutGrid },
-  { id: "contracts", label: "Contracts", icon: FileSignature },
+  { id: "contracts", label: "Agreements", icon: FileSignature },
   { id: "approvals", label: "Approvals", icon: CheckCircle2 },
   { id: "finance", label: "Finance", icon: Wallet },
 ] as const;

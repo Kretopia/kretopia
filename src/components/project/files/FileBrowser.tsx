@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDeskIntent } from "@/hooks/useDeskIntent";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -90,6 +91,12 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
   useEffect(() => {
     localStorage.setItem("td_files_view", view);
   }, [view]);
+
+  // Intent listener: NextStepBar / AI / chat → trigger upload or new folder
+  useDeskIntent("files", useCallback((intent) => {
+    if (intent === "upload-file") fileInputRef.current?.click();
+    if (intent === "new-folder") setNewFolderOpen(true);
+  }, []));
 
   const fetchFolders = async () => {
     const { data } = await supabase

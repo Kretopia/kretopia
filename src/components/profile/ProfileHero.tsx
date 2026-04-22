@@ -354,6 +354,7 @@ export const ProfileHero = ({
             </>
           )}
         </div>
+        )}
 
         {/* Thrive Status Bar — only show if there's progress to display */}
         {(hasProgress || profile.badge) && (

@@ -17,7 +17,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { ROLE_OPTIONS } from "@/components/profile/ProfileEditDialog";
 import { LOCATION_HIERARCHY } from "@/lib/locationGroups";
 
-// Phase: "discover" (AI search) → "review" (confirm profile) → "verify" (email check)
+// Wave 1 reframe: Find your work → Confirm credits → Launch profile
+// (internal phase ids unchanged for analytics continuity)
 type OnboardingPhase = "discover" | "review" | "verify";
 
 const PROFESSIONAL_URLS = [

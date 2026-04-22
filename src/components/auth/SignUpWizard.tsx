@@ -34,25 +34,28 @@ export const SignUpWizard = ({
   loading, onSubmit,
   onGoogleSignIn, onAppleSignIn, googleLoading, appleLoading,
 }: SignUpWizardProps) => {
+  // Wave 1: dropped account-type fork. Everyone defaults to "individual".
+  // Brands/companies can upgrade later from settings.
   const [step, setStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 2;
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // Force individual on mount (was previously a user choice)
+  useEffect(() => {
+    if (accountType !== "individual") setAccountType("individual");
+  }, []);
+
   const handleNextStep = async () => {
     if (step === 1) {
-      const { analytics } = await import("@/lib/analytics");
-      analytics.featureUsed("signup_step", { step: 1, step_name: "account_type", account_type: accountType });
-      setStep(2);
-    } else if (step === 2) {
       const ev = validateEmail(email);
       if (!ev.valid) { setEmailError(ev.error || ""); return; }
       setEmailError("");
       const { analytics } = await import("@/lib/analytics");
-      analytics.featureUsed("signup_step", { step: 2, step_name: "email" });
-      setStep(3);
+      analytics.featureUsed("signup_step", { step: 1, step_name: "email" });
+      setStep(2);
     }
   };
 

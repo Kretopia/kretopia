@@ -278,10 +278,30 @@ export const HeroSection = () => {
           ))}
         </div>
 
-        {/* ═══════ SEARCH BAR ═══════ */}
+        {/* ═══════ ACTIVATION BLOCK — OAuth-first, search secondary ═══════ */}
         <div className="mb-6">
+          {/* Headline */}
+          <div className="text-center max-w-xl mx-auto mb-5">
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground leading-tight">
+              Turn your work into proof.<br className="hidden sm:block" />
+              <span className="text-primary"> Get discovered. Get paid.</span>
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+              Search your name, claim your credits, and build your creative identity.
+            </p>
+          </div>
+
+          {/* PRIMARY: One-tap OAuth */}
+          <div className="max-w-xl mx-auto mb-4">
+            <p className="text-center text-[10px] uppercase tracking-widest text-energy/80 font-bold mb-3">
+              👉 Join in 1 tap
+            </p>
+            <OAuthQuickButtons hideDivider />
+          </div>
+
+          {/* SECONDARY: Search */}
           <p className="text-center text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-3">
-            Search the creative economy
+            Or search the creative economy
           </p>
           <div ref={wrapperRef} className="relative max-w-xl mx-auto">
             <form onSubmit={handleSubmit}>
@@ -334,9 +354,6 @@ export const HeroSection = () => {
               </div>
             )}
           </div>
-
-          {/* One-tap OAuth — high-conversion shortcut into the same claim flow */}
-          <OAuthQuickButtons />
         </div>
 
         {/* ═══════ SOCIAL PROOF GRID ═══════ */}

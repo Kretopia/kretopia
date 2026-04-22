@@ -92,6 +92,12 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
     localStorage.setItem("td_files_view", view);
   }, [view]);
 
+  // Intent listener: NextStepBar / AI / chat → trigger upload or new folder
+  useDeskIntent("files", useCallback((intent) => {
+    if (intent === "upload-file") fileInputRef.current?.click();
+    if (intent === "new-folder") setNewFolderOpen(true);
+  }, []));
+
   const fetchFolders = async () => {
     const { data } = await supabase
       .from("project_file_folders")

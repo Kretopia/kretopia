@@ -140,7 +140,7 @@ export const ProfileHero = ({
       )}
 
       {/* Header Card */}
-      <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 space-y-4">
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-3">
 
         {/* Top: Avatar + Identity */}
         <div className="flex items-start gap-3 sm:gap-4">
@@ -355,78 +355,88 @@ export const ProfileHero = ({
           )}
         </div>
 
-        {/* Thrive Status Bar */}
-        <div className="rounded-xl bg-muted/40 p-3 space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className={cn("text-xs font-bold tracking-wide uppercase truncate", statusResult.color)}>{statusResult.label}</span>
-              {profile.badge && (
-                <Badge variant="secondary" className="h-4 text-[9px] px-1.5 shrink-0">
-                  {profile.badge === 'founder' ? '👑 Founder' :
-                   profile.badge === 'og' ? 'OG' :
-                   profile.badge === 'odos' ? '🌿 ODOS' :
-                   profile.badge === 'official' ? '✓ Official' : 'Beta'}
-                </Badge>
+        {/* Thrive Status Bar — only show if there's progress to display */}
+        {(hasProgress || profile.badge) && (
+          <div className="rounded-xl bg-muted/40 p-3 space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className={cn("text-xs font-bold tracking-wide uppercase truncate", statusResult.color)}>{statusResult.label}</span>
+                {profile.badge && (
+                  <Badge variant="secondary" className="h-4 text-[9px] px-1.5 shrink-0">
+                    {profile.badge === 'founder' ? '👑 Founder' :
+                     profile.badge === 'og' ? 'OG' :
+                     profile.badge === 'odos' ? '🌿 ODOS' :
+                     profile.badge === 'official' ? '✓ Official' : 'Beta'}
+                  </Badge>
+                )}
+              </div>
+              {statusResult.nextTier && hasProgress && (
+                <span className="text-[10px] text-muted-foreground text-right shrink-0">
+                  +{statusResult.progress[0]?.needed - statusResult.progress[0]?.current} to {nextTierLabel}
+                </span>
               )}
             </div>
-            {statusResult.nextTier && hasProgress && (
-              <span className="text-[10px] text-muted-foreground text-right shrink-0">
-                +{statusResult.progress[0]?.needed - statusResult.progress[0]?.current} to {nextTierLabel}
-              </span>
+            {hasProgress && (
+              <div className="h-1.5 rounded-full bg-border overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r transition-all duration-500 from-primary to-primary/70"
+                  style={{ width: `${Math.min(100, (statusResult.progress[0].current / statusResult.progress[0].needed) * 100)}%` }}
+                />
+              </div>
             )}
           </div>
-          {statusResult.progress.length > 0 && (
-            <div className="h-1.5 rounded-full bg-border overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r transition-all duration-500 from-primary to-primary/70"
-                style={{ width: `${Math.min(100, (statusResult.progress[0].current / statusResult.progress[0].needed) * 100)}%` }}
-              />
+        )}
+
+        {/* Stats Grid — only render cells that have meaningful data */}
+        {(() => {
+          const cells = [
+            stats.circle > 0 && { label: "Circle", value: stats.circle, sub: null },
+            stats.projects > 0 && { label: "Projects", value: stats.projects, sub: null },
+            creditsCount > 0 && { label: "Credits", value: creditsCount, sub: verifiedCreditsCount > 0 ? verifiedCreditsCount : null },
+            stats.responseRate > 0 && { label: "Response", value: `${stats.responseRate}%`, sub: null },
+          ].filter(Boolean) as { label: string; value: string | number; sub: number | null }[];
+          if (cells.length === 0) return null;
+          return (
+            <div className={cn("grid gap-2 sm:gap-3", cells.length === 1 ? "grid-cols-1" : cells.length === 2 ? "grid-cols-2" : cells.length === 3 ? "grid-cols-3" : "grid-cols-4")}>
+              {cells.map((c) => (
+                <div key={c.label} className="text-center min-h-[48px] flex flex-col items-center justify-start">
+                  <span className="text-lg font-black block leading-tight">{c.value}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{c.label}</span>
+                  {c.sub != null && (
+                    <span className="mt-0.5 inline-flex items-center gap-0.5 text-[8px] text-energy font-black uppercase tracking-wider">
+                      <Shield className="h-2 w-2" /> {c.sub}
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
-        </div>
+          );
+        })()}
 
-        {/* Stats Grid — equal-height cells; verified shown as compact chip */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-3">
-          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
-            <span className="text-lg font-bold block leading-tight">{stats.circle}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Circle</span>
-          </div>
-          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
-            <span className="text-lg font-bold block leading-tight">{stats.projects}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Projects</span>
-          </div>
-          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
-            <span className="text-lg font-black block leading-tight">{creditsCount}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Credits</span>
-            {verifiedCreditsCount > 0 && (
-              <span className="mt-0.5 inline-flex items-center gap-0.5 text-[8px] text-energy font-black uppercase tracking-wider">
-                <Shield className="h-2 w-2" /> {verifiedCreditsCount}
-              </span>
-            )}
-          </div>
-          <div className="text-center min-h-[52px] flex flex-col items-center justify-start">
-            <span className="text-lg font-bold block leading-tight">{stats.responseRate}%</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Response</span>
-          </div>
-        </div>
-
-        {/* Trust Signals + Achievements — combined quiet row */}
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <TrustSignals
-            emailVerified={(profile as any).email_verified}
-            phoneVerified={(profile as any).phone_verified}
-            idVerified={(profile as any).id_verified}
-            paymentVerified={(profile as any).payment_verified}
-            compact
-          />
-          {profile.achievement_badges?.length > 0 && (
-            <AchievementBadges
-              achievements={profile.achievement_badges || []}
-              size="sm"
-              maxDisplay={3}
-            />
-          )}
-        </div>
+        {/* Trust Signals + Achievements — only renders if any are active */}
+        {(() => {
+          const hasTrust = (profile as any).email_verified || (profile as any).phone_verified || (profile as any).id_verified || (profile as any).payment_verified;
+          const hasAchievements = profile.achievement_badges?.length > 0;
+          if (!hasTrust && !hasAchievements) return null;
+          return (
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <TrustSignals
+                emailVerified={(profile as any).email_verified}
+                phoneVerified={(profile as any).phone_verified}
+                idVerified={(profile as any).id_verified}
+                paymentVerified={(profile as any).payment_verified}
+                compact
+              />
+              {hasAchievements && (
+                <AchievementBadges
+                  achievements={profile.achievement_badges || []}
+                  size="sm"
+                  maxDisplay={3}
+                />
+              )}
+            </div>
+          );
+        })()}
 
         {/* Connection Path */}
         {!isOwnProfile && !degreeLoading && degree === 2 && path.length > 0 && (

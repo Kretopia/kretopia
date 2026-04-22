@@ -94,7 +94,7 @@ export const UnifiedHome = () => {
       if (user) {
         const { data } = await supabase
           .from("profiles")
-          .select("role, professional_skills, passion_skills, location")
+          .select("role, professional_skills, passion_skills, location, primary_intent, primary_intents")
           .eq("user_id", user.id)
           .single();
         myProfile = data;
@@ -112,6 +112,7 @@ export const UnifiedHome = () => {
       }
       const myRole = myProfile?.role || "";
       const myLocation = myProfile?.location || "";
+      const myIntents = normalizeIntents(myProfile?.primary_intents ?? myProfile?.primary_intent);
 
       let creditsQuery = supabase
         .from("credits")

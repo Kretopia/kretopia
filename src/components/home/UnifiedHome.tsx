@@ -16,6 +16,7 @@ import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
+import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import heroCreators from "@/assets/hero-creators.jpg";
 
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";

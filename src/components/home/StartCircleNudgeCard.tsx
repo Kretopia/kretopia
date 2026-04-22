@@ -51,10 +51,9 @@ export function StartCircleNudgeCard({ className }: Props) {
       let hasHostedWithRsvps = false;
       if (hostedIds.length > 0) {
         const { count: rsvpCount } = await supabase
-          .from("session_rsvps")
+          .from("jam_participants")
           .select("id", { count: "exact", head: true })
-          .in("session_id", hostedIds)
-          .limit(1);
+          .in("jam_id", hostedIds);
         hasHostedWithRsvps = (rsvpCount ?? 0) > 0;
       }
 

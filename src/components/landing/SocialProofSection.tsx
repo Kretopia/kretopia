@@ -57,7 +57,10 @@ export const SocialProofSection = () => {
           </Badge>
           <h2 className="text-3xl sm:text-5xl font-bold tracking-tight mb-3 text-foreground">
             Built by creators.{" "}
-            <span className="text-accent" style={{ textShadow: "0 0 24px hsl(var(--accent) / 0.45)" }}>
+            <span
+              className="block sm:inline bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent"
+              style={{ filter: "drop-shadow(0 0 24px hsl(var(--primary) / 0.4))" }}
+            >
               Proven by data.
             </span>
           </h2>

@@ -23,6 +23,12 @@ Users pick up to 2 of 5 primary intents during onboarding. Editable weekly on Ho
 - `src/lib/afterClaimNudges.ts` — seeds 1 high-priority intent_nudge per selected intent on Day 0 (multi-intent aware, accepts `intents[]` or legacy `intent`)
 - `src/components/profile/ProfileHero.tsx` — IntentBadge below role/sub-roles
 
-**Phase 2 (deferred)**: Home feed re-ordering by intent, matching boost (gigs↔hire complementary), profile settings edit page, badges on creator cards.
+**Phase 2 (shipped)**: Intent-based feed re-ordering + matching boost via `src/lib/intentMatching.ts`.
+- `intentBoostForCreator(mine, theirs)` — +8 per complementary pair (capped 20), returns reason string
+- `intentBoostForGig(mine)` — +10 if "gigs", +4 if "collaborate"
+- Wired into `UnifiedHome.tsx` (creators + gigs sort) and `SmartConnectionSuggestions.tsx` (match score + reason)
+- Complementary pairs: gigs↔hire, collaborate↔collaborate, fund↔collaborate, manage↔hire
+
+**Phase 3 (deferred)**: Settings page edit, badges on creator cards, intent on swipe deck.
 
 **Brand**: purple primary border on selected card, lime energy dot accent + check icon. Emojis above.

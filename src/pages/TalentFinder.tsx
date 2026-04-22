@@ -114,8 +114,8 @@ export default function TalentFinder() {
   return (
     <PageTransition>
       <Helmet>
-        <title>AI Talent Finder | ThriveIN</title>
-        <meta name="description" content="Describe your project and let AI find the best creative talent for you." />
+        <title>Smart Talent Finder | ThriveIN</title>
+        <meta name="description" content="Describe your project and instantly find the best creative talent — ranked by verified work." />
       </Helmet>
 
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-24 space-y-4">
@@ -127,9 +127,9 @@ export default function TalentFinder() {
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-bold flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              AI Talent Finder
+              Smart Talent Finder
             </h1>
-            <p className="text-xs text-muted-foreground">Describe your project — paid or barter — AI finds the best creators</p>
+            <p className="text-xs text-muted-foreground">Describe your project — paid or barter — instantly ranked creator matches</p>
           </div>
           <Badge variant="secondary" className="gap-1 text-xs shrink-0">
             <Crown className="h-3 w-3 text-primary" /> Pro
@@ -138,8 +138,8 @@ export default function TalentFinder() {
 
         <FreeTierGate
           feature="aiApplicantRankings"
-          featureLabel="AI Talent Finder"
-          description="Upgrade to Pro to unlock AI-powered talent matching — describe your project and get instant ranked recommendations."
+          featureLabel="Smart Talent Finder"
+          description="Upgrade to Pro to unlock smart talent matching — describe your project and get instant ranked recommendations."
         >
           {/* Brief Input */}
           {!hasSearched || matches.length === 0 ? (

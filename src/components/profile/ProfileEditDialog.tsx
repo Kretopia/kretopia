@@ -552,7 +552,7 @@ export function ProfileEditDialog({
             {autoFilling ? (
               <><Loader2 className="h-4 w-4 animate-spin" /> Searching the web...</>
             ) : (
-              <><Search className="h-4 w-4" /> AI Auto-Fill from Web</>
+              <><Search className="h-4 w-4" /> Auto-Fill from Web</>
             )}
           </Button>
 

@@ -93,7 +93,7 @@ export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel, 
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="recommended">AI Recommended</SelectItem>
+            <SelectItem value="recommended">Smart Recommended</SelectItem>
             <SelectItem value="newest">Newest Members</SelectItem>
             <SelectItem value="active">Most Active</SelectItem>
             <SelectItem value="level">Highest Level</SelectItem>

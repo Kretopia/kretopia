@@ -84,7 +84,7 @@ const ICDBDiscovery = () => {
           <div className="container mx-auto px-4 py-8">
             <div className="flex items-center gap-2 mb-1">
               <Sparkles className="h-5 w-5 text-primary" />
-              <h1 className="text-xl font-bold tracking-tight">AI Discovery</h1>
+              <h1 className="text-xl font-bold tracking-tight">Smart Discovery</h1>
             </div>
             <p className="text-sm text-muted-foreground mb-5">
               Find creators matched by <span className="text-foreground font-medium">verified work history</span>, not just keywords.

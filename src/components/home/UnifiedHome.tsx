@@ -22,6 +22,7 @@ import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChoose
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
 import { StickyMobileCTA } from "@/components/landing/StickyMobileCTA";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
+import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
@@ -548,6 +549,7 @@ export const UnifiedHome = () => {
           </div>
 
           <InviteCircleCard variant="home" className="mb-4" />
+          <StartCircleNudgeCard className="mb-4" />
 
           <div className="grid grid-cols-4 gap-2 mb-5">
             {[

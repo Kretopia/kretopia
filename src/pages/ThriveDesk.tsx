@@ -154,6 +154,16 @@ const ThriveDesk = () => {
           />
         </header>
 
+        {/* Project Flow Timeline — visualizes lifecycle stages */}
+        <ProjectFlowTimeline
+          flow={flow}
+          onStageClick={(_stageId, tab) => setActiveTab(tab)}
+          onPinStage={handlePinStage}
+        />
+
+        {/* Persistent Next Step bar — drives users forward across all tabs */}
+        <NextStepBar nextStep={flow.nextStep} onAction={goToTabWithIntent} />
+
         {/* Tab Bar */}
         <DeskTabBar
           activeTab={activeTab}

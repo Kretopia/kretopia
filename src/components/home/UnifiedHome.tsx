@@ -27,6 +27,7 @@ import { PricingPreviewSection } from "@/components/landing/PricingPreviewSectio
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard";
 import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
+import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
@@ -556,6 +557,7 @@ export const UnifiedHome = () => {
             className="mb-4"
           />
 
+          <WeeklyIntentCard className="mb-4" />
           <NewMemberStarterCard className="mb-4" />
           <InviteCircleCard variant="home" className="mb-4" />
           <StartCircleNudgeCard className="mb-4" />

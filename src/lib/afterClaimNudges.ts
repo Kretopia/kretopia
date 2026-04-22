@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 export async function seedAfterClaimNudges(userId: string, opts: {
   role?: string | null;
   location?: string | null;
+  intent?: "collaborate" | "gigs" | "fund" | "manage" | null;
 }): Promise<void> {
   try {
     // Idempotency — skip if we've already seeded

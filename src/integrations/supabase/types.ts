@@ -7283,6 +7283,8 @@ export type Database = {
           instagram_followers: number | null
           instagram_url: string | null
           instagram_verified: boolean | null
+          intent_set_at: string | null
+          intent_week_start: string | null
           invite_code_used: string | null
           invited_by: string | null
           is_claimed: boolean | null
@@ -7322,6 +7324,7 @@ export type Database = {
           portfolio_verified: boolean | null
           preferred_currency: string
           press_links: Json | null
+          primary_intent: string | null
           professional_skills: Json | null
           profile_frame: string | null
           profile_source: string | null
@@ -7442,6 +7445,8 @@ export type Database = {
           instagram_followers?: number | null
           instagram_url?: string | null
           instagram_verified?: boolean | null
+          intent_set_at?: string | null
+          intent_week_start?: string | null
           invite_code_used?: string | null
           invited_by?: string | null
           is_claimed?: boolean | null
@@ -7481,6 +7486,7 @@ export type Database = {
           portfolio_verified?: boolean | null
           preferred_currency?: string
           press_links?: Json | null
+          primary_intent?: string | null
           professional_skills?: Json | null
           profile_frame?: string | null
           profile_source?: string | null
@@ -7601,6 +7607,8 @@ export type Database = {
           instagram_followers?: number | null
           instagram_url?: string | null
           instagram_verified?: boolean | null
+          intent_set_at?: string | null
+          intent_week_start?: string | null
           invite_code_used?: string | null
           invited_by?: string | null
           is_claimed?: boolean | null
@@ -7640,6 +7648,7 @@ export type Database = {
           portfolio_verified?: boolean | null
           preferred_currency?: string
           press_links?: Json | null
+          primary_intent?: string | null
           professional_skills?: Json | null
           profile_frame?: string | null
           profile_source?: string | null

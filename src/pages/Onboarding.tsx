@@ -17,6 +17,7 @@ import { ProfileLaunchScreen } from "@/components/onboarding/ProfileLaunchScreen
 import { useAuth } from "@/hooks/useAuth";
 import { ROLE_OPTIONS } from "@/components/profile/ProfileEditDialog";
 import { LOCATION_HIERARCHY } from "@/lib/locationGroups";
+import { IntentPicker } from "@/components/intent/IntentPicker";
 
 // Wave 1 reframe: Find your work → Confirm credits → Launch profile
 // (internal phase ids unchanged for analytics continuity)
@@ -71,6 +72,9 @@ export default function Onboarding() {
   // Email verification
   const [emailToVerify, setEmailToVerify] = useState("");
   const [resendingEmail, setResendingEmail] = useState(false);
+
+  // Primary intent — what the user is here to do
+  const [primaryIntent, setPrimaryIntent] = useState<import("@/lib/intents").PrimaryIntent | null>(null);
 
   useEffect(() => {
     if (user) checkOnboardingStatus();
@@ -342,6 +346,12 @@ export default function Onboarding() {
 
       // Save profile
       const skillObjects = skills.map(skill => ({ skill, level: 3, category: "General" }));
+      const weekStart = (() => {
+        const d = new Date();
+        const day = d.getDay() || 7;
+        d.setDate(d.getDate() - day + 1);
+        return d.toISOString().slice(0, 10);
+      })();
       await supabase.from("profiles").update({
         full_name: fullName.trim(),
         role: role.trim(),
@@ -350,7 +360,12 @@ export default function Onboarding() {
         professional_skills: skillObjects.length > 0 ? skillObjects as any : null,
         onboarding_completed: true,
         onboarding_step: 6,
-      }).eq("user_id", user.id);
+        ...(primaryIntent ? {
+          primary_intent: primaryIntent,
+          intent_set_at: new Date().toISOString(),
+          intent_week_start: weekStart,
+        } : {}),
+      } as any).eq("user_id", user.id);
 
       // Insert selected discovered credits
       const creditsToInsert = discoveredCredits
@@ -386,7 +401,7 @@ export default function Onboarding() {
       // After-Claim Engagement Loop — seed personalized in-app nudges (non-blocking)
       try {
         const { seedAfterClaimNudges } = await import("@/lib/afterClaimNudges");
-        await seedAfterClaimNudges(user.id, { role, location });
+        await seedAfterClaimNudges(user.id, { role, location, intent: primaryIntent });
       } catch (e) { console.error("[Onboarding] after-claim nudges:", e); }
 
       // Process pending event join
@@ -863,6 +878,19 @@ export default function Onboarding() {
                     </div>
                   </div>
                 )}
+
+                {/* Primary intent — what brings them here */}
+                <div className="space-y-2 pt-1">
+                  <Label className="text-xs text-muted-foreground">What are you here to do?</Label>
+                  <IntentPicker
+                    value={primaryIntent ?? undefined}
+                    onChange={(v) => setPrimaryIntent(v)}
+                    compact
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    We'll tune your home, matches, and nudges around this. You can switch any time.
+                  </p>
+                </div>
 
                 {/* Launch profile (Step 3) */}
                 <Button onClick={handleSaveProfile} disabled={loading} className="w-full h-12 text-base gap-2" size="lg">

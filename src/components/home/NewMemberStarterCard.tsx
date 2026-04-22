@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, Circle, Sparkles, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { intentMeta, type PrimaryIntent } from "@/lib/intents";
 
 interface StarterStep {
   id: string;
@@ -14,12 +15,14 @@ interface StarterStep {
 /**
  * Shown to users in their first 7 days post-onboarding.
  * 4-step starter checklist that pulls them into actual platform actions.
+ * Steps adapt to the user's primary_intent (collaborate / gigs / fund / manage).
  */
 export const NewMemberStarterCard = ({ className = "" }: { className?: string }) => {
   const { user } = useAuth();
   const [show, setShow] = useState(false);
   const [steps, setSteps] = useState<StarterStep[]>([]);
   const [dismissed, setDismissed] = useState(false);
+  const [intent, setIntent] = useState<PrimaryIntent | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -34,7 +37,7 @@ export const NewMemberStarterCard = ({ className = "" }: { className?: string })
       try {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("created_at, onboarding_completed, bio, avatar_url")
+          .select("created_at, onboarding_completed, bio, avatar_url, primary_intent")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -44,47 +47,67 @@ export const NewMemberStarterCard = ({ className = "" }: { className?: string })
         const ageDays = ageMs / (1000 * 60 * 60 * 24);
         if (ageDays > 7) return;
 
-        const [appliedRes, msgRes, eventRes] = await Promise.all([
-          supabase
-            .from("applications")
-            .select("id", { count: "exact", head: true })
-            .eq("applicant_id", user.id),
-          supabase
-            .from("messages")
-            .select("id", { count: "exact", head: true })
-            .eq("sender_id", user.id),
-          supabase
-            .from("jam_participants")
-            .select("id", { count: "exact", head: true })
-            .eq("user_id", user.id),
-        ]);
+        const userIntent = ((profile as any).primary_intent ?? null) as PrimaryIntent | null;
+        setIntent(userIntent);
 
-        const built: StarterStep[] = [
-          {
-            id: "profile",
-            label: "Add bio + photo",
-            href: "/profile/edit",
-            done: !!(profile.bio && profile.avatar_url),
-          },
-          {
-            id: "apply",
-            label: "Apply to your first gig",
-            href: "/opportunities",
-            done: (appliedRes.count ?? 0) > 0,
-          },
-          {
-            id: "message",
-            label: "Send your first message",
-            href: "/circle",
-            done: (msgRes.count ?? 0) > 0,
-          },
-          {
-            id: "event",
-            label: "Join an event near you",
-            href: "/nearby",
-            done: (eventRes.count ?? 0) > 0,
-          },
+        // Run all probe queries in parallel
+        const [appliedRes, msgRes, eventRes, connRes, projectRes, campaignRes, invoiceRes] =
+          await Promise.all([
+            supabase.from("applications").select("id", { count: "exact", head: true }).eq("applicant_id", user.id),
+            supabase.from("messages").select("id", { count: "exact", head: true }).eq("sender_id", user.id),
+            supabase.from("jam_participants").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+            supabase.from("connections").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "accepted"),
+            supabase.from("projects").select("id", { count: "exact", head: true }).eq("created_by", user.id),
+            supabase.from("campaigns").select("id", { count: "exact", head: true }).eq("creator_id", user.id),
+            supabase.from("invoices" as any).select("id", { count: "exact", head: true }).eq("user_id", user.id),
+          ]);
+
+        const profileDone = !!(profile.bio && profile.avatar_url);
+        const appliedDone = (appliedRes.count ?? 0) > 0;
+        const msgDone = (msgRes.count ?? 0) > 0;
+        const eventDone = (eventRes.count ?? 0) > 0;
+        const connDone = (connRes.count ?? 0) > 0;
+        const projectDone = (projectRes.count ?? 0) > 0;
+        const campaignDone = (campaignRes.count ?? 0) > 0;
+        const invoiceDone = ((invoiceRes as any).count ?? 0) > 0;
+
+        // Default (no intent) — generic starter
+        let built: StarterStep[] = [
+          { id: "profile", label: "Add bio + photo", href: "/profile/edit", done: profileDone },
+          { id: "apply", label: "Apply to your first gig", href: "/opportunities", done: appliedDone },
+          { id: "message", label: "Send your first message", href: "/circle", done: msgDone },
+          { id: "event", label: "Join an event near you", href: "/nearby", done: eventDone },
         ];
+
+        if (userIntent === "collaborate") {
+          built = [
+            { id: "profile", label: "Add bio + photo", href: "/profile/edit", done: profileDone },
+            { id: "browse", label: "Browse Match — find your circle", href: "/circle", done: connDone },
+            { id: "message", label: "Send your first message", href: "/circle", done: msgDone },
+            { id: "event", label: "Join a creative jam", href: "/nearby", done: eventDone },
+          ];
+        } else if (userIntent === "gigs") {
+          built = [
+            { id: "profile", label: "Polish your profile (bio + photo)", href: "/profile/edit", done: profileDone },
+            { id: "browse-gigs", label: "Browse open opportunities", href: "/opportunities", done: false },
+            { id: "apply", label: "Apply to your first gig", href: "/opportunities", done: appliedDone },
+            { id: "message", label: "DM a creator you'd hire", href: "/circle", done: msgDone },
+          ];
+        } else if (userIntent === "fund") {
+          built = [
+            { id: "profile", label: "Add bio + photo", href: "/profile/edit", done: profileDone },
+            { id: "browse-fund", label: "Explore ThriveFund campaigns", href: "/thrivefund", done: false },
+            { id: "campaign", label: "Draft your first campaign", href: "/thrivefund/new", done: campaignDone },
+            { id: "share", label: "Share your campaign link", href: "/thrivefund", done: false },
+          ];
+        } else if (userIntent === "manage") {
+          built = [
+            { id: "profile", label: "Add bio + photo", href: "/profile/edit", done: profileDone },
+            { id: "project", label: "Create your first project", href: "/projects", done: projectDone },
+            { id: "invoice", label: "Send your first invoice", href: "/thrivepay", done: invoiceDone },
+            { id: "invite", label: "Invite a collaborator", href: "/projects", done: connDone },
+          ];
+        }
 
         // Only show if at least one step still incomplete
         if (built.some((s) => !s.done)) {
@@ -96,13 +119,14 @@ export const NewMemberStarterCard = ({ className = "" }: { className?: string })
       }
     };
 
-    load();
+    load().catch((e) => console.error("[NewMemberStarterCard] load", e));
   }, [user]);
 
   if (!show || dismissed) return null;
 
   const doneCount = steps.filter((s) => s.done).length;
   const pct = Math.round((doneCount / steps.length) * 100);
+  const meta = intentMeta(intent);
 
   const handleDismiss = () => {
     if (user) localStorage.setItem(`starter-dismissed-${user.id}`, new Date().toISOString());
@@ -121,10 +145,12 @@ export const NewMemberStarterCard = ({ className = "" }: { className?: string })
 
       <div className="flex items-center gap-2 mb-1">
         <div className="h-8 w-8 rounded-xl bg-primary/15 flex items-center justify-center">
-          <Sparkles className="h-4 w-4 text-primary" />
+          {meta ? <span className="text-base" aria-hidden>{meta.emoji}</span> : <Sparkles className="h-4 w-4 text-primary" />}
         </div>
         <div>
-          <p className="text-sm font-bold text-foreground leading-tight">Your first week starter</p>
+          <p className="text-sm font-bold text-foreground leading-tight">
+            {meta ? `Your first week — ${meta.short}` : "Your first week starter"}
+          </p>
           <p className="text-[11px] text-muted-foreground">{doneCount} of {steps.length} done · {pct}%</p>
         </div>
       </div>

@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Calendar, Users, FolderKanban, ArrowRight } from "lucide-react";
+import { Sparkles, Calendar, Users, FolderKanban, ArrowRight, Hash } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface WelcomeProps {
   open: boolean;
@@ -11,11 +13,29 @@ interface WelcomeProps {
   onSwitchTab: (tab: string) => void;
 }
 
-/** Shown once after a user joins a circle — guides them to first activation step. */
+/** Shown once after a user joins a circle. Adapts based on what the member already has. */
 export function CircleWelcomeModal({ open, onOpenChange, circle, onSwitchTab }: WelcomeProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [creditCount, setCreditCount] = useState<number | null>(null);
 
-  const actions = [
+  useEffect(() => {
+    if (!open || !user?.id) return;
+    supabase
+      .from("credits")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .then(({ count }) => setCreditCount(count ?? 0));
+  }, [open, user?.id]);
+
+  const hasCredits = (creditCount ?? 0) > 0;
+
+  const tabActions = [
+    {
+      icon: Hash, label: "Say hi in chat",
+      desc: "Introduce yourself to the circle",
+      onClick: () => { onSwitchTab("chat"); onOpenChange(false); },
+    },
     {
       icon: Calendar, label: "Join an event",
       desc: "See what's happening this week",
@@ -44,27 +64,31 @@ export function CircleWelcomeModal({ open, onOpenChange, circle, onSwitchTab }: 
             Welcome to {circle?.title}!
           </DialogTitle>
           <DialogDescription>
-            You're in. Here's how to make it count.
+            {hasCredits
+              ? "You're in. Here's how to plug into the community."
+              : "You're in. Here's how to make it count."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2 mt-2">
-          {/* Add a credit prompt — the most important activation */}
-          <button
-            onClick={() => { navigate("/credits/new"); onOpenChange(false); }}
-            className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-accent/40 bg-accent/5 hover:bg-accent/10 transition-all text-left group"
-          >
-            <div className="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
-              <Sparkles className="h-5 w-5 text-accent" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm">Add your first credit</p>
-              <p className="text-[11px] text-muted-foreground">Show your work — unlocks opportunities</p>
-            </div>
-            <ArrowRight className="h-4 w-4 text-accent shrink-0 group-hover:translate-x-0.5 transition-transform" />
-          </button>
+          {/* Only nudge to add a credit if they don't have any yet */}
+          {!hasCredits && creditCount !== null && (
+            <button
+              onClick={() => { navigate("/credits/new"); onOpenChange(false); }}
+              className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-accent/40 bg-accent/5 hover:bg-accent/10 transition-all text-left group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center shrink-0">
+                <Sparkles className="h-5 w-5 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">Add your first credit</p>
+                <p className="text-[11px] text-muted-foreground">Show your work — unlocks opportunities</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-accent shrink-0 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          )}
 
-          {actions.map(a => (
+          {tabActions.map(a => (
             <button
               key={a.label}
               onClick={a.onClick}

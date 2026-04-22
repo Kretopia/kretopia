@@ -38,6 +38,8 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
   const { toast } = useToast();
   const [members, setMembers] = useState<CircleMember[]>([]);
   const [stats, setStats] = useState({ messagesThisWeek: 0, newMembersThisWeek: 0, totalReactions: 0, messagesLastWeek: 0, newMembersLastWeek: 0 });
+  const [eventCount, setEventCount] = useState(0);
+  const [projectCount, setProjectCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<'analytics' | 'members' | 'settings' | 'events' | 'invite'>('analytics');
   const [welcomeMessage, setWelcomeMessage] = useState("");
@@ -77,14 +79,19 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
 
-    const [membersRes, messagesRes, newMembersRes, reactionsRes, messagesLastRes, membersLastRes] = await Promise.all([
+    const [membersRes, messagesRes, newMembersRes, reactionsRes, messagesLastRes, membersLastRes, eventsRes, projectsRes] = await Promise.all([
       supabase.from("spark_room_members").select("user_id, role, joined_at").eq("room_id", circle.id).order("joined_at", { ascending: false }),
       supabase.from("spark_room_messages").select("id", { count: "exact", head: true }).eq("room_id", circle.id).gte("created_at", weekAgo),
       supabase.from("spark_room_members").select("id", { count: "exact", head: true }).eq("room_id", circle.id).gte("joined_at", weekAgo),
       supabase.from("spark_message_reactions").select("id", { count: "exact", head: true }).in("message_id", [circle.id]),
       supabase.from("spark_room_messages").select("id", { count: "exact", head: true }).eq("room_id", circle.id).gte("created_at", twoWeeksAgo).lt("created_at", weekAgo),
       supabase.from("spark_room_members").select("id", { count: "exact", head: true }).eq("room_id", circle.id).gte("joined_at", twoWeeksAgo).lt("joined_at", weekAgo),
+      supabase.from("creative_jams").select("id", { count: "exact", head: true }).eq("circle_id", circle.id),
+      supabase.from("projects").select("id", { count: "exact", head: true }).eq("spark_room_id", circle.id),
     ]);
+
+    setEventCount(eventsRes.count || 0);
+    setProjectCount(projectsRes.count || 0);
 
     if (membersRes.data?.length) {
       const userIds = membersRes.data.map(m => m.user_id);
@@ -162,6 +169,35 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
         {/* Analytics View */}
         {activeView === 'analytics' && (
           <div className="space-y-3">
+            {/* Leader Next Steps — guided activation */}
+            {(() => {
+              const steps: Array<{ done: boolean; label: string; cta: string; onClick: () => void }> = [
+                { done: circle.member_count >= 10, label: "Invite 10 members", cta: "Invite", onClick: () => setActiveView('invite') },
+                { done: eventCount > 0, label: "Host your first event", cta: "Create", onClick: () => setActiveView('events') },
+                { done: projectCount > 0, label: "Start a collaboration", cta: "Open Desk", onClick: () => window.location.assign('/desk?new=project') },
+                { done: stats.messagesThisWeek >= 5, label: "Get the chat moving (5 msgs/week)", cta: "Post", onClick: () => onClose() },
+              ];
+              const next = steps.find(s => !s.done);
+              if (!next) return null;
+              return (
+                <Card className="p-3 border-primary/30 bg-primary/5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-primary">Next step</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold leading-tight flex-1">{next.label}</p>
+                    <Button size="sm" className="h-7 text-xs shrink-0" onClick={next.onClick}>{next.cta}</Button>
+                  </div>
+                  <div className="flex gap-1 mt-2.5">
+                    {steps.map((s, i) => (
+                      <div key={i} className={cn("h-1 flex-1 rounded-full", s.done ? "bg-primary" : "bg-muted")} />
+                    ))}
+                  </div>
+                </Card>
+              );
+            })()}
+
             <div className="grid grid-cols-3 gap-2">
               <Card className="p-3 text-center">
                 <p className="text-2xl font-bold">{circle.member_count}</p>

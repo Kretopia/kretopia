@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { FileSignature, Plus, Clock, CheckCircle2, AlertTriangle, Shield } from "lucide-react";
+import { FileSignature, Plus, Clock, CheckCircle2, AlertTriangle, Shield, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ContractBuilder } from "./ContractBuilder";
 import { ContractViewer } from "./ContractViewer";
 import { formatDistanceToNow } from "date-fns";
+import { useDeskIntent } from "@/hooks/useDeskIntent";
 
 interface ContractsListProps {
   projectId: string;

@@ -244,20 +244,6 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
             )}>
               <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{section}</ReactMarkdown>
             </article>
-
-            {(i === 0 || i === 2) && categoryImages[i === 0 ? 0 : 1] && (
-              <figure className="my-10 rounded-xl overflow-hidden">
-                <img
-                  src={categoryImages[i === 0 ? 0 : 1]}
-                  alt={`Visual for ${article.category} — ${article.title}`}
-                  className="w-full aspect-[16/9] object-cover"
-                  loading="lazy"
-                />
-                <figcaption className="text-[11px] text-muted-foreground mt-2 text-center italic font-sans">
-                  ThriveIN Magazine — {article.category.charAt(0).toUpperCase() + article.category.slice(1)}
-                </figcaption>
-              </figure>
-            )}
           </div>
         ))}
 

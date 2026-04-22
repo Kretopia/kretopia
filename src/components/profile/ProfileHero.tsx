@@ -15,6 +15,7 @@ import { TrustSignals } from "./TrustSignals";
 import { AvailabilityIndicator } from "./AvailabilityIndicator";
 import { SocialStatsInline } from "./SocialStatsInline";
 import { CreativeCircleBadge } from "./CreativeCircleBadge";
+import { IntentBadge } from "@/components/intent/IntentBadge";
 
 interface ProfileHeroProps {
   profile: any;

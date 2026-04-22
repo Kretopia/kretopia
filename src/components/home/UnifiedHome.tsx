@@ -398,14 +398,8 @@ export const UnifiedHome = () => {
               </div>
             </div>
 
-            {/* Highlighted "Search yourself" block — lime-glowing frame to make it pop */}
-            <div className="max-w-xl mx-auto mb-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Or</span>
-                <div className="h-px flex-1 bg-border" />
-              </div>
-
+            {/* Highlighted "Search yourself" block — primary entry for creators with existing work */}
+            <div className="max-w-xl mx-auto mb-6">
               <div className="text-center mb-3">
                 <p className="inline-flex items-center gap-2 text-sm sm:text-base font-black text-energy">
                   <Sparkles className="h-4 w-4 text-energy" />
@@ -428,6 +422,20 @@ export const UnifiedHome = () => {
             </div>
             <div className="mb-6">
               <DiscoverCreativesRow />
+            </div>
+
+            {/* PRIMARY CTA — moved here, after social proof, with inline OAuth */}
+            <div className="max-w-md mx-auto mb-8 text-center">
+              <h3 className="text-xl sm:text-2xl font-black text-foreground mb-1.5 tracking-tight">
+                Claim your spot
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+                Join free in 1 tap — start building your verified creative identity today.
+              </p>
+              <OAuthQuickButtons hideDivider />
+              <p className="text-[10px] text-muted-foreground/60 mt-3">
+                Free forever · No credit card · 60-second setup
+              </p>
             </div>
 
             <div className="mb-5">

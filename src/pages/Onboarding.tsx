@@ -90,17 +90,38 @@ export default function Onboarding() {
 
     if (profileData?.onboarding_completed) { navigate("/circle"); return; }
 
+    // Extract OAuth identity (Google/Apple) for prefill
+    const meta = (user.user_metadata || {}) as Record<string, any>;
+    const oauthName: string =
+      meta.full_name ||
+      meta.name ||
+      [meta.given_name, meta.family_name].filter(Boolean).join(" ") ||
+      "";
+    const oauthAvatar: string = meta.avatar_url || meta.picture || "";
+    const provider = (user.app_metadata as any)?.provider || "";
+    const isOAuthUser = provider === "google" || provider === "apple";
+
     // Pre-populate from existing profile data
+    let resolvedName = "";
     if (profileData) {
       const name = profileData.full_name === "New User" ? "" : (profileData.full_name || "");
-      setFullName(name);
+      resolvedName = name || (isOAuthUser ? oauthName : "");
+      setFullName(resolvedName);
       if (profileData.role && profileData.role !== "Creator" && profileData.role !== "Company") setRole(profileData.role);
       if (profileData.location) setLocation(profileData.location);
       if (profileData.avatar_url) setAvatarUrl(profileData.avatar_url);
+      else if (oauthAvatar) setAvatarUrl(oauthAvatar);
       if (profileData.bio) setBio(profileData.bio);
 
+      // If OAuth user with no saved name yet, persist it so it sticks
+      if (!profileData.full_name || profileData.full_name === "New User") {
+        if (resolvedName) {
+          supabase.from("profiles").update({ full_name: resolvedName }).eq("user_id", user.id).then();
+        }
+      }
+
       // If we already have a name from claim flow, auto-search
-      if (name && name.length >= 3) {
+      if (resolvedName && resolvedName.length >= 3) {
         // Check if there are pending claim credits (Flow A)
         const pendingClaimRaw = sessionStorage.getItem("pending_claim_credits");
         if (pendingClaimRaw) {
@@ -132,7 +153,22 @@ export default function Onboarding() {
 
     const { analytics } = await import("@/lib/analytics");
     analytics.onboardingStart();
+
+    // Auto-run search-claim for fresh OAuth users with a usable name
+    const isFreshOAuth =
+      isOAuthUser &&
+      (!profileData?.full_name || profileData.full_name === "New User") &&
+      resolvedName.length >= 3;
+
+    if (isFreshOAuth) {
+      try {
+        analytics.featureUsed(`oauth_autosearch_${provider}`);
+      } catch {}
+      // Defer one tick so state from setFullName commits before search reads it
+      setTimeout(() => { handleDiscoverProfile(); }, 50);
+    }
   };
+
 
   // ─── AI DISCOVERY ───
   const handleDiscoverProfile = async () => {

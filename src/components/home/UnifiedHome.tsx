@@ -242,7 +242,8 @@ export const UnifiedHome = () => {
       setFeaturedCreators(creators);
 
       setUpcomingEvents(eventsRes.data || []);
-      setStats({ creators: statsCreators.count || 0, credits: statsCredits.count || 0, gigs: statsGigs.count || 0, connections: statsConnections.count || 0 });
+      const ps = (publicStatsRes as any)?.data?.stats || {};
+      setStats({ creators: ps.creators || 0, credits: ps.credits || 0, gigs: ps.gigs || 0, connections: ps.connections || 0 });
 
       setActivityNames(creators.filter((c: any) => c.full_name).map((c: any) => c.full_name.split(" ")[0]));
 

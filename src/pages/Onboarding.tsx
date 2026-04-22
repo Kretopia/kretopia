@@ -17,6 +17,7 @@ import { ProfileLaunchScreen } from "@/components/onboarding/ProfileLaunchScreen
 import { useAuth } from "@/hooks/useAuth";
 import { ROLE_OPTIONS } from "@/components/profile/ProfileEditDialog";
 import { LOCATION_HIERARCHY } from "@/lib/locationGroups";
+import { IntentPicker } from "@/components/intent/IntentPicker";
 
 // Wave 1 reframe: Find your work → Confirm credits → Launch profile
 // (internal phase ids unchanged for analytics continuity)

@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useDeskIntent } from "@/hooks/useDeskIntent";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,15 @@ export const ApprovalWorkflows = ({ projectId, currentUserId, collaborators, use
   const [newComment, setNewComment] = useState("");
   const [reviewNote, setReviewNote] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Listen for "create-approval" intent (NextStepBar / chat action chips)
+  useDeskIntent("approvals", useCallback((intent, payload) => {
+    if (intent === "create-approval") {
+      setShowCreateForm(true);
+      if (payload?.title) setNewTitle(String(payload.title));
+      if (payload?.description) setNewDescription(String(payload.description));
+    }
+  }, []));
 
   useEffect(() => {
     fetchDeliverables();

@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { ChatActionChips } from "./chat/ChatActionChips";
 
 interface Attachment {
   url: string;
@@ -482,6 +483,12 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                                   ))}
                                 </div>
                               )}
+
+                              {/* Contextual action chips (approve/contract/invoice/task/upload) */}
+                              <ChatActionChips
+                                message={msg.message}
+                                hasAttachments={!!msg.attachments && msg.attachments.length > 0}
+                              />
                             </div>
 
                             {/* Hover action bar */}

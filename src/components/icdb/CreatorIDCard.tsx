@@ -66,10 +66,12 @@ export const CreatorIDCard = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex-1 bg-background/80 rounded-md px-3 py-2 border">
-            <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium"><p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium">ThriveCredits ID</p></p>
-            <p className="font-mono font-bold text-sm text-primary">{creatorId}</p>
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex-1 bg-background/80 rounded-md px-3 py-2 border border-primary/20">
+            <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-1">
+              <ShieldCheck className="h-2.5 w-2.5 text-primary" /> Creator Passport · Unique to you
+            </p>
+            <p className="font-mono font-bold text-sm text-primary tracking-wide">{creatorId}</p>
           </div>
           <Button variant="outline" size="sm" className="h-10 w-10 p-0 shrink-0" onClick={copyId}>
             <Copy className="h-4 w-4" />

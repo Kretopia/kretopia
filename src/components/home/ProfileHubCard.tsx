@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Search, ShieldCheck, Share2, ExternalLink, ArrowRight, Sparkles, TrendingUp } from "lucide-react";
+import { Eye, Search, ShieldCheck, Share2, ExternalLink, ArrowRight, Sparkles, TrendingUp, Fingerprint, Copy } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateProfileStrength } from "@/components/profile/ProfileStrengthScore";
 import { ProfileShareModal } from "@/components/profile/ProfileShareModal";
@@ -179,6 +180,45 @@ export const ProfileHubCard = ({
             <Share2 className="h-4 w-4" />
             Share my profile
           </Button>
+
+          {/* Creator Passport — unique verified identity */}
+          {profile?.icdb_creator_id && (
+            <div className="mt-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-[9px] uppercase tracking-wider font-bold text-primary flex items-center gap-1">
+                  <ShieldCheck className="h-2.5 w-2.5" /> Creator Passport
+                </p>
+                <Link to="/icdb" className="text-[9px] font-semibold text-primary/80 hover:text-primary flex items-center gap-0.5">
+                  Manage <ArrowRight className="h-2 w-2" />
+                </Link>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                  <Fingerprint className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-mono font-bold text-sm text-foreground tracking-wide truncate">
+                    {profile.icdb_creator_id}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    Your verified ID — unique to you, embed anywhere.
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 shrink-0"
+                  onClick={() => {
+                    navigator.clipboard.writeText(profile.icdb_creator_id);
+                    toast.success("Creator Passport ID copied");
+                  }}
+                  aria-label="Copy Creator Passport"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Today / Reach panel */}

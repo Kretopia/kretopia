@@ -21,7 +21,6 @@
         "./src/*"
       ]
     },
-    "preserveSymlinks": true,
     "skipLibCheck": true,
     "strict": false,
     "target": "ES2020",

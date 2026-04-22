@@ -3,20 +3,20 @@ import { Sparkles, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { IntentPicker } from "@/components/intent/IntentPicker";
-import { intentMeta, type PrimaryIntent } from "@/lib/intents";
+import { intentMeta, normalizeIntents, type PrimaryIntent } from "@/lib/intents";
 import { useToast } from "@/hooks/use-toast";
 
 /**
  * Weekly intent refresh — appears on Home if the user hasn't picked
- * (or refreshed) their focus this calendar week. Lets them re-pick
- * what they're here to do this week.
+ * (or refreshed) their focus this calendar week. Multi-select (max 2).
  */
 export const WeeklyIntentCard = ({ className = "" }: { className?: string }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [show, setShow] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [current, setCurrent] = useState<PrimaryIntent | null>(null);
+  const [current, setCurrent] = useState<PrimaryIntent[]>([]);
+  const [draft, setDraft] = useState<PrimaryIntent[]>([]);
   const [saving, setSaving] = useState(false);
 
   // Monday of current week as YYYY-MM-DD
@@ -33,18 +33,21 @@ export const WeeklyIntentCard = ({ className = "" }: { className?: string }) => 
       try {
         const { data } = await supabase
           .from("profiles")
-          .select("primary_intent, intent_week_start")
+          .select("primary_intent, primary_intents, intent_week_start")
           .eq("user_id", user.id)
           .maybeSingle();
 
-        const intent = (data as any)?.primary_intent as PrimaryIntent | null;
+        const intents = normalizeIntents(
+          (data as any)?.primary_intents ?? (data as any)?.primary_intent
+        );
         const lastWeek = (data as any)?.intent_week_start as string | null;
-        setCurrent(intent ?? null);
+        setCurrent(intents);
+        setDraft(intents);
 
         // Show prompt when: never picked, OR week has changed
-        if (!intent || lastWeek !== weekStart) {
+        if (intents.length === 0 || lastWeek !== weekStart) {
           setShow(true);
-          if (!intent) setEditing(true);
+          if (intents.length === 0) setEditing(true);
         }
       } catch (e) {
         console.error("[WeeklyIntentCard]", e);
@@ -53,23 +56,24 @@ export const WeeklyIntentCard = ({ className = "" }: { className?: string }) => 
     load().catch((e) => console.error("[WeeklyIntentCard] load", e));
   }, [user, weekStart]);
 
-  const save = async (intent: PrimaryIntent) => {
-    if (!user) return;
+  const save = async () => {
+    if (!user || draft.length === 0) return;
     setSaving(true);
     try {
       await supabase
         .from("profiles")
         .update({
-          primary_intent: intent,
+          primary_intents: draft,
+          primary_intent: draft[0],
           intent_set_at: new Date().toISOString(),
           intent_week_start: weekStart,
         } as any)
         .eq("user_id", user.id);
-      setCurrent(intent);
+      setCurrent(draft);
       setEditing(false);
-      const meta = intentMeta(intent);
+      const labels = draft.map((d) => intentMeta(d)?.short).filter(Boolean).join(" + ");
       toast({
-        title: `Locked in: ${meta?.label}`,
+        title: `Locked in: ${labels}`,
         description: "We'll tune your home and nudges around this.",
       });
     } catch (e) {
@@ -82,8 +86,6 @@ export const WeeklyIntentCard = ({ className = "" }: { className?: string }) => 
 
   if (!user || !show) return null;
 
-  const meta = intentMeta(current);
-
   return (
     <div
       className={`relative rounded-2xl border border-energy/30 bg-gradient-to-br from-energy/[0.06] via-card to-primary/[0.05] p-5 ${className}`}
@@ -95,16 +97,16 @@ export const WeeklyIntentCard = ({ className = "" }: { className?: string }) => 
           </div>
           <div>
             <p className="text-sm font-bold text-foreground leading-tight">
-              {editing ? "What are you here to do?" : "Your focus this week"}
+              {editing ? "What's your focus this week?" : "Your focus this week"}
             </p>
             <p className="text-[11px] text-muted-foreground">
-              {editing ? "Pick one — we'll tune your home around it." : "Tap to switch any time."}
+              {editing ? "Pick up to 2 — we'll tune your home around it." : "Tap to switch any time."}
             </p>
           </div>
         </div>
         {!editing && (
           <button
-            onClick={() => setEditing(true)}
+            onClick={() => { setDraft(current); setEditing(true); }}
             className="text-[11px] inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
           >
             <Pencil className="h-3 w-3" /> Change
@@ -113,21 +115,43 @@ export const WeeklyIntentCard = ({ className = "" }: { className?: string }) => 
       </div>
 
       {editing ? (
-        <IntentPicker value={current ?? undefined} onChange={save} compact />
-      ) : meta ? (
-        <button
-          onClick={() => setEditing(true)}
-          className="w-full flex items-center gap-3 rounded-xl bg-primary/10 border border-primary/20 px-3 py-2.5 hover:bg-primary/15 transition-colors text-left"
-        >
-          <span className="text-xl" aria-hidden>{meta.emoji}</span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold leading-tight">{meta.label}</p>
-            <p className="text-[11px] text-muted-foreground truncate">{meta.blurb}</p>
+        <div className="space-y-3">
+          <IntentPicker value={draft} onChange={setDraft} compact />
+          <div className="flex gap-2">
+            <button
+              onClick={save}
+              disabled={saving || draft.length === 0}
+              className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-bold disabled:opacity-40 hover:bg-primary/90 transition-colors"
+            >
+              {saving ? "Saving…" : "Lock it in"}
+            </button>
+            {current.length > 0 && (
+              <button
+                onClick={() => { setDraft(current); setEditing(false); }}
+                className="px-4 h-10 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cancel
+              </button>
+            )}
           </div>
+        </div>
+      ) : current.length > 0 ? (
+        <button
+          onClick={() => { setDraft(current); setEditing(true); }}
+          className="w-full flex flex-wrap items-center gap-2 rounded-xl bg-primary/10 border border-primary/20 px-3 py-2.5 hover:bg-primary/15 transition-colors text-left"
+        >
+          {current.map((id) => {
+            const meta = intentMeta(id);
+            if (!meta) return null;
+            return (
+              <span key={id} className="inline-flex items-center gap-1.5 text-[13px] font-bold">
+                <span aria-hidden>{meta.emoji}</span>
+                <span>{meta.short}</span>
+              </span>
+            );
+          })}
         </button>
       ) : null}
-
-      {saving && <p className="text-[10px] text-muted-foreground mt-2">Saving…</p>}
     </div>
   );
 };

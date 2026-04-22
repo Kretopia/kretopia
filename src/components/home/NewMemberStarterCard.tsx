@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, Circle, Sparkles, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { intentMeta, type PrimaryIntent } from "@/lib/intents";
+import { intentMeta, normalizeIntents, type PrimaryIntent } from "@/lib/intents";
 
 interface StarterStep {
   id: string;
@@ -37,7 +37,7 @@ export const NewMemberStarterCard = ({ className = "" }: { className?: string })
       try {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("created_at, onboarding_completed, bio, avatar_url, primary_intent")
+          .select("created_at, onboarding_completed, bio, avatar_url, primary_intent, primary_intents")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -47,7 +47,11 @@ export const NewMemberStarterCard = ({ className = "" }: { className?: string })
         const ageDays = ageMs / (1000 * 60 * 60 * 24);
         if (ageDays > 7) return;
 
-        const userIntent = ((profile as any).primary_intent ?? null) as PrimaryIntent | null;
+        // Use first selected intent as primary driver for the checklist
+        const intents = normalizeIntents(
+          (profile as any).primary_intents ?? (profile as any).primary_intent
+        );
+        const userIntent = (intents[0] ?? null) as PrimaryIntent | null;
         setIntent(userIntent);
 
         // Run all probe queries in parallel
@@ -106,6 +110,13 @@ export const NewMemberStarterCard = ({ className = "" }: { className?: string })
             { id: "project", label: "Create your first project", href: "/projects", done: projectDone },
             { id: "invoice", label: "Send your first invoice", href: "/thrivepay", done: invoiceDone },
             { id: "invite", label: "Invite a collaborator", href: "/projects", done: connDone },
+          ];
+        } else if (userIntent === "hire") {
+          built = [
+            { id: "profile", label: "Add bio + photo", href: "/profile/edit", done: profileDone },
+            { id: "post-gig", label: "Post your first opportunity", href: "/post-opportunity", done: false },
+            { id: "browse-talent", label: "Browse verified creators", href: "/circle", done: connDone },
+            { id: "message", label: "DM a creator you want to hire", href: "/circle", done: msgDone },
           ];
         }
 

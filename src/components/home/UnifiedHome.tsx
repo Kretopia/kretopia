@@ -16,6 +16,7 @@ import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
+import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import heroCreators from "@/assets/hero-creators.jpg";
 
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
@@ -349,14 +350,7 @@ export const UnifiedHome = () => {
                   build verified credits, connect with collaborators, and get paid.
                 </p>
 
-                <div className="flex items-center justify-center lg:justify-start gap-3 flex-wrap">
-                  <Link to="/auth?tab=signup" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-7 py-3.5 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
-                    Find Your People <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                  <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-5 py-3.5 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
-                    <Briefcase className="h-4 w-4 text-primary" /> Browse Gigs
-                  </Link>
-                </div>
+                {/* Primary CTAs moved below the social-proof row for stronger conversion */}
               </div>
 
               {/* RIGHT — Cinematic creator image with overlays */}
@@ -405,14 +399,8 @@ export const UnifiedHome = () => {
               </div>
             </div>
 
-            {/* Highlighted "Search yourself" block — lime-glowing frame to make it pop */}
-            <div className="max-w-xl mx-auto mb-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Or</span>
-                <div className="h-px flex-1 bg-border" />
-              </div>
-
+            {/* Highlighted "Search yourself" block — primary entry for creators with existing work */}
+            <div className="max-w-xl mx-auto mb-6">
               <div className="text-center mb-3">
                 <p className="inline-flex items-center gap-2 text-sm sm:text-base font-black text-energy">
                   <Sparkles className="h-4 w-4 text-energy" />
@@ -435,6 +423,20 @@ export const UnifiedHome = () => {
             </div>
             <div className="mb-6">
               <DiscoverCreativesRow />
+            </div>
+
+            {/* PRIMARY CTA — moved here, after social proof, with inline OAuth */}
+            <div className="max-w-md mx-auto mb-8 text-center">
+              <h3 className="text-xl sm:text-2xl font-black text-foreground mb-1.5 tracking-tight">
+                Claim your spot
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+                Join free in 1 tap — start building your verified creative identity today.
+              </p>
+              <OAuthQuickButtons hideDivider />
+              <p className="text-[10px] text-muted-foreground/60 mt-3">
+                Free forever · No credit card · 60-second setup
+              </p>
             </div>
 
             <div className="mb-5">

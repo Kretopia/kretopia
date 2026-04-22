@@ -79,14 +79,19 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
 
-    const [membersRes, messagesRes, newMembersRes, reactionsRes, messagesLastRes, membersLastRes] = await Promise.all([
+    const [membersRes, messagesRes, newMembersRes, reactionsRes, messagesLastRes, membersLastRes, eventsRes, projectsRes] = await Promise.all([
       supabase.from("spark_room_members").select("user_id, role, joined_at").eq("room_id", circle.id).order("joined_at", { ascending: false }),
       supabase.from("spark_room_messages").select("id", { count: "exact", head: true }).eq("room_id", circle.id).gte("created_at", weekAgo),
       supabase.from("spark_room_members").select("id", { count: "exact", head: true }).eq("room_id", circle.id).gte("joined_at", weekAgo),
       supabase.from("spark_message_reactions").select("id", { count: "exact", head: true }).in("message_id", [circle.id]),
       supabase.from("spark_room_messages").select("id", { count: "exact", head: true }).eq("room_id", circle.id).gte("created_at", twoWeeksAgo).lt("created_at", weekAgo),
       supabase.from("spark_room_members").select("id", { count: "exact", head: true }).eq("room_id", circle.id).gte("joined_at", twoWeeksAgo).lt("joined_at", weekAgo),
+      supabase.from("creative_jams").select("id", { count: "exact", head: true }).eq("circle_id", circle.id),
+      supabase.from("projects").select("id", { count: "exact", head: true }).eq("spark_room_id", circle.id),
     ]);
+
+    setEventCount(eventsRes.count || 0);
+    setProjectCount(projectsRes.count || 0);
 
     if (membersRes.data?.length) {
       const userIds = membersRes.data.map(m => m.user_id);

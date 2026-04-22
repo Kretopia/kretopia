@@ -188,7 +188,7 @@ export const ProfileHubCard = ({
                 <p className="text-[9px] uppercase tracking-wider font-bold text-primary flex items-center gap-1">
                   <ShieldCheck className="h-2.5 w-2.5" /> Creator Passport
                 </p>
-                <Link to="/icdb" className="text-[9px] font-semibold text-primary/80 hover:text-primary flex items-center gap-0.5">
+                <Link to="/credits" className="text-[9px] font-semibold text-primary/80 hover:text-primary flex items-center gap-0.5">
                   Manage <ArrowRight className="h-2 w-2" />
                 </Link>
               </div>

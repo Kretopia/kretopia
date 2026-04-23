@@ -70,7 +70,7 @@ export const DeskAIPanel = ({ projectId, isPro, userId, onClose }: DeskAIPanelPr
       setMessages(prev => [...prev, { role: "assistant", content: data.reply }]);
       setUsage({ used: data.used, limit: data.limit });
     } catch (e: any) {
-      toast({ title: "DeskAI error", description: e.message || "Try again", variant: "destructive" });
+      toast({ title: "Thrive Ops error", description: e.message || "Try again", variant: "destructive" });
       setMessages(prev => prev.slice(0, -1));
     } finally {
       setSending(false);
@@ -91,9 +91,11 @@ export const DeskAIPanel = ({ projectId, isPro, userId, onClose }: DeskAIPanelPr
             <Sparkles className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-sm font-bold leading-tight">DeskAI</h3>
+            <h3 className="text-sm font-bold leading-tight">
+              Thrive Ops <span className="text-[9px] font-semibold text-primary/70 align-middle">AI</span>
+            </h3>
             <p className="text-[10px] text-muted-foreground leading-tight">
-              Your project assistant {usage?.limit ? `· ${usage.used}/${usage.limit} today` : isPro ? "· Unlimited" : ""}
+              Your project copilot {usage?.limit ? `· ${usage.used}/${usage.limit} today` : isPro ? "· Unlimited" : ""}
             </p>
           </div>
         </div>
@@ -175,7 +177,7 @@ export const DeskAIPanel = ({ projectId, isPro, userId, onClose }: DeskAIPanelPr
                 send();
               }
             }}
-            placeholder="Ask DeskAI anything…"
+            placeholder="Ask Thrive Ops anything…"
             className="min-h-[40px] max-h-32 resize-none text-sm"
             rows={1}
           />

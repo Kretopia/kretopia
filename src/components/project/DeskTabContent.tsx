@@ -165,6 +165,25 @@ export const DeskTabContent = memo(({
             </div>
           </FreeTierGate>
         )}
+
+        {activeTab === "call_sheet" && (
+          <CallSheetTab projectId={projectId} currentUserId={currentUserId} />
+        )}
+        {activeTab === "run_of_show" && (
+          <RunOfShowTab projectId={projectId} currentUserId={currentUserId} />
+        )}
+        {activeTab === "roll_call" && (
+          <RollCallTab projectId={projectId} collaborators={collaborators} currentUserId={currentUserId} />
+        )}
+        {activeTab === "split_sheet" && (
+          <SplitSheetTab projectId={projectId} collaborators={collaborators} currentUserId={currentUserId} />
+        )}
+        {activeTab === "exchange" && (
+          <ExchangeLedgerTab projectId={projectId} currentUserId={currentUserId} />
+        )}
+        {activeTab === "revisions" && (
+          <RevisionsTab projectId={projectId} currentUserId={currentUserId} />
+        )}
       </div>
     )}
   </div>

@@ -16,6 +16,7 @@ import {
 import { format } from "date-fns";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface EventItem {
   id: string;
@@ -427,18 +428,13 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
                   ))}
                 </div>
               ) : filteredEvents.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Sparkles className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
-                    <p className="font-semibold mb-1">No events found</p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Be the first to host a creative event in your area!
-                    </p>
-                    <Button variant="gradient" onClick={handleHostEvent}>
-                      <Plus className="h-4 w-4 mr-2" /> Host an Event
-                    </Button>
-                  </CardContent>
-                </Card>
+                <EmptyState
+                  icon={Sparkles}
+                  eyebrow="Be the catalyst"
+                  title="No events found"
+                  description="The best events start with one host stepping up. Be the first creative gathering in your area."
+                  action={{ label: "Host an Event", icon: Plus, onClick: handleHostEvent }}
+                />
               ) : (
                 <div className="space-y-2">
                   <FeaturedEvents events={filteredEvents} onSelect={handleEventClick} />

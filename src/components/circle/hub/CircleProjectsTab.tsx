@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FolderKanban, Plus, ArrowRight, Loader2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface ProjectsTabProps {
   circleId: string;
@@ -39,18 +40,13 @@ export function CircleProjectsTab({ circleId, isMember }: ProjectsTabProps) {
 
   if (projects.length === 0) {
     return (
-      <div className="px-4 py-12 text-center">
-        <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-        <h3 className="font-bold mb-1">No projects yet</h3>
-        <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
-          Turn your circle into real work — start a paid gig, collab, or creative project.
-        </p>
-        {isMember && (
-          <Button variant="gradient" onClick={() => navigate(`/projects/new?circleId=${circleId}`)}>
-            <Plus className="h-4 w-4 mr-1.5" /> Start a project
-          </Button>
-        )}
-      </div>
+      <EmptyState
+        icon={FolderKanban}
+        eyebrow="Turn talk into work"
+        title="No projects yet"
+        description="Spin up a paid gig, collab, or creative project — your circle is your built-in team."
+        action={isMember ? { label: "Start a project", icon: Plus, onClick: () => navigate(`/projects/new?circleId=${circleId}`) } : undefined}
+      />
     );
   }
 

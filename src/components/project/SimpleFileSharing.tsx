@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFiles";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface ProjectFile {
   id: string;
@@ -182,11 +183,13 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
       </CardHeader>
       <CardContent>
         {files.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>No files uploaded yet</p>
-            <p className="text-sm mt-1">Upload files to share with your collaborator</p>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="No files shared yet"
+            description="Drop briefs, references, or deliverables here so your collaborator always has the latest version."
+            action={{ label: "Upload a file", icon: Upload, onClick: () => fileInputRef.current?.click() }}
+            className="py-8"
+          />
         ) : (
           <ScrollArea className="h-[50vh] md:h-[300px]">
             <div className="space-y-2">

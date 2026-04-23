@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Copy, Share2, Mail, MessageCircle, Check } from "lucide-react";
+import { getShareUrl } from "@/lib/constants";
 
 interface ShareUnclaimedProfileDialogProps {
   open: boolean;
@@ -20,7 +21,7 @@ export const ShareUnclaimedProfileDialog = ({
   const [copiedType, setCopiedType] = useState<string | null>(null);
 
   // Always use production URL for sharing
-  const productionUrl = `https://www.thrivein.io/profile/${profileUrl.split('/profile/')[1]}`;
+  const productionUrl = getShareUrl(profileUrl);
   
   const shareMessages = {
     claim: {

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatusAvatar } from "@/components/ui/status-avatar";
 import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe, ChevronDown, ChevronUp, UserPlus, CheckCircle2, Film, Music, Camera, Calendar, Palette, Video, Mic } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface ProfileResult {
   user_id: string;

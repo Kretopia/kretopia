@@ -13,6 +13,12 @@ import { ProjectTemplatePicker } from "@/components/project/ProjectTemplatePicke
 import { CreativeBoard } from "@/components/project/CreativeBoard";
 import { ScopeGuardian } from "@/components/project/ScopeGuardian";
 import { ContractsList } from "@/components/project/contracts/ContractsList";
+import { CallSheetTab } from "@/components/project/workflow/CallSheetTab";
+import { RunOfShowTab } from "@/components/project/workflow/RunOfShowTab";
+import { RollCallTab } from "@/components/project/workflow/RollCallTab";
+import { SplitSheetTab } from "@/components/project/workflow/SplitSheetTab";
+import { ExchangeLedgerTab } from "@/components/project/workflow/ExchangeLedgerTab";
+import { RevisionsTab } from "@/components/project/workflow/RevisionsTab";
 import { UsageLimitBanner } from "@/components/project/ProGate";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { cn } from "@/lib/utils";

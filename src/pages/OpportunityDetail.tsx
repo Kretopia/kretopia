@@ -306,6 +306,34 @@ const OpportunityDetail = () => {
     }
   };
 
+  const handleWithdraw = async () => {
+    if (!myApplication) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .delete()
+        .eq('id', myApplication.id);
+      if (error) throw error;
+      setMyApplication(null);
+      toast({ title: 'Application withdrawn', description: 'You can re-apply anytime while the gig is open.' });
+    } catch (err: any) {
+      toast({ title: 'Failed to withdraw', description: err.message, variant: 'destructive' });
+    } finally {
+      setActionLoading(false);
+      setShowWithdrawConfirm(false);
+    }
+  };
+
+  const handleMessageOwner = () => {
+    if (!opportunity?.created_by) return;
+    if (!user) {
+      navigate(`/auth?redirect=/opportunity/${id}`);
+      return;
+    }
+    navigate(`/messages?user=${opportunity.created_by}`);
+  };
+
   const handleBookmark = async () => {
     if (!user) {
       navigate(`/auth?redirect=/opportunity/${id}`);

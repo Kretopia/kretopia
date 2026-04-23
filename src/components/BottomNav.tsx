@@ -58,6 +58,7 @@ const BottomNav = memo(() => {
   if (location.pathname === "/auth") return null;
 
   const items = isCompany ? COMPANY_ITEMS : (mode === "create" ? CREATE_ITEMS : WORK_ITEMS);
+  const canSwipeModes = !isCompany && !location.pathname.startsWith("/desk");
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -74,7 +75,7 @@ const BottomNav = memo(() => {
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (isCompany) return; // No mode swiping for company accounts
+    if (!canSwipeModes) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
     if (Math.abs(dx) > 60 && dy < 40) {
@@ -100,7 +101,7 @@ const BottomNav = memo(() => {
           >
             <span className={cn("h-1.5 w-1.5 rounded-full transition-colors", MODE_META[mode].accent)} />
             {MODE_META[mode].label}
-            <span className="text-[8px] opacity-50 ml-0.5">← swipe →</span>
+            {canSwipeModes && <span className="text-[8px] opacity-50 ml-0.5">← swipe →</span>}
           </button>
         </div>
       )}

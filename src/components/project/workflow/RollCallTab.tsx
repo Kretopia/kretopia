@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, UserCheck, UserX, Clock, Check } from "lucide-react";
+import { Loader2, UserCheck, UserX, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Collaborator } from "@/hooks/useProjectData";
 
@@ -12,8 +12,8 @@ interface Props { projectId: string; collaborators: Collaborator[]; currentUserI
 type Status = "invited" | "confirmed" | "arrived" | "no_show";
 
 interface Entry {
-  id: string; project_id: string; person_id: string | null; person_name: string | null;
-  status: Status; arrived_at: string | null;
+  id: string; project_id: string; person_user_id: string | null; person_name: string;
+  status: string; arrived_at: string | null;
 }
 
 const STATUS_META: Record<Status, { label: string; color: string }> = {
@@ -31,11 +31,12 @@ export function RollCallTab({ projectId, collaborators, currentUserId }: Props) 
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("project_roll_call").select("*")
-      .eq("project_id", projectId)
-      .catch(() => ({ data: [] as any[] }));
-    setEntries((data as any[]) || []);
+    try {
+      const { data } = await supabase
+        .from("project_roll_call").select("*")
+        .eq("project_id", projectId);
+      setEntries((data as any[]) || []);
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 
@@ -49,9 +50,10 @@ export function RollCallTab({ projectId, collaborators, currentUserId }: Props) 
   const seed = async () => {
     const rows = collaborators.map((c) => ({
       project_id: projectId,
-      person_id: c.user_id,
-      person_name: c.full_name || c.email,
-      status: "invited" as Status,
+      created_by: currentUserId,
+      person_user_id: c.id,
+      person_name: c.full_name || "Unnamed",
+      status: "invited",
     }));
     if (rows.length === 0) return;
     await supabase.from("project_roll_call").insert(rows);
@@ -65,7 +67,7 @@ export function RollCallTab({ projectId, collaborators, currentUserId }: Props) 
     void load();
   };
 
-  const getAvatar = (e: Entry) => collaborators.find((c) => c.user_id === e.person_id)?.avatar_url;
+  const getAvatar = (e: Entry) => collaborators.find((c) => c.id === e.person_user_id)?.avatar_url;
 
   if (loading) return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
@@ -92,36 +94,39 @@ export function RollCallTab({ projectId, collaborators, currentUserId }: Props) 
         </CardContent></Card>
       )}
 
-      {entries.map((e) => (
-        <Card key={e.id}>
-          <CardContent className="p-3 flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={getAvatar(e) || undefined} />
-              <AvatarFallback>{e.person_name?.[0]?.toUpperCase() ?? "?"}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="font-medium text-sm truncate">{e.person_name || "Unknown"}</div>
-              <Badge className={cn("text-[10px] mt-0.5 font-medium border-0", STATUS_META[e.status].color)} variant="secondary">
-                {STATUS_META[e.status].label}
-                {e.status === "arrived" && e.arrived_at && (
-                  <span className="ml-1 opacity-70">· {new Date(e.arrived_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                )}
-              </Badge>
-            </div>
-            <div className="flex gap-1">
-              <Button size="icon" variant={e.status === "confirmed" ? "default" : "outline"} className="h-8 w-8" onClick={() => setStatus(e.id, "confirmed")} title="Confirmed">
-                <Check className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant={e.status === "arrived" ? "default" : "outline"} className="h-8 w-8" onClick={() => setStatus(e.id, "arrived")} title="On set">
-                <UserCheck className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant={e.status === "no_show" ? "default" : "outline"} className="h-8 w-8" onClick={() => setStatus(e.id, "no_show")} title="No show">
-                <UserX className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      {entries.map((e) => {
+        const status = (e.status as Status) ?? "invited";
+        return (
+          <Card key={e.id}>
+            <CardContent className="p-3 flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={getAvatar(e) || undefined} />
+                <AvatarFallback>{e.person_name?.[0]?.toUpperCase() ?? "?"}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-sm truncate">{e.person_name || "Unknown"}</div>
+                <Badge className={cn("text-[10px] mt-0.5 font-medium border-0", STATUS_META[status].color)} variant="secondary">
+                  {STATUS_META[status].label}
+                  {status === "arrived" && e.arrived_at && (
+                    <span className="ml-1 opacity-70">· {new Date(e.arrived_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                  )}
+                </Badge>
+              </div>
+              <div className="flex gap-1">
+                <Button size="icon" variant={status === "confirmed" ? "default" : "outline"} className="h-8 w-8" onClick={() => setStatus(e.id, "confirmed")} title="Confirmed">
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button size="icon" variant={status === "arrived" ? "default" : "outline"} className="h-8 w-8" onClick={() => setStatus(e.id, "arrived")} title="On set">
+                  <UserCheck className="h-4 w-4" />
+                </Button>
+                <Button size="icon" variant={status === "no_show" ? "default" : "outline"} className="h-8 w-8" onClick={() => setStatus(e.id, "no_show")} title="No show">
+                  <UserX className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

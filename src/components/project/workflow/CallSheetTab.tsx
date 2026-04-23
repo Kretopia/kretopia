@@ -35,13 +35,14 @@ export function CallSheetTab({ projectId, currentUserId }: CallSheetTabProps) {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("project_call_sheets")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("shoot_date", { ascending: true })
-      .catch(() => ({ data: [] as any[] }));
-    setSheets((data as any[]) || []);
+    try {
+      const { data } = await supabase
+        .from("project_call_sheets")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("shoot_date", { ascending: true });
+      setSheets((data as any[]) || []);
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 

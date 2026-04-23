@@ -22,11 +22,12 @@ export function RunOfShowTab({ projectId, currentUserId }: Props) {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("project_run_of_show").select("*")
-      .eq("project_id", projectId).order("position", { ascending: true })
-      .catch(() => ({ data: [] as any[] }));
-    setItems((data as any[]) || []);
+    try {
+      const { data } = await supabase
+        .from("project_run_of_show").select("*")
+        .eq("project_id", projectId).order("position", { ascending: true });
+      setItems((data as any[]) || []);
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 

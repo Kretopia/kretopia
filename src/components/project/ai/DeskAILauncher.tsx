@@ -29,7 +29,7 @@ export const DeskAILauncher = ({ projectId, userId, isPro, hideOnMobile = false 
           "bottom-[calc(7.5rem+env(safe-area-inset-bottom))] right-4",
           "lg:bottom-6 lg:right-6"
         )}
-        aria-label="Open DeskAI"
+        aria-label="Open Thrive Ops AI"
       >
         <Sparkles className="h-5 w-5" />
       </Button>

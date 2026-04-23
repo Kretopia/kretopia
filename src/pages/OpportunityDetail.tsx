@@ -788,6 +788,25 @@ const OpportunityDetail = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Withdraw Confirmation */}
+      <AlertDialog open={showWithdrawConfirm} onOpenChange={setShowWithdrawConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Withdraw your application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes your application from the poster's queue. You can re-apply anytime while the gig is still open.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep application</AlertDialogCancel>
+            <AlertDialogAction onClick={handleWithdraw} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Withdraw
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {opportunity && (
         <ShareToMessageDialog
           open={showShareDialog}

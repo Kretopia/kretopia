@@ -112,7 +112,22 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
     }
   };
 
-  const filteredConnections = connections.filter((u) => {
+  const loadRecommendations = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, sub_roles")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const roleSignal = [profile?.role, ...((profile as any)?.sub_roles ?? [])].filter(Boolean).join(" ");
+      setRecommended(recommendWorkspaces(roleSignal));
+    } catch (e) {
+      console.error("loadRecommendations", e);
+    }
+  };
+
     const q = inviteSearch.toLowerCase();
     if (!q) return true;
     return (u.full_name?.toLowerCase().includes(q) || u.role?.toLowerCase().includes(q));

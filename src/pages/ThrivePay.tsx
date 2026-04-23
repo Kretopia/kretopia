@@ -14,6 +14,7 @@ import { SEO } from "@/components/SEO";
 import { FeeStructure } from "@/components/FeeStructure";
 import { FeeCalculator } from "@/components/FeeCalculator";
 import { getFeeDisplayText } from "@/lib/platformFees";
+import { EmptyState } from "@/components/ui/empty-state";
 
 import { WalletTopUpDialog } from "@/components/wallet/WalletTopUpDialog";
 import { WalletTransferDialog } from "@/components/wallet/WalletTransferDialog";
@@ -37,6 +38,7 @@ import {
   Wallet,
   Sparkles,
   Send,
+  Briefcase,
 } from "lucide-react";
 
 interface ConnectRequirements {
@@ -356,9 +358,14 @@ export default function ThrivePay() {
             <div className="space-y-2 sm:space-y-3">
               {recentTransactions.length === 0 ? (
                 <Card>
-                  <CardContent className="p-6 sm:p-8 text-center">
-                    <p className="text-muted-foreground text-sm">No transactions yet</p>
-                  </CardContent>
+                  <EmptyState
+                    icon={Wallet}
+                    eyebrow="Money moves"
+                    title="No transactions yet"
+                    description="Top up your wallet or get paid for a gig — every move shows up here in real time."
+                    action={{ label: "Top Up Wallet", onClick: () => setTopUpDialogOpen(true), icon: Plus }}
+                    secondaryAction={{ label: "Browse Gigs", onClick: () => navigate('/gigs'), icon: Briefcase }}
+                  />
                 </Card>
               ) : (
                 recentTransactions.map((tx) => (

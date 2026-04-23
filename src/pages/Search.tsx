@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StatusAvatar } from "@/components/ui/status-avatar";
 import { Search as SearchIcon, Database, Verified, MapPin, Loader2, Lock, ArrowRight, Briefcase, Sparkles, ExternalLink, Globe, ChevronDown, ChevronUp, UserPlus, CheckCircle2, Film, Music, Camera, Calendar, Palette, Video, Mic } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface ProfileResult {
   user_id: string;
@@ -645,22 +646,25 @@ const Search = () => {
             )}
 
             {!hasResults && !hasKnowledge && (
-              <div className="text-center py-16">
-                <SearchIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground/20" />
-                <p className="text-muted-foreground">No results found for "{searchParams.get("q")}"</p>
-                <p className="text-muted-foreground/70 text-sm mt-1">Try different keywords or add your credit manually above</p>
-              </div>
+              <EmptyState
+                icon={SearchIcon}
+                eyebrow="No matches"
+                title={`Nothing found for "${searchParams.get("q")}"`}
+                description="Try a different name, project, or brand — or add the credit manually to claim it on your profile."
+              />
             )}
           </div>
         )}
 
         {/* Empty state */}
         {!loading && !hasQuery && (
-          <div className="text-center py-16">
-            <SearchIcon className="h-12 w-12 mx-auto mb-4 text-primary/20" />
-            <p className="text-muted-foreground text-sm">Search across the creative economy</p>
-            <p className="text-muted-foreground/60 text-xs mt-1">Try searching for any creator, production, or brand</p>
-          </div>
+          <EmptyState
+            icon={Sparkles}
+            eyebrow="The creative ledger"
+            title="Search the creative economy"
+            description="Find any creator, production, or brand — backed by verified credits and live web data."
+            accent="purple"
+          />
         )}
       </div>
     </div>

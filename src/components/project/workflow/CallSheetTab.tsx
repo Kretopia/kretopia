@@ -19,7 +19,8 @@ interface CallSheet {
   project_id: string;
   shoot_date: string | null;
   call_time: string | null;
-  location: string | null;
+  location_name: string | null;
+  location_address: string | null;
   weather_note: string | null;
   contact_list: any;
   notes: string | null;
@@ -53,7 +54,7 @@ export function CallSheetTab({ projectId, currentUserId }: CallSheetTabProps) {
       created_by: currentUserId,
       shoot_date: new Date().toISOString().slice(0, 10),
       call_time: "07:00",
-      location: "",
+      location_name: "",
       contact_list: [],
     });
     setSaving(false);
@@ -119,8 +120,12 @@ export function CallSheetTab({ projectId, currentUserId }: CallSheetTabProps) {
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3" /> Location</Label>
-              <Input defaultValue={s.location ?? ""} placeholder="Studio name & address" onBlur={(e) => update(s.id, { location: e.target.value })} />
+              <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3" /> Location name</Label>
+              <Input defaultValue={s.location_name ?? ""} placeholder="Studio name" onBlur={(e) => update(s.id, { location_name: e.target.value })} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs flex items-center gap-1"><MapPin className="h-3 w-3" /> Address</Label>
+              <Input defaultValue={s.location_address ?? ""} placeholder="Full address" onBlur={(e) => update(s.id, { location_address: e.target.value })} />
             </div>
             <div className="space-y-1">
               <Label className="text-xs flex items-center gap-1"><Cloud className="h-3 w-3" /> Weather / wardrobe note</Label>

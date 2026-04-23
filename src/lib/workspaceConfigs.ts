@@ -4,7 +4,7 @@
 
 import {
   Camera, Video, Music, Shirt, Calendar, Palette, Megaphone, Disc3,
-  Scissors, FileText, Briefcase, Sparkles,
+  Scissors, FileText, Briefcase, Sparkles, User,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,6 +22,7 @@ export type WorkspaceType =
   | "general";
 
 export type DealType =
+  | "solo"           // just me, tracking my own work
   | "paid"           // I'm paying someone
   | "getting_paid"   // I'm getting paid
   | "barter"         // exchange of value
@@ -216,6 +217,15 @@ export interface DealConfig {
 }
 
 export const DEAL_CONFIGS: Record<DealType, DealConfig> = {
+  solo: {
+    id: "solo",
+    label: "Just me — solo",
+    short: "Solo",
+    description: "Planning or tracking your own work, no collaborators yet",
+    icon: User,
+    showsFinance: false,
+    showsExchange: false,
+  },
   paid: {
     id: "paid",
     label: "I'm paying someone",
@@ -264,6 +274,7 @@ export const DEAL_CONFIGS: Record<DealType, DealConfig> = {
 };
 
 export const DEAL_TYPE_LIST: DealConfig[] = [
+  DEAL_CONFIGS.solo,
   DEAL_CONFIGS.paid,
   DEAL_CONFIGS.getting_paid,
   DEAL_CONFIGS.barter,

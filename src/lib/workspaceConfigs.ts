@@ -5,6 +5,10 @@
 import {
   Camera, Video, Music, Shirt, Calendar, Palette, Megaphone, Disc3,
   Scissors, FileText, Briefcase, Sparkles, User,
+  // Tab icons
+  MessageSquare, CheckSquare, FolderOpen, LayoutGrid, CheckCircle2, Wallet,
+  FileSignature, StickyNote, Image as ImageIcon, ListChecks, Bot, ClipboardList,
+  Clock, UserCheck, ArrowRightLeft, RotateCcw, Shield,
   type LucideIcon,
 } from "lucide-react";
 

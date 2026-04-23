@@ -161,10 +161,19 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
           toast({ title: "Skipped", description: `${file.name} exceeds 50MB`, variant: "destructive" });
           continue;
         }
-        const ext = file.name.split(".").pop();
+        const nameParts = file.name.split(".");
+        const rawExt = nameParts.length > 1 ? nameParts.pop() : "bin";
+        const ext = (rawExt || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) || "bin";
         const path = `${projectId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("project-files").upload(path, file);
-        if (upErr) throw upErr;
+        console.log("[file-upload] uploading", { path, size: file.size, type: file.type });
+        const { error: upErr } = await supabase.storage.from("project-files").upload(path, file, {
+          contentType: file.type || "application/octet-stream",
+          upsert: false,
+        });
+        if (upErr) {
+          console.error("[file-upload] storage failed", upErr);
+          throw new Error(`Storage: ${(upErr as any)?.message || JSON.stringify(upErr)}`);
+        }
         const { error: dbErr } = await supabase.from("project_files").insert({
           project_id: projectId,
           user_id: user.id,
@@ -174,7 +183,10 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
           file_type: file.type,
           folder_id: currentFolder,
         });
-        if (dbErr) throw dbErr;
+        if (dbErr) {
+          console.error("[file-upload] db insert failed", dbErr);
+          throw new Error(`DB: ${dbErr.message}`);
+        }
       }
       toast({ title: "Uploaded", description: `${list.length} file(s) added` });
       onFileUploaded();

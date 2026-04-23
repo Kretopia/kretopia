@@ -128,6 +128,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
     }
   };
 
+  const filteredConnections = connections.filter((u) => {
     const q = inviteSearch.toLowerCase();
     if (!q) return true;
     return (u.full_name?.toLowerCase().includes(q) || u.role?.toLowerCase().includes(q));

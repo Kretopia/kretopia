@@ -2851,6 +2851,57 @@ export type Database = {
         }
         Relationships: []
       }
+      discovery_scans: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          new_awards: number
+          new_credits: number
+          new_press: number
+          new_uploads: number
+          query_used: string | null
+          started_at: string
+          status: string
+          total_candidates: number
+          trigger_source: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          new_awards?: number
+          new_credits?: number
+          new_press?: number
+          new_uploads?: number
+          query_used?: string | null
+          started_at?: string
+          status?: string
+          total_candidates?: number
+          trigger_source?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          new_awards?: number
+          new_credits?: number
+          new_press?: number
+          new_uploads?: number
+          query_used?: string | null
+          started_at?: string
+          status?: string
+          total_candidates?: number
+          trigger_source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       drip_campaign_sends: {
         Row: {
           campaign_id: string
@@ -6725,6 +6776,65 @@ export type Database = {
           },
         ]
       }
+      pending_discoveries: {
+        Row: {
+          created_at: string
+          dedupe_key: string
+          excerpt: string | null
+          id: string
+          kind: string
+          payload: Json
+          reviewed_at: string | null
+          scan_id: string | null
+          source_domain: string | null
+          source_url: string
+          status: string
+          thumbnail_url: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key: string
+          excerpt?: string | null
+          id?: string
+          kind: string
+          payload?: Json
+          reviewed_at?: string | null
+          scan_id?: string | null
+          source_domain?: string | null
+          source_url: string
+          status?: string
+          thumbnail_url?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string
+          excerpt?: string | null
+          id?: string
+          kind?: string
+          payload?: Json
+          reviewed_at?: string | null
+          scan_id?: string | null
+          source_domain?: string | null
+          source_url?: string
+          status?: string
+          thumbnail_url?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_discoveries_scan_id_fkey"
+            columns: ["scan_id"]
+            isOneToOne: false
+            referencedRelation: "discovery_scans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pledge_tiers: {
         Row: {
           amount: number
@@ -7294,6 +7404,7 @@ export type Database = {
           last_active_date: string | null
           last_checkin_date: string | null
           last_swipe_reset: string | null
+          last_universe_scan_at: string | null
           latitude: number | null
           level: number | null
           linkedin_connections: number | null
@@ -7457,6 +7568,7 @@ export type Database = {
           last_active_date?: string | null
           last_checkin_date?: string | null
           last_swipe_reset?: string | null
+          last_universe_scan_at?: string | null
           latitude?: number | null
           level?: number | null
           linkedin_connections?: number | null
@@ -7620,6 +7732,7 @@ export type Database = {
           last_active_date?: string | null
           last_checkin_date?: string | null
           last_swipe_reset?: string | null
+          last_universe_scan_at?: string | null
           latitude?: number | null
           level?: number | null
           linkedin_connections?: number | null

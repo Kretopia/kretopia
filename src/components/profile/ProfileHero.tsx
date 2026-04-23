@@ -16,6 +16,7 @@ import { AvailabilityIndicator } from "./AvailabilityIndicator";
 import { SocialStatsInline } from "./SocialStatsInline";
 import { CreativeCircleBadge } from "./CreativeCircleBadge";
 import { IntentBadge } from "@/components/intent/IntentBadge";
+import { RefreshUniverseButton } from "./RefreshUniverseButton";
 
 interface ProfileHeroProps {
   profile: any;
@@ -314,22 +315,25 @@ export const ProfileHero = ({
 
         {/* Row 6: Owner action bar — full-width segmented like IG */}
         {isOwnProfile && (
-          <div className="flex gap-1.5">
-            <Button variant="secondary" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onEdit}>
-              <Edit className="h-3.5 w-3.5" />
-              Edit profile
-            </Button>
-            <Button variant="secondary" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onShare}>
-              <Share2 className="h-3.5 w-3.5" />
-              Share
-            </Button>
-            {onEPKEditor && (
-              <Button variant="secondary" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onEPKEditor}>
-                <FileDown className="h-3.5 w-3.5" />
-                EPK
+          <div className="space-y-1.5">
+            <RefreshUniverseButton lastScanAt={profile?.last_universe_scan_at} />
+            <div className="flex gap-1.5">
+              <Button variant="secondary" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onEdit}>
+                <Edit className="h-3.5 w-3.5" />
+                Edit profile
               </Button>
-            )}
-            {dashboardTrigger}
+              <Button variant="secondary" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onShare}>
+                <Share2 className="h-3.5 w-3.5" />
+                Share
+              </Button>
+              {onEPKEditor && (
+                <Button variant="secondary" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onEPKEditor}>
+                  <FileDown className="h-3.5 w-3.5" />
+                  EPK
+                </Button>
+              )}
+              {dashboardTrigger}
+            </div>
           </div>
         )}
 

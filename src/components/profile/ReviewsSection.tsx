@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Star, MessageSquarePlus, Award, CheckCircle, XCircle, Link2, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Review {
   id: string;

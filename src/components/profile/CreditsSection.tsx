@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AchievementCard } from "./AchievementCard";
 import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { useNavigate } from "react-router-dom";
 
 interface Credit {
   id: string;
@@ -33,6 +35,7 @@ interface CreditsSectionProps {
 
 export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSectionProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const navigate = useNavigate();
   const [credits, setCredits] = useState<Credit[]>([]);
   const [loading, setLoading] = useState(true);
   const [endorsementCredit, setEndorsementCredit] = useState<Credit | null>(null);
@@ -303,7 +306,7 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
             eyebrow="Build your authority"
             title="Add your first credit"
             description="Verified credits unlock vouches, higher gig matches, and your IMDB-style public ledger."
-            action={{ label: "Add a Credit", icon: Plus, onClick: () => setIsOpen(true) }}
+            action={{ label: "Add a Credit", icon: Plus, onClick: () => setIsEditOpen(true) }}
             secondaryAction={{ label: "Import from web", onClick: () => navigate('/discovery') }}
           />
         ) : (

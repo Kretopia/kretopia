@@ -4,7 +4,7 @@
 
 import {
   Camera, Video, Music, Shirt, Calendar, Palette, Megaphone, Disc3,
-  Scissors, FileText, Briefcase, Sparkles,
+  Scissors, FileText, Briefcase, Sparkles, User,
   type LucideIcon,
 } from "lucide-react";
 

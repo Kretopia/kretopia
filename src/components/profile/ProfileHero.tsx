@@ -415,31 +415,18 @@ export const ProfileHero = ({
           </div>
         )}
 
-        {/* Stats Grid — only render cells that have meaningful data */}
-        {(() => {
-          const cells = [
-            stats.circle > 0 && { label: "Circle", value: stats.circle, sub: null },
-            stats.projects > 0 && { label: "Projects", value: stats.projects, sub: null },
-            creditsCount > 0 && { label: "Credits", value: creditsCount, sub: verifiedCreditsCount > 0 ? verifiedCreditsCount : null },
-            stats.responseRate > 0 && { label: "Response", value: `${stats.responseRate}%`, sub: null },
-          ].filter(Boolean) as { label: string; value: string | number; sub: number | null }[];
-          if (cells.length === 0) return null;
-          return (
-            <div className={cn("grid gap-2 sm:gap-3", cells.length === 1 ? "grid-cols-1" : cells.length === 2 ? "grid-cols-2" : cells.length === 3 ? "grid-cols-3" : "grid-cols-4")}>
-              {cells.map((c) => (
-                <div key={c.label} className="text-center min-h-[48px] flex flex-col items-center justify-start">
-                  <span className="text-lg font-black block leading-tight">{c.value}</span>
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{c.label}</span>
-                  {c.sub != null && (
-                    <span className="mt-0.5 inline-flex items-center gap-0.5 text-[8px] text-energy font-black uppercase tracking-wider">
-                      <Shield className="h-2 w-2" /> {c.sub}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          );
-        })()}
+        {/* Verified credits chip — surface verification quality if any */}
+        {verifiedCreditsCount > 0 && (
+          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-energy">
+            <Shield className="h-3 w-3" />
+            {verifiedCreditsCount} verified credit{verifiedCreditsCount === 1 ? '' : 's'}
+            {stats.responseRate > 0 && (
+              <span className="ml-2 text-muted-foreground font-medium normal-case tracking-normal">
+                · {stats.responseRate}% response
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Trust Signals + Achievements — only renders if any are active */}
         {(() => {
@@ -469,13 +456,6 @@ export const ProfileHero = ({
         {/* Connection Path */}
         {!isOwnProfile && !degreeLoading && degree === 2 && path.length > 0 && (
           <ConnectionPathDisplay path={path} />
-        )}
-
-        {/* Bio */}
-        {profile.bio && (
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {profile.bio}
-          </p>
         )}
 
         {/* Social Stats */}

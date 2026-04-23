@@ -363,7 +363,7 @@ export default function ThrivePay() {
                     eyebrow="Money moves"
                     title="No transactions yet"
                     description="Top up your wallet or get paid for a gig — every move shows up here in real time."
-                    action={{ label: "Top Up Wallet", onClick: () => setTopUpOpen(true), icon: Plus }}
+                    action={{ label: "Top Up Wallet", onClick: () => setTopUpDialogOpen(true), icon: Plus }}
                     secondaryAction={{ label: "Browse Gigs", onClick: () => navigate('/gigs'), icon: Briefcase }}
                   />
                 </Card>

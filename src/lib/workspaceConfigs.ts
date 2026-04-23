@@ -217,6 +217,15 @@ export interface DealConfig {
 }
 
 export const DEAL_CONFIGS: Record<DealType, DealConfig> = {
+  solo: {
+    id: "solo",
+    label: "Just me — solo",
+    short: "Solo",
+    description: "Planning or tracking your own work, no collaborators yet",
+    icon: User,
+    showsFinance: false,
+    showsExchange: false,
+  },
   paid: {
     id: "paid",
     label: "I'm paying someone",

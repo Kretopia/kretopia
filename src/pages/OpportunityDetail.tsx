@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit, Copy, Trash2, PauseCircle, PlayCircle, Loader2, MoreVertical, Radar } from "lucide-react";
+import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit, Copy, Trash2, PauseCircle, PlayCircle, Loader2, MoreVertical, Radar, Mail } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Helmet } from "react-helmet-async";
@@ -55,6 +55,8 @@ const OpportunityDetail = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [myApplication, setMyApplication] = useState<{ id: string; status: string } | null>(null);
+  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const isOwner = user && (opportunity?.created_by === user.id || opportunity?.scouted_by === user.id);
@@ -231,9 +233,10 @@ const OpportunityDetail = () => {
       return;
     }
 
-    const [oppResult, savedResult] = await Promise.all([
+    const [oppResult, savedResult, appResult] = await Promise.all([
       supabase.from('opportunities').select('*').eq('id', id).maybeSingle(),
-      supabase.from('saved_opportunities').select('id').eq('user_id', user.id).eq('opportunity_id', id).maybeSingle()
+      supabase.from('saved_opportunities').select('id').eq('user_id', user.id).eq('opportunity_id', id).maybeSingle(),
+      supabase.from('applications').select('id, status').eq('applicant_id', user.id).eq('opportunity_id', id).maybeSingle(),
     ]);
 
     if (oppResult.error) {
@@ -243,6 +246,7 @@ const OpportunityDetail = () => {
     }
     
     setIsSaved(!!savedResult.data);
+    setMyApplication(appResult.data ? { id: appResult.data.id, status: appResult.data.status } : null);
     setLoading(false);
   };
 
@@ -300,6 +304,34 @@ const OpportunityDetail = () => {
     } else {
       setShowApplyDialog(true);
     }
+  };
+
+  const handleWithdraw = async () => {
+    if (!myApplication) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .delete()
+        .eq('id', myApplication.id);
+      if (error) throw error;
+      setMyApplication(null);
+      toast({ title: 'Application withdrawn', description: 'You can re-apply anytime while the gig is open.' });
+    } catch (err: any) {
+      toast({ title: 'Failed to withdraw', description: err.message, variant: 'destructive' });
+    } finally {
+      setActionLoading(false);
+      setShowWithdrawConfirm(false);
+    }
+  };
+
+  const handleMessageOwner = () => {
+    if (!opportunity?.created_by) return;
+    if (!user) {
+      navigate(`/auth?redirect=/opportunity/${id}`);
+      return;
+    }
+    navigate(`/messages?user=${opportunity.created_by}`);
   };
 
   const handleBookmark = async () => {
@@ -641,8 +673,13 @@ const OpportunityDetail = () => {
             </div>
           )}
 
-          {/* Apply Button */}
-          {isActive ? (
+          {/* Apply / Status block */}
+          {isOwner ? (
+            <Button size="lg" variant="outline" className="w-full" onClick={() => navigate(`/opportunity-dashboard?opportunity=${opportunity.id}`)}>
+              <Briefcase className="h-4 w-4 mr-2" />
+              Manage Applicants
+            </Button>
+          ) : isActive ? (
             !user ? (
               <Button
                 size="lg"
@@ -656,6 +693,47 @@ const OpportunityDetail = () => {
                 <UserPlus className="h-4 w-4" />
                 Sign Up to Apply — Free
               </Button>
+            ) : myApplication ? (
+              <div className="space-y-2">
+                <div className="rounded-xl border bg-muted/40 p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold truncate">
+                        {myApplication.status === 'accepted' && "You're hired 🎉"}
+                        {myApplication.status === 'shortlisted' && "You're shortlisted ⭐"}
+                        {myApplication.status === 'rejected' && 'Not selected this time'}
+                        {!['accepted','shortlisted','rejected'].includes(myApplication.status) && 'Application submitted'}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {myApplication.status === 'pending' && 'The poster will review your application shortly.'}
+                        {myApplication.status === 'shortlisted' && 'Stay tuned — they may reach out soon.'}
+                        {myApplication.status === 'accepted' && 'Open Messages or your project workspace.'}
+                        {myApplication.status === 'rejected' && 'Plenty more gigs await — keep applying.'}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={myApplication.status === 'rejected' ? 'destructive' : myApplication.status === 'accepted' ? 'default' : 'secondary'} className="shrink-0 capitalize">
+                    {myApplication.status}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" className="w-full" onClick={handleMessageOwner}>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Message Poster
+                  </Button>
+                  {(myApplication.status === 'pending' || myApplication.status === 'shortlisted') ? (
+                    <Button variant="outline" className="w-full text-destructive hover:text-destructive" onClick={() => setShowWithdrawConfirm(true)}>
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Withdraw
+                    </Button>
+                  ) : (
+                    <Button variant="outline" className="w-full" onClick={() => navigate('/opportunities')}>
+                      Browse More Gigs
+                    </Button>
+                  )}
+                </div>
+              </div>
             ) : (
               <Button size="lg" className="w-full" onClick={handleApply}>
                 Apply Now
@@ -663,7 +741,7 @@ const OpportunityDetail = () => {
             )
           ) : (
             <Button size="lg" className="w-full" disabled>
-              Campaign Ended
+              {opportunity.status === 'filled' ? 'Position Filled' : opportunity.status === 'paused' ? 'Paused' : 'Closed'}
             </Button>
           )}
         </div>
@@ -705,6 +783,25 @@ const OpportunityDetail = () => {
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Withdraw Confirmation */}
+      <AlertDialog open={showWithdrawConfirm} onOpenChange={setShowWithdrawConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Withdraw your application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes your application from the poster's queue. You can re-apply anytime while the gig is still open.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep application</AlertDialogCancel>
+            <AlertDialogAction onClick={handleWithdraw} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Withdraw
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -291,6 +291,65 @@ Return ONLY valid JSON array:
     }
   }, [isPro, selectedOppId, applicants.length]);
 
+  const notifyApplicantStatusChange = async (
+    applicantUserId: string,
+    newStatus: 'accepted' | 'rejected' | 'shortlisted',
+    gigTitle: string,
+    gigId: string,
+    projectId?: string,
+  ) => {
+    try {
+      const { APP_URL } = await import('@/lib/constants');
+      const gigUrl = `${APP_URL}/opportunity/${gigId}`;
+      const projectUrl = projectId ? `${APP_URL}/desk/${projectId}` : undefined;
+
+      // Get applicant profile for personalization
+      const { data: applicantProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', applicantUserId)
+        .maybeSingle();
+
+      // Email (resolved server-side via userId)
+      supabase.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'application-status-update',
+          recipientUserId: applicantUserId,
+          idempotencyKey: `app-status-${gigId}-${applicantUserId}-${newStatus}`,
+          templateData: {
+            applicantName: applicantProfile?.full_name || 'there',
+            gigTitle,
+            gigUrl,
+            projectUrl,
+            status: newStatus,
+          },
+        },
+      }).catch(() => {});
+
+      // In-app + push
+      const { sendPushNotification } = await import('@/lib/pushNotifications');
+      const titleMap = {
+        accepted: "You're hired! 🎉",
+        shortlisted: "You've been shortlisted ⭐",
+        rejected: 'Application update',
+      } as const;
+      const bodyMap = {
+        accepted: `You got the gig: ${gigTitle}`,
+        shortlisted: `You made the shortlist for: ${gigTitle}`,
+        rejected: `The poster chose someone else for: ${gigTitle}`,
+      } as const;
+      await sendPushNotification({
+        userId: applicantUserId,
+        title: titleMap[newStatus],
+        body: bodyMap[newStatus],
+        type: 'opportunity',
+        link: newStatus === 'accepted' && projectId ? `/desk/${projectId}` : `/opportunity/${gigId}`,
+      });
+    } catch (err) {
+      console.error('[notifyApplicantStatusChange] failed:', err);
+    }
+  };
+
   const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
     const { error } = await supabase
       .from('applications')
@@ -306,11 +365,11 @@ Return ONLY valid JSON array:
       a.id === applicationId ? { ...a, status: newStatus } : a
     ));
 
+    const applicant = applicants.find(a => a.id === applicationId);
+    const opp = opportunities.find(o => o.id === selectedOppId);
+
     if (newStatus === 'accepted') {
       // Create a project workspace for the accepted applicant
-      const applicant = applicants.find(a => a.id === applicationId);
-      const opp = opportunities.find(o => o.id === selectedOppId);
-      
       if (applicant && opp && user) {
         try {
           const { data: project, error: projectError } = await supabase
@@ -363,6 +422,9 @@ Return ONLY valid JSON array:
             }
           });
 
+          // Notify applicant of acceptance
+          await notifyApplicantStatusChange(applicant.applicant_id, 'accepted', opp.title, opp.id, project.id);
+
           toast.success(`Application accepted! Project workspace "${opp.title}" created.`, {
             action: {
               label: 'Open Project',
@@ -372,10 +434,19 @@ Return ONLY valid JSON array:
           return;
         } catch (err) {
           console.error('Project creation error:', err);
+          // Still notify even if project creation failed
+          if (applicant && opp) {
+            await notifyApplicantStatusChange(applicant.applicant_id, 'accepted', opp.title, opp.id);
+          }
           toast.success('Application accepted! (Project creation failed — you can create one manually)');
           return;
         }
       }
+    }
+
+    // Notify on shortlist / reject
+    if ((newStatus === 'shortlisted' || newStatus === 'rejected') && applicant && opp) {
+      notifyApplicantStatusChange(applicant.applicant_id, newStatus, opp.title, opp.id);
     }
 
     toast.success(`Application ${newStatus}`);

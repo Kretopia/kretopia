@@ -10,6 +10,7 @@ export interface TemplateEntry {
 }
 
 import { template as applicationConfirmation } from './application-confirmation.tsx'
+import { template as applicationStatusUpdate } from './application-status-update.tsx'
 import { template as newApplicantNotification } from './new-applicant-notification.tsx'
 import { template as eventRegistrationConfirmation } from './event-registration-confirmation.tsx'
 import { template as onboardingReminder } from './onboarding-reminder.tsx'
@@ -22,6 +23,7 @@ import { template as day2Engagement } from './day2-engagement.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'application-confirmation': applicationConfirmation,
+  'application-status-update': applicationStatusUpdate,
   'new-applicant-notification': newApplicantNotification,
   'event-registration-confirmation': eventRegistrationConfirmation,
   'onboarding-reminder': onboardingReminder,

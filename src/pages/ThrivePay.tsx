@@ -14,6 +14,7 @@ import { SEO } from "@/components/SEO";
 import { FeeStructure } from "@/components/FeeStructure";
 import { FeeCalculator } from "@/components/FeeCalculator";
 import { getFeeDisplayText } from "@/lib/platformFees";
+import { EmptyState } from "@/components/ui/empty-state";
 
 import { WalletTopUpDialog } from "@/components/wallet/WalletTopUpDialog";
 import { WalletTransferDialog } from "@/components/wallet/WalletTransferDialog";
@@ -37,6 +38,7 @@ import {
   Wallet,
   Sparkles,
   Send,
+  Briefcase,
 } from "lucide-react";
 
 interface ConnectRequirements {

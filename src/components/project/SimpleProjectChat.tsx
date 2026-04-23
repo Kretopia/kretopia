@@ -280,15 +280,24 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
           toast({ title: `${file.name} is too large`, description: "Max 25MB per file", variant: "destructive" });
           continue;
         }
-        const ext = file.name.split(".").pop();
-        const path = `${projectId}/chat/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("project-files").upload(path, file);
+        const nameParts = file.name.split(".");
+        const ext = nameParts.length > 1 ? nameParts.pop() : "bin";
+        const safeExt = (ext || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) || "bin";
+        const path = `${projectId}/chat/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
+        console.log("[chat-upload] uploading", { path, size: file.size, type: file.type });
+        const { error: upErr } = await supabase.storage
+          .from("project-files")
+          .upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
         if (upErr) {
-          toast({ title: `Upload failed: ${file.name}`, description: upErr.message, variant: "destructive" });
+          console.error("[chat-upload] failed", upErr);
+          toast({ title: `Upload failed: ${file.name}`, description: upErr.message || "Unknown storage error", variant: "destructive" });
           continue;
         }
-        const { data: pub } = supabase.storage.from("project-files").getPublicUrl(path);
-        uploaded.push({ url: pub.publicUrl, name: file.name, type: file.type || "application/octet-stream", size: file.size });
+        // Bucket is private — store the path; resolve to a signed URL at render time
+        uploaded.push({ url: path, name: file.name, type: file.type || "application/octet-stream", size: file.size });
+      }
+      if (uploaded.length === 0 && files.length > 0) {
+        toast({ title: "No files uploaded", description: "Check console for details.", variant: "destructive" });
       }
       setPendingAttachments(prev => [...prev, ...uploaded]);
     } finally {

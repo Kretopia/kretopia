@@ -220,6 +220,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
               type: 'message',
               link,
               data: { projectId, mentioned: isMentioned },
+              skipInApp: true, // DB trigger trg_notify_project_message creates the in-app notification
             });
           })
         );

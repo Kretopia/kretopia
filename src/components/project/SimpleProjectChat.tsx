@@ -275,6 +275,12 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     if (!files || files.length === 0) return;
     setUploadingFiles(true);
     try {
+      // Verify auth before attempting uploads
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        toast({ title: "Not signed in", description: "Please sign in again to upload files.", variant: "destructive" });
+        return;
+      }
       const uploaded: Attachment[] = [];
       for (const file of Array.from(files)) {
         if (file.size > 25 * 1024 * 1024) {
@@ -285,16 +291,17 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
         const ext = nameParts.length > 1 ? nameParts.pop() : "bin";
         const safeExt = (ext || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) || "bin";
         const path = `${projectId}/chat/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
-        console.log("[chat-upload] uploading", { path, size: file.size, type: file.type });
-        const { error: upErr } = await supabase.storage
+        console.log("[chat-upload] uploading", { path, size: file.size, type: file.type, userId: session.user.id });
+        const { data: upData, error: upErr } = await supabase.storage
           .from("project-files")
           .upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
         if (upErr) {
-          console.error("[chat-upload] failed", upErr);
-          toast({ title: `Upload failed: ${file.name}`, description: upErr.message || "Unknown storage error", variant: "destructive" });
+          console.error("[chat-upload] failed", { path, error: upErr, name: (upErr as any)?.name, statusCode: (upErr as any)?.statusCode, status: (upErr as any)?.status });
+          const detail = (upErr as any)?.message || (upErr as any)?.error || JSON.stringify(upErr);
+          toast({ title: `Upload failed: ${file.name}`, description: String(detail).slice(0, 200), variant: "destructive" });
           continue;
         }
-        // Bucket is private — store the path; resolve to a signed URL at render time
+        console.log("[chat-upload] success", upData);
         uploaded.push({ url: path, name: file.name, type: file.type || "application/octet-stream", size: file.size });
       }
       if (uploaded.length === 0 && files.length > 0) {

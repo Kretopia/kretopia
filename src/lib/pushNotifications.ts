@@ -10,6 +10,8 @@ interface SendPushNotificationParams {
   link?: string;
   icon?: string;
   data?: Record<string, any>;
+  /** When true, skip creating the in-app notification row (use this when a DB trigger already creates it). */
+  skipInApp?: boolean;
 }
 
 /**
@@ -17,27 +19,29 @@ interface SendPushNotificationParams {
  * This creates an in-app notification and triggers a push notification if they're subscribed
  */
 export async function sendPushNotification(params: SendPushNotificationParams) {
-  const { userId, title, body, type, link, icon, data } = params;
+  const { userId, title, body, type, link, icon, data, skipInApp } = params;
 
   try {
-    // Create in-app notification
-    const { error: notifError } = await supabase
-      .from("notifications")
-      .insert({
-        user_id: userId,
-        title,
-        message: body,
-        type,
-        link: link || null,
-        action_url: link || null,
-        action_text: type === 'match' ? 'Send Message' : type === 'message' ? 'View Message' : type === 'opportunity' ? 'View Applicants' : 'View',
-        image_url: icon || null,
-        priority: type === 'match' || type === 'message' ? 'high' : 'normal',
-        category: type,
-      });
+    // Create in-app notification (skip if a DB trigger handles it)
+    if (!skipInApp) {
+      const { error: notifError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: userId,
+          title,
+          message: body,
+          type,
+          link: link || null,
+          action_url: link || null,
+          action_text: type === 'match' ? 'Send Message' : type === 'message' ? 'View Message' : type === 'opportunity' ? 'View Applicants' : 'View',
+          image_url: icon || null,
+          priority: type === 'match' || type === 'message' ? 'high' : 'normal',
+          category: type,
+        });
 
-    if (notifError) {
-      console.error("Error creating notification:", notifError);
+      if (notifError) {
+        console.error("Error creating notification:", notifError);
+      }
     }
 
     // Trigger push notification via edge function

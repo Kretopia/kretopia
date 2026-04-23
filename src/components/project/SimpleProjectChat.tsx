@@ -78,7 +78,13 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Scroll the messages container only — avoid scrollIntoView which can
+    // steal focus from the parent window (e.g. the Lovable preview iframe
+    // capturing focus while editing in the outer chat).
+    const el = messagesEndRef.current;
+    if (!el) return;
+    const container = el.parentElement;
+    if (container) container.scrollTop = container.scrollHeight;
   }, [messages]);
 
   // Fetch reactions

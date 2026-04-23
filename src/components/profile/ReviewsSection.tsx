@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Star, MessageSquarePlus, Award, CheckCircle, XCircle, Link2, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Review {
   id: string;
@@ -206,11 +207,12 @@ Thank you so much!`;
       )}
 
       {approvedReviews.length === 0 ? (
-        <div className="rounded-xl md:rounded-2xl border border-border bg-card p-8 md:p-12 text-center">
-          <Star className="mx-auto mb-3 md:mb-4 h-12 w-12 md:h-16 md:w-16 text-muted-foreground" />
-          <h3 className="mb-1 md:mb-2 text-lg md:text-xl font-semibold">No reviews yet</h3>
-          <p className="text-sm md:text-base text-muted-foreground">Build your credibility with reviews from collaborators</p>
-        </div>
+        <EmptyState
+          icon={Star}
+          eyebrow="Social proof"
+          title="No reviews yet"
+          description="After your next collab wraps, ask your client for a quick review — it dramatically boosts your match rate."
+        />
       ) : (
         <div className="space-y-3 md:space-y-4">
           {approvedReviews.map((review) => (

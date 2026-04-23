@@ -3,6 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Star, Quote } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Review {
   id: string;
@@ -27,11 +28,12 @@ export const TestimonialsSection = ({
 }: TestimonialsSectionProps) => {
   if (reviews.length === 0) {
     return (
-      <Card className="p-8 text-center space-y-3">
-        <div className="text-5xl mb-2"></div>
-        <h3 className="text-xl font-semibold">No reviews yet</h3>
-        <p className="text-muted-foreground">Reviews from collaborators will appear here</p>
-      </Card>
+      <EmptyState
+        icon={Quote}
+        eyebrow="What people say"
+        title="Testimonials in the making"
+        description="Once your collaborators leave reviews, their words will live here as social proof."
+      />
     );
   }
 

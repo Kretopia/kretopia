@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AchievementCard } from "./AchievementCard";
 import { CreditEndorsementDialog } from "./CreditEndorsementDialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { useNavigate } from "react-router-dom";
 
 interface Credit {
   id: string;
@@ -33,6 +35,7 @@ interface CreditsSectionProps {
 
 export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSectionProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const navigate = useNavigate();
   const [credits, setCredits] = useState<Credit[]>([]);
   const [loading, setLoading] = useState(true);
   const [endorsementCredit, setEndorsementCredit] = useState<Credit | null>(null);
@@ -297,13 +300,22 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
       </div>
 
       {credits.length === 0 ? (
-        <div className="rounded-xl border border-border bg-card p-8 text-center">
-          <Film className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
-          <h3 className="mb-2 text-lg font-semibold">No credits yet</h3>
-          <p className="text-sm text-muted-foreground">
-            {isOwnProfile ? "Start by adding your project credits" : "No credits to display"}
-          </p>
-        </div>
+        isOwnProfile ? (
+          <EmptyState
+            icon={Film}
+            eyebrow="Build your authority"
+            title="Add your first credit"
+            description="Verified credits unlock vouches, higher gig matches, and your IMDB-style public ledger."
+            action={{ label: "Add a Credit", icon: Plus, onClick: () => setIsEditOpen(true) }}
+            secondaryAction={{ label: "Import from web", onClick: () => navigate('/discovery') }}
+          />
+        ) : (
+          <EmptyState
+            icon={Film}
+            title="No public credits"
+            description="This creator hasn't published any verified work yet."
+          />
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {credits.map((credit) => (

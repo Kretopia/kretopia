@@ -32,6 +32,8 @@ const ThriveDesk = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
 
+  const agentRole = useAgentRole(project, user?.id || "");
+
   const flowExtras = useProjectFlowExtras(projectId, project?.updated_at);
   const flow = useProjectFlow({
     messageCount: messages.length,
@@ -176,6 +178,9 @@ const ThriveDesk = () => {
           dealType={project?.deal_type ?? "paid"}
         />
 
+        {/* Agent Mode Banner — visible when agent_mode is true */}
+        <AgentModeBanner agentRole={agentRole} />
+
         {/* Credit Confirmation Banner */}
         <ConfirmCreditBanner
           projectId={projectId!}
@@ -197,6 +202,7 @@ const ThriveDesk = () => {
             currentUserId={user?.id || ""}
             userRole={userRole}
             isPro={isPro}
+            agentRole={agentRole}
             onUpdate={fetchProjectData}
           />
 

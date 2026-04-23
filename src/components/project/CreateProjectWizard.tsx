@@ -342,36 +342,83 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
           <>
             {/* STEP 1: Workspace type */}
             {step === 1 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 py-2">
-                {WORKSPACE_TYPE_LIST.map((wc) => {
-                  const Icon = wc.icon;
-                  const selected = workspaceType === wc.id;
-                  return (
-                    <button
-                      key={wc.id}
-                      onClick={() => setWorkspaceType(wc.id)}
-                      className={cn(
-                        "group relative text-left p-3 rounded-xl border-2 transition-all",
-                        "hover:border-primary/60 hover:bg-primary/5",
-                        selected ? "border-primary bg-primary/10" : "border-border bg-card",
-                      )}
-                    >
-                      <div className={cn(
-                        "w-10 h-10 rounded-lg flex items-center justify-center mb-2",
-                        selected ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
-                      )}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="font-semibold text-sm leading-tight">{wc.label}</div>
-                      <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{wc.description}</div>
-                      {selected && (
-                        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-                          <Check className="h-3 w-3" />
+              <div className="space-y-4 py-2">
+                {/* Recommended for you — based on profile role */}
+                {recommended.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Recommended for you
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {recommended.map((id) => {
+                        const wc = WORKSPACE_CONFIGS[id];
+                        const Icon = wc.icon;
+                        const selected = workspaceType === wc.id;
+                        return (
+                          <button
+                            key={`rec-${wc.id}`}
+                            onClick={() => setWorkspaceType(wc.id)}
+                            className={cn(
+                              "group relative text-left p-3 rounded-xl border-2 transition-all",
+                              "hover:border-primary/60 hover:bg-primary/5",
+                              selected ? "border-primary bg-primary/10" : "border-primary/40 bg-primary/5",
+                            )}
+                          >
+                            <div className={cn(
+                              "w-10 h-10 rounded-lg flex items-center justify-center mb-2",
+                              selected ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary",
+                            )}>
+                              <Icon className="h-5 w-5" />
+                            </div>
+                            <div className="font-semibold text-sm leading-tight">{wc.label}</div>
+                            <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{wc.description}</div>
+                            {selected && (
+                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                                <Check className="h-3 w-3" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground uppercase tracking-wider pt-2 border-t border-border">
+                      All workspaces
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {WORKSPACE_TYPE_LIST.map((wc) => {
+                    const Icon = wc.icon;
+                    const selected = workspaceType === wc.id;
+                    return (
+                      <button
+                        key={wc.id}
+                        onClick={() => setWorkspaceType(wc.id)}
+                        className={cn(
+                          "group relative text-left p-3 rounded-xl border-2 transition-all",
+                          "hover:border-primary/60 hover:bg-primary/5",
+                          selected ? "border-primary bg-primary/10" : "border-border bg-card",
+                        )}
+                      >
+                        <div className={cn(
+                          "w-10 h-10 rounded-lg flex items-center justify-center mb-2",
+                          selected ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+                        )}>
+                          <Icon className="h-5 w-5" />
                         </div>
-                      )}
-                    </button>
-                  );
-                })}
+                        <div className="font-semibold text-sm leading-tight">{wc.label}</div>
+                        <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{wc.description}</div>
+                        {selected && (
+                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                            <Check className="h-3 w-3" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 

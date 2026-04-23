@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import thriveinIcon from "@/assets/thrivein-icon.png";
+
+const thriveinIcon = "/favicon.png";
 
 interface BrandLogoProps {
   /** "sm" = icon only, "md" = icon + text (default), "lg" = larger for hero/auth */

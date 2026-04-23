@@ -27,20 +27,21 @@ export async function sendPushNotification(params: SendPushNotificationParams) {
       const { error: notifError } = await supabase
         .from("notifications")
         .insert({
-        user_id: userId,
-        title,
-        message: body,
-        type,
-        link: link || null,
-        action_url: link || null,
-        action_text: type === 'match' ? 'Send Message' : type === 'message' ? 'View Message' : type === 'opportunity' ? 'View Applicants' : 'View',
-        image_url: icon || null,
-        priority: type === 'match' || type === 'message' ? 'high' : 'normal',
-        category: type,
-      });
+          user_id: userId,
+          title,
+          message: body,
+          type,
+          link: link || null,
+          action_url: link || null,
+          action_text: type === 'match' ? 'Send Message' : type === 'message' ? 'View Message' : type === 'opportunity' ? 'View Applicants' : 'View',
+          image_url: icon || null,
+          priority: type === 'match' || type === 'message' ? 'high' : 'normal',
+          category: type,
+        });
 
-    if (notifError) {
-      console.error("Error creating notification:", notifError);
+      if (notifError) {
+        console.error("Error creating notification:", notifError);
+      }
     }
 
     // Trigger push notification via edge function

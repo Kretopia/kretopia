@@ -11,8 +11,8 @@ import type { Collaborator } from "@/hooks/useProjectData";
 
 interface Props { projectId: string; collaborators: Collaborator[]; currentUserId: string; }
 interface Split {
-  id: string; project_id: string; contributor_id: string | null;
-  contributor_name: string; role: string | null; percentage: number; notes: string | null;
+  id: string; project_id: string; contributor_user_id: string | null;
+  contributor_name: string; contributor_role: string | null; percentage: number; notes: string | null;
 }
 
 export function SplitSheetTab({ projectId, collaborators, currentUserId }: Props) {
@@ -24,18 +24,19 @@ export function SplitSheetTab({ projectId, collaborators, currentUserId }: Props
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("project_split_sheets").select("*")
-      .eq("project_id", projectId)
-      .catch(() => ({ data: [] as any[] }));
-    setSplits((data as any[]) || []);
+    try {
+      const { data } = await supabase
+        .from("project_split_sheets").select("*")
+        .eq("project_id", projectId);
+      setSplits((data as any[]) || []);
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 
   const add = async () => {
     const { error } = await supabase.from("project_split_sheets").insert({
       project_id: projectId, created_by: currentUserId,
-      contributor_name: "New contributor", role: "Producer", percentage: 0,
+      contributor_name: "New contributor", contributor_role: "Producer", percentage: 0,
     });
     if (error) toast({ title: "Add failed", description: error.message, variant: "destructive" });
     else void load();
@@ -84,7 +85,7 @@ export function SplitSheetTab({ projectId, collaborators, currentUserId }: Props
       )}
 
       {splits.map((s) => {
-        const collab = collaborators.find((c) => c.user_id === s.contributor_id);
+        const collab = collaborators.find((c) => c.id === s.contributor_user_id);
         return (
           <Card key={s.id}>
             <CardContent className="p-3 flex items-center gap-3">
@@ -94,7 +95,7 @@ export function SplitSheetTab({ projectId, collaborators, currentUserId }: Props
               </Avatar>
               <div className="flex-1 grid grid-cols-12 gap-2">
                 <Input className="col-span-12 sm:col-span-5" defaultValue={s.contributor_name} placeholder="Name" onBlur={(e) => update(s.id, { contributor_name: e.target.value })} />
-                <Input className="col-span-7 sm:col-span-4" defaultValue={s.role ?? ""} placeholder="Role (Producer, Lyricist...)" onBlur={(e) => update(s.id, { role: e.target.value })} />
+                <Input className="col-span-7 sm:col-span-4" defaultValue={s.contributor_role ?? ""} placeholder="Role (Producer, Lyricist...)" onBlur={(e) => update(s.id, { contributor_role: e.target.value })} />
                 <Input className="col-span-5 sm:col-span-3" type="number" min={0} max={100} step={0.5} defaultValue={s.percentage} onBlur={(e) => update(s.id, { percentage: parseFloat(e.target.value) || 0 })} />
               </div>
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => remove(s.id)}>

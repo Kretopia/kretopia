@@ -13,10 +13,11 @@ interface Terms {
   what_i_give: string;
   what_i_get: string;
   proof_required: string;
-  agreed_by_all: boolean;
+  delivered: boolean;
+  received: boolean;
 }
 
-const EMPTY: Terms = { what_i_give: "", what_i_get: "", proof_required: "", agreed_by_all: false };
+const EMPTY: Terms = { what_i_give: "", what_i_get: "", proof_required: "", delivered: false, received: false };
 
 export function ExchangeLedgerTab({ projectId, currentUserId }: Props) {
   const { toast } = useToast();
@@ -28,19 +29,21 @@ export function ExchangeLedgerTab({ projectId, currentUserId }: Props) {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("project_exchange_terms").select("*")
-      .eq("project_id", projectId).maybeSingle()
-      .catch(() => ({ data: null as any }));
-    if (data) {
-      setTerms({
-        id: data.id,
-        what_i_give: data.what_i_give ?? "",
-        what_i_get: data.what_i_get ?? "",
-        proof_required: typeof data.proof_required === "string" ? data.proof_required : (data.proof_required?.text ?? ""),
-        agreed_by_all: !!data.agreed_by_all,
-      });
-    }
+    try {
+      const { data } = await supabase
+        .from("project_exchange_terms").select("*")
+        .eq("project_id", projectId).maybeSingle();
+      if (data) {
+        setTerms({
+          id: data.id,
+          what_i_give: data.what_i_give ?? "",
+          what_i_get: data.what_i_get ?? "",
+          proof_required: typeof data.proof_required === "string" ? data.proof_required : ((data.proof_required as any)?.text ?? ""),
+          delivered: !!data.delivered,
+          received: !!data.received,
+        });
+      }
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 
@@ -52,7 +55,8 @@ export function ExchangeLedgerTab({ projectId, currentUserId }: Props) {
       what_i_give: terms.what_i_give,
       what_i_get: terms.what_i_get,
       proof_required: { text: terms.proof_required },
-      agreed_by_all: terms.agreed_by_all,
+      delivered: terms.delivered,
+      received: terms.received,
     };
     const { error } = terms.id
       ? await supabase.from("project_exchange_terms").update(payload).eq("id", terms.id)
@@ -107,16 +111,21 @@ export function ExchangeLedgerTab({ projectId, currentUserId }: Props) {
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between gap-3">
-        <button
-          onClick={() => setTerms({ ...terms, agreed_by_all: !terms.agreed_by_all })}
-          className="flex items-center gap-2 text-sm"
-        >
-          <span className={`w-5 h-5 rounded border-2 flex items-center justify-center ${terms.agreed_by_all ? "bg-primary border-primary" : "border-border"}`}>
-            {terms.agreed_by_all && <Check className="h-3 w-3 text-primary-foreground" />}
-          </span>
-          Both sides agreed
-        </button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex gap-4 text-sm">
+          <button onClick={() => setTerms({ ...terms, delivered: !terms.delivered })} className="flex items-center gap-2">
+            <span className={`w-5 h-5 rounded border-2 flex items-center justify-center ${terms.delivered ? "bg-primary border-primary" : "border-border"}`}>
+              {terms.delivered && <Check className="h-3 w-3 text-primary-foreground" />}
+            </span>
+            I delivered
+          </button>
+          <button onClick={() => setTerms({ ...terms, received: !terms.received })} className="flex items-center gap-2">
+            <span className={`w-5 h-5 rounded border-2 flex items-center justify-center ${terms.received ? "bg-primary border-primary" : "border-border"}`}>
+              {terms.received && <Check className="h-3 w-3 text-primary-foreground" />}
+            </span>
+            I received
+          </button>
+        </div>
         <Button onClick={save} disabled={saving} className="gap-2">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save terms

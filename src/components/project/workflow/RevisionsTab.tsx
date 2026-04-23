@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 interface Props { projectId: string; currentUserId: string; }
 type Status = "open" | "in_progress" | "delivered" | "approved";
 interface Revision {
-  id: string; project_id: string; round_number: number; requested_by: string | null;
-  notes: string | null; status: Status; created_at: string;
+  id: string; project_id: string; round_number: number; requested_by: string;
+  notes: string | null; status: string; created_at: string;
 }
 
 const STATUS: Record<Status, { label: string; cls: string }> = {
@@ -33,11 +33,12 @@ export function RevisionsTab({ projectId, currentUserId }: Props) {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("project_revisions").select("*")
-      .eq("project_id", projectId).order("round_number", { ascending: false })
-      .catch(() => ({ data: [] as any[] }));
-    setItems((data as any[]) || []);
+    try {
+      const { data } = await supabase
+        .from("project_revisions").select("*")
+        .eq("project_id", projectId).order("round_number", { ascending: false });
+      setItems((data as any[]) || []);
+    } catch (e) { console.error(e); }
     setLoading(false);
   };
 
@@ -46,7 +47,7 @@ export function RevisionsTab({ projectId, currentUserId }: Props) {
     const next = (items[0]?.round_number ?? 0) + 1;
     const { error } = await supabase.from("project_revisions").insert({
       project_id: projectId, requested_by: currentUserId,
-      round_number: next, notes: draft.trim(), status: "open" as Status,
+      round_number: next, notes: draft.trim(), status: "open",
     });
     if (error) { toast({ title: "Add failed", description: error.message, variant: "destructive" }); return; }
     setDraft("");
@@ -81,33 +82,36 @@ export function RevisionsTab({ projectId, currentUserId }: Props) {
         <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">No revision rounds yet.</CardContent></Card>
       )}
 
-      {items.map((r) => (
-        <Card key={r.id}>
-          <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs px-2 py-0.5 rounded bg-muted">R{r.round_number}</span>
-                <Badge className={cn("border-0 text-[10px]", STATUS[r.status].cls)} variant="secondary">
-                  {STATUS[r.status].label}
-                </Badge>
+      {items.map((r) => {
+        const status = (r.status as Status) ?? "open";
+        return (
+          <Card key={r.id}>
+            <CardContent className="p-4 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs px-2 py-0.5 rounded bg-muted">R{r.round_number}</span>
+                  <Badge className={cn("border-0 text-[10px]", STATUS[status].cls)} variant="secondary">
+                    {STATUS[status].label}
+                  </Badge>
+                </div>
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />{formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                </span>
               </div>
-              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                <Clock className="h-3 w-3" />{formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
-              </span>
-            </div>
-            {r.notes && <p className="text-sm whitespace-pre-wrap">{r.notes}</p>}
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {(["open", "in_progress", "delivered", "approved"] as Status[]).map((s) => (
-                <Button key={s} size="sm" variant={r.status === s ? "default" : "outline"}
-                  className="h-7 text-xs gap-1" onClick={() => setStatus(r.id, s)}>
-                  {s === "approved" && <Check className="h-3 w-3" />}
-                  {STATUS[s].label}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+              {r.notes && <p className="text-sm whitespace-pre-wrap">{r.notes}</p>}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {(["open", "in_progress", "delivered", "approved"] as Status[]).map((s) => (
+                  <Button key={s} size="sm" variant={status === s ? "default" : "outline"}
+                    className="h-7 text-xs gap-1" onClick={() => setStatus(r.id, s)}>
+                    {s === "approved" && <Check className="h-3 w-3" />}
+                    {STATUS[s].label}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

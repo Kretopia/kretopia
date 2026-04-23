@@ -20,6 +20,8 @@ import {
   WORKSPACE_CONFIGS,
   DEAL_CONFIGS,
 } from "@/lib/workspaceConfigs";
+import { recommendWorkspaces } from "@/lib/workspaceRecommendations";
+import { Sparkles } from "lucide-react";
 
 interface CreateProjectWizardProps {
   open: boolean;
@@ -57,6 +59,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
   const [inviteSearch, setInviteSearch] = useState("");
   const [showInviteDropdown, setShowInviteDropdown] = useState(false);
   const [connections, setConnections] = useState<any[]>([]);
+  const [recommended, setRecommended] = useState<WorkspaceType[]>([]);
   // Agent-mode role being assigned to the next pick
   const [pendingAgentRole, setPendingAgentRole] = useState<"client" | "creative">("client");
 
@@ -65,6 +68,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
   useEffect(() => {
     if (open) {
       void loadConnections();
+      void loadRecommendations();
     } else {
       // Reset on close
       setStep(1);

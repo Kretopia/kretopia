@@ -28,6 +28,7 @@ export function useProjectData(projectId: string | undefined) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, subscriptionInfo } = useAuth();
+  const userId = user?.id;
   const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   const [loading, setLoading] = useState(true);
@@ -40,7 +41,6 @@ export function useProjectData(projectId: string | undefined) {
   const [projects, setProjects] = useState<any[]>([]);
   const [userRole, setUserRole] = useState<"creator" | "client">("creator");
 
-  // Fetch all user projects for sidebar
   const fetchProjects = useCallback(async () => {
     const { data } = await supabase
       .from("projects")
@@ -49,7 +49,6 @@ export function useProjectData(projectId: string | undefined) {
     setProjects(data || []);
   }, []);
 
-  // Batch-fetch collaborator profiles (fixes N+1)
   const fetchCollaborators = useCallback(
     async (projectData: any) => {
       const { data: collabData } = await supabase
@@ -71,7 +70,6 @@ export function useProjectData(projectId: string | undefined) {
 
       if (!profiles) return [];
 
-      // Owner first, then others
       const sorted = profiles.sort((a, b) =>
         a.user_id === projectData.created_by ? -1 : b.user_id === projectData.created_by ? 1 : 0
       );
@@ -85,7 +83,6 @@ export function useProjectData(projectId: string | undefined) {
     [projectId]
   );
 
-  // Batch-fetch message profiles (fixes N+1)
   const fetchMessages = useCallback(async () => {
     const { data: messagesData } = await supabase
       .from("project_messages")
@@ -111,9 +108,9 @@ export function useProjectData(projectId: string | undefined) {
 
   const fetchProjectData = useCallback(
     async (isInitial = false) => {
-      if (!projectId || !user) return;
+      if (!projectId || !userId) return;
       try {
-        if (isInitial) setLoading(true);
+        if (isInitial && !project) setLoading(true);
 
         const { data: projectData, error: projectError } = await supabase
           .from("projects")
@@ -122,17 +119,16 @@ export function useProjectData(projectId: string | undefined) {
           .single();
         if (projectError) throw projectError;
 
-        // Auto-accept any pending invitation for this project before checking access
         await supabase
           .from("project_collaborators")
           .update({ status: "accepted" })
           .eq("project_id", projectId)
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .eq("status", "pending");
 
         const { data: hasAccess } = await supabase.rpc("user_has_project_access", {
           project_id_param: projectId,
-          user_id_param: user.id,
+          user_id_param: userId,
         });
         if (!hasAccess) {
           toast({
@@ -145,9 +141,8 @@ export function useProjectData(projectId: string | undefined) {
         }
 
         setProject(projectData);
-        setUserRole(projectData.created_by === user.id ? "client" : "creator");
+        setUserRole(projectData.created_by === userId ? "client" : "creator");
 
-        // Parallel batch fetches
         const [collabs, msgs, filesRes, tasksRes, milestonesRes] = await Promise.all([
           fetchCollaborators(projectData),
           fetchMessages(),
@@ -168,25 +163,23 @@ export function useProjectData(projectId: string | undefined) {
         setLoading(false);
       }
     },
-    [projectId, user, navigate, toast, fetchCollaborators, fetchMessages]
+    [projectId, userId, project, navigate, toast, fetchCollaborators, fetchMessages]
   );
 
-  // Initial load + analytics
   useEffect(() => {
-    if (user) fetchProjects();
-  }, [user, fetchProjects]);
+    if (userId) fetchProjects();
+  }, [userId, fetchProjects]);
 
   useEffect(() => {
-    if (projectId && user) {
+    if (projectId && userId) {
       fetchProjectData(true);
       import("@/lib/analytics").then(({ analytics }) => {
         analytics.pageView("thrivedesk");
         analytics.featureUsed("thrivedesk_opened", { project_id: projectId });
       });
     }
-  }, [projectId, user, fetchProjectData]);
+  }, [projectId, userId, fetchProjectData]);
 
-  // Real-time subscriptions
   useEffect(() => {
     if (!projectId) return;
     const channel = supabase

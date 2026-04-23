@@ -673,8 +673,13 @@ const OpportunityDetail = () => {
             </div>
           )}
 
-          {/* Apply Button */}
-          {isActive ? (
+          {/* Apply / Status block */}
+          {isOwner ? (
+            <Button size="lg" variant="outline" className="w-full" onClick={() => navigate(`/opportunity-dashboard?opportunity=${opportunity.id}`)}>
+              <Briefcase className="h-4 w-4 mr-2" />
+              Manage Applicants
+            </Button>
+          ) : isActive ? (
             !user ? (
               <Button
                 size="lg"
@@ -688,6 +693,47 @@ const OpportunityDetail = () => {
                 <UserPlus className="h-4 w-4" />
                 Sign Up to Apply — Free
               </Button>
+            ) : myApplication ? (
+              <div className="space-y-2">
+                <div className="rounded-xl border bg-muted/40 p-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold truncate">
+                        {myApplication.status === 'accepted' && "You're hired 🎉"}
+                        {myApplication.status === 'shortlisted' && "You're shortlisted ⭐"}
+                        {myApplication.status === 'rejected' && 'Not selected this time'}
+                        {!['accepted','shortlisted','rejected'].includes(myApplication.status) && 'Application submitted'}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {myApplication.status === 'pending' && 'The poster will review your application shortly.'}
+                        {myApplication.status === 'shortlisted' && 'Stay tuned — they may reach out soon.'}
+                        {myApplication.status === 'accepted' && 'Open Messages or your project workspace.'}
+                        {myApplication.status === 'rejected' && 'Plenty more gigs await — keep applying.'}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={myApplication.status === 'rejected' ? 'destructive' : myApplication.status === 'accepted' ? 'default' : 'secondary'} className="shrink-0 capitalize">
+                    {myApplication.status}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" className="w-full" onClick={handleMessageOwner}>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Message Poster
+                  </Button>
+                  {(myApplication.status === 'pending' || myApplication.status === 'shortlisted') ? (
+                    <Button variant="outline" className="w-full text-destructive hover:text-destructive" onClick={() => setShowWithdrawConfirm(true)}>
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Withdraw
+                    </Button>
+                  ) : (
+                    <Button variant="outline" className="w-full" onClick={() => navigate('/opportunities')}>
+                      Browse More Gigs
+                    </Button>
+                  )}
+                </div>
+              </div>
             ) : (
               <Button size="lg" className="w-full" onClick={handleApply}>
                 Apply Now
@@ -695,7 +741,7 @@ const OpportunityDetail = () => {
             )
           ) : (
             <Button size="lg" className="w-full" disabled>
-              Campaign Ended
+              {opportunity.status === 'filled' ? 'Position Filled' : opportunity.status === 'paused' ? 'Paused' : 'Closed'}
             </Button>
           )}
         </div>

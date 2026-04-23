@@ -4,6 +4,7 @@ import { FileBrowser } from "@/components/project/files/FileBrowser";
 import { TasksWorkspace } from "@/components/project/tasks/TasksWorkspace";
 import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
 import { FinanceHub } from "@/components/project/finance/FinanceHub";
+import { AgentFinanceSummary } from "@/components/project/finance/AgentFinanceSummary";
 import { ProjectNotes } from "@/components/project/ProjectNotes";
 import { AIBriefBuilder } from "@/components/project/AIBriefBuilder";
 import { AIAutomation } from "@/components/project/AIAutomation";
@@ -23,6 +24,7 @@ import { UsageLimitBanner } from "@/components/project/ProGate";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { cn } from "@/lib/utils";
 import type { Collaborator } from "@/hooks/useProjectData";
+import type { AgentRoleInfo } from "@/hooks/useAgentRole";
 
 const FREE_LIMITS = { files: 10, tasks: 20, boardItems: 15 };
 
@@ -38,6 +40,7 @@ interface DeskTabContentProps {
   currentUserId: string;
   userRole: "creator" | "client";
   isPro: boolean;
+  agentRole?: AgentRoleInfo;
   onUpdate: () => void;
 }
 
@@ -53,6 +56,7 @@ export const DeskTabContent = memo(({
   currentUserId,
   userRole,
   isPro,
+  agentRole,
   onUpdate,
 }: DeskTabContentProps) => {
   const setTab = (tab: string) => {
@@ -137,6 +141,9 @@ export const DeskTabContent = memo(({
 
         {activeTab === "finance" && (
           <FreeTierGate feature="milestones" featureLabel="Finance Tools" description="Upgrade to Pro for unlimited milestones, invoices, and project payments.">
+            {agentRole?.isAgentMode && (
+              <AgentFinanceSummary project={project} agentRole={agentRole} />
+            )}
             <FinanceHub
               projectId={projectId}
               project={project}

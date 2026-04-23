@@ -7,7 +7,9 @@ import { WorkspaceSidebar } from "@/components/project/WorkspaceSidebar";
 import { WorkspaceQuickPanel } from "@/components/project/WorkspaceQuickPanel";
 import { DeskTabBar } from "@/components/project/DeskTabBar";
 import { ConfirmCreditBanner } from "@/components/project/ConfirmCreditBanner";
+import { AgentModeBanner } from "@/components/project/AgentModeBanner";
 import { DeskTabContent } from "@/components/project/DeskTabContent";
+import { useAgentRole } from "@/hooks/useAgentRole";
 import { DeskAILauncher } from "@/components/project/ai/DeskAILauncher";
 import { ProjectFlowTimeline } from "@/components/project/flow/ProjectFlowTimeline";
 import { NextStepBar } from "@/components/project/flow/NextStepBar";
@@ -29,6 +31,8 @@ const ThriveDesk = () => {
   const [activeTab, setActiveTab] = useState("today");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
+
+  const agentRole = useAgentRole(project, user?.id || "");
 
   const flowExtras = useProjectFlowExtras(projectId, project?.updated_at);
   const flow = useProjectFlow({
@@ -174,6 +178,9 @@ const ThriveDesk = () => {
           dealType={project?.deal_type ?? "paid"}
         />
 
+        {/* Agent Mode Banner — visible when agent_mode is true */}
+        <AgentModeBanner agentRole={agentRole} />
+
         {/* Credit Confirmation Banner */}
         <ConfirmCreditBanner
           projectId={projectId!}
@@ -195,6 +202,7 @@ const ThriveDesk = () => {
             currentUserId={user?.id || ""}
             userRole={userRole}
             isPro={isPro}
+            agentRole={agentRole}
             onUpdate={fetchProjectData}
           />
 

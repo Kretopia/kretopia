@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ChatActionChips } from "./chat/ChatActionChips";
+import { ChatAttachment } from "./chat/ChatAttachment";
 
 interface Attachment {
   url: string;
@@ -280,15 +281,24 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
           toast({ title: `${file.name} is too large`, description: "Max 25MB per file", variant: "destructive" });
           continue;
         }
-        const ext = file.name.split(".").pop();
-        const path = `${projectId}/chat/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("project-files").upload(path, file);
+        const nameParts = file.name.split(".");
+        const ext = nameParts.length > 1 ? nameParts.pop() : "bin";
+        const safeExt = (ext || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) || "bin";
+        const path = `${projectId}/chat/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
+        console.log("[chat-upload] uploading", { path, size: file.size, type: file.type });
+        const { error: upErr } = await supabase.storage
+          .from("project-files")
+          .upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
         if (upErr) {
-          toast({ title: `Upload failed: ${file.name}`, description: upErr.message, variant: "destructive" });
+          console.error("[chat-upload] failed", upErr);
+          toast({ title: `Upload failed: ${file.name}`, description: upErr.message || "Unknown storage error", variant: "destructive" });
           continue;
         }
-        const { data: pub } = supabase.storage.from("project-files").getPublicUrl(path);
-        uploaded.push({ url: pub.publicUrl, name: file.name, type: file.type || "application/octet-stream", size: file.size });
+        // Bucket is private — store the path; resolve to a signed URL at render time
+        uploaded.push({ url: path, name: file.name, type: file.type || "application/octet-stream", size: file.size });
+      }
+      if (uploaded.length === 0 && files.length > 0) {
+        toast({ title: "No files uploaded", description: "Check console for details.", variant: "destructive" });
       }
       setPendingAttachments(prev => [...prev, ...uploaded]);
     } finally {
@@ -444,22 +454,9 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                               {/* Attachments */}
                               {msg.attachments && msg.attachments.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
-                                  {msg.attachments.map((att, i) => {
-                                    const isImg = att.type?.startsWith("image/");
-                                    if (isImg) {
-                                      return (
-                                        <a key={i} href={att.url} target="_blank" rel="noreferrer" className="block rounded-lg overflow-hidden border border-border max-w-[240px] hover:border-primary transition-colors">
-                                          <img src={att.url} alt={att.name} className="max-h-48 object-cover" loading="lazy" />
-                                        </a>
-                                      );
-                                    }
-                                    return (
-                                      <a key={i} href={att.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border bg-muted/40 hover:bg-accent transition-colors max-w-[240px]">
-                                        <FileIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                        <span className="text-xs truncate">{att.name}</span>
-                                      </a>
-                                    );
-                                  })}
+                                  {msg.attachments.map((att, i) => (
+                                    <ChatAttachment key={i} url={att.url} name={att.name} type={att.type} />
+                                  ))}
                                 </div>
                               )}
 

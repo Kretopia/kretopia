@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface ProjectNotification {
   id: string;
@@ -123,10 +124,12 @@ export function NotificationBell({ projectId }: NotificationBellProps) {
         </div>
         <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              <Bell className="h-12 w-12 mx-auto mb-2 opacity-30" />
-              <p className="text-sm">No notifications yet</p>
-            </div>
+            <EmptyState
+              icon={Bell}
+              title="You're all caught up"
+              description="Project activity, mentions, and milestone updates will appear here."
+              className="py-10"
+            />
           ) : (
             <div className="divide-y">
               {notifications.map((notification) => (

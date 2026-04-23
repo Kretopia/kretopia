@@ -12,6 +12,7 @@ import { Plus, DollarSign, Calendar, CheckCircle2, Clock, AlertCircle, CreditCar
 // XP system removed
 import { analytics } from "@/lib/analytics";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Milestone {
   id: string;
@@ -533,13 +534,14 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
 
       <div className="grid gap-4">
         {milestones.length === 0 ? (
-          <Card className="p-8 text-center">
-            <DollarSign className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">No milestones yet</p>
-            {userRole === 'client' && (
-              <p className="text-sm text-muted-foreground mt-2">Create your first milestone to track project payments</p>
-            )}
-          </Card>
+          <EmptyState
+            icon={DollarSign}
+            eyebrow="Get paid in chunks"
+            title="No milestones yet"
+            description={userRole === 'client'
+              ? "Split the budget into milestones so funds release as work ships — protected by escrow."
+              : "Once your client sets up milestones, payments and progress will track here."}
+          />
         ) : (
           milestones.map((milestone) => {
             const statusConfig = STATUS_CONFIG[milestone.status as keyof typeof STATUS_CONFIG];

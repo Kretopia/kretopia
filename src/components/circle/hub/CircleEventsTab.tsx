@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Plus, Users } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface EventsTabProps {
   events: any[];
@@ -17,18 +18,13 @@ export function CircleEventsTab({ events, isMember, onCreateEvent }: EventsTabPr
 
   if (events.length === 0) {
     return (
-      <div className="px-4 py-12 text-center">
-        <Calendar className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-        <h3 className="font-bold mb-1">No events yet</h3>
-        <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
-          Bring your circle together — host a meetup, jam, or workshop.
-        </p>
-        {isMember && (
-          <Button variant="gradient" onClick={onCreateEvent}>
-            <Plus className="h-4 w-4 mr-1.5" /> Host your first event
-          </Button>
-        )}
-      </div>
+      <EmptyState
+        icon={Calendar}
+        eyebrow="Bring people together"
+        title="No events yet"
+        description="Host a meetup, jam, or workshop. Members get notified the moment you publish."
+        action={isMember ? { label: "Host your first event", icon: Plus, onClick: onCreateEvent } : undefined}
+      />
     );
   }
 

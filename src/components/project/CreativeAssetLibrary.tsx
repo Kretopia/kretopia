@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { getProjectFileSignedUrl } from "@/lib/projectFiles";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface AssetFolder {
   id: string;
@@ -255,13 +256,12 @@ export const CreativeAssetLibrary = ({ projectId, currentUserId }: CreativeAsset
 
       {/* Assets grid/list */}
       {currentAssets.length === 0 && currentFolders.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p className="font-medium">No assets here yet</p>
-            <p className="text-sm mt-1">Upload files or create folders to organize your creative assets</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={FolderOpen}
+          eyebrow="Your creative library"
+          title="No assets here yet"
+          description="Upload references, raw footage, design files, or finals. Versioning, folders, and tags keep everything tidy."
+        />
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {currentAssets.map(asset => (

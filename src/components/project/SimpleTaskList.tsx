@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import { CheckSquare, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Task {
   id: string;
@@ -209,11 +210,12 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
 
           {/* Task list */}
           {optimisticTasks.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <CheckSquare className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No tasks yet</p>
-              <p className="text-sm mt-1">Add tasks to track your project progress</p>
-            </div>
+            <EmptyState
+              icon={CheckSquare}
+              title="No tasks yet"
+              description="Break the work into bite-sized tasks. Assign, track, and ship together."
+              className="py-8"
+            />
           ) : (
               <div className="space-y-2">
               {optimisticTasks.map((task) => {

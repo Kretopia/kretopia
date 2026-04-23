@@ -13,6 +13,12 @@ import { ProjectTemplatePicker } from "@/components/project/ProjectTemplatePicke
 import { CreativeBoard } from "@/components/project/CreativeBoard";
 import { ScopeGuardian } from "@/components/project/ScopeGuardian";
 import { ContractsList } from "@/components/project/contracts/ContractsList";
+import { CallSheetTab } from "@/components/project/workflow/CallSheetTab";
+import { RunOfShowTab } from "@/components/project/workflow/RunOfShowTab";
+import { RollCallTab } from "@/components/project/workflow/RollCallTab";
+import { SplitSheetTab } from "@/components/project/workflow/SplitSheetTab";
+import { ExchangeLedgerTab } from "@/components/project/workflow/ExchangeLedgerTab";
+import { RevisionsTab } from "@/components/project/workflow/RevisionsTab";
 import { UsageLimitBanner } from "@/components/project/ProGate";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { cn } from "@/lib/utils";
@@ -158,6 +164,25 @@ export const DeskTabContent = memo(({
               <AIAutomation projectId={projectId} projectTitle={project.title} projectDescription={project.description} onUpdate={onUpdate} />
             </div>
           </FreeTierGate>
+        )}
+
+        {activeTab === "call_sheet" && (
+          <CallSheetTab projectId={projectId} currentUserId={currentUserId} />
+        )}
+        {activeTab === "run_of_show" && (
+          <RunOfShowTab projectId={projectId} currentUserId={currentUserId} />
+        )}
+        {activeTab === "roll_call" && (
+          <RollCallTab projectId={projectId} collaborators={collaborators} currentUserId={currentUserId} />
+        )}
+        {activeTab === "split_sheet" && (
+          <SplitSheetTab projectId={projectId} collaborators={collaborators} currentUserId={currentUserId} />
+        )}
+        {activeTab === "exchange" && (
+          <ExchangeLedgerTab projectId={projectId} currentUserId={currentUserId} />
+        )}
+        {activeTab === "revisions" && (
+          <RevisionsTab projectId={projectId} currentUserId={currentUserId} />
         )}
       </div>
     )}

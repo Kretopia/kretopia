@@ -170,6 +170,8 @@ const ThriveDesk = () => {
           onTabChange={setActiveTab}
           taskCount={tasks.filter(t => t.status !== 'done').length}
           messageCount={messages.length}
+          workspaceType={project?.workspace_type ?? "general"}
+          dealType={project?.deal_type ?? "paid"}
         />
 
         {/* Credit Confirmation Banner */}

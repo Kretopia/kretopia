@@ -5,6 +5,10 @@
 import {
   Camera, Video, Music, Shirt, Calendar, Palette, Megaphone, Disc3,
   Scissors, FileText, Briefcase, Sparkles, User,
+  // Tab icons
+  MessageSquare, CheckSquare, FolderOpen, LayoutGrid, CheckCircle2, Wallet,
+  FileSignature, StickyNote, Image as ImageIcon, ListChecks, Bot, ClipboardList,
+  Clock, UserCheck, ArrowRightLeft, RotateCcw, Shield,
   type LucideIcon,
 } from "lucide-react";
 
@@ -307,3 +311,36 @@ export function getWorkspaceConfig(workspaceType: string | null | undefined): Wo
 export function getDealConfig(dealType: string | null | undefined): DealConfig {
   return DEAL_CONFIGS[(dealType as DealType) ?? "paid"] ?? DEAL_CONFIGS.paid;
 }
+
+// Tab presentation metadata used by DeskTabBar
+export interface TabMeta { label: string; icon: LucideIcon; }
+
+export const TAB_META: Record<DeskTabKey, TabMeta> = {
+  today:        { label: "Today",       icon: Sparkles },
+  messages:     { label: "Chat",        icon: MessageSquare },
+  tasks:        { label: "Tasks",       icon: CheckSquare },
+  files:        { label: "Files",       icon: FolderOpen },
+  approvals:    { label: "Approvals",   icon: CheckCircle2 },
+  assets:       { label: "Assets",      icon: ImageIcon },
+  board:        { label: "Board",       icon: LayoutGrid },
+  contracts:    { label: "Agreements",  icon: FileSignature },
+  scope:        { label: "Scope",       icon: Shield },
+  finance:      { label: "Finance",     icon: Wallet },
+  notes:        { label: "Notes",       icon: StickyNote },
+  templates:    { label: "Templates",   icon: ClipboardList },
+  ai:           { label: "Copilot",     icon: Bot },
+  call_sheet:   { label: "Call Sheet",  icon: ClipboardList },
+  run_of_show:  { label: "Run of Show", icon: Clock },
+  roll_call:    { label: "Roll Call",   icon: UserCheck },
+  split_sheet:  { label: "Split Sheet", icon: Music },
+  exchange:     { label: "Exchange",    icon: ArrowRightLeft },
+  revisions:    { label: "Revisions",   icon: RotateCcw },
+};
+
+/** Get the workspace-specific label for a tab (e.g. "Shot List" instead of "Tasks"). */
+export function getTabLabel(tab: DeskTabKey, workspaceType: WorkspaceType): string {
+  const wc = WORKSPACE_CONFIGS[workspaceType];
+  if (tab === "tasks" && wc?.tasksLabel) return wc.tasksLabel;
+  return TAB_META[tab]?.label ?? tab;
+}
+

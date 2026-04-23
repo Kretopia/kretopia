@@ -109,7 +109,7 @@ serve(async (req) => {
     const { data: profile } = await admin
       .from("profiles")
       .select("user_id, full_name, role")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .maybeSingle();
 
     if (!profile?.full_name) {
@@ -122,7 +122,7 @@ serve(async (req) => {
     const { data: scan, error: scanErr } = await admin
       .from("discovery_scans")
       .insert({
-        user_id: user.id,
+        user_id: userId,
         status: "running",
         trigger_source: triggerSource,
         query_used: profile.full_name,
@@ -133,11 +133,11 @@ serve(async (req) => {
 
     // 3. Pre-load existing identifiers for dedupe
     const [creditsRes, awardsRes, pressRes, pendingRes] = await Promise.all([
-      admin.from("credits").select("verification_url, source_url, project_name").eq("user_id", user.id),
-      admin.from("awards").select("verification_url, title, organization").eq("user_id", user.id),
+      admin.from("credits").select("verification_url, source_url, project_name").eq("user_id", userId),
+      admin.from("awards").select("verification_url, title, organization").eq("user_id", userId),
       // press_links lives on profiles JSONB in this project; treat as best-effort dedupe via URL only
-      admin.from("profiles").select("press_links").eq("user_id", user.id).maybeSingle(),
-      admin.from("pending_discoveries").select("dedupe_key").eq("user_id", user.id),
+      admin.from("profiles").select("press_links").eq("user_id", userId).maybeSingle(),
+      admin.from("pending_discoveries").select("dedupe_key").eq("user_id", userId),
     ]);
 
     const knownUrls = new Set<string>();
@@ -194,7 +194,7 @@ serve(async (req) => {
 
       counts[kind] += 1;
       inserts.push({
-        user_id: user.id,
+        user_id: userId,
         scan_id: scan.id,
         kind,
         title: title.slice(0, 280),
@@ -227,7 +227,7 @@ serve(async (req) => {
 
     await admin.from("profiles").update({
       last_universe_scan_at: new Date().toISOString(),
-    }).eq("user_id", user.id);
+    }).eq("user_id", userId);
 
     return new Response(JSON.stringify({
       success: true,

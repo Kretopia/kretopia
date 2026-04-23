@@ -37,6 +37,7 @@ import { Fingerprint } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
 import { cn } from "@/lib/utils";
+import { APP_URL } from "@/lib/constants";
 
 interface Profile {
   full_name: string;
@@ -348,7 +349,7 @@ const CreatorEPK = () => {
       : [])
   ];
 
-  const canonicalUrl = `https://thrivein.io/epk/${userId}`;
+  const canonicalUrl = `${APP_URL}/epk/${userId}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">

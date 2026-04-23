@@ -22,6 +22,7 @@ import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { APP_URL } from "@/lib/constants";
 
 interface FinanceHubProps {
   projectId: string;
@@ -148,7 +149,7 @@ export function FinanceHub({
 
   // ===== Outside-client share link =====
   const handleShareInvoice = async (invoice: InvoiceLite) => {
-    const url = `${window.location.origin}/invoice/${invoice.id}`;
+    const url = `${APP_URL}/invoice/${invoice.id}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Pay link copied", { description: "Share with anyone — no login needed." });

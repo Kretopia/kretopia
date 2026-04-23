@@ -7,13 +7,14 @@ import { MagazineWall } from "@/components/scene/MagazineWall";
 import { PodcastPlayer } from "@/components/scene/PodcastPlayer";
 import { useLocation } from "react-router-dom";
 import { PageHeader } from "@/components/ui/page-header";
+import { APP_URL } from "@/lib/constants";
 
 const Spotlight = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState(tabParam || "magazine");
-  const canonicalUrl = "https://thrivein.io/spotlight";
+  const canonicalUrl = `${APP_URL}/spotlight`;
 
   return (
     <PageTransition>
@@ -42,7 +43,7 @@ const Spotlight = () => {
             "publisher": {
               "@type": "Organization",
               "name": "ThriveIN",
-              "url": "https://thrivein.io"
+                "url": APP_URL
             }
           })}
         </script>

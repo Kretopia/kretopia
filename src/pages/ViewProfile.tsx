@@ -669,7 +669,7 @@ const ViewProfile = () => {
               open={showShareDialog}
               onOpenChange={setShowShareDialog}
               profileName={profile.full_name}
-              profileUrl={`https://www.thrivein.io/profile/${profile.user_id}`}
+              profileUrl={`${APP_URL}/profile/${profile.user_id}`}
             />
           )}
 
@@ -747,7 +747,7 @@ const ViewProfile = () => {
           open={showShareDialog}
           onOpenChange={setShowShareDialog}
           profileName={profile.full_name}
-          profileUrl={`https://www.thrivein.io/profile/${profile.user_id}`}
+            profileUrl={`${APP_URL}/profile/${profile.user_id}`}
         />
       )}
 

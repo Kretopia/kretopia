@@ -4,10 +4,11 @@ import { PageTransition } from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { APP_URL } from "@/lib/constants";
 
 const Podcast = () => {
   const navigate = useNavigate();
-  const canonicalUrl = "https://thrivein.io/podcast";
+  const canonicalUrl = `${APP_URL}/podcast`;
 
   return (
     <PageTransition>
@@ -40,7 +41,7 @@ const Podcast = () => {
             "publisher": {
               "@type": "Organization",
               "name": "ThriveIN",
-              "url": "https://thrivein.io"
+                "url": APP_URL
             }
           })}
         </script>

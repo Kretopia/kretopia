@@ -366,7 +366,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full touch-pan-y">
         {/* Pinned Messages Banner */}
         {pinnedMessages.length > 0 && (
           <div className="border-b border-border bg-accent/30 px-4 py-2 shrink-0">
@@ -391,7 +391,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto touch-pan-y">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-20">
               <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">

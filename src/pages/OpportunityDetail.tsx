@@ -55,6 +55,8 @@ const OpportunityDetail = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [myApplication, setMyApplication] = useState<{ id: string; status: string } | null>(null);
+  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const isOwner = user && (opportunity?.created_by === user.id || opportunity?.scouted_by === user.id);
@@ -231,9 +233,10 @@ const OpportunityDetail = () => {
       return;
     }
 
-    const [oppResult, savedResult] = await Promise.all([
+    const [oppResult, savedResult, appResult] = await Promise.all([
       supabase.from('opportunities').select('*').eq('id', id).maybeSingle(),
-      supabase.from('saved_opportunities').select('id').eq('user_id', user.id).eq('opportunity_id', id).maybeSingle()
+      supabase.from('saved_opportunities').select('id').eq('user_id', user.id).eq('opportunity_id', id).maybeSingle(),
+      supabase.from('applications').select('id, status').eq('applicant_id', user.id).eq('opportunity_id', id).maybeSingle(),
     ]);
 
     if (oppResult.error) {
@@ -243,6 +246,7 @@ const OpportunityDetail = () => {
     }
     
     setIsSaved(!!savedResult.data);
+    setMyApplication(appResult.data ? { id: appResult.data.id, status: appResult.data.status } : null);
     setLoading(false);
   };
 

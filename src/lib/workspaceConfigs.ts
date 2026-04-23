@@ -274,6 +274,7 @@ export const DEAL_CONFIGS: Record<DealType, DealConfig> = {
 };
 
 export const DEAL_TYPE_LIST: DealConfig[] = [
+  DEAL_CONFIGS.solo,
   DEAL_CONFIGS.paid,
   DEAL_CONFIGS.getting_paid,
   DEAL_CONFIGS.barter,

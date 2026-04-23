@@ -7724,9 +7724,69 @@ export type Database = {
           },
         ]
       }
+      project_call_sheets: {
+        Row: {
+          call_time: string | null
+          contact_list: Json
+          created_at: string
+          created_by: string
+          id: string
+          location_address: string | null
+          location_name: string | null
+          notes: string | null
+          parking_note: string | null
+          project_id: string
+          shoot_date: string | null
+          updated_at: string
+          weather_note: string | null
+          wrap_time: string | null
+        }
+        Insert: {
+          call_time?: string | null
+          contact_list?: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          location_address?: string | null
+          location_name?: string | null
+          notes?: string | null
+          parking_note?: string | null
+          project_id: string
+          shoot_date?: string | null
+          updated_at?: string
+          weather_note?: string | null
+          wrap_time?: string | null
+        }
+        Update: {
+          call_time?: string | null
+          contact_list?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          location_address?: string | null
+          location_name?: string | null
+          notes?: string | null
+          parking_note?: string | null
+          project_id?: string
+          shoot_date?: string | null
+          updated_at?: string
+          weather_note?: string | null
+          wrap_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_call_sheets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_collaborators: {
         Row: {
           accepted_at: string | null
+          agent_role: string | null
           created_at: string
           email: string
           id: string
@@ -7740,6 +7800,7 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          agent_role?: string | null
           created_at?: string
           email: string
           id?: string
@@ -7753,6 +7814,7 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          agent_role?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -8041,6 +8103,62 @@ export type Database = {
           },
         ]
       }
+      project_exchange_terms: {
+        Row: {
+          created_at: string
+          created_by: string
+          currency: string | null
+          delivered: boolean
+          estimated_value: number | null
+          id: string
+          notes: string | null
+          project_id: string
+          proof_required: Json
+          received: boolean
+          updated_at: string
+          what_i_get: string | null
+          what_i_give: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          currency?: string | null
+          delivered?: boolean
+          estimated_value?: number | null
+          id?: string
+          notes?: string | null
+          project_id: string
+          proof_required?: Json
+          received?: boolean
+          updated_at?: string
+          what_i_get?: string | null
+          what_i_give?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          currency?: string | null
+          delivered?: boolean
+          estimated_value?: number | null
+          id?: string
+          notes?: string | null
+          project_id?: string
+          proof_required?: Json
+          received?: boolean
+          updated_at?: string
+          what_i_get?: string | null
+          what_i_give?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_exchange_terms_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_file_folders: {
         Row: {
           created_at: string
@@ -8319,6 +8437,250 @@ export type Database = {
           },
         ]
       }
+      project_revisions: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          project_id: string
+          requested_by: string
+          resolved_at: string | null
+          round_number: number
+          status: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          project_id: string
+          requested_by: string
+          resolved_at?: string | null
+          round_number?: number
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          project_id?: string
+          requested_by?: string
+          resolved_at?: string | null
+          round_number?: number
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_revisions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_roll_call: {
+        Row: {
+          arrived_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          person_contact: string | null
+          person_name: string
+          person_role: string | null
+          person_user_id: string | null
+          project_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          arrived_at?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          notes?: string | null
+          person_contact?: string | null
+          person_name: string
+          person_role?: string | null
+          person_user_id?: string | null
+          project_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          arrived_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          person_contact?: string | null
+          person_name?: string
+          person_role?: string | null
+          person_user_id?: string | null
+          project_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_roll_call_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_run_of_show: {
+        Row: {
+          created_at: string
+          created_by: string
+          duration_min: number | null
+          id: string
+          notes: string | null
+          owner_id: string | null
+          position: number
+          project_id: string
+          segment_title: string
+          time_slot: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          duration_min?: number | null
+          id?: string
+          notes?: string | null
+          owner_id?: string | null
+          position?: number
+          project_id: string
+          segment_title: string
+          time_slot?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          duration_min?: number | null
+          id?: string
+          notes?: string | null
+          owner_id?: string | null
+          position?: number
+          project_id?: string
+          segment_title?: string
+          time_slot?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_run_of_show_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_setup_state: {
+        Row: {
+          answers: Json
+          created_at: string
+          current_step: number
+          id: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          current_step?: number
+          id?: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          current_step?: number
+          id?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_setup_state_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_split_sheets: {
+        Row: {
+          contributor_name: string
+          contributor_role: string | null
+          contributor_user_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          percentage: number
+          pro_affiliation: string | null
+          project_id: string
+          publisher: string | null
+          signed: boolean
+          signed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          contributor_name: string
+          contributor_role?: string | null
+          contributor_user_id?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          notes?: string | null
+          percentage?: number
+          pro_affiliation?: string | null
+          project_id: string
+          publisher?: string | null
+          signed?: boolean
+          signed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contributor_name?: string
+          contributor_role?: string | null
+          contributor_user_id?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          percentage?: number
+          pro_affiliation?: string | null
+          project_id?: string
+          publisher?: string | null
+          signed?: boolean
+          signed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_split_sheets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_tasks: {
         Row: {
           assigned_to: string | null
@@ -8434,46 +8796,82 @@ export type Database = {
       }
       projects: {
         Row: {
+          agent_mode: boolean
+          agent_user_id: string | null
           budget: string | null
+          client_price: number | null
+          client_user_id: string | null
           created_at: string | null
           created_by: string
+          creative_payout: number | null
+          creative_user_ids: string[] | null
+          currency: string
           deadline: string | null
+          deal_type: string
           description: string | null
           id: string
+          margin_type: string | null
+          margin_value: number | null
           match_id: string | null
           pinned_stage: string | null
+          setup_completed: boolean
           spark_room_id: string | null
           status: string | null
           title: string
           updated_at: string | null
+          workspace_type: string
         }
         Insert: {
+          agent_mode?: boolean
+          agent_user_id?: string | null
           budget?: string | null
+          client_price?: number | null
+          client_user_id?: string | null
           created_at?: string | null
           created_by: string
+          creative_payout?: number | null
+          creative_user_ids?: string[] | null
+          currency?: string
           deadline?: string | null
+          deal_type?: string
           description?: string | null
           id?: string
+          margin_type?: string | null
+          margin_value?: number | null
           match_id?: string | null
           pinned_stage?: string | null
+          setup_completed?: boolean
           spark_room_id?: string | null
           status?: string | null
           title: string
           updated_at?: string | null
+          workspace_type?: string
         }
         Update: {
+          agent_mode?: boolean
+          agent_user_id?: string | null
           budget?: string | null
+          client_price?: number | null
+          client_user_id?: string | null
           created_at?: string | null
           created_by?: string
+          creative_payout?: number | null
+          creative_user_ids?: string[] | null
+          currency?: string
           deadline?: string | null
+          deal_type?: string
           description?: string | null
           id?: string
+          margin_type?: string | null
+          margin_value?: number | null
           match_id?: string | null
           pinned_stage?: string | null
+          setup_completed?: boolean
           spark_room_id?: string | null
           status?: string | null
           title?: string
           updated_at?: string | null
+          workspace_type?: string
         }
         Relationships: [
           {
@@ -12333,6 +12731,10 @@ export type Database = {
         Returns: undefined
       }
       is_profile_owner: { Args: { _profile_user_id: string }; Returns: boolean }
+      is_project_member: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_room_member: {
         Args: { _room_id: string; _user_id: string }
         Returns: boolean

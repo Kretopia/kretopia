@@ -22,6 +22,7 @@ export type WorkspaceType =
   | "general";
 
 export type DealType =
+  | "solo"           // just me, tracking my own work
   | "paid"           // I'm paying someone
   | "getting_paid"   // I'm getting paid
   | "barter"         // exchange of value

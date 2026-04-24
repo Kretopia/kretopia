@@ -68,22 +68,22 @@ const OpportunityDashboard = () => {
   const requestedOpportunityId = searchParams.get('opportunity');
 
   useEffect(() => {
-    console.log('[OpportunityDashboard] Auth state - loading:', authLoading, 'user:', user?.id);
-    
-    if (authLoading) {
-      console.log('[OpportunityDashboard] Still loading auth...');
-      return;
-    }
-    
+    if (authLoading) return;
+
     if (!user) {
-      console.log('[OpportunityDashboard] No user after auth loaded, redirecting to auth');
       navigate('/auth');
       return;
     }
-    
-    console.log('[OpportunityDashboard] Fetching opportunities');
+
+    // This page is only meaningful when reviewing applicants for a specific gig.
+    // Without a target gig, send users to the unified Gig Manager instead.
+    if (!requestedOpportunityId) {
+      navigate('/manage-opportunities', { replace: true });
+      return;
+    }
+
     fetchOpportunities();
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, requestedOpportunityId]);
 
   useEffect(() => {
     if (selectedOppId) {

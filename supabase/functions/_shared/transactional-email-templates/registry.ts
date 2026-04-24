@@ -20,8 +20,10 @@ import { template as thrivefundCampaignFunded } from './thrivefund-campaign-fund
 import { template as thrivefundCampaignFailed } from './thrivefund-campaign-failed.tsx'
 import { template as eventBlast } from './event-blast.tsx'
 import { template as day2Engagement } from './day2-engagement.tsx'
+import { template as universeScanFindings } from './universe-scan-findings.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
+  'universe-scan-findings': universeScanFindings,
   'application-confirmation': applicationConfirmation,
   'application-status-update': applicationStatusUpdate,
   'new-applicant-notification': newApplicantNotification,

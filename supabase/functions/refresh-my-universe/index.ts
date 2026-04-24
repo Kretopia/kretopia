@@ -33,12 +33,6 @@ const AWARD_KEYWORDS = [
 const CREDIT_PLATFORM_RX =
   /(imdb\.com\/name|imdb\.com\/title|muso\.ai|discogs\.com|allmusic\.com|themoviedb\.org|behance\.net|dribbble\.com|spotify\.com\/(?:track|album)|music\.apple\.com\/.+\/(?:album|song))/i;
 
-// Social / profile-aggregator domains — these are identity pages, not credits
-// or press. We surface them as "upload" (their own social presence) only if
-// the user hasn't connected them yet; otherwise skip.
-const SOCIAL_PROFILE_RX =
-  /(instagram\.com|linkedin\.com|facebook\.com|twitter\.com|x\.com|tiktok\.com|threads\.net|youtube\.com\/(?:@|channel|user|c\/)|about\.me|linktr\.ee|beacons\.ai|bio\.link|snapchat\.com|pinterest\.com)/i;
-
 function classifyKind(url: string, title: string, excerpt: string): Kind | null {
   const u = url.toLowerCase();
   const t = `${title} ${excerpt}`.toLowerCase();
@@ -49,10 +43,7 @@ function classifyKind(url: string, title: string, excerpt: string): Kind | null 
   // Credits: known credit registries / release pages
   if (CREDIT_PLATFORM_RX.test(u)) return "credit";
 
-  // Social / personal profile pages — never press, treat as upload candidate
-  if (SOCIAL_PROFILE_RX.test(u)) return "upload";
-
-  // Uploads: video/audio platforms (specific item, not channel root)
+  // Uploads: video/audio platforms (channel-owned content)
   if (/youtube\.com\/watch|youtu\.be\/|vimeo\.com\/\d+|soundcloud\.com\/[^/]+\/[^/]+/.test(u)) {
     return "upload";
   }
@@ -60,12 +51,8 @@ function classifyKind(url: string, title: string, excerpt: string): Kind | null 
   // Press: editorial domains
   if (PRESS_DOMAINS.some((d) => u.includes(d))) return "press";
 
-  // Fallback: editorial signals in title/excerpt — but require an article-like
-  // pattern (interview/review/feature WITH a verb) to avoid catching
-  // "Instagram profile for X" or "LinkedIn profile for X".
-  if (/\b(interview with|reviewed by|featured in|profiled by|premiered on|spoke (?:to|with))\b/i.test(t)) {
-    return "press";
-  }
+  // Fallback: if title/excerpt mentions interview / feature -> press
+  if (/\b(interview|feature|profile|review|premiere)\b/i.test(t)) return "press";
 
   return null; // skip — too ambiguous
 }

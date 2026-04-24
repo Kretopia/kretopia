@@ -131,11 +131,11 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[calc(100vw-1rem)] sm:w-full max-h-[90dvh] sm:max-h-[85vh] flex flex-col p-4 sm:p-6 gap-3 overflow-hidden">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-2xl w-[calc(100vw-1rem)] sm:w-full p-0 gap-0 max-h-[90dvh] flex flex-col overflow-hidden">
+        <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4 shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Sparkles className="h-4 w-4 text-primary" />
-            New finds across your universe
+            <Sparkles className="h-4 w-4 text-primary shrink-0" />
+            <span className="truncate">New finds across your universe</span>
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
             We searched the web for new credits, press, awards, and uploads.
@@ -143,7 +143,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 -mx-4 sm:-mx-6 px-4 sm:px-6">
+        <ScrollArea className="flex-1 min-h-0 px-4 sm:px-6 pb-4 sm:pb-6">
           {loading ? (
             <div className="py-12 flex justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -166,70 +166,73 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
                 return (
                   <div
                     key={item.id}
-                    className="flex gap-3 p-3 rounded-lg border bg-card hover:bg-muted/40 transition-colors"
+                    className="p-3 rounded-lg border bg-card hover:bg-muted/40 transition-colors"
                   >
-                    {item.thumbnail_url ? (
-                      <img
-                        src={item.thumbnail_url}
-                        alt=""
-                        className="h-14 w-14 rounded object-cover flex-shrink-0 bg-muted"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                      />
-                    ) : (
-                      <div className="h-14 w-14 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                        <Icon className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                    )}
+                    <div className="flex gap-3">
+                      {item.thumbnail_url ? (
+                        <img
+                          src={item.thumbnail_url}
+                          alt=""
+                          className="h-12 w-12 sm:h-14 sm:w-14 rounded object-cover flex-shrink-0 bg-muted"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                      ) : (
+                        <div className="h-12 w-12 sm:h-14 sm:w-14 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                          <Icon className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <Badge variant="outline" className={`text-[10px] h-4 px-1.5 ${Meta.color}`}>
-                          {Meta.label}
-                        </Badge>
-                        {item.source_domain && (
-                          <span className="text-[11px] text-muted-foreground truncate">
-                            {item.source_domain}
-                          </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                          <Badge variant="outline" className={`text-[10px] h-4 px-1.5 ${Meta.color}`}>
+                            {Meta.label}
+                          </Badge>
+                          {item.source_domain && (
+                            <span className="text-[11px] text-muted-foreground truncate min-w-0">
+                              {item.source_domain}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium leading-tight line-clamp-2 break-words">{item.title}</p>
+                        {item.excerpt && (
+                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1 break-words">{item.excerpt}</p>
                         )}
                       </div>
-                      <p className="text-sm font-medium leading-tight line-clamp-2">{item.title}</p>
-                      {item.excerpt && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{item.excerpt}</p>
-                      )}
-                      <div className="flex items-center gap-1 mt-2">
-                        <Button
-                          size="sm"
-                          className="h-7 text-xs gap-1"
-                          onClick={() => accept(item)}
-                          disabled={actingId === item.id}
-                        >
-                          {actingId === item.id
-                            ? <Loader2 className="h-3 w-3 animate-spin" />
-                            : <Check className="h-3 w-3" />}
-                          That's me
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs gap-1 text-muted-foreground"
-                          onClick={() => dismiss(item)}
-                          disabled={actingId === item.id}
-                        >
-                          <X className="h-3 w-3" />
-                          Not me
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs gap-1 text-muted-foreground ml-auto"
-                          asChild
-                        >
-                          <a href={item.source_url} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-3 w-3" />
-                            Open
-                          </a>
-                        </Button>
-                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 mt-3 flex-wrap">
+                      <Button
+                        size="sm"
+                        className="h-8 text-xs gap-1 flex-1 sm:flex-none min-w-0"
+                        onClick={() => accept(item)}
+                        disabled={actingId === item.id}
+                      >
+                        {actingId === item.id
+                          ? <Loader2 className="h-3 w-3 animate-spin" />
+                          : <Check className="h-3 w-3" />}
+                        That's me
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 text-xs gap-1 text-muted-foreground flex-1 sm:flex-none min-w-0"
+                        onClick={() => dismiss(item)}
+                        disabled={actingId === item.id}
+                      >
+                        <X className="h-3 w-3" />
+                        Not me
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 text-xs gap-1 text-muted-foreground sm:ml-auto"
+                        asChild
+                      >
+                        <a href={item.source_url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-3 w-3" />
+                          Open
+                        </a>
+                      </Button>
                     </div>
                   </div>
                 );

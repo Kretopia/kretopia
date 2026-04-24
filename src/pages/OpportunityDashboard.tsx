@@ -935,9 +935,11 @@ const ApplicantCard = ({
           {/* Professional Skills */}
           {applicant.professional_skills && applicant.professional_skills.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {applicant.professional_skills.slice(0, 6).map((skill, i) => (
-                <Badge key={i} variant="secondary" className="text-[10px]">{skill}</Badge>
-              ))}
+              {applicant.professional_skills.slice(0, 6).map((skill: any, i) => {
+                const label = typeof skill === 'string' ? skill : (skill?.skill || skill?.name || skill?.label || '');
+                if (!label) return null;
+                return <Badge key={i} variant="secondary" className="text-[10px]">{label}</Badge>;
+              })}
               {applicant.professional_skills.length > 6 && (
                 <Badge variant="secondary" className="text-[10px]">+{applicant.professional_skills.length - 6}</Badge>
               )}

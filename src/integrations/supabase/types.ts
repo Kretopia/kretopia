@@ -2351,6 +2351,44 @@ export type Database = {
           },
         ]
       }
+      credit_vouches: {
+        Row: {
+          action: string
+          created_at: string
+          credit_id: string
+          id: string
+          note: string | null
+          updated_at: string
+          voucher_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          credit_id: string
+          id?: string
+          note?: string | null
+          updated_at?: string
+          voucher_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          credit_id?: string
+          id?: string
+          note?: string | null
+          updated_at?: string
+          voucher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_vouches_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: false
+            referencedRelation: "credits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credits: {
         Row: {
           ai_confidence: number | null
@@ -12488,6 +12526,7 @@ export type Database = {
         Args: { p_role: string; p_user_id: string }
         Returns: undefined
       }
+      backfill_vouch_requests: { Args: never; Returns: Json }
       calculate_distance: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
@@ -12909,6 +12948,10 @@ export type Database = {
         Returns: boolean
       }
       validate_invite_code: { Args: { code: string }; Returns: boolean }
+      vouch_on_credit: {
+        Args: { _action: string; _credit_id: string; _note?: string }
+        Returns: Json
+      }
     }
     Enums: {
       account_type: "individual" | "company"

@@ -61,10 +61,26 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
   const accept = async (item: Discovery) => {
     if (!user) return;
     setActingId(item.id);
+    let undoData: { kind: string; insertedId?: string; prevSocialLinks?: any; prevPressLinks?: any } | null = null;
     try {
-      // Write to the right destination table by kind
-      if (item.kind === "credit" || item.kind === "upload") {
-        await supabase.from("credits").insert({
+      // Dedupe check by source_url before inserting
+      if (item.kind === "credit") {
+        const { data: dup } = await supabase
+          .from("credits")
+          .select("id")
+          .eq("user_id", user.id)
+          .or(`source_url.eq.${item.source_url},verification_url.eq.${item.source_url}`)
+          .maybeSingle();
+        if (dup) {
+          await supabase.from("pending_discoveries").update({
+            status: "accepted", reviewed_at: new Date().toISOString(),
+          }).eq("id", item.id);
+          setItems((prev) => prev.filter((i) => i.id !== item.id));
+          toast.info("Already in your credits — skipped");
+          setActingId(null);
+          return;
+        }
+        const { data: inserted } = await supabase.from("credits").insert({
           user_id: user.id,
           project_name: item.title,
           role: item.payload?.role || "Creator",
@@ -74,23 +90,76 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
           thumbnail_url: item.thumbnail_url,
           year: item.payload?.year || null,
           verification_status: "pending",
-        } as any);
+        } as any).select("id").maybeSingle();
+        undoData = { kind: "credit", insertedId: inserted?.id };
+      } else if (item.kind === "upload") {
+        // Linked social/platform profile → profiles.social_links JSONB
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("social_links")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const existing = Array.isArray((prof as any)?.social_links) ? (prof as any).social_links : [];
+        if (existing.some((l: any) => l?.url === item.source_url)) {
+          await supabase.from("pending_discoveries").update({
+            status: "accepted", reviewed_at: new Date().toISOString(),
+          }).eq("id", item.id);
+          setItems((prev) => prev.filter((i) => i.id !== item.id));
+          toast.info("Already linked — skipped");
+          setActingId(null);
+          return;
+        }
+        undoData = { kind: "upload", prevSocialLinks: existing };
+        await supabase.from("profiles").update({
+          social_links: [...existing, {
+            url: item.source_url,
+            title: item.title,
+            platform: item.source_domain,
+            thumbnail_url: item.thumbnail_url,
+            added_at: new Date().toISOString(),
+          }],
+        } as any).eq("user_id", user.id);
       } else if (item.kind === "award") {
-        await supabase.from("awards").insert({
+        const { data: dup } = await supabase
+          .from("awards")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("verification_url", item.source_url)
+          .maybeSingle();
+        if (dup) {
+          await supabase.from("pending_discoveries").update({
+            status: "accepted", reviewed_at: new Date().toISOString(),
+          }).eq("id", item.id);
+          setItems((prev) => prev.filter((i) => i.id !== item.id));
+          toast.info("Already in your awards — skipped");
+          setActingId(null);
+          return;
+        }
+        const { data: inserted } = await supabase.from("awards").insert({
           user_id: user.id,
           title: item.title,
           organization: item.source_domain || "Unknown",
           verification_url: item.source_url,
           year: item.payload?.year || null,
-        } as any);
+        } as any).select("id").maybeSingle();
+        undoData = { kind: "award", insertedId: inserted?.id };
       } else if (item.kind === "press") {
-        // Append to profiles.press_links JSONB
         const { data: prof } = await supabase
           .from("profiles")
           .select("press_links")
           .eq("user_id", user.id)
           .maybeSingle();
         const existing = Array.isArray((prof as any)?.press_links) ? (prof as any).press_links : [];
+        if (existing.some((l: any) => l?.url === item.source_url)) {
+          await supabase.from("pending_discoveries").update({
+            status: "accepted", reviewed_at: new Date().toISOString(),
+          }).eq("id", item.id);
+          setItems((prev) => prev.filter((i) => i.id !== item.id));
+          toast.info("Already in your press — skipped");
+          setActingId(null);
+          return;
+        }
+        undoData = { kind: "press", prevPressLinks: existing };
         await supabase.from("profiles").update({
           press_links: [...existing, {
             url: item.source_url,
@@ -107,7 +176,45 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
 
       setItems((prev) => prev.filter((i) => i.id !== item.id));
       onChanged?.();
-      toast.success(`Added to your ${KIND_META[item.kind].label.toLowerCase()}s`);
+
+      const labelMap: Record<string, string> = {
+        credit: "credits",
+        upload: "linked profiles",
+        award: "awards",
+        press: "press",
+      };
+      toast.success(`Added to your ${labelMap[item.kind]}`, {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            try {
+              if (!undoData) return;
+              if (undoData.kind === "credit" && undoData.insertedId) {
+                await supabase.from("credits").delete().eq("id", undoData.insertedId);
+              } else if (undoData.kind === "award" && undoData.insertedId) {
+                await supabase.from("awards").delete().eq("id", undoData.insertedId);
+              } else if (undoData.kind === "upload") {
+                await supabase.from("profiles").update({
+                  social_links: undoData.prevSocialLinks ?? [],
+                } as any).eq("user_id", user.id);
+              } else if (undoData.kind === "press") {
+                await supabase.from("profiles").update({
+                  press_links: undoData.prevPressLinks ?? [],
+                } as any).eq("user_id", user.id);
+              }
+              await supabase.from("pending_discoveries").update({
+                status: "pending", reviewed_at: null,
+              }).eq("id", item.id);
+              setItems((prev) => [item, ...prev]);
+              onChanged?.();
+              toast.success("Undone");
+            } catch {
+              toast.error("Could not undo");
+            }
+          },
+        },
+        duration: 6000,
+      });
     } catch (e: any) {
       toast.error(e?.message || "Could not add");
     } finally {

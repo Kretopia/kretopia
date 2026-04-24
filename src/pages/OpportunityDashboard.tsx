@@ -86,6 +86,8 @@ const OpportunityDashboard = () => {
 
   useEffect(() => {
     if (selectedOppId) {
+      // Clear stale applicants from previously selected gig before loading new ones
+      setApplicants([]);
       fetchApplicants(selectedOppId);
     }
   }, [selectedOppId]);

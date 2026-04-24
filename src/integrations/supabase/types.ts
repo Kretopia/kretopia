@@ -7453,6 +7453,7 @@ export type Database = {
           site_headline: string | null
           site_sections: Json | null
           site_template: string | null
+          social_links: Json
           social_verified: boolean | null
           soundcloud_url: string | null
           spotify_listeners: number | null
@@ -7617,6 +7618,7 @@ export type Database = {
           site_headline?: string | null
           site_sections?: Json | null
           site_template?: string | null
+          social_links?: Json
           social_verified?: boolean | null
           soundcloud_url?: string | null
           spotify_listeners?: number | null
@@ -7781,6 +7783,7 @@ export type Database = {
           site_headline?: string | null
           site_sections?: Json | null
           site_template?: string | null
+          social_links?: Json
           social_verified?: boolean | null
           soundcloud_url?: string | null
           spotify_listeners?: number | null

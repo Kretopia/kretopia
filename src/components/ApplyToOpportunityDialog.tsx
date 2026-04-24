@@ -117,7 +117,7 @@ export const ApplyToOpportunityDialog = ({
 
     // Fetch opportunity details + applicant profile for emails
     const [oppRes, profileRes] = await Promise.all([
-      supabase.from('opportunities').select('created_by, title').eq('id', opportunityId).single(),
+      supabase.from('opportunities').select('created_by, scouted_by, title').eq('id', opportunityId).single(),
       supabase.from('profiles').select('full_name').eq('user_id', user.id).single(),
     ]);
     const opportunity = oppRes.data;

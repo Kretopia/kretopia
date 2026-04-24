@@ -1013,6 +1013,19 @@ const ApplicantCard = ({
           </div>
         </div>
       </CardContent>
+      <ShareProfileDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        profile={{
+          full_name: applicant.full_name,
+          role: applicant.role,
+          user_id: applicant.applicant_id,
+          avatar_url: applicant.avatar_url,
+          professional_skills: (applicant.professional_skills || []).map((s: any) =>
+            typeof s === 'string' ? s : (s?.skill || s?.name || s?.label || '')
+          ).filter(Boolean),
+        }}
+      />
     </Card>
   );
 };

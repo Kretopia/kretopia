@@ -30,7 +30,7 @@ const UniverseScanFindingsEmail = ({
   return (
     <Html lang="en" dir="ltr">
       <Head />
-      <Preview>{total} new item{total === 1 ? '' : 's'} ready to review on your profile</Preview>
+      <Preview>{`${total} new item${total === 1 ? '' : 's'} ready to review on your profile`}</Preview>
       <Body style={main}>
         <Container style={container}>
           <Img src={LOGO_URL} width="48" height="48" alt={SITE_NAME} style={{ marginBottom: '24px' }} />

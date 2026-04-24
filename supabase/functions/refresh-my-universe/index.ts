@@ -229,6 +229,73 @@ serve(async (req) => {
       last_universe_scan_at: new Date().toISOString(),
     }).eq("user_id", userId);
 
+    // 7. Notify the creator (in-app + push + email) when there's something new
+    const totalNew = counts.credit + counts.press + counts.award + counts.upload;
+    if (totalNew > 0) {
+      try {
+        const parts: string[] = [];
+        if (counts.credit) parts.push(`${counts.credit} credit${counts.credit === 1 ? "" : "s"}`);
+        if (counts.press) parts.push(`${counts.press} press`);
+        if (counts.award) parts.push(`${counts.award} award${counts.award === 1 ? "" : "s"}`);
+        if (counts.upload) parts.push(`${counts.upload} upload${counts.upload === 1 ? "" : "s"}`);
+        const summary = parts.join(" · ");
+        const title = `${totalNew} new item${totalNew === 1 ? "" : "s"} to review`;
+        const message = `We found ${summary} that look like yours. Tap to review.`;
+        const link = "/?openPendingDiscoveries=1";
+
+        // In-app notification (drives realtime bell + toast via useNotifications)
+        await admin.from("notifications").insert({
+          user_id: userId,
+          title,
+          message,
+          type: "discovery",
+          category: "discovery",
+          priority: "normal",
+          link,
+          action_url: link,
+          action_text: "Review findings",
+          read: false,
+        });
+
+        // Push notification (best effort)
+        admin.functions.invoke("send-push-notification", {
+          body: {
+            userId,
+            title,
+            body: message,
+            tag: "universe-scan",
+            data: { type: "discovery", link, scanId: scan.id },
+          },
+        }).catch((e) => console.error("push notify failed", e));
+
+        // Email notification (best effort) — skipped for manual scans to avoid noise
+        if (triggerSource !== "manual") {
+          const { data: userRow } = await admin.auth.admin.getUserById(userId);
+          const recipientEmail = userRow?.user?.email;
+          if (recipientEmail) {
+            admin.functions.invoke("send-transactional-email", {
+              body: {
+                templateName: "universe-scan-findings",
+                recipientEmail,
+                idempotencyKey: `universe-scan-${scan.id}`,
+                templateData: {
+                  name: profile.full_name?.split(" ")[0],
+                  newCredits: counts.credit,
+                  newPress: counts.press,
+                  newAwards: counts.award,
+                  newUploads: counts.upload,
+                  reviewUrl: `https://www.thrivein.io${link}`,
+                },
+              },
+            }).catch((e) => console.error("email notify failed", e));
+          }
+        }
+      } catch (notifyErr) {
+        console.error("notification fan-out failed", notifyErr);
+      }
+    }
+
+
     return new Response(JSON.stringify({
       success: true,
       scan_id: scan.id,

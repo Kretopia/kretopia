@@ -61,7 +61,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
   const accept = async (item: Discovery) => {
     if (!user) return;
     setActingId(item.id);
-    let undoData: { kind: string; insertedId?: string; prevSocialLinks?: any; prevPressLinks?: any } | null = null;
+    let undoData: { kind: string; insertedId?: string; prevSocialLinks?: any; prevPressLinks?: any; urlColumn?: string; prevValue?: string | null } | null = null;
     try {
       // Dedupe check by source_url before inserting
       if (item.kind === "credit") {
@@ -93,14 +93,43 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
         } as any).select("id").maybeSingle();
         undoData = { kind: "credit", insertedId: inserted?.id };
       } else if (item.kind === "upload") {
-        // Linked social/platform profile → profiles.social_links JSONB
+        // Linked social/platform profile → store URL in dedicated *_url column,
+        // then sync-social-stats will fetch follower/listener counts (on-platform display only).
+        const url = item.source_url || "";
+        const domain = (item.source_domain || "").toLowerCase();
+        const lower = url.toLowerCase();
+
+        // Map domain → profile column
+        let urlColumn: string | null = null;
+        if (lower.includes("instagram.com")) urlColumn = "instagram_url";
+        else if (lower.includes("youtube.com") || lower.includes("youtu.be") || lower.includes("m.youtube.com")) urlColumn = "youtube_url";
+        else if (lower.includes("tiktok.com")) urlColumn = "tiktok_url";
+        else if (lower.includes("spotify.com")) urlColumn = "spotify_url";
+        else if (lower.includes("linkedin.com")) urlColumn = "linkedin_url";
+        else if (lower.includes("twitter.com") || lower.includes("x.com")) urlColumn = "twitter_url";
+        else if (lower.includes("imdb.com")) urlColumn = "imdb_url";
+        else if (lower.includes("soundcloud.com")) urlColumn = "soundcloud_url";
+        else if (lower.includes("behance.net")) urlColumn = "behance_url";
+
+        if (!urlColumn) {
+          // Unknown platform — skip silently, mark accepted so it doesn't reappear
+          await supabase.from("pending_discoveries").update({
+            status: "accepted", reviewed_at: new Date().toISOString(),
+          }).eq("id", item.id);
+          setItems((prev) => prev.filter((i) => i.id !== item.id));
+          toast.info(`Unsupported platform (${domain}) — skipped`);
+          setActingId(null);
+          return;
+        }
+
+        // Dedupe: if this column already has a URL, skip
         const { data: prof } = await supabase
           .from("profiles")
-          .select("social_links")
+          .select(urlColumn)
           .eq("user_id", user.id)
           .maybeSingle();
-        const existing = Array.isArray((prof as any)?.social_links) ? (prof as any).social_links : [];
-        if (existing.some((l: any) => l?.url === item.source_url)) {
+        const prevValue = (prof as any)?.[urlColumn] || null;
+        if (prevValue && prevValue.toLowerCase() === lower) {
           await supabase.from("pending_discoveries").update({
             status: "accepted", reviewed_at: new Date().toISOString(),
           }).eq("id", item.id);
@@ -109,16 +138,14 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
           setActingId(null);
           return;
         }
-        undoData = { kind: "upload", prevSocialLinks: existing };
+
+        undoData = { kind: "upload", urlColumn, prevValue };
         await supabase.from("profiles").update({
-          social_links: [...existing, {
-            url: item.source_url,
-            title: item.title,
-            platform: item.source_domain,
-            thumbnail_url: item.thumbnail_url,
-            added_at: new Date().toISOString(),
-          }],
+          [urlColumn]: url,
         } as any).eq("user_id", user.id);
+
+        // Fire-and-forget stat sync so the profile shows follower counts soon
+        supabase.functions.invoke("sync-social-stats").catch(() => {});
       } else if (item.kind === "award") {
         const { data: dup } = await supabase
           .from("awards")
@@ -193,9 +220,9 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
                 await supabase.from("credits").delete().eq("id", undoData.insertedId);
               } else if (undoData.kind === "award" && undoData.insertedId) {
                 await supabase.from("awards").delete().eq("id", undoData.insertedId);
-              } else if (undoData.kind === "upload") {
+              } else if (undoData.kind === "upload" && undoData.urlColumn) {
                 await supabase.from("profiles").update({
-                  social_links: undoData.prevSocialLinks ?? [],
+                  [undoData.urlColumn]: undoData.prevValue ?? null,
                 } as any).eq("user_id", user.id);
               } else if (undoData.kind === "press") {
                 await supabase.from("profiles").update({

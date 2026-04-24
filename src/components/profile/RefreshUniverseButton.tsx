@@ -46,6 +46,19 @@ export const RefreshUniverseButton = ({ lastScanAt }: Props) => {
     return () => { cancelled = true; };
   }, [user, lastScanAt]);
 
+  // Deep-link: open the review inbox when arriving from an email/push notification
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("openPendingDiscoveries") === "1") {
+        setOpen(true);
+        url.searchParams.delete("openPendingDiscoveries");
+        window.history.replaceState({}, "", url.toString());
+      }
+    } catch {}
+  }, [user]);
+
   const runScan = async () => {
     setScanning(true);
     try {

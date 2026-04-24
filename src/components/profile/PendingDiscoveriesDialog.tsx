@@ -69,7 +69,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
           .from("credits")
           .select("id")
           .eq("user_id", user.id)
-          .or(`source_url.eq.${item.source_url},verification_url.eq.${item.source_url}`)
+          .or(`url.eq.${item.source_url},verification_url.eq.${item.source_url}`)
           .maybeSingle();
         if (dup) {
           await supabase.from("pending_discoveries").update({

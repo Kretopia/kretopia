@@ -167,8 +167,22 @@ export const ApplyToOpportunityDialog = ({
       );
     }
 
-    toast({
-      title: "Application submitted!",
+    // Notify the scout (if different from creator) so they can forward the lead
+    if (opportunity?.scouted_by && opportunity.scouted_by !== opportunity?.created_by && opportunity.scouted_by !== user.id) {
+      supabase.from('notifications').insert({
+        user_id: opportunity.scouted_by,
+        type: 'scouted_gig_application',
+        category: 'opportunity',
+        title: 'New applicant on your scouted gig',
+        message: `${applicantName} applied to "${opportunity.title}" — share their profile with the client.`,
+        action_text: 'Review applicant',
+        action_url: `/opportunity-dashboard?opportunity=${opportunityId}`,
+        link: `/opportunity-dashboard?opportunity=${opportunityId}`,
+        priority: 'high',
+      }).then(() => {}, () => {});
+    }
+
+
       description: "The opportunity creator will review your application",
     });
 

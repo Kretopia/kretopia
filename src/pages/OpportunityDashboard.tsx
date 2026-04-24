@@ -970,6 +970,16 @@ const ApplicantCard = ({
               <Mail className="w-3 h-3 mr-1" />
               Message
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs"
+              onClick={() => setShareOpen(true)}
+              title="Share this profile with the client"
+            >
+              <Share2 className="w-3 h-3 mr-1" />
+              Share
+            </Button>
             {(applicant.status === 'pending' || applicant.status === 'shortlisted') && (
               <>
                 {applicant.status === 'pending' && (

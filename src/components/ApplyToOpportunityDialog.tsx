@@ -167,19 +167,13 @@ export const ApplyToOpportunityDialog = ({
       );
     }
 
-    // Notify the scout (if different from creator) so they can forward the lead
+    // Notify the scout (if any) so they can forward the lead to the actual client
     if (opportunity?.scouted_by && opportunity.scouted_by !== opportunity?.created_by && opportunity.scouted_by !== user.id) {
-      supabase.from('notifications').insert({
-        user_id: opportunity.scouted_by,
-        type: 'scouted_gig_application',
-        category: 'opportunity',
-        title: 'New applicant on your scouted gig',
-        message: `${applicantName} applied to "${opportunity.title}" — share their profile with the client.`,
-        action_text: 'Review applicant',
-        action_url: `/opportunity-dashboard?opportunity=${opportunityId}`,
-        link: `/opportunity-dashboard?opportunity=${opportunityId}`,
-        priority: 'high',
-      }).then(() => {}, () => {});
+      supabase.rpc('notify_scout_event', {
+        _opportunity_id: opportunityId,
+        _event: 'applied',
+        _actor_name: applicantName,
+      }).then(() => {}, (err) => console.warn('[Apply] notify_scout_event failed:', err));
     }
 
     toast({

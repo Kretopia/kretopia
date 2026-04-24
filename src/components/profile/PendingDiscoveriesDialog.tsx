@@ -69,7 +69,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
           .from("credits")
           .select("id")
           .eq("user_id", user.id)
-          .or(`source_url.eq.${item.source_url},verification_url.eq.${item.source_url}`)
+          .or(`url.eq.${item.source_url},verification_url.eq.${item.source_url}`)
           .maybeSingle();
         if (dup) {
           await supabase.from("pending_discoveries").update({
@@ -85,7 +85,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
           project_name: item.title,
           role: item.payload?.role || "Creator",
           source: item.source_domain || "web",
-          source_url: item.source_url,
+          url: item.source_url,
           verification_url: item.source_url,
           thumbnail_url: item.thumbnail_url,
           year: item.payload?.year || null,

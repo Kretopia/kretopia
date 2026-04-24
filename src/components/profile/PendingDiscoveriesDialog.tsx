@@ -3,7 +3,6 @@ import { ExternalLink, Check, X, Loader2, Sparkles, FileText, Award, Music, News
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -143,7 +142,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 px-4 sm:px-6 pb-4 sm:pb-6">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pb-4 [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch] sm:px-6 sm:pb-6">
           {loading ? (
             <div className="py-12 flex justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -239,7 +238,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
               })}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );

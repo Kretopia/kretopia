@@ -182,7 +182,8 @@ export const ApplyToOpportunityDialog = ({
       }).then(() => {}, () => {});
     }
 
-
+    toast({
+      title: "Application submitted!",
       description: "The opportunity creator will review your application",
     });
 

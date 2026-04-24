@@ -81,16 +81,10 @@ const ClaimGig = () => {
           .eq("user_id", user.id)
           .maybeSingle();
         const claimerName = claimerProfile?.full_name || "Someone";
-        await supabase.from("notifications").insert({
-          user_id: opportunity.scouted_by,
-          type: "scouted_gig_claimed",
-          category: "opportunity",
-          title: "Your scouted gig was claimed",
-          message: `${claimerName} claimed "${opportunity.title}" — they can now review applicants.`,
-          action_text: "View gig",
-          action_url: `/opportunity/${opportunity.id}`,
-          link: `/opportunity/${opportunity.id}`,
-          priority: "high",
+        await supabase.rpc("notify_scout_event", {
+          _opportunity_id: opportunity.id,
+          _event: "claimed",
+          _actor_name: claimerName,
         });
       }
 

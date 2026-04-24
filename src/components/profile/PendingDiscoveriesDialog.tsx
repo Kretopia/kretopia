@@ -220,9 +220,9 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
                 await supabase.from("credits").delete().eq("id", undoData.insertedId);
               } else if (undoData.kind === "award" && undoData.insertedId) {
                 await supabase.from("awards").delete().eq("id", undoData.insertedId);
-              } else if (undoData.kind === "upload") {
+              } else if (undoData.kind === "upload" && undoData.urlColumn) {
                 await supabase.from("profiles").update({
-                  social_links: undoData.prevSocialLinks ?? [],
+                  [undoData.urlColumn]: undoData.prevValue ?? null,
                 } as any).eq("user_id", user.id);
               } else if (undoData.kind === "press") {
                 await supabase.from("profiles").update({

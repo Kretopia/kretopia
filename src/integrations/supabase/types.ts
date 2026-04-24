@@ -12865,6 +12865,10 @@ export type Database = {
         }
         Returns: number
       }
+      notify_scout_event: {
+        Args: { _actor_name: string; _event: string; _opportunity_id: string }
+        Returns: undefined
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Briefcase, MapPin, DollarSign, User, Users, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter, LayoutGrid, List, BarChart3, ChevronDown, ChevronUp, ExternalLink, Clock } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, User, Users, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter, LayoutGrid, List, BarChart3, ChevronDown, ChevronUp, ExternalLink, Clock, Share2 } from "lucide-react";
+import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -86,6 +87,8 @@ const OpportunityDashboard = () => {
 
   useEffect(() => {
     if (selectedOppId) {
+      // Clear stale applicants from previously selected gig before loading new ones
+      setApplicants([]);
       fetchApplicants(selectedOppId);
     }
   }, [selectedOppId]);
@@ -787,6 +790,7 @@ const ApplicantCard = ({
   navigate: (path: string) => void;
 }) => {
   const [expanded, setExpanded] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const handleMessage = async () => {
     // Ensure a bidirectional connection exists so the conversation shows in inbox
@@ -966,6 +970,16 @@ const ApplicantCard = ({
               <Mail className="w-3 h-3 mr-1" />
               Message
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs"
+              onClick={() => setShareOpen(true)}
+              title="Share this profile with the client"
+            >
+              <Share2 className="w-3 h-3 mr-1" />
+              Share
+            </Button>
             {(applicant.status === 'pending' || applicant.status === 'shortlisted') && (
               <>
                 {applicant.status === 'pending' && (
@@ -999,6 +1013,19 @@ const ApplicantCard = ({
           </div>
         </div>
       </CardContent>
+      <ShareProfileDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        profile={{
+          full_name: applicant.full_name,
+          role: applicant.role,
+          user_id: applicant.applicant_id,
+          avatar_url: applicant.avatar_url,
+          professional_skills: (applicant.professional_skills || []).map((s: any) =>
+            typeof s === 'string' ? s : (s?.skill || s?.name || s?.label || '')
+          ).filter(Boolean),
+        }}
+      />
     </Card>
   );
 };

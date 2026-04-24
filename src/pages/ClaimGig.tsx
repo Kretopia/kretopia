@@ -72,6 +72,22 @@ const ClaimGig = () => {
       toast({ title: "Claim failed", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Gig claimed!", description: "You now own this listing. Share it to get applications!" });
+
+      // Notify the original scout (if any, and not the same person claiming)
+      if (opportunity?.scouted_by && opportunity.scouted_by !== user.id) {
+        const { data: claimerProfile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const claimerName = claimerProfile?.full_name || "Someone";
+        await supabase.rpc("notify_scout_event", {
+          _opportunity_id: opportunity.id,
+          _event: "claimed",
+          _actor_name: claimerName,
+        });
+      }
+
       navigate(`/opportunity/${opportunity.id}`);
     }
     setClaiming(false);

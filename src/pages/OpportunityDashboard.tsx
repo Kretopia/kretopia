@@ -520,17 +520,17 @@ Return ONLY valid JSON array:
     <div className="container mx-auto p-4 md:p-6">
       <div className="mb-6 flex flex-col sm:flex-row items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">My Posted Opportunities</h1>
+          <h1 className="text-3xl font-bold mb-2">Applicants</h1>
           <p className="text-muted-foreground">
-            Review and manage applications to your opportunities
+            Review and manage applications for this opportunity
           </p>
         </div>
         <Button
           variant="outline"
           onClick={() => navigate('/manage-opportunities')}
         >
-          <User className="mr-2 h-4 w-4" />
-          View My Applications
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Gig Manager
         </Button>
       </div>
 

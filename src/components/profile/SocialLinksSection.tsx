@@ -283,6 +283,17 @@ export const SocialLinksSection = ({ profile, isOwnProfile, onRefresh }: SocialL
                       <Icon className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
                       <span className="text-xs md:text-sm font-medium truncate">{label}</span>
                     </div>
+                    {url && (
+                      <a 
+                        href={url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
                   </div>
                   {stat && (
                     <div className="flex items-center gap-1">

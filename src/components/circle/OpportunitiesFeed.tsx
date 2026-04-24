@@ -151,7 +151,7 @@ export const OpportunitiesFeed = () => {
       <div className="flex items-center gap-2 flex-wrap">
         <SavedOpportunitiesDialog />
         <ScoutGigDialog />
-        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/opportunity-dashboard')}>
+        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/manage-opportunities')}>
           <Briefcase className="h-4 w-4" />
           <span className="hidden sm:inline">My Listings</span>
         </Button>

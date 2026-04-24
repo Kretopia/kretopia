@@ -131,19 +131,19 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            New finds across your universe
+      <DialogContent className="max-w-2xl w-[calc(100vw-1rem)] sm:w-full p-0 gap-0 max-h-[90dvh] flex flex-col overflow-hidden">
+        <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4 shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Sparkles className="h-4 w-4 text-primary shrink-0" />
+            <span className="truncate">New finds across your universe</span>
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             We searched the web for new credits, press, awards, and uploads.
             Approve what's yours — we ignore the rest.
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 -mx-6 px-6">
+        <ScrollArea className="flex-1 min-h-0 px-4 sm:px-6 pb-4 sm:pb-6">
           {loading ? (
             <div className="py-12 flex justify-center">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />

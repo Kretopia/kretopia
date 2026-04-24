@@ -61,7 +61,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
   const accept = async (item: Discovery) => {
     if (!user) return;
     setActingId(item.id);
-    let undoData: { kind: string; insertedId?: string; prevSocialLinks?: any; prevPressLinks?: any } | null = null;
+    let undoData: { kind: string; insertedId?: string; prevSocialLinks?: any; prevPressLinks?: any; urlColumn?: string; prevValue?: string | null } | null = null;
     try {
       // Dedupe check by source_url before inserting
       if (item.kind === "credit") {

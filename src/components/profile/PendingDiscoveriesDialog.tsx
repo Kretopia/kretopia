@@ -85,7 +85,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
           project_name: item.title,
           role: item.payload?.role || "Creator",
           source: item.source_domain || "web",
-          source_url: item.source_url,
+          url: item.source_url,
           verification_url: item.source_url,
           thumbnail_url: item.thumbnail_url,
           year: item.payload?.year || null,

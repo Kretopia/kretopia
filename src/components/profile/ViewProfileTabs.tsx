@@ -139,18 +139,21 @@ export const ViewProfileTabs = ({
               userId={userId}
               onRefresh={onRefresh}
             />
-            {(profile.youtube_subscribers || profile.instagram_followers || profile.tiktok_followers ||
-              profile.spotify_listeners || profile.twitter_followers || profile.linkedin_connections) && (
-              <SocialStatsSection
-                youtubeSubscribers={profile.youtube_subscribers}
-                instagramFollowers={profile.instagram_followers}
-                tiktokFollowers={profile.tiktok_followers}
-                spotifyListeners={profile.spotify_listeners}
-                twitterFollowers={profile.twitter_followers}
-                linkedinConnections={profile.linkedin_connections}
-                verifiedMetrics={profile.social_verified}
-              />
-            )}
+            <SocialStatsSection
+              youtubeSubscribers={profile.youtube_subscribers}
+              instagramFollowers={profile.instagram_followers}
+              tiktokFollowers={profile.tiktok_followers}
+              spotifyListeners={profile.spotify_listeners}
+              twitterFollowers={profile.twitter_followers}
+              linkedinConnections={profile.linkedin_connections}
+              youtubeUrl={profile.youtube_url}
+              instagramUrl={profile.instagram_url}
+              tiktokUrl={profile.tiktok_url}
+              spotifyUrl={profile.spotify_url}
+              twitterUrl={profile.twitter_url}
+              linkedinUrl={profile.linkedin_url}
+              verifiedMetrics={profile.social_verified}
+            />
           </div>
         );
       }

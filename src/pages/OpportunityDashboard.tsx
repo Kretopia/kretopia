@@ -792,7 +792,7 @@ const ApplicantCard = ({
   const [expanded, setExpanded] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
-
+  const handleMessage = async () => {
     // Ensure a bidirectional connection exists so the conversation shows in inbox
     try {
       const userId = (await supabaseClient.auth.getUser()).data.user?.id;

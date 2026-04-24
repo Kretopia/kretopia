@@ -93,14 +93,33 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
         } as any).select("id").maybeSingle();
         undoData = { kind: "credit", insertedId: inserted?.id };
       } else if (item.kind === "upload") {
-        // Linked social/platform profile → profiles.social_links JSONB
+        // Linked social/platform profile → typed URL column + social_links JSONB fallback
         const { data: prof } = await supabase
           .from("profiles")
-          .select("social_links")
+          .select("social_links, instagram_url, youtube_url, tiktok_url, twitter_url, linkedin_url, spotify_url, soundcloud_url, behance_url, vimeo_url, imdb_url")
           .eq("user_id", user.id)
           .maybeSingle();
         const existing = Array.isArray((prof as any)?.social_links) ? (prof as any).social_links : [];
-        if (existing.some((l: any) => l?.url === item.source_url)) {
+
+        // Map domain → typed column
+        const domain = (item.source_domain || "").toLowerCase();
+        const typedColumn = (() => {
+          if (domain.includes("instagram.com")) return "instagram_url";
+          if (domain.includes("youtube.com") || domain.includes("youtu.be")) return "youtube_url";
+          if (domain.includes("tiktok.com")) return "tiktok_url";
+          if (domain.includes("twitter.com") || domain.includes("x.com")) return "twitter_url";
+          if (domain.includes("linkedin.com")) return "linkedin_url";
+          if (domain.includes("spotify.com")) return "spotify_url";
+          if (domain.includes("soundcloud.com")) return "soundcloud_url";
+          if (domain.includes("behance.net")) return "behance_url";
+          if (domain.includes("vimeo.com")) return "vimeo_url";
+          if (domain.includes("imdb.com")) return "imdb_url";
+          return null;
+        })();
+
+        const alreadyTyped = typedColumn && (prof as any)?.[typedColumn] === item.source_url;
+        const alreadyJson = existing.some((l: any) => l?.url === item.source_url);
+        if (alreadyTyped || alreadyJson) {
           await supabase.from("pending_discoveries").update({
             status: "accepted", reviewed_at: new Date().toISOString(),
           }).eq("id", item.id);
@@ -110,7 +129,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
           return;
         }
         undoData = { kind: "upload", prevSocialLinks: existing };
-        await supabase.from("profiles").update({
+        const updatePayload: any = {
           social_links: [...existing, {
             url: item.source_url,
             title: item.title,
@@ -118,7 +137,15 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
             thumbnail_url: item.thumbnail_url,
             added_at: new Date().toISOString(),
           }],
-        } as any).eq("user_id", user.id);
+        };
+        // Only set typed column if empty (don't overwrite a curated value)
+        if (typedColumn && !(prof as any)?.[typedColumn]) {
+          updatePayload[typedColumn] = item.source_url;
+        }
+        await supabase.from("profiles").update(updatePayload).eq("user_id", user.id);
+
+        // Fire-and-forget stats sync so the new platform shows real numbers
+        supabase.functions.invoke("sync-social-stats").catch(() => {});
       } else if (item.kind === "award") {
         const { data: dup } = await supabase
           .from("awards")

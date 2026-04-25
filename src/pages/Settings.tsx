@@ -461,7 +461,46 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Password & Security */}
+          {/* Billing & Subscription */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Billing & Subscription
+              </CardTitle>
+              <CardDescription>
+                Manage your plan, payment method, and invoices
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button variant="default" className="w-full" onClick={() => navigate("/subscription")}>
+                Manage Subscription
+              </Button>
+              <Button variant="outline" className="w-full" onClick={() => navigate("/wallet")}>
+                ThrivePay Wallet & Payouts
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Language & Region */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Language & Region
+              </CardTitle>
+              <CardDescription>
+                Choose your preferred display language
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Display language</p>
+                <LanguageSwitcher variant="full" />
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

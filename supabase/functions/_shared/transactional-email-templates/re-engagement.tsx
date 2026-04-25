@@ -17,17 +17,18 @@ interface Props {
 const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>{`Live gigs are waiting on ThriveIN — come back inside`}</Preview>
+    <Preview>A quick note from Ethan, founder of ThriveIN</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} width="48" height="48" alt={SITE_NAME} style={{ marginBottom: '24px' }} />
+        <Img src={LOGO_URL} width="48" height="48" alt={SITE_NAME} style={{ marginBottom: '24px', borderRadius: '12px' }} />
 
         <Heading style={h1}>
-          {name ? `Hi ${name},` : 'Hey there,'}
+          {name ? `${name}, here's what's new` : "Here's what's new on ThriveIN"}
         </Heading>
+        <Text style={eyebrow}>The Creative OS</Text>
 
         <Text style={text}>
-          I'm Ethan, founder of ThriveIN. You're one of our early creators, and I wanted to share what's new since you last stopped by.
+          I'm Ethan, founder of ThriveIN. You're one of our early creators — wanted to share what's live since you last stopped by.
         </Text>
 
         <Section style={highlightBox}>
@@ -61,6 +62,8 @@ const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
           Ethan Auguste<br />
           <span style={{ color: '#7B61FF' }}>Founder, ThriveIN</span>
         </Text>
+
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
       </Container>
     </Body>
   </Html>

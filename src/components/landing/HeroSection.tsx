@@ -225,12 +225,12 @@ export const HeroSection = () => {
               {/* Subtle gradient for overlay legibility */}
               <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-background/20" />
 
-              {/* Signature Smart Match card — top-right, the brand asset */}
-              <div className="absolute top-4 right-4 sm:top-6 sm:right-6 animate-fade-in">
-                <div className="rounded-2xl border-2 border-energy/60 bg-background/85 backdrop-blur-md p-3 sm:p-4 shadow-glow-lime min-w-[150px]">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-1">Smart Match</p>
-                  <p className="text-3xl sm:text-4xl font-black text-energy-glow tracking-tighter leading-none">94%</p>
-                  <p className="text-[10px] text-foreground/80 mt-1.5 leading-tight">Photographer × Producer<br/>2.3km away</p>
+              {/* Signature Smart Match card — compact on mobile so it doesn't cover faces */}
+              <div className="absolute top-2 right-2 sm:top-6 sm:right-6 animate-fade-in">
+                <div className="rounded-xl sm:rounded-2xl border-2 border-energy/60 bg-background/85 backdrop-blur-md px-2.5 py-2 sm:p-4 shadow-glow-lime sm:min-w-[150px]">
+                  <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-0.5 sm:mb-1">Smart Match</p>
+                  <p className="text-xl sm:text-4xl font-black text-energy-glow tracking-tighter leading-none">94%</p>
+                  <p className="hidden sm:block text-[10px] text-foreground/80 mt-1.5 leading-tight">Photographer × Producer<br/>2.3km away</p>
                 </div>
               </div>
 

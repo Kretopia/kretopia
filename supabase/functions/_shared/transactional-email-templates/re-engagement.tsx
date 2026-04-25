@@ -23,24 +23,24 @@ const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
         <Img src={LOGO_URL} width="48" height="48" alt={SITE_NAME} style={{ marginBottom: '24px' }} />
 
         <Heading style={h1}>
-          {name ? `Hi ${name},` : 'Hi there,'}
+          {name ? `Hi ${name},` : 'Hey there,'}
         </Heading>
 
         <Text style={text}>
-          I'm Ethan — founder of ThriveIN. You're one of our <strong>Founding Creators</strong>, and I wanted to personally let you know what's new since you last logged in.
+          I'm Ethan, founder of ThriveIN. You're one of our early creators, and I wanted to share what's new since you last stopped by.
         </Text>
 
         <Section style={highlightBox}>
-          <Text style={highlightHeading}>🔥 What's live right now</Text>
+          <Text style={highlightHeading}>🔥 Live right now</Text>
           <Text style={highlightText}>
-            • <strong>{activeGigsCount ?? 'Several'} active gigs</strong> posted by brands and creators<br />
-            • <strong>Smart Matching</strong> — get paired by skill and intent, not random browsing<br />
-            • <strong>AI Verification</strong> — build trust signals on your profile
+            • <strong>{activeGigsCount ?? 'Several'} active gigs</strong> from brands and creators<br />
+            • <strong>Smart Matching</strong> pairs you by skill and intent<br />
+            • <strong>AI Verification</strong> builds trust on your profile
           </Text>
         </Section>
 
         <Text style={text}>
-          Most of these features only kick in once your profile is active. Step back inside and see who you match with this week.
+          These features only kick in once your profile is active. Step back inside and see who you match with this week.
         </Text>
 
         <Section style={{ textAlign: 'center', margin: '32px 0' }}>
@@ -51,12 +51,9 @@ const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
 
         <Hr style={hr} />
 
-        <Text style={text}>
-          As a Founding Creator, your feedback shapes what we build next. Hit reply or message me directly:
-        </Text>
         <Text style={smallText}>
-          <strong>WhatsApp:</strong> +62 811 399 6510<br />
-          <strong>Email:</strong> thriveinapp@gmail.com
+          Your feedback shapes what we build next. Hit reply or message me directly:<br />
+          <strong>WhatsApp:</strong> +62 811 399 6510 · <strong>Email:</strong> thriveinapp@gmail.com
         </Text>
 
         <Text style={signature}>

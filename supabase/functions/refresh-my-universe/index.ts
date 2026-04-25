@@ -183,21 +183,22 @@ serve(async (req) => {
 
     // 5. Classify + dedupe + insert
     const counts = { credit: 0, press: 0, award: 0, upload: 0 };
+    const skipped = { already_on_profile: 0, social_or_ambiguous: 0, already_pending: 0, no_url: 0 };
     const inserts: any[] = [];
 
     for (const c of candidates) {
       const url: string = c?.url || c?.source_url || "";
-      if (!url) continue;
+      if (!url) { skipped.no_url += 1; continue; }
       const norm = url.split("?")[0].split("#")[0].replace(/\/+$/, "").toLowerCase();
-      if (knownUrls.has(norm)) continue;
+      if (knownUrls.has(norm)) { skipped.already_on_profile += 1; continue; }
 
       const title: string = c?.title || c?.project_name || "Untitled";
       const excerpt: string = c?.description || c?.excerpt || "";
       const kind = classifyKind(url, title, excerpt);
-      if (!kind) continue;
+      if (!kind) { skipped.social_or_ambiguous += 1; continue; }
 
       const key = dedupeKey(kind, url);
-      if (knownPendingKeys.has(key)) continue;
+      if (knownPendingKeys.has(key)) { skipped.already_pending += 1; continue; }
       knownPendingKeys.add(key);
 
       counts[kind] += 1;
@@ -313,6 +314,7 @@ serve(async (req) => {
       new_awards: counts.award,
       new_uploads: counts.upload,
       total_new: counts.credit + counts.press + counts.award + counts.upload,
+      skipped,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("refresh-my-universe error", e);

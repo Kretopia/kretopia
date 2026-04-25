@@ -31,10 +31,11 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("[REENGAGE] Starting re-engagement job");
 
     const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString();
+    const toDateStr = (d: Date) => d.toISOString().slice(0, 10);
+    const sevenDaysAgo = toDateStr(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000));
+    const sixtyDaysAgo = toDateStr(new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000));
 
-    // Dormant 7–60 days, prefer last_active_date (fall back to updated_at if null)
+    // last_active_date is a DATE column — pass YYYY-MM-DD strings.
     const { data: dormant, error: dormantError } = await supabase
       .from("profiles")
       .select("user_id, full_name, last_active_date, updated_at")

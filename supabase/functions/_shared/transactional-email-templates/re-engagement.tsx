@@ -76,7 +76,7 @@ export const template = {
   previewData: { name: 'Jane', daysInactive: 14, activeGigsCount: 14 },
 } satisfies TemplateEntry
 
-const main = { backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }
 const container = { padding: '32px 24px', maxWidth: '560px', margin: '0 auto' }
 const h1 = { fontSize: '24px', fontWeight: 'bold', color: '#0a0a0a', margin: '0 0 20px' }
 const text = { fontSize: '15px', color: '#404040', lineHeight: '1.6', margin: '0 0 16px' }
@@ -87,3 +87,5 @@ const highlightText = { fontSize: '14px', color: '#404040', lineHeight: '1.8', m
 const button = { backgroundColor: '#7B61FF', color: '#ffffff', padding: '14px 32px', borderRadius: '8px', fontWeight: '600', fontSize: '15px', textDecoration: 'none', display: 'inline-block' }
 const hr = { borderColor: '#e5e5e5', margin: '28px 0' }
 const signature = { fontSize: '15px', color: '#0a0a0a', lineHeight: '1.6', margin: '24px 0 0' }
+const eyebrow = { fontSize: '11px', fontWeight: '900' as const, color: '#7B61FF', margin: '0 0 20px', letterSpacing: '0.18em', textTransform: 'uppercase' as const }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '24px 0 0' }

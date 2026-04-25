@@ -3,15 +3,7 @@
 import * as React from 'npm:react@18.3.1'
 
 import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Preview,
-  Text,
+  Body, Button, Container, Head, Heading, Html, Img, Preview, Section, Text,
 } from 'npm:@react-email/components@0.0.22'
 
 interface MagicLinkEmailProps {
@@ -19,32 +11,25 @@ interface MagicLinkEmailProps {
   confirmationUrl: string
 }
 
-export const MagicLinkEmail = ({
-  siteName,
-  confirmationUrl,
-}: MagicLinkEmailProps) => (
+export const MagicLinkEmail = ({ confirmationUrl }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Your ThriveIN login link</Preview>
+    <Preview>Your ThriveIN sign-in link</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img
-          src="https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png"
-          width="48"
-          height="48"
-          alt="ThriveIN"
-          style={{ marginBottom: '24px' }}
-        />
-        <Heading style={h1}>Your login link</Heading>
+        <Img src={LOGO_URL} width="48" height="48" alt="ThriveIN" style={{ marginBottom: '24px', borderRadius: '12px' }} />
+        <Heading style={h1}>Your sign-in link</Heading>
+        <Text style={eyebrow}>The Creative OS</Text>
         <Text style={text}>
           Tap below to sign in to ThriveIN. This link expires shortly, so don't wait too long.
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Sign In
-        </Button>
+        <Section style={{ textAlign: 'center', margin: '8px 0 32px' }}>
+          <Button style={button} href={confirmationUrl}>Sign in</Button>
+        </Section>
         <Text style={footer}>
           Didn't request this? You can safely ignore this email.
         </Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
       </Container>
     </Body>
   </Html>
@@ -52,27 +37,13 @@ export const MagicLinkEmail = ({
 
 export default MagicLinkEmail
 
+const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
+
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }
 const container = { padding: '32px 28px', maxWidth: '480px', margin: '0 auto' }
-const h1 = {
-  fontSize: '24px',
-  fontWeight: 'bold' as const,
-  color: '#0a0a0f',
-  margin: '0 0 16px',
-}
-const text = {
-  fontSize: '15px',
-  color: '#606068',
-  lineHeight: '1.6',
-  margin: '0 0 24px',
-}
-const button = {
-  backgroundColor: '#7B61FF',
-  color: '#ffffff',
-  fontSize: '15px',
-  fontWeight: '600' as const,
-  borderRadius: '12px',
-  padding: '14px 28px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '32px 0 0' }
+const h1 = { fontSize: '26px', fontWeight: '900' as const, color: '#0F0F14', margin: '0 0 4px', letterSpacing: '-0.03em' }
+const eyebrow = { fontSize: '11px', fontWeight: '900' as const, color: '#7B61FF', margin: '0 0 24px', letterSpacing: '0.18em', textTransform: 'uppercase' as const }
+const text = { fontSize: '15px', color: '#606068', lineHeight: '1.6', margin: '0 0 20px' }
+const button = { backgroundColor: '#7B61FF', color: '#ffffff', fontSize: '15px', fontWeight: '700' as const, borderRadius: '12px', padding: '14px 28px', textDecoration: 'none' }
+const footer = { fontSize: '12px', color: '#999999', margin: '0 0 8px' }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '0' }

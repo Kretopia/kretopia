@@ -62,13 +62,49 @@ export const RefreshUniverseButton = ({ lastScanAt }: Props) => {
   const runScan = async () => {
     setScanning(true);
     try {
-      const { data, error } = await supabase.functions.invoke("refresh-my-universe", {
+      // 1. Kick off connected-platform syncs (YouTube/IMDb/Spotify) in parallel.
+      //    These pull from each platform's API and upsert directly into `credits`.
+      const { data: platforms } = await supabase
+        .from("connected_platforms")
+        .select("platform, platform_username, platform_user_id")
+        .eq("user_id", user!.id);
+
+      const platformSyncs = (platforms || []).map(async (p: any) => {
+        try {
+          if (p.platform === "youtube" && p.platform_username) {
+            await supabase.functions.invoke("fetch-youtube-credits", {
+              body: { channelUrl: `https://youtube.com/@${p.platform_username.replace(/^@/, "")}` },
+            });
+          } else if (p.platform === "imdb" && p.platform_user_id) {
+            await supabase.functions.invoke("fetch-imdb-credits", {
+              body: { imdbId: p.platform_user_id },
+            });
+          } else if (p.platform === "spotify" && p.platform_user_id) {
+            await supabase.functions.invoke("fetch-spotify-credits", {
+              body: { artistId: p.platform_user_id },
+            });
+          }
+        } catch (e) {
+          console.warn(`${p.platform} sync failed`, e);
+        }
+      });
+
+      // 2. Run web-discovery scan in parallel with the above
+      const universeScan = supabase.functions.invoke("refresh-my-universe", {
         body: { trigger_source: "manual" },
       });
+
+      await Promise.all(platformSyncs);
+      const { data, error } = await universeScan;
       if (error) throw error;
 
       const totalNew = data?.total_new ?? 0;
+      const candidates = data?.total_candidates ?? 0;
+      const skipped = data?.skipped || {};
       setLastAt(new Date().toISOString());
+
+      // Re-check credits count to surface platform-sync results too
+      const platformLabel = (platforms || []).map((p: any) => p.platform).join(", ");
 
       if (totalNew > 0) {
         const { count } = await supabase
@@ -83,9 +119,14 @@ export const RefreshUniverseButton = ({ lastScanAt }: Props) => {
         });
         setOpen(true);
       } else {
-        toast.success("You're all caught up ✨", {
-          description: "We'll keep checking weekly in the background.",
-        });
+        // Be transparent about what happened so it doesn't feel broken
+        const knownCount = (skipped.already_on_profile || 0) + (skipped.already_pending || 0);
+        const desc = candidates === 0
+          ? "We searched the web and your connected platforms but found nothing new."
+          : knownCount > 0
+            ? `We checked ${candidates} result${candidates === 1 ? "" : "s"} from the web${platformLabel ? ` plus ${platformLabel}` : ""} — ${knownCount} already on your profile, the rest weren't a clean match.`
+            : `We checked ${candidates} result${candidates === 1 ? "" : "s"}${platformLabel ? ` plus ${platformLabel}` : ""}. Nothing new this time.`;
+        toast.success("You're all caught up ✨", { description: desc });
       }
     } catch (e: any) {
       toast.error(e?.message || "Scan failed");

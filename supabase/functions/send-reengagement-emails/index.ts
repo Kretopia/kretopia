@@ -83,11 +83,18 @@ const handler = async (req: Request): Promise<Response> => {
             templateName: "re-engagement",
             recipientEmail: email,
             idempotencyKey,
-            templateData: {
-              name: user.full_name?.split(" ")[0] || "Creative",
-              daysInactive,
-              activeGigsCount: activeGigsCount ?? 0,
-            },
+            // Sanitize: filter out generic seed names like "New User", "Test", etc.
+            templateData: (() => {
+              const raw = (user.full_name || "").trim();
+              const first = raw.split(/\s+/)[0] || "";
+              const generic = /^(new|test|user|creative|guest|anonymous|unknown)$/i;
+              const safeName = first && !generic.test(first) && first.length > 1 ? first : null;
+              return {
+                name: safeName,
+                daysInactive,
+                activeGigsCount: activeGigsCount ?? 0,
+              };
+            })(),
           },
         });
 

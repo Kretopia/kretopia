@@ -71,7 +71,7 @@ const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
 
 export const template = {
   component: ReEngagementEmail,
-  subject: 'Live gigs are waiting for you on ThriveIN',
+  subject: 'A quick note from Ethan, founder of ThriveIN',
   displayName: 'Re-engagement (dormant users)',
   previewData: { name: 'Jane', daysInactive: 14, activeGigsCount: 14 },
 } satisfies TemplateEntry

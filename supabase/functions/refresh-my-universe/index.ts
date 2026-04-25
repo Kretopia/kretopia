@@ -314,6 +314,7 @@ serve(async (req) => {
       new_awards: counts.award,
       new_uploads: counts.upload,
       total_new: counts.credit + counts.press + counts.award + counts.upload,
+      skipped,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("refresh-my-universe error", e);

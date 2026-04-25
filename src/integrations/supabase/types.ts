@@ -2071,6 +2071,57 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_rates: {
+        Row: {
+          amount: number
+          amount_max: number | null
+          created_at: string
+          currency: string
+          id: string
+          is_active: boolean
+          label: string
+          notes: string | null
+          rate_type: string
+          sort_order: number
+          unit: string | null
+          updated_at: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          amount: number
+          amount_max?: number | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          notes?: string | null
+          rate_type: string
+          sort_order?: number
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          amount?: number
+          amount_max?: number | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          notes?: string | null
+          rate_type?: string
+          sort_order?: number
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       creator_services: {
         Row: {
           category: string | null

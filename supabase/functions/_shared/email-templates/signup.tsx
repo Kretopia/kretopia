@@ -24,56 +24,37 @@ interface SignupEmailProps {
 }
 
 export const SignupEmail = ({
-  siteName,
-  siteUrl,
   recipient,
   confirmationUrl,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Welcome to ThriveIN — verify your email to get started</Preview>
+    <Preview>Verify your email to get started on ThriveIN</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={logoSection}>
-          <Img
-            src="https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png"
-            width="56"
-            height="56"
-            alt="ThriveIN"
-            style={{ borderRadius: '14px' }}
-          />
+          <Img src={LOGO_URL} width="48" height="48" alt="ThriveIN" style={{ borderRadius: '12px' }} />
         </Section>
 
         <Heading style={h1}>Welcome to ThriveIN</Heading>
-        <Text style={subtitle}>The Creative OS</Text>
+        <Text style={eyebrow}>The Creative OS</Text>
 
         <Text style={text}>
-          You're one step away from joining the professional creative network.
-          Verify your email to unlock verified credits, real gigs, and your creative career dashboard.
+          You're one step away from joining the professional creative network. Verify your email to claim verified credits, apply to real gigs, and unlock your dashboard.
         </Text>
 
         <Text style={text}>
-          Confirm your email (
-          <Link href={`mailto:${recipient}`} style={link}>
-            {recipient}
-          </Link>
-          ) to get started:
+          Confirm <Link href={`mailto:${recipient}`} style={link}>{recipient}</Link>:
         </Text>
 
         <Section style={buttonSection}>
-          <Button style={button} href={confirmationUrl}>
-            Verify & Get Started
-          </Button>
+          <Button style={button} href={confirmationUrl}>Verify & get started</Button>
         </Section>
-
-        <Section style={divider} />
 
         <Text style={footer}>
           If you didn't sign up for ThriveIN, you can safely ignore this email.
         </Text>
-        <Text style={footerBrand}>
-          © {new Date().getFullYear()} ThriveIN · thrivein.io
-        </Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
       </Container>
     </Body>
   </Html>
@@ -81,66 +62,16 @@ export const SignupEmail = ({
 
 export default SignupEmail
 
-const brandPrimary = '#7B61FF'
-const brandLime = '#C6FF00'
-const brandDark = '#0F0F14'
+const LOGO_URL = 'https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png'
 
-const main = {
-  backgroundColor: '#f4f4f7',
-  fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-  padding: '24px 0',
-}
-const container = {
-  padding: '40px 32px',
-  maxWidth: '480px',
-  margin: '0 auto',
-  backgroundColor: '#ffffff',
-  borderRadius: '16px',
-  border: '1px solid #e5e5ea',
-  borderTop: `4px solid ${brandLime}`,
-}
-const logoSection = {
-  marginBottom: '28px',
-}
-const h1 = {
-  fontSize: '28px',
-  fontWeight: '900' as const,
-  color: brandDark,
-  margin: '0 0 4px',
-  letterSpacing: '-0.03em',
-}
-const subtitle = {
-  fontSize: '11px',
-  fontWeight: '900' as const,
-  color: brandPrimary,
-  margin: '0 0 24px',
-  letterSpacing: '0.18em',
-  textTransform: 'uppercase' as const,
-}
-const text = {
-  fontSize: '15px',
-  color: '#606068',
-  lineHeight: '1.6',
-  margin: '0 0 20px',
-}
-const link = { color: brandPrimary, textDecoration: 'underline' }
-const buttonSection = {
-  textAlign: 'center' as const,
-  margin: '8px 0 32px',
-}
-const button = {
-  backgroundColor: brandPrimary,
-  color: '#ffffff',
-  fontSize: '15px',
-  fontWeight: '700' as const,
-  borderRadius: '12px',
-  padding: '14px 32px',
-  textDecoration: 'none',
-  boxShadow: `0 4px 14px ${brandPrimary}55`,
-}
-const divider = {
-  borderTop: '1px solid #e5e5ea',
-  margin: '0 0 20px',
-}
+const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }
+const container = { padding: '32px 28px', maxWidth: '480px', margin: '0 auto' }
+const logoSection = { marginBottom: '24px' }
+const h1 = { fontSize: '26px', fontWeight: '900' as const, color: '#0F0F14', margin: '0 0 4px', letterSpacing: '-0.03em' }
+const eyebrow = { fontSize: '11px', fontWeight: '900' as const, color: '#7B61FF', margin: '0 0 24px', letterSpacing: '0.18em', textTransform: 'uppercase' as const }
+const text = { fontSize: '15px', color: '#606068', lineHeight: '1.6', margin: '0 0 20px' }
+const link = { color: '#7B61FF', textDecoration: 'underline' }
+const buttonSection = { textAlign: 'center' as const, margin: '8px 0 32px' }
+const button = { backgroundColor: '#7B61FF', color: '#ffffff', fontSize: '15px', fontWeight: '700' as const, borderRadius: '12px', padding: '14px 28px', textDecoration: 'none' }
 const footer = { fontSize: '12px', color: '#999999', margin: '0 0 8px' }
 const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '0' }

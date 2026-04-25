@@ -108,6 +108,8 @@ const EventRegistrationConfirmationEmail = ({
           <Text style={footer}>
             Add this to your calendar so you don't miss it! See you there. 🎶
           </Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+
         </Container>
       </Body>
     </Html>
@@ -191,3 +193,4 @@ const claimButton = {
   textDecoration: 'none',
   display: 'inline-block' as const,
 }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '12px 0 0' }

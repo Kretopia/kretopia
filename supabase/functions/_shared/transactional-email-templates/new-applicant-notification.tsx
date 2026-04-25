@@ -34,8 +34,9 @@ const NewApplicantNotificationEmail = ({ ownerName, applicantName, gigTitle, gig
           </Button>
         )}
         <Text style={footer}>
-          Verified Credits · Real Gigs · Get Paid
+          Manage all your gigs and applicants from your Gig Manager anytime.
         </Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
       </Container>
     </Body>
   </Html>
@@ -61,4 +62,5 @@ const button = {
   padding: '14px 28px',
   textDecoration: 'none',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '32px 0 0' }
+const footer = { fontSize: '12px', color: '#999999', margin: '32px 0 8px' }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '0' }

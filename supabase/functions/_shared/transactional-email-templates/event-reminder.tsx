@@ -88,6 +88,8 @@ const EventReminderEmail = ({
           <Text style={footer}>
             Make sure you've added this to your calendar. See you there! 🎶
           </Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+
         </Container>
       </Body>
     </Html>
@@ -140,3 +142,4 @@ const button = {
 }
 const hr = { borderColor: '#eee', margin: '24px 0' }
 const footer = { fontSize: '12px', color: '#999999', margin: '0' }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '12px 0 0' }

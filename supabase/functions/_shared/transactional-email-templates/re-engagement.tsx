@@ -17,17 +17,18 @@ interface Props {
 const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>{`Live gigs are waiting on ThriveIN — come back inside`}</Preview>
+    <Preview>A quick note from Ethan, founder of ThriveIN</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} width="48" height="48" alt={SITE_NAME} style={{ marginBottom: '24px' }} />
+        <Img src={LOGO_URL} width="48" height="48" alt={SITE_NAME} style={{ marginBottom: '24px', borderRadius: '12px' }} />
 
         <Heading style={h1}>
-          {name ? `Hi ${name},` : 'Hey there,'}
+          {name ? `${name}, here's what's new` : "Here's what's new on ThriveIN"}
         </Heading>
+        <Text style={eyebrow}>The Creative OS</Text>
 
         <Text style={text}>
-          I'm Ethan, founder of ThriveIN. You're one of our early creators, and I wanted to share what's new since you last stopped by.
+          I'm Ethan, founder of ThriveIN. You're one of our early creators — wanted to share what's live since you last stopped by.
         </Text>
 
         <Section style={highlightBox}>
@@ -61,6 +62,8 @@ const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
           Ethan Auguste<br />
           <span style={{ color: '#7B61FF' }}>Founder, ThriveIN</span>
         </Text>
+
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
       </Container>
     </Body>
   </Html>
@@ -68,12 +71,12 @@ const ReEngagementEmail = ({ name, activeGigsCount }: Props) => (
 
 export const template = {
   component: ReEngagementEmail,
-  subject: 'Live gigs are waiting for you on ThriveIN',
+  subject: 'A quick note from Ethan, founder of ThriveIN',
   displayName: 'Re-engagement (dormant users)',
   previewData: { name: 'Jane', daysInactive: 14, activeGigsCount: 14 },
 } satisfies TemplateEntry
 
-const main = { backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }
 const container = { padding: '32px 24px', maxWidth: '560px', margin: '0 auto' }
 const h1 = { fontSize: '24px', fontWeight: 'bold', color: '#0a0a0a', margin: '0 0 20px' }
 const text = { fontSize: '15px', color: '#404040', lineHeight: '1.6', margin: '0 0 16px' }
@@ -84,3 +87,5 @@ const highlightText = { fontSize: '14px', color: '#404040', lineHeight: '1.8', m
 const button = { backgroundColor: '#7B61FF', color: '#ffffff', padding: '14px 32px', borderRadius: '8px', fontWeight: '600', fontSize: '15px', textDecoration: 'none', display: 'inline-block' }
 const hr = { borderColor: '#e5e5e5', margin: '28px 0' }
 const signature = { fontSize: '15px', color: '#0a0a0a', lineHeight: '1.6', margin: '24px 0 0' }
+const eyebrow = { fontSize: '11px', fontWeight: '900' as const, color: '#7B61FF', margin: '0 0 20px', letterSpacing: '0.18em', textTransform: 'uppercase' as const }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '24px 0 0' }

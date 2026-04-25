@@ -45,6 +45,8 @@ const CampaignFundedEmail = ({
         )}
         <Hr style={hr} />
         <Text style={footer}>This is what verified crowdfunding looks like. 💜</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+
       </Container>
     </Body>
   </Html>
@@ -75,3 +77,4 @@ const valueSmall = { fontSize: '15px', color: '#0a0a0f', fontWeight: '600' as co
 const button = { backgroundColor: '#7B61FF', color: '#ffffff', fontSize: '15px', fontWeight: '600' as const, borderRadius: '12px', padding: '14px 28px', textDecoration: 'none', display: 'block' as const, textAlign: 'center' as const }
 const hr = { borderColor: '#eee', margin: '24px 0' }
 const footer = { fontSize: '12px', color: '#999999', margin: '0' }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '12px 0 0' }

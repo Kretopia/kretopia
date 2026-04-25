@@ -36,6 +36,8 @@ const CampaignFailedEmail = ({ recipientName, campaignTitle, isCreator, exploreU
           </Button>
         )}
         <Text style={footer}>Thanks for being part of ThriveFund.</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+
       </Container>
     </Body>
   </Html>
@@ -62,3 +64,4 @@ const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#0a0a0f', ma
 const text = { fontSize: '15px', color: '#606068', lineHeight: '1.6', margin: '0 0 20px' }
 const button = { backgroundColor: '#7B61FF', color: '#ffffff', fontSize: '15px', fontWeight: '600' as const, borderRadius: '12px', padding: '14px 28px', textDecoration: 'none', display: 'block' as const, textAlign: 'center' as const, marginBottom: '24px' }
 const footer = { fontSize: '12px', color: '#999999', margin: '0' }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '12px 0 0' }

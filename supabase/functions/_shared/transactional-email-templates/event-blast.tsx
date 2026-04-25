@@ -48,6 +48,8 @@ const EventBlastEmail = ({
             </Text>
           </>
         )}
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+
       </Container>
     </Body>
   </Html>
@@ -78,3 +80,4 @@ const button = { backgroundColor: '#C6FF00', color: '#0F172A', padding: '12px 28
 const hr = { borderColor: '#E2E8F0', margin: '24px 0' }
 const footer = { fontSize: '13px', color: '#64748B', margin: 0 }
 const link = { color: '#7B61FF', textDecoration: 'underline' }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '12px 0 0' }

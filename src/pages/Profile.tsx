@@ -366,6 +366,11 @@ const ProfileContent = () => {
         {/* Claim success banner */}
         <ClaimContinueBanner onRefresh={fetchData} />
 
+        {/* Discoveries Inbox — review credits surfaced by scans */}
+        {profile?.user_id && (
+          <DiscoveriesInbox userId={profile.user_id} onApproved={fetchData} />
+        )}
+
         {/* Profile Hero — compact, Instagram-style */}
         <ProfileHero
           profile={profile}

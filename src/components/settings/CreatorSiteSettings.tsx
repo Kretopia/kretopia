@@ -3,443 +3,139 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Globe, ExternalLink, Copy, CheckCircle2, Sparkles, Wand2, Loader2, Eye, PenLine, Maximize2, Lock, Crown } from "lucide-react";
+import { Globe, ExternalLink, Copy, CheckCircle2, Loader2, PenLine } from "lucide-react";
 import { APP_URL } from "@/lib/constants";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { hasProAccess, hasCreatorProAccess } from "@/lib/subscriptionConfig";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { CreatorSiteSectionEditor, SiteSection } from "./CreatorSiteSectionEditor";
-import type { ContentBlock } from "@/components/creator-site/blocks/BlockTypes";
-import { SiteSetupWizard } from "@/components/creator-site/SiteSetupWizard";
-import { SitePreviewPanel } from "@/components/creator-site/SitePreviewPanel";
-import { SiteAnalyticsDashboard } from "@/components/creator-site/SiteAnalyticsDashboard";
-import { AIWebsiteGenerator } from "@/components/creator-site/AIWebsiteGenerator";
-import { FullScreenSiteEditor } from "@/components/creator-site/FullScreenSiteEditor";
-import { TEMPLATES, isTemplateAccessible } from "@/components/creator-site/templateConfig";
 
-// Templates imported from templateConfig.ts
-
+/**
+ * Slim Creator Site card for /settings.
+ * Full editor / preview / analytics / templates live in /website-builder.
+ */
 export const CreatorSiteSettings = () => {
-  const { user, subscriptionInfo } = useAuth();
-  const isPro = hasProAccess(subscriptionInfo.tier as any);
-  const isCreatorPro = hasCreatorProAccess(subscriptionInfo.tier as any);
+  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   const [siteEnabled, setSiteEnabled] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState('bold-electric');
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [siteSections, setSiteSections] = useState<SiteSection[]>([]);
-  const [siteCustomBlocks, setSiteCustomBlocks] = useState<ContentBlock[]>([]);
-  const [siteHeadline, setSiteHeadline] = useState('');
-  const [siteBio, setSiteBio] = useState('');
-  const [username, setUsername] = useState('');
-  const [usernameInput, setUsernameInput] = useState('');
-  const [savingUsername, setSavingUsername] = useState(false);
-  const [showWizard, setShowWizard] = useState(false);
-  const [showAIGenerator, setShowAIGenerator] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [showFullEditor, setShowFullEditor] = useState(false);
-  const [previewKey, setPreviewKey] = useState(0);
 
-  const siteUrl = username 
-    ? `${APP_URL}/${username}` 
-    : user ? `${APP_URL}/site/${user.id}` : '';
+  const siteUrl = username
+    ? `${APP_URL}/${username}`
+    : user
+    ? `${APP_URL}/site/${user.id}`
+    : "";
 
-  const reloadSettings = () => {
+  useEffect(() => {
     if (!user) return;
     supabase
-      .from('profiles')
-      .select('site_enabled, site_template, site_sections, site_headline, site_bio, site_custom_blocks, username')
-      .eq('user_id', user.id)
+      .from("profiles")
+      .select("site_enabled, username")
+      .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
-          setSiteEnabled(data.site_enabled || false);
-          setSelectedTemplate(data.site_template || 'bold-electric');
-          setSiteSections((data.site_sections as any) || []);
-          setSiteHeadline(data.site_headline || '');
-          setSiteBio(data.site_bio || '');
-          setSiteCustomBlocks((data.site_custom_blocks as any) || []);
-          setUsername((data as any).username || '');
-          setUsernameInput((data as any).username || '');
+          setSiteEnabled((data as any).site_enabled || false);
+          setUsername((data as any).username || "");
         }
         setLoading(false);
       });
-  };
-
-  useEffect(() => { reloadSettings(); }, [user?.id]);
+  }, [user?.id]);
 
   const handleToggle = async (enabled: boolean) => {
     if (!user) return;
-    if (!isPro && enabled) {
-      navigate('/subscription');
-      return;
-    }
-    
-    if (enabled && !siteEnabled) {
-      setShowWizard(true);
-      return;
-    }
-
     setSaving(true);
     const { error } = await supabase
-      .from('profiles')
+      .from("profiles")
       .update({ site_enabled: enabled })
-      .eq('user_id', user.id);
-
-    if (error) {
-      toast({ title: "Failed to update", variant: "destructive" });
-    } else {
-      setSiteEnabled(enabled);
-      toast({ title: enabled ? "Creator Site enabled!" : "Creator Site disabled" });
-    }
+      .eq("user_id", user.id);
     setSaving(false);
-  };
-
-  const handleTemplateChange = async (templateId: string) => {
-    if (!user) return;
-    setSaving(true);
-    const { error } = await supabase
-      .from('profiles')
-      .update({ site_template: templateId })
-      .eq('user_id', user.id);
-
     if (error) {
-      toast({ title: "Failed to update template", variant: "destructive" });
-    } else {
-      setSelectedTemplate(templateId);
-      toast({ title: `Template changed to ${TEMPLATES.find(t => t.id === templateId)?.name}` });
+      toast({ title: "Couldn't update site", description: error.message, variant: "destructive" });
+      return;
     }
-    setSaving(false);
+    setSiteEnabled(enabled);
+    toast({ title: enabled ? "Creator site enabled" : "Creator site disabled" });
   };
 
-  const handleSaveUsername = async () => {
-    if (!user || !usernameInput) return;
-    setSavingUsername(true);
-    const { error } = await supabase
-      .from('profiles')
-      .update({ username: usernameInput.toLowerCase() })
-      .eq('user_id', user.id);
-
-    if (error) {
-      toast({ 
-        title: "Username unavailable", 
-        description: error.message?.includes('username') ? "Try a different username" : error.message,
-        variant: "destructive" 
-      });
-    } else {
-      setUsername(usernameInput.toLowerCase());
-      toast({ title: "Username saved!" });
-    }
-    setSavingUsername(false);
-  };
-
-  const copyUrl = () => {
-    navigator.clipboard.writeText(siteUrl);
+  const handleCopy = async () => {
+    if (!siteUrl) return;
+    await navigator.clipboard.writeText(siteUrl);
     setCopied(true);
-    toast({ title: "Link copied!" });
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 1500);
   };
 
   return (
-    <>
-      <Card className={!isPro ? "border-primary/20 bg-primary/5" : ""}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Creator Site
-            {isPro ? (
-              <Badge variant="secondary" className="text-xs">Pro</Badge>
-            ) : (
-              <Badge className="text-xs bg-primary">Upgrade</Badge>
-            )}
-          </CardTitle>
-          <CardDescription>
-            Transform your profile into a standalone professional website powered by your real data
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {isPro ? (
-            <>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Enable Creator Site</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Your profile becomes a full website at a unique URL
-                  </p>
-                </div>
-                <Switch
-                  checked={siteEnabled}
-                  onCheckedChange={handleToggle}
-                  disabled={loading || saving}
-                />
-              </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Globe className="h-5 w-5" />
+          Creator Site
+        </CardTitle>
+        <CardDescription>
+          Your public creator website. Build and customize it in the Website Builder.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="site-enabled" className="flex flex-col gap-1">
+            <span>Enable Creator Site</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              Make your site reachable at a public URL
+            </span>
+          </Label>
+          <Switch
+            id="site-enabled"
+            checked={siteEnabled}
+            disabled={loading || saving}
+            onCheckedChange={handleToggle}
+          />
+        </div>
 
-              {/* AI Generate button — always visible for Pro users */}
-              {!siteEnabled && (
-                <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-5 text-center space-y-3">
-                  <Wand2 className="h-8 w-8 text-primary mx-auto" />
-                  <div>
-                    <p className="text-sm font-semibold">Create My Website with AI</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      AI analyzes your credits, services, and profile to generate a professional website in seconds
-                    </p>
-                  </div>
-                  <Button onClick={() => setShowAIGenerator(true)} className="w-full">
-                    <Wand2 className="h-4 w-4 mr-2" />
-                    Create My Website
-                  </Button>
-                </div>
-              )}
+        {siteEnabled && (
+          <div className="rounded-lg border p-3 flex items-center gap-2 bg-muted/40">
+            <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+            <code className="text-xs flex-1 truncate">{siteUrl}</code>
+            <Button size="sm" variant="ghost" onClick={handleCopy} className="h-7 px-2">
+              {copied ? <CheckCircle2 className="h-4 w-4 text-energy" /> : <Copy className="h-4 w-4" />}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => window.open(siteUrl, "_blank")}
+              className="h-7 px-2"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
 
-              {siteEnabled && (
-                <div className="space-y-5 pt-2">
-                  {/* URL Section */}
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground uppercase tracking-wider">Your Site URL</Label>
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 text-xs bg-muted px-3 py-2 rounded truncate">
-                        {siteUrl}
-                      </code>
-                      <Button variant="outline" size="sm" onClick={copyUrl}>
-                        {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={siteUrl} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Username */}
-                  <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground uppercase tracking-wider">Username / Vanity URL</Label>
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <Input
-                          value={usernameInput}
-                          onChange={(e) => setUsernameInput(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
-                          placeholder="your-username"
-                          className="text-sm pl-[105px]"
-                          maxLength={30}
-                        />
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                          thrivein.io/
-                        </span>
-                      </div>
-                      {usernameInput !== username && (
-                        <Button size="sm" onClick={handleSaveUsername} disabled={savingUsername || usernameInput.length < 3}>
-                          {savingUsername ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Custom Domain */}
-                  {isCreatorPro ? (
-                    <div className="p-3 rounded-lg bg-muted/50 border border-border space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Globe className="h-4 w-4 text-primary shrink-0" />
-                        <p className="text-xs font-medium">Custom Domain Redirect</p>
-                        <Badge variant="secondary" className="text-[10px]">Creator+</Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Point your own domain (e.g. yourdomain.com) to your ThriveIN creator site. Visitors who go to your domain will be redirected to your page.
-                      </p>
-                      <div className="bg-background rounded-md p-3 border border-border space-y-2">
-                        <p className="text-[11px] font-semibold text-foreground">Setup Instructions</p>
-                        <ol className="text-[11px] text-muted-foreground space-y-1.5 list-decimal list-inside">
-                          <li>Go to your domain registrar (GoDaddy, Namecheap, Cloudflare, etc.)</li>
-                          <li>Find <span className="font-medium text-foreground">DNS Settings</span> or <span className="font-medium text-foreground">Forwarding</span></li>
-                          <li>Add a <span className="font-medium text-foreground">URL Redirect / Forward</span> pointing to:</li>
-                        </ol>
-                        <div className="flex items-center gap-2 mt-1">
-                          <code className="text-[11px] bg-muted px-2 py-1 rounded font-mono flex-1 truncate">
-                            {siteUrl || `thrivein.io/${username || 'yourname'}`}
-                          </code>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 shrink-0"
-                            onClick={() => {
-                              const url = siteUrl || `thrivein.io/${username || 'yourname'}`;
-                              navigator.clipboard.writeText(url);
-                              toast({ title: 'Copied!', description: 'URL copied to clipboard' });
-                            }}
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground/70 mt-1">
-                          Choose "Permanent (301)" redirect if available for best SEO.
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-                      <div className="flex items-start gap-2">
-                        <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                        <div>
-                          <p className="text-xs font-medium">Connect Your Own Domain</p>
-                          <p className="text-xs text-muted-foreground">
-                            Creator+ members can use their own domain (yourdomain.com)
-                          </p>
-                          <Button variant="link" size="sm" className="h-auto p-0 text-xs mt-1" onClick={() => navigate('/subscription')}>
-                            Upgrade to Creator+ →
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Template Picker — scrollable grid */}
-                  <div className="space-y-3">
-                    <Label className="text-xs text-muted-foreground uppercase tracking-wider">Template Style</Label>
-                    <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-1">
-                      {TEMPLATES.map((tmpl) => {
-                        const accessible = isTemplateAccessible(tmpl.id, isCreatorPro);
-                        return (
-                          <button
-                            key={tmpl.id}
-                            onClick={() => {
-                              if (!accessible) {
-                                toast({ title: "Creator+ Template", description: `"${tmpl.name}" requires Creator+. Upgrade to unlock all ${TEMPLATES.length} templates.` });
-                                navigate("/subscription");
-                                return;
-                              }
-                              handleTemplateChange(tmpl.id);
-                            }}
-                            disabled={saving}
-                            className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
-                              selectedTemplate === tmpl.id
-                                ? 'border-primary ring-1 ring-primary bg-primary/5'
-                                : accessible ? 'border-border hover:border-muted-foreground/30' : 'border-border opacity-60 hover:opacity-80'
-                            }`}
-                          >
-                            <div className={`w-10 h-10 rounded-md ${tmpl.preview} border border-border flex items-center justify-center shrink-0`}>
-                              <div className={`w-3 h-3 rounded-full ${tmpl.accent}`} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-sm font-medium">{tmpl.name}</p>
-                                {!accessible && <Lock className="h-3 w-3 text-muted-foreground" />}
-                              </div>
-                              <p className="text-xs text-muted-foreground truncate">{tmpl.description}</p>
-                              {!accessible && <p className="text-[10px] text-primary mt-0.5">Creator+</p>}
-                            </div>
-                            {selectedTemplate === tmpl.id && accessible && (
-                              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                            )}
-                            {!accessible && <Crown className="h-4 w-4 text-primary shrink-0" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => navigate('/website-builder')}
-                    >
-                      <Maximize2 className="h-4 w-4 mr-2" />
-                      Open Editor
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowAIGenerator(true)}>
-                      <Wand2 className="h-4 w-4 mr-2" />
-                      AI Regenerate
-                    </Button>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button 
-                      variant={showPreview ? "default" : "outline"} 
-                      size="sm" 
-                      className="flex-1" 
-                      onClick={() => { setShowPreview(!showPreview); setPreviewKey(k => k + 1); }}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      {showPreview ? "Hide Preview" : "Quick Preview"}
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setShowWizard(true)}>
-                      <PenLine className="h-4 w-4 mr-2" />
-                      Setup
-                    </Button>
-                  </div>
-
-                  {/* Live Preview */}
-                  {showPreview && (
-                    <SitePreviewPanel siteUrl={siteUrl} className="h-[500px]" />
-                  )}
-
-                  {/* Section Editor */}
-                  <CreatorSiteSectionEditor
-                    initialSections={siteSections}
-                    initialHeadline={siteHeadline}
-                    initialBio={siteBio}
-                    initialCustomBlocks={siteCustomBlocks}
-                  />
-
-                  {/* Analytics */}
-                  <SiteAnalyticsDashboard />
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">Turn your profile into a website</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Pro members get a beautiful, standalone website powered by your existing ThriveIN profile data — with AI-powered generation, 8 premium templates, and live data blocks.
-                  </p>
-                </div>
-              </div>
-              <Button onClick={() => navigate('/subscription')} className="w-full" size="sm">
-                Upgrade to Pro
-              </Button>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <Button
+            variant="default"
+            onClick={() => navigate("/website-builder")}
+            className="w-full"
+          >
+            <PenLine className="h-4 w-4 mr-2" />
+            Open Website Builder
+          </Button>
+          {!username && (
+            <Button
+              variant="outline"
+              onClick={() => navigate("/website-builder?step=username")}
+              className="w-full"
+            >
+              {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Claim a username
+            </Button>
           )}
-        </CardContent>
-      </Card>
-
-      <SiteSetupWizard
-        open={showWizard}
-        onOpenChange={setShowWizard}
-        onComplete={reloadSettings}
-      />
-
-      <AIWebsiteGenerator
-        open={showAIGenerator}
-        onOpenChange={setShowAIGenerator}
-        onComplete={reloadSettings}
-      />
-
-      <FullScreenSiteEditor
-        open={showFullEditor}
-        onClose={() => setShowFullEditor(false)}
-        siteUrl={siteUrl}
-        initialData={{
-          template: selectedTemplate,
-          sections: siteSections,
-          headline: siteHeadline,
-          bio: siteBio,
-          customBlocks: siteCustomBlocks,
-        }}
-        onSaved={reloadSettings}
-        onOpenAI={() => { setShowFullEditor(false); setShowAIGenerator(true); }}
-      />
-    </>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

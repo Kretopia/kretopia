@@ -5,8 +5,6 @@ import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, Zap, DollarS
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
-import { ImportReviewBanner } from "@/components/profile/ImportReviewBanner";
-import { EmbeddableCreditsWidget } from "@/components/profile/EmbeddableCreditsWidget";
 
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
@@ -155,20 +153,7 @@ export const ProfileContentSections = ({
               )}
             </div>
 
-            {/* Embeddable Credits Widget */}
-            <div>
-              <EmbeddableCreditsWidget
-                userId={profile.user_id}
-                displayName={profile.full_name || "Creator"}
-                thriveId={profile.thrive_id}
-                creditCount={credits.length}
-                topCredits={credits.slice(0, 3).map((c: any) => ({
-                  project_name: c.project_name,
-                  role: c.role,
-                  verification_status: c.verification_status,
-                }))}
-              />
-            </div>
+            {/* Embeddable widget moved to /website-builder */}
           </div>
         );
 
@@ -182,8 +167,7 @@ export const ProfileContentSections = ({
       {/* Pending verification requests */}
       <CreditVerificationPanel userId={profile.user_id} />
 
-      {/* Auto-imported credits awaiting user review */}
-      <ImportReviewBanner userId={profile.user_id} onResolved={onRefresh} />
+      {/* Auto-imported credits review now lives in DiscoveriesInbox at the top of /profile */}
 
 
       {/* Sentinel for sticky detection */}

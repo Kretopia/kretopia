@@ -12,7 +12,7 @@ import { TrustSignals } from "@/components/profile/TrustSignals";
 import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
 import { WhoViewedProfile } from "@/components/profile/WhoViewedProfile";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
-import { RescanAllLinksCard } from "@/components/profile/RescanAllLinksCard";
+// RescanAllLinksCard removed — unified into RefreshUniverseButton on the profile hero
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -131,8 +131,7 @@ export const ProfileDashboardDrawer = ({
             onVerificationComplete={() => onRefresh()}
           />
 
-          {/* Re-scan all linked platforms (IMDb, YouTube, Spotify, Behance, SoundCloud) */}
-          <RescanAllLinksCard profile={profile} onRefresh={onRefresh} />
+          {/* Scanning unified — use the "Refresh Universe / Review finds" button on the profile hero */}
 
           {/* Who Viewed */}
           <WhoViewedProfile userId={profile.user_id} isPro={isPro} />

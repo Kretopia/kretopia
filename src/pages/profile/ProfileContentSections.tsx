@@ -5,8 +5,6 @@ import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, Zap, DollarS
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
-import { ImportReviewBanner } from "@/components/profile/ImportReviewBanner";
-import { EmbeddableCreditsWidget } from "@/components/profile/EmbeddableCreditsWidget";
 
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
 import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";

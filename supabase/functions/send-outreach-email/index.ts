@@ -101,7 +101,7 @@ serve(async (req) => {
     });
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    const { data: claimsData, error: claimsError } = await (userClient.auth as any).getClaims(token);
     if (claimsError || !claimsData?.claims) throw new Error("Unauthorized");
 
     const user = { id: claimsData.claims.sub as string, email: claimsData.claims.email as string };

@@ -68,6 +68,8 @@ const ApplicationStatusUpdateEmail = ({
           <Text style={footer}>
             Track all your applications anytime in your Gig Manager.
           </Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+
         </Container>
       </Body>
     </Html>
@@ -101,3 +103,4 @@ const button = {
   boxShadow: '0 4px 14px #7B61FF55',
 }
 const footer = { fontSize: '12px', color: '#999999', margin: '32px 0 0' }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '12px 0 0' }

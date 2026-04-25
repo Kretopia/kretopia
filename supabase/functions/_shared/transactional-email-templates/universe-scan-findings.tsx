@@ -59,6 +59,8 @@ const UniverseScanFindingsEmail = ({
             Accept what's yours, dismiss what isn't. Takes about a minute.
           </Text>
           <Text style={footer}>The {SITE_NAME} Team</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+
         </Container>
       </Body>
     </Html>
@@ -100,3 +102,4 @@ const button = {
 }
 const subtext = { fontSize: '13px', color: '#999999', margin: '12px 0 32px', textAlign: 'center' as const }
 const footer = { fontSize: '12px', color: '#999999', margin: '32px 0 0', whiteSpace: 'pre-line' as const }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '12px 0 0' }

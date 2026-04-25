@@ -51,6 +51,8 @@ const OnboardingReminderEmail = ({ name }: Props) => (
           See you on the other side,{'\n'}
           The ThriveIN Team
         </Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+
       </Container>
     </Body>
   </Html>
@@ -88,3 +90,4 @@ const button = {
 }
 const subtext = { fontSize: '13px', color: '#999999', margin: '12px 0 32px', textAlign: 'center' as const }
 const footer = { fontSize: '12px', color: '#999999', margin: '32px 0 0', whiteSpace: 'pre-line' as const }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '12px 0 0' }

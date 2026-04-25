@@ -42,6 +42,8 @@ const PledgeConfirmedEmail = ({
         )}
         <Hr style={hr} />
         <Text style={footer}>You're helping a verified creator bring real work to life. 💜</Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
+
       </Container>
     </Body>
   </Html>
@@ -71,3 +73,4 @@ const valueSmall = { fontSize: '14px', color: '#0a0a0f', margin: '0 0 4px', line
 const button = { backgroundColor: '#7B61FF', color: '#ffffff', fontSize: '15px', fontWeight: '600' as const, borderRadius: '12px', padding: '14px 28px', textDecoration: 'none', display: 'block' as const, textAlign: 'center' as const }
 const hr = { borderColor: '#eee', margin: '24px 0' }
 const footer = { fontSize: '12px', color: '#999999', margin: '0' }
+const footerBrand = { fontSize: '11px', color: '#bbbbbb', margin: '12px 0 0' }

@@ -153,20 +153,7 @@ export const ProfileContentSections = ({
               )}
             </div>
 
-            {/* Embeddable Credits Widget */}
-            <div>
-              <EmbeddableCreditsWidget
-                userId={profile.user_id}
-                displayName={profile.full_name || "Creator"}
-                thriveId={profile.thrive_id}
-                creditCount={credits.length}
-                topCredits={credits.slice(0, 3).map((c: any) => ({
-                  project_name: c.project_name,
-                  role: c.role,
-                  verification_status: c.verification_status,
-                }))}
-              />
-            </div>
+            {/* Embeddable widget moved to /website-builder */}
           </div>
         );
 

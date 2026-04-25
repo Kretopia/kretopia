@@ -131,8 +131,7 @@ export const ProfileDashboardDrawer = ({
             onVerificationComplete={() => onRefresh()}
           />
 
-          {/* Re-scan all linked platforms (IMDb, YouTube, Spotify, Behance, SoundCloud) */}
-          <RescanAllLinksCard profile={profile} onRefresh={onRefresh} />
+          {/* Scanning unified — use the "Refresh Universe / Review finds" button on the profile hero */}
 
           {/* Who Viewed */}
           <WhoViewedProfile userId={profile.user_id} isPro={isPro} />

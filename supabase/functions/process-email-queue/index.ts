@@ -1,5 +1,7 @@
 import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
-import { createClient } from 'npm:@supabase/supabase-js@2'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { createClient as _createClient } from 'npm:@supabase/supabase-js@2'
+const createClient = _createClient as any
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10

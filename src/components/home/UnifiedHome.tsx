@@ -30,6 +30,7 @@ import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
+import { LiveGigsStrip } from "@/components/landing/LiveGigsStrip";
 import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
 import GigCard from "@/components/opportunity/GigCard";
 import { GigRailCard } from "@/components/opportunity/GigRailCard";
@@ -518,6 +519,9 @@ export const UnifiedHome = () => {
           </div>
         </div>
       )}
+
+      {/* ═══════════ LIVE GIGS STRIP (guests only) ═══════════ */}
+      {!user && <LiveGigsStrip />}
 
       {/* ═══════════ LIVE ACTIVITY BAR (moved higher) ═══════════ */}
       {activityMsg && !user && (

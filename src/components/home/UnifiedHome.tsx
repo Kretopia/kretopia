@@ -632,8 +632,8 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── Spotlight (magazine + podcast teaser) ── */}
-        <SpotlightFeedRow />
+        {/* ── Spotlight (auth only — accessible via hamburger menu for guests) ── */}
+        {user && <SpotlightFeedRow />}
 
         {/* ── ThriveFund (auth only) ── */}
         {user && <ThriveFundFeedRow />}

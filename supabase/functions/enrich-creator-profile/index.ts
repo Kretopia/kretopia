@@ -395,50 +395,87 @@ CRITICAL RULES:
 
           const cleanJson = creditsRaw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
           const discoveredCredits: any[] = JSON.parse(cleanJson);
-          
-          // CROSS-VALIDATE: only keep credits whose project_name appears in the source
-          const validatedCredits = validateAgainstSource(discoveredCredits, allCreditSnippets, 'project_name');
-          console.log(`[enrich] Credits: ${discoveredCredits.length} extracted, ${validatedCredits.length} validated against source`);
-          
-          let newCreditsCount = 0;
+          console.log(`[enrich] Credits: ${discoveredCredits.length} extracted, staging all for user review`);
 
-          for (const c of validatedCredits) {
-            if (!c.project_name || !c.role) continue;
-            const key = `${c.project_name.toLowerCase()}|${c.role.toLowerCase()}`;
+          // Look up the latest scan for this user to attach scan_id
+          const { data: latestScan } = await supabase.from('discovery_scans')
+            .select('id')
+            .eq('user_id', user_id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          let stagedCount = 0;
+
+          for (const c of discoveredCredits) {
+            if (!c.project_name) continue;
+            const key = `${(c.project_name || '').toLowerCase()}|${(c.role || '').toLowerCase()}`;
+
+            // Skip if already an active credit
             if (existingCredits.has(key)) continue;
             if (deletedSet.has(key)) {
-              console.log(`[enrich] Skipping deleted credit: ${c.project_name}`);
+              console.log(`[enrich] Skipping previously-deleted credit: ${c.project_name}`);
               continue;
             }
 
+            // Skip if already exists in credits table
             const { data: existing } = await supabase.from('credits')
               .select('id')
               .eq('user_id', user_id)
               .ilike('project_name', c.project_name)
-              .ilike('role', c.role)
+              .ilike('role', c.role || '')
               .limit(1);
             if (existing && existing.length > 0) {
               existingCredits.add(key);
               continue;
             }
 
-            const { error: insertErr } = await supabase.from('credits').insert({
+            // Skip if already in staging (any status: pending/approved/dismissed)
+            const { data: staged } = await supabase.from('discovered_credits')
+              .select('id')
+              .eq('user_id', user_id)
+              .ilike('project_name', c.project_name)
+              .ilike('role', c.role || '')
+              .limit(1);
+            if (staged && staged.length > 0) continue;
+
+            const { error: stageErr } = await supabase.from('discovered_credits').insert({
               user_id,
+              scan_id: latestScan?.id ?? null,
               project_name: c.project_name,
-              role: c.role,
+              role: c.role || null,
               year: c.year || null,
               credit_category: c.credit_category || null,
               platform: c.platform || null,
               url: c.url || null,
-              source: 'web_verified',
-              verification_status: 'pending_review', // Hidden from public profile until owner confirms
+              ai_confidence: c.confidence ?? null,
+              source: 'web_scan',
+              status: 'pending',
             });
-            if (insertErr) console.log(`Credit insert skipped: ${c.project_name} - ${insertErr.message}`);
-            existingCredits.add(key);
-            newCreditsCount++;
+            if (stageErr) {
+              console.log(`Stage insert skipped: ${c.project_name} - ${stageErr.message}`);
+            } else {
+              stagedCount++;
+            }
           }
-          (results as any).new_credits = newCreditsCount;
-          console.log(`[enrich] Discovered ${newCreditsCount} new verified credits for ${profile.full_name}`);
+          (results as any).new_credits = stagedCount;
+          (results as any).discoveries_staged = stagedCount;
+          console.log(`[enrich] Staged ${stagedCount} new credit discoveries for ${profile.full_name} (review required)`);
+
+          // Notify the user that there are discoveries to review
+          if (stagedCount > 0) {
+            await supabase.from('notifications').insert({
+              user_id,
+              type: 'discoveries',
+              category: 'credit_discovery',
+              title: `${stagedCount} new credit${stagedCount === 1 ? '' : 's'} found`,
+              message: `We found ${stagedCount} potential credit${stagedCount === 1 ? '' : 's'} for your profile. Tap to review and add to your portfolio.`,
+              action_text: 'Review discoveries',
+              action_url: '/profile?tab=discoveries',
+              link: '/profile?tab=discoveries',
+              priority: 'high',
+            });
+          }
         } catch (e) {
           console.error('Credit extraction failed:', e);
         }

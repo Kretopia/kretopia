@@ -27,6 +27,7 @@ import { ProfileDialogs } from "@/pages/profile/ProfileDialogs";
 import { ProfileContentSections } from "@/pages/profile/ProfileContentSections";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
+import { DiscoveriesInbox } from "@/components/profile/DiscoveriesInbox";
 import { ClaimedProfileGlow } from "@/components/onboarding/claim-flow/ClaimedProfileGlow";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
@@ -364,6 +365,11 @@ const ProfileContent = () => {
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
         {/* Claim success banner */}
         <ClaimContinueBanner onRefresh={fetchData} />
+
+        {/* Discoveries Inbox — review credits surfaced by scans */}
+        {profile?.user_id && (
+          <DiscoveriesInbox userId={profile.user_id} onApproved={fetchData} />
+        )}
 
         {/* Profile Hero — compact, Instagram-style */}
         <ProfileHero

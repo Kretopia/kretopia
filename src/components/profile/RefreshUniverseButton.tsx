@@ -141,7 +141,7 @@ export const RefreshUniverseButton = ({ lastScanAt }: Props) => {
         <Button
           variant="default"
           size="sm"
-          className="h-8 w-full text-xs gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90 font-semibold"
+          className="h-8 w-full text-xs gap-1.5 bg-energy text-energy-foreground hover:bg-energy/90 font-semibold"
           onClick={pendingCount > 0 ? () => setOpen(true) : runScan}
           disabled={scanning}
         >

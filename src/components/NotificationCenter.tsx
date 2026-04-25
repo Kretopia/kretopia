@@ -4,15 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Check, CheckCheck, Trash2, ExternalLink, MessageCircle } from "lucide-react";
+import { Bell, Check, CheckCheck, Trash2, ExternalLink, MessageCircle, ThumbsUp, X, Sparkles } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 
 export const NotificationCenter = () => {
-  const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification, vouchOnCredit } = useNotifications();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [vouchingId, setVouchingId] = useState<string | null>(null);
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.read) {
@@ -148,87 +149,120 @@ export const NotificationCenter = () => {
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                           </span>
-                          <div className="flex gap-2">
-                            {/* View Profile button - works for any notification with a profile link */}
-                            {notification.link && notification.link.includes('/profile/') && (
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-7 text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (!notification.read) markAsRead(notification.id);
-                                  setIsOpen(false);
-                                  setTimeout(() => navigate(notification.link), 100);
-                                }}
-                              >
-                                View Profile
-                              </Button>
-                            )}
-                            {/* Message button - for any notification with messages action URL */}
-                            {notification.action_url && notification.action_url.includes('/messages') && (
-                              <Button 
-                                variant="default" 
-                                size="sm" 
-                                className="h-7 text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (!notification.read) markAsRead(notification.id);
-                                  setIsOpen(false);
-                                  setTimeout(() => navigate(notification.action_url), 100);
-                                }}
-                              >
-                                <MessageCircle className="h-3 w-3 mr-1" />
-                                Message
-                              </Button>
-                            )}
-                            {/* Fallback: View Connection for /circle links without profile */}
-                            {notification.link && 
-                             notification.link === '/circle' && 
-                             !notification.action_url?.includes('/messages') && (
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-7 text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (!notification.read) markAsRead(notification.id);
-                                  setIsOpen(false);
-                                  setTimeout(() => navigate('/circle?tab=network'), 100);
-                                }}
-                              >
-                                View Connections
-                              </Button>
-                            )}
-                            {/* Project desk action buttons */}
-                            {notification.action_url && notification.action_url.includes('/desk/') && (
-                              <Button 
-                                variant="default" 
-                                size="sm" 
-                                className="h-7 text-xs"
-                                onClick={(e) => handleActionClick(e, notification)}
-                              >
-                                {notification.action_url.includes('tab=messages') ? (
-                                  <><MessageCircle className="h-3 w-3 mr-1" />{notification.action_text || 'View Messages'}</>
-                                ) : (
-                                  <><ExternalLink className="h-3 w-3 mr-1" />{notification.action_text || 'Open Project'}</>
+                          <div className="flex gap-2 flex-wrap">
+                            {notification.category === 'vouch_request' ? (
+                              (() => {
+                                const creditId = notification.action_url?.split('credit=')[1];
+                                const acted = (notification as any)._vouchAction;
+                                if (acted) {
+                                  return (
+                                    <Badge
+                                      variant={acted === 'vouched' ? 'default' : 'secondary'}
+                                      className="h-7 px-2 text-xs"
+                                    >
+                                      {acted === 'vouched' ? (
+                                        <><Sparkles className="h-3 w-3 mr-1" /> Vouched</>
+                                      ) : (
+                                        <><X className="h-3 w-3 mr-1" /> Marked not yours</>
+                                      )}
+                                    </Badge>
+                                  );
+                                }
+                                if (!creditId) return null;
+                                const isLoading = vouchingId === notification.id;
+                                return (
+                                  <>
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      className="h-7 text-xs"
+                                      disabled={isLoading}
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        setVouchingId(notification.id);
+                                        await vouchOnCredit(notification.id, creditId, 'vouched');
+                                        setVouchingId(null);
+                                      }}
+                                    >
+                                      <ThumbsUp className="h-3 w-3 mr-1" />
+                                      Yes, I worked on this
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-7 text-xs"
+                                      disabled={isLoading}
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        setVouchingId(notification.id);
+                                        await vouchOnCredit(notification.id, creditId, 'rejected');
+                                        setVouchingId(null);
+                                      }}
+                                    >
+                                      <X className="h-3 w-3 mr-1" />
+                                      Not me
+                                    </Button>
+                                  </>
+                                );
+                              })()
+                            ) : (
+                              <>
+                                {notification.link && notification.link.includes('/profile/') && (
+                                  <Button variant="outline" size="sm" className="h-7 text-xs"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (!notification.read) markAsRead(notification.id);
+                                      setIsOpen(false);
+                                      setTimeout(() => navigate(notification.link!), 100);
+                                    }}>
+                                    View Profile
+                                  </Button>
                                 )}
-                              </Button>
-                            )}
-                            {/* Generic action button for other notifications */}
-                            {notification.action_url && 
-                             !notification.action_url.includes('/messages') && 
-                             !notification.action_url.includes('/circle') && 
-                             !notification.action_url.includes('/desk/') && (
-                              <Button 
-                                variant="default" 
-                                size="sm" 
-                                className="h-7 text-xs"
-                                onClick={(e) => handleActionClick(e, notification)}
-                              >
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                {notification.action_text || 'View'}
-                              </Button>
+                                {notification.action_url && notification.action_url.includes('/messages') && (
+                                  <Button variant="default" size="sm" className="h-7 text-xs"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (!notification.read) markAsRead(notification.id);
+                                      setIsOpen(false);
+                                      setTimeout(() => navigate(notification.action_url!), 100);
+                                    }}>
+                                    <MessageCircle className="h-3 w-3 mr-1" />
+                                    Message
+                                  </Button>
+                                )}
+                                {notification.link && notification.link === '/circle' &&
+                                  !notification.action_url?.includes('/messages') && (
+                                    <Button variant="outline" size="sm" className="h-7 text-xs"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!notification.read) markAsRead(notification.id);
+                                        setIsOpen(false);
+                                        setTimeout(() => navigate('/circle?tab=network'), 100);
+                                      }}>
+                                      View Connections
+                                    </Button>
+                                  )}
+                                {notification.action_url && notification.action_url.includes('/desk/') && (
+                                  <Button variant="default" size="sm" className="h-7 text-xs"
+                                    onClick={(e) => handleActionClick(e, notification)}>
+                                    {notification.action_url.includes('tab=messages') ? (
+                                      <><MessageCircle className="h-3 w-3 mr-1" />{notification.action_text || 'View Messages'}</>
+                                    ) : (
+                                      <><ExternalLink className="h-3 w-3 mr-1" />{notification.action_text || 'Open Project'}</>
+                                    )}
+                                  </Button>
+                                )}
+                                {notification.action_url &&
+                                  !notification.action_url.includes('/messages') &&
+                                  !notification.action_url.includes('/circle') &&
+                                  !notification.action_url.includes('/desk/') && (
+                                    <Button variant="default" size="sm" className="h-7 text-xs"
+                                      onClick={(e) => handleActionClick(e, notification)}>
+                                      <ExternalLink className="h-3 w-3 mr-1" />
+                                      {notification.action_text || 'View'}
+                                    </Button>
+                                  )}
+                              </>
                             )}
                           </div>
                         </div>

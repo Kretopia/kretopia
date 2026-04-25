@@ -16,6 +16,7 @@ interface Notification {
   image_url: string | null;
   priority: string;
   category: string;
+  _vouchAction?: 'vouched' | 'rejected';
 }
 
 export const useNotifications = () => {
@@ -124,6 +125,53 @@ export const useNotifications = () => {
     }
   };
 
+  const vouchOnCredit = async (
+    notificationId: string,
+    creditId: string,
+    action: 'vouched' | 'rejected'
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.rpc('vouch_on_credit', {
+        _credit_id: creditId,
+        _action: action,
+      });
+      if (error) throw error;
+      const result = data as { success: boolean; error?: string };
+      if (!result?.success) {
+        toast({
+          title: 'Could not record vouch',
+          description: result?.error || 'Please try again',
+          variant: 'destructive',
+        });
+        return { success: false, error: result?.error };
+      }
+
+      // Mark the notification as read and tag it locally so UI can show "Vouched ✓"
+      await supabase.from('notifications').update({ read: true }).eq('id', notificationId);
+      setNotifications(prev =>
+        prev.map(n =>
+          n.id === notificationId
+            ? { ...n, read: true, _vouchAction: action } as Notification & { _vouchAction?: string }
+            : n
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+
+      toast({
+        title: action === 'vouched' ? 'Vouched ✓' : 'Marked as not yours',
+        description:
+          action === 'vouched'
+            ? 'The credit owner has been notified.'
+            : 'Thanks for letting us know.',
+      });
+      return { success: true };
+    } catch (e: any) {
+      console.error('Error vouching on credit:', e);
+      toast({ title: 'Error', description: e.message || 'Failed to vouch', variant: 'destructive' });
+      return { success: false, error: e.message };
+    }
+  };
+
   const deleteNotification = async (notificationId: string) => {
     try {
       const { error } = await supabase
@@ -150,6 +198,7 @@ export const useNotifications = () => {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    vouchOnCredit,
     refetch: fetchNotifications,
   };
 };

@@ -34,8 +34,9 @@ const NewApplicantNotificationEmail = ({ ownerName, applicantName, gigTitle, gig
           </Button>
         )}
         <Text style={footer}>
-          Verified Credits · Real Gigs · Get Paid
+          Manage all your gigs and applicants from your Gig Manager anytime.
         </Text>
+        <Text style={footerBrand}>© {new Date().getFullYear()} ThriveIN · thrivein.io</Text>
       </Container>
     </Body>
   </Html>

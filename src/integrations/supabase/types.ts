@@ -2889,6 +2889,90 @@ export type Database = {
         }
         Relationships: []
       }
+      discovered_credits: {
+        Row: {
+          ai_confidence: number | null
+          approved_at: string | null
+          approved_credit_id: string | null
+          created_at: string
+          credit_category: string | null
+          description: string | null
+          dismissed_at: string | null
+          id: string
+          platform: string | null
+          project_name: string
+          role: string | null
+          scan_id: string | null
+          source: string | null
+          source_snippet: string | null
+          status: string
+          thumbnail_url: string | null
+          updated_at: string
+          url: string | null
+          user_id: string
+          year: number | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          approved_at?: string | null
+          approved_credit_id?: string | null
+          created_at?: string
+          credit_category?: string | null
+          description?: string | null
+          dismissed_at?: string | null
+          id?: string
+          platform?: string | null
+          project_name: string
+          role?: string | null
+          scan_id?: string | null
+          source?: string | null
+          source_snippet?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          url?: string | null
+          user_id: string
+          year?: number | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          approved_at?: string | null
+          approved_credit_id?: string | null
+          created_at?: string
+          credit_category?: string | null
+          description?: string | null
+          dismissed_at?: string | null
+          id?: string
+          platform?: string | null
+          project_name?: string
+          role?: string | null
+          scan_id?: string | null
+          source?: string | null
+          source_snippet?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discovered_credits_approved_credit_id_fkey"
+            columns: ["approved_credit_id"]
+            isOneToOne: false
+            referencedRelation: "credits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discovered_credits_scan_id_fkey"
+            columns: ["scan_id"]
+            isOneToOne: false
+            referencedRelation: "discovery_scans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discovery_scans: {
         Row: {
           completed_at: string | null
@@ -12522,6 +12606,10 @@ export type Database = {
         Returns: Json
       }
       admin_set_profile_coords: { Args: { coords: Json }; Returns: number }
+      approve_discovered_credit: {
+        Args: { _discovery_id: string }
+        Returns: Json
+      }
       auto_join_circles_for_role: {
         Args: { p_role: string; p_user_id: string }
         Returns: undefined
@@ -12594,6 +12682,10 @@ export type Database = {
         Returns: boolean
       }
       delete_group_room: { Args: { _room_id: string }; Returns: boolean }
+      dismiss_discovered_credit: {
+        Args: { _discovery_id: string }
+        Returns: Json
+      }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number

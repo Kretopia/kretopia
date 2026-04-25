@@ -33,9 +33,16 @@ const AWARD_KEYWORDS = [
 const CREDIT_PLATFORM_RX =
   /(imdb\.com\/name|imdb\.com\/title|muso\.ai|discogs\.com|allmusic\.com|themoviedb\.org|behance\.net|dribbble\.com|spotify\.com\/(?:track|album)|music\.apple\.com\/.+\/(?:album|song))/i;
 
+// Social/own-profile domains — never surface as discoveries (already linked via connected_platforms)
+const SOCIAL_PROFILE_RX =
+  /(instagram\.com|tiktok\.com|twitter\.com|x\.com|facebook\.com|linkedin\.com\/in|threads\.net|snapchat\.com|pinterest\.com)/i;
+
 function classifyKind(url: string, title: string, excerpt: string): Kind | null {
   const u = url.toLowerCase();
   const t = `${title} ${excerpt}`.toLowerCase();
+
+  // Skip social profile pages — these belong in connected platforms, not discoveries
+  if (SOCIAL_PROFILE_RX.test(u)) return null;
 
   // Awards win on any signal
   if (AWARD_KEYWORDS.some((k) => t.includes(k))) return "award";
@@ -51,8 +58,9 @@ function classifyKind(url: string, title: string, excerpt: string): Kind | null 
   // Press: editorial domains
   if (PRESS_DOMAINS.some((d) => u.includes(d))) return "press";
 
-  // Fallback: if title/excerpt mentions interview / feature -> press
-  if (/\b(interview|feature|profile|review|premiere)\b/i.test(t)) return "press";
+  // Fallback: title/excerpt mentions interview/feature -> press
+  // ('profile' removed — too noisy, matched social profile descriptions)
+  if (/\b(interview|featured in|premiere|reviewed by)\b/i.test(t)) return "press";
 
   return null; // skip — too ambiguous
 }

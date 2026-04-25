@@ -9,6 +9,7 @@ import { PressLinksSection } from "@/components/profile/PressLinksSection";
 import { AwardsSection } from "@/components/profile/AwardsSection";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
+import { RateCardSection } from "@/components/profile/RateCardSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";
@@ -31,16 +32,20 @@ const HireTabContent = ({ userId, creatorName }: { userId: string; creatorName?:
   }, [userId]);
 
   if (hasContent === null) return <div className="text-center py-8 text-muted-foreground text-sm">Loading...</div>;
-  if (!hasContent) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        <DollarSign className="h-10 w-10 mx-auto mb-3 opacity-30" />
-        <p className="text-sm">{creatorName?.split(' ')[0] || 'This creator'} hasn't listed any services yet</p>
-      </div>
-    );
-  }
 
-  return <WorkWithMeSection userId={userId} isOwner={false} creatorName={creatorName} />;
+  return (
+    <>
+      <RateCardSection userId={userId} isOwner={false} />
+      {hasContent ? (
+        <WorkWithMeSection userId={userId} isOwner={false} creatorName={creatorName} />
+      ) : (
+        <div className="text-center py-8 text-muted-foreground">
+          <DollarSign className="h-10 w-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">{creatorName?.split(' ')[0] || 'This creator'} hasn't listed any services yet</p>
+        </div>
+      )}
+    </>
+  );
 };
 
 const VIEW_TABS = [

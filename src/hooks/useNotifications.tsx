@@ -16,6 +16,7 @@ interface Notification {
   image_url: string | null;
   priority: string;
   category: string;
+  _vouchAction?: 'vouched' | 'rejected';
 }
 
 export const useNotifications = () => {

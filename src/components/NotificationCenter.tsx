@@ -4,15 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Check, CheckCheck, Trash2, ExternalLink, MessageCircle } from "lucide-react";
+import { Bell, Check, CheckCheck, Trash2, ExternalLink, MessageCircle, ThumbsUp, X, Sparkles } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 
 export const NotificationCenter = () => {
-  const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification, vouchOnCredit } = useNotifications();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [vouchingId, setVouchingId] = useState<string | null>(null);
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.read) {

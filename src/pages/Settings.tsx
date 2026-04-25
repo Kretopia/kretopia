@@ -781,6 +781,9 @@ const Settings = () => {
             </CardContent>
           </Card>
 
+          {/* Blocked Users */}
+          <BlockedUsersCard />
+
           {/* Install App */}
           <Card>
             <CardHeader>

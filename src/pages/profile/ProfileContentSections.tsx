@@ -167,8 +167,7 @@ export const ProfileContentSections = ({
       {/* Pending verification requests */}
       <CreditVerificationPanel userId={profile.user_id} />
 
-      {/* Auto-imported credits awaiting user review */}
-      <ImportReviewBanner userId={profile.user_id} onResolved={onRefresh} />
+      {/* Auto-imported credits review now lives in DiscoveriesInbox at the top of /profile */}
 
 
       {/* Sentinel for sticky detection */}

@@ -40,7 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
       .from("profiles")
       .select("user_id, full_name, last_active_date, updated_at")
       .gte("last_active_date", sixtyDaysAgo)
-      .lt("last_active_date", sevenDaysAgo)
+      .lte("last_active_date", sevenDaysAgo)
       .order("last_active_date", { ascending: false })
       .limit(DAILY_CAP);
 

@@ -32,6 +32,10 @@ export interface GigOpportunity {
   is_priority?: boolean;
   priority_expires_at?: string | null;
   scouted_by?: string | null;
+  usage_type?: string | null;
+  usage_territory?: string | null;
+  usage_duration?: string | null;
+  usage_exclusive?: boolean | null;
 }
 
 export interface GigCreatorProfile {

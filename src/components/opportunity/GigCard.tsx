@@ -66,6 +66,42 @@ const getAiMatchScore = (id: string): number => {
   return 70 + Math.abs(hash % 28);
 };
 
+const USAGE_LABELS: Record<string, string> = {
+  organic_social: "Organic Social",
+  paid_ads: "Paid Ads",
+  full_buyout: "Full Buyout",
+  broadcast: "Broadcast",
+  ooh: "OOH",
+  web_only: "Web Only",
+};
+
+const formatUsageRights = (opp: GigOpportunity): string | null => {
+  if (!opp.usage_type && !opp.usage_territory && !opp.usage_duration) return null;
+  const parts: string[] = [];
+  if (opp.usage_type) parts.push(USAGE_LABELS[opp.usage_type] || opp.usage_type);
+  if (opp.usage_territory) parts.push(opp.usage_territory);
+  if (opp.usage_duration) parts.push(opp.usage_duration);
+  return parts.join(" · ");
+};
+
+const UsageRightsChip = ({ opp, variant = "dark" }: { opp: GigOpportunity; variant?: "dark" | "muted" }) => {
+  const summary = formatUsageRights(opp);
+  if (!summary) return null;
+  const base = variant === "dark"
+    ? "bg-background/80 backdrop-blur-sm border-border text-foreground"
+    : "bg-muted/40 border-border/60 text-foreground";
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-semibold ${base}`}
+      title="Usage rights"
+    >
+      {opp.usage_exclusive ? <Lock className="h-2.5 w-2.5 text-amber-400" /> : <Globe className="h-2.5 w-2.5 text-primary" />}
+      <span className="truncate max-w-[180px]">{summary}</span>
+      {opp.usage_exclusive && <span className="text-amber-400">· Excl.</span>}
+    </span>
+  );
+};
+
 interface GigCardProps {
   opportunity: GigOpportunity;
   creator?: GigCreatorProfile | null;

@@ -6,6 +6,7 @@ import {
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock,
   DollarSign, Zap, Target, GraduationCap, AlertTriangle,
   Gift, ArrowRight, Shield, User, Verified, Radar, Sparkles,
+  Globe, Lock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
@@ -31,6 +32,10 @@ export interface GigOpportunity {
   is_priority?: boolean;
   priority_expires_at?: string | null;
   scouted_by?: string | null;
+  usage_type?: string | null;
+  usage_territory?: string | null;
+  usage_duration?: string | null;
+  usage_exclusive?: boolean | null;
 }
 
 export interface GigCreatorProfile {
@@ -59,6 +64,42 @@ const getAiMatchScore = (id: string): number => {
     hash |= 0;
   }
   return 70 + Math.abs(hash % 28);
+};
+
+const USAGE_LABELS: Record<string, string> = {
+  organic_social: "Organic Social",
+  paid_ads: "Paid Ads",
+  full_buyout: "Full Buyout",
+  broadcast: "Broadcast",
+  ooh: "OOH",
+  web_only: "Web Only",
+};
+
+const formatUsageRights = (opp: GigOpportunity): string | null => {
+  if (!opp.usage_type && !opp.usage_territory && !opp.usage_duration) return null;
+  const parts: string[] = [];
+  if (opp.usage_type) parts.push(USAGE_LABELS[opp.usage_type] || opp.usage_type);
+  if (opp.usage_territory) parts.push(opp.usage_territory);
+  if (opp.usage_duration) parts.push(opp.usage_duration);
+  return parts.join(" · ");
+};
+
+const UsageRightsChip = ({ opp, variant = "dark" }: { opp: GigOpportunity; variant?: "dark" | "muted" }) => {
+  const summary = formatUsageRights(opp);
+  if (!summary) return null;
+  const base = variant === "dark"
+    ? "bg-background/80 backdrop-blur-sm border-border text-foreground"
+    : "bg-muted/40 border-border/60 text-foreground";
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-semibold ${base}`}
+      title="Usage rights"
+    >
+      {opp.usage_exclusive ? <Lock className="h-2.5 w-2.5 text-amber-400" /> : <Globe className="h-2.5 w-2.5 text-primary" />}
+      <span className="truncate max-w-[180px]">{summary}</span>
+      {opp.usage_exclusive && <span className="text-amber-400">· Excl.</span>}
+    </span>
+  );
 };
 
 interface GigCardProps {
@@ -149,6 +190,11 @@ const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) =
             <h3 className="text-lg sm:text-xl font-black tracking-tight leading-[1.1] text-foreground line-clamp-2">
               {opp.title}
             </h3>
+            {formatUsageRights(opp) && (
+              <div className="mt-2">
+                <UsageRightsChip opp={opp} variant="dark" />
+              </div>
+            )}
           </div>
         </div>
 
@@ -237,6 +283,12 @@ const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) =
           <p className="text-sm text-muted-foreground line-clamp-2 mt-2 leading-relaxed">
             {opp.description}
           </p>
+        )}
+
+        {formatUsageRights(opp) && (
+          <div className="mt-3">
+            <UsageRightsChip opp={opp} variant="muted" />
+          </div>
         )}
 
         {/* Poster row */}

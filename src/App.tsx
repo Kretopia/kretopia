@@ -49,6 +49,7 @@ const Circles = lazy(() => import("./pages/Circles"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const ProjectsList = lazy(() => import("./pages/ProjectsList"));
+const Shortlists = lazy(() => import("./pages/Shortlists"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminWeeklyNote = lazy(() => import("./pages/AdminWeeklyNote"));

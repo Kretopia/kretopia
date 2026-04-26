@@ -42,6 +42,13 @@ interface Opportunity {
   content_deliverables?: any;
   created_by?: string;
   scouted_by?: string;
+  usage_type?: string | null;
+  usage_territory?: string | null;
+  usage_duration?: string | null;
+  usage_exclusive?: boolean | null;
+  barter_gifted_value_usd?: number | null;
+  barter_posting_deadline?: string | null;
+  whitelisting_allowed?: boolean | null;
 }
 
 const OpportunityDetail = () => {

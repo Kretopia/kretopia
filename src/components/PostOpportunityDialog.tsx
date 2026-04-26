@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, Loader2, Upload, X, ArrowRightLeft, Handshake, Zap, Target, GraduationCap, UtensilsCrossed, Hotel, Gift, Instagram, Youtube, Music } from "lucide-react";
+import { Briefcase, Loader2, Upload, X, ArrowRightLeft, Handshake, Zap, Target, GraduationCap, UtensilsCrossed, Hotel, Gift, Instagram, Youtube, Music, Shield } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
@@ -49,6 +50,25 @@ const CONTENT_TYPE_OPTIONS = [
   "Blog Post", "Review", "Photo Set", "Live Stream",
 ];
 
+const USAGE_TYPES = [
+  { value: "organic_social", label: "Organic Social" },
+  { value: "paid_social", label: "Paid Social Ads" },
+  { value: "ooh", label: "Out-of-Home (OOH)" },
+  { value: "broadcast", label: "TV / Broadcast" },
+  { value: "full_buyout", label: "Full Buyout" },
+];
+const USAGE_TERRITORIES = [
+  { value: "local", label: "Local" },
+  { value: "national", label: "National" },
+  { value: "global", label: "Global" },
+];
+const USAGE_DURATIONS = [
+  { value: "3_months", label: "3 months" },
+  { value: "6_months", label: "6 months" },
+  { value: "1_year", label: "1 year" },
+  { value: "perpetual", label: "Perpetual" },
+];
+
 export const PostOpportunityDialog = ({
   variant = "default",
   size = "default",
@@ -86,6 +106,15 @@ export const PostOpportunityDialog = ({
     platform_requirements: [] as string[],
     min_followers: "",
     content_deliverables: [] as string[],
+    // Usage rights
+    usage_type: "",
+    usage_territory: "",
+    usage_duration: "",
+    usage_exclusive: false,
+    // Structured barter
+    barter_gifted_value_usd: "",
+    barter_posting_deadline: "",
+    whitelisting_allowed: false,
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -227,6 +256,13 @@ export const PostOpportunityDialog = ({
           platform_requirements: formData.platform_requirements.length > 0 ? formData.platform_requirements : null,
           min_followers: formData.min_followers ? parseInt(formData.min_followers) : null,
           content_deliverables: formData.content_deliverables.length > 0 ? JSON.stringify(formData.content_deliverables) : null,
+          usage_type: formData.usage_type || null,
+          usage_territory: formData.usage_territory || null,
+          usage_duration: formData.usage_duration || null,
+          usage_exclusive: formData.usage_exclusive,
+          barter_gifted_value_usd: formData.barter_gifted_value_usd ? parseFloat(formData.barter_gifted_value_usd) : null,
+          barter_posting_deadline: formData.barter_posting_deadline || null,
+          whitelisting_allowed: formData.whitelisting_allowed,
         } as any)
         .select()
         .single();
@@ -246,6 +282,8 @@ export const PostOpportunityDialog = ({
         location: "", requirements: "", skills: "", deliverables: "", duration: "",
         barter_offering: "", barter_requesting: "", platform_requirements: [],
         min_followers: "", content_deliverables: [],
+        usage_type: "", usage_territory: "", usage_duration: "", usage_exclusive: false,
+        barter_gifted_value_usd: "", barter_posting_deadline: "", whitelisting_allowed: false,
       });
       setImageFile(null);
       setImagePreview("");
@@ -449,6 +487,41 @@ export const PostOpportunityDialog = ({
                       onChange={(e) => setFormData(prev => ({ ...prev, min_followers: e.target.value }))}
                     />
                   </div>
+
+                  {/* Structured barter terms */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="gifted-value" className="text-xs">Gifted Value (USD)</Label>
+                      <Input
+                        id="gifted-value"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="e.g., 250"
+                        value={formData.barter_gifted_value_usd}
+                        onChange={(e) => setFormData(prev => ({ ...prev, barter_gifted_value_usd: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="post-deadline" className="text-xs">Posting Deadline</Label>
+                      <Input
+                        id="post-deadline"
+                        type="date"
+                        value={formData.barter_posting_deadline}
+                        onChange={(e) => setFormData(prev => ({ ...prev, barter_posting_deadline: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border bg-background/50 px-3 py-2">
+                    <div>
+                      <p className="text-xs font-medium">Whitelisting / paid amplification</p>
+                      <p className="text-[10px] text-muted-foreground">Brand can boost creator's post as paid ads</p>
+                    </div>
+                    <Switch
+                      checked={formData.whitelisting_allowed}
+                      onCheckedChange={(v) => setFormData(prev => ({ ...prev, whitelisting_allowed: v }))}
+                    />
+                  </div>
                 </div>
               )}
 
@@ -529,6 +602,54 @@ export const PostOpportunityDialog = ({
                     placeholder="e.g., 1 day, 1 week"
                     value={formData.duration}
                     onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              {/* Usage Rights — applies to anything involving content (paid or barter) */}
+              <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-amber-300 bg-amber-500/5">
+                <div className="flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-300">
+                  <Shield className="h-4 w-4" />
+                  Usage Rights <span className="text-[10px] font-normal text-muted-foreground">(optional but recommended)</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground -mt-1">Tell creators exactly how their work will be used so they can price fairly.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-wide">Usage</Label>
+                    <Select value={formData.usage_type} onValueChange={(v) => setFormData(prev => ({ ...prev, usage_type: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {USAGE_TYPES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-wide">Territory</Label>
+                    <Select value={formData.usage_territory} onValueChange={(v) => setFormData(prev => ({ ...prev, usage_territory: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {USAGE_TERRITORIES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-wide">Duration</Label>
+                    <Select value={formData.usage_duration} onValueChange={(v) => setFormData(prev => ({ ...prev, usage_duration: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {USAGE_DURATIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border bg-background/50 px-3 py-2">
+                  <div>
+                    <p className="text-xs font-medium">Exclusive usage</p>
+                    <p className="text-[10px] text-muted-foreground">Creator can't work with competing brands during the term</p>
+                  </div>
+                  <Switch
+                    checked={formData.usage_exclusive}
+                    onCheckedChange={(v) => setFormData(prev => ({ ...prev, usage_exclusive: v }))}
                   />
                 </div>
               </div>

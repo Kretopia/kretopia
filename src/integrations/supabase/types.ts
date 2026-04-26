@@ -6301,7 +6301,9 @@ export type Database = {
       }
       opportunities: {
         Row: {
+          barter_gifted_value_usd: number | null
           barter_offering: string | null
+          barter_posting_deadline: string | null
           barter_requesting: string | null
           claim_status: string | null
           claim_token: string | null
@@ -6339,12 +6341,19 @@ export type Database = {
           title: string
           type: string
           updated_at: string | null
+          usage_duration: string | null
+          usage_exclusive: boolean | null
+          usage_territory: string | null
+          usage_type: string | null
           verification_token: string | null
           verified_at: string | null
           view_count: number
+          whitelisting_allowed: boolean | null
         }
         Insert: {
+          barter_gifted_value_usd?: number | null
           barter_offering?: string | null
+          barter_posting_deadline?: string | null
           barter_requesting?: string | null
           claim_status?: string | null
           claim_token?: string | null
@@ -6382,12 +6391,19 @@ export type Database = {
           title: string
           type: string
           updated_at?: string | null
+          usage_duration?: string | null
+          usage_exclusive?: boolean | null
+          usage_territory?: string | null
+          usage_type?: string | null
           verification_token?: string | null
           verified_at?: string | null
           view_count?: number
+          whitelisting_allowed?: boolean | null
         }
         Update: {
+          barter_gifted_value_usd?: number | null
           barter_offering?: string | null
+          barter_posting_deadline?: string | null
           barter_requesting?: string | null
           claim_status?: string | null
           claim_token?: string | null
@@ -6425,9 +6441,14 @@ export type Database = {
           title?: string
           type?: string
           updated_at?: string | null
+          usage_duration?: string | null
+          usage_exclusive?: boolean | null
+          usage_territory?: string | null
+          usage_type?: string | null
           verification_token?: string | null
           verified_at?: string | null
           view_count?: number
+          whitelisting_allowed?: boolean | null
         }
         Relationships: [
           {

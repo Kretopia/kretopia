@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit, Copy, Trash2, PauseCircle, PlayCircle, Loader2, MoreVertical, Radar, Mail } from "lucide-react";
+import { MapPin, DollarSign, Clock, Briefcase, Share2, CheckCircle2, XCircle, UserPlus, ArrowLeft, Bookmark, BookmarkCheck, Gift, ArrowRightLeft, ArrowRight, Instagram, Music, Youtube, Edit, Copy, Trash2, PauseCircle, PlayCircle, Loader2, MoreVertical, Radar, Mail, Shield, Globe, Lock, Calendar, Megaphone } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Helmet } from "react-helmet-async";
@@ -42,6 +42,13 @@ interface Opportunity {
   content_deliverables?: any;
   created_by?: string;
   scouted_by?: string;
+  usage_type?: string | null;
+  usage_territory?: string | null;
+  usage_duration?: string | null;
+  usage_exclusive?: boolean | null;
+  barter_gifted_value_usd?: number | null;
+  barter_posting_deadline?: string | null;
+  whitelisting_allowed?: boolean | null;
 }
 
 const OpportunityDetail = () => {
@@ -636,7 +643,64 @@ const OpportunityDetail = () => {
             </div>
           )}
 
-          {/* Description */}
+          {/* Structured barter terms */}
+          {opportunity.type === 'barter' && (opportunity.barter_gifted_value_usd || opportunity.barter_posting_deadline || opportunity.whitelisting_allowed) && (
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {opportunity.barter_gifted_value_usd != null && (
+                <div className="rounded-lg border bg-card p-3">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground flex items-center gap-1"><DollarSign className="h-3 w-3" />Gifted Value</div>
+                  <div className="text-sm font-semibold mt-1">${Number(opportunity.barter_gifted_value_usd).toLocaleString()}</div>
+                </div>
+              )}
+              {opportunity.barter_posting_deadline && (
+                <div className="rounded-lg border bg-card p-3">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />Post by</div>
+                  <div className="text-sm font-semibold mt-1">{new Date(opportunity.barter_posting_deadline).toLocaleDateString()}</div>
+                </div>
+              )}
+              {opportunity.whitelisting_allowed && (
+                <div className="rounded-lg border bg-card p-3">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground flex items-center gap-1"><Megaphone className="h-3 w-3" />Whitelisting</div>
+                  <div className="text-sm font-semibold mt-1">Allowed</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Usage Rights */}
+          {(opportunity.usage_type || opportunity.usage_territory || opportunity.usage_duration || opportunity.usage_exclusive) && (
+            <div className="mb-6 rounded-xl border-2 border-dashed border-amber-300 bg-amber-500/5 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Shield className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <h2 className="text-lg font-semibold">Usage Rights</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {opportunity.usage_type && (
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Usage</div>
+                    <div className="text-sm font-medium capitalize">{opportunity.usage_type.replace(/_/g, ' ')}</div>
+                  </div>
+                )}
+                {opportunity.usage_territory && (
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground flex items-center gap-1"><Globe className="h-3 w-3" />Territory</div>
+                    <div className="text-sm font-medium capitalize">{opportunity.usage_territory}</div>
+                  </div>
+                )}
+                {opportunity.usage_duration && (
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Duration</div>
+                    <div className="text-sm font-medium">{opportunity.usage_duration.replace(/_/g, ' ')}</div>
+                  </div>
+                )}
+              </div>
+              {opportunity.usage_exclusive && (
+                <div className="mt-3">
+                  <Badge variant="outline" className="gap-1 text-xs"><Lock className="h-3 w-3" />Exclusive — no competing brands during the term</Badge>
+                </div>
+              )}
+            </div>
+          )}
           <div className="mb-6">
             <h2 className="mb-2 text-xl font-semibold">Description</h2>
             <p className="whitespace-pre-line text-muted-foreground">{opportunity.description}</p>

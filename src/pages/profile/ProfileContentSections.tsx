@@ -16,6 +16,7 @@ import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
 import { RateCardSection } from "@/components/profile/RateCardSection";
+import { AvailabilityCalendarSection } from "@/components/profile/AvailabilityCalendarSection";
 
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 

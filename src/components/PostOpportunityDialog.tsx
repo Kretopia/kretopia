@@ -50,6 +50,25 @@ const CONTENT_TYPE_OPTIONS = [
   "Blog Post", "Review", "Photo Set", "Live Stream",
 ];
 
+const USAGE_TYPES = [
+  { value: "organic_social", label: "Organic Social" },
+  { value: "paid_social", label: "Paid Social Ads" },
+  { value: "ooh", label: "Out-of-Home (OOH)" },
+  { value: "broadcast", label: "TV / Broadcast" },
+  { value: "full_buyout", label: "Full Buyout" },
+];
+const USAGE_TERRITORIES = [
+  { value: "local", label: "Local" },
+  { value: "national", label: "National" },
+  { value: "global", label: "Global" },
+];
+const USAGE_DURATIONS = [
+  { value: "3_months", label: "3 months" },
+  { value: "6_months", label: "6 months" },
+  { value: "1_year", label: "1 year" },
+  { value: "perpetual", label: "Perpetual" },
+];
+
 export const PostOpportunityDialog = ({
   variant = "default",
   size = "default",

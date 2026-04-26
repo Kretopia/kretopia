@@ -10,6 +10,7 @@ import { AwardsSection } from "@/components/profile/AwardsSection";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
 import { RateCardSection } from "@/components/profile/RateCardSection";
+import { AvailabilityCalendarSection } from "@/components/profile/AvailabilityCalendarSection";
 import { SocialStatsSection } from "@/components/profile/SocialStatsSection";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { AchievementBadges } from "@/components/profile/AchievementBadges";

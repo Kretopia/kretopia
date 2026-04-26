@@ -285,6 +285,12 @@ const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) =
           </p>
         )}
 
+        {formatUsageRights(opp) && (
+          <div className="mt-3">
+            <UsageRightsChip opp={opp} variant="muted" />
+          </div>
+        )}
+
         {/* Poster row */}
         {opp.scouted_by ? (
           <div className="flex items-center gap-2 mt-4 text-[11px] text-primary/90">

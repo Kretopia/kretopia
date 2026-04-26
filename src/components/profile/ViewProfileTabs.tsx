@@ -36,6 +36,7 @@ const HireTabContent = ({ userId, creatorName }: { userId: string; creatorName?:
 
   return (
     <>
+      <AvailabilityCalendarSection userId={userId} isOwner={false} />
       <RateCardSection userId={userId} isOwner={false} />
       {hasContent ? (
         <WorkWithMeSection userId={userId} isOwner={false} creatorName={creatorName} />

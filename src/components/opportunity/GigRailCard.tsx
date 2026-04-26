@@ -3,7 +3,7 @@ import { BookmarkButton } from "@/components/opportunity/BookmarkButton";
 import { EasyApplyButton } from "@/components/opportunity/EasyApplyButton";
 import {
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock,
-  DollarSign, Zap, Target, GraduationCap, Sparkles, Radar, Shield,
+  DollarSign, Zap, Target, GraduationCap, Sparkles, Radar, Shield, Globe, Lock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";

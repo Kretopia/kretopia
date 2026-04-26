@@ -2071,6 +2071,42 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_availability_blocks: {
+        Row: {
+          block_type: string
+          created_at: string
+          end_date: string
+          id: string
+          is_public: boolean
+          label: string | null
+          start_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          block_type?: string
+          created_at?: string
+          end_date: string
+          id?: string
+          is_public?: boolean
+          label?: string | null
+          start_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          block_type?: string
+          created_at?: string
+          end_date?: string
+          id?: string
+          is_public?: boolean
+          label?: string | null
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       creator_rates: {
         Row: {
           amount: number

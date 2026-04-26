@@ -16,6 +16,7 @@ import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
 import { RateCardSection } from "@/components/profile/RateCardSection";
+import { AvailabilityCalendarSection } from "@/components/profile/AvailabilityCalendarSection";
 
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -88,6 +89,7 @@ export const ProfileContentSections = ({
       case "hire":
         return (
           <>
+            <AvailabilityCalendarSection userId={profile.user_id} isOwner={true} />
             <RateCardSection userId={profile.user_id} isOwner={true} />
             <WorkWithMeSection userId={profile.user_id} isOwner={true} creatorName={profile.full_name} />
           </>

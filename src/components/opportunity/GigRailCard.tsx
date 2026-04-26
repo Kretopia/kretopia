@@ -85,6 +85,14 @@ export const GigRailCard = ({ opportunity: opp }: { opportunity: GigOpportunity 
           <h3 className="text-base sm:text-lg font-black tracking-tight leading-[1.15] text-foreground line-clamp-2">
             {opp.title}
           </h3>
+          {(opp.usage_type || opp.usage_territory || opp.usage_duration) && (
+            <div className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md border border-border bg-background/80 backdrop-blur-sm text-[9px] font-semibold text-foreground">
+              {opp.usage_exclusive ? <Lock className="h-2.5 w-2.5 text-amber-400" /> : <Globe className="h-2.5 w-2.5 text-primary" />}
+              <span className="truncate max-w-[160px]">
+                {[opp.usage_type, opp.usage_territory, opp.usage_duration].filter(Boolean).join(" · ")}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

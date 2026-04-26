@@ -256,6 +256,13 @@ export const PostOpportunityDialog = ({
           platform_requirements: formData.platform_requirements.length > 0 ? formData.platform_requirements : null,
           min_followers: formData.min_followers ? parseInt(formData.min_followers) : null,
           content_deliverables: formData.content_deliverables.length > 0 ? JSON.stringify(formData.content_deliverables) : null,
+          usage_type: formData.usage_type || null,
+          usage_territory: formData.usage_territory || null,
+          usage_duration: formData.usage_duration || null,
+          usage_exclusive: formData.usage_exclusive,
+          barter_gifted_value_usd: formData.barter_gifted_value_usd ? parseFloat(formData.barter_gifted_value_usd) : null,
+          barter_posting_deadline: formData.barter_posting_deadline || null,
+          whitelisting_allowed: formData.whitelisting_allowed,
         } as any)
         .select()
         .single();

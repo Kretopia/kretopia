@@ -2599,6 +2599,103 @@ export type Database = {
         }
         Relationships: []
       }
+      deal_memos: {
+        Row: {
+          application_id: string
+          created_at: string
+          creator_signed_at: string | null
+          creator_user_id: string
+          deadline: string | null
+          deliverables: string | null
+          id: string
+          notes: string | null
+          opportunity_id: string
+          pdf_path: string | null
+          poster_signed_at: string | null
+          poster_user_id: string
+          rate_amount: number | null
+          rate_currency: string | null
+          rate_unit: string | null
+          status: string
+          title: string
+          updated_at: string
+          usage_duration: string | null
+          usage_exclusive: boolean | null
+          usage_territory: string | null
+          usage_type: string | null
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          creator_signed_at?: string | null
+          creator_user_id: string
+          deadline?: string | null
+          deliverables?: string | null
+          id?: string
+          notes?: string | null
+          opportunity_id: string
+          pdf_path?: string | null
+          poster_signed_at?: string | null
+          poster_user_id: string
+          rate_amount?: number | null
+          rate_currency?: string | null
+          rate_unit?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          usage_duration?: string | null
+          usage_exclusive?: boolean | null
+          usage_territory?: string | null
+          usage_type?: string | null
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          creator_signed_at?: string | null
+          creator_user_id?: string
+          deadline?: string | null
+          deliverables?: string | null
+          id?: string
+          notes?: string | null
+          opportunity_id?: string
+          pdf_path?: string | null
+          poster_signed_at?: string | null
+          poster_user_id?: string
+          rate_amount?: number | null
+          rate_currency?: string | null
+          rate_unit?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          usage_duration?: string | null
+          usage_exclusive?: boolean | null
+          usage_territory?: string | null
+          usage_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_memos_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_memos_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "user_applications_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_memos_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deleted_credits: {
         Row: {
           deleted_at: string

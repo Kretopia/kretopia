@@ -22,8 +22,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Mail, Sparkles, GripVertical } from "lucide-react";
+import { Eye, Mail, Sparkles, GripVertical, FileText, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Applicant {
   id: string;
@@ -97,6 +99,33 @@ function DroppableColumn({
 
 function SortableApplicantCard({ applicant }: { applicant: Applicant }) {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [genLoading, setGenLoading] = useState(false);
+
+  const handleGenerateMemo = async () => {
+    setGenLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-deal-memo", {
+        body: { application_id: applicant.id },
+      });
+      if (error) throw error;
+      if (data?.signed_url) {
+        window.open(data.signed_url, "_blank");
+        toast({ title: "Deal memo generated", description: "PDF opened in a new tab." });
+      } else {
+        throw new Error("No signed URL returned");
+      }
+    } catch (e: any) {
+      toast({
+        title: "Could not generate memo",
+        description: e.message || "Try again",
+        variant: "destructive",
+      });
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
   const {
     attributes,
     listeners,
@@ -172,6 +201,19 @@ function SortableApplicantCard({ applicant }: { applicant: Applicant }) {
           >
             <Mail className="w-3 h-3" />
           </Button>
+          {applicant.status === "accepted" && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-xs gap-1 text-primary hover:text-primary"
+              onClick={handleGenerateMemo}
+              disabled={genLoading}
+              title="Generate Deal Memo PDF"
+            >
+              {genLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+              <span className="hidden sm:inline">Deal Memo</span>
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

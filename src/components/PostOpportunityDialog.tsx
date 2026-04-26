@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, Loader2, Upload, X, ArrowRightLeft, Handshake, Zap, Target, GraduationCap, UtensilsCrossed, Hotel, Gift, Instagram, Youtube, Music } from "lucide-react";
+import { Briefcase, Loader2, Upload, X, ArrowRightLeft, Handshake, Zap, Target, GraduationCap, UtensilsCrossed, Hotel, Gift, Instagram, Youtube, Music, Shield } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";

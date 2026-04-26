@@ -190,6 +190,11 @@ const GigCard = ({ opportunity: opp, creator, compact = false }: GigCardProps) =
             <h3 className="text-lg sm:text-xl font-black tracking-tight leading-[1.1] text-foreground line-clamp-2">
               {opp.title}
             </h3>
+            {formatUsageRights(opp) && (
+              <div className="mt-2">
+                <UsageRightsChip opp={opp} variant="dark" />
+              </div>
+            )}
           </div>
         </div>
 

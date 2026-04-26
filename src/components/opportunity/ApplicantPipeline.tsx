@@ -201,6 +201,19 @@ function SortableApplicantCard({ applicant }: { applicant: Applicant }) {
           >
             <Mail className="w-3 h-3" />
           </Button>
+          {applicant.status === "accepted" && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-xs gap-1 text-primary hover:text-primary"
+              onClick={handleGenerateMemo}
+              disabled={genLoading}
+              title="Generate Deal Memo PDF"
+            >
+              {genLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+              <span className="hidden sm:inline">Deal Memo</span>
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

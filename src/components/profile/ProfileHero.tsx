@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { calculateStatusFromCredits, type StatusResult } from "@/lib/statusEngine";
 import { AchievementBadges } from "./AchievementBadges";
 import { DegreeBadge, ConnectionPathDisplay } from "@/components/circle/DegreeBadge";
+import { SaveToShortlistButton } from "@/components/profile/SaveToShortlistButton";
 import { useConnectionDegree } from "@/hooks/useNetworkStats";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
@@ -364,6 +365,7 @@ export const ProfileHero = ({
                 <Briefcase className="h-3.5 w-3.5" />
                 Start Project
               </Button>
+              <SaveToShortlistButton creatorUserId={profile.user_id} />
               <Button variant="outline" size="sm" className="h-9" onClick={onShare}>
                 <Share2 className="h-3.5 w-3.5" />
               </Button>
@@ -379,6 +381,7 @@ export const ProfileHero = ({
               <Badge variant="secondary" className="py-2 px-4 text-xs flex-1 justify-center">
                 Match to connect & message
               </Badge>
+              <SaveToShortlistButton creatorUserId={profile.user_id} />
               <Button variant="outline" size="sm" className="h-9" onClick={onShare}>
                 <Share2 className="h-3.5 w-3.5" />
               </Button>

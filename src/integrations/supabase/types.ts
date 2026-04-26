@@ -10957,6 +10957,68 @@ export type Database = {
           },
         ]
       }
+      talent_shortlist_items: {
+        Row: {
+          added_at: string
+          creator_user_id: string
+          id: string
+          note: string | null
+          shortlist_id: string
+        }
+        Insert: {
+          added_at?: string
+          creator_user_id: string
+          id?: string
+          note?: string | null
+          shortlist_id: string
+        }
+        Update: {
+          added_at?: string
+          creator_user_id?: string
+          id?: string
+          note?: string | null
+          shortlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talent_shortlist_items_shortlist_id_fkey"
+            columns: ["shortlist_id"]
+            isOneToOne: false
+            referencedRelation: "talent_shortlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      talent_shortlists: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       time_entries: {
         Row: {
           created_at: string | null

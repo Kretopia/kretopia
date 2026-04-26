@@ -106,6 +106,15 @@ export const PostOpportunityDialog = ({
     platform_requirements: [] as string[],
     min_followers: "",
     content_deliverables: [] as string[],
+    // Usage rights
+    usage_type: "",
+    usage_territory: "",
+    usage_duration: "",
+    usage_exclusive: false,
+    // Structured barter
+    barter_gifted_value_usd: "",
+    barter_posting_deadline: "",
+    whitelisting_allowed: false,
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);

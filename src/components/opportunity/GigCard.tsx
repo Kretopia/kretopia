@@ -6,6 +6,7 @@ import {
   Briefcase, Handshake, ArrowRightLeft, MapPin, Clock,
   DollarSign, Zap, Target, GraduationCap, AlertTriangle,
   Gift, ArrowRight, Shield, User, Verified, Radar, Sparkles,
+  Globe, Lock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";

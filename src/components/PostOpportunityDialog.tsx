@@ -487,6 +487,41 @@ export const PostOpportunityDialog = ({
                       onChange={(e) => setFormData(prev => ({ ...prev, min_followers: e.target.value }))}
                     />
                   </div>
+
+                  {/* Structured barter terms */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="gifted-value" className="text-xs">Gifted Value (USD)</Label>
+                      <Input
+                        id="gifted-value"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="e.g., 250"
+                        value={formData.barter_gifted_value_usd}
+                        onChange={(e) => setFormData(prev => ({ ...prev, barter_gifted_value_usd: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="post-deadline" className="text-xs">Posting Deadline</Label>
+                      <Input
+                        id="post-deadline"
+                        type="date"
+                        value={formData.barter_posting_deadline}
+                        onChange={(e) => setFormData(prev => ({ ...prev, barter_posting_deadline: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border bg-background/50 px-3 py-2">
+                    <div>
+                      <p className="text-xs font-medium">Whitelisting / paid amplification</p>
+                      <p className="text-[10px] text-muted-foreground">Brand can boost creator's post as paid ads</p>
+                    </div>
+                    <Switch
+                      checked={formData.whitelisting_allowed}
+                      onCheckedChange={(v) => setFormData(prev => ({ ...prev, whitelisting_allowed: v }))}
+                    />
+                  </div>
                 </div>
               )}
 

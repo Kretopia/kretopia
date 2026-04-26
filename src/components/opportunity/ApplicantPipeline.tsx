@@ -99,6 +99,33 @@ function DroppableColumn({
 
 function SortableApplicantCard({ applicant }: { applicant: Applicant }) {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [genLoading, setGenLoading] = useState(false);
+
+  const handleGenerateMemo = async () => {
+    setGenLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-deal-memo", {
+        body: { application_id: applicant.id },
+      });
+      if (error) throw error;
+      if (data?.signed_url) {
+        window.open(data.signed_url, "_blank");
+        toast({ title: "Deal memo generated", description: "PDF opened in a new tab." });
+      } else {
+        throw new Error("No signed URL returned");
+      }
+    } catch (e: any) {
+      toast({
+        title: "Could not generate memo",
+        description: e.message || "Try again",
+        variant: "destructive",
+      });
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
   const {
     attributes,
     listeners,

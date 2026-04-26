@@ -89,6 +89,7 @@ export const ProfileContentSections = ({
       case "hire":
         return (
           <>
+            <AvailabilityCalendarSection userId={profile.user_id} isOwner={true} />
             <RateCardSection userId={profile.user_id} isOwner={true} />
             <WorkWithMeSection userId={profile.user_id} isOwner={true} creatorName={profile.full_name} />
           </>

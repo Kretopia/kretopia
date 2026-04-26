@@ -606,6 +606,54 @@ export const PostOpportunityDialog = ({
                 </div>
               </div>
 
+              {/* Usage Rights — applies to anything involving content (paid or barter) */}
+              <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-amber-300 bg-amber-500/5">
+                <div className="flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-300">
+                  <Shield className="h-4 w-4" />
+                  Usage Rights <span className="text-[10px] font-normal text-muted-foreground">(optional but recommended)</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground -mt-1">Tell creators exactly how their work will be used so they can price fairly.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-wide">Usage</Label>
+                    <Select value={formData.usage_type} onValueChange={(v) => setFormData(prev => ({ ...prev, usage_type: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {USAGE_TYPES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-wide">Territory</Label>
+                    <Select value={formData.usage_territory} onValueChange={(v) => setFormData(prev => ({ ...prev, usage_territory: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {USAGE_TERRITORIES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-wide">Duration</Label>
+                    <Select value={formData.usage_duration} onValueChange={(v) => setFormData(prev => ({ ...prev, usage_duration: v }))}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {USAGE_DURATIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border bg-background/50 px-3 py-2">
+                  <div>
+                    <p className="text-xs font-medium">Exclusive usage</p>
+                    <p className="text-[10px] text-muted-foreground">Creator can't work with competing brands during the term</p>
+                  </div>
+                  <Switch
+                    checked={formData.usage_exclusive}
+                    onCheckedChange={(v) => setFormData(prev => ({ ...prev, usage_exclusive: v }))}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="post-skills">Skills Needed (comma-separated)</Label>
                 <Input

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { calculateStatusFromCredits, type StatusResult } from "@/lib/statusEngine";
 import { AchievementBadges } from "./AchievementBadges";
 import { DegreeBadge, ConnectionPathDisplay } from "@/components/circle/DegreeBadge";
+import { SaveToShortlistButton } from "@/components/profile/SaveToShortlistButton";
 import { useConnectionDegree } from "@/hooks/useNetworkStats";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";

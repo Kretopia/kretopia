@@ -31,29 +31,30 @@ export const ProjectInviteAcceptBanner = ({ projectId, onAccepted }: ProjectInvi
     let cancelled = false;
 
     const load = async () => {
-      const { data } = await supabase
-        .from("project_collaborators")
-        .select("id, role, agent_role, invited_by, invited_at")
-        .eq("project_id", projectId)
-        .eq("user_id", user.id)
-        .eq("status", "pending")
-        .maybeSingle()
-        .then((r) => r, () => ({ data: null } as any))
-        .catch(() => ({ data: null } as any));
+      try {
+        const { data } = await supabase
+          .from("project_collaborators")
+          .select("id, role, agent_role, invited_by, invited_at")
+          .eq("project_id", projectId)
+          .eq("user_id", user.id)
+          .eq("status", "pending")
+          .maybeSingle();
 
-      if (cancelled || !data) {
-        if (!cancelled) setInvite(null);
-        return;
+        if (cancelled || !data) {
+          if (!cancelled) setInvite(null);
+          return;
+        }
+
+        const { data: inviter } = await supabase
+          .from("profiles")
+          .select("full_name, avatar_url")
+          .eq("user_id", data.invited_by)
+          .maybeSingle();
+
+        if (!cancelled) setInvite({ ...data, inviter });
+      } catch (e) {
+        console.error("Failed to load invite", e);
       }
-
-      const { data: inviter } = await supabase
-        .from("profiles")
-        .select("full_name, avatar_url")
-        .eq("user_id", data.invited_by)
-        .maybeSingle()
-        .catch(() => ({ data: null } as any));
-
-      if (!cancelled) setInvite({ ...data, inviter });
     };
 
     load();

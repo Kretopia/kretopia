@@ -191,7 +191,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <>
                   <Link to="/thrivepay" aria-label="ThrivePay">
                     <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
-                      <DollarSign className="h-[18px] w-[18px]" />
+                      <Wallet className="h-[18px] w-[18px]" />
                     </Button>
                   </Link>
                   <Link to="/messages" aria-label="Messages">

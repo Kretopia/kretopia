@@ -203,6 +203,9 @@ const ThriveDesk = () => {
         {/* Agent Mode Banner — visible when agent_mode is true */}
         <AgentModeBanner agentRole={agentRole} />
 
+        {/* Pending invite — accept inline */}
+        <ProjectInviteAcceptBanner projectId={projectId!} onAccepted={fetchProjectData} />
+
         {/* Credit Confirmation Banner */}
         <ConfirmCreditBanner
           projectId={projectId!}

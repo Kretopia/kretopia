@@ -132,8 +132,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">
-      <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2.5">
-        <BrandLogo size="md" showBeta linkToHome />
+      <div className="container mx-auto flex items-center justify-between gap-1 px-2 sm:px-4 py-2.5">
+        <div className="shrink-0">
+          <BrandLogo size="md" showBeta linkToHome />
+        </div>
 
         {/* ═══ PERSISTENT SEARCH BAR ═══ */}
         {!isLandingPage && (

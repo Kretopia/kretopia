@@ -163,25 +163,41 @@ const ThriveDesk = () => {
           />
         </header>
 
-        {/* Project Flow Timeline — visualizes lifecycle stages */}
-        <ProjectFlowTimeline
-          flow={flow}
-          onStageClick={(_stageId, tab) => setActiveTab(tab)}
-          onPinStage={handlePinStage}
-        />
+        {/* Project Flow Timeline + Next Step + Tab Bar — desktop only */}
+        <div className={cn(isMobile && "hidden")}>
+          <ProjectFlowTimeline
+            flow={flow}
+            onStageClick={(_stageId, tab) => setActiveTab(tab)}
+            onPinStage={handlePinStage}
+          />
+          <NextStepBar nextStep={flow.nextStep} onAction={goToTabWithIntent} />
+          <DeskTabBar
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            taskCount={tasks.filter(t => t.status !== 'done').length}
+            messageCount={messages.length}
+            workspaceType={project?.workspace_type ?? "general"}
+            dealType={project?.deal_type ?? "paid"}
+          />
+        </div>
 
-        {/* Persistent Next Step bar — drives users forward across all tabs */}
-        <NextStepBar nextStep={flow.nextStep} onAction={goToTabWithIntent} />
-
-        {/* Tab Bar */}
-        <DeskTabBar
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          taskCount={tasks.filter(t => t.status !== 'done').length}
-          messageCount={messages.length}
-          workspaceType={project?.workspace_type ?? "general"}
-          dealType={project?.deal_type ?? "paid"}
-        />
+        {/* Mobile back-to-hub bar — visible when drilled into a section */}
+        {isMobile && !isMobileHub && (
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-card/60 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs gap-1"
+              onClick={() => setActiveTab("today")}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Hub
+            </Button>
+            <span className="text-xs font-semibold capitalize text-muted-foreground truncate">
+              {activeTab.replace(/_/g, " ")}
+            </span>
+          </div>
+        )}
 
         {/* Agent Mode Banner — visible when agent_mode is true */}
         <AgentModeBanner agentRole={agentRole} />
@@ -195,21 +211,39 @@ const ThriveDesk = () => {
 
         {/* Content + Quick Panel */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
-          <DeskTabContent
-            activeTab={activeTab}
-            projectId={projectId!}
-            project={project}
-            messages={messages}
-            tasks={tasks}
-            files={files}
-            milestones={milestones}
-            collaborators={collaborators}
-            currentUserId={user?.id || ""}
-            userRole={userRole}
-            isPro={isPro}
-            agentRole={agentRole}
-            onUpdate={fetchProjectData}
-          />
+          {isMobileHub ? (
+            <MobileProjectHub
+              flow={flow}
+              project={project}
+              tasks={tasks}
+              messages={messages}
+              files={files}
+              milestones={milestones}
+              noteCount={flowExtras.noteCount}
+              approvalPendingCount={flowExtras.approvalPendingCount}
+              contractCount={flowExtras.contractCount}
+              invoiceCount={flowExtras.invoiceCount}
+              invoicePaidCount={flowExtras.invoicePaidCount}
+              onNavigateToTab={goToTabWithIntent}
+              onPinStage={handlePinStage}
+            />
+          ) : (
+            <DeskTabContent
+              activeTab={activeTab}
+              projectId={projectId!}
+              project={project}
+              messages={messages}
+              tasks={tasks}
+              files={files}
+              milestones={milestones}
+              collaborators={collaborators}
+              currentUserId={user?.id || ""}
+              userRole={userRole}
+              isPro={isPro}
+              agentRole={agentRole}
+              onUpdate={fetchProjectData}
+            />
+          )}
 
           {/* Quick Panel Toggle - Desktop only */}
           {!quickPanelOpen && (

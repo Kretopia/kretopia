@@ -38,7 +38,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const location = useLocation();
   const { toast } = useToast();
   const { subscriptionInfo } = useAuth();
-  const { mode, setMode } = useNavMode();
   const [isOpen, setIsOpen] = useState(false);
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [isManagerMode, setIsManagerMode] = useState(false);
@@ -103,16 +102,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
     navigate(path);
   };
 
-  // Force work mode for company accounts
-  useEffect(() => {
-    if (accountType === "company" && mode === "create") {
-      setMode("work");
-    }
-  }, [accountType, mode]);
-
   const isCompany = accountType === "company";
 
-  // Desktop nav items per mode
+  // Single, focused desktop nav — mirrors mobile bottom nav
   const desktopNavItems = isCompany
     ? [
         { path: "/desk", icon: FolderKanban, label: "Desk" },
@@ -120,16 +112,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/talent-finder", icon: Search, label: "Talent" },
         { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
       ]
-    : mode === "create"
-    ? [
+    : [
         { path: "/", icon: Home, label: "Home" },
+        { path: "/desk", icon: FolderKanban, label: "Desk" },
         { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-      ]
-    : [
-        { path: "/desk", icon: FolderKanban, label: "Desk" },
-        { path: "/credits", icon: Trophy, label: "Credits" },
-        { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
+        { path: "/fund", icon: Rocket, label: "Fund" },
       ];
 
   const [searchOpen, setSearchOpen] = useState(false);

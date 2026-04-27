@@ -60,10 +60,10 @@ const BottomNav = memo(() => {
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
-    if (path === "/nearby") return location.pathname === "/nearby";
     if (path === "/circle") return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
     if (path === "/opportunities") return location.pathname === "/opportunities" || location.pathname === "/opportunity-dashboard";
     if (path === "/desk") return location.pathname.startsWith("/desk");
+    if (path === "/credits") return location.pathname.startsWith("/credits");
     return location.pathname === path;
   };
 

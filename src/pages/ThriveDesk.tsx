@@ -34,6 +34,8 @@ const ThriveDesk = () => {
   const [activeTab, setActiveTab] = useState("today");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
+  const isMobile = useIsMobile();
+  const isMobileHub = isMobile && activeTab === "today";
 
   const agentRole = useAgentRole(project, user?.id || "");
 

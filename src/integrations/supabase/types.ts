@@ -8231,7 +8231,7 @@ export type Database = {
           accepted_at: string | null
           agent_role: string | null
           created_at: string
-          email: string
+          email: string | null
           id: string
           invited_at: string
           invited_by: string
@@ -8245,7 +8245,7 @@ export type Database = {
           accepted_at?: string | null
           agent_role?: string | null
           created_at?: string
-          email: string
+          email?: string | null
           id?: string
           invited_at?: string
           invited_by: string
@@ -8259,7 +8259,7 @@ export type Database = {
           accepted_at?: string | null
           agent_role?: string | null
           created_at?: string
-          email?: string
+          email?: string | null
           id?: string
           invited_at?: string
           invited_by?: string

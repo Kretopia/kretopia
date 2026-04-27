@@ -5,21 +5,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { UserPlus, Mail, Loader2, Users } from "lucide-react";
+import { UserPlus, Mail, Loader2, Users, Briefcase, Sparkles, Handshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface InviteCollaboratorDialogProps {
   projectId: string;
   onInvite: () => void;
 }
 
+type InviteRole = "client" | "creative" | "collaborator";
+
+const ROLE_OPTIONS: { value: InviteRole; label: string; description: string; icon: typeof Briefcase }[] = [
+  { value: "creative", label: "Creative", description: "Doing the work", icon: Sparkles },
+  { value: "client", label: "Client", description: "Paying / approving", icon: Briefcase },
+  { value: "collaborator", label: "Collaborator", description: "Helping out", icon: Handshake },
+];
+
 export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollaboratorDialogProps) => {
   const [searchInput, setSearchInput] = useState("");
   const [connectedUsers, setConnectedUsers] = useState<any[]>([]);
   const [sending, setSending] = useState(false);
   const [open, setOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<InviteRole>("creative");
   const { toast } = useToast();
 
   // Filter connected users based on search

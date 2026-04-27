@@ -201,6 +201,16 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
               </Select>
             )}
             <Button
+              type="button"
+              onClick={() => setVoiceOpen(true)}
+              variant="outline"
+              size="icon"
+              className="shrink-0"
+              aria-label="Voice to task"
+            >
+              <Mic className="h-4 w-4" />
+            </Button>
+            <Button
               onClick={handleAddTask}
               disabled={adding || !newTask.trim()}
               size="icon"

@@ -45,6 +45,7 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
   const [adding, setAdding] = useState(false);
   const [assignTo, setAssignTo] = useState<string>("unassigned");
   const [optimisticTasks, setOptimisticTasks] = useState<OptimisticTask[]>(tasks);
+  const [voiceOpen, setVoiceOpen] = useState(false);
 
   useEffect(() => {
     setOptimisticTasks(tasks);

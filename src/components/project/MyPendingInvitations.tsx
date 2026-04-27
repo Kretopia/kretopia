@@ -177,6 +177,11 @@ export const MyPendingInvitations = () => {
                 <p className="text-sm font-semibold text-primary truncate">
                   {invitation.projects?.title}
                 </p>
+                {invitation.agent_role && (
+                  <Badge variant="secondary" className="text-xs capitalize">
+                    Role: {invitation.agent_role === 'member' ? 'Collaborator' : invitation.agent_role}
+                  </Badge>
+                )}
                 {invitation.projects?.description && (
                   <p className="text-xs text-muted-foreground line-clamp-2">
                     {invitation.projects.description}

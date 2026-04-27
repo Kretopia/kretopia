@@ -8,6 +8,7 @@ import { WorkspaceQuickPanel } from "@/components/project/WorkspaceQuickPanel";
 import { DeskTabBar } from "@/components/project/DeskTabBar";
 import { ConfirmCreditBanner } from "@/components/project/ConfirmCreditBanner";
 import { AgentModeBanner } from "@/components/project/AgentModeBanner";
+import { ProjectInviteAcceptBanner } from "@/components/project/ProjectInviteAcceptBanner";
 import { DeskTabContent } from "@/components/project/DeskTabContent";
 import { useAgentRole } from "@/hooks/useAgentRole";
 import { DeskAILauncher } from "@/components/project/ai/DeskAILauncher";
@@ -201,6 +202,9 @@ const ThriveDesk = () => {
 
         {/* Agent Mode Banner — visible when agent_mode is true */}
         <AgentModeBanner agentRole={agentRole} />
+
+        {/* Pending invite — accept inline */}
+        <ProjectInviteAcceptBanner projectId={projectId!} onAccepted={fetchProjectData} />
 
         {/* Credit Confirmation Banner */}
         <ConfirmCreditBanner

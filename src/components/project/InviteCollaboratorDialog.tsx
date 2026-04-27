@@ -5,21 +5,31 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { UserPlus, Mail, Loader2, Users } from "lucide-react";
+import { UserPlus, Mail, Loader2, Users, Briefcase, Sparkles, Handshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface InviteCollaboratorDialogProps {
   projectId: string;
   onInvite: () => void;
 }
 
+type InviteRole = "client" | "creative" | "collaborator";
+
+const ROLE_OPTIONS: { value: InviteRole; label: string; description: string; icon: typeof Briefcase }[] = [
+  { value: "creative", label: "Creative", description: "Doing the work", icon: Sparkles },
+  { value: "client", label: "Client", description: "Paying / approving", icon: Briefcase },
+  { value: "collaborator", label: "Collaborator", description: "Helping out", icon: Handshake },
+];
+
 export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollaboratorDialogProps) => {
   const [searchInput, setSearchInput] = useState("");
   const [connectedUsers, setConnectedUsers] = useState<any[]>([]);
   const [sending, setSending] = useState(false);
   const [open, setOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<InviteRole>("creative");
   const { toast } = useToast();
 
   // Filter connected users based on search
@@ -133,6 +143,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           email: emailToInvite.toLowerCase(),
           invited_by: user.id,
           role: 'member',
+          agent_role: selectedRole,
           status: 'pending'
         });
 
@@ -204,6 +215,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           email: `user-${userId}@platform.invite`,
           invited_by: user.id,
           role: 'member',
+          agent_role: selectedRole,
           status: 'pending'
         });
 
@@ -265,6 +277,34 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         </DialogHeader>
         
         <div className="space-y-4">
+          {/* Role picker */}
+          <div className="space-y-2">
+            <Label>Invite as</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {ROLE_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                const active = selectedRole === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setSelectedRole(opt.value)}
+                    className={cn(
+                      "flex flex-col items-center gap-1 rounded-lg border px-2 py-3 text-center transition-colors",
+                      active
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-accent"
+                    )}
+                  >
+                    <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
+                    <span className="text-xs font-medium">{opt.label}</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight">{opt.description}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="search">Search or Enter Email</Label>
             <div className="relative">

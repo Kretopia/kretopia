@@ -313,6 +313,14 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
           )}
         </CardContent>
       </Card>
+      <VoiceTaskCapture
+        open={voiceOpen}
+        onOpenChange={setVoiceOpen}
+        projectId={projectId}
+        currentUserId={currentUserId}
+        collaborators={collaborators}
+        onTaskCreated={onTasksChanged}
+      />
     </TooltipProvider>
   );
 };

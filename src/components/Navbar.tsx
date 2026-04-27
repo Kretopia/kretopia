@@ -249,12 +249,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   ) : (
                     /* ====== UNIFIED MENU (single nav) ====== */
                     <>
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>
                       <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-
-                      <Separator className="my-3" />
-
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Tools</p>
                       <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
                       <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
@@ -263,7 +258,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <Separator className="my-3" />
 
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
                       <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} />
                       <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
                       {isManagerMode && (
@@ -286,15 +280,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <span className="text-[10px] text-muted-foreground">Invite creatives, earn rewards</span>
                     </div>
                   </Button>
-
-                  {/* Circles section — hidden by default. Only existing members (myCirclesCount > 0) see it. */}
-                  {myCirclesCount > 0 && (
-                    <>
-                      <Separator className="my-3" />
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Circles</p>
-                      <MenuButton icon={MessageSquareMore} label={`My Circles (${myCirclesCount})`} onClick={() => handleNavigation("/circles?tab=mine")} />
-                    </>
-                  )}
 
                   <Separator className="my-3" />
 

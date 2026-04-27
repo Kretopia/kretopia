@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, Briefcase, LayoutDashboard, Wallet, User, Home, MapPin, UserSearch } from "lucide-react";
+import { Sparkles, Briefcase, LayoutDashboard, Wallet, Home, UserSearch, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useRef, useState, useEffect } from "react";
 import { useNavMode, NavMode } from "@/hooks/useNavMode";
@@ -8,16 +8,14 @@ import { useAuth } from "@/hooks/useAuth";
 
 const CREATE_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
-  { path: "/nearby", icon: MapPin, label: "Discover" },
   { path: "/circle", icon: Sparkles, label: "Match" },
   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
 ];
 
 const WORK_ITEMS = [
   { path: "/desk", icon: LayoutDashboard, label: "Desk" },
-  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+  { path: "/credits", icon: Award, label: "Credits" },
   { path: "/thrivepay", icon: Wallet, label: "Pay" },
-  { path: "/profile", icon: User, label: "Profile" },
 ];
 
 const COMPANY_ITEMS = [
@@ -62,10 +60,10 @@ const BottomNav = memo(() => {
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
-    if (path === "/nearby") return location.pathname === "/nearby";
     if (path === "/circle") return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
     if (path === "/opportunities") return location.pathname === "/opportunities" || location.pathname === "/opportunity-dashboard";
     if (path === "/desk") return location.pathname.startsWith("/desk");
+    if (path === "/credits") return location.pathname.startsWith("/credits");
     return location.pathname === path;
   };
 

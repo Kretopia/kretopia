@@ -123,15 +123,13 @@ const Navbar = memo(({ user }: NavbarProps) => {
     : mode === "create"
     ? [
         { path: "/", icon: Home, label: "Home" },
-        { path: "/nearby", icon: MapPin, label: "Discover" },
         { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
       ]
     : [
         { path: "/desk", icon: FolderKanban, label: "Desk" },
-        { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+        { path: "/credits", icon: Trophy, label: "Credits" },
         { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
-        { path: "/profile", icon: User, label: "Profile" },
       ];
 
   const [searchOpen, setSearchOpen] = useState(false);
@@ -309,9 +307,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Explore</p>
-                      <MenuButton icon={Globe} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
                       <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} />
-                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
+                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />
+                      <MenuButton icon={Rocket} label="Thrive Fund" onClick={() => handleNavigation("/fund")} />
                     </>
                   ) : (
                     /* ====== WORK MODE MENU ====== */
@@ -355,7 +353,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <Separator className="my-3" />
 
                   <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">ThriveIN</p>
-                  <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />
                   <MenuButton icon={Globe} label="About Us" onClick={() => handleNavigation("/about")} />
                   <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} />
 

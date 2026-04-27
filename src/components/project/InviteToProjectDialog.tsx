@@ -54,21 +54,26 @@ export const InviteToProjectDialog = ({
             .order("created_at", { ascending: false }),
           supabase
             .from("project_collaborators")
-            .select("project_id, projects!inner(id, title, status, created_at)")
+            .select("project_id")
             .eq("user_id", user.id)
             .eq("status", "accepted"),
         ]);
 
-        const owned = ownedRes.data || [];
-        const collab = (collabRes.data || []).map((r: any) => r.projects).filter(Boolean);
-        const merged = [...owned];
-        const seen = new Set(owned.map((p: any) => p.id));
-        for (const p of collab) {
-          if (!seen.has(p.id)) {
-            merged.push(p);
-            seen.add(p.id);
-          }
+        const owned: any[] = ownedRes.data || [];
+        const ownedIds = new Set(owned.map((p) => p.id));
+        const collabIds = ((collabRes.data || []) as any[])
+          .map((r) => r.project_id)
+          .filter((id) => id && !ownedIds.has(id));
+
+        let collabProjects: any[] = [];
+        if (collabIds.length > 0) {
+          const { data: cp } = await supabase
+            .from("projects")
+            .select("id, title, status, created_at")
+            .in("id", collabIds);
+          collabProjects = cp || [];
         }
+        const merged: any[] = [...owned, ...collabProjects];
 
         const projectIds = merged.map((p) => p.id);
         let existing = new Set<string>();

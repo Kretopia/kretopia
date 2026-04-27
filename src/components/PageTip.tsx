@@ -16,9 +16,13 @@ export function PageTip({ id, title, message, className }: PageTipProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Show after a short delay if not dismissed
+    // Show once ever — mark as seen on first display so it never re-appears,
+    // even if the user navigates away without explicitly dismissing it.
     if (localStorage.getItem(storageKey) !== "true") {
-      const t = setTimeout(() => setVisible(true), 800);
+      const t = setTimeout(() => {
+        setVisible(true);
+        try { localStorage.setItem(storageKey, "true"); } catch {}
+      }, 800);
       return () => clearTimeout(t);
     }
   }, [storageKey]);

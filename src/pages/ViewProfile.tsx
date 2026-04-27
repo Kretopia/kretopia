@@ -30,6 +30,8 @@ import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { ShareUnclaimedProfileDialog } from "@/components/profile/ShareUnclaimedProfileDialog";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
+import { InviteToProjectDialog } from "@/components/project/InviteToProjectDialog";
+import { FolderPlus } from "lucide-react";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import { SEO } from "@/components/SEO";
 import CreatorEPK from "./CreatorEPK";

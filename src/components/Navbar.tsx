@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
-  DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2, Rocket,
+  DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
   MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus
 } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
@@ -191,7 +191,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 <>
                   <Link to="/thrivepay" aria-label="ThrivePay">
                     <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
-                      <DollarSign className="h-[18px] w-[18px]" />
+                      <Wallet className="h-[18px] w-[18px]" />
                     </Button>
                   </Link>
                   <Link to="/messages" aria-label="Messages">
@@ -234,7 +234,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     /* ====== UNIFIED MENU (single nav) ====== */
                     <>
                       <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-                      <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} />
+                      <MenuButton icon={Wallet} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
                       <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />

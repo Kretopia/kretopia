@@ -206,13 +206,13 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         .eq('id', projectId)
         .single();
 
-      // For existing users, use a placeholder email since we have their user_id
+      // Existing users are linked by user_id; email is optional
       const { error } = await supabase
         .from('project_collaborators')
         .insert({
           project_id: projectId,
           user_id: userId,
-          email: `user-${userId}@platform.invite`,
+          email: null,
           invited_by: user.id,
           role: 'member',
           agent_role: selectedRole,
@@ -225,7 +225,6 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       console.log('Invoking send-project-invitation function for user:', userId);
       const { data: emailData, error: emailError } = await supabase.functions.invoke('send-project-invitation', {
         body: {
-          email: `user-${userId}@platform.invite`,
           projectTitle: project?.title || 'Untitled Project',
           projectId,
           inviterName: profile?.full_name || 'A ThriveIN user',

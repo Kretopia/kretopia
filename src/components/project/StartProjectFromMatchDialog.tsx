@@ -258,8 +258,7 @@ export function StartProjectFromMatchDialog({
         .eq('user_id', user.id)
         .single();
 
-      // Auto-invite the matched user as collaborator
-      // Use get_user_email RPC (client-safe) instead of auth.admin which doesn't work client-side
+      // Auto-invite the matched user as collaborator (linked by user_id, email optional)
       const { data: matchedUserEmail } = await supabase.rpc('get_user_email', { _user_id: matchedUser.id });
 
       const { error: inviteError } = await supabase
@@ -267,7 +266,7 @@ export function StartProjectFromMatchDialog({
         .insert({
           project_id: project.id,
           user_id: matchedUser.id,
-          email: matchedUserEmail || `user-${matchedUser.id}@platform.invite`,
+          email: matchedUserEmail || null,
           invited_by: user.id,
           role: 'member',
           status: 'pending',

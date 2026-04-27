@@ -77,12 +77,12 @@ export const InviteToProjectDialog = ({
         const projectIds = merged.map((p) => p.id);
         let existing = new Set<string>();
         if (projectIds.length > 0) {
-          const { data: rows } = await supabase
+          const { data: rows } = await sb
             .from("project_collaborators")
             .select("project_id, status")
             .eq("user_id", recipientUserId)
             .in("project_id", projectIds);
-          existing = new Set((rows || []).map((r: any) => r.project_id));
+          existing = new Set(((rows || []) as any[]).map((r) => r.project_id));
         }
 
         if (!cancelled) {

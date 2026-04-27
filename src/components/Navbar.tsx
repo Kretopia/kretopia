@@ -123,15 +123,13 @@ const Navbar = memo(({ user }: NavbarProps) => {
     : mode === "create"
     ? [
         { path: "/", icon: Home, label: "Home" },
-        { path: "/nearby", icon: MapPin, label: "Discover" },
         { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
       ]
     : [
         { path: "/desk", icon: FolderKanban, label: "Desk" },
-        { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+        { path: "/credits", icon: Trophy, label: "Credits" },
         { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
-        { path: "/profile", icon: User, label: "Profile" },
       ];
 
   const [searchOpen, setSearchOpen] = useState(false);

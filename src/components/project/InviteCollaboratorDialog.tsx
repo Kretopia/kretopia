@@ -277,6 +277,34 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         </DialogHeader>
         
         <div className="space-y-4">
+          {/* Role picker */}
+          <div className="space-y-2">
+            <Label>Invite as</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {ROLE_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                const active = selectedRole === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setSelectedRole(opt.value)}
+                    className={cn(
+                      "flex flex-col items-center gap-1 rounded-lg border px-2 py-3 text-center transition-colors",
+                      active
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:bg-accent"
+                    )}
+                  >
+                    <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
+                    <span className="text-xs font-medium">{opt.label}</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight">{opt.description}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="search">Search or Enter Email</Label>
             <div className="relative">

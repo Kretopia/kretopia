@@ -572,7 +572,7 @@ export const UnifiedHome = () => {
           <WeeklyIntentCard className="mb-4" />
           <NewMemberStarterCard className="mb-4" />
           <InviteCircleCard variant="home" className="mb-4" />
-          <StartCircleNudgeCard className="mb-4" />
+          {/* StartCircleNudgeCard hidden — Circles paused on discovery surfaces (Pass A) */}
 
           <PushNotificationPrompt trigger="default" className="mb-4" />
         </div>

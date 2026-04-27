@@ -232,7 +232,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
             await supabase.from("project_collaborators").insert({
               project_id: project.id,
               user_id: person.user_id,
-              email: person.email || `user-${person.user_id}@platform.invite`,
+              email: person.email || null,
               invited_by: user.id,
               role: "member",
               status: "pending",

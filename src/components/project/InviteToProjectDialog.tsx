@@ -119,7 +119,7 @@ export const InviteToProjectDialog = ({
       const { error } = await supabase.from("project_collaborators").insert({
         project_id: selectedProjectId,
         user_id: recipientUserId,
-        email: `user-${recipientUserId}@platform.invite`,
+        email: null,
         invited_by: user.id,
         role: "member",
         agent_role: selectedRole,
@@ -131,7 +131,6 @@ export const InviteToProjectDialog = ({
       await supabase.functions
         .invoke("send-project-invitation", {
           body: {
-            email: `user-${recipientUserId}@platform.invite`,
             projectTitle: project?.title || "Untitled Project",
             projectId: selectedProjectId,
             inviterName: profile?.full_name || "A ThriveIN user",

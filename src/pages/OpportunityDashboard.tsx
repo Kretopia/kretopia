@@ -394,7 +394,7 @@ Return ONLY valid JSON array:
             .insert({
               project_id: project.id,
               user_id: applicant.applicant_id,
-              email: `user-${applicant.applicant_id}@platform.invite`,
+              email: null,
               invited_by: user.id,
               role: 'member',
               status: 'pending',

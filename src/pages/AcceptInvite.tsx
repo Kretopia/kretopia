@@ -22,94 +22,54 @@ const AcceptInvite = () => {
       try {
         // If not authenticated, redirect to auth with this URL as redirect
         if (!user) {
-          const currentUrl = `/accept-invite/${projectId}?email=${encodeURIComponent(email || '')}`;
+          const qs = email ? `?email=${encodeURIComponent(email)}` : '';
+          const currentUrl = `/accept-invite/${projectId}${qs}`;
           navigate(`/auth?redirect=${encodeURIComponent(currentUrl)}`);
           return;
         }
 
-        // Check if this is a user-specific invitation (from in-app notification)
-        // Format: user-{userId}@platform.invite
-        const isUserInvite = email?.startsWith('user-') && email?.endsWith('@platform.invite');
-        
-        if (isUserInvite) {
-          // Extract user ID from the email format
-          const invitedUserId = email.replace('user-', '').replace('@platform.invite', '');
-          
-          // Verify current user matches the invited user
-          if (user.id !== invitedUserId) {
-            toast({
-              title: "Wrong account",
-              description: "Please log in with the account that received the invitation.",
-              variant: "destructive",
-            });
-            navigate("/circle");
-            return;
-          }
-          
-          // Find invitation by user_id (could be pending or with this email)
-          const { data: invitation, error: inviteError } = await supabase
-            .from('project_collaborators')
-            .select('*')
-            .eq('project_id', projectId)
-            .or(`user_id.eq.${user.id},email.eq.${email}`)
-            .maybeSingle();
+        // Legacy placeholder format (kept for backward compatibility with old notifications)
+        const isLegacyUserInvite = email?.startsWith('user-') && email?.endsWith('@platform.invite');
+        const legacyInvitedUserId = isLegacyUserInvite
+          ? email!.replace('user-', '').replace('@platform.invite', '')
+          : null;
 
-          if (inviteError) throw inviteError;
+        if (legacyInvitedUserId && user.id !== legacyInvitedUserId) {
+          toast({
+            title: "Wrong account",
+            description: "Please log in with the account that received the invitation.",
+            variant: "destructive",
+          });
+          navigate("/circle");
+          return;
+        }
 
-          if (invitation) {
-            if (invitation.status === 'pending') {
-              // Accept the invitation
-              const { error: updateError } = await supabase
-                .from('project_collaborators')
-                .update({
-                  status: 'accepted',
-                  user_id: user.id,
-                  accepted_at: new Date().toISOString()
-                })
-                .eq('id', invitation.id);
+        // Look up the invitation. Prefer matching by user_id (new flow); fall back to email.
+        let invitationQuery = supabase
+          .from('project_collaborators')
+          .select('*')
+          .eq('project_id', projectId);
 
-              if (updateError) throw updateError;
-
-              toast({
-                title: "Welcome to the project!",
-                description: "You've successfully joined the project team.",
-              });
-            } else if (invitation.status === 'accepted') {
-              // Already accepted - just redirect
-              toast({
-                title: "Already a member",
-                description: "You're already part of this project.",
-              });
-            }
-          } else {
-            toast({
-              title: "Invitation not found",
-              description: "This invitation may have expired or been removed.",
-              variant: "destructive",
-            });
-            navigate("/circle");
-            return;
-          }
+        if (email && !isLegacyUserInvite) {
+          // Email-based invite: match by either user_id or email
+          invitationQuery = invitationQuery.or(`user_id.eq.${user.id},email.eq.${email.toLowerCase()}`);
         } else {
-          // Regular email-based invitation flow
-          const { data: invitation, error: inviteError } = await supabase
-            .from('project_collaborators')
-            .select('*')
-            .eq('project_id', projectId)
-            .eq('email', email?.toLowerCase())
-            .eq('status', 'pending')
-            .maybeSingle();
+          // In-app invite (no email param OR legacy placeholder): match by user_id
+          invitationQuery = invitationQuery.eq('user_id', user.id);
+        }
 
-          if (inviteError) throw inviteError;
+        const { data: invitation, error: inviteError } = await invitationQuery.maybeSingle();
 
-          if (invitation) {
-            // Update the invitation to accepted and link to user
+        if (inviteError) throw inviteError;
+
+        if (invitation) {
+          if (invitation.status === 'pending') {
             const { error: updateError } = await supabase
               .from('project_collaborators')
               .update({
                 status: 'accepted',
                 user_id: user.id,
-                accepted_at: new Date().toISOString()
+                accepted_at: new Date().toISOString(),
               })
               .eq('id', invitation.id);
 
@@ -120,27 +80,27 @@ const AcceptInvite = () => {
               description: "You've successfully joined the project team.",
             });
           } else {
-            // Check if user already has access
-            const { data: existingAccess } = await supabase
-              .from('project_collaborators')
-              .select('*')
-              .eq('project_id', projectId)
-              .eq('user_id', user.id)
-              .eq('status', 'accepted')
-              .maybeSingle();
+            toast({
+              title: "Already a member",
+              description: "You're already part of this project.",
+            });
+          }
+        } else {
+          // Check if user already has access
+          const { data: existingAccess } = await supabase
+            .from('project_collaborators')
+            .select('id')
+            .eq('project_id', projectId)
+            .eq('user_id', user.id)
+            .eq('status', 'accepted')
+            .maybeSingle();
 
-            if (existingAccess) {
-              toast({
-                title: "Already a member",
-                description: "You're already part of this project.",
-              });
-            } else {
-              toast({
-                title: "Invitation not found",
-                description: "This invitation may have expired or been used already.",
-                variant: "destructive",
-              });
-            }
+          if (!existingAccess) {
+            toast({
+              title: "Invitation not found",
+              description: "This invitation may have expired or been used already.",
+              variant: "destructive",
+            });
           }
         }
 
@@ -159,7 +119,7 @@ const AcceptInvite = () => {
       }
     };
 
-    if (projectId && email) {
+    if (projectId) {
       processInvitation();
     } else {
       toast({

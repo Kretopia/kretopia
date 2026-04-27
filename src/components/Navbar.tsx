@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2, Rocket,
-  MessageSquareMore, MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus
+  MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus
 } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { cn } from "@/lib/utils";
@@ -41,7 +41,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [accountType, setAccountType] = useState<"individual" | "company">("individual");
   const [isManagerMode, setIsManagerMode] = useState(false);
-  const [myCirclesCount, setMyCirclesCount] = useState(0);
   const isLandingPage = location.pathname === "/" && !user;
   const isPro = subscriptionInfo.subscribed;
   const tierName = getTierDisplayName(subscriptionInfo.tier as any);
@@ -58,16 +57,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
       if (data?.account_type) setAccountType(data.account_type);
       if (data?.is_manager_mode) setIsManagerMode(true);
     }).catch(err => console.warn('[Navbar] Error loading profile:', err));
-
-    // My Circles count — gates the "My Circles" menu item
-    Promise.resolve(
-      supabase
-        .from("spark_room_members")
-        .select("room_id", { count: "exact", head: true })
-        .eq("user_id", user.id)
-    ).then(({ count }) => {
-      setMyCirclesCount(count || 0);
-    }).catch(err => console.warn('[Navbar] Error loading circles count:', err));
   }, [user?.id]);
 
   const handleSignOut = async () => {
@@ -132,8 +121,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">
-      <div className="container mx-auto flex items-center justify-between px-3 sm:px-4 py-2.5">
-        <BrandLogo size="md" showBeta linkToHome />
+      <div className="container mx-auto flex items-center justify-between gap-1 px-2 sm:px-4 py-2.5">
+        <div className="shrink-0">
+          <BrandLogo size="md" showBeta linkToHome />
+        </div>
 
         {/* ═══ PERSISTENT SEARCH BAR ═══ */}
         {!isLandingPage && (
@@ -187,25 +178,25 @@ const Navbar = memo(({ user }: NavbarProps) => {
           </div>
         )}
 
-        <div className="flex items-center gap-1 sm:gap-3 ml-auto">
+        <div className="flex items-center gap-0.5 sm:gap-2 ml-auto shrink-0">
           {!isLandingPage && (
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center">
               {/* Mobile search toggle - only show for signed-in users */}
               {user && (
-                <Button variant="ghost" size="icon" className="h-9 w-9 sm:hidden shrink-0" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
-                  <Search className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 sm:hidden shrink-0" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
+                  <Search className="h-[18px] w-[18px]" />
                 </Button>
               )}
               {user && (
                 <>
                   <Link to="/thrivepay" aria-label="ThrivePay">
-                    <Button variant="ghost" size="icon" className="h-9 w-9 relative">
-                      <DollarSign className="h-5 w-5" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
+                      <DollarSign className="h-[18px] w-[18px]" />
                     </Button>
                   </Link>
                   <Link to="/messages" aria-label="Messages">
-                    <Button variant="ghost" size="icon" className="h-9 w-9 relative">
-                      <MessageCircle className="h-5 w-5" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
+                      <MessageCircle className="h-[18px] w-[18px]" />
                     </Button>
                   </Link>
                   <NotificationCenter />
@@ -219,8 +210,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
           {user && !isLandingPage ? (
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10">
-                  <Menu className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                  <Menu className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[85vw] sm:w-[400px]">
@@ -233,12 +224,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   {isCompany ? (
                     /* ====== COMPANY MENU ====== */
                     <>
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Company</p>
                       <MenuButton icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-
-                      <Separator className="my-3" />
-
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Hiring</p>
                       <MenuButton icon={Search} label="Find Talent" onClick={() => handleNavigation("/talent-finder")} />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
@@ -247,12 +233,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   ) : (
                     /* ====== UNIFIED MENU (single nav) ====== */
                     <>
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>
                       <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-
-                      <Separator className="my-3" />
-
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Tools</p>
                       <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
                       <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
@@ -261,7 +242,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <Separator className="my-3" />
 
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
                       <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} />
                       <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
                       {isManagerMode && (
@@ -285,25 +265,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     </div>
                   </Button>
 
-                  {/* Circles section — hidden by default. Only existing members (myCirclesCount > 0) see it. */}
-                  {myCirclesCount > 0 && (
-                    <>
-                      <Separator className="my-3" />
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Circles</p>
-                      <MenuButton icon={MessageSquareMore} label={`My Circles (${myCirclesCount})`} onClick={() => handleNavigation("/circles?tab=mine")} />
-                    </>
-                  )}
-
                   <Separator className="my-3" />
 
-                  <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">ThriveIN</p>
                   <MenuButton icon={Globe} label="About Us" onClick={() => handleNavigation("/about")} />
                   <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} />
 
                   <Separator className="my-3" />
 
-                  {/* Always visible — Account section */}
-                  <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Account</p>
+                  {/* Account section */}
                   <Button
                     variant="ghost"
                     className="justify-start gap-3 h-auto w-full py-3"
@@ -346,7 +315,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   {user?.id === 'ef429714-ea32-4f08-a4f9-ef0226f1804b' && (
                     <>
                       <Separator className="my-3" />
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Admin</p>
                       <MenuButton icon={Shield} label="Admin Panel" onClick={() => handleNavigation("/admin")} />
                     </>
                   )}

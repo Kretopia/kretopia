@@ -189,25 +189,25 @@ const Navbar = memo(({ user }: NavbarProps) => {
           </div>
         )}
 
-        <div className="flex items-center gap-1 sm:gap-3 ml-auto">
+        <div className="flex items-center gap-0.5 sm:gap-2 ml-auto shrink-0">
           {!isLandingPage && (
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center">
               {/* Mobile search toggle - only show for signed-in users */}
               {user && (
-                <Button variant="ghost" size="icon" className="h-9 w-9 sm:hidden shrink-0" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
-                  <Search className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 sm:hidden shrink-0" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
+                  <Search className="h-[18px] w-[18px]" />
                 </Button>
               )}
               {user && (
                 <>
                   <Link to="/thrivepay" aria-label="ThrivePay">
-                    <Button variant="ghost" size="icon" className="h-9 w-9 relative">
-                      <DollarSign className="h-5 w-5" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
+                      <DollarSign className="h-[18px] w-[18px]" />
                     </Button>
                   </Link>
                   <Link to="/messages" aria-label="Messages">
-                    <Button variant="ghost" size="icon" className="h-9 w-9 relative">
-                      <MessageCircle className="h-5 w-5" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
+                      <MessageCircle className="h-[18px] w-[18px]" />
                     </Button>
                   </Link>
                   <NotificationCenter />

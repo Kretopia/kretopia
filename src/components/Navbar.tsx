@@ -283,8 +283,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                   <Separator className="my-3" />
 
-                  {/* Always visible — Account section */}
-                  <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Account</p>
+                  {/* Account section */}
                   <Button
                     variant="ghost"
                     className="justify-start gap-3 h-auto w-full py-3"

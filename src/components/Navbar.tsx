@@ -326,7 +326,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   {user?.id === 'ef429714-ea32-4f08-a4f9-ef0226f1804b' && (
                     <>
                       <Separator className="my-3" />
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Admin</p>
                       <MenuButton icon={Shield} label="Admin Panel" onClick={() => handleNavigation("/admin")} />
                     </>
                   )}

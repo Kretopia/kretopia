@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import {
   CheckSquare,
   MessageCircle,
@@ -9,10 +9,12 @@ import {
   Wallet,
   ChevronRight,
   Sparkles,
+  Mic,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROJECT_FLOW_STAGES, type ProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
+import { VoiceTaskCapture } from "@/components/project/mobile/VoiceTaskCapture";
 
 interface MobileProjectHubProps {
   flow: ProjectFlow;
@@ -26,6 +28,10 @@ interface MobileProjectHubProps {
   contractCount: number;
   invoiceCount: number;
   invoicePaidCount: number;
+  projectId: string;
+  currentUserId: string;
+  collaborators?: Array<{ id: string; full_name: string; avatar_url?: string | null }>;
+  onTasksChanged?: () => void;
   onNavigateToTab: (tab: string, intent?: string) => void;
   onPinStage?: (stageId: ProjectFlowStageId | null) => void;
 }

@@ -30,6 +30,8 @@ import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { ShareUnclaimedProfileDialog } from "@/components/profile/ShareUnclaimedProfileDialog";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
 import { StartProjectFromMatchDialog } from "@/components/project/StartProjectFromMatchDialog";
+import { InviteToProjectDialog } from "@/components/project/InviteToProjectDialog";
+import { FolderPlus } from "lucide-react";
 import { MediaPlayerModal } from "@/components/profile/MediaPlayerModal";
 import { SEO } from "@/components/SEO";
 import CreatorEPK from "./CreatorEPK";
@@ -106,6 +108,7 @@ const ViewProfile = () => {
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [isStartProjectOpen, setIsStartProjectOpen] = useState(false);
+  const [isInviteToProjectOpen, setIsInviteToProjectOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(searchParams.get('showClaim') === 'true');
   const [showShareToChat, setShowShareToChat] = useState(false);
@@ -600,6 +603,10 @@ const ViewProfile = () => {
                       <Rocket className="h-4 w-4" />
                       Start Project
                     </Button>
+                    <Button variant="outline" onClick={() => setIsInviteToProjectOpen(true)} className="gap-2">
+                      <FolderPlus className="h-4 w-4" />
+                      Add to Project
+                    </Button>
                     <Button variant="outline" size="icon" onClick={() => setShowShareToChat(true)} aria-label="Share profile">
                       <Share2 className="h-4 w-4" />
                     </Button>
@@ -613,6 +620,10 @@ const ViewProfile = () => {
                     <Button variant="outline" onClick={() => setIsStartProjectOpen(true)} className="gap-2">
                       <Rocket className="h-4 w-4" />
                       Collaborate
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsInviteToProjectOpen(true)} className="gap-2">
+                      <FolderPlus className="h-4 w-4" />
+                      Add to Project
                     </Button>
                     <Button variant="outline" size="icon" onClick={() => setShowShareToChat(true)} aria-label="Share profile">
                       <Share2 className="h-4 w-4" />
@@ -719,6 +730,16 @@ const ViewProfile = () => {
             avatar: profile.avatar_url
           }}
           matchId={matchId || undefined}
+        />
+      )}
+
+      {/* Add to existing project dialog */}
+      {(isMatched || connectionStatus === 'connected') && profile?.user_id && (
+        <InviteToProjectDialog
+          open={isInviteToProjectOpen}
+          onOpenChange={setIsInviteToProjectOpen}
+          recipientUserId={profile.user_id}
+          recipientName={profile.full_name || 'this user'}
         />
       )}
 

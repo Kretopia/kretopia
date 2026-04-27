@@ -46,12 +46,13 @@ export const InviteToProjectDialog = ({
 
     (async () => {
       try {
-        const ownedRes: any = await supabase
+        const sb = supabase as any;
+        const ownedRes: any = await sb
           .from("projects")
           .select("id, title, status, created_at")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
-        const collabRes: any = await supabase
+        const collabRes: any = await sb
           .from("project_collaborators")
           .select("project_id")
           .eq("user_id", user.id)
@@ -65,7 +66,7 @@ export const InviteToProjectDialog = ({
 
         let collabProjects: any[] = [];
         if (collabIds.length > 0) {
-          const cp: any = await supabase
+          const cp: any = await sb
             .from("projects")
             .select("id, title, status, created_at")
             .in("id", collabIds);

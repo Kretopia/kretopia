@@ -235,12 +235,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   {isCompany ? (
                     /* ====== COMPANY MENU ====== */
                     <>
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Company</p>
                       <MenuButton icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-
-                      <Separator className="my-3" />
-
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Hiring</p>
                       <MenuButton icon={Search} label="Find Talent" onClick={() => handleNavigation("/talent-finder")} />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />

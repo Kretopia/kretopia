@@ -224,6 +224,10 @@ const ThriveDesk = () => {
               contractCount={flowExtras.contractCount}
               invoiceCount={flowExtras.invoiceCount}
               invoicePaidCount={flowExtras.invoicePaidCount}
+              projectId={projectId!}
+              currentUserId={user?.id || ""}
+              collaborators={collaborators}
+              onTasksChanged={fetchProjectData}
               onNavigateToTab={goToTabWithIntent}
               onPinStage={handlePinStage}
             />

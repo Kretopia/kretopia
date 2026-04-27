@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import {
   CheckSquare,
   MessageCircle,
@@ -9,10 +9,12 @@ import {
   Wallet,
   ChevronRight,
   Sparkles,
+  Mic,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROJECT_FLOW_STAGES, type ProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
+import { VoiceTaskCapture } from "@/components/project/mobile/VoiceTaskCapture";
 
 interface MobileProjectHubProps {
   flow: ProjectFlow;
@@ -26,6 +28,10 @@ interface MobileProjectHubProps {
   contractCount: number;
   invoiceCount: number;
   invoicePaidCount: number;
+  projectId: string;
+  currentUserId: string;
+  collaborators?: Array<{ id: string; full_name: string; avatar_url?: string | null }>;
+  onTasksChanged?: () => void;
   onNavigateToTab: (tab: string, intent?: string) => void;
   onPinStage?: (stageId: ProjectFlowStageId | null) => void;
 }
@@ -48,9 +54,15 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
     contractCount,
     invoiceCount,
     invoicePaidCount,
+    projectId,
+    currentUserId,
+    collaborators = [],
+    onTasksChanged,
     onNavigateToTab,
     onPinStage,
   } = props;
+
+  const [voiceOpen, setVoiceOpen] = useState(false);
 
   const openTasks = useMemo(() => tasks.filter((t) => t.status !== "done").length, [tasks]);
   const doneTasks = tasks.length - openTasks;
@@ -66,7 +78,8 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
     }).format(n);
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto">
+    <>
+    <div className="flex-1 min-h-0 overflow-y-auto relative">
       <div className="px-4 pt-3 pb-32 space-y-4">
         {/* === Stage strip (horizontal scroll) === */}
         <section>
@@ -258,7 +271,28 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
           </div>
         </section>
       </div>
+
+      {/* Voice-to-Task FAB */}
+      <button
+        onClick={() => setVoiceOpen(true)}
+        className="fixed right-4 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center active:scale-95 transition-transform"
+        style={{ bottom: "calc(env(safe-area-inset-bottom) + 88px)" }}
+        aria-label="Voice to task"
+      >
+        <Mic className="h-6 w-6" />
+      </button>
     </div>
+
+    <VoiceTaskCapture
+      open={voiceOpen}
+      onOpenChange={setVoiceOpen}
+      projectId={projectId}
+      projectTitle={project?.title}
+      currentUserId={currentUserId}
+      collaborators={collaborators}
+      onTaskCreated={() => onTasksChanged?.()}
+    />
+    </>
   );
 });
 

@@ -220,6 +220,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
               )}
               {user && (
                 <>
+                  <Link to="/thrivepay" aria-label="ThrivePay">
+                    <Button variant="ghost" size="icon" className="h-9 w-9 relative">
+                      <DollarSign className="h-5 w-5" />
+                    </Button>
+                  </Link>
                   <Link to="/messages" aria-label="Messages">
                     <Button variant="ghost" size="icon" className="h-9 w-9 relative">
                       <MessageCircle className="h-5 w-5" />
@@ -242,32 +247,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
               </SheetTrigger>
               <SheetContent side="right" className="w-[85vw] sm:w-[400px]">
                 <SheetHeader className="pr-8">
-                   <SheetTitle className="flex items-center gap-2">
-                    <span className="shrink-0">Menu</span>
-                    {/* Mode toggle in hamburger — hidden for company accounts */}
-                    {!isCompany && (
-                      <div className="flex items-center bg-muted/60 rounded-full p-0.5 ml-auto shrink-0">
-                        <button
-                          onClick={() => setMode("create")}
-                          className={cn(
-                            "px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all",
-                            mode === "create" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
-                          )}
-                        >
-                          Explore
-                        </button>
-                        <button
-                          onClick={() => setMode("work")}
-                          className={cn(
-                            "px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all",
-                            mode === "work" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
-                          )}
-                        >
-                          Work
-                        </button>
-                      </div>
-                    )}
-                  </SheetTitle>
+                  <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
 
                 <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
@@ -286,29 +266,26 @@ const Navbar = memo(({ user }: NavbarProps) => {
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                       )}
                     </>
-                  ) : mode === "create" ? (
-                    /* ====== EXPLORE MODE MENU ====== */
+                  ) : (
+                    /* ====== UNIFIED MENU (single nav) ====== */
                     <>
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>
                       <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
 
                       <Separator className="my-3" />
 
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Explore</p>
-                      <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} />
+                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Tools</p>
+                      <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} />
+                      <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
+                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />
-                      <MenuButton icon={Rocket} label="Thrive Fund" onClick={() => handleNavigation("/fund")} />
-                    </>
-                  ) : (
-                    /* ====== WORK MODE MENU ====== */
-                    <>
-                      <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">You</p>
-                      <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
+                      <MenuButton icon={MapPin} label="Discover Map" onClick={() => handleNavigation("/nearby")} />
 
                       <Separator className="my-3" />
 
                       <p className="text-xs font-medium text-muted-foreground px-3 mb-2 uppercase tracking-wider">Manage</p>
-                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund/manage")} />
+                      <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} />
+                      <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                       )}

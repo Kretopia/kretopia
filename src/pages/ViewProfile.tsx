@@ -733,6 +733,16 @@ const ViewProfile = () => {
         />
       )}
 
+      {/* Add to existing project dialog */}
+      {(isMatched || connectionStatus === 'connected') && profile?.user_id && (
+        <InviteToProjectDialog
+          open={isInviteToProjectOpen}
+          onOpenChange={setIsInviteToProjectOpen}
+          recipientUserId={profile.user_id}
+          recipientName={profile.full_name || 'this user'}
+        />
+      )}
+
       {/* Media Player Modal */}
       {selectedMedia && (
         <MediaPlayerModal

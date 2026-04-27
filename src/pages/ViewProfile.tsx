@@ -108,6 +108,7 @@ const ViewProfile = () => {
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [isStartProjectOpen, setIsStartProjectOpen] = useState(false);
+  const [isInviteToProjectOpen, setIsInviteToProjectOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   const [showClaimDialog, setShowClaimDialog] = useState(searchParams.get('showClaim') === 'true');
   const [showShareToChat, setShowShareToChat] = useState(false);

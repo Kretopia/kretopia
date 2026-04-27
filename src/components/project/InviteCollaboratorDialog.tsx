@@ -143,6 +143,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           email: emailToInvite.toLowerCase(),
           invited_by: user.id,
           role: 'member',
+          agent_role: selectedRole,
           status: 'pending'
         });
 

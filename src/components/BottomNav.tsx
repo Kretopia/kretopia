@@ -8,16 +8,14 @@ import { useAuth } from "@/hooks/useAuth";
 
 const CREATE_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
-  { path: "/nearby", icon: MapPin, label: "Discover" },
   { path: "/circle", icon: Sparkles, label: "Match" },
   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
 ];
 
 const WORK_ITEMS = [
   { path: "/desk", icon: LayoutDashboard, label: "Desk" },
-  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+  { path: "/credits", icon: Award, label: "Credits" },
   { path: "/thrivepay", icon: Wallet, label: "Pay" },
-  { path: "/profile", icon: User, label: "Profile" },
 ];
 
 const COMPANY_ITEMS = [

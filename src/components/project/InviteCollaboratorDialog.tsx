@@ -215,6 +215,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           email: `user-${userId}@platform.invite`,
           invited_by: user.id,
           role: 'member',
+          agent_role: selectedRole,
           status: 'pending'
         });
 

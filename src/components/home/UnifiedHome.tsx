@@ -25,7 +25,7 @@ import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
 // StickyMobileCTA removed — dismissible popup handles guest CTA
 import { InviteCircleCard } from "@/components/InviteCircleCard";
-import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard";
+// import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A
 import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
@@ -572,7 +572,7 @@ export const UnifiedHome = () => {
           <WeeklyIntentCard className="mb-4" />
           <NewMemberStarterCard className="mb-4" />
           <InviteCircleCard variant="home" className="mb-4" />
-          <StartCircleNudgeCard className="mb-4" />
+          {/* StartCircleNudgeCard hidden — Circles paused on discovery surfaces (Pass A) */}
 
           <PushNotificationPrompt trigger="default" className="mb-4" />
         </div>

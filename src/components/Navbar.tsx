@@ -234,7 +234,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     /* ====== UNIFIED MENU (single nav) ====== */
                     <>
                       <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-                      <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} />
+                      <MenuButton icon={Wallet} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
                       <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />

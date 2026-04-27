@@ -46,32 +46,30 @@ export const InviteToProjectDialog = ({
 
     (async () => {
       try {
-        const [ownedRes, collabRes] = await Promise.all([
-          supabase
-            .from("projects")
-            .select("id, title, status, created_at")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false }),
-          supabase
-            .from("project_collaborators")
-            .select("project_id")
-            .eq("user_id", user.id)
-            .eq("status", "accepted"),
-        ]);
+        const ownedRes: any = await supabase
+          .from("projects")
+          .select("id, title, status, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+        const collabRes: any = await supabase
+          .from("project_collaborators")
+          .select("project_id")
+          .eq("user_id", user.id)
+          .eq("status", "accepted");
 
         const owned: any[] = ownedRes.data || [];
-        const ownedIds = new Set(owned.map((p) => p.id));
-        const collabIds = ((collabRes.data || []) as any[])
-          .map((r) => r.project_id)
-          .filter((id) => id && !ownedIds.has(id));
+        const ownedIds = new Set<string>(owned.map((p) => p.id));
+        const collabIds: string[] = (collabRes.data || [])
+          .map((r: any) => r.project_id)
+          .filter((id: string) => id && !ownedIds.has(id));
 
         let collabProjects: any[] = [];
         if (collabIds.length > 0) {
-          const { data: cp } = await supabase
+          const cp: any = await supabase
             .from("projects")
             .select("id, title, status, created_at")
             .in("id", collabIds);
-          collabProjects = cp || [];
+          collabProjects = cp.data || [];
         }
         const merged: any[] = [...owned, ...collabProjects];
 

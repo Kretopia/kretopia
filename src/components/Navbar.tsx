@@ -164,29 +164,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         {/* Desktop Navigation - Mode Aware */}
         {user && !isLandingPage && (
           <div className="hidden lg:flex items-center gap-1">
-            {/* Mode toggle pill */}
-            {!isCompany && (
-              <div className="flex items-center bg-muted/60 rounded-full p-0.5 mr-2">
-                <button
-                  onClick={() => setMode("create")}
-                  className={cn(
-                    "px-3 py-1 rounded-full text-xs font-semibold transition-all",
-                    mode === "create" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  Explore
-                </button>
-                <button
-                  onClick={() => setMode("work")}
-                  className={cn(
-                    "px-3 py-1 rounded-full text-xs font-semibold transition-all",
-                    mode === "work" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  Work
-                </button>
-              </div>
-            )}
+            {/* Mode toggle removed — single unified nav */}
 
             {desktopNavItems.map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path || 

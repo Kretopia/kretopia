@@ -134,7 +134,7 @@ If a field truly has no signal, use null. Never invent prices or venues.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-pro",
         messages,
         response_format: { type: "json_object" },
       }),

@@ -84,9 +84,30 @@ export const PostOpportunityDialog = ({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { subscriptionInfo } = useAuth();
+  const { subscriptionInfo, user } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
   const gigGate = useFeatureGate("gigPosts");
+  const [accountType, setAccountType] = useState<"individual" | "company" | null>(null);
+  const [profileUsername, setProfileUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open || !user) return;
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("account_type, username")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        setAccountType((data.account_type as any) || "individual");
+        setProfileUsername(data.username || null);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [open, user]);
+
+  const isCompany = accountType === "company";
 
   const [formData, setFormData] = useState({
     email: "",

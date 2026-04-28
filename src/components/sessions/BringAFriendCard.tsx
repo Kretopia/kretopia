@@ -2,13 +2,13 @@
 // so when their friend RSVPs, the attribution is captured (and credits are awarded
 // post-event if the friend checks in).
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Share2, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfileData } from "@/hooks/useProfileData";
+import { supabase } from "@/integrations/supabase/client";
 import { buildWarmShareMessage, logShareClick } from "@/lib/eventActions";
 
 interface BringAFriendCardProps {
@@ -27,9 +27,20 @@ interface BringAFriendCardProps {
 
 export const BringAFriendCard = ({ event, hostFirstName, attendeeCount }: BringAFriendCardProps) => {
   const { user } = useAuth();
-  const { profile } = useProfileData();
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [profile, setProfile] = useState<{ first_name: string | null; full_name: string | null; username: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("first_name, full_name, username")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setProfile(data as any))
+      .catch?.(() => {});
+  }, [user?.id]);
 
   const message = useMemo(
     () =>

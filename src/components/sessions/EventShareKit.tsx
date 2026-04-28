@@ -11,7 +11,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import QRCodeStyling from "qr-code-styling";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfileContext } from "@/contexts/ProfileContext";
+import { supabase } from "@/integrations/supabase/client";
 import { buildWarmShareMessage, buildEventShareUrl, logShareClick, type ShareChannel } from "@/lib/eventActions";
 
 interface EventShareKitProps {

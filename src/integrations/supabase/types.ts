@@ -11286,12 +11286,21 @@ export type Database = {
           appeal_reviewed_by: string | null
           appeal_submitted_at: string | null
           authenticity_score: number | null
+          awards_count: number | null
           created_at: string | null
+          credits_count: number | null
+          decision: string | null
           id: string
+          industry_fit_score: number | null
+          portfolio_count: number | null
+          press_count: number | null
           profile_data: Json
+          quality_score: number | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          social_proof_score: number | null
+          social_verified: boolean | null
           status: string | null
           user_id: string
         }
@@ -11305,12 +11314,21 @@ export type Database = {
           appeal_reviewed_by?: string | null
           appeal_submitted_at?: string | null
           authenticity_score?: number | null
+          awards_count?: number | null
           created_at?: string | null
+          credits_count?: number | null
+          decision?: string | null
           id?: string
+          industry_fit_score?: number | null
+          portfolio_count?: number | null
+          press_count?: number | null
           profile_data: Json
+          quality_score?: number | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          social_proof_score?: number | null
+          social_verified?: boolean | null
           status?: string | null
           user_id: string
         }
@@ -11324,12 +11342,21 @@ export type Database = {
           appeal_reviewed_by?: string | null
           appeal_submitted_at?: string | null
           authenticity_score?: number | null
+          awards_count?: number | null
           created_at?: string | null
+          credits_count?: number | null
+          decision?: string | null
           id?: string
+          industry_fit_score?: number | null
+          portfolio_count?: number | null
+          press_count?: number | null
           profile_data?: Json
+          quality_score?: number | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          social_proof_score?: number | null
+          social_verified?: boolean | null
           status?: string | null
           user_id?: string
         }

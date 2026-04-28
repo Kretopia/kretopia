@@ -613,31 +613,42 @@ const EventPage = () => {
           {!isCancelled && (
             <div className="space-y-3">
               {isPast || isCompleted ? (
-                <Badge variant="outline" className="w-full justify-center py-3 text-base">This event has ended</Badge>
+                <Badge variant="outline" className="w-full justify-center py-3 text-base">This event has wrapped</Badge>
               ) : isCreator ? (
                 <div className="space-y-3">
-                  <Badge variant="secondary" className="w-full justify-center py-3 text-base">You're hosting this event</Badge>
+                  <Badge variant="secondary" className="w-full justify-center py-3 text-base">You're hosting</Badge>
                   <Button variant="outline" className="w-full" onClick={() => setShowShareKit(true)}>
-                    <Share2 className="h-4 w-4 mr-2" /> Share Event
+                    <Share2 className="h-4 w-4 mr-2" /> Share with your network
                   </Button>
                 </div>
               ) : participation ? (
                 <div className="space-y-3">
-                  <Button variant="outline" className="w-full" onClick={handleJoin} disabled={joining}>
-                    {joining ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                      <><Check className="h-4 w-4 mr-2" /> You're going — Tap to leave</>
-                    )}
+                  {/* Primary: Show my pass — most important for guest on event day */}
+                  <Button
+                    variant="gradient"
+                    className="w-full py-6 text-base"
+                    onClick={() => setShowGuestPass(true)}
+                  >
+                    <Ticket className="h-5 w-5 mr-2" /> Show my pass
                   </Button>
-                  <Button variant="ghost" className="w-full" onClick={() => setShowShareKit(true)}>
-                    <Share2 className="h-4 w-4 mr-2" /> Share with friends
-                  </Button>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="outline" onClick={handleJoin} disabled={joining} className="text-xs sm:text-sm">
+                      {joining ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                        <><Check className="h-4 w-4 mr-1.5" /> You're in</>
+                      )}
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowShareKit(true)} className="text-xs sm:text-sm">
+                      <Share2 className="h-4 w-4 mr-1.5" /> Tell a friend
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-center text-muted-foreground">Tap "You're in" again to cancel</p>
                 </div>
               ) : !isTicketed ? (
                 <Button variant="gradient" className="w-full py-6 text-lg" onClick={handleJoinOrSignup} disabled={joining || isFull}>
                   {joining ? <Loader2 className="h-5 w-5 animate-spin" /> : !isAuthenticated ? (
-                    <><Sparkles className="h-5 w-5 mr-2" /> Sign Up & Join Event <ArrowRight className="h-5 w-5 ml-2" /></>
-                  ) : isFull ? "Event Full" : (
-                    <><Sparkles className="h-5 w-5 mr-2" /> Join Event</>
+                    <><Sparkles className="h-5 w-5 mr-2" /> Save my spot <ArrowRight className="h-5 w-5 ml-2" /></>
+                  ) : isFull ? "All spots taken" : (
+                    <><Sparkles className="h-5 w-5 mr-2" /> Save my spot</>
                   )}
                 </Button>
               ) : null}

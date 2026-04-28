@@ -44,7 +44,7 @@ import { EventGuestRoster } from "@/components/sessions/EventGuestRoster";
 import { ScoutEventDialog } from "@/components/sessions/ScoutEventDialog";
 import { InviteByEmailDialog } from "@/components/sessions/InviteByEmailDialog";
 import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
-import { Mail, UserPlus, MessageCircle } from "lucide-react";
+import { Mail, UserPlus, MessageCircle, Scan } from "lucide-react";
 import {
   Dialog,
   DialogContent,

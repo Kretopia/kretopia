@@ -41,19 +41,23 @@ export const GuestPassDialog = ({
     if (!open) return;
     let cancelled = false;
     setLoading(true);
-    supabase
-      .from("jam_participants")
-      .select("check_in_token, checked_in_at")
-      .eq("jam_id", eventId)
-      .eq("user_id", userId)
-      .maybeSingle()
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("jam_participants")
+          .select("check_in_token, checked_in_at")
+          .eq("jam_id", eventId)
+          .eq("user_id", userId)
+          .maybeSingle();
         if (cancelled) return;
         setToken(data?.check_in_token || null);
         setCheckedIn(!!data?.checked_in_at);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      } catch {
+        // silent
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
     return () => {
       cancelled = true;
     };

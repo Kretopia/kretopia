@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
+import QuickActionFab from "./components/QuickActionFab";
 import { ModeDiscoverySheet } from "./components/ModeDiscoverySheet";
 import { ModeThemeSync } from "./components/ModeThemeSync";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";

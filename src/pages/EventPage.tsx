@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Loader2, Lock, 
   Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine,
-  MoreVertical, Crown, Ban, CheckCircle, Download
+  MoreVertical, Crown, Ban, CheckCircle, Download, CalendarPlus, Navigation
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
@@ -29,7 +29,9 @@ import { EventRecapButton } from "@/components/sessions/EventRecapButton";
 import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
 import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";
 import { GuestRsvpDialog } from "@/components/sessions/GuestRsvpDialog";
+import { GuestPassDialog } from "@/components/sessions/GuestPassDialog";
 import { APP_URL } from "@/lib/constants";
+import { downloadIcs, openDirections } from "@/lib/eventActions";
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',

@@ -382,17 +382,21 @@ export const OpportunitiesFeed = () => {
         </div>
       )}
 
-      {/* Cards */}
-      {!loading && opportunities.map((opp, index) => {
-        // Don't show scout's profile as the poster — show "Scouted for" label instead
-        const creator = opp.scouted_by ? null : (opp.created_by ? creators[opp.created_by] : null);
+      {/* Cards — responsive grid: 1 col mobile, 2 cols tablet, 3 cols desktop */}
+      {!loading && opportunities.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {opportunities.map((opp, index) => {
+            // Don't show scout's profile as the poster — show "Scouted for" label instead
+            const creator = opp.scouted_by ? null : (opp.created_by ? creators[opp.created_by] : null);
 
-        return (
-          <DiscoveryGate key={opp.id} totalItems={opportunities.length} freePreviewCount={4} index={index} itemLabel="gigs">
-            <GigCard opportunity={opp} creator={creator} />
-          </DiscoveryGate>
-        );
-      })}
+            return (
+              <DiscoveryGate key={opp.id} totalItems={opportunities.length} freePreviewCount={4} index={index} itemLabel="gigs">
+                <GigCard opportunity={opp} creator={creator} />
+              </DiscoveryGate>
+            );
+          })}
+        </div>
+      )}
       {!loading && <DiscoveryUpsell totalItems={opportunities.length} freePreviewCount={4} itemLabel="gigs" />}
     </div>
   );

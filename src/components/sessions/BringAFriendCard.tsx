@@ -33,13 +33,18 @@ export const BringAFriendCard = ({ event, hostFirstName, attendeeCount }: BringA
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("profiles")
-      .select("first_name, full_name, username")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => setProfile(data as any))
-      .catch?.(() => {});
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("first_name, full_name, username")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        setProfile(data as any);
+      } catch {
+        // silent
+      }
+    })();
   }, [user?.id]);
 
   const message = useMemo(

@@ -400,8 +400,8 @@ const EventPage = () => {
                 </AvatarFallback>
               </Avatar>
               <div className="text-left">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Your host</p>
                 <p className="font-medium text-sm">{creator?.full_name || 'ThriveIN Host'}</p>
-                <p className="text-xs text-muted-foreground">{creator?.role || 'Creator'}</p>
               </div>
             </div>
 
@@ -422,9 +422,34 @@ const EventPage = () => {
 
             {/* Quick share */}
             <Button variant="ghost" size="sm" onClick={handleShare} className="text-muted-foreground">
-              <Share2 className="h-4 w-4 mr-1.5" /> Share Event
+              <Share2 className="h-4 w-4 mr-1.5" /> Share with friends
             </Button>
           </div>
+
+          {/* Who's going — bigger social proof above ticket/CTA */}
+          {attendeeAvatars.length > 0 && !isPast && (
+            <div className="mb-4 flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-muted/40 border border-border/50">
+              <div className="flex -space-x-2.5">
+                {attendeeAvatars.slice(0, 6).map((a, i) => (
+                  <Avatar key={i} className="h-9 w-9 border-2 border-background">
+                    <AvatarImage src={a.avatar_url || undefined} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                      {a.full_name?.charAt(0) || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {participantCount > 6 && (
+                  <div className="h-9 w-9 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center">
+                    <span className="text-xs font-semibold text-primary">+{participantCount - 6}</span>
+                  </div>
+                )}
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-semibold">{participantCount} {participantCount === 1 ? 'person is' : 'people are'} going</p>
+                <p className="text-xs text-muted-foreground">Join the crew</p>
+              </div>
+            </div>
+          )}
 
           {/* Ticket Banner (for ticketed events) */}
           {isTicketed && !isPast && !isCancelled && (

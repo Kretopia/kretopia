@@ -36,6 +36,7 @@ import GigCard from "@/components/opportunity/GigCard";
 import { GigRailCard } from "@/components/opportunity/GigRailCard";
 import { intentBoostForCreator, intentBoostForGig, intentBoostForEvent } from "@/lib/intentMatching";
 import { normalizeIntents } from "@/lib/intents";
+import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];
@@ -55,6 +56,7 @@ export const UnifiedHome = () => {
   const navigate = useNavigate();
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
   const [heroRoleIdx, setHeroRoleIdx] = useState(0);
+  const { geo: currentGeo } = useCurrentGeoCountry();
 
   // Dashboard data
   const [trendingCredits, setTrendingCredits] = useState<any[]>([]);
@@ -149,10 +151,13 @@ export const UnifiedHome = () => {
         gigsQuery,
         supabase.functions.invoke("public-stats"),
         (async () => {
-          // Country-filtered upcoming events (derive country from profile.location: "City, Country")
-          const loc = (myProfile as any)?.location || "";
-          const parts = String(loc).split(",").map((s: string) => s.trim()).filter(Boolean);
-          const userCountry = parts.length > 1 ? parts[parts.length - 1] : null;
+          // Prefer CURRENT GPS country (great for travelers); fall back to profile.location.
+          let userCountry: string | null = currentGeo?.country || null;
+          if (!userCountry) {
+            const loc = (myProfile as any)?.location || "";
+            const parts = String(loc).split(",").map((s: string) => s.trim()).filter(Boolean);
+            userCountry = parts.length > 1 ? parts[parts.length - 1] : null;
+          }
           if (userCountry) {
             // Show events explicitly tagged to the user's country OR with no country (likely local/community-posted).
             // NEVER show events tagged to a different country.
@@ -164,7 +169,7 @@ export const UnifiedHome = () => {
               .order("start_time", { ascending: true })
               .limit(8);
           }
-          // No country on profile — show everything upcoming.
+          // No country detected — show everything upcoming.
           return await supabase.from("creative_jams")
             .select("id, title, start_time, venue_name, category, cover_image_url, created_by, country")
             .eq("is_public", true)
@@ -275,7 +280,7 @@ export const UnifiedHome = () => {
       }
     };
     fetchPublic();
-  }, [user]);
+  }, [user, currentGeo?.country]);
 
   // Live activity ticker
   useEffect(() => {

@@ -123,7 +123,7 @@ If a field truly has no signal, use null. Never invent prices or venues.`;
     } else {
       messages.push({
         role: "user",
-        content: `Extract event details from the following content:\n\n${combinedText}`,
+        content: `Extract event details from the following scraped page content. Pay special attention to:\n- Date fragments split across separate lines (e.g. month, day, weekday on different lines — combine them).\n- Time ranges like "07:30 - 11:59" — these mean evening (19:30 - 23:59 local time).\n- Venue name and city/country — often appears as a short line right after the time, sometimes with a flag emoji (e.g. "🇮🇩Canggu" → city Canggu, country Indonesia → timezone Asia/Makassar).\n\nContent:\n\n${combinedText}`,
       });
     }
 

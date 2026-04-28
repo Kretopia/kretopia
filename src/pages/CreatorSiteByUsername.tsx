@@ -43,6 +43,23 @@ const CreatorSiteByUsername = () => {
         return;
       }
 
+      // Guard: never treat reserved platform paths as usernames.
+      // This prevents "/index", "/home", etc. from rendering the dark
+      // "Site Not Found" screen when a stale link or typo is hit.
+      const RESERVED_PATHS = new Set([
+        "index", "home", "auth", "login", "signup", "logout",
+        "admin", "settings", "profile", "messages", "notifications",
+        "circle", "circles", "desk", "fund", "thrivepay", "subscription",
+        "search", "nearby", "spotlight", "opportunities", "gigs",
+        "onboarding", "company-onboarding", "claim", "install",
+        "about", "terms", "privacy", "unsubscribe", "community-guidelines",
+        "talent-finder", "talent-manager", "shortlists", "website-builder",
+      ]);
+      if (RESERVED_PATHS.has(username.toLowerCase())) {
+        navigate("/", { replace: true });
+        return;
+      }
+
       const { data: profile } = await supabase
         .from("profiles")
         .select("user_id, full_name, role, bio, location, avatar_url, cover_image_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, rate_range, site_template, site_enabled, site_headline, site_bio, site_sections, site_custom_blocks, professional_skills, subscription_tier, username")
@@ -99,18 +116,18 @@ const CreatorSiteByUsername = () => {
 
   if (loading) {
     return (
-      <div className="min-h-dvh bg-[#0a0a0c] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-white/50" />
+      <div className="min-h-dvh bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="min-h-dvh bg-[#0a0a0c] flex flex-col items-center justify-center text-white gap-4">
+      <div className="min-h-dvh bg-background flex flex-col items-center justify-center text-foreground gap-4 p-6 text-center">
         <h1 className="text-2xl font-bold">Site Not Found</h1>
-        <p className="text-zinc-400">This creator hasn't set up their site yet.</p>
-        <button onClick={() => navigate("/")} className="text-[#ff00ff] hover:underline">
+        <p className="text-muted-foreground">This creator hasn't set up their site yet.</p>
+        <button onClick={() => navigate("/")} className="text-primary hover:underline">
           Go to ThriveIN →
         </button>
       </div>

@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
 
 interface EventItem {
   id: string;
@@ -199,6 +200,7 @@ const FeaturedEvents = ({ events, onSelect }: { events: EventItem[]; onSelect: (
 const Events = ({ embedded }: { embedded?: boolean }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { geo: currentGeo } = useCurrentGeoCountry();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [myEvents, setMyEvents] = useState<EventItem[]>([]);
@@ -255,13 +257,33 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
+      // Resolve user country: GPS first, fall back to profile.location
+      let userCountry: string | null = currentGeo?.country || null;
+      if (!userCountry && user) {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('location')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        const loc = (prof as any)?.location || '';
+        const parts = String(loc).split(',').map((s: string) => s.trim()).filter(Boolean);
+        userCountry = parts.length > 1 ? parts[parts.length - 1] : null;
+      }
+
       // Public browse: fetch events even without auth
-      const { data: allEvents } = await supabase
+      let query = supabase
         .from('creative_jams')
         .select('*, profiles!creative_jams_created_by_fkey (full_name, avatar_url)')
         .eq('is_public', true)
         .in('status', ['upcoming', 'active'])
-        .gte('start_time', new Date().toISOString())
+        .gte('start_time', new Date().toISOString());
+
+      // If we know user's country, prioritize that country + untagged events
+      if (userCountry) {
+        query = query.or(`country.eq.${userCountry},country.is.null`);
+      }
+
+      const { data: allEvents } = await query
         .order('start_time', { ascending: true })
         .limit(50);
 
@@ -332,7 +354,7 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, currentGeo?.country]);
 
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
 

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, MapPin, Clock, Users, Loader2, Ticket, X } from "lucide-react";
+import { CalendarIcon, MapPin, Clock, Users, Loader2, Ticket, X, ScanLine } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { LocationSearchInput } from "./LocationSearchInput";
 import { Switch } from "@/components/ui/switch";
 import { EventCoverPicker } from "./EventCoverPicker";
+import { ScanFlyerDialog, type ScannedEventDetails } from "./ScanFlyerDialog";
 
 interface CreateSessionDialogProps {
   open: boolean;
@@ -54,6 +55,7 @@ export const CreateSessionDialog = ({
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [userCircles, setUserCircles] = useState<{ id: string; title: string; icon_emoji: string }[]>([]);
+  const [scanOpen, setScanOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -106,6 +108,40 @@ export const CreateSessionDialog = ({
   const removeCover = () => {
     setCoverFile(null);
     setCoverPreview(null);
+  };
+
+  const applyScannedDetails = (
+    details: ScannedEventDetails,
+    flyerFile: File,
+    flyerPreview: string,
+  ) => {
+    // Use flyer as cover image
+    setCoverFile(flyerFile);
+    setCoverPreview(flyerPreview);
+
+    // Apply date/time
+    if (details.start_date) {
+      const parsed = new Date(`${details.start_date}T${details.start_time || "12:00"}:00`);
+      if (!isNaN(parsed.getTime())) setDate(parsed);
+    }
+    if (details.start_time && /^\d{2}:\d{2}$/.test(details.start_time)) {
+      setTime(details.start_time);
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      title: details.title || prev.title,
+      description: details.description || prev.description,
+      category: details.category || prev.category,
+      venue_name: details.venue_name || prev.venue_name,
+      venue_address: details.venue_address || prev.venue_address,
+      max_participants: details.max_participants ?? prev.max_participants,
+      is_ticketed: details.is_ticketed ?? prev.is_ticketed,
+      ticket_price: details.ticket_price ?? prev.ticket_price,
+      ticket_currency: details.ticket_currency || prev.ticket_currency,
+      external_ticket_url: details.external_ticket_url || prev.external_ticket_url,
+      event_type: 'event',
+    }));
   };
 
   const uploadCover = async (): Promise<string | null> => {
@@ -227,6 +263,21 @@ export const CreateSessionDialog = ({
             <Button type="button" variant={formData.event_type === 'event' ? 'default' : 'outline'} size="sm" className="flex-1"
               onClick={() => setFormData(prev => ({ ...prev, event_type: 'event' }))}>Event / Meetup</Button>
           </div>
+
+          {/* Scan Flyer shortcut */}
+          <button
+            type="button"
+            onClick={() => setScanOpen(true)}
+            className="w-full flex items-center gap-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2.5 text-left hover:bg-primary/10 transition-colors"
+          >
+            <div className="h-8 w-8 rounded-md bg-primary/15 flex items-center justify-center shrink-0">
+              <ScanLine className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium leading-tight">Scan a flyer with AI</p>
+              <p className="text-[11px] text-muted-foreground leading-tight">Auto-fill title, date, venue & more from an image</p>
+            </div>
+          </button>
 
           <EventCoverPicker
             coverPreview={coverPreview}
@@ -384,6 +435,11 @@ export const CreateSessionDialog = ({
           </div>
         </form>
       </DialogContent>
+      <ScanFlyerDialog
+        open={scanOpen}
+        onOpenChange={setScanOpen}
+        onExtracted={applyScannedDetails}
+      />
     </Dialog>
   );
 };

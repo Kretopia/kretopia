@@ -223,6 +223,7 @@ const AppContent = () => {
       <PageViewTracker />
       {showNavbar && <Navbar user={user} />}
       {showBottomNav && <BottomNav />}
+      {showBottomNav && <QuickActionFab />}
       {user && !isPublicEPK && !isCreatorSite && !isAuthPage && !isOnboardingPage && !isDeckPage && <ModeDiscoverySheet />}
       {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
       {!user && <NewsletterPopup />}

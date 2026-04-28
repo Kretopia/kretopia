@@ -398,15 +398,15 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full mb-4">
               <TabsTrigger value="browse" className="flex-1">
-                <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Browse
+                <Sparkles className="h-3.5 w-3.5 mr-1.5" /> What's on
               </TabsTrigger>
               {user && (
                 <>
                   <TabsTrigger value="joined" className="flex-1">
-                    <Check className="h-3.5 w-3.5 mr-1.5" /> Joined
+                    <Check className="h-3.5 w-3.5 mr-1.5" /> My plans
                   </TabsTrigger>
                   <TabsTrigger value="hosting" className="flex-1">
-                    <Calendar className="h-3.5 w-3.5 mr-1.5" /> Hosting
+                    <Calendar className="h-3.5 w-3.5 mr-1.5" /> I'm hosting
                   </TabsTrigger>
                 </>
               )}

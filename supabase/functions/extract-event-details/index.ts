@@ -304,6 +304,25 @@ If a field truly has no signal, use null. Never invent prices or venues.`;
       ...(coverImageUrl ? { cover_image_url: coverImageUrl } : {}),
     };
 
+    // If this user already scouted this exact URL, return the existing event instead of creating a duplicate.
+    if (source_url) {
+      const { data: existing } = await supabase
+        .from("creative_jams")
+        .select("id, claim_token, title")
+        .eq("scouted_by", user.id)
+        .eq("source_url", source_url)
+        .maybeSingle();
+      if (existing) {
+        return json({
+          success: true,
+          event: existing,
+          extracted,
+          has_cover_image: !!coverImageUrl,
+          already_scouted: true,
+        });
+      }
+    }
+
     const { data: inserted, error: insErr } = await supabase
       .from("creative_jams")
       .insert(insertRow)
@@ -311,6 +330,18 @@ If a field truly has no signal, use null. Never invent prices or venues.`;
       .single();
 
     if (insErr) {
+      // Race condition: another request inserted first — fetch and return it.
+      if (insErr.code === "23505" && source_url) {
+        const { data: existing } = await supabase
+          .from("creative_jams")
+          .select("id, claim_token, title")
+          .eq("scouted_by", user.id)
+          .eq("source_url", source_url)
+          .maybeSingle();
+        if (existing) {
+          return json({ success: true, event: existing, extracted, has_cover_image: !!coverImageUrl, already_scouted: true });
+        }
+      }
       console.error("Insert error:", insErr);
       return json({ error: `Failed to create event: ${insErr.message}` }, 500);
     }

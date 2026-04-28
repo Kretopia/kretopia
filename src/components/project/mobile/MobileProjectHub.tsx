@@ -37,6 +37,7 @@ interface MobileProjectHubProps {
   onNavigateToTab: (tab: string, intent?: string) => void;
   onPinStage?: (stageId: ProjectFlowStageId | null) => void;
   onOpenCopilot?: () => void;
+  isPro?: boolean;
 }
 
 /**
@@ -64,9 +65,11 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
     onNavigateToTab,
     onPinStage,
     onOpenCopilot,
+    isPro = false,
   } = props;
 
   const [voiceOpen, setVoiceOpen] = useState(false);
+  const [copilotOpen, setCopilotOpen] = useState(false);
 
   const openTasks = useMemo(() => tasks.filter((t) => t.status !== "done").length, [tasks]);
   const doneTasks = tasks.length - openTasks;
@@ -300,7 +303,10 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
       {/* Combined action FAB: voice note + Project Copilot */}
       <DeskActionFab
         onVoice={() => setVoiceOpen(true)}
-        onCopilot={() => onOpenCopilot?.()}
+        onCopilot={() => {
+          setCopilotOpen(true);
+          onOpenCopilot?.();
+        }}
       />
     </div>
 

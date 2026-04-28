@@ -20,6 +20,7 @@ import { InteractiveOnboarding } from "./components/onboarding/InteractiveOnboar
 import { SkipLink } from "./components/ui/skip-link";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { analytics } from "@/lib/analytics";
+import { trackPlatformPageview, attachPlatformAnalyticsListeners } from "@/lib/platformAnalytics";
 import { NetworkStatus } from "./components/NetworkStatus";
 import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
 import { GuestBanner } from "./components/GuestBanner";

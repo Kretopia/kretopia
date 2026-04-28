@@ -145,21 +145,9 @@ export const EventGroupChatCard = ({
           )}
         </div>
 
-        {/* CTAs */}
-        {groupChatEnabled && (
-          <div>
-            {isHost || isMember ? (
-              <Button variant="outline" className="w-full" onClick={openChat} disabled={!groupChatRoomId}>
-                Open chat <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            ) : isParticipant ? (
-              <Button variant="gradient" className="w-full" onClick={handleJoin} disabled={busy || !groupChatRoomId}>
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Join group chat"}
-              </Button>
-            ) : (
-              <p className="text-xs text-muted-foreground text-center">RSVP to join the group chat.</p>
-            )}
-          </div>
+        {/* Status hint — chat renders inline below this card */}
+        {groupChatEnabled && !isHost && !isParticipant && (
+          <p className="text-xs text-muted-foreground text-center">RSVP to join the group chat.</p>
         )}
       </CardContent>
     </Card>

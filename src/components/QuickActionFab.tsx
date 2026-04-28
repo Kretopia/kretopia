@@ -114,6 +114,17 @@ const QuickActionFab = () => {
       },
     },
     {
+      id: "scout-event",
+      label: "Scout an event",
+      sub: "Saw a flyer or link? List it here",
+      icon: Scan,
+      tone: "primary",
+      onSelect: () => {
+        close();
+        setShowScoutEvent(true);
+      },
+    },
+    {
       id: "post-gig",
       label: "Post a gig",
       sub: "Hire, collab, or barter",

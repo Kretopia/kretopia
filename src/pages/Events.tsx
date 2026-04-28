@@ -200,6 +200,7 @@ const FeaturedEvents = ({ events, onSelect }: { events: EventItem[]; onSelect: (
 const Events = ({ embedded }: { embedded?: boolean }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { geo: currentGeo } = useCurrentGeoCountry();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [myEvents, setMyEvents] = useState<EventItem[]>([]);

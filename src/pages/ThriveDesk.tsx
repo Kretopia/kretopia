@@ -286,13 +286,13 @@ const ThriveDesk = () => {
         </div>
       </div>
 
-      {/* Floating AI Assistant — desktop only; mobile uses combined FAB in MobileProjectHub */}
-      {user && projectId && (
+      {/* Floating AI Assistant — only show when mobile Hub isn't rendering its own combined FAB */}
+      {user && projectId && !isMobileHub && (
         <DeskAILauncher
           projectId={projectId}
           userId={user.id}
           isPro={isPro}
-          hideOnMobile={true}
+          hideOnMobile={isMobile && activeTab === "messages"}
         />
       )}
     </div>

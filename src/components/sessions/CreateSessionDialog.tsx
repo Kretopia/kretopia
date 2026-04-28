@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, MapPin, Clock, Users, Loader2, Ticket, X } from "lucide-react";
+import { CalendarIcon, MapPin, Clock, Users, Loader2, Ticket, X, ScanLine } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { LocationSearchInput } from "./LocationSearchInput";
 import { Switch } from "@/components/ui/switch";
 import { EventCoverPicker } from "./EventCoverPicker";
+import { ScanFlyerDialog, type ScannedEventDetails } from "./ScanFlyerDialog";
 
 interface CreateSessionDialogProps {
   open: boolean;

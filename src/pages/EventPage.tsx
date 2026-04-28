@@ -26,6 +26,8 @@ import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
 import { EventComments } from "@/components/sessions/EventComments";
 import { EventCohosts } from "@/components/sessions/EventCohosts";
 import { EventRecapButton } from "@/components/sessions/EventRecapButton";
+import { EventGroupChatCard } from "@/components/sessions/EventGroupChatCard";
+import { EventGuestRoster } from "@/components/sessions/EventGuestRoster";
 import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
 import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";
 import { GuestRsvpDialog } from "@/components/sessions/GuestRsvpDialog";
@@ -691,29 +693,29 @@ const EventPage = () => {
             </Card>
           )}
 
-          {/* Group Chat */}
+          {/* Guest Roster — Match/Circle-style discovery before the event */}
+          <EventGuestRoster
+            eventId={event.id}
+            eventTitle={event.title}
+            hostId={event.created_by}
+            currentUserId={user?.id || null}
+            isParticipant={!!participation}
+            isHost={isCreator}
+            participantCount={participantCount}
+          />
+
+          {/* Group Chat — host toggle + opt-in for RSVPs */}
           {isAuthenticated && (
-            <Card className="mb-6">
-              <CardContent className="p-0">
-                <div className="flex items-center justify-between px-5 pt-4 pb-2">
-                  <div>
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <MessageCircle className="h-4 w-4 text-primary" />
-                      Group chat
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {participation || isCreator ? "Say hi, ask questions, share plans" : "RSVP to join the chat"}
-                    </p>
-                  </div>
-                </div>
-                <EventComments 
-                  eventId={event.id} 
-                  isCreator={isCreator} 
-                  creatorId={event.created_by}
-                  eventTitle={event.title}
-                />
-              </CardContent>
-            </Card>
+            <EventGroupChatCard
+              eventId={event.id}
+              eventTitle={event.title}
+              isHost={isCreator}
+              isParticipant={!!participation}
+              hostId={event.created_by}
+              groupChatEnabled={!!event.group_chat_enabled}
+              groupChatRoomId={event.group_chat_room_id || null}
+              onChange={({ enabled, roomId }) => setEvent((prev: any) => prev ? { ...prev, group_chat_enabled: enabled, group_chat_room_id: roomId } : prev)}
+            />
           )}
 
           {/* CTA */}

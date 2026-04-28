@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Loader2, Lock, 
   Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine,
-  MoreVertical, Crown, Ban, CheckCircle, Download, CalendarPlus, Navigation
+  MoreVertical, Crown, Ban, CheckCircle, Download, CalendarPlus, Navigation, MessageCircle
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger

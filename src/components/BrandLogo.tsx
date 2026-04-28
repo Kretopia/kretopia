@@ -53,11 +53,11 @@ export function BrandLogo({
             "font-black tracking-tight text-primary select-none"
           )}
         >
-          ThriveIN
+          Thrive<span className="text-energy">IN</span>
         </span>
       )}
       {showBeta && (
-        <span className="hidden sm:inline-block bg-primary/10 text-primary text-[10px] uppercase tracking-widest font-semibold px-1.5 py-0.5 rounded-md leading-none">
+        <span className="hidden sm:inline-block bg-energy/15 text-energy border border-energy/30 text-[10px] uppercase tracking-widest font-bold px-1.5 py-0.5 rounded-md leading-none">
           BETA
         </span>
       )}

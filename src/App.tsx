@@ -180,11 +180,16 @@ const CatchAllRedirect = () => {
 // Track page views
 const PageViewTracker = () => {
   const location = useLocation();
-  
+
+  useEffect(() => {
+    attachPlatformAnalyticsListeners();
+  }, []);
+
   useEffect(() => {
     analytics.pageView(location.pathname);
+    void trackPlatformPageview(location.pathname);
   }, [location.pathname]);
-  
+
   return null;
 };
 

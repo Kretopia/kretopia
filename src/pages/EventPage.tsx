@@ -430,18 +430,40 @@ const EventPage = () => {
               </div>
             </div>
 
-            {/* Countdown */}
+            {/* Live countdown */}
             {!isPast && !isCancelled && diff > 0 && (
-              <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                <div className="text-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-primary/10">
-                  <p className="text-xl sm:text-2xl font-bold text-primary">{daysUntil}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase">Days</p>
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <div className="text-center px-3 py-1.5 rounded-lg bg-primary/10 min-w-[56px]">
+                  <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{daysUntil}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">Days</p>
                 </div>
-                <span className="text-xl sm:text-2xl text-muted-foreground">:</span>
-                <div className="text-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-primary/10">
-                  <p className="text-xl sm:text-2xl font-bold text-primary">{hoursUntil}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase">Hours</p>
+                <span className="text-xl text-muted-foreground">:</span>
+                <div className="text-center px-3 py-1.5 rounded-lg bg-primary/10 min-w-[56px]">
+                  <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{String(hoursUntil).padStart(2, '0')}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">Hrs</p>
                 </div>
+                <span className="text-xl text-muted-foreground">:</span>
+                <div className="text-center px-3 py-1.5 rounded-lg bg-primary/10 min-w-[56px]">
+                  <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{String(minutesUntil).padStart(2, '0')}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">Min</p>
+                </div>
+                {isImminent && (
+                  <>
+                    <span className="text-xl text-muted-foreground">:</span>
+                    <div className="text-center px-3 py-1.5 rounded-lg bg-accent/20 min-w-[56px] animate-pulse">
+                      <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{String(secondsUntil).padStart(2, '0')}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">Sec</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Scarcity line */}
+            {showScarcity && !isPast && !isCancelled && (
+              <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-semibold">
+                <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
+                Only {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
               </div>
             )}
 

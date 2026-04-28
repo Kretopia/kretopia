@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { PROJECT_FLOW_STAGES, type ProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
 import { VoiceTaskCapture } from "@/components/project/mobile/VoiceTaskCapture";
 import { DeskActionFab } from "@/components/project/mobile/DeskActionFab";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { DeskAIPanel } from "@/components/project/ai/DeskAIPanel";
 
 interface MobileProjectHubProps {
   flow: ProjectFlow;

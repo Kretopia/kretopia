@@ -9,12 +9,14 @@ import {
   Wallet,
   ChevronRight,
   Sparkles,
-  Mic,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROJECT_FLOW_STAGES, type ProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
 import { VoiceTaskCapture } from "@/components/project/mobile/VoiceTaskCapture";
+import { DeskActionFab } from "@/components/project/mobile/DeskActionFab";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { DeskAIPanel } from "@/components/project/ai/DeskAIPanel";
 
 interface MobileProjectHubProps {
   flow: ProjectFlow;
@@ -34,6 +36,8 @@ interface MobileProjectHubProps {
   onTasksChanged?: () => void;
   onNavigateToTab: (tab: string, intent?: string) => void;
   onPinStage?: (stageId: ProjectFlowStageId | null) => void;
+  onOpenCopilot?: () => void;
+  isPro?: boolean;
 }
 
 /**
@@ -60,9 +64,12 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
     onTasksChanged,
     onNavigateToTab,
     onPinStage,
+    onOpenCopilot,
+    isPro = false,
   } = props;
 
   const [voiceOpen, setVoiceOpen] = useState(false);
+  const [copilotOpen, setCopilotOpen] = useState(false);
 
   const openTasks = useMemo(() => tasks.filter((t) => t.status !== "done").length, [tasks]);
   const doneTasks = tasks.length - openTasks;
@@ -83,42 +90,49 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
       <div className="px-4 pt-3 pb-32 space-y-4">
         {/* === Stage strip (horizontal scroll) === */}
         <section>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              Project Flow · {flow.completionPct}%
-            </span>
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-sm font-bold text-foreground">Project Flow</span>
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                {flow.completionPct}% complete
+              </span>
+            </div>
             {onPinStage && (
               <button
-                className="text-[10px] font-medium text-primary"
+                className="text-xs font-semibold text-primary px-2 py-1 -mr-2 active:opacity-60"
                 onClick={() => onPinStage(flow.isPinned ? null : flow.currentStageId)}
               >
-                {flow.isPinned ? "Unpin stage" : "Pin stage"}
+                {flow.isPinned ? "Unpin" : "Pin stage"}
               </button>
             )}
           </div>
-          <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
-            <div className="flex items-center gap-1.5 min-w-max pb-1">
-              {PROJECT_FLOW_STAGES.map((stage) => {
-                const status = flow.stageStatus[stage.id];
-                return (
-                  <button
-                    key={stage.id}
-                    onClick={() => onNavigateToTab(stage.tab)}
-                    className={cn(
-                      "px-2.5 h-7 rounded-full text-[11px] font-semibold whitespace-nowrap border transition-colors",
-                      status === "complete" &&
-                        "bg-primary/15 border-primary/30 text-primary",
-                      status === "current" &&
-                        "bg-primary text-primary-foreground border-primary shadow-sm",
-                      status === "todo" &&
-                        "bg-muted/40 border-border text-muted-foreground"
-                    )}
-                  >
-                    {stage.short}
-                  </button>
-                );
-              })}
+          <div className="relative -mx-4">
+            <div className="px-4 overflow-x-auto scrollbar-none">
+              <div className="flex items-center gap-1.5 min-w-max pb-1">
+                {PROJECT_FLOW_STAGES.map((stage) => {
+                  const status = flow.stageStatus[stage.id];
+                  return (
+                    <button
+                      key={stage.id}
+                      onClick={() => onNavigateToTab(stage.tab)}
+                      className={cn(
+                        "px-3 h-8 rounded-full text-xs font-semibold whitespace-nowrap border transition-colors",
+                        status === "complete" &&
+                          "bg-primary/15 border-primary/30 text-primary",
+                        status === "current" &&
+                          "bg-primary text-primary-foreground border-primary shadow-sm",
+                        status === "todo" &&
+                          "bg-muted/40 border-border text-muted-foreground"
+                      )}
+                    >
+                      {stage.short}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+            {/* Right-edge fade signals more content */}
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent" />
           </div>
         </section>
 
@@ -175,26 +189,40 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-[11px] text-muted-foreground">Budget</div>
-              <div className="text-lg font-bold truncate">
-                {budget > 0 ? formatMoney(budget) : "Not set"}
+          {budget > 0 ? (
+            <>
+              <div className="flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[11px] text-muted-foreground">Budget</div>
+                  <div className="text-lg font-bold truncate">{formatMoney(budget)}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[11px] text-muted-foreground">Invoices paid</div>
+                  <div className="text-lg font-bold">
+                    {invoicePaidCount}/{invoiceCount || 0}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="text-right">
-              <div className="text-[11px] text-muted-foreground">Invoices paid</div>
-              <div className="text-lg font-bold">
-                {invoicePaidCount}/{invoiceCount || 0}
+              {invoiceCount > 0 && (
+                <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${paidPct}%` }}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">No budget yet</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  Add one to track invoices and payments
+                </div>
               </div>
-            </div>
-          </div>
-          {invoiceCount > 0 && (
-            <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all"
-                style={{ width: `${paidPct}%` }}
-              />
+              <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full whitespace-nowrap">
+                Set budget
+              </span>
             </div>
           )}
         </section>
@@ -272,15 +300,14 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
         </section>
       </div>
 
-      {/* Voice-to-Task FAB */}
-      <button
-        onClick={() => setVoiceOpen(true)}
-        className="fixed right-4 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center active:scale-95 transition-transform"
-        style={{ bottom: "calc(env(safe-area-inset-bottom) + 96px)" }}
-        aria-label="Voice to task"
-      >
-        <Mic className="h-6 w-6" />
-      </button>
+      {/* Combined action FAB: voice note + Project Copilot */}
+      <DeskActionFab
+        onVoice={() => setVoiceOpen(true)}
+        onCopilot={() => {
+          setCopilotOpen(true);
+          onOpenCopilot?.();
+        }}
+      />
     </div>
 
     <VoiceTaskCapture
@@ -292,6 +319,17 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
       collaborators={collaborators}
       onTaskCreated={() => onTasksChanged?.()}
     />
+
+    <Sheet open={copilotOpen} onOpenChange={setCopilotOpen}>
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+        <DeskAIPanel
+          projectId={projectId}
+          userId={currentUserId}
+          isPro={isPro}
+          onClose={() => setCopilotOpen(false)}
+        />
+      </SheetContent>
+    </Sheet>
     </>
   );
 });

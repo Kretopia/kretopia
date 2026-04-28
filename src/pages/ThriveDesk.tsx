@@ -234,6 +234,7 @@ const ThriveDesk = () => {
               onTasksChanged={fetchProjectData}
               onNavigateToTab={goToTabWithIntent}
               onPinStage={handlePinStage}
+              isPro={isPro}
             />
           ) : (
             <DeskTabContent
@@ -285,13 +286,13 @@ const ThriveDesk = () => {
         </div>
       </div>
 
-      {/* Floating AI Assistant — available on every tab */}
+      {/* Floating AI Assistant — desktop only; mobile uses combined FAB in MobileProjectHub */}
       {user && projectId && (
         <DeskAILauncher
           projectId={projectId}
           userId={user.id}
           isPro={isPro}
-          hideOnMobile={activeTab === "messages"}
+          hideOnMobile={true}
         />
       )}
     </div>

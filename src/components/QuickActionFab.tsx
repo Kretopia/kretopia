@@ -283,23 +283,43 @@ const QuickActionFab = () => {
       )}
 
       {/* The FAB itself */}
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Close quick actions" : "Open quick actions"}
-        aria-expanded={open}
-        className={cn(
-          "fixed right-4 z-[57] lg:hidden",
-          "h-14 w-14 rounded-full flex items-center justify-center",
-          "bg-energy text-energy-foreground shadow-[0_8px_24px_-6px_hsl(var(--energy)/0.55)]",
-          "border border-energy/40",
-          "transition-transform duration-200 active:scale-95",
-          open && "rotate-45"
-        )}
+      <div
+        className="fixed right-4 z-[57] lg:hidden"
         style={{ bottom: fabBottom }}
       >
-        <Plus className="h-7 w-7" strokeWidth={2.5} />
-      </button>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Close quick actions" : "Open quick actions"}
+          aria-expanded={open}
+          className={cn(
+            "h-14 w-14 rounded-full flex items-center justify-center",
+            "bg-energy text-energy-foreground shadow-[0_8px_24px_-6px_hsl(var(--energy)/0.55)]",
+            "border border-energy/40",
+            "transition-transform duration-200 active:scale-95",
+            open && "rotate-45"
+          )}
+        >
+          <Plus className="h-7 w-7" strokeWidth={2.5} />
+        </button>
+
+        {/* Dismiss badge — hides the FAB until user lands on Home or Match */}
+        {!open && (
+          <button
+            type="button"
+            onClick={dismissFab}
+            aria-label="Hide quick actions"
+            className={cn(
+              "absolute -top-1 -right-1 h-6 w-6 rounded-full",
+              "bg-card text-foreground border border-border shadow-md",
+              "flex items-center justify-center",
+              "hover:bg-muted active:scale-95 transition-all touch-manipulation"
+            )}
+          >
+            <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
 
       {/* Mounted dialogs */}
       <CreateSessionDialog

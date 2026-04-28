@@ -244,10 +244,17 @@ const EventPage = () => {
   const isCompleted = event.status === 'completed';
   const hasExternalTicket = !!event.external_ticket_url;
 
-  const now = new Date();
   const diff = startDate.getTime() - now.getTime();
   const daysUntil = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
   const hoursUntil = Math.max(0, Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+  const minutesUntil = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+  const secondsUntil = Math.max(0, Math.floor((diff % (1000 * 60)) / 1000));
+  const isImminent = diff > 0 && diff < 24 * 60 * 60 * 1000; // <24h shows mins+secs
+
+  // Scarcity: capacity > 0, <30% remaining, not full
+  const capacity = event.max_participants || 0;
+  const spotsLeft = capacity > 0 ? capacity - participantCount : null;
+  const showScarcity = capacity > 0 && spotsLeft !== null && spotsLeft > 0 && spotsLeft / capacity < 0.3;
 
   return (
     <>

@@ -504,9 +504,11 @@ const EventPage = () => {
                   </div>
                 )}
               </div>
-              <div className="text-left">
+              <div className="text-left flex-1 min-w-0">
                 <p className="text-sm font-semibold">{participantCount} {participantCount === 1 ? 'person is' : 'people are'} going</p>
-                <p className="text-xs text-muted-foreground">Join the crew</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {roleBreakdown.length > 0 ? `Incl. ${roleBreakdown.join(', ')}` : 'Join the crew'}
+                </p>
               </div>
             </div>
           )}

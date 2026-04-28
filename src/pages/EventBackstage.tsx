@@ -788,6 +788,26 @@ const EventBackstage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Email blast (rich composer with templates) */}
+      {emailBlastFor && (
+        <BlastComposerDialog
+          open={!!emailBlastFor}
+          onOpenChange={(o) => !o && setEmailBlastFor(null)}
+          eventId={emailBlastFor.id}
+          eventTitle={emailBlastFor.title}
+        />
+      )}
+
+      {/* Invite by email (CSV / paste) */}
+      {inviteFor && (
+        <InviteByEmailDialog
+          open={!!inviteFor}
+          onOpenChange={(o) => !o && setInviteFor(null)}
+          eventId={inviteFor.id}
+          eventTitle={inviteFor.title}
+        />
+      )}
     </>
   );
 };

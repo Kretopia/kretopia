@@ -256,6 +256,19 @@ const EventPage = () => {
   const spotsLeft = capacity > 0 ? capacity - participantCount : null;
   const showScarcity = capacity > 0 && spotsLeft !== null && spotsLeft > 0 && spotsLeft / capacity < 0.3;
 
+  // Role breakdown for "Who's going" — top 2 roles
+  const roleBreakdown = useMemo(() => {
+    const counts: Record<string, number> = {};
+    attendeeAvatars.forEach(a => {
+      const r = a.role?.trim();
+      if (r) counts[r] = (counts[r] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 2)
+      .map(([role, n]) => `${n} ${role.toLowerCase()}${n > 1 ? 's' : ''}`);
+  }, [attendeeAvatars]);
+
   return (
     <>
       <SEO 

@@ -1,0 +1,286 @@
+import { useEffect, useMemo, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Users, MapPin, Briefcase, ExternalLink, Loader2, Check, Clock, UserPlus, MessageCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+
+interface Guest {
+  user_id: string;
+  full_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  role: string | null;
+  bio: string | null;
+  city: string | null;
+  country: string | null;
+  is_host?: boolean;
+}
+
+interface Props {
+  eventId: string;
+  eventTitle: string;
+  hostId: string;
+  currentUserId: string | null;
+  isParticipant: boolean;
+  isHost: boolean;
+  participantCount: number;
+}
+
+/**
+ * Match/Circle-style guest roster on the event page.
+ * Visible to: host + RSVP'd participants only.
+ * Tap a guest -> profile preview sheet with tagged Connect button.
+ */
+export const EventGuestRoster = ({
+  eventId, eventTitle, hostId, currentUserId, isParticipant, isHost, participantCount,
+}: Props) => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [guests, setGuests] = useState<Guest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Guest | null>(null);
+  const [connections, setConnections] = useState<Record<string, "none" | "pending" | "accepted" | "declined" | "received">>({});
+  const [acting, setActing] = useState(false);
+
+  const canSee = isHost || isParticipant;
+
+  useEffect(() => {
+    if (!canSee) { setLoading(false); return; }
+    (async () => {
+      setLoading(true);
+      try {
+        const { data: parts } = await supabase
+          .from("jam_participants")
+          .select("user_id")
+          .eq("jam_id", eventId)
+          .in("status", ["going", "interested"]);
+        const userIds = Array.from(new Set([hostId, ...(parts || []).map((p) => p.user_id)]));
+        if (userIds.length === 0) { setGuests([]); return; }
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, username, avatar_url, role, bio, city, country")
+          .in("user_id", userIds);
+        const list: Guest[] = (profiles || [])
+          .map((p) => ({ ...p, is_host: p.user_id === hostId }))
+          .sort((a, b) => (a.is_host ? -1 : b.is_host ? 1 : 0));
+        setGuests(list);
+
+        // Load connection status for current user vs each guest
+        if (currentUserId) {
+          const otherIds = userIds.filter((id) => id !== currentUserId);
+          if (otherIds.length > 0) {
+            const [{ data: out }, { data: inc }] = await Promise.all([
+              supabase.from("connections").select("connected_user_id, status").eq("user_id", currentUserId).in("connected_user_id", otherIds),
+              supabase.from("connections").select("user_id, status").eq("connected_user_id", currentUserId).in("user_id", otherIds),
+            ]);
+            const map: Record<string, any> = {};
+            out?.forEach((c) => { map[c.connected_user_id] = c.status; });
+            inc?.forEach((c) => {
+              if (c.status === "accepted") map[c.user_id] = "accepted";
+              else if (c.status === "pending" && !map[c.user_id]) map[c.user_id] = "received";
+            });
+            setConnections(map);
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    })().catch(() => setLoading(false));
+  }, [eventId, hostId, currentUserId, canSee]);
+
+  const handleConnect = async (guest: Guest) => {
+    if (!currentUserId) {
+      navigate("/auth");
+      return;
+    }
+    if (guest.user_id === currentUserId) return;
+    setActing(true);
+    try {
+      const { error } = await supabase.from("connections").insert({
+        user_id: currentUserId,
+        connected_user_id: guest.user_id,
+        status: "pending",
+        context: { source: "event", event_id: eventId, event_title: eventTitle },
+      });
+      if (error) throw error;
+      setConnections((prev) => ({ ...prev, [guest.user_id]: "pending" }));
+      toast({ title: "Request sent", description: `Tagged: Met via ${eventTitle}` });
+    } catch (e: any) {
+      toast({ title: "Couldn't send request", description: e.message, variant: "destructive" });
+    } finally {
+      setActing(false);
+    }
+  };
+
+  const openProfile = (g: Guest) => {
+    if (g.username) navigate(`/u/${g.username}`);
+    else navigate(`/profile/${g.user_id}`);
+  };
+
+  if (!canSee) {
+    return (
+      <Card className="mb-6">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-semibold leading-tight">Who's going</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {participantCount} {participantCount === 1 ? "person" : "people"} so far · RSVP to see the guest list and connect
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <>
+      <Card className="mb-6">
+        <CardContent className="p-5 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold leading-tight">Who's going</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Tap to preview · connect before you meet
+              </p>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-6 text-muted-foreground text-sm">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading guests…
+            </div>
+          ) : guests.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No guests yet — be the first.</p>
+          ) : (
+            <ScrollArea className="-mx-1">
+              <div className="flex gap-3 px-1 pb-2">
+                {guests.map((g) => (
+                  <button
+                    key={g.user_id}
+                    onClick={() => setSelected(g)}
+                    className="shrink-0 w-[112px] rounded-xl border border-border bg-card hover:bg-accent/40 active:scale-[0.98] transition p-3 text-left"
+                  >
+                    <Avatar className="h-14 w-14 mx-auto mb-2">
+                      <AvatarImage src={g.avatar_url || undefined} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        {g.full_name?.charAt(0) || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <p className="text-xs font-semibold truncate text-center">
+                      {g.full_name?.split(" ")[0] || "Guest"}
+                    </p>
+                    {g.is_host ? (
+                      <Badge variant="secondary" className="mt-1 w-full justify-center text-[10px]">Host</Badge>
+                    ) : g.role ? (
+                      <p className="text-[10px] text-muted-foreground truncate text-center mt-0.5">{g.role}</p>
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Profile Preview Sheet */}
+      <Sheet open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <SheetContent side="bottom" className="rounded-t-2xl p-0 max-h-[85vh] flex flex-col">
+          {selected && (
+            <>
+              <SheetHeader className="p-5 pb-3 border-b border-border text-left">
+                <SheetTitle className="sr-only">{selected.full_name || "Guest"}</SheetTitle>
+                <div className="flex items-start gap-3">
+                  <Avatar className="h-16 w-16 shrink-0">
+                    <AvatarImage src={selected.avatar_url || undefined} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-lg font-semibold">
+                      {selected.full_name?.charAt(0) || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-lg truncate">{selected.full_name || "Guest"}</h3>
+                      {selected.is_host && <Badge variant="secondary" className="text-[10px]">Host</Badge>}
+                    </div>
+                    {selected.role && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        <Briefcase className="h-3.5 w-3.5" /> {selected.role}
+                      </p>
+                    )}
+                    {(selected.city || selected.country) && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                        <MapPin className="h-3 w-3" /> {[selected.city, selected.country].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </SheetHeader>
+
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {selected.bio && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">About</p>
+                    <p className="text-sm whitespace-pre-wrap">{selected.bio}</p>
+                  </div>
+                )}
+                <Button variant="ghost" size="sm" className="w-full" onClick={() => openProfile(selected)}>
+                  View full profile <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+                </Button>
+              </div>
+
+              <div className="border-t border-border p-4 space-y-2">
+                {(() => {
+                  const status = connections[selected.user_id] || "none";
+                  if (selected.user_id === currentUserId) return (
+                    <Badge variant="outline" className="w-full justify-center py-2.5">This is you</Badge>
+                  );
+                  if (status === "accepted") {
+                    return (
+                      <Button variant="gradient" className="w-full" onClick={() => navigate(`/messages?user=${selected.user_id}`)}>
+                        <MessageCircle className="h-4 w-4 mr-2" /> Message
+                      </Button>
+                    );
+                  }
+                  if (status === "pending") {
+                    return (
+                      <Button variant="outline" className="w-full" disabled>
+                        <Clock className="h-4 w-4 mr-2" /> Request pending
+                      </Button>
+                    );
+                  }
+                  if (status === "received") {
+                    return (
+                      <Button variant="outline" className="w-full" onClick={() => navigate("/messages?tab=requests")}>
+                        <Check className="h-4 w-4 mr-2" /> Respond to their request
+                      </Button>
+                    );
+                  }
+                  return (
+                    <Button variant="gradient" className="w-full" onClick={() => handleConnect(selected)} disabled={acting}>
+                      {acting ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                        <><UserPlus className="h-4 w-4 mr-2" /> Connect · Met via {eventTitle.length > 18 ? eventTitle.slice(0, 18) + "…" : eventTitle}</>
+                      )}
+                    </Button>
+                  );
+                })()}
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+};

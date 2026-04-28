@@ -86,42 +86,49 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
       <div className="px-4 pt-3 pb-32 space-y-4">
         {/* === Stage strip (horizontal scroll) === */}
         <section>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              Project Flow · {flow.completionPct}%
-            </span>
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-sm font-bold text-foreground">Project Flow</span>
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                {flow.completionPct}% complete
+              </span>
+            </div>
             {onPinStage && (
               <button
-                className="text-[10px] font-medium text-primary"
+                className="text-xs font-semibold text-primary px-2 py-1 -mr-2 active:opacity-60"
                 onClick={() => onPinStage(flow.isPinned ? null : flow.currentStageId)}
               >
-                {flow.isPinned ? "Unpin stage" : "Pin stage"}
+                {flow.isPinned ? "Unpin" : "Pin stage"}
               </button>
             )}
           </div>
-          <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
-            <div className="flex items-center gap-1.5 min-w-max pb-1">
-              {PROJECT_FLOW_STAGES.map((stage) => {
-                const status = flow.stageStatus[stage.id];
-                return (
-                  <button
-                    key={stage.id}
-                    onClick={() => onNavigateToTab(stage.tab)}
-                    className={cn(
-                      "px-2.5 h-7 rounded-full text-[11px] font-semibold whitespace-nowrap border transition-colors",
-                      status === "complete" &&
-                        "bg-primary/15 border-primary/30 text-primary",
-                      status === "current" &&
-                        "bg-primary text-primary-foreground border-primary shadow-sm",
-                      status === "todo" &&
-                        "bg-muted/40 border-border text-muted-foreground"
-                    )}
-                  >
-                    {stage.short}
-                  </button>
-                );
-              })}
+          <div className="relative -mx-4">
+            <div className="px-4 overflow-x-auto scrollbar-none">
+              <div className="flex items-center gap-1.5 min-w-max pb-1">
+                {PROJECT_FLOW_STAGES.map((stage) => {
+                  const status = flow.stageStatus[stage.id];
+                  return (
+                    <button
+                      key={stage.id}
+                      onClick={() => onNavigateToTab(stage.tab)}
+                      className={cn(
+                        "px-3 h-8 rounded-full text-xs font-semibold whitespace-nowrap border transition-colors",
+                        status === "complete" &&
+                          "bg-primary/15 border-primary/30 text-primary",
+                        status === "current" &&
+                          "bg-primary text-primary-foreground border-primary shadow-sm",
+                        status === "todo" &&
+                          "bg-muted/40 border-border text-muted-foreground"
+                      )}
+                    >
+                      {stage.short}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+            {/* Right-edge fade signals more content */}
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent" />
           </div>
         </section>
 

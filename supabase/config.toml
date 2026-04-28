@@ -35,6 +35,8 @@ project_id = "kwmcocsitwssrtzkdojh"
     verify_jwt = false
   [functions.event-og-image]
     verify_jwt = false
+  [functions.event-reminders]
+    verify_jwt = false
   [functions.fetch-portfolio-data]
     verify_jwt = false
   [functions.fetch-youtube-credits]

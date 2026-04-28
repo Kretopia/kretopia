@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { sendEventConfirmationEmail } from "@/utils/eventConfirmationEmail";
@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Loader2, Lock, 
   Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine,
-  MoreVertical, Crown, Ban, CheckCircle, Download, CalendarPlus, Navigation
+  MoreVertical, Crown, Ban, CheckCircle, Download, CalendarPlus, Navigation, MessageCircle
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
@@ -31,7 +31,7 @@ import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";
 import { GuestRsvpDialog } from "@/components/sessions/GuestRsvpDialog";
 import { GuestPassDialog } from "@/components/sessions/GuestPassDialog";
 import { APP_URL } from "@/lib/constants";
-import { downloadIcs, openDirections } from "@/lib/eventActions";
+import { downloadIcs, openDirections, captureRefFromUrl, buildWarmShareMessage, buildEventShareUrl } from "@/lib/eventActions";
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',
@@ -52,7 +52,7 @@ const EventPage = () => {
   const [event, setEvent] = useState<any>(null);
   const [creator, setCreator] = useState<any>(null);
   const [participantCount, setParticipantCount] = useState(0);
-  const [attendeeAvatars, setAttendeeAvatars] = useState<{ avatar_url: string | null; full_name: string }[]>([]);
+  const [attendeeAvatars, setAttendeeAvatars] = useState<{ avatar_url: string | null; full_name: string; role?: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [participation, setParticipation] = useState<string | null>(null);
@@ -65,6 +65,13 @@ const EventPage = () => {
   const [showCohosts, setShowCohosts] = useState(false);
   const [showRecap, setShowRecap] = useState(false);
   const [showGuestPass, setShowGuestPass] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+
+  // Tick every second for live countdown
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (eventId) fetchEvent();
@@ -111,19 +118,37 @@ const EventPage = () => {
       setEvent(eventData);
 
       const { data: profileData } = await supabase
-        .from('public_profiles_safe').select('full_name, avatar_url, role').eq('user_id', eventData.created_by).single();
-      setCreator(profileData);
+        .from('public_profiles_safe')
+        .select('user_id, full_name, avatar_url, role, bio, id_verified, verification_status, verification_tier, badge, level')
+        .eq('user_id', eventData.created_by)
+        .single();
+
+      // Also fetch host username (separate, since username is on profiles)
+      const { data: hostUsername } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('user_id', eventData.created_by)
+        .maybeSingle();
+
+      // Count of public events this host has run (trust signal)
+      const { count: hostedCount } = await supabase
+        .from('creative_jams')
+        .select('id', { count: 'exact', head: true })
+        .eq('created_by', eventData.created_by)
+        .eq('is_public', true);
+
+      setCreator({ ...profileData, username: hostUsername?.username, hostedCount: hostedCount || 0 });
 
       // Get participant count and avatars
       const { data: participants, count } = await supabase
         .from('jam_participants').select('user_id', { count: 'exact' }).eq('jam_id', eventId).in('status', ['going', 'interested']);
       setParticipantCount(count || 0);
 
-      // Fetch first 8 attendee avatars
+      // Fetch first 12 attendee avatars + roles for richer social proof
       if (participants && participants.length > 0) {
-        const userIds = participants.slice(0, 8).map(p => p.user_id);
+        const userIds = participants.slice(0, 12).map(p => p.user_id);
         const { data: profiles } = await supabase
-          .from('profiles').select('avatar_url, full_name').in('user_id', userIds);
+          .from('profiles').select('avatar_url, full_name, role').in('user_id', userIds);
         setAttendeeAvatars(profiles || []);
       }
 
@@ -164,7 +189,18 @@ const EventPage = () => {
         setParticipantCount(prev => prev - 1);
         toast({ title: "Left event" });
       } else {
-        const { data: inserted } = await supabase.from('jam_participants').insert({ jam_id: event.id, user_id: user.id, status: 'going' }).select('id, check_in_token').single();
+        // Capture promoter/host attribution from ?ref= query
+        const referredBy = await captureRefFromUrl(event.id);
+        const insertPayload: any = { jam_id: event.id, user_id: user.id, status: 'going' };
+        if (referredBy && referredBy !== user.id) {
+          insertPayload.referred_by = referredBy;
+          insertPayload.referral_channel = 'link';
+        }
+        const { data: inserted } = await supabase
+          .from('jam_participants')
+          .insert(insertPayload)
+          .select('id, check_in_token')
+          .single();
         setParticipation('going');
         setParticipantCount(prev => prev + 1);
         toast({ title: "You're in!", description: "You've joined this event" });
@@ -226,10 +262,30 @@ const EventPage = () => {
   const isCompleted = event.status === 'completed';
   const hasExternalTicket = !!event.external_ticket_url;
 
-  const now = new Date();
   const diff = startDate.getTime() - now.getTime();
   const daysUntil = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
   const hoursUntil = Math.max(0, Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+  const minutesUntil = Math.max(0, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+  const secondsUntil = Math.max(0, Math.floor((diff % (1000 * 60)) / 1000));
+  const isImminent = diff > 0 && diff < 24 * 60 * 60 * 1000; // <24h shows mins+secs
+
+  // Scarcity: capacity > 0, <30% remaining, not full
+  const capacity = event.max_participants || 0;
+  const spotsLeft = capacity > 0 ? capacity - participantCount : null;
+  const showScarcity = capacity > 0 && spotsLeft !== null && spotsLeft > 0 && spotsLeft / capacity < 0.3;
+
+  // Role breakdown for "Who's going" — top 2 roles
+  const roleBreakdown = useMemo(() => {
+    const counts: Record<string, number> = {};
+    attendeeAvatars.forEach(a => {
+      const r = a.role?.trim();
+      if (r) counts[r] = (counts[r] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 2)
+      .map(([role, n]) => `${n} ${role.toLowerCase()}${n > 1 ? 's' : ''}`);
+  }, [attendeeAvatars]);
 
   return (
     <>
@@ -391,9 +447,14 @@ const EventPage = () => {
             </Badge>
             <h1 className="text-xl sm:text-4xl font-bold mb-2 sm:mb-3 leading-tight">{event.title}</h1>
             
-            {/* Hosted By */}
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+            {/* Hosted By — trust card */}
+            <button
+              type="button"
+              onClick={() => creator?.username && navigate(`/u/${creator.username}`)}
+              className="inline-flex items-center justify-center gap-3 mb-4 px-3 py-2 rounded-xl hover:bg-muted/50 transition-colors disabled:opacity-100"
+              disabled={!creator?.username}
+            >
+              <Avatar className="h-11 w-11 ring-2 ring-primary/20">
                 <AvatarImage src={creator?.avatar_url} />
                 <AvatarFallback className="bg-primary/10 text-primary">
                   {creator?.full_name?.charAt(0) || 'H'}
@@ -401,22 +462,56 @@ const EventPage = () => {
               </Avatar>
               <div className="text-left">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Your host</p>
-                <p className="font-medium text-sm">{creator?.full_name || 'ThriveIN Host'}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="font-semibold text-sm">{creator?.full_name || 'ThriveIN Host'}</p>
+                  {creator?.id_verified && (
+                    <CheckCircle className="h-3.5 w-3.5 text-primary" aria-label="Verified" />
+                  )}
+                </div>
+                {(creator?.role || creator?.hostedCount > 0) && (
+                  <p className="text-[11px] text-muted-foreground">
+                    {creator?.role}
+                    {creator?.role && creator?.hostedCount > 0 && ' · '}
+                    {creator?.hostedCount > 0 && `${creator.hostedCount} ${creator.hostedCount === 1 ? 'event' : 'events'} hosted`}
+                  </p>
+                )}
               </div>
-            </div>
+            </button>
 
-            {/* Countdown */}
+            {/* Live countdown */}
             {!isPast && !isCancelled && diff > 0 && (
-              <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                <div className="text-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-primary/10">
-                  <p className="text-xl sm:text-2xl font-bold text-primary">{daysUntil}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase">Days</p>
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <div className="text-center px-3 py-1.5 rounded-lg bg-primary/10 min-w-[56px]">
+                  <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{daysUntil}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">Days</p>
                 </div>
-                <span className="text-xl sm:text-2xl text-muted-foreground">:</span>
-                <div className="text-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-primary/10">
-                  <p className="text-xl sm:text-2xl font-bold text-primary">{hoursUntil}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase">Hours</p>
+                <span className="text-xl text-muted-foreground">:</span>
+                <div className="text-center px-3 py-1.5 rounded-lg bg-primary/10 min-w-[56px]">
+                  <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{String(hoursUntil).padStart(2, '0')}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">Hrs</p>
                 </div>
+                <span className="text-xl text-muted-foreground">:</span>
+                <div className="text-center px-3 py-1.5 rounded-lg bg-primary/10 min-w-[56px]">
+                  <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{String(minutesUntil).padStart(2, '0')}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">Min</p>
+                </div>
+                {isImminent && (
+                  <>
+                    <span className="text-xl text-muted-foreground">:</span>
+                    <div className="text-center px-3 py-1.5 rounded-lg bg-accent/20 min-w-[56px] animate-pulse">
+                      <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{String(secondsUntil).padStart(2, '0')}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase">Sec</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Scarcity line */}
+            {showScarcity && !isPast && !isCancelled && (
+              <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-semibold">
+                <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
+                Only {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
               </div>
             )}
 
@@ -444,9 +539,11 @@ const EventPage = () => {
                   </div>
                 )}
               </div>
-              <div className="text-left">
+              <div className="text-left flex-1 min-w-0">
                 <p className="text-sm font-semibold">{participantCount} {participantCount === 1 ? 'person is' : 'people are'} going</p>
-                <p className="text-xs text-muted-foreground">Join the crew</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {roleBreakdown.length > 0 ? `Incl. ${roleBreakdown.join(', ')}` : 'Join the crew'}
+                </p>
               </div>
             </div>
           )}
@@ -594,11 +691,21 @@ const EventPage = () => {
             </Card>
           )}
 
-          {/* Discussion */}
+          {/* Group Chat */}
           {isAuthenticated && (
             <Card className="mb-6">
               <CardContent className="p-0">
-                <h3 className="font-semibold px-5 pt-4 pb-2">Discussion</h3>
+                <div className="flex items-center justify-between px-5 pt-4 pb-2">
+                  <div>
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4 text-primary" />
+                      Group chat
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {participation || isCreator ? "Say hi, ask questions, share plans" : "RSVP to join the chat"}
+                    </p>
+                  </div>
+                </div>
                 <EventComments 
                   eventId={event.id} 
                   isCreator={isCreator} 
@@ -665,7 +772,13 @@ const EventPage = () => {
           )}
 
           {isAuthenticated && (
-            <EventShareKit event={event} open={showShareKit} onOpenChange={setShowShareKit} />
+            <EventShareKit
+              event={event}
+              hostFirstName={creator?.full_name?.split(" ")[0]}
+              attendeeCount={participantCount}
+              open={showShareKit}
+              onOpenChange={setShowShareKit}
+            />
           )}
 
           <ShareToMessageDialog
@@ -678,8 +791,25 @@ const EventPage = () => {
               subtitle: event.venue_name || undefined,
               image_url: event.cover_image_url,
             }}
-            externalUrl={`${APP_URL}/share/event/${event.id}/`}
-            externalText={`🎉 ${event.title}\n\nRSVP now on ThriveIN 👇\n${APP_URL}/share/event/${event.id}/`}
+            externalUrl={buildEventShareUrl(event.id)}
+            externalText={
+              buildWarmShareMessage(
+                {
+                  id: event.id,
+                  title: event.title,
+                  startTime: event.start_time,
+                  venueName: event.venue_name,
+                  isTicketed: event.is_ticketed,
+                  ticketPrice: event.ticket_price,
+                  ticketCurrency: event.ticket_currency,
+                  attendeeCount: participantCount,
+                },
+                {
+                  hostFirstName: creator?.full_name?.split(" ")[0],
+                  isHost: isCreator,
+                }
+              ).text
+            }
           />
 
           <TicketPurchaseDialog

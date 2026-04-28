@@ -1,17 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { 
-  Copy, Check, Share2, QrCode, Download, 
+  Copy, Check, Share2, Download, 
   MessageCircle, Twitter, Code2 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import QRCodeStyling from "qr-code-styling";
-import { useEffect, useRef } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfileContext } from "@/contexts/ProfileContext";
+import { buildWarmShareMessage, buildEventShareUrl, logShareClick, type ShareChannel } from "@/lib/eventActions";
 
 interface EventShareKitProps {
   event: {
@@ -21,21 +22,58 @@ interface EventShareKitProps {
     start_time: string;
     venue_name?: string;
     category: string;
+    is_ticketed?: boolean | null;
+    ticket_price?: number | null;
+    ticket_currency?: string | null;
+    created_by?: string;
   };
+  hostFirstName?: string | null;
+  attendeeCount?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps) => {
+export const EventShareKit = ({ event, hostFirstName, attendeeCount, open, onOpenChange }: EventShareKitProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { profile } = useProfileContext();
   const [copied, setCopied] = useState(false);
+  const [customMessage, setCustomMessage] = useState("");
   const qrRef = useRef<HTMLDivElement>(null);
   const qrCode = useRef<QRCodeStyling | null>(null);
 
-  const baseUrl = "https://www.thrivein.io";
-  const eventUrl = `${baseUrl}/share/event/${event.id}/`;
+  const isHost = !!user && event.created_by === user.id;
+  const sharerFirstName = profile?.full_name?.split(" ")[0] || null;
+  const sharerUsername = profile?.username || null;
 
-  const shareText = `🎉 "${event.title}" on ThriveIN!\n\n📅 ${new Date(event.start_time).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}${event.venue_name ? `\n📍 ${event.venue_name}` : ''}\n\nRSVP & join here:`;
+  const eventUrl = buildEventShareUrl(event.id, sharerUsername);
+
+  const { text: defaultShareText } = buildWarmShareMessage(
+    {
+      id: event.id,
+      title: event.title,
+      startTime: event.start_time,
+      venueName: event.venue_name,
+      isTicketed: event.is_ticketed,
+      ticketPrice: event.ticket_price,
+      ticketCurrency: event.ticket_currency,
+      attendeeCount: attendeeCount,
+    },
+    {
+      hostFirstName,
+      sharerFirstName,
+      sharerUsername,
+      isHost,
+    }
+  );
+
+  // Reset custom message whenever the dialog re-opens for a fresh event
+  useEffect(() => {
+    if (open) setCustomMessage(defaultShareText);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, event.id]);
+
+  const shareText = customMessage || defaultShareText;
 
   useEffect(() => {
     if (open && qrRef.current) {
@@ -43,8 +81,8 @@ export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps)
         width: 200,
         height: 200,
         data: eventUrl,
-        dotsOptions: { color: "#8B5CF6", type: "rounded" },
-        cornersSquareOptions: { color: "#6D28D9", type: "extra-rounded" },
+        dotsOptions: { color: "#7B61FF", type: "rounded" },
+        cornersSquareOptions: { color: "#5B6BF5", type: "extra-rounded" },
         backgroundOptions: { color: "#ffffff" },
         imageOptions: { crossOrigin: "anonymous" },
       });
@@ -53,11 +91,22 @@ export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps)
     }
   }, [open, eventUrl]);
 
+  const track = (channel: ShareChannel) => {
+    logShareClick(event.id, channel, user?.id || null).catch(() => {});
+  };
+
   const copyLink = async () => {
     await navigator.clipboard.writeText(eventUrl);
     setCopied(true);
     toast({ title: "Link copied!" });
+    track("copy");
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyMessage = async () => {
+    await navigator.clipboard.writeText(shareText);
+    toast({ title: "Message copied — paste anywhere" });
+    track("copy");
   };
 
   const downloadQR = () => {
@@ -65,27 +114,32 @@ export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps)
       name: `thrivein-event-${event.id.slice(0, 8)}`, 
       extension: "png" 
     });
+    track("qr");
   };
 
   const shareNative = async () => {
+    track("native");
     if (navigator.share) {
       try {
-        await navigator.share({ title: event.title, text: shareText, url: eventUrl });
+        await navigator.share({ title: event.title, text: shareText });
       } catch {}
     } else {
-      copyLink();
+      copyMessage();
     }
   };
 
   const shareWhatsApp = () => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(shareText + '\n' + eventUrl)}`, '_blank');
+    track("whatsapp");
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
   };
 
   const shareTwitter = () => {
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(eventUrl)}`, '_blank');
+    track("twitter");
+    // Twitter handles URL preview from text — pass message + URL separately for richer card
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
   };
 
-  const embedCode = `<iframe src="${eventUrl}?embed=1" width="400" height="500" frameborder="0" style="border-radius: 12px; max-width: 100%;"></iframe>`;
+  const embedCode = `<iframe src="${eventUrl}&embed=1" width="400" height="500" frameborder="0" style="border-radius: 12px; max-width: 100%;"></iframe>`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -93,40 +147,33 @@ export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps)
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5" />
-            Share Event
+            {isHost ? "Invite your people" : "Tell a friend"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Quick Link */}
+        <div className="space-y-5">
+          {/* Editable warm message */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Event Link</Label>
-            <div className="flex gap-2">
-              <Input value={eventUrl} readOnly className="text-sm" />
-              <Button size="icon" variant="outline" onClick={copyLink}>
-                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-              </Button>
-            </div>
-          </div>
-
-          {/* QR Code */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">QR Code</Label>
-            <div className="flex flex-col items-center gap-3 p-4 rounded-lg bg-muted/50">
-              <div ref={qrRef} className="rounded-lg overflow-hidden" />
-              <p className="text-xs text-muted-foreground text-center">
-                Print this for posters, flyers, or display at venues
+            <Label className="text-sm font-medium">Your message</Label>
+            <Textarea
+              value={shareText}
+              onChange={(e) => setCustomMessage(e.target.value)}
+              rows={7}
+              className="text-sm resize-none"
+            />
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-muted-foreground">
+                {sharerUsername ? `Tracked link: ?ref=${sharerUsername}` : "Add a username to track invites"}
               </p>
-              <Button size="sm" variant="outline" onClick={downloadQR}>
-                <Download className="h-4 w-4 mr-2" />
-                Download QR
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={copyMessage}>
+                <Copy className="h-3 w-3 mr-1" /> Copy
               </Button>
             </div>
           </div>
 
-          {/* Social Share Buttons */}
+          {/* Quick share row */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Share to</Label>
+            <Label className="text-sm font-medium">Send via</Label>
             <div className="grid grid-cols-3 gap-2">
               <Button variant="outline" className="flex-col h-auto py-3 gap-1" onClick={shareNative}>
                 <Share2 className="h-5 w-5" />
@@ -143,38 +190,60 @@ export const EventShareKit = ({ event, open, onOpenChange }: EventShareKitProps)
             </div>
           </div>
 
-          {/* Embed Code */}
+          {/* Quick Link */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <Code2 className="h-4 w-4" />
-              Embed Widget
-            </Label>
-            <Textarea 
-              value={embedCode} 
-              readOnly 
-              rows={3} 
-              className="text-xs font-mono"
-            />
-            <Button 
-              size="sm" 
-              variant="ghost" 
-              className="text-xs"
-              onClick={() => {
-                navigator.clipboard.writeText(embedCode);
-                toast({ title: "Embed code copied!" });
-              }}
-            >
-              <Copy className="h-3 w-3 mr-1" /> Copy embed code
-            </Button>
+            <Label className="text-sm font-medium">Direct link</Label>
+            <div className="flex gap-2">
+              <Input value={eventUrl} readOnly className="text-sm" />
+              <Button size="icon" variant="outline" onClick={copyLink}>
+                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
 
-          {/* Pro Tips */}
-          <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
-            <p className="text-xs text-muted-foreground">
-              <strong>Pro Tip:</strong> Share this link as your event's "entrance ticket" — 
-              anyone who clicks will sign up for ThriveIN and automatically join your event!
-            </p>
-          </div>
+          {/* QR Code (collapsed feel) */}
+          <details className="rounded-lg border border-border/50 overflow-hidden">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-medium bg-muted/30 select-none">
+              QR Code · for posters & flyers
+            </summary>
+            <div className="flex flex-col items-center gap-3 p-4">
+              <div ref={qrRef} className="rounded-lg overflow-hidden" />
+              <Button size="sm" variant="outline" onClick={downloadQR}>
+                <Download className="h-4 w-4 mr-2" /> Download QR
+              </Button>
+            </div>
+          </details>
+
+          {/* Embed Code */}
+          <details className="rounded-lg border border-border/50 overflow-hidden">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-medium bg-muted/30 select-none flex items-center gap-2">
+              <Code2 className="h-4 w-4" /> Embed on your site
+            </summary>
+            <div className="p-4 space-y-2">
+              <Textarea value={embedCode} readOnly rows={3} className="text-xs font-mono" />
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(embedCode);
+                  toast({ title: "Embed code copied!" });
+                  track("embed");
+                }}
+              >
+                <Copy className="h-3 w-3 mr-1" /> Copy embed code
+              </Button>
+            </div>
+          </details>
+
+          {sharerUsername && (
+            <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <p className="text-xs text-muted-foreground">
+                <strong>Tip:</strong> Every RSVP from your link is attributed to you — so when we launch
+                Promoter rewards, your shares already count.
+              </p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

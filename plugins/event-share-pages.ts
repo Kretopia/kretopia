@@ -98,7 +98,11 @@ function buildEventShareHtml(event: EventRow, siteUrl: string) {
     ? `${subtitle} — ${truncate(event.description, 120)}`
     : `${subtitle} — RSVP now on ThriveIN, the Creative OS.`;
   const ctaDescription = `${description} Join the creative community.`;
-  const image = event.cover_image_url || FALLBACK_OG_IMAGE;
+  // Prefer dynamic OG image (live attendee count) over static cover, fall back gracefully
+  const projectRef = process.env.VITE_SUPABASE_PROJECT_ID || "kwmcocsitwssrtzkdojh";
+  const dynamicOg = `https://${projectRef}.supabase.co/functions/v1/event-og-image?event_id=${event.id}`;
+  const image = dynamicOg;
+  const fallbackImage = event.cover_image_url || FALLBACK_OG_IMAGE;
 
   return `<!doctype html>
 <html lang="en">
@@ -116,6 +120,10 @@ function buildEventShareHtml(event: EventRow, siteUrl: string) {
     <meta property="og:url" content="${shareUrl}" />
     <meta property="og:site_name" content="ThriveIN" />
     <meta property="og:image" content="${escapeHtml(image)}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${escapeHtml(event.title)} on ThriveIN" />
+    <meta property="og:image:secondary" content="${escapeHtml(fallbackImage)}" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(title)}" />

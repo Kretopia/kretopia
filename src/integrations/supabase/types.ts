@@ -4031,6 +4031,44 @@ export type Database = {
           },
         ]
       }
+      event_share_clicks: {
+        Row: {
+          channel: string
+          converted_to_rsvp: boolean
+          created_at: string
+          event_id: string
+          id: string
+          referrer_user_id: string | null
+          visitor_session: string | null
+        }
+        Insert: {
+          channel?: string
+          converted_to_rsvp?: boolean
+          created_at?: string
+          event_id: string
+          id?: string
+          referrer_user_id?: string | null
+          visitor_session?: string | null
+        }
+        Update: {
+          channel?: string
+          converted_to_rsvp?: boolean
+          created_at?: string
+          event_id?: string
+          id?: string
+          referrer_user_id?: string | null
+          visitor_session?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_share_clicks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_ticket_tiers: {
         Row: {
           created_at: string
@@ -5141,6 +5179,8 @@ export type Database = {
           is_visible: boolean
           jam_id: string
           joined_at: string
+          referral_channel: string | null
+          referred_by: string | null
           status: string | null
           user_id: string
         }
@@ -5151,6 +5191,8 @@ export type Database = {
           is_visible?: boolean
           jam_id: string
           joined_at?: string
+          referral_channel?: string | null
+          referred_by?: string | null
           status?: string | null
           user_id: string
         }
@@ -5161,6 +5203,8 @@ export type Database = {
           is_visible?: boolean
           jam_id?: string
           joined_at?: string
+          referral_channel?: string | null
+          referred_by?: string | null
           status?: string | null
           user_id?: string
         }

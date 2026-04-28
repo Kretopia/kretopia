@@ -374,7 +374,7 @@ const EventPage = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/events")}
+              onClick={() => navigate("/")}
               aria-label="Close"
               className="h-9 w-9 -mr-2"
             >

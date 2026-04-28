@@ -186,41 +186,62 @@ const EventPage = () => {
     setJoining(true);
     try {
       if (participation) {
-        await supabase.from('jam_participants').delete().eq('jam_id', event.id).eq('user_id', user.id);
+        // Cancel RSVP — frees the spot and triggers waitlist auto-promotion
+        await supabase
+          .from('jam_participants')
+          .update({ status: 'cancelled' } as any)
+          .eq('jam_id', event.id)
+          .eq('user_id', user.id);
         setParticipation(null);
-        setParticipantCount(prev => prev - 1);
-        toast({ title: "Left event" });
+        setParticipantCount(prev => Math.max(0, prev - 1));
+        toast({ title: "RSVP cancelled", description: "Your spot has been released." });
       } else {
         // Capture promoter/host attribution from ?ref= query
         const referredBy = await captureRefFromUrl(event.id);
-        const insertPayload: any = { jam_id: event.id, user_id: user.id, status: 'going' };
-        if (referredBy && referredBy !== user.id) {
-          insertPayload.referred_by = referredBy;
-          insertPayload.referral_channel = 'link';
-        }
-        const { data: inserted } = await supabase
-          .from('jam_participants')
-          .insert(insertPayload)
-          .select('id, check_in_token')
-          .single();
-        setParticipation('going');
-        setParticipantCount(prev => prev + 1);
-        toast({ title: "You're in!", description: "You've joined this event" });
-        if (inserted) {
-          sendEventConfirmationEmail({
-            eventId: event.id,
-            eventTitle: event.title,
-            startTime: event.start_time,
-            endTime: event.end_time,
-            venueName: event.venue_name,
-            venueAddress: event.venue_address,
-            isTicketed: false,
-            participantId: inserted.id,
-          });
+        const { data: result, error } = await supabase.rpc('rsvp_to_event', {
+          p_event_id: event.id,
+          p_referred_by: referredBy && referredBy !== user.id ? referredBy : null,
+          p_referral_channel: referredBy && referredBy !== user.id ? 'link' : null,
+        });
+        if (error) throw error;
+
+        if (result === 'waitlisted') {
+          toast({ title: "You're on the waitlist", description: "We'll notify you the moment a spot opens." });
+        } else if (result === 'full_no_waitlist') {
+          toast({ title: "Event is full", description: "The host hasn't enabled a waitlist for this one.", variant: "destructive" });
+        } else if (result === 'already') {
+          setParticipation('going');
+          toast({ title: "Already going", description: "You're already on the guest list." });
+        } else {
+          // joined
+          setParticipation('going');
+          setParticipantCount(prev => prev + 1);
+          toast({ title: "You're in!", description: "You've joined this event" });
+
+          // Look up the new participant row to send confirmation email
+          const { data: inserted } = await supabase
+            .from('jam_participants')
+            .select('id')
+            .eq('jam_id', event.id)
+            .eq('user_id', user.id)
+            .maybeSingle();
+          if (inserted) {
+            sendEventConfirmationEmail({
+              eventId: event.id,
+              eventTitle: event.title,
+              startTime: event.start_time,
+              endTime: event.end_time,
+              venueName: event.venue_name,
+              venueAddress: event.venue_address,
+              isTicketed: false,
+              participantId: inserted.id,
+            }).catch(() => {});
+          }
         }
       }
-    } catch {
-      toast({ title: "Error", description: "Failed to update", variant: "destructive" });
+    } catch (err) {
+      console.error('RSVP error:', err);
+      toast({ title: "Error", description: "Failed to update RSVP", variant: "destructive" });
     } finally {
       setJoining(false);
     }

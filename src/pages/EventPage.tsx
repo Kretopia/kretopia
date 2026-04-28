@@ -27,6 +27,7 @@ import { EventComments } from "@/components/sessions/EventComments";
 import { EventCohosts } from "@/components/sessions/EventCohosts";
 import { EventRecapButton } from "@/components/sessions/EventRecapButton";
 import { EventGroupChatCard } from "@/components/sessions/EventGroupChatCard";
+import { EventInlineChat } from "@/components/sessions/EventInlineChat";
 import { EventGuestRoster } from "@/components/sessions/EventGuestRoster";
 import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
 import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";

@@ -331,3 +331,43 @@ async function runPostEvent(
     }
   }
 }
+
+async function sendReconnectNudge(
+  admin: ReturnType<typeof createClient>,
+  ev: Event,
+  stats: { sends: number; errors: number }
+) {
+  const { data: attendees } = await admin
+    .from("jam_participants")
+    .select("user_id")
+    .eq("jam_id", ev.id)
+    .not("checked_in_at", "is", null);
+
+  const { data: alreadySent } = await admin
+    .from("event_reminders_sent")
+    .select("user_id")
+    .eq("event_id", ev.id)
+    .eq("reminder_type", "reconnect_48h");
+  const sent = new Set((alreadySent || []).map((r: any) => r.user_id));
+
+  for (const a of (attendees || []) as { user_id: string }[]) {
+    if (sent.has(a.user_id)) continue;
+    try {
+      await admin.from("notifications").insert({
+        user_id: a.user_id,
+        type: "event_reconnect",
+        title: `Met someone at ${ev.title}?`,
+        body: `Don't lose the connection — say hi while it's fresh.`,
+        action_url: `/event/${ev.id}`,
+        metadata: { event_id: ev.id },
+      });
+      await admin.from("event_reminders_sent").insert({
+        event_id: ev.id, user_id: a.user_id, reminder_type: "reconnect_48h", channel: "in_app",
+      });
+      stats.sends++;
+    } catch (e) {
+      console.error("reconnect nudge failed", ev.id, a.user_id, e);
+      stats.errors++;
+    }
+  }
+}

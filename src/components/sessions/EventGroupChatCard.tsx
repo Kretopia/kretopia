@@ -119,6 +119,73 @@ export const EventGroupChatCard = ({
     }
   };
 
+  const handleAddAllRsvps = async () => {
+    if (!isHost || !groupChatRoomId) return;
+    setBusy(true);
+    try {
+      // 1. Get all RSVPs (going + interested)
+      const { data: parts, error: pErr } = await supabase
+        .from("jam_participants")
+        .select("user_id")
+        .eq("jam_id", eventId)
+        .in("status", ["going", "interested"]);
+      if (pErr) throw pErr;
+
+      const rsvpIds = Array.from(new Set([hostId, ...(parts || []).map((p: any) => p.user_id).filter(Boolean)]));
+      if (rsvpIds.length === 0) {
+        toast({ title: "No guests yet", description: "Once people RSVP you can add them." });
+        return;
+      }
+
+      // 2. Find who's already in the chat
+      const { data: existing } = await supabase
+        .from("spark_room_members")
+        .select("user_id")
+        .eq("room_id", groupChatRoomId)
+        .in("user_id", rsvpIds);
+      const existingIds = new Set((existing || []).map((m: any) => m.user_id));
+      const toAdd = rsvpIds.filter((id) => !existingIds.has(id));
+
+      if (toAdd.length === 0) {
+        toast({ title: "Everyone's already in", description: "All RSVPs are members of the chat." });
+        return;
+      }
+
+      // 3. Add as members
+      const memberRows = toAdd.map((uid) => ({
+        room_id: groupChatRoomId,
+        user_id: uid,
+        role: uid === hostId ? "owner" : "member",
+      }));
+      const { error: insErr } = await supabase.from("spark_room_members").insert(memberRows);
+      if (insErr && !insErr.message.includes("duplicate")) throw insErr;
+
+      // 4. Notify everyone (except host) so they know
+      const notifyIds = toAdd.filter((id) => id !== hostId);
+      if (notifyIds.length > 0) {
+        const notifs = notifyIds.map((uid) => ({
+          user_id: uid,
+          title: `You've been added to the chat for "${eventTitle}"`,
+          message: "Tap to say hi to the host and other guests.",
+          type: "event_update",
+          action_url: `/messages/${groupChatRoomId}`,
+        }));
+        await supabase.from("notifications").insert(notifs).catch(() => {});
+      }
+
+      setMemberCount((c) => c + toAdd.length);
+      setIsMember(true);
+      toast({
+        title: `Added ${toAdd.length} guest${toAdd.length === 1 ? "" : "s"}`,
+        description: "They've been notified.",
+      });
+    } catch (e: any) {
+      toast({ title: "Couldn't add guests", description: e.message, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const openChat = () => groupChatRoomId && navigate(`/messages/${groupChatRoomId}`);
 
   // Hidden entirely from non-hosts when chat is off

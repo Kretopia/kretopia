@@ -27,6 +27,7 @@ import { EventComments } from "@/components/sessions/EventComments";
 import { EventCohosts } from "@/components/sessions/EventCohosts";
 import { EventRecapButton } from "@/components/sessions/EventRecapButton";
 import { EventGroupChatCard } from "@/components/sessions/EventGroupChatCard";
+import { EventInlineChat } from "@/components/sessions/EventInlineChat";
 import { EventGuestRoster } from "@/components/sessions/EventGuestRoster";
 import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog";
 import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";
@@ -623,7 +624,7 @@ const EventPage = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">When</p>
-                  <p className="font-medium">{format(startDate, "EEEE, MMMM d")}</p>
+                  <p className="font-medium">{format(startDate, "EEEE, MMMM d, yyyy")}</p>
                   <p className="text-sm text-muted-foreground">{format(startDate, "h:mm a")}{event.end_time ? ` – ${format(new Date(event.end_time), "h:mm a")}` : ''}</p>
                 </div>
                 {!isPast && !isCancelled && (
@@ -741,6 +742,17 @@ const EventPage = () => {
               groupChatEnabled={!!event.group_chat_enabled}
               groupChatRoomId={event.group_chat_room_id || null}
               onChange={({ enabled, roomId }) => setEvent((prev: any) => prev ? { ...prev, group_chat_enabled: enabled, group_chat_room_id: roomId } : prev)}
+            />
+          )}
+
+          {/* Inline event chat — lives on the event page until the event wraps.
+              After the event, it collapses to a "moved to Messages" link so the
+              conversation can continue in the Groups inbox. */}
+          {isAuthenticated && event.group_chat_enabled && event.group_chat_room_id && (isCreator || !!participation) && (
+            <EventInlineChat
+              roomId={event.group_chat_room_id}
+              currentUserId={user!.id}
+              archived={isPast || isCompleted}
             />
           )}
 

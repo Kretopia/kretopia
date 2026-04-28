@@ -116,18 +116,18 @@ const CreatorSiteByUsername = () => {
 
   if (loading) {
     return (
-      <div className="min-h-dvh bg-[#0a0a0c] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-white/50" />
+      <div className="min-h-dvh bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="min-h-dvh bg-[#0a0a0c] flex flex-col items-center justify-center text-white gap-4">
+      <div className="min-h-dvh bg-background flex flex-col items-center justify-center text-foreground gap-4 p-6 text-center">
         <h1 className="text-2xl font-bold">Site Not Found</h1>
-        <p className="text-zinc-400">This creator hasn't set up their site yet.</p>
-        <button onClick={() => navigate("/")} className="text-[#ff00ff] hover:underline">
+        <p className="text-muted-foreground">This creator hasn't set up their site yet.</p>
+        <button onClick={() => navigate("/")} className="text-primary hover:underline">
           Go to ThriveIN →
         </button>
       </div>

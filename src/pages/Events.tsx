@@ -349,22 +349,22 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
       <div className={embedded ? "" : "min-h-screen bg-background"}>
         <div className={embedded ? "" : "max-w-2xl mx-auto px-4 pt-4 pb-24"}>
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <div>
+          <div className="flex items-start justify-between mb-4 gap-3">
+            <div className="min-w-0">
               {!embedded && (
                 <h1 className="text-xl font-bold flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-primary" />
-                  Events & Meetups
+                  What's on
                 </h1>
               )}
-              {upcomingCount > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {upcomingCount} coming up · {events.filter(e => e.participant_count >= 5).length} trending
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground">
+                {upcomingCount > 0
+                  ? `${upcomingCount} happening soon · ${events.filter(e => e.participant_count >= 5).length} trending`
+                  : "Real-life moments with the creative community"}
+              </p>
             </div>
-            <Button variant="gradient" size="sm" onClick={handleHostEvent} className="gap-1.5 rounded-full">
-              <Plus className="h-4 w-4" /> Host Event
+            <Button variant="gradient" size="sm" onClick={handleHostEvent} className="gap-1.5 rounded-full shrink-0">
+              <Plus className="h-4 w-4" /> Host one
             </Button>
           </div>
 
@@ -372,7 +372,7 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
           <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
-              placeholder="Search events, venues, creators..." 
+              placeholder="Search what's on, venues, hosts..." 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="pl-10 bg-muted/50"
@@ -398,15 +398,15 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full mb-4">
               <TabsTrigger value="browse" className="flex-1">
-                <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Browse
+                <Sparkles className="h-3.5 w-3.5 mr-1.5" /> What's on
               </TabsTrigger>
               {user && (
                 <>
                   <TabsTrigger value="joined" className="flex-1">
-                    <Check className="h-3.5 w-3.5 mr-1.5" /> Joined
+                    <Check className="h-3.5 w-3.5 mr-1.5" /> My plans
                   </TabsTrigger>
                   <TabsTrigger value="hosting" className="flex-1">
-                    <Calendar className="h-3.5 w-3.5 mr-1.5" /> Hosting
+                    <Calendar className="h-3.5 w-3.5 mr-1.5" /> I'm hosting
                   </TabsTrigger>
                 </>
               )}
@@ -466,10 +466,10 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
                         <CardContent className="py-12 text-center">
                           <Calendar className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
                           <p className="font-semibold mb-1">
-                            {joinedTime === "upcoming" ? "No upcoming events joined" : "No past events"}
+                            {joinedTime === "upcoming" ? "Nothing on your calendar yet" : "No past events"}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {joinedTime === "upcoming" ? "Browse events and join creative gatherings" : "Events you attend will show up here"}
+                            {joinedTime === "upcoming" ? "Browse what's on and save your spot" : "Events you attend will show up here"}
                           </p>
                         </CardContent>
                       </Card>
@@ -506,14 +506,14 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
                         <CardContent className="py-12 text-center">
                           <Sparkles className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
                           <p className="font-semibold mb-1">
-                            {hostingTime === "upcoming" ? "No upcoming events" : "No past events yet"}
+                            {hostingTime === "upcoming" ? "You're not hosting anything yet" : "No past events yet"}
                           </p>
                           <p className="text-sm text-muted-foreground mb-4">
-                            {hostingTime === "upcoming" ? "Create your first event and grow your community" : "Once you wrap an event, it'll show up here"}
+                            {hostingTime === "upcoming" ? "Bring people together — your community is waiting" : "Once you wrap an event, it'll show up here"}
                           </p>
                           {hostingTime === "upcoming" && (
                             <Button variant="gradient" onClick={() => setShowCreate(true)}>
-                              <Plus className="h-4 w-4 mr-2" /> Host an Event
+                              <Plus className="h-4 w-4 mr-2" /> Host your first
                             </Button>
                           )}
                         </CardContent>

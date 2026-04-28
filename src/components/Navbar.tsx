@@ -167,7 +167,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   to={path}
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-lg transition-smooth text-sm font-medium",
-                    isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    isActive ? "bg-energy/10 text-energy" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                   )}
                 >
                   <Icon className="h-4 w-4" />

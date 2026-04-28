@@ -319,6 +319,17 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
       collaborators={collaborators}
       onTaskCreated={() => onTasksChanged?.()}
     />
+
+    <Sheet open={copilotOpen} onOpenChange={setCopilotOpen}>
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+        <DeskAIPanel
+          projectId={projectId}
+          userId={currentUserId}
+          isPro={isPro}
+          onClose={() => setCopilotOpen(false)}
+        />
+      </SheetContent>
+    </Sheet>
     </>
   );
 });

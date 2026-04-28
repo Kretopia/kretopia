@@ -36,6 +36,7 @@ import GigCard from "@/components/opportunity/GigCard";
 import { GigRailCard } from "@/components/opportunity/GigRailCard";
 import { intentBoostForCreator, intentBoostForGig, intentBoostForEvent } from "@/lib/intentMatching";
 import { normalizeIntents } from "@/lib/intents";
+import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
 
 
 const HERO_ROLES = ["Filmmaker", "Musician", "Photographer", "Designer", "Producer", "Artist", "Director", "Dancer", "Event Producer", "DJ", "Stylist", "Choreographer", "Animator", "Content Creator", "MC"];

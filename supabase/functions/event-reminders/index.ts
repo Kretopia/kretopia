@@ -88,6 +88,20 @@ Deno.serve(async (req) => {
     await runPostEvent(admin, ev, stats);
   }
 
+  // ---------- 48h reconnect nudge: events that ended 47h45m to 48h15m ago ----------
+  const r48Hi = new Date(now.getTime() - (48 * 60 - 15) * 60 * 1000).toISOString();
+  const r48Lo = new Date(now.getTime() - (48 * 60 + 15) * 60 * 1000).toISOString();
+
+  const { data: events48 } = await admin
+    .from("creative_jams")
+    .select("id, title, start_time, end_time, venue_name, venue_address, created_by, category")
+    .lte("end_time", r48Hi)
+    .gte("end_time", r48Lo);
+
+  for (const ev of (events48 || []) as Event[]) {
+    await sendReconnectNudge(admin, ev, stats);
+  }
+
   return new Response(JSON.stringify({ ok: true, stats }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });

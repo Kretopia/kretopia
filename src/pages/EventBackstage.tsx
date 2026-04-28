@@ -566,6 +566,19 @@ const EventBackstage = () => {
                     <Button size="sm" variant="outline" onClick={() => setRosterFor(ev)}>
                       <Users className="h-3.5 w-3.5 mr-1.5" /> Guest list
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleConvertToGroup(ev)}
+                      disabled={convertingId === ev.id}
+                    >
+                      {convertingId === ev.id ? (
+                        <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                      ) : (
+                        <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
+                      )}
+                      Turn into a group
+                    </Button>
                     <Button size="sm" variant="outline" onClick={() => handleDuplicate(ev)}>
                       <Copy className="h-3.5 w-3.5 mr-1.5" /> Run it again
                     </Button>
@@ -583,6 +596,19 @@ const EventBackstage = () => {
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setCheckinFor(ev)}>
                       <ScanLine className="h-3.5 w-3.5 mr-1.5" /> Check-in
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleConvertToGroup(ev)}
+                      disabled={convertingId === ev.id}
+                    >
+                      {convertingId === ev.id ? (
+                        <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                      ) : (
+                        <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
+                      )}
+                      Turn into a group
                     </Button>
                   </>
                 )}

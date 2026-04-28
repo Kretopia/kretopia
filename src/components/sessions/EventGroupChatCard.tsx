@@ -120,19 +120,24 @@ export const EventGroupChatCard = ({
   if (!isHost && !groupChatEnabled) return null;
 
   return (
-    <Card className="mb-6">
+    <Card className={`mb-6 transition-colors ${groupChatEnabled ? "border-energy/40" : ""}`}>
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <MessageCircle className="h-5 w-5 text-primary" />
+            <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${groupChatEnabled ? "bg-energy/15" : "bg-primary/10"}`}>
+              <MessageCircle className={`h-5 w-5 ${groupChatEnabled ? "text-energy" : "text-primary"}`} />
             </div>
             <div className="min-w-0">
-              <h3 className="font-semibold leading-tight">Group chat</h3>
+              <h3 className="font-semibold leading-tight flex items-center gap-2">
+                Group chat
+                {groupChatEnabled && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-energy">Live</span>
+                )}
+              </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {isHost
-                  ? (groupChatEnabled ? "RSVPs can opt in to join." : "Turn on to give your guests a private chat.")
-                  : (isMember ? `${memberCount} in the chat — say hi` : "Opt in to chat with the host & other guests")}
+                  ? (groupChatEnabled ? "Chat is live below — RSVPs can jump in." : "Turn on to give your guests a private chat.")
+                  : (groupChatEnabled ? `${memberCount} in the chat — scroll down to say hi` : "Waiting on the host to open the chat")}
               </p>
             </div>
           </div>
@@ -145,21 +150,9 @@ export const EventGroupChatCard = ({
           )}
         </div>
 
-        {/* CTAs */}
-        {groupChatEnabled && (
-          <div>
-            {isHost || isMember ? (
-              <Button variant="outline" className="w-full" onClick={openChat} disabled={!groupChatRoomId}>
-                Open chat <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            ) : isParticipant ? (
-              <Button variant="gradient" className="w-full" onClick={handleJoin} disabled={busy || !groupChatRoomId}>
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Join group chat"}
-              </Button>
-            ) : (
-              <p className="text-xs text-muted-foreground text-center">RSVP to join the group chat.</p>
-            )}
-          </div>
+        {/* Status hint — chat renders inline below this card */}
+        {groupChatEnabled && !isHost && !isParticipant && (
+          <p className="text-xs text-muted-foreground text-center">RSVP to join the group chat.</p>
         )}
       </CardContent>
     </Card>

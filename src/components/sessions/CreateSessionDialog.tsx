@@ -264,6 +264,21 @@ export const CreateSessionDialog = ({
               onClick={() => setFormData(prev => ({ ...prev, event_type: 'event' }))}>Event / Meetup</Button>
           </div>
 
+          {/* Scan Flyer shortcut */}
+          <button
+            type="button"
+            onClick={() => setScanOpen(true)}
+            className="w-full flex items-center gap-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2.5 text-left hover:bg-primary/10 transition-colors"
+          >
+            <div className="h-8 w-8 rounded-md bg-primary/15 flex items-center justify-center shrink-0">
+              <ScanLine className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium leading-tight">Scan a flyer with AI</p>
+              <p className="text-[11px] text-muted-foreground leading-tight">Auto-fill title, date, venue & more from an image</p>
+            </div>
+          </button>
+
           <EventCoverPicker
             coverPreview={coverPreview}
             onCoverChange={(file, preview) => { setCoverFile(file); setCoverPreview(preview); }}

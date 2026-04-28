@@ -466,10 +466,10 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
                         <CardContent className="py-12 text-center">
                           <Calendar className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
                           <p className="font-semibold mb-1">
-                            {joinedTime === "upcoming" ? "No upcoming events joined" : "No past events"}
+                            {joinedTime === "upcoming" ? "Nothing on your calendar yet" : "No past events"}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {joinedTime === "upcoming" ? "Browse events and join creative gatherings" : "Events you attend will show up here"}
+                            {joinedTime === "upcoming" ? "Browse what's on and save your spot" : "Events you attend will show up here"}
                           </p>
                         </CardContent>
                       </Card>

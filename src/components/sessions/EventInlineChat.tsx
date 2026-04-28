@@ -133,7 +133,7 @@ export const EventInlineChat = ({ roomId, currentUserId, archived = false }: Pro
           </button>
         </div>
 
-        <ScrollArea className="h-[340px]" viewportRef={scrollRef as any}>
+        <div ref={scrollRef} className="h-[340px] overflow-y-auto">
           <div className="p-4 space-y-3">
             {loading ? (
               <div className="flex justify-center py-8">

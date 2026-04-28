@@ -44,6 +44,7 @@ serve(async (req) => {
     // 1. If URL provided, try to scrape its visible text (best-effort).
     let scrapedText = "";
     if (source_url) {
+      // 1a. Try a plain fetch first (fast, free).
       try {
         const r = await fetch(source_url, {
           headers: { "User-Agent": "Mozilla/5.0 ThriveINBot/1.0" },
@@ -51,7 +52,6 @@ serve(async (req) => {
         });
         if (r.ok) {
           const html = await r.text();
-          // Strip scripts/styles, then tags, collapse whitespace.
           scrapedText = html
             .replace(/<script[\s\S]*?<\/script>/gi, " ")
             .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -61,7 +61,46 @@ serve(async (req) => {
             .slice(0, 8000);
         }
       } catch (e) {
-        console.warn("URL fetch failed (non-fatal):", e);
+        console.warn("Raw fetch failed (non-fatal):", e);
+      }
+
+      // 1b. If the page is a JS SPA (sparse text or missing date/time signals), fall back to Firecrawl.
+      const looksSparse =
+        scrapedText.length < 400 ||
+        !/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d{1,2}[:\.]\d{2})\b/i.test(
+          scrapedText,
+        );
+      const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+      if (looksSparse && FIRECRAWL_API_KEY) {
+        try {
+          const fcResp = await fetch("https://api.firecrawl.dev/v1/scrape", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              url: source_url,
+              formats: ["markdown"],
+              onlyMainContent: true,
+              waitFor: 1500,
+              timeout: 20000,
+            }),
+            signal: AbortSignal.timeout(25000),
+          });
+          if (fcResp.ok) {
+            const fcData = await fcResp.json();
+            const md = fcData?.data?.markdown || "";
+            if (md && md.length > scrapedText.length) {
+              scrapedText = md.slice(0, 8000);
+              console.log("Firecrawl scrape succeeded, length:", scrapedText.length);
+            }
+          } else {
+            console.warn("Firecrawl returned non-OK:", fcResp.status);
+          }
+        } catch (e) {
+          console.warn("Firecrawl fallback failed (non-fatal):", e);
+        }
       }
     }
 

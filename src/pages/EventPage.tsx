@@ -32,6 +32,8 @@ import { ShareToMessageDialog } from "@/components/messages/ShareToMessageDialog
 import { TicketPurchaseDialog } from "@/components/meetup/TicketPurchaseDialog";
 import { GuestRsvpDialog } from "@/components/sessions/GuestRsvpDialog";
 import { GuestPassDialog } from "@/components/sessions/GuestPassDialog";
+import { BringAFriendCard } from "@/components/sessions/BringAFriendCard";
+import { EventPhotoWall } from "@/components/sessions/EventPhotoWall";
 import { APP_URL } from "@/lib/constants";
 import { downloadIcs, openDirections, captureRefFromUrl, buildWarmShareMessage, buildEventShareUrl } from "@/lib/eventActions";
 
@@ -736,6 +738,24 @@ const EventPage = () => {
               groupChatEnabled={!!event.group_chat_enabled}
               groupChatRoomId={event.group_chat_room_id || null}
               onChange={({ enabled, roomId }) => setEvent((prev: any) => prev ? { ...prev, group_chat_enabled: enabled, group_chat_room_id: roomId } : prev)}
+            />
+          )}
+
+          {/* Bring a +1 — RSVP'd guests get a personal invite link with attribution */}
+          {!!participation && !isPast && !isCompleted && !isCancelled && (
+            <BringAFriendCard
+              event={event}
+              hostFirstName={creator?.first_name || creator?.full_name?.split(" ")[0] || null}
+              attendeeCount={participantCount}
+            />
+          )}
+
+          {/* Photo Wall — visible during/after event for attendees */}
+          {(isPast || isCompleted) && event.photo_wall_enabled !== false && (
+            <EventPhotoWall
+              eventId={event.id}
+              isHost={isCreator}
+              canUpload={isCreator || !!participation}
             />
           )}
 

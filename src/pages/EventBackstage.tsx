@@ -336,6 +336,8 @@ const EventBackstage = () => {
       setConvertingId(null);
     }
   };
+
+  const handlePublishDraft = async (ev: BackstageEvent) => {
     try {
       const { error } = await supabase
         .from("creative_jams")

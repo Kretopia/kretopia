@@ -153,23 +153,24 @@ export const UnifiedHome = () => {
           const loc = (myProfile as any)?.location || "";
           const parts = String(loc).split(",").map((s: string) => s.trim()).filter(Boolean);
           const userCountry = parts.length > 1 ? parts[parts.length - 1] : null;
-          let q = supabase.from("creative_jams")
+          if (userCountry) {
+            // Show events explicitly tagged to the user's country OR with no country (likely local/community-posted).
+            // NEVER show events tagged to a different country.
+            return await supabase.from("creative_jams")
+              .select("id, title, start_time, venue_name, category, cover_image_url, created_by, country")
+              .eq("is_public", true)
+              .gte("start_time", new Date().toISOString())
+              .or(`country.eq.${userCountry},country.is.null`)
+              .order("start_time", { ascending: true })
+              .limit(8);
+          }
+          // No country on profile — show everything upcoming.
+          return await supabase.from("creative_jams")
             .select("id, title, start_time, venue_name, category, cover_image_url, created_by, country")
             .eq("is_public", true)
             .gte("start_time", new Date().toISOString())
             .order("start_time", { ascending: true })
             .limit(8);
-          if (userCountry) q = q.eq("country", userCountry);
-          const res = await q;
-          if (userCountry && (!res.data || res.data.length === 0)) {
-            return await supabase.from("creative_jams")
-              .select("id, title, start_time, venue_name, category, cover_image_url, created_by, country")
-              .eq("is_public", true)
-              .gte("start_time", new Date().toISOString())
-              .order("start_time", { ascending: true })
-              .limit(4);
-          }
-          return res;
         })(),
       ]);
 

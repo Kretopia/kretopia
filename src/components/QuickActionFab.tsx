@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Plus, X, CalendarPlus, Briefcase, FolderPlus, Compass, LayoutDashboard, UserSearch, Wallet } from "lucide-react";
+import { Plus, X, CalendarPlus, Briefcase, FolderPlus, Compass, LayoutDashboard, UserSearch, Wallet, Scan } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
+import { ScoutEventDialog } from "@/components/sessions/ScoutEventDialog";
 
 interface QuickAction {
   id: string;
@@ -57,6 +58,7 @@ const QuickActionFab = () => {
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [showPostGig, setShowPostGig] = useState(false);
+  const [showScoutEvent, setShowScoutEvent] = useState(false);
 
   const sheetRef = useRef<HTMLDivElement>(null);
 
@@ -109,6 +111,17 @@ const QuickActionFab = () => {
       onSelect: () => {
         close();
         setShowCreateEvent(true);
+      },
+    },
+    {
+      id: "scout-event",
+      label: "Scout an event",
+      sub: "Saw a flyer or link? List it here",
+      icon: Scan,
+      tone: "primary",
+      onSelect: () => {
+        close();
+        setShowScoutEvent(true);
       },
     },
     {
@@ -180,6 +193,17 @@ const QuickActionFab = () => {
       onSelect: () => {
         close();
         setShowCreateEvent(true);
+      },
+    },
+    {
+      id: "scout-event",
+      label: "Scout an event",
+      sub: "Spotted one? List it for the host",
+      icon: Scan,
+      tone: "muted",
+      onSelect: () => {
+        close();
+        setShowScoutEvent(true);
       },
     },
     {
@@ -338,6 +362,10 @@ const QuickActionFab = () => {
       <PostOpportunityDialog
         open={showPostGig}
         onOpenChange={setShowPostGig}
+      />
+      <ScoutEventDialog
+        open={showScoutEvent}
+        onOpenChange={setShowScoutEvent}
       />
     </>
   );

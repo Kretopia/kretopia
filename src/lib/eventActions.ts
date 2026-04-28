@@ -1,5 +1,125 @@
-// Utilities for IRL event guest actions: Add to Calendar (.ics) + Get Directions deep-links.
-// Designed to be friendly for non-technical and older users — one-tap, native handlers.
+// Utilities for IRL event guest actions: Add to Calendar (.ics), Get Directions
+// deep-links, and Warm-&-Human share copy with promoter/host attribution tracking.
+
+import { supabase } from "@/integrations/supabase/client";
+import { APP_URL } from "@/lib/constants";
+
+export type ShareChannel = "native" | "whatsapp" | "twitter" | "copy" | "qr" | "embed" | "unknown";
+
+interface WarmShareEventInput {
+  id: string;
+  title: string;
+  startTime: string;
+  venueName?: string | null;
+  ticketPrice?: number | null;
+  ticketCurrency?: string | null;
+  isTicketed?: boolean | null;
+  attendeeCount?: number | null;
+}
+
+interface WarmShareOptions {
+  hostFirstName?: string | null;
+  sharerFirstName?: string | null;
+  sharerUsername?: string | null;
+  isHost?: boolean;
+}
+
+/** Build a Warm & Human share message: personal one-liner + clean info block + ref'd short link. */
+export const buildWarmShareMessage = (
+  event: WarmShareEventInput,
+  options: WarmShareOptions = {}
+): { text: string; url: string } => {
+  const url = buildEventShareUrl(event.id, options.sharerUsername);
+
+  const date = new Date(event.startTime);
+  const dateStr = date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+  const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+
+  // Personal one-liner
+  let opener: string;
+  if (options.isHost) {
+    opener = `Hey — I'm hosting "${event.title}" ${dateStr}. Would love to see you there 🤝`;
+  } else if (options.sharerFirstName) {
+    const host = options.hostFirstName ? ` (hosted by ${options.hostFirstName})` : "";
+    opener = `Found something good: "${event.title}"${host}. Thinking of going — come with?`;
+  } else {
+    const host = options.hostFirstName ? ` Hosted by ${options.hostFirstName}.` : "";
+    opener = `Check this out: "${event.title}".${host}`;
+  }
+
+  // Clean info block
+  const lines: string[] = [];
+  lines.push(`📅 ${dateStr} · ${timeStr}`);
+  if (event.venueName) lines.push(`📍 ${event.venueName}`);
+  if (event.isTicketed && event.ticketPrice) {
+    const sym = event.ticketCurrency === "EUR" ? "€" : event.ticketCurrency === "GBP" ? "£" : event.ticketCurrency === "TTD" ? "TT$" : "$";
+    lines.push(`🎟️ ${sym}${event.ticketPrice}`);
+  } else {
+    lines.push(`🎟️ Free`);
+  }
+  if (event.attendeeCount && event.attendeeCount > 0) {
+    lines.push(`👥 ${event.attendeeCount} going`);
+  }
+
+  const text = `${opener}\n\n${lines.join("\n")}\n\n${url}`;
+  return { text, url };
+};
+
+/** Returns the canonical shareable event URL with optional ?ref=username for attribution. */
+export const buildEventShareUrl = (eventId: string, sharerUsername?: string | null): string => {
+  const base = `${APP_URL}/share/event/${eventId}/`;
+  if (!sharerUsername) return base;
+  return `${base}?ref=${encodeURIComponent(sharerUsername)}`;
+};
+
+/** Log a share click for attribution. Fire-and-forget, never throws. */
+export const logShareClick = async (
+  eventId: string,
+  channel: ShareChannel,
+  referrerUserId?: string | null
+): Promise<void> => {
+  try {
+    await supabase.from("event_share_clicks").insert({
+      event_id: eventId,
+      referrer_user_id: referrerUserId || null,
+      channel,
+      visitor_session: typeof window !== "undefined" ? sessionStorage.getItem("session_id") : null,
+    });
+  } catch {
+    // silent — never block the share UX
+  }
+};
+
+/** Read ?ref= from current URL and resolve to a user_id (cached in sessionStorage for the visit). */
+export const captureRefFromUrl = async (eventId: string): Promise<string | null> => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (!ref) return null;
+
+    const cacheKey = `event_ref_${eventId}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) return cached;
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("username", ref)
+      .maybeSingle();
+
+    if (data?.user_id) {
+      sessionStorage.setItem(cacheKey, data.user_id);
+      return data.user_id;
+    }
+  } catch {
+    // silent
+  }
+  return null;
+};
 
 interface IcsEvent {
   id: string;

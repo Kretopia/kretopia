@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -205,7 +205,17 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
   const [joinedEvents, setJoinedEvents] = useState<EventItem[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
-  const [activeTab, setActiveTab] = useState("browse");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(
+    initialTab === "hosting" || initialTab === "joined" ? initialTab : "browse"
+  );
+
+  // Sync if user navigates with a different ?tab= while page is mounted
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t === "hosting" || t === "joined" || t === "browse") setActiveTab(t);
+  }, [searchParams]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [hostingTime, setHostingTime] = useState<"upcoming" | "past">("upcoming");

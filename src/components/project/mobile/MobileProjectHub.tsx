@@ -185,26 +185,40 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-[11px] text-muted-foreground">Budget</div>
-              <div className="text-lg font-bold truncate">
-                {budget > 0 ? formatMoney(budget) : "Not set"}
+          {budget > 0 ? (
+            <>
+              <div className="flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[11px] text-muted-foreground">Budget</div>
+                  <div className="text-lg font-bold truncate">{formatMoney(budget)}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[11px] text-muted-foreground">Invoices paid</div>
+                  <div className="text-lg font-bold">
+                    {invoicePaidCount}/{invoiceCount || 0}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="text-right">
-              <div className="text-[11px] text-muted-foreground">Invoices paid</div>
-              <div className="text-lg font-bold">
-                {invoicePaidCount}/{invoiceCount || 0}
+              {invoiceCount > 0 && (
+                <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all"
+                    style={{ width: `${paidPct}%` }}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">No budget yet</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  Add one to track invoices and payments
+                </div>
               </div>
-            </div>
-          </div>
-          {invoiceCount > 0 && (
-            <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all"
-                style={{ width: `${paidPct}%` }}
-              />
+              <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full whitespace-nowrap">
+                Set budget
+              </span>
             </div>
           )}
         </section>
@@ -282,15 +296,11 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
         </section>
       </div>
 
-      {/* Voice-to-Task FAB */}
-      <button
-        onClick={() => setVoiceOpen(true)}
-        className="fixed right-4 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center active:scale-95 transition-transform"
-        style={{ bottom: "calc(env(safe-area-inset-bottom) + 96px)" }}
-        aria-label="Voice to task"
-      >
-        <Mic className="h-6 w-6" />
-      </button>
+      {/* Combined action FAB: voice note + Project Copilot */}
+      <DeskActionFab
+        onVoice={() => setVoiceOpen(true)}
+        onCopilot={() => onOpenCopilot?.()}
+      />
     </div>
 
     <VoiceTaskCapture

@@ -98,7 +98,11 @@ function buildEventShareHtml(event: EventRow, siteUrl: string) {
     ? `${subtitle} — ${truncate(event.description, 120)}`
     : `${subtitle} — RSVP now on ThriveIN, the Creative OS.`;
   const ctaDescription = `${description} Join the creative community.`;
-  const image = event.cover_image_url || FALLBACK_OG_IMAGE;
+  // Prefer dynamic OG image (live attendee count) over static cover, fall back gracefully
+  const projectRef = process.env.VITE_SUPABASE_PROJECT_ID || "kwmcocsitwssrtzkdojh";
+  const dynamicOg = `https://${projectRef}.supabase.co/functions/v1/event-og-image?event_id=${event.id}`;
+  const image = dynamicOg;
+  const fallbackImage = event.cover_image_url || FALLBACK_OG_IMAGE;
 
   return `<!doctype html>
 <html lang="en">

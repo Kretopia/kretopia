@@ -41,6 +41,9 @@ import { EditEventDialog } from "@/components/sessions/EditEventDialog";
 import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
 import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EventGuestRoster } from "@/components/sessions/EventGuestRoster";
+import { InviteByEmailDialog } from "@/components/sessions/InviteByEmailDialog";
+import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
+import { Mail, UserPlus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -104,6 +107,8 @@ const EventBackstage = () => {
   const [messageFor, setMessageFor] = useState<BackstageEvent | null>(null);
   const [messageText, setMessageText] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [emailBlastFor, setEmailBlastFor] = useState<BackstageEvent | null>(null);
+  const [inviteFor, setInviteFor] = useState<BackstageEvent | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth?redirect=/events/backstage");
@@ -391,13 +396,23 @@ const EventBackstage = () => {
                       </DropdownMenuItem>
                     )}
                     {!isDraft && (
+                      <DropdownMenuItem onClick={() => setInviteFor(ev)}>
+                        <UserPlus className="h-4 w-4 mr-2" /> Invite by email
+                      </DropdownMenuItem>
+                    )}
+                    {!isDraft && (
+                      <DropdownMenuItem onClick={() => setEmailBlastFor(ev)}>
+                        <Mail className="h-4 w-4 mr-2" /> Email guests (blast)
+                      </DropdownMenuItem>
+                    )}
+                    {!isDraft && (
                       <DropdownMenuItem
                         onClick={() => {
                           setMessageFor(ev);
                           setMessageText("");
                         }}
                       >
-                        <MessageSquare className="h-4 w-4 mr-2" /> Message guests
+                        <MessageSquare className="h-4 w-4 mr-2" /> In-app notification
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
@@ -470,21 +485,17 @@ const EventBackstage = () => {
                   </>
                 ) : (
                   <>
-                    <Button size="sm" variant="default" onClick={() => setCheckinFor(ev)}>
-                      <ScanLine className="h-3.5 w-3.5 mr-1.5" /> Check-in
+                    <Button size="sm" variant="lime" onClick={() => setInviteFor(ev)}>
+                      <UserPlus className="h-3.5 w-3.5 mr-1.5" /> Invite
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setEmailBlastFor(ev)}>
+                      <Mail className="h-3.5 w-3.5 mr-1.5" /> Email
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setShareFor(ev)}>
                       <Share2 className="h-3.5 w-3.5 mr-1.5" /> Share
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setMessageFor(ev);
-                        setMessageText("");
-                      }}
-                    >
-                      <MessageSquare className="h-3.5 w-3.5 mr-1.5" /> Message
+                    <Button size="sm" variant="outline" onClick={() => setCheckinFor(ev)}>
+                      <ScanLine className="h-3.5 w-3.5 mr-1.5" /> Check-in
                     </Button>
                   </>
                 )}
@@ -777,6 +788,26 @@ const EventBackstage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Email blast (rich composer with templates) */}
+      {emailBlastFor && (
+        <BlastComposerDialog
+          open={!!emailBlastFor}
+          onOpenChange={(o) => !o && setEmailBlastFor(null)}
+          eventId={emailBlastFor.id}
+          eventTitle={emailBlastFor.title}
+        />
+      )}
+
+      {/* Invite by email (CSV / paste) */}
+      {inviteFor && (
+        <InviteByEmailDialog
+          open={!!inviteFor}
+          onOpenChange={(o) => !o && setInviteFor(null)}
+          eventId={inviteFor.id}
+          eventTitle={inviteFor.title}
+        />
+      )}
     </>
   );
 };

@@ -19,6 +19,7 @@ import { template as thrivefundPledgeConfirmed } from './thrivefund-pledge-confi
 import { template as thrivefundCampaignFunded } from './thrivefund-campaign-funded.tsx'
 import { template as thrivefundCampaignFailed } from './thrivefund-campaign-failed.tsx'
 import { template as eventBlast } from './event-blast.tsx'
+import { template as eventInvite } from './event-invite.tsx'
 import { template as day2Engagement } from './day2-engagement.tsx'
 import { template as universeScanFindings } from './universe-scan-findings.tsx'
 import { template as reEngagement } from './re-engagement.tsx'
@@ -38,5 +39,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'thrivefund-campaign-funded': thrivefundCampaignFunded,
   'thrivefund-campaign-failed': thrivefundCampaignFailed,
   'event-blast': eventBlast,
+  'event-invite': eventInvite,
   'day2-engagement': day2Engagement,
 }

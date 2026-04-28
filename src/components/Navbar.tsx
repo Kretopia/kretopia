@@ -244,6 +244,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} />
                       <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
+                      <MenuButton icon={CalendarDays} label="My Events" onClick={() => handleNavigation("/events?tab=hosting")} />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
                       )}

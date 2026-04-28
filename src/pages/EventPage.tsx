@@ -118,8 +118,26 @@ const EventPage = () => {
       setEvent(eventData);
 
       const { data: profileData } = await supabase
-        .from('public_profiles_safe').select('full_name, avatar_url, role').eq('user_id', eventData.created_by).single();
-      setCreator(profileData);
+        .from('public_profiles_safe')
+        .select('user_id, full_name, avatar_url, role, bio, id_verified, verification_status, verification_tier, badge, level')
+        .eq('user_id', eventData.created_by)
+        .single();
+
+      // Also fetch host username (separate, since username is on profiles)
+      const { data: hostUsername } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('user_id', eventData.created_by)
+        .maybeSingle();
+
+      // Count of public events this host has run (trust signal)
+      const { count: hostedCount } = await supabase
+        .from('creative_jams')
+        .select('id', { count: 'exact', head: true })
+        .eq('created_by', eventData.created_by)
+        .eq('is_public', true);
+
+      setCreator({ ...profileData, username: hostUsername?.username, hostedCount: hostedCount || 0 });
 
       // Get participant count and avatars
       const { data: participants, count } = await supabase

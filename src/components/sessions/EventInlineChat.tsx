@@ -93,7 +93,7 @@ export const EventInlineChat = ({ roomId, currentUserId, archived = false }: Pro
       cancelled = true;
       supabase.removeChannel(ch);
     };
-  }, [roomId, archived]);
+  }, [roomId, archived, currentUserId]);
 
   const send = async () => {
     const text = draft.trim();

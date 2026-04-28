@@ -287,6 +287,10 @@ const QuickActionFab = () => {
       <CreateProjectDialog
         open={showCreateProject}
         onOpenChange={setShowCreateProject}
+        onSuccess={() => {
+          setShowCreateProject(false);
+          navigate("/desk");
+        }}
       />
       <PostOpportunityDialog
         open={showPostGig}

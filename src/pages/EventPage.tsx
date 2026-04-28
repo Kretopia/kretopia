@@ -52,7 +52,7 @@ const EventPage = () => {
   const [event, setEvent] = useState<any>(null);
   const [creator, setCreator] = useState<any>(null);
   const [participantCount, setParticipantCount] = useState(0);
-  const [attendeeAvatars, setAttendeeAvatars] = useState<{ avatar_url: string | null; full_name: string }[]>([]);
+  const [attendeeAvatars, setAttendeeAvatars] = useState<{ avatar_url: string | null; full_name: string; role?: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [participation, setParticipation] = useState<string | null>(null);
@@ -126,11 +126,11 @@ const EventPage = () => {
         .from('jam_participants').select('user_id', { count: 'exact' }).eq('jam_id', eventId).in('status', ['going', 'interested']);
       setParticipantCount(count || 0);
 
-      // Fetch first 8 attendee avatars
+      // Fetch first 12 attendee avatars + roles for richer social proof
       if (participants && participants.length > 0) {
-        const userIds = participants.slice(0, 8).map(p => p.user_id);
+        const userIds = participants.slice(0, 12).map(p => p.user_id);
         const { data: profiles } = await supabase
-          .from('profiles').select('avatar_url, full_name').in('user_id', userIds);
+          .from('profiles').select('avatar_url, full_name, role').in('user_id', userIds);
         setAttendeeAvatars(profiles || []);
       }
 

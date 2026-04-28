@@ -91,6 +91,7 @@ const QuickActionFab = () => {
   // Hide on auth and other full-screen routes
   if (location.pathname === "/auth") return null;
   if (!user) return null;
+  if (dismissed) return null;
 
   const close = () => setOpen(false);
   const go = (path: string) => {

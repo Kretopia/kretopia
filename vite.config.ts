@@ -46,10 +46,28 @@ export default defineConfig(({ mode }) => {
           globIgnores: ['**/version.json'],
           // CRITICAL: Don't cache OAuth redirect route
           navigateFallbackDenylist: [/^\/~oauth/],
+          // CRITICAL: Disable navigation precache fallback so index.html is always
+          // fetched fresh from the network. This prevents the SW from serving a
+          // stale index.html that references chunk filenames that no longer exist
+          // after a deploy (root cause of "Failed to fetch dynamically imported
+          // module" black-screen errors).
+          navigateFallback: null,
           // Import push notification scripts
           importScripts: ['/sw.js'],
           // Cache strategy
           runtimeCaching: [
+            {
+              // HTML navigations: always go to network first so users get fresh
+              // chunk manifests immediately after a deploy. Falls back to cache
+              // only when offline.
+              urlPattern: ({ request }) => request.mode === 'navigate',
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'html-navigations',
+                networkTimeoutSeconds: 4,
+                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 },
+              },
+            },
             {
               // API calls: always network first
               urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,

@@ -86,6 +86,7 @@ const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 
 const EventPage = lazy(() => import("./pages/EventPage"));
+const ClaimEvent = lazy(() => import("./pages/ClaimEvent"));
 const EventConfirmed = lazy(() => import("./pages/EventConfirmed"));
 const Meetup = lazy(() => import("./pages/Meetup"));
 const MeetupManage = lazy(() => import("./pages/MeetupManage"));
@@ -387,6 +388,7 @@ const AppContent = () => {
             <Route path="/claim/:claimToken" element={<ClaimProfile />} />
             <Route path="/post-opportunity" element={<PostOpportunity />} />
             <Route path="/claim-gig/:token" element={<ClaimGig />} />
+            <Route path="/claim-event/:token" element={<ClaimEvent />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
             
             {/* Search & Notifications */}

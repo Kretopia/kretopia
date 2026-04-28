@@ -1810,6 +1810,8 @@ export type Database = {
           attendee_list_visibility: string
           category: string
           circle_id: string | null
+          claim_status: string
+          claim_token: string | null
           co_host_revenue_split: Json | null
           country: string | null
           cover_image_url: string | null
@@ -1829,9 +1831,13 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           max_participants: number | null
+          original_source_text: string | null
           parent_event_id: string | null
           photo_wall_enabled: boolean
           refund_policy: string | null
+          scouted_by: string | null
+          source_platform: string | null
+          source_url: string | null
           start_time: string
           status: string | null
           status_note: string | null
@@ -1851,6 +1857,8 @@ export type Database = {
           attendee_list_visibility?: string
           category?: string
           circle_id?: string | null
+          claim_status?: string
+          claim_token?: string | null
           co_host_revenue_split?: Json | null
           country?: string | null
           cover_image_url?: string | null
@@ -1870,9 +1878,13 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           max_participants?: number | null
+          original_source_text?: string | null
           parent_event_id?: string | null
           photo_wall_enabled?: boolean
           refund_policy?: string | null
+          scouted_by?: string | null
+          source_platform?: string | null
+          source_url?: string | null
           start_time: string
           status?: string | null
           status_note?: string | null
@@ -1892,6 +1904,8 @@ export type Database = {
           attendee_list_visibility?: string
           category?: string
           circle_id?: string | null
+          claim_status?: string
+          claim_token?: string | null
           co_host_revenue_split?: Json | null
           country?: string | null
           cover_image_url?: string | null
@@ -1911,9 +1925,13 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           max_participants?: number | null
+          original_source_text?: string | null
           parent_event_id?: string | null
           photo_wall_enabled?: boolean
           refund_policy?: string | null
+          scouted_by?: string | null
+          source_platform?: string | null
+          source_url?: string | null
           start_time?: string
           status?: string | null
           status_note?: string | null

@@ -3,13 +3,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const EVENT_CATEGORIES = [
-  "music", "film", "photo", "art", "podcast", "content",
-  "workshop", "networking", "festival", "showcase", "general",
-];
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -18,62 +20,91 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
     const authHeader = req.headers.get("authorization");
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader?.replace("Bearer ", "") || "",
-    );
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const token = authHeader?.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) return json({ error: "Unauthorized" }, 401);
+
+    const body = await req.json().catch(() => ({}));
+    const { text, image_base64, source_platform, source_url } = body as {
+      text?: string;
+      image_base64?: string;
+      source_platform?: string;
+      source_url?: string;
+    };
+
+    if (!text && !image_base64 && !source_url) {
+      return json({ error: "Provide text, screenshot, or a URL" }, 400);
     }
 
-    const { text, image_base64 } = await req.json();
-    if (!text && !image_base64) {
-      return new Response(JSON.stringify({ error: "Provide text or image" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // 1. If URL provided, try to scrape its visible text (best-effort).
+    let scrapedText = "";
+    if (source_url) {
+      try {
+        const r = await fetch(source_url, {
+          headers: { "User-Agent": "Mozilla/5.0 ThriveINBot/1.0" },
+          signal: AbortSignal.timeout(10000),
+        });
+        if (r.ok) {
+          const html = await r.text();
+          // Strip scripts/styles, then tags, collapse whitespace.
+          scrapedText = html
+            .replace(/<script[\s\S]*?<\/script>/gi, " ")
+            .replace(/<style[\s\S]*?<\/style>/gi, " ")
+            .replace(/<[^>]+>/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 8000);
+        }
+      } catch (e) {
+        console.warn("URL fetch failed (non-fatal):", e);
+      }
     }
 
-    const today = new Date().toISOString().split("T")[0];
-    const systemPrompt = `You are an event flyer parser AND copywriter. Extract structured event details from the provided flyer image and/or text. Read EVERY visible detail carefully — title, date, time, venue, address, ticket info, who's hosting/performing.
+    const combinedText = [text, scrapedText].filter(Boolean).join("\n\n");
 
-Today's date is ${today}. If a date is shown without a year, assume the next upcoming occurrence.
+    // 2. AI extraction
+    const systemPrompt = `You extract structured EVENT details from flyers, posters, social posts, or web pages.
 
-For "description", don't just transcribe — rewrite as a polished, inviting event description (2–4 short paragraphs). Capture the vibe and what guests can expect. Use line breaks for readability.
+Read every detail carefully — date, time, venue, ticket info, host name, what attendees should expect.
 
-Return a JSON object with these fields:
-- title: string (clean event title, properly capitalized)
-- description: string (polished, warm description rewritten from the flyer)
-- category: string (one of: ${EVENT_CATEGORIES.join(", ")})
-- start_date: string or null (ISO date "YYYY-MM-DD")
-- start_time: string or null ("HH:MM" 24-hour)
+For the "description" field, do NOT just copy the raw text. Rewrite it as a polished, engaging event listing — clear, professional, and inviting. Use proper line breaks. Keep it 2-4 short paragraphs.
+
+Return ONLY a JSON object with these fields:
+- title: string (clean, properly capitalized)
+- description: string (polished, rewritten — not the raw post)
+- category: string or null (e.g. "music", "film", "networking", "workshop", "fashion", "art", "tech", "other")
 - venue_name: string or null
 - venue_address: string or null
-- max_participants: number or null
+- country: string or null (full country name if identifiable)
+- start_time: string ISO 8601 with timezone, or null if unknown. If only a date is given, use 19:00 local time.
+- end_time: string ISO 8601 or null
+- timezone: string IANA (e.g. "America/Port_of_Spain") or null
+- max_participants: integer (default 100 if not stated)
 - is_ticketed: boolean
-- ticket_price: number or null
-- ticket_currency: string or null (3-letter ISO, e.g., "USD", "TTD", "EUR")
-- external_ticket_url: string or null
+- ticket_price: number or null (numeric only)
+- ticket_currency: string ISO code or null (e.g. "USD", "TTD")
+- external_ticket_url: string URL or null (if a ticket link is visible)
+- tags: string[] (3-6 relevant tags)
+- cover_image_prompt: string (a clean visual prompt describing the vibe/mood for a 16:9 banner — no text in the image)
 
-Be thorough but concise. If a field isn't visible, use null. Never invent details.`;
+If anything is unclear, use null. Never invent dates or prices.`;
 
     const messages: any[] = [{ role: "system", content: systemPrompt }];
+
     if (image_base64) {
       messages.push({
         role: "user",
         content: [
           {
             type: "text",
-            text: text
-              ? `Extract event details from this flyer image and any extra text:\n${text}`
-              : "Extract event details from this flyer image:",
+            text: combinedText
+              ? `Extract event details from this image and the text below.\n\n${combinedText}`
+              : "Extract event details from this image.",
           },
           { type: "image_url", image_url: { url: `data:image/jpeg;base64,${image_base64}` } },
         ],
@@ -81,11 +112,11 @@ Be thorough but concise. If a field isn't visible, use null. Never invent detail
     } else {
       messages.push({
         role: "user",
-        content: `Extract event details from this text:\n\n${text}`,
+        content: `Extract event details from the following content:\n\n${combinedText}`,
       });
     }
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -98,49 +129,150 @@ Be thorough but concise. If a field isn't visible, use null. Never invent detail
       }),
     });
 
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error("AI error:", aiResponse.status, errText);
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited, please try again shortly" }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted" }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      throw new Error(`AI extraction failed: ${aiResponse.status}`);
+    if (!aiResp.ok) {
+      const errText = await aiResp.text();
+      console.error("AI error:", aiResp.status, errText);
+      if (aiResp.status === 429) return json({ error: "Rate limited, please try again shortly" }, 429);
+      if (aiResp.status === 402) return json({ error: "AI credits exhausted" }, 402);
+      return json({ error: `AI extraction failed (${aiResp.status})` }, 500);
     }
 
-    const aiData = await aiResponse.json();
-    const rawContent = aiData.choices?.[0]?.message?.content;
-    if (!rawContent) throw new Error("AI did not return any content");
+    const aiData = await aiResp.json();
+    const raw = aiData.choices?.[0]?.message?.content;
+    if (!raw) return json({ error: "AI returned no content" }, 500);
 
     let extracted: any;
     try {
-      extracted = JSON.parse(rawContent);
+      extracted = JSON.parse(raw);
     } catch {
-      const jsonMatch = rawContent.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (jsonMatch) extracted = JSON.parse(jsonMatch[1].trim());
-      else throw new Error("Could not parse AI response as JSON");
+      const m = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (m) extracted = JSON.parse(m[1].trim());
+      else return json({ error: "Could not parse AI response" }, 500);
     }
 
-    if (!extracted.category || !EVENT_CATEGORIES.includes(extracted.category)) {
-      extracted.category = "general";
+    // Sanitize numeric/date fields
+    const safeNum = (v: any) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+    const ticketPrice = safeNum(extracted.ticket_price);
+    const maxP = Number.isFinite(Number(extracted.max_participants))
+      ? Math.max(1, Math.min(10000, Math.floor(Number(extracted.max_participants))))
+      : 100;
+
+    let startTime = extracted.start_time;
+    if (!startTime || isNaN(new Date(startTime).getTime())) {
+      // Default to 7 days from now at 7pm UTC if AI couldn't read a date
+      const d = new Date();
+      d.setUTCDate(d.getUTCDate() + 7);
+      d.setUTCHours(19, 0, 0, 0);
+      startTime = d.toISOString();
+    }
+    const endTime = extracted.end_time && !isNaN(new Date(extracted.end_time).getTime())
+      ? extracted.end_time
+      : null;
+
+    const coverPrompt = extracted.cover_image_prompt;
+    delete extracted.cover_image_prompt;
+
+    // 3. Generate cover image (best-effort)
+    let coverImageUrl: string | null = null;
+    try {
+      const imgResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image",
+          messages: [
+            {
+              role: "user",
+              content: `Create a clean, modern 16:9 banner image for an event listing. ${coverPrompt || extracted.title}. No text or words in the image. Cinematic, professional, suitable as a cover.`,
+            },
+          ],
+          modalities: ["image", "text"],
+        }),
+      });
+      if (imgResp.ok) {
+        const imgData = await imgResp.json();
+        const dataUrl = imgData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        if (dataUrl) {
+          const bytes = Uint8Array.from(atob(dataUrl.split(",")[1]), (c) => c.charCodeAt(0));
+          const fileName = `event-covers/${crypto.randomUUID()}.png`;
+          const { error: uploadErr } = await supabase.storage
+            .from("event-covers")
+            .upload(fileName, bytes, { contentType: "image/png", upsert: true });
+          if (!uploadErr) {
+            const { data: urlData } = supabase.storage.from("event-covers").getPublicUrl(fileName);
+            coverImageUrl = urlData?.publicUrl || null;
+          } else {
+            // Fall back to opportunities bucket if event-covers doesn't exist
+            const { error: fallbackErr } = await supabase.storage
+              .from("opportunities")
+              .upload(fileName, bytes, { contentType: "image/png", upsert: true });
+            if (!fallbackErr) {
+              const { data: urlData } = supabase.storage.from("opportunities").getPublicUrl(fileName);
+              coverImageUrl = urlData?.publicUrl || null;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("cover image gen failed (non-fatal):", e);
     }
 
-    return new Response(JSON.stringify({ success: true, extracted }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // 4. Create unclaimed event
+    const claimToken = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+
+    const insertRow: any = {
+      title: extracted.title || "Untitled event",
+      description: extracted.description || null,
+      category: extracted.category || null,
+      venue_name: extracted.venue_name || null,
+      venue_address: extracted.venue_address || null,
+      country: extracted.country || null,
+      start_time: startTime,
+      end_time: endTime,
+      timezone: extracted.timezone || null,
+      max_participants: maxP,
+      is_ticketed: !!extracted.is_ticketed,
+      ticket_price: ticketPrice,
+      ticket_currency: extracted.ticket_currency || null,
+      external_ticket_url: extracted.external_ticket_url || null,
+      tags: Array.isArray(extracted.tags) ? extracted.tags.slice(0, 8) : null,
+      is_public: true,
+      status: "upcoming",
+      created_by: user.id,
+      scouted_by: user.id,
+      claim_token: claimToken,
+      claim_status: "unclaimed",
+      source_platform: source_platform || (source_url ? "url" : "unknown"),
+      source_url: source_url || null,
+      original_source_text: text || (source_url ? `URL: ${source_url}` : "Screenshot upload"),
+      ...(coverImageUrl ? { cover_image_url: coverImageUrl } : {}),
+    };
+
+    const { data: inserted, error: insErr } = await supabase
+      .from("creative_jams")
+      .insert(insertRow)
+      .select("id, claim_token, title")
+      .single();
+
+    if (insErr) {
+      console.error("Insert error:", insErr);
+      return json({ error: `Failed to create event: ${insErr.message}` }, 500);
+    }
+
+    return json({
+      success: true,
+      event: inserted,
+      extracted,
+      has_cover_image: !!coverImageUrl,
     });
   } catch (e) {
     console.error("extract-event-details error:", e);
-    return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return json({ error: e instanceof Error ? e.message : "Unknown error" }, 500);
   }
 });

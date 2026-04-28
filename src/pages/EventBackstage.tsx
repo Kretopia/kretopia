@@ -41,9 +41,10 @@ import { EditEventDialog } from "@/components/sessions/EditEventDialog";
 import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
 import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EventGuestRoster } from "@/components/sessions/EventGuestRoster";
+import { ScoutEventDialog } from "@/components/sessions/ScoutEventDialog";
 import { InviteByEmailDialog } from "@/components/sessions/InviteByEmailDialog";
 import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
-import { Mail, UserPlus, MessageCircle } from "lucide-react";
+import { Mail, UserPlus, MessageCircle, Scan } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -668,14 +669,23 @@ const EventBackstage = () => {
                 </p>
               </div>
             </div>
-            <Button
-              variant="gradient"
-              size="sm"
-              className="rounded-full gap-1.5 shrink-0"
-              onClick={() => setShowCreate(true)}
-            >
-              <Plus className="h-4 w-4" /> <span className="hidden xs:inline">Host</span>
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <ScoutEventDialog
+                trigger={
+                  <Button variant="outline" size="sm" className="rounded-full gap-1.5">
+                    <Scan className="h-4 w-4" /> <span className="hidden xs:inline">Scout</span>
+                  </Button>
+                }
+              />
+              <Button
+                variant="gradient"
+                size="sm"
+                className="rounded-full gap-1.5"
+                onClick={() => setShowCreate(true)}
+              >
+                <Plus className="h-4 w-4" /> <span className="hidden xs:inline">Host</span>
+              </Button>
+            </div>
           </div>
         </div>
 

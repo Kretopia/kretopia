@@ -40,12 +40,12 @@ Deno.serve(async (req) => {
   }
 
   if (!article) {
-    return Response.redirect("https://thrivein.io/magazine", 302);
+    return Response.redirect("https://www.thrivein.io/magazine", 302);
   }
 
-  const canonicalUrl = `https://thrivein.io/magazine/${slug}`;
+  const canonicalUrl = `https://www.thrivein.io/magazine/${slug}`;
   const description = article.subtitle || (article.content?.slice(0, 155).replace(/[#*>\n]/g, "") + "...");
-  const image = article.cover_image_url || "https://thrivein.io/lovable-uploads/thrivein-logo.png";
+  const image = article.cover_image_url || "https://www.thrivein.io/lovable-uploads/thrivein-logo.png";
   const title = `${article.title} | ThriveIN Magazine`;
 
   // Check if this is a bot/crawler

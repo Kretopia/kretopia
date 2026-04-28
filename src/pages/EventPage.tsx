@@ -691,11 +691,21 @@ const EventPage = () => {
             </Card>
           )}
 
-          {/* Discussion */}
+          {/* Group Chat */}
           {isAuthenticated && (
             <Card className="mb-6">
               <CardContent className="p-0">
-                <h3 className="font-semibold px-5 pt-4 pb-2">Discussion</h3>
+                <div className="flex items-center justify-between px-5 pt-4 pb-2">
+                  <div>
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4 text-primary" />
+                      Group chat
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {participation || isCreator ? "Say hi, ask questions, share plans" : "RSVP to join the chat"}
+                    </p>
+                  </div>
+                </div>
                 <EventComments 
                   eventId={event.id} 
                   isCreator={isCreator} 

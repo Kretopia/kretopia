@@ -506,14 +506,14 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
                         <CardContent className="py-12 text-center">
                           <Sparkles className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
                           <p className="font-semibold mb-1">
-                            {hostingTime === "upcoming" ? "No upcoming events" : "No past events yet"}
+                            {hostingTime === "upcoming" ? "You're not hosting anything yet" : "No past events yet"}
                           </p>
                           <p className="text-sm text-muted-foreground mb-4">
-                            {hostingTime === "upcoming" ? "Create your first event and grow your community" : "Once you wrap an event, it'll show up here"}
+                            {hostingTime === "upcoming" ? "Bring people together — your community is waiting" : "Once you wrap an event, it'll show up here"}
                           </p>
                           {hostingTime === "upcoming" && (
                             <Button variant="gradient" onClick={() => setShowCreate(true)}>
-                              <Plus className="h-4 w-4 mr-2" /> Host an Event
+                              <Plus className="h-4 w-4 mr-2" /> Host your first
                             </Button>
                           )}
                         </CardContent>

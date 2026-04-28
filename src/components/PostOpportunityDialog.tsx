@@ -93,17 +93,20 @@ export const PostOpportunityDialog = ({
   useEffect(() => {
     if (!open || !user) return;
     let cancelled = false;
-    supabase
-      .from("profiles")
-      .select("account_type, username")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("account_type, username")
+          .eq("user_id", user.id)
+          .maybeSingle();
         if (cancelled || !data) return;
         setAccountType((data.account_type as any) || "individual");
         setProfileUsername(data.username || null);
-      })
-      .catch(() => {});
+      } catch {
+        // non-fatal: nudge just won't render
+      }
+    })();
     return () => { cancelled = true; };
   }, [open, user]);
 

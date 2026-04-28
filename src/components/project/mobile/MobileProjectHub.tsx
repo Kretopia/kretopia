@@ -35,6 +35,7 @@ interface MobileProjectHubProps {
   onTasksChanged?: () => void;
   onNavigateToTab: (tab: string, intent?: string) => void;
   onPinStage?: (stageId: ProjectFlowStageId | null) => void;
+  onOpenCopilot?: () => void;
 }
 
 /**
@@ -61,6 +62,7 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
     onTasksChanged,
     onNavigateToTab,
     onPinStage,
+    onOpenCopilot,
   } = props;
 
   const [voiceOpen, setVoiceOpen] = useState(false);

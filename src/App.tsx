@@ -90,6 +90,7 @@ const Meetup = lazy(() => import("./pages/Meetup"));
 const MeetupManage = lazy(() => import("./pages/MeetupManage"));
 
 const Scene = lazy(() => import("./pages/Scene"));
+const EventBackstage = lazy(() => import("./pages/EventBackstage"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Magazine = lazy(() => import("./pages/Magazine"));
 const Spotlight = lazy(() => import("./pages/Spotlight"));
@@ -297,6 +298,7 @@ const AppContent = () => {
             
             {/* Public Browsable Routes */}
             <Route path="/nearby" element={<NearbyCreators />} />
+            <Route path="/events/backstage" element={<EventBackstage />} />
             <Route path="/events" element={<Navigate to="/nearby" replace />} />
             <Route path="/scene" element={<Scene />} />
             <Route path="/explore" element={<Navigate to="/nearby" replace />} />

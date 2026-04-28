@@ -40,8 +40,7 @@ export const EventShareKit = ({ event, hostFirstName, attendeeCount, open, onOpe
   useEffect(() => {
     if (!user) { setProfile(null); return; }
     supabase.from('profiles').select('full_name, username').eq('user_id', user.id).maybeSingle()
-      .then(({ data }) => setProfile(data as any))
-      .catch(() => setProfile(null));
+      .then(({ data }) => setProfile(data as any), () => setProfile(null));
   }, [user?.id]);
   const [copied, setCopied] = useState(false);
   const [customMessage, setCustomMessage] = useState("");

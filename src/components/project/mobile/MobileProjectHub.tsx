@@ -275,8 +275,8 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
       {/* Voice-to-Task FAB */}
       <button
         onClick={() => setVoiceOpen(true)}
-        className="fixed right-4 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center active:scale-95 transition-transform"
-        style={{ bottom: "calc(env(safe-area-inset-bottom) + 88px)" }}
+        className="fixed right-4 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center active:scale-95 transition-transform"
+        style={{ bottom: "calc(env(safe-area-inset-bottom) + 96px)" }}
         aria-label="Voice to task"
       >
         <Mic className="h-6 w-6" />

@@ -42,6 +42,8 @@ export default defineConfig(({ mode }) => {
           clientsClaim: true,
           // Clean old caches on update
           cleanupOutdatedCaches: true,
+          // Raise precache size limit to accommodate the main JS bundle
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           // CRITICAL: Never precache version.json — it must always be fetched fresh
           globIgnores: ['**/version.json'],
           // CRITICAL: Don't cache OAuth redirect route

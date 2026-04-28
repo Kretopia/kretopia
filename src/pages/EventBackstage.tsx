@@ -107,6 +107,8 @@ const EventBackstage = () => {
   const [messageFor, setMessageFor] = useState<BackstageEvent | null>(null);
   const [messageText, setMessageText] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [emailBlastFor, setEmailBlastFor] = useState<BackstageEvent | null>(null);
+  const [inviteFor, setInviteFor] = useState<BackstageEvent | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth?redirect=/events/backstage");

@@ -335,6 +335,56 @@ export const PostOpportunityDialog = ({
           <DialogDescription>What kind of opportunity are you posting?</DialogDescription>
         </DialogHeader>
 
+        {/* Smart nudge — account-aware shortcuts */}
+        {user && accountType && (
+          <div className="space-y-2">
+            {isCompany ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  navigate(profileUsername ? `/u/${profileUsername}` : "/profile");
+                }}
+                className="w-full flex items-center gap-3 p-3 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
+              >
+                <div className="shrink-0 w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                  <Building2 className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground">Posting as your Brand Page</p>
+                  <p className="text-[11px] text-muted-foreground leading-snug">
+                    Tap to review your brand profile before going live.
+                  </p>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                navigate("/talent-finder");
+              }}
+              className="w-full flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-muted/40 transition-colors text-left"
+            >
+              <div className="shrink-0 w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center">
+                <UserSearch className="h-4 w-4 text-accent-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-foreground">
+                  Hiring talent? Try Smart Talent Finder
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  Describe who you need and get a curated shortlist — faster than posting a gig.
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </button>
+          </div>
+        )}
+
+
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Step 1: Type Selection (visual cards) */}
           {!hasType ? (

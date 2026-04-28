@@ -435,6 +435,11 @@ export const CreateSessionDialog = ({
           </div>
         </form>
       </DialogContent>
+      <ScanFlyerDialog
+        open={scanOpen}
+        onOpenChange={setScanOpen}
+        onExtracted={applyScannedDetails}
+      />
     </Dialog>
   );
 };

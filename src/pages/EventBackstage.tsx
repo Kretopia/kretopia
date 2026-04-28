@@ -43,7 +43,7 @@ import { EventShareKit } from "@/components/sessions/EventShareKit";
 import { EventGuestRoster } from "@/components/sessions/EventGuestRoster";
 import { InviteByEmailDialog } from "@/components/sessions/InviteByEmailDialog";
 import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
-import { Mail, UserPlus } from "lucide-react";
+import { Mail, UserPlus, MessageCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,

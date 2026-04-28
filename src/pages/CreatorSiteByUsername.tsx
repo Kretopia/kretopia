@@ -43,6 +43,23 @@ const CreatorSiteByUsername = () => {
         return;
       }
 
+      // Guard: never treat reserved platform paths as usernames.
+      // This prevents "/index", "/home", etc. from rendering the dark
+      // "Site Not Found" screen when a stale link or typo is hit.
+      const RESERVED_PATHS = new Set([
+        "index", "home", "auth", "login", "signup", "logout",
+        "admin", "settings", "profile", "messages", "notifications",
+        "circle", "circles", "desk", "fund", "thrivepay", "subscription",
+        "search", "nearby", "spotlight", "opportunities", "gigs",
+        "onboarding", "company-onboarding", "claim", "install",
+        "about", "terms", "privacy", "unsubscribe", "community-guidelines",
+        "talent-finder", "talent-manager", "shortlists", "website-builder",
+      ]);
+      if (RESERVED_PATHS.has(username.toLowerCase())) {
+        navigate("/", { replace: true });
+        return;
+      }
+
       const { data: profile } = await supabase
         .from("profiles")
         .select("user_id, full_name, role, bio, location, avatar_url, cover_image_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, rate_range, site_template, site_enabled, site_headline, site_bio, site_sections, site_custom_blocks, professional_skills, subscription_tier, username")

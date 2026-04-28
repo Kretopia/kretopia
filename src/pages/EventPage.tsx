@@ -64,6 +64,7 @@ const EventPage = () => {
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showCohosts, setShowCohosts] = useState(false);
   const [showRecap, setShowRecap] = useState(false);
+  const [showGuestPass, setShowGuestPass] = useState(false);
 
   useEffect(() => {
     if (eventId) fetchEvent();

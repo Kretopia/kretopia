@@ -49,7 +49,12 @@ export const EventGroupChatCard = ({
   }, [groupChatRoomId]);
 
   const ensureRoom = async (): Promise<string | null> => {
-    if (groupChatRoomId) return groupChatRoomId;
+    if (groupChatRoomId) {
+      // Room already exists — just flip the enabled flag back on
+      await supabase.from("creative_jams").update({ group_chat_enabled: true }).eq("id", eventId);
+      onChange?.({ enabled: true, roomId: groupChatRoomId });
+      return groupChatRoomId;
+    }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
     const { data: room, error } = await supabase

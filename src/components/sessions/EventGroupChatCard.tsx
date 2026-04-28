@@ -170,7 +170,7 @@ export const EventGroupChatCard = ({
           type: "event_update",
           action_url: `/messages/${groupChatRoomId}`,
         }));
-        await supabase.from("notifications").insert(notifs).catch(() => {});
+        try { await supabase.from("notifications").insert(notifs); } catch { /* non-blocking */ }
       }
 
       setMemberCount((c) => c + toAdd.length);

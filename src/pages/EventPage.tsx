@@ -623,7 +623,7 @@ const EventPage = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">When</p>
-                  <p className="font-medium">{format(startDate, "EEEE, MMMM d")}</p>
+                  <p className="font-medium">{format(startDate, "EEEE, MMMM d, yyyy")}</p>
                   <p className="text-sm text-muted-foreground">{format(startDate, "h:mm a")}{event.end_time ? ` – ${format(new Date(event.end_time), "h:mm a")}` : ''}</p>
                 </div>
                 {!isPast && !isCancelled && (

@@ -196,6 +196,17 @@ const QuickActionFab = () => {
       },
     },
     {
+      id: "scout-event",
+      label: "Scout an event",
+      sub: "Spotted one? List it for the host",
+      icon: Scan,
+      tone: "muted",
+      onSelect: () => {
+        close();
+        setShowScoutEvent(true);
+      },
+    },
+    {
       id: "new-project",
       label: "Start a project",
       sub: "Onboard a creator",

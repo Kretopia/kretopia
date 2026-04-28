@@ -17,8 +17,7 @@ interface Guest {
   avatar_url: string | null;
   role: string | null;
   bio: string | null;
-  city: string | null;
-  country: string | null;
+  location: string | null;
   is_host?: boolean;
 }
 
@@ -64,7 +63,7 @@ export const EventGuestRoster = ({
         if (userIds.length === 0) { setGuests([]); return; }
         const { data: profiles } = await supabase
           .from("profiles")
-          .select("user_id, full_name, username, avatar_url, role, bio, city, country")
+          .select("user_id, full_name, username, avatar_url, role, bio, location")
           .in("user_id", userIds);
         const list: Guest[] = (profiles || [])
           .map((p) => ({ ...p, is_host: p.user_id === hostId }))
@@ -220,9 +219,9 @@ export const EventGuestRoster = ({
                         <Briefcase className="h-3.5 w-3.5" /> {selected.role}
                       </p>
                     )}
-                    {(selected.city || selected.country) && (
+                    {selected.location && (
                       <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                        <MapPin className="h-3 w-3" /> {[selected.city, selected.country].filter(Boolean).join(", ")}
+                        <MapPin className="h-3 w-3" /> {selected.location}
                       </p>
                     )}
                   </div>

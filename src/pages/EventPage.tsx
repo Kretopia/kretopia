@@ -527,9 +527,9 @@ const EventPage = () => {
                 {isImminent && (
                   <>
                     <span className="text-xl text-muted-foreground">:</span>
-                    <div className="text-center px-3 py-1.5 rounded-lg bg-accent/20 min-w-[56px] animate-pulse">
-                      <p className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{String(secondsUntil).padStart(2, '0')}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase">Sec</p>
+                    <div className="text-center px-3 py-1.5 rounded-lg bg-energy/15 border border-energy/40 min-w-[56px] animate-pulse">
+                      <p className="text-xl sm:text-2xl font-bold text-energy tabular-nums">{String(secondsUntil).padStart(2, '0')}</p>
+                      <p className="text-[10px] text-energy/80 uppercase">Sec</p>
                     </div>
                   </>
                 )}
@@ -538,8 +538,8 @@ const EventPage = () => {
 
             {/* Scarcity line */}
             {showScarcity && !isPast && !isCancelled && (
-              <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-semibold">
-                <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
+              <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-energy/15 border border-energy/40 text-energy text-xs font-semibold">
+                <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
                 Only {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
               </div>
             )}

@@ -39,5 +39,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'thrivefund-campaign-funded': thrivefundCampaignFunded,
   'thrivefund-campaign-failed': thrivefundCampaignFailed,
   'event-blast': eventBlast,
+  'event-invite': eventInvite,
   'day2-engagement': day2Engagement,
 }

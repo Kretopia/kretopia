@@ -280,7 +280,7 @@ export const UnifiedHome = () => {
       }
     };
     fetchPublic();
-  }, [user]);
+  }, [user, currentGeo?.country]);
 
   // Live activity ticker
   useEffect(() => {

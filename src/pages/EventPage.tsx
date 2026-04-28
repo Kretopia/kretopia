@@ -164,7 +164,18 @@ const EventPage = () => {
         setParticipantCount(prev => prev - 1);
         toast({ title: "Left event" });
       } else {
-        const { data: inserted } = await supabase.from('jam_participants').insert({ jam_id: event.id, user_id: user.id, status: 'going' }).select('id, check_in_token').single();
+        // Capture promoter/host attribution from ?ref= query
+        const referredBy = await captureRefFromUrl(event.id);
+        const insertPayload: any = { jam_id: event.id, user_id: user.id, status: 'going' };
+        if (referredBy && referredBy !== user.id) {
+          insertPayload.referred_by = referredBy;
+          insertPayload.referral_channel = 'link';
+        }
+        const { data: inserted } = await supabase
+          .from('jam_participants')
+          .insert(insertPayload)
+          .select('id, check_in_token')
+          .single();
         setParticipation('going');
         setParticipantCount(prev => prev + 1);
         toast({ title: "You're in!", description: "You've joined this event" });

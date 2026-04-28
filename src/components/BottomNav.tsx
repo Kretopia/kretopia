@@ -73,15 +73,15 @@ const BottomNav = memo(() => {
                 "relative flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-xl transition-all duration-200 flex-1 min-h-[48px]",
                 "touch-manipulation select-none active:scale-95",
                 active
-                  ? "text-primary"
+                  ? "text-energy"
                   : "text-muted-foreground hover:text-foreground"
               )}
               style={{ WebkitTapHighlightColor: "transparent" }}
             >
-              <item.icon className={cn("h-5 w-5 transition-all duration-200", active && "scale-110 drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)]")} />
+              <item.icon className={cn("h-5 w-5 transition-all duration-200", active && "scale-110 drop-shadow-[0_0_8px_hsl(var(--energy)/0.6)]")} />
               <span className={cn("text-[10px] font-medium leading-tight", active && "font-semibold")}>{item.label}</span>
               {active && (
-                <span className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.8)]" />
+                <span className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-energy shadow-[0_0_8px_hsl(var(--energy)/0.8)]" />
               )}
             </Link>
           );

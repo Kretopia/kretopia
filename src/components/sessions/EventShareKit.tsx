@@ -11,7 +11,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import QRCodeStyling from "qr-code-styling";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/contexts/ProfileContext";
+import { useProfileContext } from "@/contexts/ProfileContext";
 import { buildWarmShareMessage, buildEventShareUrl, logShareClick, type ShareChannel } from "@/lib/eventActions";
 
 interface EventShareKitProps {
@@ -36,7 +36,7 @@ interface EventShareKitProps {
 export const EventShareKit = ({ event, hostFirstName, attendeeCount, open, onOpenChange }: EventShareKitProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { profile } = useProfile();
+  const { profile } = useProfileContext();
   const [copied, setCopied] = useState(false);
   const [customMessage, setCustomMessage] = useState("");
   const qrRef = useRef<HTMLDivElement>(null);

@@ -165,32 +165,36 @@ export const EventGuestRoster = ({
           ) : guests.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">No guests yet — be the first.</p>
           ) : (
-            <ScrollArea className="-mx-1">
-              <div className="flex gap-3 px-1 pb-2">
-                {guests.map((g) => (
+            <ul className="divide-y divide-border rounded-lg border border-border overflow-hidden">
+              {guests.map((g) => (
+                <li key={g.user_id}>
                   <button
-                    key={g.user_id}
                     onClick={() => setSelected(g)}
-                    className="shrink-0 w-[112px] rounded-xl border border-border bg-card hover:bg-accent/40 active:scale-[0.98] transition p-3 text-left"
+                    className="w-full flex items-center gap-3 p-3 hover:bg-accent/40 active:bg-accent/60 transition text-left"
                   >
-                    <Avatar className="h-14 w-14 mx-auto mb-2">
+                    <Avatar className="h-10 w-10 shrink-0">
                       <AvatarImage src={g.avatar_url || undefined} />
                       <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                         {g.full_name?.charAt(0) || "?"}
                       </AvatarFallback>
                     </Avatar>
-                    <p className="text-xs font-semibold truncate text-center">
-                      {g.full_name?.split(" ")[0] || "Guest"}
-                    </p>
-                    {g.is_host ? (
-                      <Badge variant="secondary" className="mt-1 w-full justify-center text-[10px]">Host</Badge>
-                    ) : g.role ? (
-                      <p className="text-[10px] text-muted-foreground truncate text-center mt-0.5">{g.role}</p>
-                    ) : null}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold truncate">
+                          {g.full_name || "Guest"}
+                        </p>
+                        {g.is_host && (
+                          <Badge variant="secondary" className="text-[10px] shrink-0">Host</Badge>
+                        )}
+                      </div>
+                      {g.role && (
+                        <p className="text-xs text-muted-foreground truncate">{g.role}</p>
+                      )}
+                    </div>
                   </button>
-                ))}
-              </div>
-            </ScrollArea>
+                </li>
+              ))}
+            </ul>
           )}
         </CardContent>
       </Card>

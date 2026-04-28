@@ -90,6 +90,7 @@ const Meetup = lazy(() => import("./pages/Meetup"));
 const MeetupManage = lazy(() => import("./pages/MeetupManage"));
 
 const Scene = lazy(() => import("./pages/Scene"));
+const EventBackstage = lazy(() => import("./pages/EventBackstage"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Magazine = lazy(() => import("./pages/Magazine"));
 const Spotlight = lazy(() => import("./pages/Spotlight"));

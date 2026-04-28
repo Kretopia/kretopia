@@ -1666,6 +1666,7 @@ export type Database = {
       connections: {
         Row: {
           connected_user_id: string
+          context: Json | null
           created_at: string | null
           declined_at: string | null
           id: string
@@ -1675,6 +1676,7 @@ export type Database = {
         }
         Insert: {
           connected_user_id: string
+          context?: Json | null
           created_at?: string | null
           declined_at?: string | null
           id?: string
@@ -1684,6 +1686,7 @@ export type Database = {
         }
         Update: {
           connected_user_id?: string
+          context?: Json | null
           created_at?: string | null
           declined_at?: string | null
           id?: string
@@ -1815,6 +1818,8 @@ export type Database = {
           end_time: string | null
           event_type: string | null
           external_ticket_url: string | null
+          group_chat_enabled: boolean
+          group_chat_room_id: string | null
           host_response_hours: number | null
           id: string
           is_public: boolean | null
@@ -1852,6 +1857,8 @@ export type Database = {
           end_time?: string | null
           event_type?: string | null
           external_ticket_url?: string | null
+          group_chat_enabled?: boolean
+          group_chat_room_id?: string | null
           host_response_hours?: number | null
           id?: string
           is_public?: boolean | null
@@ -1889,6 +1896,8 @@ export type Database = {
           end_time?: string | null
           event_type?: string | null
           external_ticket_url?: string | null
+          group_chat_enabled?: boolean
+          group_chat_room_id?: string | null
           host_response_hours?: number | null
           id?: string
           is_public?: boolean | null
@@ -1962,6 +1971,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "public_profiles_view"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "creative_jams_group_chat_room_id_fkey"
+            columns: ["group_chat_room_id"]
+            isOneToOne: false
+            referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "creative_jams_parent_event_id_fkey"

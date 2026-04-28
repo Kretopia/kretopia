@@ -55,6 +55,7 @@ export const CreateSessionDialog = ({
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [userCircles, setUserCircles] = useState<{ id: string; title: string; icon_emoji: string }[]>([]);
+  const [scanOpen, setScanOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',

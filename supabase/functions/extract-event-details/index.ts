@@ -44,6 +44,7 @@ serve(async (req) => {
     // 1. If URL provided, try to scrape its visible text (best-effort).
     let scrapedText = "";
     if (source_url) {
+      // 1a. Try a plain fetch first (fast, free).
       try {
         const r = await fetch(source_url, {
           headers: { "User-Agent": "Mozilla/5.0 ThriveINBot/1.0" },
@@ -51,7 +52,6 @@ serve(async (req) => {
         });
         if (r.ok) {
           const html = await r.text();
-          // Strip scripts/styles, then tags, collapse whitespace.
           scrapedText = html
             .replace(/<script[\s\S]*?<\/script>/gi, " ")
             .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -61,16 +61,66 @@ serve(async (req) => {
             .slice(0, 8000);
         }
       } catch (e) {
-        console.warn("URL fetch failed (non-fatal):", e);
+        console.warn("Raw fetch failed (non-fatal):", e);
+      }
+
+      // 1b. If the page is a JS SPA (sparse text or missing date/time signals), fall back to Firecrawl.
+      const looksSparse =
+        scrapedText.length < 400 ||
+        !/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d{1,2}[:\.]\d{2})\b/i.test(
+          scrapedText,
+        );
+      const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+      if (looksSparse && FIRECRAWL_API_KEY) {
+        try {
+          const fcResp = await fetch("https://api.firecrawl.dev/v1/scrape", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              url: source_url,
+              formats: ["markdown"],
+              onlyMainContent: true,
+              waitFor: 1500,
+              timeout: 20000,
+            }),
+            signal: AbortSignal.timeout(25000),
+          });
+          if (fcResp.ok) {
+            const fcData = await fcResp.json();
+            const md = fcData?.data?.markdown || "";
+            if (md && md.length > scrapedText.length) {
+              scrapedText = md.slice(0, 8000);
+              console.log("Firecrawl scrape succeeded, length:", scrapedText.length);
+            }
+          } else {
+            console.warn("Firecrawl returned non-OK:", fcResp.status);
+          }
+        } catch (e) {
+          console.warn("Firecrawl fallback failed (non-fatal):", e);
+        }
       }
     }
 
     const combinedText = [text, scrapedText].filter(Boolean).join("\n\n");
 
     // 2. AI extraction
+    const nowIso = new Date().toISOString();
     const systemPrompt = `You extract structured EVENT details from flyers, posters, social posts, or web pages.
 
+Today is ${nowIso}. Use this as your reference when resolving relative or partial dates.
+
 Read every detail carefully — date, time, venue, ticket info, host name, what attendees should expect.
+
+DATE & TIME RULES (critical — get these right):
+1. If a year is missing, pick the NEXT future occurrence of that month/day relative to today. Never default to the current year if that date has already passed.
+2. If a weekday is given alongside a date (e.g. "May 1, Friday"), verify the weekday matches the year you chose. If it does not match the current year, advance the year until it does.
+3. Times like "7:30", "07:30", "8 - 11" on a social/meetup/nightlife page nearly always mean PM/evening. Treat ambiguous single-digit or sub-12 times as PM unless the context (brunch, breakfast, morning workshop) clearly indicates AM.
+4. Always anchor times to the venue's local timezone (IANA), then convert to a proper ISO 8601 string with offset. Example: an event at 7:30pm in Canggu, Bali → "2026-05-01T19:30:00+08:00", timezone "Asia/Makassar".
+5. If a range is given ("07:30 - 11:59"), populate both start_time and end_time.
+6. Only return null for start_time if there is genuinely no date information at all.
 
 For the "description" field, do NOT just copy the raw text. Rewrite it as a polished, engaging event listing — clear, professional, and inviting. Use proper line breaks. Keep it 2-4 short paragraphs.
 
@@ -81,9 +131,9 @@ Return ONLY a JSON object with these fields:
 - venue_name: string or null
 - venue_address: string or null
 - country: string or null (full country name if identifiable)
-- start_time: string ISO 8601 with timezone, or null if unknown. If only a date is given, use 19:00 local time.
-- end_time: string ISO 8601 or null
-- timezone: string IANA (e.g. "America/Port_of_Spain") or null
+- start_time: string ISO 8601 with offset (e.g. "2026-05-01T19:30:00+08:00")
+- end_time: string ISO 8601 with offset, or null
+- timezone: string IANA (e.g. "Asia/Makassar", "America/Port_of_Spain") — required when you return a start_time
 - max_participants: integer (default 100 if not stated)
 - is_ticketed: boolean
 - ticket_price: number or null (numeric only)
@@ -92,7 +142,7 @@ Return ONLY a JSON object with these fields:
 - tags: string[] (3-6 relevant tags)
 - cover_image_prompt: string (a clean visual prompt describing the vibe/mood for a 16:9 banner — no text in the image)
 
-If anything is unclear, use null. Never invent dates or prices.`;
+If a field truly has no signal, use null. Never invent prices or venues.`;
 
     const messages: any[] = [{ role: "system", content: systemPrompt }];
 
@@ -112,7 +162,7 @@ If anything is unclear, use null. Never invent dates or prices.`;
     } else {
       messages.push({
         role: "user",
-        content: `Extract event details from the following content:\n\n${combinedText}`,
+        content: `Extract event details from the following scraped page content. Pay special attention to:\n- Date fragments split across separate lines (e.g. month, day, weekday on different lines — combine them).\n- Time ranges like "07:30 - 11:59" — these mean evening (19:30 - 23:59 local time).\n- Venue name and city/country — often appears as a short line right after the time, sometimes with a flag emoji (e.g. "🇮🇩Canggu" → city Canggu, country Indonesia → timezone Asia/Makassar).\n\nContent:\n\n${combinedText}`,
       });
     }
 

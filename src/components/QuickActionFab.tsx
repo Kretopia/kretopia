@@ -30,6 +30,28 @@ const QuickActionFab = () => {
 
   const [open, setOpen] = useState(false);
   const [isCompany, setIsCompany] = useState(false);
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem("quickFab.dismissed") === "1";
+  });
+
+  // Routes where the FAB always returns even after dismissal (primary surfaces)
+  const isAutoShowRoute =
+    location.pathname === "/" || location.pathname.startsWith("/circle");
+
+  // Auto-restore visibility when user lands on Home or Match
+  useEffect(() => {
+    if (isAutoShowRoute && dismissed) {
+      sessionStorage.removeItem("quickFab.dismissed");
+      setDismissed(false);
+    }
+  }, [isAutoShowRoute, dismissed]);
+
+  const dismissFab = () => {
+    sessionStorage.setItem("quickFab.dismissed", "1");
+    setDismissed(true);
+    setOpen(false);
+  };
 
   // Dialogs
   const [showCreateEvent, setShowCreateEvent] = useState(false);

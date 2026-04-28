@@ -354,7 +354,7 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, currentGeo?.country]);
 
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
 

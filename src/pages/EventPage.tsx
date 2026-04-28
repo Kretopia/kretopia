@@ -11,7 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MapPin, Calendar, Clock, Users, Loader2, Lock, 
   Sparkles, ArrowRight, Check, Share2, Ticket, ExternalLink, Pencil, XCircle, ScanLine,
-  MoreVertical, Crown, Ban, CheckCircle, Download, CalendarPlus, Navigation, MessageCircle
+  MoreVertical, Crown, Ban, CheckCircle, Download, CalendarPlus, Navigation, MessageCircle,
+  ArrowLeft, X
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger
@@ -359,6 +360,29 @@ const EventPage = () => {
       </Helmet>
       
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+        {/* Top nav: Back + Close */}
+        <div className="sticky top-0 z-30 bg-background/95 border-b border-border/50">
+          <div className="max-w-2xl mx-auto px-3 sm:px-4 h-12 flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/events"))}
+              className="gap-1.5 -ml-2 h-9"
+            >
+              <ArrowLeft className="h-4 w-4" /> Events
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/events")}
+              aria-label="Close"
+              className="h-9 w-9 -mr-2"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+
         {/* Hero Cover */}
         {event.cover_image_url ? (
           <div className="relative h-48 sm:h-72 w-full">

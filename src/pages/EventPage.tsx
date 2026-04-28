@@ -744,6 +744,17 @@ const EventPage = () => {
             />
           )}
 
+          {/* Inline event chat — lives on the event page until the event wraps.
+              After the event, it collapses to a "moved to Messages" link so the
+              conversation can continue in the Groups inbox. */}
+          {isAuthenticated && event.group_chat_enabled && event.group_chat_room_id && (isCreator || !!participation) && (
+            <EventInlineChat
+              roomId={event.group_chat_room_id}
+              currentUserId={user!.id}
+              archived={isPast || isCompleted}
+            />
+          )}
+
           {/* Bring a +1 — RSVP'd guests get a personal invite link with attribution */}
           {!!participation && !isPast && !isCompleted && !isCancelled && (
             <BringAFriendCard

@@ -491,75 +491,86 @@ const EventPage = () => {
           {/* Event Details Card */}
           <Card className="mb-6 overflow-hidden">
             <CardContent className="p-5 space-y-4">
-              <div className="flex items-center gap-3">
+              {/* When */}
+              <div className="flex items-start gap-3">
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <Calendar className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <p className="font-medium">{format(startDate, "EEEE, MMMM d, yyyy")}</p>
-                  <p className="text-sm text-muted-foreground">{format(startDate, "h:mm a")}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">When</p>
+                  <p className="font-medium">{format(startDate, "EEEE, MMMM d")}</p>
+                  <p className="text-sm text-muted-foreground">{format(startDate, "h:mm a")}{event.end_time ? ` – ${format(new Date(event.end_time), "h:mm a")}` : ''}</p>
                 </div>
+                {!isPast && !isCancelled && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0 gap-1.5"
+                    onClick={() => downloadIcs({
+                      id: event.id,
+                      title: event.title,
+                      description: event.description,
+                      startTime: event.start_time,
+                      endTime: event.end_time,
+                      venueName: event.venue_name,
+                      venueAddress: event.venue_address,
+                      url: `${APP_URL}/event/${event.id}`,
+                    })}
+                  >
+                    <CalendarPlus className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Add to Calendar</span>
+                    <span className="sm:hidden">Save</span>
+                  </Button>
+                )}
               </div>
 
-              <div className="flex items-center gap-3">
+              {/* Where */}
+              <div className="flex items-start gap-3">
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <MapPin className="h-5 w-5 text-primary" />
                 </div>
                 {isAuthenticated ? (
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium">{event.venue_name || 'Location TBA'}</p>
-                    {event.venue_address && <p className="text-sm text-muted-foreground">{event.venue_address}</p>}
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Where</p>
+                    <p className="font-medium truncate">{event.venue_name || 'Location TBA'}</p>
+                    {event.venue_address && <p className="text-sm text-muted-foreground line-clamp-2">{event.venue_address}</p>}
                   </div>
                 ) : (
-                  <div>
+                  <div className="flex-1">
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Where</p>
                     <p className="font-medium text-muted-foreground">
-                      {event.venue_name ? event.venue_name.split(',')[0] + '...' : 'Location hidden'}
+                      {event.venue_name ? event.venue_name.split(',')[0] + '…' : 'Location hidden'}
                     </p>
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Lock className="h-3 w-3" /> Sign up to see full location
                     </p>
                   </div>
                 )}
-                {isAuthenticated && event.venue_address && (
-                  <Button size="icon" variant="ghost" className="shrink-0" asChild>
-                    <a href={`https://maps.google.com/?q=${encodeURIComponent(event.venue_address)}`} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
+                {isAuthenticated && (event.venue_address || event.venue_name) && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0 gap-1.5"
+                    onClick={() => openDirections(event.venue_address, event.venue_name)}
+                  >
+                    <Navigation className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Directions</span>
+                    <span className="sm:hidden">Map</span>
                   </Button>
                 )}
               </div>
 
+              {/* Capacity */}
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <Users className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium">{participantCount} / {event.max_participants || '∞'} going</p>
-                  {isFull && <p className="text-xs text-destructive">This event is full</p>}
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Who's coming</p>
+                  <p className="font-medium">{participantCount}{event.max_participants ? ` of ${event.max_participants}` : ''} going</p>
+                  {isFull && <p className="text-xs text-destructive">This one's full — try the waitlist</p>}
                 </div>
               </div>
-
-              {/* Attendee Avatars */}
-              {attendeeAvatars.length > 0 && (
-                <div className="flex items-center gap-2 pt-1">
-                  <div className="flex -space-x-2">
-                    {attendeeAvatars.map((a, i) => (
-                      <Avatar key={i} className="h-8 w-8 border-2 border-background">
-                        <AvatarImage src={a.avatar_url || undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                          {a.full_name?.charAt(0) || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                    ))}
-                    {participantCount > attendeeAvatars.length && (
-                      <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                        <span className="text-xs text-muted-foreground">+{participantCount - attendeeAvatars.length}</span>
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-xs text-muted-foreground">are going</span>
-                </div>
-              )}
             </CardContent>
           </Card>
 
@@ -567,7 +578,7 @@ const EventPage = () => {
           {event.description && (
             <Card className="mb-6">
               <CardContent className="p-5">
-                <h3 className="font-semibold mb-2">About this event</h3>
+                <h3 className="font-semibold mb-2">The vibe</h3>
                 {isAuthenticated ? (
                   <p className="text-muted-foreground whitespace-pre-wrap">{event.description}</p>
                 ) : (

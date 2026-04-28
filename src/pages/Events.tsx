@@ -17,6 +17,7 @@ import { format } from "date-fns";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
 
 interface EventItem {
   id: string;

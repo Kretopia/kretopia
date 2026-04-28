@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { MessageCircle, Loader2, ArrowRight } from "lucide-react";
+import { MessageCircle, Loader2, ArrowRight, UserPlus2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -119,6 +119,73 @@ export const EventGroupChatCard = ({
     }
   };
 
+  const handleAddAllRsvps = async () => {
+    if (!isHost || !groupChatRoomId) return;
+    setBusy(true);
+    try {
+      // 1. Get all RSVPs (going + interested)
+      const { data: parts, error: pErr } = await supabase
+        .from("jam_participants")
+        .select("user_id")
+        .eq("jam_id", eventId)
+        .in("status", ["going", "interested"]);
+      if (pErr) throw pErr;
+
+      const rsvpIds = Array.from(new Set([hostId, ...(parts || []).map((p: any) => p.user_id).filter(Boolean)]));
+      if (rsvpIds.length === 0) {
+        toast({ title: "No guests yet", description: "Once people RSVP you can add them." });
+        return;
+      }
+
+      // 2. Find who's already in the chat
+      const { data: existing } = await supabase
+        .from("spark_room_members")
+        .select("user_id")
+        .eq("room_id", groupChatRoomId)
+        .in("user_id", rsvpIds);
+      const existingIds = new Set((existing || []).map((m: any) => m.user_id));
+      const toAdd = rsvpIds.filter((id) => !existingIds.has(id));
+
+      if (toAdd.length === 0) {
+        toast({ title: "Everyone's already in", description: "All RSVPs are members of the chat." });
+        return;
+      }
+
+      // 3. Add as members
+      const memberRows = toAdd.map((uid) => ({
+        room_id: groupChatRoomId,
+        user_id: uid,
+        role: uid === hostId ? "owner" : "member",
+      }));
+      const { error: insErr } = await supabase.from("spark_room_members").insert(memberRows);
+      if (insErr && !insErr.message.includes("duplicate")) throw insErr;
+
+      // 4. Notify everyone (except host) so they know
+      const notifyIds = toAdd.filter((id) => id !== hostId);
+      if (notifyIds.length > 0) {
+        const notifs = notifyIds.map((uid) => ({
+          user_id: uid,
+          title: `You've been added to the chat for "${eventTitle}"`,
+          message: "Tap to say hi to the host and other guests.",
+          type: "event_update",
+          action_url: `/messages/${groupChatRoomId}`,
+        }));
+        try { await supabase.from("notifications").insert(notifs); } catch { /* non-blocking */ }
+      }
+
+      setMemberCount((c) => c + toAdd.length);
+      setIsMember(true);
+      toast({
+        title: `Added ${toAdd.length} guest${toAdd.length === 1 ? "" : "s"}`,
+        description: "They've been notified.",
+      });
+    } catch (e: any) {
+      toast({ title: "Couldn't add guests", description: e.message, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const openChat = () => groupChatRoomId && navigate(`/messages/${groupChatRoomId}`);
 
   // Hidden entirely from non-hosts when chat is off
@@ -154,6 +221,22 @@ export const EventGroupChatCard = ({
             </div>
           )}
         </div>
+
+        {/* Host: bulk-add all RSVPs */}
+        {isHost && groupChatEnabled && groupChatRoomId && (
+          <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3 flex items-center gap-3">
+            <UserPlus2 className="h-4 w-4 text-primary shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium leading-tight">Add all RSVPs to the chat</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Pulls every "going" guest in and notifies them. Safe to re-run.
+              </p>
+            </div>
+            <Button size="sm" variant="outline" onClick={handleAddAllRsvps} disabled={busy} className="shrink-0">
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Add all"}
+            </Button>
+          </div>
+        )}
 
         {/* Status hint — chat renders inline below this card */}
         {groupChatEnabled && !isHost && !isParticipant && (

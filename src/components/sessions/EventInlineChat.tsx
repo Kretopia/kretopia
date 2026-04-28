@@ -54,6 +54,12 @@ export const EventInlineChat = ({ roomId, currentUserId, archived = false }: Pro
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Ensure membership so RLS lets us read & post (idempotent — duplicate ignored)
+      await supabase
+        .from("spark_room_members")
+        .insert({ room_id: roomId, user_id: currentUserId, role: "member" })
+        .then(() => {}, () => {});
+
       const { data } = await supabase
         .from("spark_room_messages")
         .select("id, user_id, content, created_at")

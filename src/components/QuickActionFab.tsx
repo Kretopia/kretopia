@@ -363,6 +363,10 @@ const QuickActionFab = () => {
         open={showPostGig}
         onOpenChange={setShowPostGig}
       />
+      <ScoutEventDialog
+        open={showScoutEvent}
+        onOpenChange={setShowScoutEvent}
+      />
     </>
   );
 };

@@ -120,6 +120,10 @@ function buildEventShareHtml(event: EventRow, siteUrl: string) {
     <meta property="og:url" content="${shareUrl}" />
     <meta property="og:site_name" content="ThriveIN" />
     <meta property="og:image" content="${escapeHtml(image)}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${escapeHtml(event.title)} on ThriveIN" />
+    <meta property="og:image:secondary" content="${escapeHtml(fallbackImage)}" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(title)}" />

@@ -485,21 +485,17 @@ const EventBackstage = () => {
                   </>
                 ) : (
                   <>
-                    <Button size="sm" variant="default" onClick={() => setCheckinFor(ev)}>
-                      <ScanLine className="h-3.5 w-3.5 mr-1.5" /> Check-in
+                    <Button size="sm" variant="lime" onClick={() => setInviteFor(ev)}>
+                      <UserPlus className="h-3.5 w-3.5 mr-1.5" /> Invite
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setEmailBlastFor(ev)}>
+                      <Mail className="h-3.5 w-3.5 mr-1.5" /> Email
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setShareFor(ev)}>
                       <Share2 className="h-3.5 w-3.5 mr-1.5" /> Share
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setMessageFor(ev);
-                        setMessageText("");
-                      }}
-                    >
-                      <MessageSquare className="h-3.5 w-3.5 mr-1.5" /> Message
+                    <Button size="sm" variant="outline" onClick={() => setCheckinFor(ev)}>
+                      <ScanLine className="h-3.5 w-3.5 mr-1.5" /> Check-in
                     </Button>
                   </>
                 )}

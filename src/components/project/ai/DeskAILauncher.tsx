@@ -26,7 +26,7 @@ export const DeskAILauncher = ({ projectId, userId, isPro, hideOnMobile = false 
           "hover:scale-105 transition-transform",
           hideOnMobile && "hidden sm:inline-flex",
           // Position: above mobile bottom nav, bottom-right on desktop
-          "bottom-[calc(7.5rem+env(safe-area-inset-bottom))] right-4",
+          "bottom-[calc(10.5rem+env(safe-area-inset-bottom))] right-4",
           "lg:bottom-6 lg:right-6"
         )}
         aria-label="Open Thrive Ops AI"

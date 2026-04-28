@@ -105,14 +105,16 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
       <>
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-semibold truncate">{project.title}</h1>
-              <Badge variant="outline" className={`${getStatusColor(project.status)} text-[10px] px-1.5 py-0`}>
+            <div className="flex items-start gap-2 flex-wrap">
+              <h1 className="text-base font-semibold leading-tight line-clamp-2 break-words">
+                {project.title}
+              </h1>
+              <Badge variant="outline" className={`${getStatusColor(project.status)} text-[10px] px-1.5 py-0 mt-0.5 shrink-0`}>
                 {project.status || 'Planning'}
               </Badge>
             </div>
             {project.description && (
-              <p className="text-xs text-muted-foreground truncate">{project.description}</p>
+              <p className="text-xs text-muted-foreground truncate mt-0.5">{project.description}</p>
             )}
           </div>
         </div>

@@ -110,6 +110,40 @@ export const CreateSessionDialog = ({
     setCoverPreview(null);
   };
 
+  const applyScannedDetails = (
+    details: ScannedEventDetails,
+    flyerFile: File,
+    flyerPreview: string,
+  ) => {
+    // Use flyer as cover image
+    setCoverFile(flyerFile);
+    setCoverPreview(flyerPreview);
+
+    // Apply date/time
+    if (details.start_date) {
+      const parsed = new Date(`${details.start_date}T${details.start_time || "12:00"}:00`);
+      if (!isNaN(parsed.getTime())) setDate(parsed);
+    }
+    if (details.start_time && /^\d{2}:\d{2}$/.test(details.start_time)) {
+      setTime(details.start_time);
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      title: details.title || prev.title,
+      description: details.description || prev.description,
+      category: details.category || prev.category,
+      venue_name: details.venue_name || prev.venue_name,
+      venue_address: details.venue_address || prev.venue_address,
+      max_participants: details.max_participants ?? prev.max_participants,
+      is_ticketed: details.is_ticketed ?? prev.is_ticketed,
+      ticket_price: details.ticket_price ?? prev.ticket_price,
+      ticket_currency: details.ticket_currency || prev.ticket_currency,
+      external_ticket_url: details.external_ticket_url || prev.external_ticket_url,
+      event_type: 'event',
+    }));
+  };
+
   const uploadCover = async (): Promise<string | null> => {
     if (!coverFile || !user) return null;
     const ext = coverFile.name.split('.').pop();

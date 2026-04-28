@@ -121,13 +121,16 @@ export const EventInlineChat = ({ roomId, currentUserId, archived = false }: Pro
   }
 
   return (
-    <Card className="mb-6 overflow-hidden">
+    <Card className="mb-6 overflow-hidden border-energy/30">
       <CardContent className="p-0">
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <p className="font-semibold text-sm">Event chat</p>
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-energy/5">
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+            <p className="font-semibold text-sm">Event chat</p>
+          </div>
           <button
             onClick={() => navigate(`/messages/${roomId}`)}
-            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+            className="text-xs text-muted-foreground hover:text-energy inline-flex items-center gap-1"
           >
             Full screen <ExternalLink className="h-3 w-3" />
           </button>
@@ -140,9 +143,13 @@ export const EventInlineChat = ({ roomId, currentUserId, archived = false }: Pro
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             ) : messages.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground py-8">
-                Be the first to say hi 👋
-              </p>
+              <div className="text-center py-10 px-4">
+                <div className="text-3xl mb-2">👋</div>
+                <p className="font-semibold text-sm mb-1">The room's quiet — break the ice</p>
+                <p className="text-xs text-muted-foreground">
+                  Drop a hello, share what you're bringing, or ask who's coming through.
+                </p>
+              </div>
             ) : (
               messages.map((m) => {
                 const mine = m.user_id === currentUserId;

@@ -68,9 +68,20 @@ serve(async (req) => {
     const combinedText = [text, scrapedText].filter(Boolean).join("\n\n");
 
     // 2. AI extraction
+    const nowIso = new Date().toISOString();
     const systemPrompt = `You extract structured EVENT details from flyers, posters, social posts, or web pages.
 
+Today is ${nowIso}. Use this as your reference when resolving relative or partial dates.
+
 Read every detail carefully — date, time, venue, ticket info, host name, what attendees should expect.
+
+DATE & TIME RULES (critical — get these right):
+1. If a year is missing, pick the NEXT future occurrence of that month/day relative to today. Never default to the current year if that date has already passed.
+2. If a weekday is given alongside a date (e.g. "May 1, Friday"), verify the weekday matches the year you chose. If it does not match the current year, advance the year until it does.
+3. Times like "7:30", "07:30", "8 - 11" on a social/meetup/nightlife page nearly always mean PM/evening. Treat ambiguous single-digit or sub-12 times as PM unless the context (brunch, breakfast, morning workshop) clearly indicates AM.
+4. Always anchor times to the venue's local timezone (IANA), then convert to a proper ISO 8601 string with offset. Example: an event at 7:30pm in Canggu, Bali → "2026-05-01T19:30:00+08:00", timezone "Asia/Makassar".
+5. If a range is given ("07:30 - 11:59"), populate both start_time and end_time.
+6. Only return null for start_time if there is genuinely no date information at all.
 
 For the "description" field, do NOT just copy the raw text. Rewrite it as a polished, engaging event listing — clear, professional, and inviting. Use proper line breaks. Keep it 2-4 short paragraphs.
 
@@ -81,9 +92,9 @@ Return ONLY a JSON object with these fields:
 - venue_name: string or null
 - venue_address: string or null
 - country: string or null (full country name if identifiable)
-- start_time: string ISO 8601 with timezone, or null if unknown. If only a date is given, use 19:00 local time.
-- end_time: string ISO 8601 or null
-- timezone: string IANA (e.g. "America/Port_of_Spain") or null
+- start_time: string ISO 8601 with offset (e.g. "2026-05-01T19:30:00+08:00")
+- end_time: string ISO 8601 with offset, or null
+- timezone: string IANA (e.g. "Asia/Makassar", "America/Port_of_Spain") — required when you return a start_time
 - max_participants: integer (default 100 if not stated)
 - is_ticketed: boolean
 - ticket_price: number or null (numeric only)
@@ -92,7 +103,7 @@ Return ONLY a JSON object with these fields:
 - tags: string[] (3-6 relevant tags)
 - cover_image_prompt: string (a clean visual prompt describing the vibe/mood for a 16:9 banner — no text in the image)
 
-If anything is unclear, use null. Never invent dates or prices.`;
+If a field truly has no signal, use null. Never invent prices or venues.`;
 
     const messages: any[] = [{ role: "system", content: systemPrompt }];
 

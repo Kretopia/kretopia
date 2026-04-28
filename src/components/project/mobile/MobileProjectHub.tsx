@@ -9,12 +9,13 @@ import {
   Wallet,
   ChevronRight,
   Sparkles,
-  Mic,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROJECT_FLOW_STAGES, type ProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
 import { VoiceTaskCapture } from "@/components/project/mobile/VoiceTaskCapture";
+import { DeskActionFab } from "@/components/project/mobile/DeskActionFab";
 
 interface MobileProjectHubProps {
   flow: ProjectFlow;

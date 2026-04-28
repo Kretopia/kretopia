@@ -26,9 +26,9 @@ import { AuthGate } from "./components/AuthGate";
 import { OnboardingTour } from "./components/OnboardingTour";
 import { NewsletterPopup } from "./components/NewsletterPopup";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
+import UnifiedHome from "./components/home/UnifiedHome";
 
 // Lazy load active page components
-const UnifiedHome = lazy(() => import("./components/home/UnifiedHome"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CompanyOnboarding = lazy(() => import("./pages/CompanyOnboarding"));

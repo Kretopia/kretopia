@@ -16,6 +16,7 @@ export function lazyWithRetry<T extends ComponentType<any>>(
 ) {
   return lazy(async () => {
     const RELOAD_KEY = "__lovable_chunk_reloaded__";
+    const failedOnce = typeof window !== "undefined" && sessionStorage.getItem(RELOAD_KEY);
 
     const tryImport = async (attempt: number): Promise<{ default: T }> => {
       try {
@@ -35,8 +36,16 @@ export function lazyWithRetry<T extends ComponentType<any>>(
         }
 
         // Last resort — hard reload once per session to pick up new chunks
-        if (typeof window !== "undefined" && !sessionStorage.getItem(RELOAD_KEY)) {
+        if (typeof window !== "undefined" && !failedOnce) {
           sessionStorage.setItem(RELOAD_KEY, "1");
+          if ("serviceWorker" in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations().catch(() => []);
+            await Promise.all(registrations.map((registration) => registration.unregister())).catch(() => undefined);
+          }
+          if ("caches" in window) {
+            const cacheKeys = await caches.keys().catch(() => []);
+            await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey))).catch(() => undefined);
+          }
           window.location.reload();
           // Return a never-resolving promise so React keeps Suspense fallback
           return new Promise(() => {}) as any;

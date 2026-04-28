@@ -176,7 +176,7 @@ export const EventInlineChat = ({ roomId, currentUserId, archived = false }: Pro
               })
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         <div className="border-t border-border p-3 flex gap-2">
           <Input

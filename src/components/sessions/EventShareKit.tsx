@@ -11,7 +11,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import QRCodeStyling from "qr-code-styling";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfileContext } from "@/contexts/ProfileContext";
+import { supabase } from "@/integrations/supabase/client";
 import { buildWarmShareMessage, buildEventShareUrl, logShareClick, type ShareChannel } from "@/lib/eventActions";
 
 interface EventShareKitProps {
@@ -36,7 +36,12 @@ interface EventShareKitProps {
 export const EventShareKit = ({ event, hostFirstName, attendeeCount, open, onOpenChange }: EventShareKitProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { profile } = useProfileContext();
+  const [profile, setProfile] = useState<{ full_name?: string | null; username?: string | null } | null>(null);
+  useEffect(() => {
+    if (!user) { setProfile(null); return; }
+    supabase.from('profiles').select('full_name, username').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setProfile(data as any), () => setProfile(null));
+  }, [user?.id]);
   const [copied, setCopied] = useState(false);
   const [customMessage, setCustomMessage] = useState("");
   const qrRef = useRef<HTMLDivElement>(null);

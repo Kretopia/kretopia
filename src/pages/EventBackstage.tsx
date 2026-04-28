@@ -396,13 +396,23 @@ const EventBackstage = () => {
                       </DropdownMenuItem>
                     )}
                     {!isDraft && (
+                      <DropdownMenuItem onClick={() => setInviteFor(ev)}>
+                        <UserPlus className="h-4 w-4 mr-2" /> Invite by email
+                      </DropdownMenuItem>
+                    )}
+                    {!isDraft && (
+                      <DropdownMenuItem onClick={() => setEmailBlastFor(ev)}>
+                        <Mail className="h-4 w-4 mr-2" /> Email guests (blast)
+                      </DropdownMenuItem>
+                    )}
+                    {!isDraft && (
                       <DropdownMenuItem
                         onClick={() => {
                           setMessageFor(ev);
                           setMessageText("");
                         }}
                       >
-                        <MessageSquare className="h-4 w-4 mr-2" /> Message guests
+                        <MessageSquare className="h-4 w-4 mr-2" /> In-app notification
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />

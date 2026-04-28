@@ -65,6 +65,13 @@ const EventPage = () => {
   const [showCohosts, setShowCohosts] = useState(false);
   const [showRecap, setShowRecap] = useState(false);
   const [showGuestPass, setShowGuestPass] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+
+  // Tick every second for live countdown
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (eventId) fetchEvent();

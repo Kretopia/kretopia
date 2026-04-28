@@ -140,9 +140,13 @@ export const EventInlineChat = ({ roomId, currentUserId, archived = false }: Pro
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             ) : messages.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground py-8">
-                Be the first to say hi 👋
-              </p>
+              <div className="text-center py-10 px-4">
+                <div className="text-3xl mb-2">👋</div>
+                <p className="font-semibold text-sm mb-1">The room's quiet — break the ice</p>
+                <p className="text-xs text-muted-foreground">
+                  Drop a hello, share what you're bringing, or ask who's coming through.
+                </p>
+              </div>
             ) : (
               messages.map((m) => {
                 const mine = m.user_id === currentUserId;

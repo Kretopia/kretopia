@@ -1810,6 +1810,7 @@ export type Database = {
           attendee_list_visibility: string
           category: string
           circle_id: string | null
+          co_host_revenue_split: Json | null
           country: string | null
           cover_image_url: string | null
           created_at: string
@@ -1829,6 +1830,7 @@ export type Database = {
           longitude: number | null
           max_participants: number | null
           parent_event_id: string | null
+          photo_wall_enabled: boolean
           refund_policy: string | null
           start_time: string
           status: string | null
@@ -1849,6 +1851,7 @@ export type Database = {
           attendee_list_visibility?: string
           category?: string
           circle_id?: string | null
+          co_host_revenue_split?: Json | null
           country?: string | null
           cover_image_url?: string | null
           created_at?: string
@@ -1868,6 +1871,7 @@ export type Database = {
           longitude?: number | null
           max_participants?: number | null
           parent_event_id?: string | null
+          photo_wall_enabled?: boolean
           refund_policy?: string | null
           start_time: string
           status?: string | null
@@ -1888,6 +1892,7 @@ export type Database = {
           attendee_list_visibility?: string
           category?: string
           circle_id?: string | null
+          co_host_revenue_split?: Json | null
           country?: string | null
           cover_image_url?: string | null
           created_at?: string
@@ -1907,6 +1912,7 @@ export type Database = {
           longitude?: number | null
           max_participants?: number | null
           parent_event_id?: string | null
+          photo_wall_enabled?: boolean
           refund_policy?: string | null
           start_time?: string
           status?: string | null
@@ -3744,6 +3750,44 @@ export type Database = {
           },
         ]
       }
+      event_co_hosts: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          event_id: string
+          id: string
+          invited_by: string
+          revenue_share_pct: number | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          invited_by: string
+          revenue_share_pct?: number | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          invited_by?: string
+          revenue_share_pct?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_co_hosts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_cohosts: {
         Row: {
           added_by: string
@@ -3991,6 +4035,41 @@ export type Database = {
           },
         ]
       }
+      event_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          event_id: string
+          id: string
+          image_url: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          image_url: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          image_url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_promo_codes: {
         Row: {
           applies_to_tier_ids: string[] | null
@@ -4040,6 +4119,82 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "event_promo_codes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_promoter_rewards: {
+        Row: {
+          awarded_at: string | null
+          checked_in: boolean
+          created_at: string
+          credits_awarded: number
+          event_id: string
+          id: string
+          promoter_user_id: string
+          referred_user_id: string
+        }
+        Insert: {
+          awarded_at?: string | null
+          checked_in?: boolean
+          created_at?: string
+          credits_awarded?: number
+          event_id: string
+          id?: string
+          promoter_user_id: string
+          referred_user_id: string
+        }
+        Update: {
+          awarded_at?: string | null
+          checked_in?: boolean
+          created_at?: string
+          credits_awarded?: number
+          event_id?: string
+          id?: string
+          promoter_user_id?: string
+          referred_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_promoter_rewards_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_reminders_sent: {
+        Row: {
+          channel: string
+          event_id: string
+          id: string
+          reminder_type: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          event_id: string
+          id?: string
+          reminder_type: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          event_id?: string
+          id?: string
+          reminder_type?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_reminders_sent_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "creative_jams"
@@ -5191,6 +5346,7 @@ export type Database = {
         Row: {
           check_in_token: string
           checked_in_at: string | null
+          checked_in_by: string | null
           id: string
           is_visible: boolean
           jam_id: string
@@ -5203,6 +5359,7 @@ export type Database = {
         Insert: {
           check_in_token?: string
           checked_in_at?: string | null
+          checked_in_by?: string | null
           id?: string
           is_visible?: boolean
           jam_id: string
@@ -5215,6 +5372,7 @@ export type Database = {
         Update: {
           check_in_token?: string
           checked_in_at?: string | null
+          checked_in_by?: string | null
           id?: string
           is_visible?: boolean
           jam_id?: string
@@ -13369,6 +13527,14 @@ export type Database = {
       record_referral: {
         Args: { p_referred_id: string; p_referrer_id: string }
         Returns: undefined
+      }
+      rsvp_to_event: {
+        Args: {
+          p_event_id: string
+          p_referral_channel?: string
+          p_referred_by?: string
+        }
+        Returns: string
       }
       send_opportunity_alerts: {
         Args: { opportunity_id_param: string }

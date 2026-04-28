@@ -58,6 +58,7 @@ const QuickActionFab = () => {
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [showPostGig, setShowPostGig] = useState(false);
+  const [showScoutEvent, setShowScoutEvent] = useState(false);
 
   const sheetRef = useRef<HTMLDivElement>(null);
 

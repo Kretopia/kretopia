@@ -703,6 +703,19 @@ const EventPage = () => {
               setParticipantCount(prev => prev + 1);
             }}
           />
+
+          {user && participation && (
+            <GuestPassDialog
+              open={showGuestPass}
+              onOpenChange={setShowGuestPass}
+              eventId={event.id}
+              eventTitle={event.title}
+              startTime={event.start_time}
+              venueName={event.venue_name}
+              userId={user.id}
+              guestName={user.user_metadata?.full_name || user.email}
+            />
+          )}
           
           {isCreator && (
             <EditEventDialog 

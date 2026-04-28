@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
 import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
+import { ScoutEventDialog } from "@/components/sessions/ScoutEventDialog";
 
 interface QuickAction {
   id: string;

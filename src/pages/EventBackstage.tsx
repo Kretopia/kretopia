@@ -251,7 +251,91 @@ const EventBackstage = () => {
     }
   };
 
-  const handlePublishDraft = async (ev: BackstageEvent) => {
+  const handleConvertToGroup = async (ev: BackstageEvent) => {
+    if (!user) return;
+    setConvertingId(ev.id);
+    try {
+      // 1. Ensure spark_room exists for this event
+      let roomId = ev.group_chat_room_id || null;
+      if (!roomId) {
+        const { data: room, error: roomErr } = await supabase
+          .from("spark_rooms")
+          .insert({
+            title: ev.title,
+            created_by: user.id,
+            is_private: true,
+            circle_type: "group",
+            category: "event",
+            icon_emoji: "🎟️",
+            description: `Group chat for "${ev.title}".`,
+          })
+          .select()
+          .single();
+        if (roomErr || !room) throw roomErr || new Error("Couldn't create group");
+        roomId = room.id;
+        await supabase.from("spark_room_members").insert({ room_id: roomId, user_id: user.id, role: "owner" });
+        await supabase.from("creative_jams")
+          .update({ group_chat_enabled: true, group_chat_room_id: roomId })
+          .eq("id", ev.id);
+      } else {
+        await supabase.from("creative_jams").update({ group_chat_enabled: true }).eq("id", ev.id);
+      }
+
+      // 2. Pull all RSVPs (going + interested) + host
+      const { data: parts } = await supabase
+        .from("jam_participants")
+        .select("user_id")
+        .eq("jam_id", ev.id)
+        .in("status", ["going", "interested"]);
+      const rsvpIds = Array.from(new Set([user.id, ...(parts || []).map((p: any) => p.user_id).filter(Boolean)]));
+
+      // 3. Skip those already in
+      const { data: existing } = await supabase
+        .from("spark_room_members")
+        .select("user_id")
+        .eq("room_id", roomId)
+        .in("user_id", rsvpIds);
+      const existingIds = new Set((existing || []).map((m: any) => m.user_id));
+      const toAdd = rsvpIds.filter((id) => !existingIds.has(id));
+
+      if (toAdd.length > 0) {
+        const memberRows = toAdd.map((uid) => ({
+          room_id: roomId!,
+          user_id: uid,
+          role: uid === user.id ? "owner" : "member",
+        }));
+        const { error: insErr } = await supabase.from("spark_room_members").insert(memberRows);
+        if (insErr && !insErr.message.includes("duplicate")) throw insErr;
+
+        // 4. Notify guests
+        const notifyIds = toAdd.filter((id) => id !== user.id);
+        if (notifyIds.length > 0) {
+          const notifs = notifyIds.map((uid) => ({
+            user_id: uid,
+            title: `You've been added to the group chat for "${ev.title}"`,
+            message: "Tap to say hi and keep the conversation going.",
+            type: "event_update",
+            action_url: `/messages/${roomId}`,
+          }));
+          try { await supabase.from("notifications").insert(notifs); } catch { /* non-blocking */ }
+        }
+      }
+
+      toast({
+        title: "Group is ready",
+        description: toAdd.length > 0
+          ? `Added ${toAdd.length} guest${toAdd.length === 1 ? "" : "s"}. Opening the chat…`
+          : "Everyone was already in. Opening the chat…",
+      });
+      fetchEvents();
+      navigate(`/messages/${roomId}`);
+    } catch (e: any) {
+      console.error("[backstage] convert-to-group failed", e);
+      toast({ title: "Couldn't create the group", description: e.message, variant: "destructive" });
+    } finally {
+      setConvertingId(null);
+    }
+  };
     try {
       const { error } = await supabase
         .from("creative_jams")

@@ -56,6 +56,7 @@ export const UnifiedHome = () => {
   const navigate = useNavigate();
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
   const [heroRoleIdx, setHeroRoleIdx] = useState(0);
+  const { geo: currentGeo } = useCurrentGeoCountry();
 
   // Dashboard data
   const [trendingCredits, setTrendingCredits] = useState<any[]>([]);

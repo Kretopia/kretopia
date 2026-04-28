@@ -676,7 +676,13 @@ const EventPage = () => {
           )}
 
           {isAuthenticated && (
-            <EventShareKit event={event} open={showShareKit} onOpenChange={setShowShareKit} />
+            <EventShareKit
+              event={event}
+              hostFirstName={creator?.full_name?.split(" ")[0]}
+              attendeeCount={participantCount}
+              open={showShareKit}
+              onOpenChange={setShowShareKit}
+            />
           )}
 
           <ShareToMessageDialog
@@ -689,8 +695,25 @@ const EventPage = () => {
               subtitle: event.venue_name || undefined,
               image_url: event.cover_image_url,
             }}
-            externalUrl={`${APP_URL}/share/event/${event.id}/`}
-            externalText={`🎉 ${event.title}\n\nRSVP now on ThriveIN 👇\n${APP_URL}/share/event/${event.id}/`}
+            externalUrl={buildEventShareUrl(event.id)}
+            externalText={
+              buildWarmShareMessage(
+                {
+                  id: event.id,
+                  title: event.title,
+                  startTime: event.start_time,
+                  venueName: event.venue_name,
+                  isTicketed: event.is_ticketed,
+                  ticketPrice: event.ticket_price,
+                  ticketCurrency: event.ticket_currency,
+                  attendeeCount: participantCount,
+                },
+                {
+                  hostFirstName: creator?.full_name?.split(" ")[0],
+                  isHost: isCreator,
+                }
+              ).text
+            }
           />
 
           <TicketPurchaseDialog

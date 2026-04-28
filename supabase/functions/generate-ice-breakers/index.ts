@@ -34,7 +34,7 @@ serve(async (req) => {
     // Fetch recipient's profile for more context
     const { data: recipientProfile } = await supabase
       .from('profiles')
-      .select('bio, skills, collab_intent, location')
+      .select('bio, professional_skills, collab_intent, location')
       .eq('user_id', recipientId)
       .single();
 
@@ -49,8 +49,8 @@ serve(async (req) => {
       ? `They have portfolio pieces: ${portfolioItems.map(p => p.title).join(', ')}.`
       : '';
 
-    const skillsContext = recipientProfile?.skills?.length
-      ? `Their skills include: ${recipientProfile.skills.slice(0, 5).map((s: any) => typeof s === 'string' ? s : s.skill).join(', ')}.`
+    const skillsContext = recipientProfile?.professional_skills?.length
+      ? `Their skills include: ${recipientProfile.professional_skills.slice(0, 5).map((s: any) => typeof s === 'string' ? s : s.skill).join(', ')}.`
       : '';
 
     const intentContext = recipientProfile?.collab_intent

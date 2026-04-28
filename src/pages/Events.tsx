@@ -349,22 +349,22 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
       <div className={embedded ? "" : "min-h-screen bg-background"}>
         <div className={embedded ? "" : "max-w-2xl mx-auto px-4 pt-4 pb-24"}>
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <div>
+          <div className="flex items-start justify-between mb-4 gap-3">
+            <div className="min-w-0">
               {!embedded && (
                 <h1 className="text-xl font-bold flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-primary" />
-                  Events & Meetups
+                  What's on
                 </h1>
               )}
-              {upcomingCount > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {upcomingCount} coming up · {events.filter(e => e.participant_count >= 5).length} trending
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground">
+                {upcomingCount > 0
+                  ? `${upcomingCount} happening soon · ${events.filter(e => e.participant_count >= 5).length} trending`
+                  : "Real-life moments with the creative community"}
+              </p>
             </div>
-            <Button variant="gradient" size="sm" onClick={handleHostEvent} className="gap-1.5 rounded-full">
-              <Plus className="h-4 w-4" /> Host Event
+            <Button variant="gradient" size="sm" onClick={handleHostEvent} className="gap-1.5 rounded-full shrink-0">
+              <Plus className="h-4 w-4" /> Host one
             </Button>
           </div>
 

@@ -42,18 +42,28 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     payment_method: "card",
   });
 
-  // Listen for global "open expense" event (from ThrivePay quick-add menu)
+  // Listen for global "open expense" event (from ThrivePay quick-add menu / Snap FAB)
   useEffect(() => {
     const handler = (e: Event) => {
-      setOpen(true);
-      // If event asks to auto-open the camera/file picker (Quick Scan)
       const detail = (e as CustomEvent).detail;
-      if (detail?.scan) {
-        setTimeout(() => {
-          const input = document.querySelector<HTMLInputElement>('input[data-scan-receipt-input="true"]');
-          input?.click();
-        }, 250);
+      // If a Snap-Receipt prefill payload is provided, populate the form
+      if (detail?.prefill) {
+        const data = detail.prefill;
+        setForm(prev => ({
+          ...prev,
+          title: data.title || prev.title,
+          amount: data.amount?.toString() || prev.amount,
+          currency: data.currency || prev.currency,
+          category: data.category || prev.category,
+          vendor: data.vendor || prev.vendor,
+          date: data.date || prev.date,
+          tax_deductible: data.tax_deductible ?? prev.tax_deductible,
+          notes: data.notes || (data.line_items?.length
+            ? `Items: ${data.line_items.map((i: any) => `${i.description} (${data.currency} ${i.amount})`).join(", ")}`
+            : prev.notes),
+        }));
       }
+      setOpen(true);
     };
     window.addEventListener("thrivepay:add-expense", handler as EventListener);
     return () => window.removeEventListener("thrivepay:add-expense", handler as EventListener);

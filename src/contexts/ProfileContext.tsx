@@ -22,7 +22,7 @@ interface ProfileContextType {
   setAwards: (awards: any[]) => void;
   pressLinks: any[];
   setPressLinks: (links: any[]) => void;
-  userBadge: 'og' | 'beta' | 'official' | 'founder' | 'odos' | null;
+  userBadge: 'og' | 'beta' | 'official' | 'founder' | 'odos' | 'founding_member' | null;
   setUserBadge: (badge: 'og' | 'beta' | 'official' | 'founder' | 'odos' | 'founding_member' | null) => void;
   stats: {
     circle: number;

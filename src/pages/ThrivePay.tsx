@@ -53,6 +53,8 @@ import {
   FileText,
   Receipt,
   FilePlus,
+  Camera,
+  MoreHorizontal,
 } from "lucide-react";
 
 interface ConnectRequirements {
@@ -294,15 +296,33 @@ export default function ThrivePay() {
             <p className="text-sm text-muted-foreground">Invoices, expenses, earnings & payouts — one place.</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {/* Snap Receipt — primary daily-driver action for creatives (no spreadsheets, just snap) */}
+            <Button
+              size="sm"
+              variant="default"
+              className="gap-1.5 h-9 px-3"
+              onClick={() => {
+                setActiveTab("earnings");
+                setTimeout(
+                  () => window.dispatchEvent(new CustomEvent("thrivepay:add-expense", { detail: { scan: true } })),
+                  80
+                );
+              }}
+              aria-label="Snap a receipt"
+            >
+              <Camera className="h-4 w-4" />
+              <span className="hidden sm:inline">Snap</span>
+            </Button>
+
+            {/* Secondary "more" menu — Invoice / Quote / manual Expense */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="default" className="gap-1.5 h-9 px-3" aria-label="Quick add">
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">New</span>
+                <Button size="sm" variant="outline" className="h-9 w-9 p-0" aria-label="More create options">
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 z-50 bg-popover">
-                <DropdownMenuLabel>Quick add</DropdownMenuLabel>
+                <DropdownMenuLabel>Create</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => {
@@ -331,14 +351,15 @@ export default function ThrivePay() {
                 <DropdownMenuItem
                   onClick={() => {
                     setActiveTab("earnings");
-                    setTimeout(() => window.dispatchEvent(new Event("thrivepay:add-expense")), 80);
+                    setTimeout(() => window.dispatchEvent(new CustomEvent("thrivepay:add-expense")), 80);
                   }}
                 >
                   <Receipt className="h-4 w-4 mr-2 text-primary" />
-                  Add Expense
+                  Log Expense
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
             <Button size="sm" variant="outline" className="gap-1.5 h-9 px-3" onClick={() => setTransferDialogOpen(true)}>
               <Send className="h-4 w-4" />
               <span className="hidden sm:inline">Send</span>

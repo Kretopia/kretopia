@@ -50,6 +50,9 @@ import {
   Sparkles,
   Send,
   Briefcase,
+  FileText,
+  Receipt,
+  FilePlus,
 } from "lucide-react";
 
 interface ConnectRequirements {

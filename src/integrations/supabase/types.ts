@@ -8712,16 +8712,21 @@ export type Database = {
       }
       project_deliverables: {
         Row: {
+          assignee_id: string | null
           created_at: string
           description: string | null
+          due_date: string | null
           file_id: string | null
           file_url: string | null
           id: string
           media_type: string | null
+          milestone_id: string | null
           project_id: string
           review_note: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          sort_order: number
+          source: string
           status: string
           submitted_by: string
           thumbnail_url: string | null
@@ -8730,16 +8735,21 @@ export type Database = {
           version: number
         }
         Insert: {
+          assignee_id?: string | null
           created_at?: string
           description?: string | null
+          due_date?: string | null
           file_id?: string | null
           file_url?: string | null
           id?: string
           media_type?: string | null
+          milestone_id?: string | null
           project_id: string
           review_note?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          sort_order?: number
+          source?: string
           status?: string
           submitted_by: string
           thumbnail_url?: string | null
@@ -8748,16 +8758,21 @@ export type Database = {
           version?: number
         }
         Update: {
+          assignee_id?: string | null
           created_at?: string
           description?: string | null
+          due_date?: string | null
           file_id?: string | null
           file_url?: string | null
           id?: string
           media_type?: string | null
+          milestone_id?: string | null
           project_id?: string
           review_note?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          sort_order?: number
+          source?: string
           status?: string
           submitted_by?: string
           thumbnail_url?: string | null

@@ -20,6 +20,8 @@ import { RollCallTab } from "@/components/project/workflow/RollCallTab";
 import { SplitSheetTab } from "@/components/project/workflow/SplitSheetTab";
 import { ExchangeLedgerTab } from "@/components/project/workflow/ExchangeLedgerTab";
 import { RevisionsTab } from "@/components/project/workflow/RevisionsTab";
+import { BriefHub } from "@/components/project/BriefHub";
+import { DeliverablesBoard } from "@/components/project/DeliverablesBoard";
 import { UsageLimitBanner } from "@/components/project/ProGate";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { cn } from "@/lib/utils";
@@ -110,6 +112,13 @@ export const DeskTabContent = memo(({
             <UsageLimitBanner current={files.length} limit={FREE_LIMITS.files} itemName="files" isPro={isPro} />
             <FileBrowser projectId={projectId} files={files} onFileUploaded={onUpdate} />
           </>
+        )}
+
+        {activeTab === "brief" && (
+          <div className="space-y-4">
+            <BriefHub projectId={projectId} projectTitle={project.title} onCreated={onUpdate} />
+            <DeliverablesBoard projectId={projectId} currentUserId={currentUserId} />
+          </div>
         )}
 
         {activeTab === "approvals" && (

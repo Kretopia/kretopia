@@ -298,14 +298,14 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
   return (
     <div className="space-y-4">
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-5 sm:pt-6 px-4 sm:px-6">
           <div className="flex items-start gap-3 mb-4">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Sparkles className="h-5 w-5 text-primary" />
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h3 className="font-semibold">Add a Brief</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Bring whatever you have — type it, drop a doc, paste a Sheet, or record it.
                 We'll turn it into deliverables on your board.
               </p>

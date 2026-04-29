@@ -347,17 +347,19 @@ export default function ThrivePay() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
           <TabsList className="w-full grid grid-cols-3 h-10 sm:h-11">
+            <TabsTrigger value="earnings" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
+              <TrendingUp className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Invoices & Earnings</span>
+              <span className="sm:hidden">Invoices</span>
+            </TabsTrigger>
             <TabsTrigger value="wallet" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
               <Wallet className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Wallet</span>
             </TabsTrigger>
-            <TabsTrigger value="earnings" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
-              <TrendingUp className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Earnings</span>
-            </TabsTrigger>
             <TabsTrigger value="payments" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
               <CreditCard className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Payments</span>
+              <span className="hidden sm:inline">Payouts</span>
+              <span className="sm:hidden">Payouts</span>
             </TabsTrigger>
           </TabsList>
 

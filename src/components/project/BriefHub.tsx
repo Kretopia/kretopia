@@ -191,17 +191,31 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
         : tab === "sheet" ? "sheet"
         : "voice";
 
-      const rows = valid.map((d, i) => ({
-        project_id: projectId,
-        title: d.title.trim().slice(0, 200),
-        description: [d.description, d.notes, d.reference_url].filter(Boolean).join("\n\n") || null,
-        status: "pending",
-        version: 1,
-        source: sourceTag,
-        sort_order: i,
-        due_date: d.due_date || null,
-        submitted_by: submittedBy,
-      }));
+      const rows = valid.map((d, i) => {
+        // Merge legacy reference_url into the moodboard so nothing gets lost
+        const refs: MoodboardItem[] = [...(d.references ?? [])];
+        if (d.reference_url && !refs.some((r) => r.url === d.reference_url)) {
+          const isImg = /\.(jpe?g|png|webp|gif)(\?|$)/i.test(d.reference_url);
+          refs.push({
+            url: d.reference_url,
+            thumbnail_url: isImg ? d.reference_url : null,
+            kind: isImg ? "image" : "link",
+            caption: null,
+          });
+        }
+        return {
+          project_id: projectId,
+          title: d.title.trim().slice(0, 200),
+          description: [d.description, d.notes].filter(Boolean).join("\n\n") || null,
+          status: "pending",
+          version: 1,
+          source: sourceTag,
+          sort_order: i,
+          due_date: d.due_date || null,
+          submitted_by: submittedBy,
+          moodboard: refs,
+        };
+      });
 
       const { error } = await supabase.from("project_deliverables").insert(rows);
       if (error) throw error;

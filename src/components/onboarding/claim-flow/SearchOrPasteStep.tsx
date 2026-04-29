@@ -33,16 +33,28 @@ export const SearchOrPasteStep = ({ initialQuery = "", onResults }: Props) => {
         setLoading(false);
         return;
       }
+      console.info("[ClaimFlow] searching for", q);
       const { data, error } = await supabase.functions.invoke("search-credits-web", {
         body: { query: q },
       });
-      if (error) throw error;
+      if (error) {
+        console.error("[ClaimFlow] invoke error", error);
+        throw error;
+      }
       const results: WebCreditResult[] = data?.results || [];
+      console.info("[ClaimFlow] received", results.length, "results");
+      if (results.length === 0) {
+        toast.info("No matches yet", {
+          description: "Try a different spelling, or paste a portfolio link.",
+        });
+      }
       onResults(results, q);
     } catch (e: any) {
       console.error("[ClaimFlow] search failed", e);
-      toast.error(e?.message || "Search temporarily unavailable");
-      onResults([], q);
+      toast.error("Search hiccup", {
+        description: e?.message || "Please try again in a moment.",
+      });
+      // Don't advance to empty state — let user retry
     } finally {
       setLoading(false);
     }

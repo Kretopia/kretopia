@@ -31,6 +31,7 @@ import { FreeTierGate } from "@/components/FreeTierGate";
 import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { MoneyStreakChip } from "@/components/thrivepay/MoneyStreakChip";
 import { WeeklyMoneyInsights } from "@/components/thrivepay/WeeklyMoneyInsights";
+import { SnapReceiptFAB } from "@/components/thrivepay/SnapReceiptFAB";
 import {
   DollarSign,
   TrendingUp,

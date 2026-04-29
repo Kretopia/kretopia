@@ -18,11 +18,19 @@ const corsHeaders = {
 
 type Source = "text" | "csv" | "sheet" | "doc" | "audio";
 
+interface MoodboardItem {
+  url: string;                 // link to image, Pinterest, IG, Behance, Drive, etc.
+  thumbnail_url?: string | null; // direct image URL if known (used for card preview)
+  caption?: string | null;
+  kind?: "image" | "link" | "video" | null;
+}
+
 interface DeliverableOut {
   title: string;
   description?: string;
   due_date?: string | null; // ISO date
-  reference_url?: string | null;
+  reference_url?: string | null;        // legacy single ref (kept for back-compat)
+  references?: MoodboardItem[];         // NEW: full moodboard
   notes?: string | null;
 }
 

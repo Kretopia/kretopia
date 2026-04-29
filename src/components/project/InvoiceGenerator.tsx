@@ -129,6 +129,19 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     }
   }, [showCreateDialog, editingInvoiceId]);
 
+  // Listen for global open events (from ThrivePay quick-add menu)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { type?: DocumentType } | undefined;
+      setDocumentType(detail?.type === "quote" ? "quote" : "invoice");
+      setEditingInvoiceId(null);
+      setCreateStep("details");
+      setShowCreateDialog(true);
+    };
+    window.addEventListener("thrivepay:create-document", handler);
+    return () => window.removeEventListener("thrivepay:create-document", handler);
+  }, []);
+
   // Collaborators for recipient picker
   const [collaborators, setCollaborators] = useState<any[]>([]);
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,13 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     recurring_interval: "monthly",
     payment_method: "card",
   });
+
+  // Listen for global "open expense" event (from ThrivePay quick-add menu)
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("thrivepay:add-expense", handler);
+    return () => window.removeEventListener("thrivepay:add-expense", handler);
+  }, []);
 
   const handleScanReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

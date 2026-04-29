@@ -18,6 +18,7 @@ import {
   googleSheetCsvUrl,
   type ParsedDeliverable,
 } from "@/lib/csvBriefParser";
+import { SmartBriefBuilder } from "./SmartBriefBuilder";
 
 interface BriefHubProps {
   projectId: string;

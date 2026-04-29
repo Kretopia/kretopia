@@ -13628,7 +13628,13 @@ export type Database = {
         | "networker"
         | "mogul"
         | "icon"
-      user_badge: "og" | "beta" | "official" | "founder" | "odos"
+      user_badge:
+        | "og"
+        | "beta"
+        | "official"
+        | "founder"
+        | "odos"
+        | "founding_member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -13768,7 +13774,14 @@ export const Constants = {
         "mogul",
         "icon",
       ],
-      user_badge: ["og", "beta", "official", "founder", "odos"],
+      user_badge: [
+        "og",
+        "beta",
+        "official",
+        "founder",
+        "odos",
+        "founding_member",
+      ],
     },
   },
 } as const

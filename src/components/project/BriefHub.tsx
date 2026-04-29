@@ -40,6 +40,8 @@ interface DraftDeliverable {
   reference_url?: string | null;
   references?: MoodboardItem[];
   notes?: string | null;
+  kind?: string;
+  source?: "typed" | "document" | "sheet" | "csv" | "voice";
 }
 
 const newId = () => Math.random().toString(36).slice(2, 10);
@@ -115,20 +117,70 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
     callExtract({ source: "text", text });
   };
 
-  const handleSheet = () => {
+  // Deterministic Sheet/CSV import — NO AI rewriting. What's in the cells is what shows up.
+  const importCsvText = (csv: string, sourceTag: "sheet" | "csv") => {
+    const { deliverables, rowCount } = parseCsvToDeliverables(csv);
+    if (!deliverables.length) {
+      toast({
+        title: "Couldn't read any rows",
+        description: rowCount === 0
+          ? "The sheet looks empty. Make sure it has a header row + at least one data row."
+          : "Found rows but no titles. Check that one column is named Title / Name / Asset.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setDrafts(deliverables.map((d: ParsedDeliverable) => ({
+      id: newId(),
+      title: d.title,
+      description: d.description,
+      due_date: d.due_date,
+      references: d.references,
+      notes: d.notes,
+      kind: d.kind,
+      source: sourceTag,
+    })));
+    toast({
+      title: `Imported ${deliverables.length} rows exactly`,
+      description: "Pulled straight from your sheet — nothing rewritten by AI. Review, edit, save.",
+    });
+  };
+
+  const handleSheet = async () => {
     if (!sheetUrl.trim()) return;
-    callExtract({ source: "sheet", url: sheetUrl.trim() });
+    const exportUrl = googleSheetCsvUrl(sheetUrl.trim());
+    if (!exportUrl) {
+      toast({ title: "That doesn't look like a Sheets URL", variant: "destructive" });
+      return;
+    }
+    setExtracting(true);
+    try {
+      const res = await fetch(exportUrl);
+      if (!res.ok) {
+        throw new Error(`Couldn't read sheet (status ${res.status}). Make sure it's shared as "Anyone with the link — Viewer".`);
+      }
+      const csv = await res.text();
+      importCsvText(csv, "sheet");
+    } catch (e) {
+      toast({
+        title: "Couldn't fetch sheet",
+        description: e instanceof Error ? e.message : "Try again",
+        variant: "destructive",
+      });
+    } finally {
+      setExtracting(false);
+    }
   };
 
   const handleCsvText = () => {
     if (!csvText.trim()) return;
-    callExtract({ source: "csv", csv: csvText });
+    importCsvText(csvText, "csv");
   };
 
   const handleCsvFile = async (file: File) => {
     const txt = await file.text();
     setCsvText(txt);
-    callExtract({ source: "csv", csv: txt });
+    importCsvText(txt, "csv");
   };
 
   const handleDoc = async () => {

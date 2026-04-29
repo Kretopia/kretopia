@@ -214,33 +214,72 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
     setReviewNote("");
   };
 
-  const uploadWip = async (file: File) => {
+  const uploadWipFiles = async (files: FileList | File[]) => {
     if (!selected) return;
-    setUploading(true);
-    try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
-      const path = `${projectId}/deliverables/${selected.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("project-files").upload(path, file, {
-        upsert: false,
-        contentType: file.type || undefined,
+    const list = Array.from(files);
+    if (!list.length) return;
+    // 200 MB per file safety cap (Supabase storage default is much higher; keeps UX honest)
+    const MAX = 200 * 1024 * 1024;
+    const tooBig = list.find((f) => f.size > MAX);
+    if (tooBig) {
+      toast({
+        title: "File too large",
+        description: `${tooBig.name} is over 200 MB. Compress or split it first.`,
+        variant: "destructive",
       });
-      if (upErr) throw upErr;
+      return;
+    }
 
-      const signed = await getProjectFileSignedUrl(path, { expiresIn: 60 * 60 * 24 * 7 });
-      const isImg = file.type.startsWith("image/");
+    setUploading(true);
+    setUploadProgress({ done: 0, total: list.length });
+    const newSubs: SubmissionFile[] = [];
+    try {
+      for (let i = 0; i < list.length; i++) {
+        const file = list[i];
+        const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `${projectId}/deliverables/${selected.id}/${Date.now()}-${i}-${safeName}`;
+        const { error: upErr } = await supabase.storage.from("project-files").upload(path, file, {
+          upsert: false,
+          contentType: file.type || undefined,
+        });
+        if (upErr) throw upErr;
+        const signed = await getProjectFileSignedUrl(path, { expiresIn: 60 * 60 * 24 * 7 });
+        if (!signed) throw new Error(`Couldn't get URL for ${file.name}`);
+        const kind = fileKindFromMime(file.type, file.name);
+        newSubs.push({
+          url: signed,
+          name: file.name,
+          mime: file.type || `application/${ext}`,
+          size: file.size,
+          thumbnail_url: kind === "image" ? signed : null,
+          uploaded_by: currentUserId,
+          uploaded_at: new Date().toISOString(),
+          kind,
+        });
+        setUploadProgress({ done: i + 1, total: list.length });
+      }
+
+      const merged: SubmissionFile[] = [...(selected.submission_files ?? []), ...newSubs];
+      // Hero preview = first image in the merged set, else first file
+      const heroImg = merged.find((s) => s.kind === "image");
+      const hero = heroImg ?? merged[0];
 
       const { error: updErr } = await supabase
         .from("project_deliverables")
         .update({
-          file_url: signed,
-          thumbnail_url: isImg ? signed : null,
-          media_type: isImg ? "image" : "file",
+          submission_files: merged as unknown as never,
+          file_url: hero?.url ?? null,
+          thumbnail_url: heroImg?.url ?? null,
           status: "submitted",
           submitted_by: currentUserId,
         })
         .eq("id", selected.id);
       if (updErr) throw updErr;
-      toast({ title: "Submitted for review", description: "The client will see your upload on the board." });
+      toast({
+        title: list.length === 1 ? "Submitted for review" : `Submitted ${list.length} files for review`,
+        description: "The client will see your upload on the board.",
+      });
     } catch (e) {
       toast({
         title: "Upload failed",
@@ -249,7 +288,27 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
       });
     } finally {
       setUploading(false);
+      setUploadProgress(null);
       if (wipInputRef.current) wipInputRef.current.value = "";
+      if (folderInputRef.current) folderInputRef.current.value = "";
+    }
+  };
+
+  const removeSubmission = async (idx: number) => {
+    if (!selected) return;
+    const next = (selected.submission_files ?? []).filter((_, i) => i !== idx);
+    const heroImg = next.find((s) => s.kind === "image");
+    const hero = heroImg ?? next[0];
+    const { error } = await supabase
+      .from("project_deliverables")
+      .update({
+        submission_files: next as unknown as never,
+        file_url: hero?.url ?? null,
+        thumbnail_url: heroImg?.url ?? null,
+      })
+      .eq("id", selected.id);
+    if (error) {
+      toast({ title: "Couldn't remove", description: error.message, variant: "destructive" });
     }
   };
 

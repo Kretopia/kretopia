@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { badgeLabel } from '@/lib/badgeLabel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -82,7 +83,7 @@ export function HingeStyleCard({ profile, onLike, onPass, onViewProfile, onMessa
           )}
           {profile.badge && !isIndustryVerified && (
             <Badge variant="outline" className="backdrop-blur-sm border-white/30 text-[10px] text-white">
-              {profile.badge === 'og' ? 'OG' : profile.badge === 'founder' ? '👑 Founder' : profile.badge}
+              {badgeLabel(profile.badge)}
             </Badge>
           )}
         </div>

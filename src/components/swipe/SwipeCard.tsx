@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { badgeLabel } from '@/lib/badgeLabel';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -127,14 +128,13 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
                 className={cn(
                   "backdrop-blur-sm border-white/30 text-xs",
                   profile.badge === 'og' && "bg-amber-500/20 text-amber-200 border-amber-400/50",
+                  profile.badge === 'founding_member' && "bg-amber-500/25 text-amber-100 border-amber-300/60",
                   profile.badge === 'beta' && "bg-blue-500/20 text-blue-200 border-blue-400/50",
                   profile.badge === 'odos' && "bg-green-500/20 text-green-200 border-green-400/50",
                   profile.badge === 'founder' && "bg-primary/20 text-purple-200 border-primary/50"
                 )}
               >
-                {profile.badge === 'og' ? 'OG' : 
-                 profile.badge === 'odos' ? '🌿 ODOS' : 
-                 profile.badge === 'founder' ? '👑 Founder' : 'Beta'}
+                {badgeLabel(profile.badge)}
               </Badge>
             </div>
           )}

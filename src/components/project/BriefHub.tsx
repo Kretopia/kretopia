@@ -19,12 +19,20 @@ interface BriefHubProps {
   onCreated?: () => void;
 }
 
+interface MoodboardItem {
+  url: string;
+  thumbnail_url?: string | null;
+  caption?: string | null;
+  kind?: "image" | "link" | "video" | null;
+}
+
 interface DraftDeliverable {
   id: string;
   title: string;
   description?: string;
   due_date?: string | null;
   reference_url?: string | null;
+  references?: MoodboardItem[];
   notes?: string | null;
 }
 

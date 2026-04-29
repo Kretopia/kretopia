@@ -215,6 +215,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
               type="file"
               accept="image/*"
               capture="environment"
+              data-scan-receipt-input="true"
               className="hidden"
               onChange={handleScanReceipt}
               disabled={scanning}

@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { badgeLabel } from '@/lib/badgeLabel';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';

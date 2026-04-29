@@ -263,7 +263,7 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
         .from("project_notes")
         .insert({
           project_id: projectId,
-          author_id: me,
+          created_by: me,
           title: `Brief: ${brief.title}`,
           content: [
             `**Summary**\n${brief.summary}`,

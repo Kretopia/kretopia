@@ -8,7 +8,7 @@ import {
   Clock, CheckCircle2, Loader2,
   Building2, Users, UserSearch, Star, Wallet
 } from "lucide-react";
-import { CrossModeNudge } from "@/components/CrossModeNudge";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

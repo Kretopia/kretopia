@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import {
   Calendar, Clock, CheckCircle2, XCircle, Circle, Loader2,
   ArrowRight, Sparkles, Inbox, Upload, ExternalLink, Image as ImageIcon, Plus,
+  FolderUp, FileText, Music, Film, FileArchive, File as FileIcon, X,
 } from "lucide-react";
 import { getProjectFileSignedUrl } from "@/lib/projectFiles";
 
@@ -23,6 +24,17 @@ interface MoodboardItem {
   thumbnail_url?: string | null;
   caption?: string | null;
   kind?: "image" | "link" | "video" | null;
+}
+
+interface SubmissionFile {
+  url: string;
+  name: string;
+  mime: string;
+  size?: number;
+  thumbnail_url?: string | null;
+  uploaded_by?: string | null;
+  uploaded_at?: string | null;
+  kind?: "image" | "video" | "audio" | "pdf" | "doc" | "archive" | "file";
 }
 
 interface Deliverable {
@@ -41,6 +53,8 @@ interface Deliverable {
   file_url: string | null;
   thumbnail_url: string | null;
   moodboard: MoodboardItem[] | null;
+  kind: string | null;
+  submission_files: SubmissionFile[] | null;
 }
 
 interface DeliverablesBoardProps {

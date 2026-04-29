@@ -213,7 +213,7 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
           sort_order: i,
           due_date: d.due_date || null,
           submitted_by: submittedBy,
-          moodboard: refs,
+          moodboard: refs as unknown as Record<string, unknown>[],
         };
       });
 

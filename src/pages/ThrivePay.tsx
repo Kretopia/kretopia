@@ -53,6 +53,8 @@ import {
   FileText,
   Receipt,
   FilePlus,
+  Camera,
+  MoreHorizontal,
 } from "lucide-react";
 
 interface ConnectRequirements {

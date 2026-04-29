@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import {
   Calendar, Clock, CheckCircle2, XCircle, Circle, Loader2,
   ArrowRight, Sparkles, Inbox, Upload, ExternalLink, Image as ImageIcon, Plus,
+  FolderUp, FileText, Music, Film, FileArchive, File as FileIcon, X,
 } from "lucide-react";
 import { getProjectFileSignedUrl } from "@/lib/projectFiles";
 
@@ -23,6 +24,17 @@ interface MoodboardItem {
   thumbnail_url?: string | null;
   caption?: string | null;
   kind?: "image" | "link" | "video" | null;
+}
+
+interface SubmissionFile {
+  url: string;
+  name: string;
+  mime: string;
+  size?: number;
+  thumbnail_url?: string | null;
+  uploaded_by?: string | null;
+  uploaded_at?: string | null;
+  kind?: "image" | "video" | "audio" | "pdf" | "doc" | "archive" | "file";
 }
 
 interface Deliverable {
@@ -41,6 +53,8 @@ interface Deliverable {
   file_url: string | null;
   thumbnail_url: string | null;
   moodboard: MoodboardItem[] | null;
+  kind: string | null;
+  submission_files: SubmissionFile[] | null;
 }
 
 interface DeliverablesBoardProps {
@@ -67,8 +81,33 @@ const NEXT_STATUS: Record<Status, Status | null> = {
 
 const isImageUrl = (u: string) => /\.(jpe?g|png|webp|gif|avif)(\?|$)/i.test(u);
 
-/** Cover preview for a card — submitted WIP wins, otherwise first reference image. */
+const fileKindFromMime = (mime: string, name: string): SubmissionFile["kind"] => {
+  if (mime.startsWith("image/")) return "image";
+  if (mime.startsWith("video/")) return "video";
+  if (mime.startsWith("audio/")) return "audio";
+  if (mime === "application/pdf" || /\.pdf$/i.test(name)) return "pdf";
+  if (/\.(zip|rar|7z|tar|gz)$/i.test(name)) return "archive";
+  if (/\.(docx?|pages|odt|txt|rtf|md)$/i.test(name) || mime.includes("word") || mime.includes("text")) return "doc";
+  return "file";
+};
+
+const FileKindIcon = ({ kind }: { kind?: SubmissionFile["kind"] }) => {
+  switch (kind) {
+    case "image": return <ImageIcon className="h-4 w-4" />;
+    case "video": return <Film className="h-4 w-4" />;
+    case "audio": return <Music className="h-4 w-4" />;
+    case "pdf":
+    case "doc":   return <FileText className="h-4 w-4" />;
+    case "archive": return <FileArchive className="h-4 w-4" />;
+    default: return <FileIcon className="h-4 w-4" />;
+  }
+};
+
+/** Cover preview for a card — first submitted image wins, otherwise first reference image. */
 function coverFor(d: Deliverable): { src: string; isWip: boolean } | null {
+  const subs = d.submission_files ?? [];
+  const firstWipImg = subs.find((s) => s.kind === "image" && (s.thumbnail_url || s.url));
+  if (firstWipImg) return { src: (firstWipImg.thumbnail_url || firstWipImg.url)!, isWip: true };
   if (d.thumbnail_url) return { src: d.thumbnail_url, isWip: true };
   if (d.file_url && isImageUrl(d.file_url)) return { src: d.file_url, isWip: true };
   const refs = d.moodboard ?? [];
@@ -85,14 +124,16 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
   const [reviewNote, setReviewNote] = useState("");
   const [updating, setUpdating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
   const [newRefUrl, setNewRefUrl] = useState("");
   const wipInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("project_deliverables")
-      .select("id,project_id,title,description,status,due_date,source,sort_order,created_at,submitted_by,reviewed_by,review_note,file_url,thumbnail_url,moodboard")
+      .select("id,project_id,title,description,status,due_date,source,sort_order,created_at,submitted_by,reviewed_by,review_note,file_url,thumbnail_url,moodboard,kind,submission_files")
       .eq("project_id", projectId)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true });
@@ -102,6 +143,9 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
       const rows = (data ?? []).map((r) => ({
         ...r,
         moodboard: Array.isArray(r.moodboard) ? (r.moodboard as unknown as MoodboardItem[]) : [],
+        submission_files: Array.isArray((r as { submission_files?: unknown }).submission_files)
+          ? ((r as { submission_files: unknown }).submission_files as unknown as SubmissionFile[])
+          : [],
       })) as Deliverable[];
       setItems(rows);
       if (!rows.length) onEmpty?.();
@@ -170,33 +214,72 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
     setReviewNote("");
   };
 
-  const uploadWip = async (file: File) => {
+  const uploadWipFiles = async (files: FileList | File[]) => {
     if (!selected) return;
-    setUploading(true);
-    try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
-      const path = `${projectId}/deliverables/${selected.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("project-files").upload(path, file, {
-        upsert: false,
-        contentType: file.type || undefined,
+    const list = Array.from(files);
+    if (!list.length) return;
+    // 200 MB per file safety cap (Supabase storage default is much higher; keeps UX honest)
+    const MAX = 200 * 1024 * 1024;
+    const tooBig = list.find((f) => f.size > MAX);
+    if (tooBig) {
+      toast({
+        title: "File too large",
+        description: `${tooBig.name} is over 200 MB. Compress or split it first.`,
+        variant: "destructive",
       });
-      if (upErr) throw upErr;
+      return;
+    }
 
-      const signed = await getProjectFileSignedUrl(path, { expiresIn: 60 * 60 * 24 * 7 });
-      const isImg = file.type.startsWith("image/");
+    setUploading(true);
+    setUploadProgress({ done: 0, total: list.length });
+    const newSubs: SubmissionFile[] = [];
+    try {
+      for (let i = 0; i < list.length; i++) {
+        const file = list[i];
+        const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `${projectId}/deliverables/${selected.id}/${Date.now()}-${i}-${safeName}`;
+        const { error: upErr } = await supabase.storage.from("project-files").upload(path, file, {
+          upsert: false,
+          contentType: file.type || undefined,
+        });
+        if (upErr) throw upErr;
+        const signed = await getProjectFileSignedUrl(path, { expiresIn: 60 * 60 * 24 * 7 });
+        if (!signed) throw new Error(`Couldn't get URL for ${file.name}`);
+        const kind = fileKindFromMime(file.type, file.name);
+        newSubs.push({
+          url: signed,
+          name: file.name,
+          mime: file.type || `application/${ext}`,
+          size: file.size,
+          thumbnail_url: kind === "image" ? signed : null,
+          uploaded_by: currentUserId,
+          uploaded_at: new Date().toISOString(),
+          kind,
+        });
+        setUploadProgress({ done: i + 1, total: list.length });
+      }
+
+      const merged: SubmissionFile[] = [...(selected.submission_files ?? []), ...newSubs];
+      // Hero preview = first image in the merged set, else first file
+      const heroImg = merged.find((s) => s.kind === "image");
+      const hero = heroImg ?? merged[0];
 
       const { error: updErr } = await supabase
         .from("project_deliverables")
         .update({
-          file_url: signed,
-          thumbnail_url: isImg ? signed : null,
-          media_type: isImg ? "image" : "file",
+          submission_files: merged as unknown as never,
+          file_url: hero?.url ?? null,
+          thumbnail_url: heroImg?.url ?? null,
           status: "submitted",
           submitted_by: currentUserId,
         })
         .eq("id", selected.id);
       if (updErr) throw updErr;
-      toast({ title: "Submitted for review", description: "The client will see your upload on the board." });
+      toast({
+        title: list.length === 1 ? "Submitted for review" : `Submitted ${list.length} files for review`,
+        description: "The client will see your upload on the board.",
+      });
     } catch (e) {
       toast({
         title: "Upload failed",
@@ -205,7 +288,27 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
       });
     } finally {
       setUploading(false);
+      setUploadProgress(null);
       if (wipInputRef.current) wipInputRef.current.value = "";
+      if (folderInputRef.current) folderInputRef.current.value = "";
+    }
+  };
+
+  const removeSubmission = async (idx: number) => {
+    if (!selected) return;
+    const next = (selected.submission_files ?? []).filter((_, i) => i !== idx);
+    const heroImg = next.find((s) => s.kind === "image");
+    const hero = heroImg ?? next[0];
+    const { error } = await supabase
+      .from("project_deliverables")
+      .update({
+        submission_files: next as unknown as never,
+        file_url: hero?.url ?? null,
+        thumbnail_url: heroImg?.url ?? null,
+      })
+      .eq("id", selected.id);
+    if (error) {
+      toast({ title: "Couldn't remove", description: error.message, variant: "destructive" });
     }
   };
 
@@ -373,8 +476,54 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
                   )}
                 </div>
 
-                {/* Submitted work (WIP) */}
-                {(selected.file_url || selected.thumbnail_url) && (
+                {/* Submitted work — renders every file the creative attached */}
+                {(selected.submission_files?.length ?? 0) > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                      Submitted work ({selected.submission_files!.length})
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {selected.submission_files!.map((s, idx) => (
+                        <div key={idx} className="relative group rounded-lg border overflow-hidden bg-muted">
+                          {s.kind === "image" ? (
+                            <a href={s.url} target="_blank" rel="noreferrer" className="block aspect-square">
+                              <img src={s.thumbnail_url || s.url} alt={s.name} loading="lazy" className="h-full w-full object-cover" />
+                            </a>
+                          ) : s.kind === "video" ? (
+                            <video src={s.url} controls preload="metadata" className="w-full aspect-square object-cover bg-black" />
+                          ) : s.kind === "audio" ? (
+                            <div className="aspect-square flex flex-col items-center justify-center p-2 gap-2">
+                              <Music className="h-6 w-6 text-muted-foreground" />
+                              <audio src={s.url} controls className="w-full" />
+                            </div>
+                          ) : (
+                            <a href={s.url} target="_blank" rel="noreferrer" className="aspect-square flex flex-col items-center justify-center p-3 text-center gap-1.5 hover:bg-accent">
+                              <FileKindIcon kind={s.kind} />
+                              <span className="text-[10px] text-muted-foreground line-clamp-2 break-all">{s.name}</span>
+                              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                            </a>
+                          )}
+                          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-[10px] px-1.5 py-1 truncate">
+                            {s.name}
+                          </div>
+                          {selected.status !== "approved" && (
+                            <button
+                              onClick={() => removeSubmission(idx)}
+                              className="absolute top-1 right-1 h-5 w-5 rounded-full bg-background/90 border opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
+                              aria-label="Remove file"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Legacy single submitted file (back-compat for old rows) */}
+                {(selected.submission_files?.length ?? 0) === 0 && (selected.file_url || selected.thumbnail_url) && (
                   <div>
                     <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
@@ -481,36 +630,71 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
                   </div>
                 </div>
 
-                {/* WIP upload (creative side) */}
+                {/* WIP upload (creative side) — supports any format, multiple files, OR a whole folder */}
                 {selected.status !== "approved" && (
-                  <div className="rounded-lg border-2 border-dashed p-4 text-center space-y-2">
+                  <div
+                    className="rounded-lg border-2 border-dashed p-4 text-center space-y-3"
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => {
+                      e.preventDefault(); e.stopPropagation();
+                      if (e.dataTransfer.files?.length) uploadWipFiles(e.dataTransfer.files);
+                    }}
+                  >
                     <p className="text-xs font-semibold flex items-center justify-center gap-1.5">
                       <Upload className="h-3.5 w-3.5" />
-                      Upload work for review
+                      Submit work for review
                     </p>
                     <p className="text-[11px] text-muted-foreground">
-                      Drop the deliverable here. It moves the card to <strong>Submitted</strong> and pings the client to approve.
+                      Drop images, video, audio, PDFs, or project files. One file or a whole folder — your call.
+                      Moves the card to <strong>Submitted</strong> so the client can approve.
                     </p>
+
                     <input
                       ref={wipInputRef}
                       type="file"
-                      accept="image/*,application/pdf,video/*"
+                      multiple
                       className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) uploadWip(f);
-                      }}
+                      onChange={(e) => { if (e.target.files?.length) uploadWipFiles(e.target.files); }}
                     />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => wipInputRef.current?.click()}
-                      disabled={uploading}
-                      className="gap-1.5"
-                    >
-                      {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                      {uploading ? "Uploading…" : "Choose file"}
-                    </Button>
+                    <input
+                      ref={folderInputRef}
+                      type="file"
+                      multiple
+                      // @ts-expect-error non-standard but widely supported
+                      webkitdirectory=""
+                      directory=""
+                      className="hidden"
+                      onChange={(e) => { if (e.target.files?.length) uploadWipFiles(e.target.files); }}
+                    />
+
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => wipInputRef.current?.click()}
+                        disabled={uploading}
+                        className="gap-1.5"
+                      >
+                        {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        {uploading ? "Uploading…" : "Choose files"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => folderInputRef.current?.click()}
+                        disabled={uploading}
+                        className="gap-1.5"
+                      >
+                        <FolderUp className="h-3.5 w-3.5" />
+                        Upload folder
+                      </Button>
+                    </div>
+
+                    {uploadProgress && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Uploading {uploadProgress.done} / {uploadProgress.total}…
+                      </p>
+                    )}
                   </div>
                 )}
 

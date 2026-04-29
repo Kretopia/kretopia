@@ -298,14 +298,14 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
   return (
     <div className="space-y-4">
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-5 sm:pt-6 px-4 sm:px-6">
           <div className="flex items-start gap-3 mb-4">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Sparkles className="h-5 w-5 text-primary" />
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h3 className="font-semibold">Add a Brief</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Bring whatever you have — type it, drop a doc, paste a Sheet, or record it.
                 We'll turn it into deliverables on your board.
               </p>
@@ -429,21 +429,21 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
 
       {drafts.length > 0 && (
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-3">
-              <div>
+          <CardContent className="pt-5 sm:pt-6 px-4 sm:px-6">
+            <div className="flex items-center justify-between mb-3 gap-2">
+              <div className="min-w-0">
                 <h3 className="font-semibold">Review & save</h3>
                 <p className="text-xs text-muted-foreground">Edit anything, then add them all to your board.</p>
               </div>
-              <Badge variant="secondary">{drafts.length} items</Badge>
+              <Badge variant="secondary" className="shrink-0">{drafts.length} items</Badge>
             </div>
 
-            <ScrollArea className="max-h-[420px] pr-2">
+            <ScrollArea className="max-h-[60vh] sm:max-h-[420px] pr-1 sm:pr-2">
               <div className="space-y-3">
                 {drafts.map((d, i) => (
-                  <div key={d.id} className="p-3 rounded-lg border bg-card space-y-2">
+                  <div key={d.id} className="p-2.5 sm:p-3 rounded-lg border bg-card space-y-2">
                     <div className="flex items-start gap-2">
-                      <span className="text-xs font-mono text-muted-foreground mt-2 w-6">#{i + 1}</span>
+                      <span className="text-[10px] sm:text-xs font-mono text-muted-foreground mt-2 w-5 sm:w-6 shrink-0">#{i + 1}</span>
                       <div className="flex-1 space-y-2">
                         <Input
                           placeholder="Deliverable title"

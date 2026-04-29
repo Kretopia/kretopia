@@ -372,12 +372,12 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
   return (
     <>
       <ScrollArea className="w-full">
-        <div className="flex gap-3 pb-4 min-w-max">
+        <div className="flex gap-2.5 sm:gap-3 pb-4 min-w-max px-0.5">
           {COLUMNS.map((col) => {
             const Icon = col.icon;
             const list = grouped[col.key];
             return (
-              <div key={col.key} className="w-72 shrink-0">
+              <div key={col.key} className="w-[78vw] max-w-[260px] sm:w-72 sm:max-w-none shrink-0">
                 <div className="flex items-center justify-between px-2 py-2">
                   <div className="flex items-center gap-2">
                     <Icon className="h-4 w-4" />
@@ -452,7 +452,7 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
       </ScrollArea>
 
       <Dialog open={!!selected} onOpenChange={(o) => { if (!o) { setSelected(null); setNewRefUrl(""); } }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl w-[calc(100vw-1rem)] sm:w-full max-h-[92vh] overflow-y-auto p-4 sm:p-6">
           {selected && (
             <>
               <DialogHeader>

@@ -217,7 +217,7 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
         };
       });
 
-      const { error } = await supabase.from("project_deliverables").insert(rows);
+      const { error } = await supabase.from("project_deliverables").insert(rows as never);
       if (error) throw error;
 
       toast({ title: `Added ${rows.length} deliverables`, description: "Open the Board tab to drag, assign and approve." });

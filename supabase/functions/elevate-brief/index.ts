@@ -167,9 +167,13 @@ serve(async (req) => {
       const dataBase64: string = body.data_base64 ?? "";
       const mimeType: string = body.mime_type ?? "audio/webm";
       if (!dataBase64) throw new Error("data_base64 is required for source=audio");
+      const format = mimeType.includes("mp3") ? "mp3" : mimeType.includes("wav") ? "wav" : "webm";
       parts = [
-        { type: "text", text: `${ctx}Rough brief delivered as a voice memo. Transcribe it, then elevate it.` },
-        { type: "image_url", image_url: { url: `data:${mimeType};base64,${dataBase64}` } },
+        {
+          type: "text",
+          text: `${ctx}Rough brief delivered as a voice memo. FIRST transcribe everything the founder said in full. THEN elevate it into a polished brief, deliverables, and 4-10 actionable tasks. Do NOT collapse it into a single task — break the work down into the concrete steps a collaborator would need to execute it.`,
+        },
+        { type: "input_audio", input_audio: { data: dataBase64, format } },
       ];
     } else {
       throw new Error(`Unknown source: ${source}`);

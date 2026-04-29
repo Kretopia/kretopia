@@ -20,6 +20,9 @@ import { WalletTopUpDialog } from "@/components/wallet/WalletTopUpDialog";
 import { WalletTransferDialog } from "@/components/wallet/WalletTransferDialog";
 import { AccountingDashboard } from "@/components/project/AccountingDashboard";
 import { FreeTierGate } from "@/components/FreeTierGate";
+import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
+import { MoneyStreakChip } from "@/components/thrivepay/MoneyStreakChip";
+import { WeeklyMoneyInsights } from "@/components/thrivepay/WeeklyMoneyInsights";
 import {
   DollarSign,
   TrendingUp,
@@ -75,7 +78,7 @@ export default function ThrivePay() {
 
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("tab") || "wallet";
+    return params.get("tab") || "earnings";
   });
 
   useEffect(() => {

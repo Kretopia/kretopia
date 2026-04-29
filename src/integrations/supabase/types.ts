@@ -8719,6 +8719,7 @@ export type Database = {
           file_id: string | null
           file_url: string | null
           id: string
+          kind: string | null
           media_type: string | null
           milestone_id: string | null
           moodboard: Json
@@ -8729,6 +8730,7 @@ export type Database = {
           sort_order: number
           source: string
           status: string
+          submission_files: Json | null
           submitted_by: string | null
           thumbnail_url: string | null
           title: string
@@ -8743,6 +8745,7 @@ export type Database = {
           file_id?: string | null
           file_url?: string | null
           id?: string
+          kind?: string | null
           media_type?: string | null
           milestone_id?: string | null
           moodboard?: Json
@@ -8753,6 +8756,7 @@ export type Database = {
           sort_order?: number
           source?: string
           status?: string
+          submission_files?: Json | null
           submitted_by?: string | null
           thumbnail_url?: string | null
           title: string
@@ -8767,6 +8771,7 @@ export type Database = {
           file_id?: string | null
           file_url?: string | null
           id?: string
+          kind?: string | null
           media_type?: string | null
           milestone_id?: string | null
           moodboard?: Json
@@ -8777,6 +8782,7 @@ export type Database = {
           sort_order?: number
           source?: string
           status?: string
+          submission_files?: Json | null
           submitted_by?: string | null
           thumbnail_url?: string | null
           title?: string

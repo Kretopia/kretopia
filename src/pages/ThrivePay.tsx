@@ -20,6 +20,9 @@ import { WalletTopUpDialog } from "@/components/wallet/WalletTopUpDialog";
 import { WalletTransferDialog } from "@/components/wallet/WalletTransferDialog";
 import { AccountingDashboard } from "@/components/project/AccountingDashboard";
 import { FreeTierGate } from "@/components/FreeTierGate";
+import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
+import { MoneyStreakChip } from "@/components/thrivepay/MoneyStreakChip";
+import { WeeklyMoneyInsights } from "@/components/thrivepay/WeeklyMoneyInsights";
 import {
   DollarSign,
   TrendingUp,
@@ -75,7 +78,7 @@ export default function ThrivePay() {
 
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("tab") || "wallet";
+    return params.get("tab") || "earnings";
   });
 
   useEffect(() => {
@@ -267,16 +270,17 @@ export default function ThrivePay() {
       <div className="mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
         {/* Header */}
         <div className="mb-4 sm:mb-6 flex flex-wrap items-start justify-between gap-3 border-b-2 border-primary/20 pb-4">
-          <div className="space-y-1 min-w-0">
-            <p className="brand-eyebrow">Wallet & Payments</p>
+          <div className="space-y-1.5 min-w-0">
+            <p className="brand-eyebrow">Your money, daily</p>
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <h1 className="text-3xl md:text-4xl font-black tracking-[-0.03em] flex items-center gap-3 leading-[1.05]">
                 <Wallet className="h-7 w-7 md:h-8 md:w-8 text-primary" />
                 ThrivePay
               </h1>
               {getStatusBadge()}
+              <MoneyStreakChip />
             </div>
-            <p className="text-sm text-muted-foreground">Earnings, status, and payouts in one place.</p>
+            <p className="text-sm text-muted-foreground">Invoices, expenses, earnings & payouts — one place.</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Button size="sm" variant="outline" className="gap-1.5 h-9 px-3" onClick={() => setTransferDialogOpen(true)}>
@@ -288,6 +292,16 @@ export default function ThrivePay() {
               Top Up
             </Button>
           </div>
+        </div>
+
+        {/* Money Brief — daily-driver hero */}
+        <div className="mb-4 sm:mb-6">
+          <MoneyBrief />
+        </div>
+
+        {/* Weekly insights */}
+        <div className="mb-4 sm:mb-6">
+          <WeeklyMoneyInsights />
         </div>
 
         <WalletTopUpDialog open={topUpDialogOpen} onOpenChange={setTopUpDialogOpen} />
@@ -333,17 +347,19 @@ export default function ThrivePay() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
           <TabsList className="w-full grid grid-cols-3 h-10 sm:h-11">
+            <TabsTrigger value="earnings" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
+              <TrendingUp className="h-4 w-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Invoices & Earnings</span>
+              <span className="sm:hidden">Invoices</span>
+            </TabsTrigger>
             <TabsTrigger value="wallet" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
               <Wallet className="h-4 w-4 flex-shrink-0" />
               <span className="hidden sm:inline">Wallet</span>
             </TabsTrigger>
-            <TabsTrigger value="earnings" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
-              <TrendingUp className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Earnings</span>
-            </TabsTrigger>
             <TabsTrigger value="payments" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
               <CreditCard className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Payments</span>
+              <span className="hidden sm:inline">Payouts</span>
+              <span className="sm:hidden">Payouts</span>
             </TabsTrigger>
           </TabsList>
 

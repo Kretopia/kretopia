@@ -6395,6 +6395,39 @@ export type Database = {
           },
         ]
       }
+      money_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          last_action_date: string | null
+          last_action_type: string | null
+          longest_streak: number
+          total_actions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          last_action_date?: string | null
+          last_action_type?: string | null
+          longest_streak?: number
+          total_actions?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          last_action_date?: string | null
+          last_action_type?: string | null
+          longest_streak?: number
+          total_actions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           email: string
@@ -13574,6 +13607,14 @@ export type Database = {
       recompute_verification_tier: {
         Args: { p_user_id: string }
         Returns: undefined
+      }
+      record_money_action: {
+        Args: { _action_type: string }
+        Returns: {
+          current_streak: number
+          is_new_day: boolean
+          longest_streak: number
+        }[]
       }
       record_referral: {
         Args: { p_referred_id: string; p_referrer_id: string }

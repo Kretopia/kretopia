@@ -30,6 +30,7 @@ import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
+import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { LiveGigsStrip } from "@/components/landing/LiveGigsStrip";
 import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
 import GigCard from "@/components/opportunity/GigCard";
@@ -576,6 +577,7 @@ export const UnifiedHome = () => {
           />
 
           <WeeklyIntentCard className="mb-4" />
+          <MoneyBrief variant="compact" className="mb-4" />
           <NewMemberStarterCard className="mb-4" />
           <InviteCircleCard variant="home" className="mb-4" />
           {/* StartCircleNudgeCard hidden — Circles paused on discovery surfaces (Pass A) */}

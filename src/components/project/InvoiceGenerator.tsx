@@ -21,6 +21,7 @@ import { InvoicePreview } from "./invoice/InvoicePreview";
 import { PricingCoPilot } from "./invoice/PricingCoPilot";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
 import { useAutoSaveDraft } from "@/hooks/useAutoSaveDraft";
+import { recordMoneyAction } from "@/lib/moneyStreak";
 
 interface InvoiceGeneratorProps {
   projectId?: string;
@@ -301,6 +302,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       const { error } = await supabase.from("invoices").insert(invoiceData);
       if (error) throw error;
 
+      recordMoneyAction(documentType === "quote" ? "quote_sent" : "invoice_created");
       toast.success(`${documentType === "quote" ? "Quote" : "Invoice"} created successfully!`);
       setShowCreateDialog(false);
       setCreateStep("details");
@@ -507,6 +509,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         } as any);
       if (paymentError) console.error("Payment history error:", paymentError);
 
+      recordMoneyAction("invoice_paid");
       toast.success("Invoice marked as paid!");
       fetchInvoices();
     } catch (error) {
@@ -525,6 +528,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
       });
 
       if (error) throw error;
+      recordMoneyAction("invoice_sent");
       toast.success("Invoice sent!");
       fetchInvoices();
     } catch (error) {

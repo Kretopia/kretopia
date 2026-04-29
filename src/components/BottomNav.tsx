@@ -1,17 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, Briefcase, LayoutDashboard, Home, Rocket, UserSearch, Wallet } from "lucide-react";
+import { Sparkles, Briefcase, LayoutDashboard, Home, UserSearch, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-// Single, focused MVP nav: Home · Desk · Match · Gigs · Fund
+// Single, focused MVP nav: Home · Desk · Match · Gigs · Pay
 const NAV_ITEMS = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/desk", icon: LayoutDashboard, label: "Desk" },
   { path: "/circle", icon: Sparkles, label: "Match" },
   { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-  { path: "/fund", icon: Rocket, label: "Fund" },
+  { path: "/thrivepay", icon: Wallet, label: "Pay" },
 ];
 
 // Company accounts get a B2B-focused nav
@@ -49,7 +49,7 @@ const BottomNav = memo(() => {
     if (path === "/circle") return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
     if (path === "/opportunities") return location.pathname === "/opportunities" || location.pathname === "/opportunity-dashboard";
     if (path === "/desk") return location.pathname.startsWith("/desk");
-    if (path === "/fund") return location.pathname.startsWith("/fund");
+    if (path === "/thrivepay") return location.pathname.startsWith("/thrivepay") || location.pathname.startsWith("/accounting");
     return location.pathname === path;
   };
 

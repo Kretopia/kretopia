@@ -372,9 +372,6 @@ const CreatorWorkHome = () => {
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-2">Run your projects, milestones & clients — all in one place.</p>
-          <div className="mt-3">
-            <CrossModeNudge targetMode="create" label="Switch to Explore →" targetPath="/scene" />
-          </div>
         </div>
 
         {/* At-a-glance stats — project focused */}

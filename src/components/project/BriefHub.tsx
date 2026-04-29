@@ -11,7 +11,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   PenLine, Upload, Sheet as SheetIcon, Mic, Loader2,
   FileCheck2, Trash2, Plus, Sparkles, Square, Calendar as CalendarIcon,
+  ShieldCheck,
 } from "lucide-react";
+import {
+  parseCsvToDeliverables,
+  googleSheetCsvUrl,
+  type ParsedDeliverable,
+} from "@/lib/csvBriefParser";
 
 interface BriefHubProps {
   projectId: string;

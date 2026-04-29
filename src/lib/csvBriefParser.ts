@@ -116,8 +116,8 @@ function buildColMap(header: string[]): ColMap {
       if (!aliases.some((a) => n === a || n.includes(a))) continue;
       if (key === "references") {
         map.references.push(idx);
-      } else if (map[key] === -1) {
-        (map as Record<string, number>)[key] = idx;
+      } else if ((map[key] as number) === -1) {
+        (map as unknown as Record<string, number>)[key as string] = idx;
       }
     }
   });

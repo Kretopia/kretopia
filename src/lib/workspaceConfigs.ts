@@ -8,7 +8,7 @@ import {
   // Tab icons
   MessageSquare, CheckSquare, FolderOpen, LayoutGrid, CheckCircle2, Wallet,
   FileSignature, StickyNote, Image as ImageIcon, ListChecks, Bot, ClipboardList,
-  Clock, UserCheck, ArrowRightLeft, RotateCcw, Shield,
+  Clock, UserCheck, ArrowRightLeft, RotateCcw, Shield, ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,7 +38,9 @@ export type DeskTabKey =
   | "today" | "messages" | "tasks" | "files" | "approvals" | "assets"
   | "board" | "contracts" | "scope" | "finance" | "notes" | "templates" | "ai"
   // new workflow-specific (built in turn 3)
-  | "call_sheet" | "run_of_show" | "roll_call" | "split_sheet" | "exchange" | "revisions";
+  | "call_sheet" | "run_of_show" | "roll_call" | "split_sheet" | "exchange" | "revisions"
+  // Brief Hub + Visual Deliverables Board
+  | "brief";
 
 export interface WorkspaceConfig {
   id: WorkspaceType;
@@ -335,6 +337,7 @@ export const TAB_META: Record<DeskTabKey, TabMeta> = {
   split_sheet:  { label: "Split Sheet", icon: Music },
   exchange:     { label: "Exchange",    icon: ArrowRightLeft },
   revisions:    { label: "Revisions",   icon: RotateCcw },
+  brief:        { label: "Brief",       icon: ClipboardCheck },
 };
 
 /** Get the workspace-specific label for a tab (e.g. "Shot List" instead of "Tasks"). */

@@ -81,8 +81,33 @@ const NEXT_STATUS: Record<Status, Status | null> = {
 
 const isImageUrl = (u: string) => /\.(jpe?g|png|webp|gif|avif)(\?|$)/i.test(u);
 
-/** Cover preview for a card — submitted WIP wins, otherwise first reference image. */
+const fileKindFromMime = (mime: string, name: string): SubmissionFile["kind"] => {
+  if (mime.startsWith("image/")) return "image";
+  if (mime.startsWith("video/")) return "video";
+  if (mime.startsWith("audio/")) return "audio";
+  if (mime === "application/pdf" || /\.pdf$/i.test(name)) return "pdf";
+  if (/\.(zip|rar|7z|tar|gz)$/i.test(name)) return "archive";
+  if (/\.(docx?|pages|odt|txt|rtf|md)$/i.test(name) || mime.includes("word") || mime.includes("text")) return "doc";
+  return "file";
+};
+
+const FileKindIcon = ({ kind }: { kind?: SubmissionFile["kind"] }) => {
+  switch (kind) {
+    case "image": return <ImageIcon className="h-4 w-4" />;
+    case "video": return <Film className="h-4 w-4" />;
+    case "audio": return <Music className="h-4 w-4" />;
+    case "pdf":
+    case "doc":   return <FileText className="h-4 w-4" />;
+    case "archive": return <FileArchive className="h-4 w-4" />;
+    default: return <FileIcon className="h-4 w-4" />;
+  }
+};
+
+/** Cover preview for a card — first submitted image wins, otherwise first reference image. */
 function coverFor(d: Deliverable): { src: string; isWip: boolean } | null {
+  const subs = d.submission_files ?? [];
+  const firstWipImg = subs.find((s) => s.kind === "image" && (s.thumbnail_url || s.url));
+  if (firstWipImg) return { src: (firstWipImg.thumbnail_url || firstWipImg.url)!, isWip: true };
   if (d.thumbnail_url) return { src: d.thumbnail_url, isWip: true };
   if (d.file_url && isImageUrl(d.file_url)) return { src: d.file_url, isWip: true };
   const refs = d.moodboard ?? [];

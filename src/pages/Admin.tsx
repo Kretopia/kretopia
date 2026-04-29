@@ -294,6 +294,10 @@ export default function Admin() {
             <Banknote className="h-4 w-4" />
             <span>Transfers</span>
           </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
+            <Activity className="h-4 w-4" />
+            <span>Analytics</span>
+          </TabsTrigger>
           <TabsTrigger value="system" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Settings className="h-4 w-4" />
             <span>System</span>

@@ -44,9 +44,19 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
 
   // Listen for global "open expense" event (from ThrivePay quick-add menu)
   useEffect(() => {
-    const handler = () => setOpen(true);
-    window.addEventListener("thrivepay:add-expense", handler);
-    return () => window.removeEventListener("thrivepay:add-expense", handler);
+    const handler = (e: Event) => {
+      setOpen(true);
+      // If event asks to auto-open the camera/file picker (Quick Scan)
+      const detail = (e as CustomEvent).detail;
+      if (detail?.scan) {
+        setTimeout(() => {
+          const input = document.querySelector<HTMLInputElement>('input[data-scan-receipt-input="true"]');
+          input?.click();
+        }, 250);
+      }
+    };
+    window.addEventListener("thrivepay:add-expense", handler as EventListener);
+    return () => window.removeEventListener("thrivepay:add-expense", handler as EventListener);
   }, []);
 
   const handleScanReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {

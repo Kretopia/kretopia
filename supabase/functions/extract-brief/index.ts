@@ -18,11 +18,19 @@ const corsHeaders = {
 
 type Source = "text" | "csv" | "sheet" | "doc" | "audio";
 
+interface MoodboardItem {
+  url: string;                 // link to image, Pinterest, IG, Behance, Drive, etc.
+  thumbnail_url?: string | null; // direct image URL if known (used for card preview)
+  caption?: string | null;
+  kind?: "image" | "link" | "video" | null;
+}
+
 interface DeliverableOut {
   title: string;
   description?: string;
   due_date?: string | null; // ISO date
-  reference_url?: string | null;
+  reference_url?: string | null;        // legacy single ref (kept for back-compat)
+  references?: MoodboardItem[];         // NEW: full moodboard
   notes?: string | null;
 }
 
@@ -31,26 +39,38 @@ interface BriefOut {
   deliverables: DeliverableOut[];
 }
 
-const SYSTEM_PROMPT = `You convert a creative project brief into a structured deliverables list.
+const SYSTEM_PROMPT = `You convert a creative project brief into a structured deliverables list with VISUAL references.
 
 Output STRICT JSON matching this TypeScript type:
 {
   "project": { "title": string, "summary": string },
   "deliverables": Array<{
     "title": string,            // short imperative, e.g. "Instagram carousel - launch day"
-    "description": string,      // 1-3 sentences of context
+    "description": string,      // 1-3 sentences of context, including style/mood notes
     "due_date": string | null,  // ISO YYYY-MM-DD or null
-    "reference_url": string | null,
+    "references": Array<{       // moodboard for THIS deliverable (can be empty)
+      "url": string,            // ANY URL found in the source row: image, Pinterest, IG post, Behance, YouTube, Drive, Dropbox, Figma, web link
+      "thumbnail_url": string | null, // ONLY if it ends in .jpg/.jpeg/.png/.webp/.gif (a direct image). Otherwise null.
+      "caption": string | null, // short label like "Color palette", "Mood reference", "Brand example"
+      "kind": "image" | "link" | "video" | null
+    }>,
     "notes": string | null
   }>
 }
 
 Rules:
 - Every distinct asset, post, scene, deliverable, or task = ONE row.
-- If the source is a spreadsheet, treat each ROW as one deliverable. Map columns intelligently (Title/Name/Asset, Description/Brief/Notes, Due/Deadline, Reference/Link).
-- Never invent deliverables that aren't supported by the source.
+- If the source is a spreadsheet, treat each ROW as one deliverable. Map columns intelligently:
+    Title/Name/Asset → title
+    Description/Brief/Notes/Concept → description
+    Due/Deadline/Date → due_date
+    Reference/Link/Inspo/Inspiration/Moodboard/Image/Visual → references[] (collect ALL URLs from those columns; one row may have many)
+- If a single cell contains multiple URLs (separated by commas, newlines, spaces), split them and add each as its own reference.
+- A URL ending in .jpg, .jpeg, .png, .webp, .gif is a direct image — set thumbnail_url to the same URL and kind="image".
+- A URL containing youtube.com, youtu.be, vimeo.com → kind="video", thumbnail_url=null.
+- Otherwise kind="link", thumbnail_url=null.
+- Never invent references that aren't in the source.
 - Keep titles under 80 chars.
-- If no clear project title is given, summarize one from context.
 - Return ONLY the JSON object, no prose, no markdown fences.`;
 
 async function fetchPublicSheetAsCsv(url: string): Promise<string> {

@@ -19,12 +19,20 @@ interface BriefHubProps {
   onCreated?: () => void;
 }
 
+interface MoodboardItem {
+  url: string;
+  thumbnail_url?: string | null;
+  caption?: string | null;
+  kind?: "image" | "link" | "video" | null;
+}
+
 interface DraftDeliverable {
   id: string;
   title: string;
   description?: string;
   due_date?: string | null;
   reference_url?: string | null;
+  references?: MoodboardItem[];
   notes?: string | null;
 }
 
@@ -183,19 +191,33 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
         : tab === "sheet" ? "sheet"
         : "voice";
 
-      const rows = valid.map((d, i) => ({
-        project_id: projectId,
-        title: d.title.trim().slice(0, 200),
-        description: [d.description, d.notes, d.reference_url].filter(Boolean).join("\n\n") || null,
-        status: "pending",
-        version: 1,
-        source: sourceTag,
-        sort_order: i,
-        due_date: d.due_date || null,
-        submitted_by: submittedBy,
-      }));
+      const rows = valid.map((d, i) => {
+        // Merge legacy reference_url into the moodboard so nothing gets lost
+        const refs: MoodboardItem[] = [...(d.references ?? [])];
+        if (d.reference_url && !refs.some((r) => r.url === d.reference_url)) {
+          const isImg = /\.(jpe?g|png|webp|gif)(\?|$)/i.test(d.reference_url);
+          refs.push({
+            url: d.reference_url,
+            thumbnail_url: isImg ? d.reference_url : null,
+            kind: isImg ? "image" : "link",
+            caption: null,
+          });
+        }
+        return {
+          project_id: projectId,
+          title: d.title.trim().slice(0, 200),
+          description: [d.description, d.notes].filter(Boolean).join("\n\n") || null,
+          status: "pending",
+          version: 1,
+          source: sourceTag,
+          sort_order: i,
+          due_date: d.due_date || null,
+          submitted_by: submittedBy,
+          moodboard: refs as unknown as Record<string, unknown>[],
+        };
+      });
 
-      const { error } = await supabase.from("project_deliverables").insert(rows);
+      const { error } = await supabase.from("project_deliverables").insert(rows as never);
       if (error) throw error;
 
       toast({ title: `Added ${rows.length} deliverables`, description: "Open the Board tab to drag, assign and approve." });
@@ -372,7 +394,7 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
                           onChange={(e) => updateDraft(d.id, { description: e.target.value })}
                           rows={2}
                         />
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
                           <Input
                             type="date"
@@ -380,7 +402,39 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
                             onChange={(e) => updateDraft(d.id, { due_date: e.target.value || null })}
                             className="h-8 text-xs w-auto"
                           />
+                          {(d.references?.length ?? 0) > 0 && (
+                            <Badge variant="outline" className="gap-1 text-[10px]">
+                              🎨 {d.references!.length} ref{d.references!.length === 1 ? "" : "s"}
+                            </Badge>
+                          )}
                         </div>
+                        {(d.references?.length ?? 0) > 0 && (
+                          <div className="flex gap-1.5 overflow-x-auto pb-1">
+                            {d.references!.slice(0, 6).map((r, idx) =>
+                              r.thumbnail_url ? (
+                                <a key={idx} href={r.url} target="_blank" rel="noreferrer" className="shrink-0">
+                                  <img
+                                    src={r.thumbnail_url}
+                                    alt={r.caption ?? "reference"}
+                                    className="h-12 w-12 rounded object-cover border"
+                                    loading="lazy"
+                                  />
+                                </a>
+                              ) : (
+                                <a
+                                  key={idx}
+                                  href={r.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="shrink-0 h-12 px-2 rounded border bg-muted text-[10px] text-muted-foreground inline-flex items-center max-w-[140px] truncate"
+                                  title={r.url}
+                                >
+                                  {r.caption || new URL(r.url).hostname.replace("www.", "")}
+                                </a>
+                              ),
+                            )}
+                          </div>
+                        )}
                       </div>
                       <Button variant="ghost" size="icon" onClick={() => removeDraft(d.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />

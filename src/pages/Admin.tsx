@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search, Megaphone, MessageSquare, Mail, Crown, Banknote } from "lucide-react";
+import { Shield, Users, ShieldCheck, Settings, UserPlus, Send, Loader2, Leaf, CheckCircle, AlertCircle, Bot, Sparkles, Search, Megaphone, MessageSquare, Mail, Crown, Banknote, Activity } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ import { FeedbackTab } from "@/components/admin/FeedbackTab";
 import { DripCampaignTab } from "@/components/admin/DripCampaignTab";
 import { FounderGrantTab } from "@/components/admin/FounderGrantTab";
 import { BankTransfersTab } from "@/components/admin/BankTransfersTab";
+import { BounceRateTab } from "@/components/admin/BounceRateTab";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -293,6 +294,10 @@ export default function Admin() {
             <Banknote className="h-4 w-4" />
             <span>Transfers</span>
           </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
+            <Activity className="h-4 w-4" />
+            <span>Analytics</span>
+          </TabsTrigger>
           <TabsTrigger value="system" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Settings className="h-4 w-4" />
             <span>System</span>
@@ -329,6 +334,10 @@ export default function Admin() {
 
         <TabsContent value="bank-transfers" className="mt-4 sm:mt-6">
           <BankTransfersTab />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-4 sm:mt-6">
+          <BounceRateTab />
         </TabsContent>
 
         <TabsContent value="system" className="mt-4 sm:mt-6">

@@ -10461,36 +10461,45 @@ export type Database = {
           country: string | null
           created_at: string
           device_type: string | null
+          duration_ms: number | null
           event_target: string | null
           event_type: string
           id: string
           page_path: string | null
           referrer: string | null
-          user_id: string
+          scope: string
+          session_id: string | null
+          user_id: string | null
           visitor_id: string | null
         }
         Insert: {
           country?: string | null
           created_at?: string
           device_type?: string | null
+          duration_ms?: number | null
           event_target?: string | null
           event_type?: string
           id?: string
           page_path?: string | null
           referrer?: string | null
-          user_id: string
+          scope?: string
+          session_id?: string | null
+          user_id?: string | null
           visitor_id?: string | null
         }
         Update: {
           country?: string | null
           created_at?: string
           device_type?: string | null
+          duration_ms?: number | null
           event_target?: string | null
           event_type?: string
           id?: string
           page_path?: string | null
           referrer?: string | null
-          user_id?: string
+          scope?: string
+          session_id?: string | null
+          user_id?: string | null
           visitor_id?: string | null
         }
         Relationships: []

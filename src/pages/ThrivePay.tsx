@@ -701,6 +701,9 @@ export default function ThrivePay() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Floating Snap Receipt button — opens camera immediately, AI fills the expense */}
+      <SnapReceiptFAB />
     </>
   );
 }

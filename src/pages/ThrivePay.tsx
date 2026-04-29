@@ -294,13 +294,58 @@ export default function ThrivePay() {
             <p className="text-sm text-muted-foreground">Invoices, expenses, earnings & payouts — one place.</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="default" className="gap-1.5 h-9 px-3" aria-label="Quick add">
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">New</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 z-50 bg-popover">
+                <DropdownMenuLabel>Quick add</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => {
+                    setActiveTab("earnings");
+                    setTimeout(
+                      () => window.dispatchEvent(new CustomEvent("thrivepay:create-document", { detail: { type: "invoice" } })),
+                      80
+                    );
+                  }}
+                >
+                  <FileText className="h-4 w-4 mr-2 text-primary" />
+                  New Invoice
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setActiveTab("earnings");
+                    setTimeout(
+                      () => window.dispatchEvent(new CustomEvent("thrivepay:create-document", { detail: { type: "quote" } })),
+                      80
+                    );
+                  }}
+                >
+                  <FilePlus className="h-4 w-4 mr-2 text-primary" />
+                  New Quote
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setActiveTab("earnings");
+                    setTimeout(() => window.dispatchEvent(new Event("thrivepay:add-expense")), 80);
+                  }}
+                >
+                  <Receipt className="h-4 w-4 mr-2 text-primary" />
+                  Add Expense
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button size="sm" variant="outline" className="gap-1.5 h-9 px-3" onClick={() => setTransferDialogOpen(true)}>
               <Send className="h-4 w-4" />
-              Send
+              <span className="hidden sm:inline">Send</span>
             </Button>
             <Button size="sm" variant="lime" className="gap-1.5 h-9 px-3" onClick={() => setTopUpDialogOpen(true)}>
               <Plus className="h-4 w-4" />
-              Top Up
+              <span className="hidden sm:inline">Top Up</span>
             </Button>
           </div>
         </div>

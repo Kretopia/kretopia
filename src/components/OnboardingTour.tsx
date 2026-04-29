@@ -28,7 +28,7 @@ const tourSteps: TourStep[] = [
   },
   {
     title: "Discover & Browse",
-    description: "Search for creators, events, gigs, and opportunities. Use Explore mode to discover what's happening in the creative world.",
+    description: "Search for creators, events, gigs, and opportunities — all from one place.",
     icon: <Search className="h-8 w-8 text-primary" />,
     action: "Next",
   },

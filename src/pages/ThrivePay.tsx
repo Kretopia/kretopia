@@ -296,28 +296,10 @@ export default function ThrivePay() {
             <p className="text-sm text-muted-foreground">Invoices, expenses, earnings & payouts — one place.</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {/* Snap Receipt — primary daily-driver action for creatives (no spreadsheets, just snap) */}
-            <Button
-              size="sm"
-              variant="default"
-              className="gap-1.5 h-9 px-3"
-              onClick={() => {
-                setActiveTab("earnings");
-                setTimeout(
-                  () => window.dispatchEvent(new CustomEvent("thrivepay:add-expense", { detail: { scan: true } })),
-                  80
-                );
-              }}
-              aria-label="Snap a receipt"
-            >
-              <Camera className="h-4 w-4" />
-              <span className="hidden sm:inline">Snap</span>
-            </Button>
-
-            {/* Secondary "more" menu — Invoice / Quote / manual Expense */}
+            {/* Compact "more" menu — Invoice / Quote / Log Expense / Send */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline" className="h-9 w-9 p-0" aria-label="More create options">
+                <Button size="sm" variant="outline" className="h-9 w-9 p-0" aria-label="More actions">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -357,13 +339,14 @@ export default function ThrivePay() {
                   <Receipt className="h-4 w-4 mr-2 text-primary" />
                   Log Expense
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setTransferDialogOpen(true)}>
+                  <Send className="h-4 w-4 mr-2 text-primary" />
+                  Send Money
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button size="sm" variant="outline" className="gap-1.5 h-9 px-3" onClick={() => setTransferDialogOpen(true)}>
-              <Send className="h-4 w-4" />
-              <span className="hidden sm:inline">Send</span>
-            </Button>
             <Button size="sm" variant="lime" className="gap-1.5 h-9 px-3" onClick={() => setTopUpDialogOpen(true)}>
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Top Up</span>

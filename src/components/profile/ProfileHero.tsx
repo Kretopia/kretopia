@@ -398,10 +398,7 @@ export const ProfileHero = ({
                 <span className={cn("text-xs font-bold tracking-wide uppercase truncate", statusResult.color)}>{statusResult.label}</span>
                 {profile.badge && (
                   <Badge variant="secondary" className="h-4 text-[9px] px-1.5 shrink-0">
-                    {profile.badge === 'founder' ? '👑 Founder' :
-                     profile.badge === 'og' ? 'OG' :
-                     profile.badge === 'odos' ? '🌿 ODOS' :
-                     profile.badge === 'official' ? '✓ Official' : 'Beta'}
+                    {badgeLabel(profile.badge)}
                   </Badge>
                 )}
               </div>

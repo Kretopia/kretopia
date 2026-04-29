@@ -18,6 +18,7 @@ import { FeedbackTab } from "@/components/admin/FeedbackTab";
 import { DripCampaignTab } from "@/components/admin/DripCampaignTab";
 import { FounderGrantTab } from "@/components/admin/FounderGrantTab";
 import { BankTransfersTab } from "@/components/admin/BankTransfersTab";
+import { BounceRateTab } from "@/components/admin/BounceRateTab";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 

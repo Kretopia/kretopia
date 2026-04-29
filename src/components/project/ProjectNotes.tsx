@@ -248,9 +248,9 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
                   size="sm"
                   variant="outline"
                   className="gap-1.5"
-                  onClick={() => handleNew({ title: "Project Brief", content: BRIEF_TEMPLATE })}
+                  onClick={() => navigateDeskTab("brief")}
                 >
-                  <Sparkles className="h-3.5 w-3.5" /> Start with brief
+                  <Sparkles className="h-3.5 w-3.5" /> Start with Smart Brief
                 </Button>
               </div>
             )}

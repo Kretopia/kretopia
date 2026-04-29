@@ -12,6 +12,7 @@ import { Plus, Receipt, Sparkles, Loader2, Camera, ScanLine } from "lucide-react
 import { toast } from "sonner";
 import { EXPENSE_CATEGORIES } from "./ExpenseCategories";
 import { useFeatureGate } from "@/hooks/useFeatureGate";
+import { recordMoneyAction } from "@/lib/moneyStreak";
 
 interface ExpenseFormProps {
   projectId?: string;
@@ -91,6 +92,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
           : prev.notes),
       }));
 
+      recordMoneyAction("receipt_scanned");
       toast.success("Receipt scanned! Review the details below.");
     } catch (err: any) {
       toast.error(err.message || "Failed to scan receipt");
@@ -144,6 +146,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
         payment_method: form.payment_method,
       });
       if (error) throw error;
+      recordMoneyAction("expense_added");
       toast.success("Expense added");
       setOpen(false);
       setForm({

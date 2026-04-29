@@ -245,10 +245,7 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
     try {
       const { data: userRes } = await supabase.auth.getUser();
       const submittedBy = userRes?.user?.id ?? null;
-      const sourceTag = tab === "type" ? "typed"
-        : tab === "doc" ? "document"
-        : tab === "sheet" ? "sheet"
-        : "voice";
+      const sourceTag = tab === "doc" ? "document" : tab === "sheet" ? "sheet" : "smart";
 
       const rows = valid.map((d, i) => {
         // Merge legacy reference_url into the moodboard so nothing gets lost

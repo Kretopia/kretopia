@@ -73,7 +73,7 @@ async function blobToBase64(blob: Blob): Promise<string> {
 
 export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) => {
   const { toast } = useToast();
-  const [tab, setTab] = useState<"type" | "doc" | "sheet" | "voice">("type");
+  const [tab, setTab] = useState<"smart" | "type" | "doc" | "sheet" | "voice">("smart");
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<DraftDeliverable[]>([]);

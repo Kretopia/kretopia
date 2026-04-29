@@ -42,6 +42,13 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     payment_method: "card",
   });
 
+  // Listen for global "open expense" event (from ThrivePay quick-add menu)
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("thrivepay:add-expense", handler);
+    return () => window.removeEventListener("thrivepay:add-expense", handler);
+  }, []);
+
   const handleScanReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;

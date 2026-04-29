@@ -18,6 +18,7 @@ import {
   googleSheetCsvUrl,
   type ParsedDeliverable,
 } from "@/lib/csvBriefParser";
+import { SmartBriefBuilder } from "./SmartBriefBuilder";
 
 interface BriefHubProps {
   projectId: string;
@@ -72,7 +73,7 @@ async function blobToBase64(blob: Blob): Promise<string> {
 
 export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) => {
   const { toast } = useToast();
-  const [tab, setTab] = useState<"type" | "doc" | "sheet" | "voice">("type");
+  const [tab, setTab] = useState<"smart" | "type" | "doc" | "sheet" | "voice">("smart");
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<DraftDeliverable[]>([]);
@@ -313,12 +314,21 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
           </div>
 
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-            <TabsList className="grid grid-cols-4 w-full">
+            <TabsList className="grid grid-cols-5 w-full">
+              <TabsTrigger value="smart" className="gap-1.5"><Sparkles className="h-3.5 w-3.5" /><span className="hidden sm:inline">Smart</span></TabsTrigger>
               <TabsTrigger value="type" className="gap-1.5"><PenLine className="h-3.5 w-3.5" /><span className="hidden sm:inline">Type</span></TabsTrigger>
               <TabsTrigger value="doc" className="gap-1.5"><Upload className="h-3.5 w-3.5" /><span className="hidden sm:inline">Doc</span></TabsTrigger>
               <TabsTrigger value="sheet" className="gap-1.5"><SheetIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Sheet</span></TabsTrigger>
               <TabsTrigger value="voice" className="gap-1.5"><Mic className="h-3.5 w-3.5" /><span className="hidden sm:inline">Voice</span></TabsTrigger>
             </TabsList>
+
+            <TabsContent value="smart" className="pt-4">
+              <SmartBriefBuilder
+                projectId={projectId}
+                projectTitle={projectTitle}
+                onSent={onCreated}
+              />
+            </TabsContent>
 
             <TabsContent value="type" className="space-y-3 pt-4">
               <Textarea

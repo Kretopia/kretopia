@@ -1,0 +1,412 @@
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  PenLine, Upload, Sheet as SheetIcon, Mic, Loader2,
+  FileCheck2, Trash2, Plus, Sparkles, Square, Calendar as CalendarIcon,
+} from "lucide-react";
+
+interface BriefHubProps {
+  projectId: string;
+  projectTitle: string;
+  onCreated?: () => void;
+}
+
+interface DraftDeliverable {
+  id: string;
+  title: string;
+  description?: string;
+  due_date?: string | null;
+  reference_url?: string | null;
+  notes?: string | null;
+}
+
+const newId = () => Math.random().toString(36).slice(2, 10);
+
+async function fileToBase64(file: File): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const r = String(reader.result || "");
+      resolve(r.includes(",") ? r.split(",")[1] : r);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function blobToBase64(blob: Blob): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const r = String(reader.result || "");
+      resolve(r.includes(",") ? r.split(",")[1] : r);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) => {
+  const { toast } = useToast();
+  const [tab, setTab] = useState<"type" | "doc" | "sheet" | "voice">("type");
+  const [extracting, setExtracting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [drafts, setDrafts] = useState<DraftDeliverable[]>([]);
+
+  // type
+  const [text, setText] = useState("");
+  // sheet/csv
+  const [sheetUrl, setSheetUrl] = useState("");
+  const [csvText, setCsvText] = useState("");
+  // doc
+  const [docFile, setDocFile] = useState<File | null>(null);
+  // voice
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+
+  const callExtract = async (payload: Record<string, unknown>) => {
+    setExtracting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("extract-brief", {
+        body: { project_title: projectTitle, ...payload },
+      });
+      if (error) throw error;
+      const list = (data?.deliverables ?? []) as Array<Omit<DraftDeliverable, "id">>;
+      if (!list.length) {
+        toast({ title: "Nothing to import", description: "We couldn't find any deliverables.", variant: "destructive" });
+        return;
+      }
+      setDrafts(list.map((d) => ({ ...d, id: newId() })));
+      toast({ title: `Found ${list.length} deliverables`, description: "Review, edit, then save to your board." });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Extraction failed";
+      toast({ title: "Couldn't read brief", description: msg, variant: "destructive" });
+    } finally {
+      setExtracting(false);
+    }
+  };
+
+  const handleType = () => {
+    if (!text.trim()) return;
+    callExtract({ source: "text", text });
+  };
+
+  const handleSheet = () => {
+    if (!sheetUrl.trim()) return;
+    callExtract({ source: "sheet", url: sheetUrl.trim() });
+  };
+
+  const handleCsvText = () => {
+    if (!csvText.trim()) return;
+    callExtract({ source: "csv", csv: csvText });
+  };
+
+  const handleCsvFile = async (file: File) => {
+    const txt = await file.text();
+    setCsvText(txt);
+    callExtract({ source: "csv", csv: txt });
+  };
+
+  const handleDoc = async () => {
+    if (!docFile) return;
+    const b64 = await fileToBase64(docFile);
+    callExtract({ source: "doc", data_base64: b64, mime_type: docFile.type || "application/pdf" });
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      chunksRef.current = [];
+      mr.ondataavailable = (e) => chunksRef.current.push(e.data);
+      mr.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        setVoiceBlob(blob);
+        stream.getTracks().forEach((t) => t.stop());
+      };
+      mr.start();
+      mediaRecorderRef.current = mr;
+      setRecording(true);
+    } catch {
+      toast({ title: "Microphone blocked", description: "Allow mic access to record a brief.", variant: "destructive" });
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setRecording(false);
+  };
+
+  const handleVoice = async () => {
+    if (!voiceBlob) return;
+    const b64 = await blobToBase64(voiceBlob);
+    callExtract({ source: "audio", data_base64: b64, mime_type: "audio/webm" });
+  };
+
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+      }
+    };
+  }, []);
+
+  const updateDraft = (id: string, patch: Partial<DraftDeliverable>) => {
+    setDrafts((prev) => prev.map((d) => (d.id === id ? { ...d, ...patch } : d)));
+  };
+  const removeDraft = (id: string) => setDrafts((prev) => prev.filter((d) => d.id !== id));
+  const addBlankDraft = () =>
+    setDrafts((prev) => [...prev, { id: newId(), title: "", description: "" }]);
+
+  const saveAll = async () => {
+    const valid = drafts.filter((d) => d.title.trim().length > 0);
+    if (!valid.length) {
+      toast({ title: "Add at least one deliverable", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const submittedBy = userRes?.user?.id ?? null;
+      const sourceTag = tab === "type" ? "typed"
+        : tab === "doc" ? "document"
+        : tab === "sheet" ? "sheet"
+        : "voice";
+
+      const rows = valid.map((d, i) => ({
+        project_id: projectId,
+        title: d.title.trim().slice(0, 200),
+        description: [d.description, d.notes, d.reference_url].filter(Boolean).join("\n\n") || null,
+        status: "pending",
+        version: 1,
+        source: sourceTag,
+        sort_order: i,
+        due_date: d.due_date || null,
+        submitted_by: submittedBy,
+      }));
+
+      const { error } = await supabase.from("project_deliverables").insert(rows);
+      if (error) throw error;
+
+      toast({ title: `Added ${rows.length} deliverables`, description: "Open the Board tab to drag, assign and approve." });
+      setDrafts([]);
+      setText("");
+      setSheetUrl("");
+      setCsvText("");
+      setDocFile(null);
+      setVoiceBlob(null);
+      onCreated?.();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Save failed";
+      toast({ title: "Couldn't save deliverables", description: msg, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Add a Brief</h3>
+              <p className="text-sm text-muted-foreground">
+                Bring whatever you have — type it, drop a doc, paste a Sheet, or record it.
+                We'll turn it into deliverables on your board.
+              </p>
+            </div>
+          </div>
+
+          <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="type" className="gap-1.5"><PenLine className="h-3.5 w-3.5" /><span className="hidden sm:inline">Type</span></TabsTrigger>
+              <TabsTrigger value="doc" className="gap-1.5"><Upload className="h-3.5 w-3.5" /><span className="hidden sm:inline">Doc</span></TabsTrigger>
+              <TabsTrigger value="sheet" className="gap-1.5"><SheetIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Sheet</span></TabsTrigger>
+              <TabsTrigger value="voice" className="gap-1.5"><Mic className="h-3.5 w-3.5" /><span className="hidden sm:inline">Voice</span></TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="type" className="space-y-3 pt-4">
+              <Textarea
+                placeholder="Describe the project and deliverables. e.g. '5 IG carousel posts for our Spring drop, brand colors navy + gold, deadline May 15'"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                rows={6}
+                maxLength={5000}
+              />
+              <Button onClick={handleType} disabled={extracting || !text.trim()} className="w-full">
+                {extracting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                Build deliverables
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="doc" className="space-y-3 pt-4">
+              <Input
+                type="file"
+                accept="application/pdf,image/*,.docx"
+                onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
+              />
+              {docFile && <p className="text-xs text-muted-foreground">Selected: {docFile.name}</p>}
+              <p className="text-xs text-muted-foreground">PDF, image, or screenshot of the brief works best.</p>
+              <Button onClick={handleDoc} disabled={extracting || !docFile} className="w-full">
+                {extracting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileCheck2 className="h-4 w-4 mr-2" />}
+                Extract deliverables
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="sheet" className="space-y-3 pt-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium">Public Google Sheet URL</label>
+                <Input
+                  placeholder="https://docs.google.com/spreadsheets/d/..."
+                  value={sheetUrl}
+                  onChange={(e) => setSheetUrl(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Tip: Share &rarr; "Anyone with the link — Viewer". One row = one deliverable.
+                </p>
+                <Button onClick={handleSheet} disabled={extracting || !sheetUrl.trim()} className="w-full">
+                  {extracting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <SheetIcon className="h-4 w-4 mr-2" />}
+                  Import from Sheet
+                </Button>
+              </div>
+
+              <div className="relative my-3">
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">or upload CSV</span>
+                </div>
+              </div>
+
+              <Input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleCsvFile(f);
+                }}
+              />
+              <Textarea
+                placeholder="…or paste CSV / TSV rows here"
+                value={csvText}
+                onChange={(e) => setCsvText(e.target.value)}
+                rows={4}
+              />
+              {csvText && (
+                <Button onClick={handleCsvText} disabled={extracting} variant="outline" className="w-full">
+                  {extracting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Import pasted rows
+                </Button>
+              )}
+            </TabsContent>
+
+            <TabsContent value="voice" className="space-y-3 pt-4">
+              <div className="flex flex-col items-center justify-center gap-3 p-6 border-2 border-dashed rounded-lg">
+                {!recording ? (
+                  <Button onClick={startRecording} variant="outline" size="lg" className="gap-2">
+                    <Mic className="h-5 w-5" /> Start recording
+                  </Button>
+                ) : (
+                  <Button onClick={stopRecording} variant="destructive" size="lg" className="gap-2">
+                    <Square className="h-5 w-5" /> Stop
+                  </Button>
+                )}
+                {voiceBlob && !recording && (
+                  <>
+                    <audio controls src={URL.createObjectURL(voiceBlob)} className="w-full" />
+                    <Button onClick={handleVoice} disabled={extracting} className="w-full">
+                      {extracting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                      Build deliverables from this recording
+                    </Button>
+                  </>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Speak naturally: what you need, how many, deadlines.
+              </p>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {drafts.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="font-semibold">Review & save</h3>
+                <p className="text-xs text-muted-foreground">Edit anything, then add them all to your board.</p>
+              </div>
+              <Badge variant="secondary">{drafts.length} items</Badge>
+            </div>
+
+            <ScrollArea className="max-h-[420px] pr-2">
+              <div className="space-y-3">
+                {drafts.map((d, i) => (
+                  <div key={d.id} className="p-3 rounded-lg border bg-card space-y-2">
+                    <div className="flex items-start gap-2">
+                      <span className="text-xs font-mono text-muted-foreground mt-2 w-6">#{i + 1}</span>
+                      <div className="flex-1 space-y-2">
+                        <Input
+                          placeholder="Deliverable title"
+                          value={d.title}
+                          onChange={(e) => updateDraft(d.id, { title: e.target.value })}
+                          maxLength={200}
+                        />
+                        <Textarea
+                          placeholder="Description / notes"
+                          value={d.description ?? ""}
+                          onChange={(e) => updateDraft(d.id, { description: e.target.value })}
+                          rows={2}
+                        />
+                        <div className="flex items-center gap-2">
+                          <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            type="date"
+                            value={d.due_date ?? ""}
+                            onChange={(e) => updateDraft(d.id, { due_date: e.target.value || null })}
+                            className="h-8 text-xs w-auto"
+                          />
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={() => removeDraft(d.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" size="sm" onClick={addBlankDraft} className="gap-1">
+                <Plus className="h-3.5 w-3.5" /> Add row
+              </Button>
+              <div className="flex-1" />
+              <Button variant="ghost" size="sm" onClick={() => setDrafts([])}>Discard</Button>
+              <Button size="sm" onClick={saveAll} disabled={saving}>
+                {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                Save to board
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
+export default BriefHub;

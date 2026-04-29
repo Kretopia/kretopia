@@ -476,8 +476,54 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
                   )}
                 </div>
 
-                {/* Submitted work (WIP) */}
-                {(selected.file_url || selected.thumbnail_url) && (
+                {/* Submitted work — renders every file the creative attached */}
+                {(selected.submission_files?.length ?? 0) > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                      Submitted work ({selected.submission_files!.length})
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {selected.submission_files!.map((s, idx) => (
+                        <div key={idx} className="relative group rounded-lg border overflow-hidden bg-muted">
+                          {s.kind === "image" ? (
+                            <a href={s.url} target="_blank" rel="noreferrer" className="block aspect-square">
+                              <img src={s.thumbnail_url || s.url} alt={s.name} loading="lazy" className="h-full w-full object-cover" />
+                            </a>
+                          ) : s.kind === "video" ? (
+                            <video src={s.url} controls preload="metadata" className="w-full aspect-square object-cover bg-black" />
+                          ) : s.kind === "audio" ? (
+                            <div className="aspect-square flex flex-col items-center justify-center p-2 gap-2">
+                              <Music className="h-6 w-6 text-muted-foreground" />
+                              <audio src={s.url} controls className="w-full" />
+                            </div>
+                          ) : (
+                            <a href={s.url} target="_blank" rel="noreferrer" className="aspect-square flex flex-col items-center justify-center p-3 text-center gap-1.5 hover:bg-accent">
+                              <FileKindIcon kind={s.kind} />
+                              <span className="text-[10px] text-muted-foreground line-clamp-2 break-all">{s.name}</span>
+                              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                            </a>
+                          )}
+                          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent text-white text-[10px] px-1.5 py-1 truncate">
+                            {s.name}
+                          </div>
+                          {selected.status !== "approved" && (
+                            <button
+                              onClick={() => removeSubmission(idx)}
+                              className="absolute top-1 right-1 h-5 w-5 rounded-full bg-background/90 border opacity-0 group-hover:opacity-100 transition flex items-center justify-center"
+                              aria-label="Remove file"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Legacy single submitted file (back-compat for old rows) */}
+                {(selected.submission_files?.length ?? 0) === 0 && (selected.file_url || selected.thumbnail_url) && (
                   <div>
                     <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />

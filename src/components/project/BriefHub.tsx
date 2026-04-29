@@ -349,6 +349,10 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
             </TabsContent>
 
             <TabsContent value="sheet" className="space-y-3 pt-4">
+              <div className="flex items-start gap-2 px-2.5 py-2 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[11px] font-medium">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>Imported exactly as you wrote it — no AI rewriting. Every cell, link, and date is preserved.</span>
+              </div>
               <div className="space-y-2">
                 <label className="text-xs font-medium">Public Google Sheet URL</label>
                 <Input

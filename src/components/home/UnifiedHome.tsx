@@ -21,6 +21,7 @@ import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import heroCreators from "@/assets/hero-creators.jpg";
 
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
+import { CreatorDashboardSection } from "@/components/landing/CreatorDashboardSection";
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
 // StickyMobileCTA removed — dismissible popup handles guest CTA
@@ -592,6 +593,8 @@ export const UnifiedHome = () => {
 
 
         {!user && <WhyCreatorsChooseSection />}
+
+        {!user && <CreatorDashboardSection />}
 
         {!user && <SocialProofSection />}
 

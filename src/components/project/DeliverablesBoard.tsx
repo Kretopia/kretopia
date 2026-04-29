@@ -630,36 +630,71 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
                   </div>
                 </div>
 
-                {/* WIP upload (creative side) */}
+                {/* WIP upload (creative side) — supports any format, multiple files, OR a whole folder */}
                 {selected.status !== "approved" && (
-                  <div className="rounded-lg border-2 border-dashed p-4 text-center space-y-2">
+                  <div
+                    className="rounded-lg border-2 border-dashed p-4 text-center space-y-3"
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={(e) => {
+                      e.preventDefault(); e.stopPropagation();
+                      if (e.dataTransfer.files?.length) uploadWipFiles(e.dataTransfer.files);
+                    }}
+                  >
                     <p className="text-xs font-semibold flex items-center justify-center gap-1.5">
                       <Upload className="h-3.5 w-3.5" />
-                      Upload work for review
+                      Submit work for review
                     </p>
                     <p className="text-[11px] text-muted-foreground">
-                      Drop the deliverable here. It moves the card to <strong>Submitted</strong> and pings the client to approve.
+                      Drop images, video, audio, PDFs, or project files. One file or a whole folder — your call.
+                      Moves the card to <strong>Submitted</strong> so the client can approve.
                     </p>
+
                     <input
                       ref={wipInputRef}
                       type="file"
-                      accept="image/*,application/pdf,video/*"
+                      multiple
                       className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) uploadWip(f);
-                      }}
+                      onChange={(e) => { if (e.target.files?.length) uploadWipFiles(e.target.files); }}
                     />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => wipInputRef.current?.click()}
-                      disabled={uploading}
-                      className="gap-1.5"
-                    >
-                      {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                      {uploading ? "Uploading…" : "Choose file"}
-                    </Button>
+                    <input
+                      ref={folderInputRef}
+                      type="file"
+                      multiple
+                      // @ts-expect-error non-standard but widely supported
+                      webkitdirectory=""
+                      directory=""
+                      className="hidden"
+                      onChange={(e) => { if (e.target.files?.length) uploadWipFiles(e.target.files); }}
+                    />
+
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => wipInputRef.current?.click()}
+                        disabled={uploading}
+                        className="gap-1.5"
+                      >
+                        {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        {uploading ? "Uploading…" : "Choose files"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => folderInputRef.current?.click()}
+                        disabled={uploading}
+                        className="gap-1.5"
+                      >
+                        <FolderUp className="h-3.5 w-3.5" />
+                        Upload folder
+                      </Button>
+                    </div>
+
+                    {uploadProgress && (
+                      <p className="text-[11px] text-muted-foreground">
+                        Uploading {uploadProgress.done} / {uploadProgress.total}…
+                      </p>
+                    )}
                   </div>
                 )}
 

@@ -204,10 +204,10 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleNew({ title: "Project Brief", content: BRIEF_TEMPLATE })}
+            onClick={() => navigateDeskTab("brief")}
             className="w-full mb-2 gap-1.5"
           >
-            <Sparkles className="h-3.5 w-3.5" /> Brief template
+            <Sparkles className="h-3.5 w-3.5" /> Smart Brief
           </Button>
 
           <div className="flex-1 overflow-y-auto space-y-2">

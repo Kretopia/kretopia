@@ -124,14 +124,16 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
   const [reviewNote, setReviewNote] = useState("");
   const [updating, setUpdating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null);
   const [newRefUrl, setNewRefUrl] = useState("");
   const wipInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("project_deliverables")
-      .select("id,project_id,title,description,status,due_date,source,sort_order,created_at,submitted_by,reviewed_by,review_note,file_url,thumbnail_url,moodboard")
+      .select("id,project_id,title,description,status,due_date,source,sort_order,created_at,submitted_by,reviewed_by,review_note,file_url,thumbnail_url,moodboard,kind,submission_files")
       .eq("project_id", projectId)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true });
@@ -141,6 +143,9 @@ export const DeliverablesBoard = ({ projectId, currentUserId, onEmpty }: Deliver
       const rows = (data ?? []).map((r) => ({
         ...r,
         moodboard: Array.isArray(r.moodboard) ? (r.moodboard as unknown as MoodboardItem[]) : [],
+        submission_files: Array.isArray((r as { submission_files?: unknown }).submission_files)
+          ? ((r as { submission_files: unknown }).submission_files as unknown as SubmissionFile[])
+          : [],
       })) as Deliverable[];
       setItems(rows);
       if (!rows.length) onEmpty?.();

@@ -336,6 +336,10 @@ export default function Admin() {
           <BankTransfersTab />
         </TabsContent>
 
+        <TabsContent value="analytics" className="mt-4 sm:mt-6">
+          <BounceRateTab />
+        </TabsContent>
+
         <TabsContent value="system" className="mt-4 sm:mt-6">
           <div className="space-y-6">
             {/* ODOS Import Card */}

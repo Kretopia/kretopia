@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { badgeLabel } from "@/lib/badgeLabel";
 import { Building2, MapPin, Users, Star, Award, Gift, Globe, Briefcase, Edit, Share2, QrCode, MessageCircle, CreditCard, Settings, ChevronRight, ExternalLink, Calendar, Clock, Crown, Image as ImageIcon, UserPlus, TrendingUp, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

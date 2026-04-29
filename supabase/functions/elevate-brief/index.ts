@@ -102,7 +102,8 @@ Rules:
 - Be concrete and creative. Add VALUE — don't just rephrase the rough input.
 - Use research_notes to surface things the founder might not have thought of (e.g. "Consider 9:16 cuts for Reels", "Spring drops typically peak engagement Tue/Thu 7pm").
 - For assignee suggestions: match the task to the role. If only one collaborator exists, assign most tasks to them.
-- Tasks should be 4-10 items max. Don't over-engineer.
+- ALWAYS produce AT LEAST 2 deliverables and 4-10 tasks. NEVER return a single task — break the work into the concrete steps a collaborator needs to execute it (e.g. research, draft, design, review, schedule, publish).
+- Each task should be one clear action under 80 chars, with 1-2 sentences of context in description.
 - Return ONLY the JSON object, no prose, no markdown fences.`;
 };
 

@@ -73,7 +73,7 @@ async function blobToBase64(blob: Blob): Promise<string> {
 
 export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) => {
   const { toast } = useToast();
-  const [tab, setTab] = useState<"smart" | "type" | "doc" | "sheet" | "voice">("smart");
+  const [tab, setTab] = useState<"smart" | "doc" | "sheet">("smart");
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [drafts, setDrafts] = useState<DraftDeliverable[]>([]);
@@ -245,10 +245,7 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
     try {
       const { data: userRes } = await supabase.auth.getUser();
       const submittedBy = userRes?.user?.id ?? null;
-      const sourceTag = tab === "type" ? "typed"
-        : tab === "doc" ? "document"
-        : tab === "sheet" ? "sheet"
-        : "voice";
+      const sourceTag = tab === "doc" ? "document" : tab === "sheet" ? "sheet" : "smart";
 
       const rows = valid.map((d, i) => {
         // Merge legacy reference_url into the moodboard so nothing gets lost
@@ -314,12 +311,10 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
           </div>
 
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-            <TabsList className="grid grid-cols-5 w-full">
-              <TabsTrigger value="smart" className="gap-1.5"><Sparkles className="h-3.5 w-3.5" /><span className="hidden sm:inline">Smart</span></TabsTrigger>
-              <TabsTrigger value="type" className="gap-1.5"><PenLine className="h-3.5 w-3.5" /><span className="hidden sm:inline">Type</span></TabsTrigger>
-              <TabsTrigger value="doc" className="gap-1.5"><Upload className="h-3.5 w-3.5" /><span className="hidden sm:inline">Doc</span></TabsTrigger>
-              <TabsTrigger value="sheet" className="gap-1.5"><SheetIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Sheet</span></TabsTrigger>
-              <TabsTrigger value="voice" className="gap-1.5"><Mic className="h-3.5 w-3.5" /><span className="hidden sm:inline">Voice</span></TabsTrigger>
+            <TabsList className="grid grid-cols-3 w-full">
+              <TabsTrigger value="smart" className="gap-1.5"><Sparkles className="h-3.5 w-3.5" />Smart</TabsTrigger>
+              <TabsTrigger value="doc" className="gap-1.5"><Upload className="h-3.5 w-3.5" />Doc</TabsTrigger>
+              <TabsTrigger value="sheet" className="gap-1.5"><SheetIcon className="h-3.5 w-3.5" />Sheet</TabsTrigger>
             </TabsList>
 
             <TabsContent value="smart" className="pt-4">
@@ -328,20 +323,6 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
                 projectTitle={projectTitle}
                 onSent={onCreated}
               />
-            </TabsContent>
-
-            <TabsContent value="type" className="space-y-3 pt-4">
-              <Textarea
-                placeholder="Describe the project and deliverables. e.g. '5 IG carousel posts for our Spring drop, brand colors navy + gold, deadline May 15'"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                rows={6}
-                maxLength={5000}
-              />
-              <Button onClick={handleType} disabled={extracting || !text.trim()} className="w-full">
-                {extracting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                Build deliverables
-              </Button>
             </TabsContent>
 
             <TabsContent value="doc" className="space-y-3 pt-4">
@@ -406,32 +387,6 @@ export const BriefHub = ({ projectId, projectTitle, onCreated }: BriefHubProps) 
                   Import pasted rows
                 </Button>
               )}
-            </TabsContent>
-
-            <TabsContent value="voice" className="space-y-3 pt-4">
-              <div className="flex flex-col items-center justify-center gap-3 p-6 border-2 border-dashed rounded-lg">
-                {!recording ? (
-                  <Button onClick={startRecording} variant="outline" size="lg" className="gap-2">
-                    <Mic className="h-5 w-5" /> Start recording
-                  </Button>
-                ) : (
-                  <Button onClick={stopRecording} variant="destructive" size="lg" className="gap-2">
-                    <Square className="h-5 w-5" /> Stop
-                  </Button>
-                )}
-                {voiceBlob && !recording && (
-                  <>
-                    <audio controls src={URL.createObjectURL(voiceBlob)} className="w-full" />
-                    <Button onClick={handleVoice} disabled={extracting} className="w-full">
-                      {extracting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                      Build deliverables from this recording
-                    </Button>
-                  </>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground text-center">
-                Speak naturally: what you need, how many, deadlines.
-              </p>
             </TabsContent>
           </Tabs>
         </CardContent>

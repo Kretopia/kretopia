@@ -40,9 +40,10 @@ export function MoneyBrief({ variant = "hero", className }: Props) {
     const range = { start: startOfMonth(new Date()), end: endOfMonth(new Date()) };
 
     const cols = "total_amount,amount,currency,status,paid_at,due_date,created_at,issued_by,recipient_user_id";
-    const sentP = supabase.from("invoices").select(cols).eq("issued_by", user.id).then((r) => r.data as any[] | null);
-    const recvP = supabase.from("invoices").select(cols).eq("recipient_user_id", user.id).then((r) => r.data as any[] | null);
-    const expP = supabase.from("expenses").select("amount,currency,date").eq("user_id", user.id).then((r) => r.data as any[] | null);
+    const sb: any = supabase;
+    const sentP = sb.from("invoices").select(cols).eq("issued_by", user.id).then((r: any) => r.data as any[] | null);
+    const recvP = sb.from("invoices").select(cols).eq("recipient_user_id", user.id).then((r: any) => r.data as any[] | null);
+    const expP = sb.from("expenses").select("amount,currency,date").eq("user_id", user.id).then((r: any) => r.data as any[] | null);
 
     Promise.all([sentP, recvP, expP])
       .then(([sentRaw, recvRaw, expRaw]) => {

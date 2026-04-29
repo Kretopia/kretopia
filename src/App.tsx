@@ -13,7 +13,7 @@ import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import QuickActionFab from "./components/QuickActionFab";
-import { ModeDiscoverySheet } from "./components/ModeDiscoverySheet";
+
 import { ModeThemeSync } from "./components/ModeThemeSync";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { InteractiveOnboarding } from "./components/onboarding/InteractiveOnboarding";
@@ -231,7 +231,7 @@ const AppContent = () => {
       {showNavbar && <Navbar user={user} />}
       {showBottomNav && <BottomNav />}
       {showBottomNav && <QuickActionFab />}
-      {user && !isPublicEPK && !isCreatorSite && !isAuthPage && !isOnboardingPage && !isDeckPage && <ModeDiscoverySheet />}
+      
       {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />

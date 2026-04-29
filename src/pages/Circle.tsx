@@ -151,13 +151,13 @@ export default function Circle() {
   return (
     <PageTransition>
     <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
-      <SEO title="Match - Find Your Creative Collaborators" description="Swipe to connect with creators" />
+      <SEO title="Match - Find Your Creative Collaborators" description="Tap to connect with creators who fit your craft" />
       
       <div className="container mx-auto px-3 sm:px-4 pt-2">
         <PageTip
           id="circle"
           title="Welcome to Match!"
-          message="Swipe right on creators you'd like to work with. When both of you swipe right, it's a match — and you can start messaging!"
+          message="Tap a creator to see their profile, then send a connect request. When they accept, you can start a conversation."
         />
       </div>
       

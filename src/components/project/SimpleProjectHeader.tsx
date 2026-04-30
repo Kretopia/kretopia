@@ -378,6 +378,16 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <VideoCallSheet
+        open={callOpen}
+        onOpenChange={setCallOpen}
+        projectName={project.title}
+        roomUrl={callRoomUrl}
+        token={callToken}
+        callId={callId}
+        userName={myName}
+      />
     </div>
   );
 };

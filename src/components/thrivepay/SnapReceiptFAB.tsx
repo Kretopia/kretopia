@@ -240,7 +240,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     }
   };
 
-  const processReceiptFile = async (file: File) => {
+  const processReceiptImage = async (image: ReceiptImageInput) => {
     if (!user) {
       addDebug("Scan stopped: no signed-in user", "The image was selected, but there is no active user session for saving expenses.", "error");
       toast.error("Sign in again before scanning receipts.");
@@ -249,9 +249,9 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
 
     setPickerOpen(false);
     setDebugOpen(false);
-    addDebug("Image received", `${file.name || "camera-photo"} • ${file.type || "unknown type"} • ${(file.size / 1024).toFixed(1)} KB`);
+    addDebug("Image received", `${image.label} • image/jpeg • ${image.sizeKb ? `${image.sizeKb.toFixed(1)} KB` : "ready"}`);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(URL.createObjectURL(file));
+    setPreviewUrl(image.previewUrl);
     setScanned(null);
     setScanError(null);
     setForm(emptyReceiptForm());
@@ -259,12 +259,10 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     setScanning(true);
     toast.loading("Reading your receipt…", { id: "snap-receipt" });
     try {
-      addDebug("Compressing image for scanner");
-      const base64 = await compressImage(file);
-      addDebug("Image compressed", `Base64 payload length: ${base64.length.toLocaleString()} characters`);
+      addDebug("Image ready for scanner", `Base64 payload length: ${image.base64.length.toLocaleString()} characters`);
       addDebug("Calling receipt scanner function");
       const { data, error } = await supabase.functions
-        .invoke("scan-receipt", { body: { image_base64: base64 } })
+        .invoke("scan-receipt", { body: { image_base64: image.base64 } })
         .catch((err) => {
           addDebug("Receipt scanner request failed", formatErrorDetail(err), "error");
           return { data: null, error: err };
@@ -303,6 +301,27 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       setScanning(false);
       if (cameraRef.current) cameraRef.current.value = "";
       if (uploadRef.current) uploadRef.current.value = "";
+    }
+  };
+
+  const processReceiptFile = async (file: File) => {
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      addDebug("Compressing image for scanner");
+      const base64 = await compressImage(file);
+      await processReceiptImage({
+        base64,
+        previewUrl: objectUrl,
+        label: file.name || "receipt-image",
+        sizeKb: file.size / 1024,
+      });
+    } catch (err) {
+      URL.revokeObjectURL(objectUrl);
+      const message = err instanceof Error ? err.message : "Could not prepare the image";
+      setScanError(message);
+      setDebugOpen(true);
+      addDebug("Image preparation failed", formatErrorDetail(err), "error");
+      toast.error(message);
     }
   };
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,6 +105,16 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
       setStartingCall(false);
     }
   };
+
+  // Listen for global "start video call" event (e.g. from voice command)
+  useEffect(() => {
+    const onStart = () => {
+      if (!startingCall && !callOpen) handleStartCall();
+    };
+    window.addEventListener("thrivedesk:start-video-call", onStart);
+    return () => window.removeEventListener("thrivedesk:start-video-call", onStart);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startingCall, callOpen]);
 
   const getStatusColor = (status: string | null) => {
     switch (status) {

@@ -377,7 +377,7 @@ const CreatorWorkHome = () => {
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Speak it. We'll set the room up around you.
+            Built for creatives. Save time — use your voice.
             <span className="hidden md:inline"> · Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono ml-1">⌘K</kbd> to jump anywhere</span>
           </p>
         </div>

@@ -45,6 +45,13 @@ export function AccountingDashboard({ projectId }: AccountingDashboardProps) {
     if (user) fetchAccountingData();
   }, [user, projectId]);
 
+  // Refresh when SnapReceiptFAB adds a new expense
+  useEffect(() => {
+    const handler = () => { if (user) fetchAccountingData(); };
+    window.addEventListener("thrivepay:expense-added", handler);
+    return () => window.removeEventListener("thrivepay:expense-added", handler);
+  }, [user]);
+
   const fetchAccountingData = async () => {
     try {
       let invoiceQuery = supabase.from("invoices").select("*").eq("issued_by", user!.id).order("created_at", { ascending: false });

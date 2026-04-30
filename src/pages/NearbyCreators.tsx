@@ -73,14 +73,15 @@ const NearbyCreators = () => {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data } = await supabase.from('profiles').select('location_visible, location_precision, latitude, longitude').eq('user_id', user.id).single();
+      const { data } = await supabase.from('profiles').select('location_visible, location_precision, latitude, longitude, location').eq('user_id', user.id).single();
       if (data) {
         setLocationVisible(data.location_visible ?? true);
         setLocationPrecision((data.location_precision as LocationPrecision) ?? 'approximate');
         if (data.latitude && data.longitude) setUserLocation({ lat: data.latitude, lng: data.longitude });
+        if ((data as any).location) setCityName(String((data as any).location).split(',')[0].trim());
       }
     };
-    load();
+    load().catch(err => console.warn('[NearbyCreators] profile prefs load failed:', err));
   }, [user]);
 
   const detectLocation = useCallback(async () => {

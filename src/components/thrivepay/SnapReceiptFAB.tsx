@@ -73,8 +73,12 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
   const { user } = useAuth();
   const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const pendingPickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraStarting, setCameraStarting] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -130,10 +134,18 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     }, 15000);
   };
 
+  useEffect(() => {
+    if (cameraOpen && cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+      videoRef.current.play().catch((err) => addDebug("Camera preview failed to start", formatErrorDetail(err), "error"));
+    }
+  }, [cameraOpen, cameraStream]);
+
   useEffect(() => () => {
     clearPickerTimer();
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-  }, [previewUrl]);
+    cameraStream?.getTracks().forEach((track) => track.stop());
+  }, [previewUrl, cameraStream]);
 
   const compressImage = (f: File, maxWidth = 1200, quality = 0.7): Promise<string> =>
     new Promise((resolve, reject) => {

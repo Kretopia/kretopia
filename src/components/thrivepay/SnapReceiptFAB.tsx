@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Camera, Loader2, Check, X, Sparkles, ImagePlus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -75,8 +75,6 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
   const pendingPickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cameraInputId = useId();
-  const uploadInputId = useId();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -288,28 +286,6 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
 
   return (
     <>
-      {/* Camera input — opens device camera on mobile */}
-      <input
-        id={cameraInputId}
-        ref={cameraRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="sr-only"
-        onChange={handleFile}
-        disabled={scanning}
-      />
-      {/* Upload input — gallery / file picker (works for screenshots) */}
-      <input
-        id={uploadInputId}
-        ref={uploadRef}
-        type="file"
-        accept="image/*"
-        className="sr-only"
-        onChange={handleFile}
-        disabled={scanning}
-      />
-
       <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -334,36 +310,43 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
           sideOffset={8}
         >
           <div className="space-y-1">
-            <label
-              htmlFor={cameraInputId}
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                beginPicker("camera");
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
+            <div
+              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden"
             >
               <Camera className="h-4 w-4 text-primary shrink-0" />
               <div className="min-w-0">
                 <div className="text-sm font-medium">Take photo</div>
                 <div className="text-[11px] text-muted-foreground">Snap a paper receipt</div>
               </div>
-            </label>
-            <label
-              htmlFor={uploadInputId}
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                beginPicker("upload");
-              }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
+              <input
+                ref={cameraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                onClick={() => beginPicker("camera")}
+                onChange={handleFile}
+                disabled={scanning}
+              />
+            </div>
+            <div
+              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden"
             >
               <ImagePlus className="h-4 w-4 text-primary shrink-0" />
               <div className="min-w-0">
                 <div className="text-sm font-medium">Upload screenshot</div>
                 <div className="text-[11px] text-muted-foreground">From gallery or files</div>
               </div>
-            </label>
+              <input
+                ref={uploadRef}
+                type="file"
+                accept="image/*"
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                onClick={() => beginPicker("upload")}
+                onChange={handleFile}
+                disabled={scanning}
+              />
+            </div>
           </div>
         </PopoverContent>
       </Popover>

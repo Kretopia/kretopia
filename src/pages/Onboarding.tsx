@@ -520,6 +520,17 @@ export default function Onboarding() {
     }
   }, [phase, navigate]);
 
+  // Auto-focus the role selector when entering Review via the empty/timeout fallback
+  useEffect(() => {
+    if (phase === "review" && enteredEmpty) {
+      const t = setTimeout(() => {
+        const el = document.getElementById("review-role-trigger") as HTMLElement | null;
+        el?.focus();
+      }, 80);
+      return () => clearTimeout(t);
+    }
+  }, [phase, enteredEmpty]);
+
   const toggleCredit = (index: number) => {
     setSelectedCredits(prev => {
       const next = new Set(prev);

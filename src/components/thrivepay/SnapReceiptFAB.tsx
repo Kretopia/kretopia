@@ -214,8 +214,8 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             <button
               type="button"
               onClick={() => {
+                cameraRef.current?.click();
                 setPickerOpen(false);
-                requestAnimationFrame(() => cameraRef.current?.click());
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
             >
@@ -228,8 +228,8 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             <button
               type="button"
               onClick={() => {
+                uploadRef.current?.click();
                 setPickerOpen(false);
-                requestAnimationFrame(() => uploadRef.current?.click());
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
             >

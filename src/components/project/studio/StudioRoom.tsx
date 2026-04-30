@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { VibeHeader } from "./VibeHeader";
 import { BriefSection } from "./BriefSection";
 import { WorkSection } from "./WorkSection";
@@ -7,6 +7,7 @@ import { PeopleSection } from "./PeopleSection";
 import { AddCreditSection } from "./AddCreditSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useStudioPresence } from "@/hooks/useStudioPresence";
 
 interface StudioRoomProps {
   project: any;

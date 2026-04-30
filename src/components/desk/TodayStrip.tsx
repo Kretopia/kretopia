@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, DollarSign, MessageSquare, Mic, Calendar, Sparkles, ArrowRight } from "lucide-react";
+import { CheckCircle2, DollarSign, MessageSquare, Mic, Calendar, Sparkles, ArrowRight, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 interface TodayStripProps {
   onVoice: () => void;
   onCommandPalette?: () => void;
+  onWrapWeek?: () => void;
 }
 
 interface Stats {
@@ -26,7 +27,7 @@ interface Stats {
  *
  * Goal: zero-nav glance — what needs me right now?
  */
-export const TodayStrip = ({ onVoice, onCommandPalette }: TodayStripProps) => {
+export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStripProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats>({
@@ -137,6 +138,14 @@ export const TodayStrip = ({ onVoice, onCommandPalette }: TodayStripProps) => {
       value: "Today",
       tone: "muted",
       onClick: () => navigate("/calendar"),
+    },
+    {
+      key: "wrap",
+      icon: Wand2,
+      label: "Wrap week",
+      value: "1 tap",
+      tone: "primary",
+      onClick: () => onWrapWeek?.(),
     },
     {
       key: "cmdk",

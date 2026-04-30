@@ -60,7 +60,7 @@ export const StudioCardsGrid = ({
         </div>
         <h2 className="text-lg font-bold mb-1">Open your first room</h2>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-5">
-          Tell us what you're making — we'll set the room up around you.
+          Built for creatives. Tell us what you're making — voice or text. We'll set up the room.
         </p>
         <Button onClick={onNewProject} className="gap-2">
           <Mic className="h-4 w-4" />

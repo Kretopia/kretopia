@@ -19,6 +19,7 @@ import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
 import { TodayStrip } from "@/components/desk/TodayStrip";
 import { DeskCommandPalette } from "@/components/desk/DeskCommandPalette";
 import { VoiceCommandSheet } from "@/components/desk/VoiceCommandSheet";
+import { WrapMyWeekSheet } from "@/components/desk/WrapMyWeekSheet";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
@@ -62,6 +63,7 @@ const BrandWorkHome = () => {
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
+  const [wrapWeekOpen, setWrapWeekOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -163,6 +165,7 @@ const BrandWorkHome = () => {
         <TodayStrip
           onVoice={() => setVoiceCmdOpen(true)}
           onCommandPalette={() => setPaletteOpen(true)}
+          onWrapWeek={() => setWrapWeekOpen(true)}
         />
 
         <div className="grid grid-cols-4 gap-2">
@@ -291,6 +294,7 @@ const BrandWorkHome = () => {
         onVoiceCommand={() => setVoiceCmdOpen(true)}
       />
       <VoiceCommandSheet open={voiceCmdOpen} onOpenChange={setVoiceCmdOpen} />
+      <WrapMyWeekSheet open={wrapWeekOpen} onOpenChange={setWrapWeekOpen} />
     </PageTransition>
   );
 };
@@ -307,6 +311,7 @@ const CreatorWorkHome = () => {
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
+  const [wrapWeekOpen, setWrapWeekOpen] = useState(false);
 
   const fetchProjects = async () => {
     if (!user) return;
@@ -377,7 +382,7 @@ const CreatorWorkHome = () => {
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Speak it. We'll set the room up around you.
+            Built for creatives. Save time — use your voice.
             <span className="hidden md:inline"> · Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono ml-1">⌘K</kbd> to jump anywhere</span>
           </p>
         </div>
@@ -386,6 +391,7 @@ const CreatorWorkHome = () => {
         <TodayStrip
           onVoice={() => setVoiceCmdOpen(true)}
           onCommandPalette={() => setPaletteOpen(true)}
+          onWrapWeek={() => setWrapWeekOpen(true)}
         />
 
         {/* Pending invites */}
@@ -428,6 +434,7 @@ const CreatorWorkHome = () => {
         onVoiceCommand={() => setVoiceCmdOpen(true)}
       />
       <VoiceCommandSheet open={voiceCmdOpen} onOpenChange={setVoiceCmdOpen} />
+      <WrapMyWeekSheet open={wrapWeekOpen} onOpenChange={setWrapWeekOpen} />
     </PageTransition>
   );
 };

@@ -107,13 +107,23 @@ export const BriefSection = ({
           disabled={!isOwner}
           onClick={() => setEditing(true)}
           className={cn(
-            "w-full text-left rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground",
-            isOwner && "hover:border-primary hover:text-foreground transition-colors"
+            "w-full text-left rounded-2xl bg-card ring-1 ring-border p-4 flex items-start gap-3",
+            isOwner && "hover:ring-primary/40 transition-all"
           )}
         >
-          {isOwner
-            ? "Drop the vision here. Tone, references, who it's for…"
-            : "No brief yet."}
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Mic className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold leading-tight">
+              {isOwner ? "Speak the vision" : "No brief yet"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {isOwner
+                ? "Tap to type, or hold the mic on your room. Tone, references, who it's for."
+                : "The owner hasn't dropped the brief yet."}
+            </p>
+          </div>
         </button>
       )}
 

@@ -98,6 +98,20 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
           {isOnline ? <span className="text-success">Online</span> : (otherUser.role || '')}
         </p>
       </div>
+      {recipientId && (
+        <Button
+          type="button"
+          size="icon"
+          variant="default"
+          className="h-9 w-9 rounded-full"
+          onClick={handleStartCall}
+          disabled={starting}
+          aria-label={`Video call ${otherUser.name || 'user'}`}
+          title="Start video call"
+        >
+          {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+        </Button>
+      )}
       <Button variant="outline" size="sm" className="hidden sm:flex gap-2" onClick={onStartProject}>
         <Briefcase className="h-4 w-4" />
         Start Project
@@ -134,6 +148,17 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
           recipientName={otherUser.name || 'this user'}
         />
       )}
+      <VideoCallSheet
+        open={callOpen}
+        onOpenChange={setCallOpen}
+        projectName={`Call with ${otherUser.name || 'guest'}`}
+        roomUrl={callRoomUrl}
+        token={callToken}
+        callId={callId}
+        userName={myName}
+        directCallId={callId}
+        roomName={callRoomName}
+      />
     </div>
   );
 };

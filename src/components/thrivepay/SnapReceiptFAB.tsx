@@ -237,14 +237,20 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
   const handleAdd = async () => {
     if (!user) return;
     if (!form.amount || isNaN(parseFloat(form.amount))) {
+      addDebug("Save blocked", `Invalid amount: ${form.amount || "empty"}`, "error");
       toast.error("Enter an amount");
       return;
     }
     if (!form.title.trim()) {
+      addDebug("Save blocked", "Title is empty.", "error");
       toast.error("Add a title");
       return;
     }
     setSaving(true);
+    addDebug(
+      "Saving expense",
+      JSON.stringify({ project_id: projectId || null, title: form.title, amount: form.amount, currency: form.currency, category: form.category, vendor: form.vendor, date: form.date }, null, 2),
+    );
     try {
       const { error } = await supabase.from("expenses").insert({
         user_id: user.id,
@@ -262,6 +268,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       });
       if (error) throw error;
       recordMoneyAction("expense_added").catch(() => {});
+      addDebug("Expense saved", "The expense insert succeeded and the refresh event was sent.", "success");
       toast.success(`Added ${form.currency} ${form.amount} to expenses`);
       setReviewOpen(false);
       setPreviewUrl(null);
@@ -269,6 +276,8 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       // Tell any open expense lists to refresh
       window.dispatchEvent(new CustomEvent("thrivepay:expense-added"));
     } catch (err: any) {
+      setScanError(err?.message || "Couldn't save expense");
+      addDebug("Save failed", formatErrorDetail(err), "error");
       toast.error(err?.message || "Couldn't save expense");
     } finally {
       setSaving(false);

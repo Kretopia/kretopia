@@ -112,7 +112,8 @@ export function SnapReceiptFAB() {
       setPreviewUrl(null);
     } finally {
       setScanning(false);
-      if (inputRef.current) inputRef.current.value = "";
+      if (cameraRef.current) cameraRef.current.value = "";
+      if (uploadRef.current) uploadRef.current.value = "";
     }
   };
 

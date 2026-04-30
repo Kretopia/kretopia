@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,8 @@ const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY
 export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   const { user } = useAuth();
   const { guard: guardExpense } = useFeatureGate("expenses");
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categorizing, setCategorizing] = useState(false);
@@ -204,7 +206,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
         </DialogHeader>
         <div className="space-y-3">
           {/* Scan Receipt CTA */}
-          <label className={`flex items-center gap-3 p-3 rounded-lg border-2 border-dashed cursor-pointer transition-all ${scanning ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-primary/5"}`}>
+          <div className={`space-y-3 p-3 rounded-lg border-2 border-dashed transition-all ${scanning ? "border-primary bg-primary/5" : "border-border"}`}>
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               {scanning ? (
                 <Loader2 className="h-5 w-5 text-primary animate-spin" />
@@ -212,16 +214,38 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
                 <Camera className="h-5 w-5 text-primary" />
               )}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0">
               <p className="text-xs font-semibold">
-                {scanning ? "Scanning receipt..." : "Scan a Receipt or Bill"}
+                {scanning ? "Scanning receipt..." : "Scan or upload a receipt"}
               </p>
               <p className="text-[10px] text-muted-foreground">
-                {scanning ? "AI is extracting the details" : "Upload a photo and AI will fill everything in"}
+                {scanning ? "Reading the details for review" : "Take a photo or upload a payment screenshot"}
               </p>
             </div>
-            <ScanLine className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 text-xs"
+                onClick={() => cameraInputRef.current?.click()}
+                disabled={scanning}
+              >
+                <Camera className="h-3.5 w-3.5" /> Take photo
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 text-xs"
+                onClick={() => uploadInputRef.current?.click()}
+                disabled={scanning}
+              >
+                <ScanLine className="h-3.5 w-3.5" /> Upload
+              </Button>
+            </div>
             <input
+              ref={cameraInputRef}
               type="file"
               accept="image/*"
               capture="environment"
@@ -230,7 +254,15 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
               onChange={handleScanReceipt}
               disabled={scanning}
             />
-          </label>
+            <input
+              ref={uploadInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleScanReceipt}
+              disabled={scanning}
+            />
+          </div>
 
           <div className="relative flex items-center">
             <div className="flex-1 border-t border-border" />

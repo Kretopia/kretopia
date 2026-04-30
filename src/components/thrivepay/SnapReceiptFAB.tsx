@@ -1,10 +1,9 @@
 import { useRef, useState } from "react";
-import { Camera, Loader2, Check, X, Receipt, Sparkles, Upload, ImagePlus } from "lucide-react";
+import { Camera, Loader2, Check, X, Sparkles, ImagePlus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,7 +41,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
   const { user } = useAuth();
   const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
-  const inputRef = cameraRef; // back-compat alias
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -82,6 +81,8 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     if (!file || !user) return;
 
     setPreviewUrl(URL.createObjectURL(file));
+    setScanned(null);
+    setReviewOpen(true);
     setScanning(true);
     toast.loading("Reading your receipt…", { id: "snap-receipt" });
     try {
@@ -113,7 +114,6 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       toast.success("Got it — review and add.", { id: "snap-receipt" });
     } catch (err: any) {
       toast.error(err?.message || "Couldn't read that receipt", { id: "snap-receipt" });
-      setPreviewUrl(null);
     } finally {
       setScanning(false);
       if (cameraRef.current) cameraRef.current.value = "";
@@ -186,7 +186,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         disabled={scanning}
       />
 
-      <Popover>
+      <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
         <PopoverTrigger asChild>
           <Button
             type="button"
@@ -212,7 +212,10 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
           <div className="space-y-1">
             <button
               type="button"
-              onClick={() => cameraRef.current?.click()}
+              onClick={() => {
+                cameraRef.current?.click();
+                setPickerOpen(false);
+              }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
             >
               <Camera className="h-4 w-4 text-primary shrink-0" />
@@ -223,7 +226,10 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             </button>
             <button
               type="button"
-              onClick={() => uploadRef.current?.click()}
+              onClick={() => {
+                uploadRef.current?.click();
+                setPickerOpen(false);
+              }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
             >
               <ImagePlus className="h-4 w-4 text-primary shrink-0" />
@@ -236,179 +242,157 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         </PopoverContent>
       </Popover>
 
-      {/* Review & approve sheet */}
-      <Sheet open={reviewOpen} onOpenChange={setReviewOpen}>
-        <SheetContent
-          side="bottom"
-          className="h-[92vh] overflow-y-auto p-0 rounded-t-2xl"
-        >
-          <div className="sticky top-0 z-10 bg-background border-b px-4 py-3">
-            <SheetHeader className="text-left space-y-1">
-              <SheetTitle className="flex items-center gap-2 text-base">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Review your receipt
-              </SheetTitle>
-              <SheetDescription className="text-xs">
-                We read what we could — tweak anything, then add to expenses.
-              </SheetDescription>
-            </SheetHeader>
-          </div>
-
-          <div className="px-4 py-4 space-y-4 pb-32">
-            {/* Receipt preview thumbnail */}
-            {previewUrl && (
-              <div className="rounded-xl overflow-hidden border bg-muted/30 max-h-48 flex items-center justify-center">
-                <img
-                  src={previewUrl}
-                  alt="Scanned receipt"
-                  className="max-h-48 object-contain"
-                />
+      {/* Review & approve panel */}
+      {reviewOpen && (
+        <div className="fixed inset-0 z-[90]" role="presentation">
+          <button
+            type="button"
+            aria-label="Close receipt review"
+            className="absolute inset-0 bg-background/80"
+            onClick={() => setReviewOpen(false)}
+          />
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="receipt-review-title"
+            className="absolute inset-x-0 bottom-0 z-[100] flex h-[92dvh] flex-col rounded-t-2xl border bg-background shadow-2xl"
+          >
+            <div className="shrink-0 border-b px-4 py-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1 text-left">
+                  <h2 id="receipt-review-title" className="flex items-center gap-2 text-base font-semibold text-foreground">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    Review your receipt
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {scanning ? "Reading the image now — the fields will fill in here." : "Tweak anything, then add to expenses."}
+                  </p>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setReviewOpen(false)} disabled={saving} className="h-9 w-9 shrink-0">
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
+                </Button>
               </div>
-            )}
+            </div>
 
-            {/* Big amount + currency */}
-            <div className="rounded-xl border bg-card p-4">
-              <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Amount</Label>
-              <div className="flex items-center gap-2 mt-1">
-                <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
-                  <SelectTrigger className="w-24 h-12 text-sm font-semibold">
-                    <SelectValue />
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+              {previewUrl && (
+                <div className="rounded-xl overflow-hidden border bg-muted/30 max-h-48 flex items-center justify-center">
+                  <img src={previewUrl} alt="Scanned receipt" className="max-h-48 object-contain" />
+                </div>
+              )}
+
+              {scanning && (
+                <div className="flex items-center gap-2 rounded-lg border bg-card p-3 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  Capturing the breakdown…
+                </div>
+              )}
+
+              <div className="rounded-xl border bg-card p-4">
+                <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Amount</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
+                    <SelectTrigger className="w-24 h-12 text-sm font-semibold">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={form.amount}
+                    onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                    placeholder="0.00"
+                    className="h-12 text-2xl font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs">Category</Label>
+                <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                  <SelectTrigger className="mt-1 h-11">
+                    <SelectValue>
+                      <span className="flex items-center gap-2">
+                        <span>{cat.icon}</span>
+                        <span>{cat.label}</span>
+                      </span>
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {CURRENCIES.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    {EXPENSE_CATEGORIES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>
+                        <span className="flex items-center gap-2">
+                          <span>{c.icon}</span>
+                          <span>{c.label}</span>
+                        </span>
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  value={form.amount}
-                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                  placeholder="0.00"
-                  className="h-12 text-2xl font-bold"
-                />
               </div>
-            </div>
 
-            {/* Category */}
-            <div>
-              <Label className="text-xs">Category</Label>
-              <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                <SelectTrigger className="mt-1 h-11">
-                  <SelectValue>
-                    <span className="flex items-center gap-2">
-                      <span>{cat.icon}</span>
-                      <span>{cat.label}</span>
-                    </span>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {EXPENSE_CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      <span className="flex items-center gap-2">
-                        <span>{c.icon}</span>
-                        <span>{c.label}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Title */}
-            <div>
-              <Label className="text-xs">What was it for?</Label>
-              <Input
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="e.g. Adobe subscription"
-                className="mt-1"
-              />
-            </div>
-
-            {/* Vendor + Date */}
-            <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Vendor</Label>
+                <Label className="text-xs">What was it for?</Label>
                 <Input
-                  value={form.vendor}
-                  onChange={(e) => setForm({ ...form, vendor: e.target.value })}
-                  placeholder="—"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="e.g. Adobe subscription"
                   className="mt-1"
                 />
               </div>
-              <div>
-                <Label className="text-xs">Date</Label>
-                <Input
-                  type="date"
-                  value={form.date}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-            </div>
 
-            {/* Tax deductible */}
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div>
-                <div className="text-sm font-medium">Tax deductible</div>
-                <div className="text-[11px] text-muted-foreground">Mark as a business expense</div>
-              </div>
-              <Switch
-                checked={form.tax_deductible}
-                onCheckedChange={(v) => setForm({ ...form, tax_deductible: v })}
-              />
-            </div>
-
-            {/* Line items if AI found any */}
-            {scanned?.line_items && scanned.line_items.length > 0 && (
-              <div className="rounded-lg border bg-muted/30 p-3">
-                <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">
-                  Detected items
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Vendor</Label>
+                  <Input value={form.vendor} onChange={(e) => setForm({ ...form, vendor: e.target.value })} placeholder="—" className="mt-1" />
                 </div>
-                <ul className="space-y-1 text-sm">
-                  {scanned.line_items.map((it, i) => (
-                    <li key={i} className="flex justify-between">
-                      <span className="truncate pr-2">{it.description}</span>
-                      <span className="text-muted-foreground tabular-nums">
-                        {form.currency} {it.amount.toFixed(2)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                <div>
+                  <Label className="text-xs">Date</Label>
+                  <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="mt-1" />
+                </div>
               </div>
-            )}
-          </div>
 
-          {/* Sticky action bar */}
-          <div
-            className="fixed bottom-0 left-0 right-0 bg-background border-t px-4 py-3 flex gap-2"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
-          >
-            <Button
-              variant="outline"
-              onClick={() => setReviewOpen(false)}
-              disabled={saving}
-              className="flex-1"
-            >
-              <X className="h-4 w-4 mr-1" /> Cancel
-            </Button>
-            <Button
-              onClick={handleAdd}
-              disabled={saving || !form.amount || !form.title.trim()}
-              className="flex-1 bg-primary"
-            >
-              {saving ? (
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4 mr-1" />
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <div className="text-sm font-medium">Tax deductible</div>
+                  <div className="text-[11px] text-muted-foreground">Mark as a business expense</div>
+                </div>
+                <Switch checked={form.tax_deductible} onCheckedChange={(v) => setForm({ ...form, tax_deductible: v })} />
+              </div>
+
+              {scanned?.line_items && scanned.line_items.length > 0 && (
+                <div className="rounded-lg border bg-muted/30 p-3">
+                  <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">Detected items</div>
+                  <ul className="space-y-1 text-sm">
+                    {scanned.line_items.map((it, i) => (
+                      <li key={i} className="flex justify-between">
+                        <span className="truncate pr-2">{it.description}</span>
+                        <span className="text-muted-foreground tabular-nums">{form.currency} {it.amount.toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
-              Add to expenses
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+            </div>
+
+            <div className="shrink-0 border-t bg-background px-4 py-3 flex gap-2" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}>
+              <Button variant="outline" onClick={() => setReviewOpen(false)} disabled={saving} className="flex-1">
+                <X className="h-4 w-4 mr-1" /> Cancel
+              </Button>
+              <Button onClick={handleAdd} disabled={scanning || saving || !form.amount || !form.title.trim()} className="flex-1 bg-primary">
+                {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
+                Add to expenses
+              </Button>
+            </div>
+          </section>
+        </div>
+      )}
     </>
   );
 }

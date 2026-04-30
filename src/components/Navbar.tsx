@@ -282,11 +282,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <Separator className="my-3" />
 
                   <MenuButton icon={Globe} label="About Us" onClick={() => handleNavigation("/about")} />
-                  <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} />
 
                   <Separator className="my-3" />
 
                   {/* Account section */}
+                  <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
+                  {!isCompany && (
+                    <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
+                  )}
                   <Button
                     variant="ghost"
                     className="justify-start gap-3 h-auto w-full py-3"

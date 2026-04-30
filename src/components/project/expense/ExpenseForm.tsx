@@ -126,6 +126,8 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
+      setScanError(null);
+
       // Auto-fill the form
       setForm(prev => ({
         ...prev,
@@ -199,6 +201,9 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
       recordMoneyAction("expense_added");
       toast.success("Expense added");
       setOpen(false);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+      setScanError(null);
       setForm({
         title: "", amount: "", currency: "USD", category: "other", vendor: "",
         date: new Date().toISOString().split("T")[0], notes: "", tax_deductible: false,
@@ -228,6 +233,11 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
         <div className="space-y-3">
           {/* Scan Receipt CTA */}
           <div className={`space-y-3 p-3 rounded-lg border-2 border-dashed transition-all ${scanning ? "border-primary bg-primary/5" : "border-border"}`}>
+            {previewUrl && (
+              <div className="overflow-hidden rounded-lg border bg-muted/30 max-h-40 flex items-center justify-center">
+                <img src={previewUrl} alt="Receipt preview" className="max-h-40 object-contain" />
+              </div>
+            )}
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               {scanning ? (
                 <Loader2 className="h-5 w-5 text-primary animate-spin" />
@@ -283,6 +293,11 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
               onChange={handleScanReceipt}
               disabled={scanning}
             />
+            {scanError && !scanning && (
+              <p className="rounded-md bg-destructive/10 p-2 text-[11px] text-destructive">
+                The image is ready for review, but the automatic breakdown hit an issue. Fill anything missing, then add it.
+              </p>
+            )}
           </div>
 
           <div className="relative flex items-center">

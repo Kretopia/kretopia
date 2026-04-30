@@ -45,22 +45,23 @@ export const TodayStrip = ({ onVoice, onCommandPalette }: TodayStripProps) => {
     const load = async () => {
       const today = new Date().toISOString().slice(0, 10);
 
-      const [tasksRes, invoicesRes] = await Promise.all([
-        supabase
-          .from("project_tasks")
-          .select("id, due_date, status, assigned_to, created_by")
-          .or(`assigned_to.eq.${user.id},created_by.eq.${user.id}`)
-          .neq("status", "done")
-          .not("due_date", "is", null)
-          .lte("due_date", today)
-          .catch(() => ({ data: [] as any[] })),
-        supabase
-          .from("invoices")
-          .select("amount, currency, status")
-          .eq("user_id", user.id)
-          .in("status", ["pending", "sent"])
-          .catch(() => ({ data: [] as any[] })),
-      ]);
+      const tasksPromise = (supabase as any)
+        .from("project_tasks")
+        .select("id, due_date, status, assigned_to, created_by")
+        .or(`assigned_to.eq.${user.id},created_by.eq.${user.id}`)
+        .neq("status", "done")
+        .not("due_date", "is", null)
+        .lte("due_date", today)
+        .then((r: any) => r, () => ({ data: [] }));
+
+      const invoicesPromise = (supabase as any)
+        .from("invoices")
+        .select("amount, currency, status")
+        .eq("user_id", user.id)
+        .in("status", ["pending", "sent"])
+        .then((r: any) => r, () => ({ data: [] }));
+
+      const [tasksRes, invoicesRes] = await Promise.all([tasksPromise, invoicesPromise]);
 
       if (cancelled) return;
 

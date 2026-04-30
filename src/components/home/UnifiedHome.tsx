@@ -30,7 +30,6 @@ import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
 import { FoundingMemberCard } from "@/components/founding/FoundingMemberCard";
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
-import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";

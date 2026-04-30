@@ -270,7 +270,7 @@ const AppContent = () => {
             
             {/* ThriveDesk - Lightweight Project Workspace */}
             <Route path="/desk" element={<ProtectedRoute><WorkHome /></ProtectedRoute>} />
-            <Route path="/desk/projects" element={<ProtectedRoute><ProjectsList /></ProtectedRoute>} />
+            <Route path="/desk/projects" element={<Navigate to="/desk" replace />} />
             <Route path="/shortlists" element={<ProtectedRoute><Shortlists /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
 

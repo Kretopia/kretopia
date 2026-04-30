@@ -456,6 +456,15 @@ export function FinanceHub({
           </div>
         )}
       </div>
+
+      {markPaidInvoice && (
+        <MarkPaidBankTransferDialog
+          open={!!markPaidInvoice}
+          onOpenChange={(v) => { if (!v) setMarkPaidInvoice(null); }}
+          invoice={markPaidInvoice}
+          onSuccess={() => { setMarkPaidInvoice(null); fetchInvoices(); onUpdate?.(); }}
+        />
+      )}
     </div>
   );
 }

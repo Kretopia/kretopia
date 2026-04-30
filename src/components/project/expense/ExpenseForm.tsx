@@ -148,10 +148,25 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     return () => window.removeEventListener("thrivepay:add-expense", handler as EventListener);
   }, []);
 
-  const handleScanReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+  useEffect(() => () => {
+    clearPickerTimer();
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
+  const handleScanReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    clearPickerTimer();
+    const file = e.target.files?.[0];
+    if (!file) {
+      addDebug("File picker closed without a file", "No file was returned from the camera/gallery input.", "error");
+      return;
+    }
+    if (!user) {
+      addDebug("Scan stopped: no signed-in user", "The image was selected, but there is no active user session for saving expenses.", "error");
+      toast.error("Sign in again before scanning receipts.");
+      return;
+    }
+
+    addDebug("Image received", `${file.name || "camera-photo"} • ${file.type || "unknown type"} • ${(file.size / 1024).toFixed(1)} KB`);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
     setScanError(null);
@@ -173,21 +188,28 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
             const dataUrl = canvas.toDataURL("image/jpeg", quality);
             resolve(dataUrl.split(",")[1]);
           };
-          img.onerror = reject;
+          img.onerror = () => reject(new Error("The selected image could not be loaded for compression."));
           img.src = URL.createObjectURL(f);
         });
       };
 
+      addDebug("Compressing image for scanner");
       const base64 = await compressImage(file);
+      addDebug("Image compressed", `Base64 payload length: ${base64.length.toLocaleString()} characters`);
+      addDebug("Calling receipt scanner function");
 
       const { data, error } = await supabase.functions
         .invoke("scan-receipt", { body: { image_base64: base64 } })
-        .catch((err) => ({ data: null, error: err }));
+        .catch((err) => {
+          addDebug("Receipt scanner request failed", formatErrorDetail(err), "error");
+          return { data: null, error: err };
+        });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
       setScanError(null);
+      addDebug("Receipt data extracted", JSON.stringify(data, null, 2), "success");
 
       // Auto-fill the form
       setForm(prev => ({
@@ -208,6 +230,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
       toast.success("Receipt scanned! Review the details below.");
     } catch (err: any) {
       setScanError(err.message || "Failed to scan receipt");
+      addDebug("Scan failed", formatErrorDetail(err), "error");
       toast.error("Couldn't read it automatically — review it here.");
     } finally {
       setScanning(false);

@@ -506,7 +506,8 @@ const NearbyCreators = () => {
                   </>
                 )}
               </div>
-            )}
+            );
+            })()}
           </div>
         )}
         </>

@@ -18,7 +18,10 @@ import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown
 import { ProfileHubCard } from "@/components/home/ProfileHubCard";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
+// TODO: Replace with real community photos before launch
+// To swap the hero visual, change this single import path:
 import heroCreators from "@/assets/hero-creators.jpg";
+const HERO_IMAGE = heroCreators;
 
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
 import { CreatorDashboardSection } from "@/components/landing/CreatorDashboardSection";

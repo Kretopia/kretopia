@@ -203,7 +203,11 @@ export const VoiceFirstCreateModal = ({
           status: "todo",
           created_by: user.id,
         }));
-        await supabase.from("project_tasks").insert(rows).catch(() => {});
+        try {
+          await supabase.from("project_tasks").insert(rows);
+        } catch (e) {
+          console.warn("seed tasks failed", e);
+        }
       }
 
       try {

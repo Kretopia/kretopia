@@ -499,6 +499,21 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                                 </p>
                               )}
 
+                              {/* Voice note */}
+                              {msg.voice_url && (
+                                <div className="mt-2 space-y-1 max-w-[280px]">
+                                  <audio src={msg.voice_url} controls className="h-9 w-full" />
+                                  {msg.voice_transcript === null || msg.voice_transcript === undefined ? (
+                                    <p className="text-[11px] text-muted-foreground italic">Transcribing…</p>
+                                  ) : msg.voice_transcript ? (
+                                    <details className="text-xs text-muted-foreground">
+                                      <summary className="cursor-pointer hover:text-foreground">Show transcript</summary>
+                                      <p className="mt-1 whitespace-pre-wrap leading-relaxed">{msg.voice_transcript}</p>
+                                    </details>
+                                  ) : null}
+                                </div>
+                              )}
+
                               {/* Attachments */}
                               {msg.attachments && msg.attachments.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">

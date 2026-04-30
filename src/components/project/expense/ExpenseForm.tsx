@@ -349,49 +349,71 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button
+                asChild
                 type="button"
                 variant="outline"
                 size="sm"
                 className="h-9 gap-1.5 text-xs"
-                onClick={() => cameraInputRef.current?.click()}
                 disabled={scanning}
               >
-                <Camera className="h-3.5 w-3.5" /> Take photo
+                <label htmlFor={cameraInputId} onClick={() => beginPicker("camera")}>
+                  <Camera className="h-3.5 w-3.5" /> Take photo
+                </label>
               </Button>
               <Button
+                asChild
                 type="button"
                 variant="outline"
                 size="sm"
                 className="h-9 gap-1.5 text-xs"
-                onClick={() => uploadInputRef.current?.click()}
                 disabled={scanning}
               >
-                <ScanLine className="h-3.5 w-3.5" /> Upload
+                <label htmlFor={uploadInputId} onClick={() => beginPicker("upload")}>
+                  <ScanLine className="h-3.5 w-3.5" /> Upload
+                </label>
               </Button>
             </div>
             <input
+              id={cameraInputId}
               ref={cameraInputRef}
               type="file"
               accept="image/*"
               capture="environment"
               data-scan-receipt-input="true"
-              className="hidden"
+              className="sr-only"
               onChange={handleScanReceipt}
               disabled={scanning}
             />
             <input
+              id={uploadInputId}
               ref={uploadInputRef}
               type="file"
               accept="image/*"
-              className="hidden"
+              className="sr-only"
               onChange={handleScanReceipt}
               disabled={scanning}
             />
             {scanError && !scanning && (
               <p className="rounded-md bg-destructive/10 p-2 text-[11px] text-destructive">
-                The image is ready for review, but the automatic breakdown hit an issue. Fill anything missing, then add it.
+                {scanError}
               </p>
             )}
+            <details open className="rounded-md border bg-muted/30 p-2 text-[11px]">
+              <summary className="cursor-pointer font-semibold text-foreground">Receipt scan debug</summary>
+              <div className="mt-2 max-h-36 overflow-y-auto space-y-1.5">
+                {debugSteps.length === 0 ? (
+                  <p className="text-muted-foreground">No debug events yet.</p>
+                ) : debugSteps.map((step, index) => (
+                  <div key={`${step.time}-${index}`} className="rounded border bg-background p-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={step.level === "error" ? "font-semibold text-destructive" : step.level === "success" ? "font-semibold text-primary" : "font-semibold text-foreground"}>{step.message}</span>
+                      <span className="shrink-0 text-muted-foreground">{step.time}</span>
+                    </div>
+                    {step.detail && <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[10px] text-muted-foreground">{step.detail}</pre>}
+                  </div>
+                ))}
+              </div>
+            </details>
           </div>
 
           <div className="relative flex items-center">

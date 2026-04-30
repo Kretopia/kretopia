@@ -303,11 +303,10 @@ export const CreditsSection = ({ userId, isOwnProfile, onRefresh }: CreditsSecti
         isOwnProfile ? (
           <EmptyState
             icon={Film}
-            eyebrow="Build your authority"
-            title="Add your first credit"
-            description="Verified credits unlock vouches, higher gig matches, and your IMDB-style public ledger."
-            action={{ label: "Add a Credit", icon: Plus, onClick: () => setIsEditOpen(true) }}
-            secondaryAction={{ label: "Import from web", onClick: () => navigate('/discovery') }}
+            eyebrow="Your creative CV"
+            title="Your creative CV starts here"
+            description="Add your first credit and start building your verified record."
+            action={{ label: "Add Credit", icon: Plus, onClick: () => setIsEditOpen(true) }}
           />
         ) : (
           <EmptyState

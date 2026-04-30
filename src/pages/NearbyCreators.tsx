@@ -521,6 +521,7 @@ const NearbyCreators = () => {
       <SessionDetailDialog session={selectedSession} open={!!selectedSession} onOpenChange={(open) => { if (!open) setSelectedSession(null); }} onRefresh={fetchNearbyData} />
       <LocationDetailDialog location={selectedLocation} open={!!selectedLocation} onOpenChange={(open) => { if (!open) setSelectedLocation(null); }}
         isBookmarked={selectedLocation ? bookmarkedIds.has(selectedLocation.id) : false} onToggleBookmark={selectedLocation ? () => toggleBookmark(selectedLocation.id) : undefined} />
+      <InviteDialog open={showInviteDialog} onOpenChange={setShowInviteDialog} />
     </div>
   );
 };

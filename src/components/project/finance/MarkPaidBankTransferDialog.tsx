@@ -73,7 +73,6 @@ export function MarkPaidBankTransferDialog({
       return;
     }
 
-    setSubmitting true;
     setSubmitting(true);
     try {
       // 1) Upload proof to private bucket under issuer's folder

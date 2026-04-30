@@ -246,6 +246,7 @@ const AppContent = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/claim" element={<Claim />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/founding-member" element={<ProtectedRoute><FoundingMember /></ProtectedRoute>} />
             <Route path="/company-onboarding" element={<ProtectedRoute><CompanyOnboarding /></ProtectedRoute>} />
             
             {/* Core Feature Pages - Public browsable, actions gated */}

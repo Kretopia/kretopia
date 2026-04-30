@@ -29,6 +29,7 @@ import { OnboardingTour } from "./components/OnboardingTour";
 import { NewsletterPopup } from "./components/NewsletterPopup";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import UnifiedHome from "./components/home/UnifiedHome";
+import { GlobalIncomingCall } from "./components/calls/GlobalIncomingCall";
 
 // Lazy load active page components
 const Auth = lazy(() => import("./pages/Auth"));
@@ -235,6 +236,7 @@ const AppContent = () => {
       {showBottomNav && <QuickActionFab />}
       
       {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
+      {user && <GlobalIncomingCall />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />
       {showGuestBanner && <GuestBanner />}

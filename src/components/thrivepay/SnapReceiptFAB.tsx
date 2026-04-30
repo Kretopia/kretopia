@@ -165,13 +165,34 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       img.src = URL.createObjectURL(f);
     });
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const stopInlineCamera = () => {
+    cameraStream?.getTracks().forEach((track) => track.stop());
+    setCameraStream(null);
+    setCameraOpen(false);
+  };
+
+  const startInlineCamera = async () => {
     clearPickerTimer();
-    const file = e.target.files?.[0];
-    if (!file) {
-      addDebug("File picker closed without a file", "No file was returned from the camera/gallery input.", "error");
-      return;
+    setPickerOpen(false);
+    setScanError(null);
+    setCameraStarting(true);
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error("Camera access is not available in this browser.");
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+      setCameraStream(stream);
+      setCameraOpen(true);
+      addDebug("Camera opened", "Using the in-app camera preview instead of the Android file-picker capture flow.", "success");
+    } catch (err) {
+      setDebugOpen(true);
+      setScanError(err instanceof Error ? err.message : "Camera could not open");
+      addDebug("Camera open failed", formatErrorDetail(err), "error");
+      toast.error("Camera could not open. Try Upload screenshot.");
+    } finally {
+      setCameraStarting(false);
     }
+  };
+
+  const processReceiptFile = async (file: File) => {
     if (!user) {
       addDebug("Scan stopped: no signed-in user", "The image was selected, but there is no active user session for saving expenses.", "error");
       toast.error("Sign in again before scanning receipts.");
@@ -179,7 +200,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     }
 
     setPickerOpen(false);
-    setDebugOpen(true);
+    setDebugOpen(false);
     addDebug("Image received", `${file.name || "camera-photo"} • ${file.type || "unknown type"} • ${(file.size / 1024).toFixed(1)} KB`);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
@@ -235,6 +256,35 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       if (cameraRef.current) cameraRef.current.value = "";
       if (uploadRef.current) uploadRef.current.value = "";
     }
+  };
+
+  const captureInlinePhoto = async () => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) {
+      toast.error("Camera preview is not ready yet.");
+      return;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
+    if (!blob) {
+      toast.error("Could not capture photo.");
+      return;
+    }
+    stopInlineCamera();
+    await processReceiptFile(new File([blob], `receipt-${Date.now()}.jpg`, { type: "image/jpeg" }));
+  };
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    clearPickerTimer();
+    const file = e.target.files?.[0];
+    if (!file) {
+      addDebug("File picker closed without a file", "No file was returned from the camera/gallery input.", "error");
+      return;
+    }
+    await processReceiptFile(file);
   };
 
   const handleAdd = async () => {

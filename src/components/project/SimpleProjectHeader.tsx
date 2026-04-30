@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, ArrowLeft, UserPlus, X, Crown } from "lucide-react";
+import { Users, ArrowLeft, UserPlus, X, Crown, Video, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { InviteCollaboratorDialog } from "./InviteCollaboratorDialog";
+import { VideoCallSheet } from "./VideoCallSheet";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sendPushNotification } from "@/lib/pushNotifications";
 import {
   DropdownMenu,
   DropdownMenuContent,

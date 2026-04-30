@@ -27,7 +27,7 @@ interface Stats {
  *
  * Goal: zero-nav glance — what needs me right now?
  */
-export const TodayStrip = ({ onVoice, onCommandPalette }: TodayStripProps) => {
+export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStripProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats>({

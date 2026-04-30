@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
+import { MarkPaidBankTransferDialog } from "@/components/project/finance/MarkPaidBankTransferDialog";
+import { Landmark } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";

@@ -428,6 +428,17 @@ export function FinanceHub({
                         Copy pay link
                       </Button>
                     )}
+                    {userRole === "creator" && !isQuote && inv.status !== "paid" && inv.status !== "cancelled" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setMarkPaidInvoice(inv)}
+                        className="h-7 text-xs gap-1 border-success/40 text-success hover:bg-success/10 hover:text-success"
+                      >
+                        <Landmark className="h-3 w-3" />
+                        Mark paid · bank
+                      </Button>
+                    )}
                     {userRole === "client" && ["sent", "viewed", "overdue"].includes(inv.status) && (
                       <Button
                         size="sm"

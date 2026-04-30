@@ -208,6 +208,38 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     }
   };
 
+  const openNativeImage = async (source: CameraSource) => {
+    clearPickerTimer();
+    setPickerOpen(false);
+    setScanError(null);
+    try {
+      const photo = await NativeCamera.getPhoto({
+        quality: 80,
+        allowEditing: false,
+        resultType: CameraResultType.Base64,
+        source,
+        correctOrientation: true,
+      });
+
+      if (!photo.base64String) throw new Error("The selected image did not return image data.");
+      const preview = `data:image/${photo.format || "jpeg"};base64,${photo.base64String}`;
+      await processReceiptImage({
+        base64: photo.base64String,
+        previewUrl: preview,
+        label: source === CameraSource.Camera ? "camera-photo" : "uploaded-receipt",
+        sizeKb: Math.round((photo.base64String.length * 3) / 4 / 1024),
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err || "Image picker was closed");
+      if (!/cancel/i.test(message)) {
+        setDebugOpen(true);
+        setScanError(message);
+        addDebug(source === CameraSource.Camera ? "Native camera failed" : "Native upload failed", formatErrorDetail(err), "error");
+        toast.error(source === CameraSource.Camera ? "Camera could not open. Try Upload screenshot." : "Upload could not open.");
+      }
+    }
+  };
+
   const processReceiptFile = async (file: File) => {
     if (!user) {
       addDebug("Scan stopped: no signed-in user", "The image was selected, but there is no active user session for saving expenses.", "error");

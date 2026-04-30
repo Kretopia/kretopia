@@ -30,6 +30,9 @@ interface Message {
   reply_to?: string | null;
   is_pinned?: boolean;
   attachments?: Attachment[] | null;
+  voice_url?: string | null;
+  voice_duration?: number | null;
+  voice_transcript?: string | null;
   profiles?: {
     full_name: string;
     avatar_url: string | null;

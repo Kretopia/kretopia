@@ -5,6 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { MoodboardThumb } from "./MoodboardThumb";
+import { BriefVoiceRecorder } from "./BriefVoiceRecorder";
 
 interface BriefSectionProps {
   project: {
@@ -28,26 +30,33 @@ export const BriefSection = ({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(project.description ?? "");
   const [saving, setSaving] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
 
-  // Simple heuristic: image files attached to the project become moodboard references
+  // Image files attached to the project become moodboard references
   const moodboard = files.filter((f) => {
     const url: string = f.file_url || f.url || "";
-    return /\.(jpe?g|png|gif|webp|avif)$/i.test(url);
+    const type: string = f.file_type || "";
+    return /^image\//i.test(type) || /\.(jpe?g|png|gif|webp|avif)$/i.test(url);
   });
+
+  const persist = async (text: string) => {
+    const { error } = await supabase
+      .from("projects")
+      .update({ description: text.trim() || null })
+      .eq("id", project.id);
+    if (error) {
+      toast({ title: "Couldn't save brief", description: error.message, variant: "destructive" });
+      return false;
+    }
+    onUpdated();
+    return true;
+  };
 
   const save = async () => {
     setSaving(true);
-    const { error } = await supabase
-      .from("projects")
-      .update({ description: draft.trim() || null })
-      .eq("id", project.id);
+    const ok = await persist(draft);
     setSaving(false);
-    if (error) {
-      toast({ title: "Couldn't save brief", description: error.message, variant: "destructive" });
-      return;
-    }
-    setEditing(false);
-    onUpdated();
+    if (ok) setEditing(false);
   };
 
   return (
@@ -56,20 +65,34 @@ export const BriefSection = ({
         <h2 className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
           The Brief
         </h2>
-        {isOwner && !editing && project.description && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs gap-1"
-            onClick={() => {
-              setDraft(project.description ?? "");
-              setEditing(true);
-            }}
-          >
-            <Pencil className="h-3 w-3" /> Edit
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          {isOwner && !editing && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs gap-1"
+              onClick={() => setVoiceOpen(true)}
+              aria-label="Record brief"
+            >
+              <Mic className="h-3.5 w-3.5" /> Voice
+            </Button>
+          )}
+          {isOwner && !editing && project.description && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs gap-1"
+              onClick={() => {
+                setDraft(project.description ?? "");
+                setEditing(true);
+              }}
+            >
+              <Pencil className="h-3 w-3" /> Edit
+            </Button>
+          )}
+        </div>
       </header>
 
       {editing ? (
@@ -102,29 +125,41 @@ export const BriefSection = ({
           {project.description}
         </p>
       ) : (
-        <button
-          type="button"
-          disabled={!isOwner}
-          onClick={() => setEditing(true)}
+        <div
           className={cn(
-            "w-full text-left rounded-2xl bg-card ring-1 ring-border p-4 flex items-start gap-3",
-            isOwner && "hover:ring-primary/40 transition-all"
+            "w-full rounded-2xl bg-card ring-1 ring-border p-4 flex items-start gap-3",
           )}
         >
-          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <button
+            type="button"
+            disabled={!isOwner}
+            onClick={() => isOwner && setVoiceOpen(true)}
+            className="h-10 w-10 rounded-xl bg-primary/10 hover:bg-primary/20 flex items-center justify-center shrink-0 transition-colors"
+            aria-label="Record brief"
+          >
             <Mic className="h-5 w-5 text-primary" />
-          </div>
+          </button>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold leading-tight">
               {isOwner ? "Speak the vision" : "No brief yet"}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {isOwner
-                ? "Tap to type, or hold the mic on your room. Tone, references, who it's for."
+                ? "Tap the mic to record, or "
                 : "The owner hasn't dropped the brief yet."}
+              {isOwner && (
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  type it
+                </button>
+              )}
+              {isOwner && "."}
             </p>
           </div>
-        </button>
+        </div>
       )}
 
       {/* Moodboard */}
@@ -155,29 +190,30 @@ export const BriefSection = ({
         ) : (
           <div className="-mx-4 px-4 overflow-x-auto">
             <div className="flex gap-2 pb-1 snap-x">
-              {moodboard.map((f) => {
-                const url = f.file_url || f.url;
-                return (
-                  <a
-                    key={f.id ?? url}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0 snap-start block w-28 h-28 rounded-lg overflow-hidden bg-muted ring-1 ring-border"
-                  >
-                    <img
-                      src={url}
-                      alt={f.name || "Reference"}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                    />
-                  </a>
-                );
-              })}
+              {moodboard.map((f) => (
+                <div
+                  key={f.id ?? f.file_url}
+                  className="shrink-0 snap-start w-28 h-28 rounded-lg overflow-hidden bg-muted ring-1 ring-border"
+                >
+                  <MoodboardThumb
+                    storedUrl={f.file_url}
+                    alt={f.file_name || "Reference"}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         )}
       </div>
+
+      <BriefVoiceRecorder
+        open={voiceOpen}
+        onOpenChange={setVoiceOpen}
+        onSave={async (text) => {
+          await persist(text);
+        }}
+      />
     </section>
   );
 };

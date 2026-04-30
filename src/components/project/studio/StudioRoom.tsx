@@ -82,12 +82,11 @@ export const StudioRoom = ({
           .from("project-files")
           .upload(path, file, { cacheControl: "3600", upsert: false });
         if (upErr) throw upErr;
-        const { data } = supabase.storage.from("project-files").getPublicUrl(path);
         await supabase.from("project_files").insert({
           project_id: project.id,
           user_id: currentUserId,
           file_name: file.name,
-          file_url: data.publicUrl,
+          file_url: path, // store relative path; render via signed URL
           file_type: file.type,
           file_size: file.size,
         });

@@ -28,6 +28,7 @@ import { PricingPreviewSection } from "@/components/landing/PricingPreviewSectio
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A
 import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
+import { FoundingMemberCard } from "@/components/founding/FoundingMemberCard";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";

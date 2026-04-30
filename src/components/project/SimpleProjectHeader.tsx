@@ -137,6 +137,46 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startingCall, callOpen]);
 
+  // Auto-join via ?joinCall=1 (from accept-call deep link). Members mint
+  // their own meeting token using mint-video-token.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("joinCall") !== "1" || !user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        // Refetch room url from the project to ensure it's still live.
+        const { data: prj } = await supabase
+          .from("projects")
+          .select("video_room_url")
+          .eq("id", project.id)
+          .maybeSingle();
+        if (!prj?.video_room_url) return;
+        const roomName = prj.video_room_url.split("/").pop();
+        const { data, error } = await supabase.functions.invoke("mint-video-token", {
+          body: { room_name: roomName, user_name: myName },
+        });
+        if (error) throw error;
+        if (cancelled) return;
+        setCallRoomUrl(prj.video_room_url);
+        setCallToken(data?.token ?? null);
+        setCallId(null);
+        setCallOpen(true);
+      } catch (e) {
+        console.error("[auto-join]", e);
+      } finally {
+        // Strip the param so refresh doesn't re-trigger
+        const next = new URLSearchParams(searchParams);
+        next.delete("joinCall");
+        setSearchParams(next, { replace: true });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, user?.id, project.id]);
+
   const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'active': return 'bg-green-500/10 text-green-500 border-green-500/20';

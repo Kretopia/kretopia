@@ -73,8 +73,12 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
   const { user } = useAuth();
   const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const pendingPickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraStarting, setCameraStarting] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -119,27 +123,29 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
 
   const beginPicker = (mode: "camera" | "upload") => {
     clearPickerTimer();
-    setDebugOpen(true);
-    setScanError(null);
-    const inputReady = mode === "camera" ? Boolean(cameraRef.current) : Boolean(uploadRef.current);
-    addDebug(
-      mode === "camera" ? "Take photo tapped" : "Upload screenshot tapped",
-      `Input ready: ${inputReady ? "yes" : "no"}. Signed in: ${user?.id ? "yes" : "no"}. Browser: ${navigator.userAgent}`,
-      inputReady ? "info" : "error",
-    );
     pendingPickerTimer.current = setTimeout(() => {
+      const inputReady = mode === "camera" ? Boolean(cameraRef.current) : Boolean(uploadRef.current);
+      setDebugOpen(true);
       addDebug(
-        "No image reached the app yet",
-        "If the camera/gallery did not open, the browser may have blocked the file picker, camera permission may be denied, or the picker was cancelled before a file was selected.",
+        mode === "camera" ? "Take photo did not return an image" : "Upload did not return an image",
+        `Input ready: ${inputReady ? "yes" : "no"}. Signed in: ${user?.id ? "yes" : "no"}. Browser: ${navigator.userAgent}\n\nIf the camera/gallery did not open, this WebView may be blocking native file picking or camera permission may be denied.`,
         "error",
       );
     }, 15000);
   };
 
+  useEffect(() => {
+    if (cameraOpen && cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+      videoRef.current.play().catch((err) => addDebug("Camera preview failed to start", formatErrorDetail(err), "error"));
+    }
+  }, [cameraOpen, cameraStream]);
+
   useEffect(() => () => {
     clearPickerTimer();
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-  }, [previewUrl]);
+    cameraStream?.getTracks().forEach((track) => track.stop());
+  }, [previewUrl, cameraStream]);
 
   const compressImage = (f: File, maxWidth = 1200, quality = 0.7): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -159,13 +165,34 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       img.src = URL.createObjectURL(f);
     });
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const stopInlineCamera = () => {
+    cameraStream?.getTracks().forEach((track) => track.stop());
+    setCameraStream(null);
+    setCameraOpen(false);
+  };
+
+  const startInlineCamera = async () => {
     clearPickerTimer();
-    const file = e.target.files?.[0];
-    if (!file) {
-      addDebug("File picker closed without a file", "No file was returned from the camera/gallery input.", "error");
-      return;
+    setPickerOpen(false);
+    setScanError(null);
+    setCameraStarting(true);
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error("Camera access is not available in this browser.");
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+      setCameraStream(stream);
+      setCameraOpen(true);
+      addDebug("Camera opened", "Using the in-app camera preview instead of the Android file-picker capture flow.", "success");
+    } catch (err) {
+      setDebugOpen(true);
+      setScanError(err instanceof Error ? err.message : "Camera could not open");
+      addDebug("Camera open failed", formatErrorDetail(err), "error");
+      toast.error("Camera could not open. Try Upload screenshot.");
+    } finally {
+      setCameraStarting(false);
     }
+  };
+
+  const processReceiptFile = async (file: File) => {
     if (!user) {
       addDebug("Scan stopped: no signed-in user", "The image was selected, but there is no active user session for saving expenses.", "error");
       toast.error("Sign in again before scanning receipts.");
@@ -173,7 +200,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     }
 
     setPickerOpen(false);
-    setDebugOpen(true);
+    setDebugOpen(false);
     addDebug("Image received", `${file.name || "camera-photo"} • ${file.type || "unknown type"} • ${(file.size / 1024).toFixed(1)} KB`);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
@@ -229,6 +256,35 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       if (cameraRef.current) cameraRef.current.value = "";
       if (uploadRef.current) uploadRef.current.value = "";
     }
+  };
+
+  const captureInlinePhoto = async () => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) {
+      toast.error("Camera preview is not ready yet.");
+      return;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
+    if (!blob) {
+      toast.error("Could not capture photo.");
+      return;
+    }
+    stopInlineCamera();
+    await processReceiptFile(new File([blob], `receipt-${Date.now()}.jpg`, { type: "image/jpeg" }));
+  };
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    clearPickerTimer();
+    const file = e.target.files?.[0];
+    if (!file) {
+      addDebug("File picker closed without a file", "No file was returned from the camera/gallery input.", "error");
+      return;
+    }
+    await processReceiptFile(file);
   };
 
   const handleAdd = async () => {
@@ -316,25 +372,18 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 9.5rem)" }}
           >
             <div className="space-y-1">
-            <div
-              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden"
+            <button
+              type="button"
+              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden disabled:opacity-50"
+              onClick={startInlineCamera}
+              disabled={scanning || cameraStarting}
             >
               <Camera className="h-4 w-4 text-primary shrink-0" />
               <div className="min-w-0">
-                <div className="text-sm font-medium">Take photo</div>
+                <div className="text-sm font-medium">{cameraStarting ? "Opening camera…" : "Take photo"}</div>
                 <div className="text-[11px] text-muted-foreground">Snap a paper receipt</div>
               </div>
-              <input
-                ref={cameraRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                onClick={() => beginPicker("camera")}
-                onChange={handleFile}
-                disabled={scanning}
-              />
-            </div>
+            </button>
             <div
               className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden"
             >
@@ -354,6 +403,20 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
               />
             </div>
           </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {cameraOpen && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[95] bg-background" role="dialog" aria-modal="true" aria-label="Receipt camera">
+          <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+          <div className="absolute inset-x-0 top-0 bg-background/80 px-4 py-3 text-center text-sm font-semibold text-foreground">
+            Fit the receipt inside the frame
+          </div>
+          <div className="absolute inset-x-0 bottom-0 flex gap-3 bg-background/90 px-4 py-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}>
+            <Button type="button" variant="outline" className="flex-1" onClick={stopInlineCamera}>Cancel</Button>
+            <Button type="button" className="flex-1 bg-primary" onClick={captureInlinePhoto}>Use photo</Button>
           </div>
         </div>,
         document.body,

@@ -47,6 +47,7 @@ export default function Onboarding() {
   const [searching, setSearching] = useState(false);
   const [searchAttempted, setSearchAttempted] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [enteredEmpty, setEnteredEmpty] = useState(false);
 
   // Review phase — AI-populated, user-editable
   const [avatarUrl, setAvatarUrl] = useState("");

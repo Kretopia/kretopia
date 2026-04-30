@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { VibeHeader } from "./VibeHeader";
 import { BriefSection } from "./BriefSection";
 import { WorkSection } from "./WorkSection";
@@ -7,6 +7,7 @@ import { PeopleSection } from "./PeopleSection";
 import { AddCreditSection } from "./AddCreditSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useStudioPresence } from "@/hooks/useStudioPresence";
 
 interface StudioRoomProps {
   project: any;
@@ -49,6 +50,16 @@ export const StudioRoom = ({
     avatar_url: c.avatar_url ?? c.profiles?.avatar_url ?? null,
     role: c.role ?? null,
   }));
+
+  // Identify current user from the people list for presence metadata
+  const me = useMemo(
+    () => people.find((p) => p.id === currentUserId) ?? null,
+    [people, currentUserId],
+  );
+  const { onlineUserIds, knock } = useStudioPresence(
+    project?.id,
+    me ? { id: me.id, full_name: me.full_name, avatar_url: me.avatar_url } : null,
+  );
 
   const handleAddReference = () => {
     if (!isOwner) {
@@ -141,6 +152,8 @@ export const StudioRoom = ({
           isOwner={isOwner}
           projectId={project.id}
           onUpdated={onUpdated}
+          onlineUserIds={onlineUserIds}
+          onKnock={knock}
         />
 
         <AddCreditSection project={project} collaborators={people} />

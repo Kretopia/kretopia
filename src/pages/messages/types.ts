@@ -32,6 +32,7 @@ export interface Message {
   shared_content_type?: string | null;
   shared_content_id?: string | null;
   shared_content_meta?: any;
+  voice_note_transcript?: string | null;
 }
 
 export interface Attachment {

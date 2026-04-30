@@ -6211,6 +6211,7 @@ export type Database = {
           shared_content_type: string | null
           typing_at: string | null
           updated_at: string | null
+          voice_note_transcript: string | null
         }
         Insert: {
           attachment_duration?: number | null
@@ -6234,6 +6235,7 @@ export type Database = {
           shared_content_type?: string | null
           typing_at?: string | null
           updated_at?: string | null
+          voice_note_transcript?: string | null
         }
         Update: {
           attachment_duration?: number | null
@@ -6257,6 +6259,7 @@ export type Database = {
           shared_content_type?: string | null
           typing_at?: string | null
           updated_at?: string | null
+          voice_note_transcript?: string | null
         }
         Relationships: [
           {

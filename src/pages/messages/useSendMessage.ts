@@ -57,15 +57,28 @@ export const useSendMessage = ({ currentUserId, selectedConversation }: Args) =>
 
   const sendVoiceNote = useCallback(async (url: string, duration: number) => {
     if (!selectedConversation) return;
-    await supabase.from("messages").insert({
-      sender_id: currentUserId,
-      receiver_id: selectedConversation,
-      content: '🎙️ Voice note',
-      attachment_url: url,
-      attachment_type: 'voice',
-      attachment_duration: duration,
-      read: false,
-    });
+    const { data: inserted, error } = await supabase
+      .from("messages")
+      .insert({
+        sender_id: currentUserId,
+        receiver_id: selectedConversation,
+        content: '🎙️ Voice note',
+        attachment_url: url,
+        attachment_type: 'voice',
+        attachment_duration: duration,
+        read: false,
+      })
+      .select('id')
+      .single();
+
+    if (error || !inserted) return;
+
+    // Fire-and-forget transcription (does not block message delivery)
+    supabase.functions
+      .invoke('transcribe-voice-note', {
+        body: { message_id: inserted.id, audio_url: url },
+      })
+      .catch((err) => console.error('[transcribe-voice-note] failed:', err));
   }, [currentUserId, selectedConversation]);
 
   return { sendMessage, sendVoiceNote };

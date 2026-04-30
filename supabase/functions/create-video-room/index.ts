@@ -153,6 +153,9 @@ serve(async (req) => {
 
     if (!roomUrl) throw new Error("No room URL returned");
 
+    // Derive room name from URL (handles retry-with-fresh-suffix case)
+    const actualRoomName = roomUrl.split("/").pop() || roomName;
+
     // Create meeting token for this user
     const tokenRes = await fetch(`${DAILY_API}/meeting-tokens`, {
       method: "POST",
@@ -162,7 +165,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         properties: {
-          room_name: roomName,
+          room_name: actualRoomName,
           user_name: user_name || "Guest",
           user_id: userId,
           exp,

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, PhoneOff, Video } from "lucide-react";
-import SEO from "@/components/SEO";
+import { SEO } from "@/components/SEO";
 
 /**
  * Public guest join page. Visitors paste/are sent a /call/:token link from

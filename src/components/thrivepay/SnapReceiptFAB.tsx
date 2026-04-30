@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { recordMoneyAction } from "@/lib/moneyStreak";
 import { EXPENSE_CATEGORIES, getCategoryInfo } from "@/components/project/expense/ExpenseCategories";
+import { Capacitor } from "@capacitor/core";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY", "INR", "BRL", "TTD", "AED"];
 
@@ -61,6 +62,13 @@ interface DebugStep {
 interface SnapReceiptFABProps {
   projectId?: string;
 }
+
+type ReceiptImageInput = {
+  base64: string;
+  previewUrl: string;
+  label: string;
+  sizeKb?: number;
+};
 
 /**
  * SnapReceiptFAB

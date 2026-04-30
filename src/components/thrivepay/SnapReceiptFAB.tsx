@@ -442,7 +442,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             <button
               type="button"
               className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden disabled:opacity-50"
-              onClick={startInlineCamera}
+              onClick={() => isNativeCameraReady() ? openNativeImage(CameraSource.Camera) : startInlineCamera()}
               disabled={scanning || cameraStarting}
             >
               <CameraIcon className="h-4 w-4 text-primary shrink-0" />
@@ -451,26 +451,29 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
                 <div className="text-[11px] text-muted-foreground">Snap a paper receipt</div>
               </div>
             </button>
-            <div
-              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden"
+            <button
+              type="button"
+              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden disabled:opacity-50"
+              onClick={() => isNativeCameraReady() ? openNativeImage(CameraSource.Photos) : uploadRef.current?.click()}
+              disabled={scanning}
             >
               <ImagePlus className="h-4 w-4 text-primary shrink-0" />
               <div className="min-w-0">
                 <div className="text-sm font-medium">Upload screenshot</div>
                 <div className="text-[11px] text-muted-foreground">From gallery or files</div>
               </div>
-              <input
-                ref={uploadRef}
-                type="file"
-                accept="image/*"
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                onClick={() => beginPicker("upload")}
-                onChange={handleFile}
-                disabled={scanning}
-              />
-            </div>
+            </button>
           </div>
           </div>
+          <input
+            ref={uploadRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onClick={() => beginPicker("upload")}
+            onChange={handleFile}
+            disabled={scanning}
+          />
         </div>,
         document.body,
       )}

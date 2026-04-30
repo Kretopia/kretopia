@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Camera, Loader2, Check, X, Receipt, Sparkles } from "lucide-react";
+import { Camera, Loader2, Check, X, Receipt, Sparkles, Upload, ImagePlus } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +36,9 @@ interface ScannedReceipt {
  */
 export function SnapReceiptFAB() {
   const { user } = useAuth();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const uploadRef = useRef<HTMLInputElement>(null);
+  const inputRef = cameraRef; // back-compat alias
   const [scanning, setScanning] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -109,7 +112,8 @@ export function SnapReceiptFAB() {
       setPreviewUrl(null);
     } finally {
       setScanning(false);
-      if (inputRef.current) inputRef.current.value = "";
+      if (cameraRef.current) cameraRef.current.value = "";
+      if (uploadRef.current) uploadRef.current.value = "";
     }
   };
 
@@ -158,8 +162,9 @@ export function SnapReceiptFAB() {
 
   return (
     <>
+      {/* Camera input — opens device camera on mobile */}
       <input
-        ref={inputRef}
+        ref={cameraRef}
         type="file"
         accept="image/*"
         capture="environment"
@@ -167,21 +172,64 @@ export function SnapReceiptFAB() {
         onChange={handleFile}
         disabled={scanning}
       />
-
-      <Button
-        type="button"
-        onClick={() => inputRef.current?.click()}
+      {/* Upload input — gallery / file picker (works for screenshots) */}
+      <input
+        ref={uploadRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFile}
         disabled={scanning}
-        aria-label="Snap a receipt"
-        className="fixed right-4 z-40 h-14 w-14 rounded-full p-0 shadow-lg shadow-primary/30 bg-primary hover:bg-primary/90"
-        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 5.5rem)" }}
-      >
-        {scanning ? (
-          <Loader2 className="h-6 w-6 animate-spin text-primary-foreground" />
-        ) : (
-          <Camera className="h-6 w-6 text-primary-foreground" />
-        )}
-      </Button>
+      />
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            disabled={scanning}
+            aria-label="Scan a receipt"
+            className="fixed right-4 z-40 h-14 w-14 rounded-full p-0 shadow-lg shadow-primary/30 bg-primary hover:bg-primary/90"
+            style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 5.5rem)" }}
+          >
+            {scanning ? (
+              <Loader2 className="h-6 w-6 animate-spin text-primary-foreground" />
+            ) : (
+              <Camera className="h-6 w-6 text-primary-foreground" />
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          side="top"
+          align="end"
+          className="w-56 p-2 mr-1"
+          sideOffset={8}
+        >
+          <div className="space-y-1">
+            <button
+              type="button"
+              onClick={() => cameraRef.current?.click()}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
+            >
+              <Camera className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <div className="text-sm font-medium">Take photo</div>
+                <div className="text-[11px] text-muted-foreground">Snap a paper receipt</div>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => uploadRef.current?.click()}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
+            >
+              <ImagePlus className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <div className="text-sm font-medium">Upload screenshot</div>
+                <div className="text-[11px] text-muted-foreground">From gallery or files</div>
+              </div>
+            </button>
+          </div>
+        </PopoverContent>
+      </Popover>
 
       {/* Review & approve sheet */}
       <Sheet open={reviewOpen} onOpenChange={setReviewOpen}>

@@ -294,6 +294,7 @@ const BrandWorkHome = () => {
         onVoiceCommand={() => setVoiceCmdOpen(true)}
       />
       <VoiceCommandSheet open={voiceCmdOpen} onOpenChange={setVoiceCmdOpen} />
+      <WrapMyWeekSheet open={wrapWeekOpen} onOpenChange={setWrapWeekOpen} />
     </PageTransition>
   );
 };
@@ -433,6 +434,7 @@ const CreatorWorkHome = () => {
         onVoiceCommand={() => setVoiceCmdOpen(true)}
       />
       <VoiceCommandSheet open={voiceCmdOpen} onOpenChange={setVoiceCmdOpen} />
+      <WrapMyWeekSheet open={wrapWeekOpen} onOpenChange={setWrapWeekOpen} />
     </PageTransition>
   );
 };

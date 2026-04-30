@@ -290,20 +290,22 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     <>
       {/* Camera input — opens device camera on mobile */}
       <input
+        id={cameraInputId}
         ref={cameraRef}
         type="file"
         accept="image/*"
         capture="environment"
-        className="hidden"
+        className="sr-only"
         onChange={handleFile}
         disabled={scanning}
       />
       {/* Upload input — gallery / file picker (works for screenshots) */}
       <input
+        id={uploadInputId}
         ref={uploadRef}
         type="file"
         accept="image/*"
-        className="hidden"
+        className="sr-only"
         onChange={handleFile}
         disabled={scanning}
       />
@@ -332,11 +334,12 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
           sideOffset={8}
         >
           <div className="space-y-1">
-            <button
-              type="button"
+            <label
+              htmlFor={cameraInputId}
+              role="button"
+              tabIndex={0}
               onClick={() => {
-                cameraRef.current?.click();
-                setPickerOpen(false);
+                beginPicker("camera");
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
             >
@@ -345,12 +348,13 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
                 <div className="text-sm font-medium">Take photo</div>
                 <div className="text-[11px] text-muted-foreground">Snap a paper receipt</div>
               </div>
-            </button>
-            <button
-              type="button"
+            </label>
+            <label
+              htmlFor={uploadInputId}
+              role="button"
+              tabIndex={0}
               onClick={() => {
-                uploadRef.current?.click();
-                setPickerOpen(false);
+                beginPicker("upload");
               }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
             >
@@ -359,10 +363,38 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
                 <div className="text-sm font-medium">Upload screenshot</div>
                 <div className="text-[11px] text-muted-foreground">From gallery or files</div>
               </div>
-            </button>
+            </label>
           </div>
         </PopoverContent>
       </Popover>
+
+      {debugOpen && !reviewOpen && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-x-3 bottom-28 z-[85] rounded-xl border bg-background p-3 shadow-2xl">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-foreground">Receipt scan debug</p>
+              <p className="text-[11px] text-muted-foreground">Visible until the review panel opens.</p>
+            </div>
+            <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setDebugOpen(false)}>
+              Hide
+            </Button>
+          </div>
+          <div className="mt-2 max-h-36 overflow-y-auto space-y-1.5">
+            {debugSteps.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">No debug events yet.</p>
+            ) : debugSteps.map((step, index) => (
+              <div key={`${step.time}-${index}`} className="rounded-md border bg-muted/30 p-2 text-[11px]">
+                <div className="flex items-center justify-between gap-2">
+                  <span className={step.level === "error" ? "font-semibold text-destructive" : step.level === "success" ? "font-semibold text-primary" : "font-semibold text-foreground"}>{step.message}</span>
+                  <span className="shrink-0 text-muted-foreground">{step.time}</span>
+                </div>
+                {step.detail && <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[10px] text-muted-foreground">{step.detail}</pre>}
+              </div>
+            ))}
+          </div>
+        </div>,
+        document.body,
+      )}
 
       {/* Review & approve panel */}
       {reviewOpen && typeof document !== "undefined" && createPortal(

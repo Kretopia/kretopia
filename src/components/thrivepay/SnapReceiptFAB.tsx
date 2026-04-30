@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Camera, Loader2, Check, X, Sparkles, ImagePlus } from "lucide-react";
+import { Camera as CameraIcon, Loader2, Check, X, Sparkles, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { recordMoneyAction } from "@/lib/moneyStreak";
 import { EXPENSE_CATEGORIES, getCategoryInfo } from "@/components/project/expense/ExpenseCategories";
 import { Capacitor } from "@capacitor/core";
+import { Camera as NativeCamera, CameraResultType, CameraSource } from "@capacitor/camera";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY", "INR", "BRL", "TTD", "AED"];
 

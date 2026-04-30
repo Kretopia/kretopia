@@ -66,33 +66,36 @@ serve(async (req) => {
       });
     }
 
-    // Daily room names: max 41 chars, alphanumeric + dash
-    const roomName = `td-${project_id.replace(/-/g, "").slice(0, 30)}`;
+    // Daily room names: max 41 chars, lowercase alphanumeric + dash
+    const roomName = `td-${project_id.replace(/-/g, "").slice(0, 30)}`.toLowerCase();
     const exp = Math.floor(Date.now() / 1000) + 4 * 60 * 60; // 4h
 
-    // Try create room (idempotent: if exists, fetch it)
-    let roomUrl: string | null = null;
-    const createRes = await fetch(`${DAILY_API}/rooms`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${DAILY_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: roomName,
-        privacy: "private",
-        properties: {
-          exp,
-          max_participants: 10,
-          enable_chat: true,
-          enable_screenshare: true,
-          enable_recording: "cloud",
-          start_video_off: false,
-          start_audio_off: false,
-          enable_knocking: true,
+    // Properties — keep minimal/free-plan-compatible.
+    // NOTE: enable_recording requires a paid Daily plan; we omit it here and
+    // toggle recording per-call from the client instead (host control).
+    const roomProperties: Record<string, unknown> = {
+      exp,
+      max_participants: 10,
+      enable_chat: true,
+      enable_screenshare: true,
+      start_video_off: false,
+      start_audio_off: false,
+      enable_knocking: true,
+    };
+
+    async function createRoom(name: string) {
+      return fetch(`${DAILY_API}/rooms`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${DAILY_API_KEY}`,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({ name, privacy: "private", properties: roomProperties }),
+      });
+    }
+
+    let roomUrl: string | null = null;
+    const createRes = await createRoom(roomName);
 
     if (createRes.ok) {
       const room = await createRes.json();
@@ -103,12 +106,13 @@ serve(async (req) => {
       try { errJson = JSON.parse(errText); } catch (_) {}
       console.error("[create-video-room] Daily create response:", createRes.status, errText);
 
-      // If the room already exists, Daily returns 409 with info containing "already exists"
+      // Daily returns 409 (or invalid-request-error with "already exists") if the room name is taken.
       const alreadyExists =
         createRes.status === 409 ||
         (typeof errJson?.info === "string" && errJson.info.toLowerCase().includes("already exist"));
 
       if (alreadyExists) {
+        // Try to fetch the existing room
         const getRes = await fetch(`${DAILY_API}/rooms/${roomName}`, {
           headers: { Authorization: `Bearer ${DAILY_API_KEY}` },
         });
@@ -116,29 +120,9 @@ serve(async (req) => {
           const room = await getRes.json();
           roomUrl = room.url;
         } else {
-          // Stale local reference — try creating with a fresh suffix
-          const freshName = `${roomName.slice(0, 30)}-${Date.now().toString(36).slice(-6)}`;
-          const retryRes = await fetch(`${DAILY_API}/rooms`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${DAILY_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              name: freshName,
-              privacy: "private",
-              properties: {
-                exp,
-                max_participants: 10,
-                enable_chat: true,
-                enable_screenshare: true,
-                enable_recording: "cloud",
-                start_video_off: false,
-                start_audio_off: false,
-                enable_knocking: true,
-              },
-            }),
-          });
+          // Name conflict but room not retrievable — create with a fresh suffix
+          const freshName = `${roomName.slice(0, 30)}-${Date.now().toString(36).slice(-6)}`.toLowerCase();
+          const retryRes = await createRoom(freshName);
           if (!retryRes.ok) {
             const rt = await retryRes.text();
             throw new Error(`Daily retry create failed: ${retryRes.status} ${rt}`);

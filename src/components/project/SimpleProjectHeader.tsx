@@ -106,6 +106,7 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
     }
   };
 
+  const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'active': return 'bg-green-500/10 text-green-500 border-green-500/20';
       case 'completed': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';

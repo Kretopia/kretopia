@@ -158,6 +158,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
 
   const compressImage = (f: File, maxWidth = 1200, quality = 0.7): Promise<string> =>
     new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(f);
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
@@ -168,11 +169,17 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         if (!ctx) return reject(new Error("Canvas not supported"));
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        URL.revokeObjectURL(objectUrl);
         resolve(dataUrl.split(",")[1]);
       };
-      img.onerror = () => reject(new Error("The selected image could not be loaded for compression."));
-      img.src = URL.createObjectURL(f);
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("The selected image could not be loaded for compression."));
+      };
+      img.src = objectUrl;
     });
+
+  const isNativeCameraReady = () => Capacitor.isNativePlatform() && Capacitor.isPluginAvailable("Camera");
 
   const stopInlineCamera = () => {
     cameraStream?.getTracks().forEach((track) => track.stop());

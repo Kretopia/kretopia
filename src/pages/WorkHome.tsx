@@ -5,8 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
   FolderKanban, Briefcase, DollarSign, ArrowRight, Plus, Mic,
-  Clock, CheckCircle2, Loader2,
-  Building2, Users, UserSearch, Star, Wallet
+  Clock, Loader2,
+  Building2, Users, UserSearch, Star,
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
+import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
+import { TodayStrip } from "@/components/desk/TodayStrip";
+import { DeskCommandPalette } from "@/components/desk/DeskCommandPalette";
+import { VoiceCommandSheet } from "@/components/desk/VoiceCommandSheet";
+import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -55,13 +60,13 @@ const BrandWorkHome = () => {
   const [applicantCounts, setApplicantCounts] = useState<Record<string, number>>({});
   const [stats, setStats] = useState({ posted: 0, active: 0, hired: 0, avgRating: 0 });
   const [showCreateProject, setShowCreateProject] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-
-      // Fetch opportunities
       const { data: opps } = await supabase
         .from("opportunities")
         .select("*")
@@ -70,14 +75,12 @@ const BrandWorkHome = () => {
         .limit(10);
       setOpportunities(opps || []);
 
-      // Get applicant counts per opportunity
       if (opps && opps.length > 0) {
         const oppIds = opps.map(o => o.id);
         const { data: apps } = await supabase
           .from("applications")
           .select("opportunity_id")
           .in("opportunity_id", oppIds);
-        
         const counts: Record<string, number> = {};
         (apps || []).forEach(a => {
           counts[a.opportunity_id] = (counts[a.opportunity_id] || 0) + 1;
@@ -85,24 +88,20 @@ const BrandWorkHome = () => {
         setApplicantCounts(counts);
       }
 
-      // Stats
       const { count: totalPosted } = await supabase
         .from("opportunities")
         .select("*", { count: "exact", head: true })
         .eq("created_by", user.id);
-
       const { count: activeCount } = await supabase
         .from("opportunities")
         .select("*", { count: "exact", head: true })
         .eq("created_by", user.id)
         .eq("status", "active");
 
-      // Hired count
       const { data: userOpps } = await supabase
         .from("opportunities")
         .select("id")
         .eq("created_by", user.id);
-      
       let hiredCount = 0;
       if (userOpps && userOpps.length > 0) {
         const ids = userOpps.map(o => o.id);
@@ -114,7 +113,6 @@ const BrandWorkHome = () => {
         hiredCount = count || 0;
       }
 
-      // Average rating
       const { data: reviewData } = await supabase
         .from("company_reviews")
         .select("rating")
@@ -162,7 +160,11 @@ const BrandWorkHome = () => {
           size="sm"
         />
 
-        {/* Stats Row */}
+        <TodayStrip
+          onVoice={() => setVoiceCmdOpen(true)}
+          onCommandPalette={() => setPaletteOpen(true)}
+        />
+
         <div className="grid grid-cols-4 gap-2">
           <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/manage-opportunities")}>
             <p className="text-xl font-black tracking-tight">{stats.posted}</p>
@@ -185,7 +187,6 @@ const BrandWorkHome = () => {
           </Card>
         </div>
 
-        {/* Active Listings */}
         <Widget title="Active Listings" icon={Briefcase} action={{ label: "Manage", path: "/manage-opportunities" }}>
           {activeOpps.length === 0 ? (
             <div className="text-center py-4">
@@ -224,7 +225,6 @@ const BrandWorkHome = () => {
           )}
         </Widget>
 
-        {/* Find Talent CTA */}
         <Card 
           className="p-4 cursor-pointer hover:border-primary/30 transition-all bg-gradient-to-r from-primary/5 to-accent/5 border-primary/10"
           onClick={() => navigate("/talent-finder")}
@@ -235,13 +235,12 @@ const BrandWorkHome = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">Find Talent</p>
-              <p className="text-xs text-muted-foreground">Describe what you need — paid or barter — AI matches you instantly</p>
+              <p className="text-xs text-muted-foreground">Describe what you need — paid or barter — Smart Match finds them instantly</p>
             </div>
             <ArrowRight className="h-4 w-4 text-primary shrink-0" />
           </div>
         </Card>
 
-        {/* Past Listings */}
         {closedOpps.length > 0 && (
           <Widget title="Past Listings" icon={Clock} action={{ label: "All", path: "/manage-opportunities" }}>
             <div className="space-y-2">
@@ -260,7 +259,6 @@ const BrandWorkHome = () => {
           </Widget>
         )}
 
-        {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3 pt-2">
           <Button variant="outline" className="h-auto py-3 flex-col gap-1" onClick={() => navigate("/post-opportunity")}>
             <Briefcase className="h-4 w-4" />
@@ -286,60 +284,65 @@ const BrandWorkHome = () => {
         onOpenChange={setShowCreateProject}
         onCreated={() => setShowCreateProject(false)}
       />
+      <DeskCommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        onVoiceCreate={() => setShowCreateProject(true)}
+        onVoiceCommand={() => setVoiceCmdOpen(true)}
+      />
+      <VoiceCommandSheet open={voiceCmdOpen} onOpenChange={setVoiceCmdOpen} />
     </PageTransition>
   );
 };
 
-// ── Individual Creator Dashboard ──────────────────────────────
+// ── Individual Creator Dashboard — Studio-first ──────────────
 const CreatorWorkHome = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<any[]>([]);
-  const [gigs, setGigs] = useState<any[]>([]);
+  const [invoicesByProject, setInvoicesByProject] = useState<
+    Record<string, "paid" | "invoiced" | "unsent">
+  >({});
   const [showCreateProject, setShowCreateProject] = useState(false);
-  const [pendingMilestones, setPendingMilestones] = useState(0);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [earnings, setEarnings] = useState({ pending: 0, total: 0 });
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
+
+  const fetchProjects = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const { data: projectsData } = await supabase
+        .from("projects")
+        .select("*")
+        .order("updated_at", { ascending: false });
+      const list = projectsData || [];
+      setProjects(list);
+
+      if (list.length) {
+        const ids = list.map((p) => p.id);
+        const { data: invs } = await (supabase as any)
+          .from("invoices")
+          .select("project_id, status")
+          .in("project_id", ids);
+        const map: Record<string, "paid" | "invoiced" | "unsent"> = {};
+        for (const id of ids) map[id] = "unsent";
+        for (const row of invs || []) {
+          const cur = map[row.project_id];
+          if (row.status === "paid") map[row.project_id] = "paid";
+          else if (cur !== "paid") map[row.project_id] = "invoiced";
+        }
+        setInvoicesByProject(map);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!user) return;
-    const load = async () => {
-      setLoading(true);
-      const [projRes, gigsRes, msRes, invoicesRes] = await Promise.all([
-        supabase.from("projects").select("*").order("updated_at", { ascending: false }).limit(20),
-        // @ts-ignore – deep type instantiation
-        supabase.from("opportunities").select("id, title, status, created_at, compensation").eq("created_by", user.id).order("created_at", { ascending: false }).limit(5),
-        supabase.from("milestones").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        // @ts-ignore – deep type instantiation
-        supabase.from("invoices").select("amount, status, currency").eq("user_id", user.id),
-      ]);
-      setProjects(projRes.data || []);
-      setGigs(gigsRes.data || []);
-      setPendingMilestones(msRes.count || 0);
-
-      // Calculate earnings
-      const invoices = invoicesRes.data || [];
-      const pendingAmount = invoices.filter((i: any) => i.status === "pending" || i.status === "sent").reduce((sum: number, i: any) => sum + (i.amount || 0), 0);
-      const totalAmount = invoices.filter((i: any) => i.status === "paid").reduce((sum: number, i: any) => sum + (i.amount || 0), 0);
-      setEarnings({ pending: pendingAmount, total: totalAmount });
-
-      // Build recent activity from projects
-      const allProjects = projRes.data || [];
-      const activity = allProjects
-        .slice(0, 5)
-        .map((p: any) => ({
-          id: p.id,
-          title: p.title,
-          status: p.status,
-          time: p.updated_at,
-        }));
-      setRecentActivity(activity);
-
-      setLoading(false);
-    };
-    load();
-  }, [user]);
+    fetchProjects().catch(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   if (loading) {
     return (
@@ -351,148 +354,80 @@ const CreatorWorkHome = () => {
 
   const activeProjects = projects.filter(p => p.status === "active");
   const completedProjects = projects.filter(p => p.status === "completed" || p.status === "archived");
-  const activeGigs = gigs.filter(g => g.status === "active" || g.status === "open");
 
   return (
     <PageTransition>
       <Helmet>
         <title>ThriveDesk | ThriveIN</title>
-        <meta name="description" content="ThriveDesk — your project command center. Manage workspaces, milestones, and clients in one place." />
+        <meta name="description" content="ThriveDesk — your studio rooms. Voice-first project management for creatives." />
       </Helmet>
 
-      <div className="max-w-2xl mx-auto px-4 pt-4 pb-36 space-y-4">
-        {/* Hero header — ThrivePay-style */}
+      {/* Wider on desktop, capped for readability */}
+      <div className="max-w-6xl mx-auto px-4 pt-4 pb-36 md:pb-12 space-y-5">
+        {/* Hero header */}
         <div className="border-b-2 border-primary/20 pb-4">
           <p className="brand-eyebrow mb-2">Projects & Workspaces</p>
           <div className="flex items-center gap-3 flex-wrap">
             <FolderKanban className="h-9 w-9 md:h-10 md:w-10 text-primary shrink-0" strokeWidth={2.5} />
-            <h1 className="text-4xl md:text-5xl font-black tracking-[-0.04em] leading-none">ThriveDesk</h1>
-            <Badge className="bg-energy text-energy-foreground hover:bg-energy gap-1 font-bold border-0">
-              <CheckCircle2 className="h-3 w-3" /> {activeProjects.length} Active
-            </Badge>
+            <h1 className="text-3xl md:text-5xl font-black tracking-[-0.04em] leading-none">ThriveDesk</h1>
+            {activeProjects.length > 0 && (
+              <Badge className="bg-energy text-energy-foreground hover:bg-energy gap-1 font-bold border-0">
+                {activeProjects.length} Active
+              </Badge>
+            )}
           </div>
-          <p className="text-sm text-muted-foreground mt-2">Run your projects, milestones & clients — all in one place.</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Speak it. We'll set the room up around you.
+            <span className="hidden md:inline"> · Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono ml-1">⌘K</kbd> to jump anywhere</span>
+          </p>
         </div>
 
-        {/* At-a-glance stats — project focused */}
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/desk/projects")}>
-            <p className="text-2xl font-black tracking-tight text-energy">{activeProjects.length}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Active</p>
-          </Card>
-          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/desk/projects")}>
-            <p className="text-2xl font-black tracking-tight">{pendingMilestones}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Pending</p>
-          </Card>
-          <Card className="p-3 text-center cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all" onClick={() => navigate("/desk/projects")}>
-            <p className="text-2xl font-black tracking-tight">{completedProjects.length}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Done</p>
-          </Card>
-        </div>
+        {/* Today Strip — what needs me right now */}
+        <TodayStrip
+          onVoice={() => setVoiceCmdOpen(true)}
+          onCommandPalette={() => setPaletteOpen(true)}
+        />
 
-        {/* Primary CTA — create workspace */}
-        <Button
-          size="lg"
-          onClick={() => setShowCreateProject(true)}
-          className="w-full h-12 gap-2 font-bold"
-        >
-          <Mic className="h-4 w-4" /> What are you making?
-        </Button>
+        {/* Pending invites */}
+        <MyPendingInvitations />
 
-        {/* Active Projects */}
-        <Widget title="Active Projects" icon={FolderKanban} action={{ label: "All", path: "/desk/projects" }}>
-          {activeProjects.length === 0 ? (
-            <div className="text-center py-6">
-              <p className="text-sm font-semibold mb-1">Your workspace is ready</p>
-              <p className="text-xs text-muted-foreground mb-4 max-w-xs mx-auto">
-                Start your first project — a music session, brand shoot, collab, or anything you're building.
-              </p>
-              <Button size="sm" onClick={() => setShowCreateProject(true)} className="gap-1.5">
-                <Plus className="h-3.5 w-3.5" /> New Project
-              </Button>
+        {/* Studio rooms grid */}
+        {projects.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-end justify-between">
+              <h2 className="text-base font-bold">Your studio rooms</h2>
+              <span className="text-xs text-muted-foreground">
+                {activeProjects.length} in progress · {completedProjects.length} delivered
+              </span>
             </div>
-          ) : (
-            <div className="space-y-2">
-              {activeProjects.slice(0, 4).map((p) => (
-                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all" onClick={() => navigate(`/desk/${p.id}`)}>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
-                  <span className="text-sm font-medium truncate flex-1">{p.title}</span>
-                  <span className="text-[10px] text-muted-foreground shrink-0">
-                    {formatDistanceToNow(new Date(p.updated_at), { addSuffix: true })}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Widget>
-
-        {/* Compact shortcuts to Gigs & ThrivePay — sub to projects */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card
-            className="p-3 cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all"
-            onClick={() => navigate("/manage-opportunities")}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <Briefcase className="h-3.5 w-3.5 text-[hsl(var(--mode-accent))]" />
-              <span className="text-xs font-bold uppercase tracking-wider">Gigs</span>
-            </div>
-            <p className="text-xl font-black tracking-tight">{activeGigs.length}</p>
-            <p className="text-[10px] text-muted-foreground">Open listings</p>
-          </Card>
-          <Card
-            className="p-3 cursor-pointer hover:border-energy/40 hover:bg-accent/30 transition-all"
-            onClick={() => navigate("/thrivepay")}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <Wallet className="h-3.5 w-3.5 text-[hsl(var(--mode-accent))]" />
-              <span className="text-xs font-bold uppercase tracking-wider">ThrivePay</span>
-            </div>
-            <p className="text-xl font-black tracking-tight">${earnings.pending.toLocaleString()}</p>
-            <p className="text-[10px] text-muted-foreground">Pending payout</p>
-          </Card>
-        </div>
-
-        {/* Recent Activity */}
-        {recentActivity.length > 0 && (
-          <Widget title="Recent Activity" icon={Clock}>
-            <div className="space-y-2">
-              {recentActivity.map((a) => (
-                <div key={a.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all" onClick={() => navigate(`/desk/${a.id}`)}>
-                  <div className={cn(
-                    "h-2 w-2 rounded-full shrink-0",
-                    a.status === "active" ? "bg-success" : "bg-muted-foreground"
-                  )} />
-                  <span className="text-sm truncate flex-1">{a.title}</span>
-                  <span className="text-[10px] text-muted-foreground shrink-0">
-                    {formatDistanceToNow(new Date(a.time), { addSuffix: true })}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Widget>
+          </div>
         )}
 
-        {/* Completed Projects */}
-        {completedProjects.length > 0 && (
-          <Widget title="Past Projects" icon={CheckCircle2} action={{ label: "All", path: "/desk/projects" }}>
-            <div className="space-y-2">
-              {completedProjects.slice(0, 3).map((p) => (
-                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/30 cursor-pointer transition-all opacity-70" onClick={() => navigate(`/desk/${p.id}`)}>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="text-sm font-medium truncate flex-1">{p.title}</span>
-                  <Badge variant="secondary" className="text-[10px]">Completed</Badge>
-                </div>
-              ))}
-            </div>
-          </Widget>
-        )}
+        <StudioCardsGrid
+          projects={projects as any}
+          invoicesByProject={invoicesByProject}
+          onNewProject={() => setShowCreateProject(true)}
+        />
       </div>
 
+      {/* Voice-first create */}
       <VoiceFirstCreateModal
         open={showCreateProject}
         onOpenChange={setShowCreateProject}
-        onCreated={() => setShowCreateProject(false)}
+        onCreated={() => {
+          setShowCreateProject(false);
+          fetchProjects();
+        }}
       />
+
+      {/* Command palette + voice command */}
+      <DeskCommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        onVoiceCreate={() => setShowCreateProject(true)}
+        onVoiceCommand={() => setVoiceCmdOpen(true)}
+      />
+      <VoiceCommandSheet open={voiceCmdOpen} onOpenChange={setVoiceCmdOpen} />
     </PageTransition>
   );
 };

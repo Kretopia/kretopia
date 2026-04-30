@@ -100,7 +100,7 @@ export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: V
         style={
           project.cover_url
             ? undefined
-            : { background: require("./moodGradient").moodGradient(project.mood) }
+            : { background: moodGradient(project.mood) }
         }
       >
         {project.cover_url ? (

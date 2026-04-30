@@ -296,11 +296,28 @@ export default function ThrivePay() {
             <p className="text-sm text-muted-foreground">Invoices, expenses, earnings & payouts — one place.</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {/* Compact "more" menu — Invoice / Quote / Log Expense / Send */}
+            {/* Top Up — primary lime CTA */}
+            <Button size="sm" variant="lime" className="gap-1.5 h-9 px-3" onClick={() => setTopUpDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              <span>Top Up</span>
+            </Button>
+
+            {/* Send Money — icon only */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-9 w-9 p-0"
+              aria-label="Send money"
+              onClick={() => setTransferDialogOpen(true)}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+
+            {/* Create menu — Invoice / Quote / Expense */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline" className="h-9 w-9 p-0" aria-label="More actions">
-                  <MoreHorizontal className="h-4 w-4" />
+                <Button size="sm" variant="outline" className="h-9 w-9 p-0" aria-label="Create">
+                  <Plus className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 z-50 bg-popover">
@@ -337,20 +354,10 @@ export default function ThrivePay() {
                   }}
                 >
                   <Receipt className="h-4 w-4 mr-2 text-primary" />
-                  Log Expense
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setTransferDialogOpen(true)}>
-                  <Send className="h-4 w-4 mr-2 text-primary" />
-                  Send Money
+                  New Expense
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <Button size="sm" variant="lime" className="gap-1.5 h-9 px-3" onClick={() => setTopUpDialogOpen(true)}>
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Top Up</span>
-            </Button>
           </div>
         </div>
 

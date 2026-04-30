@@ -355,6 +355,16 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           </AlertDialogContent>
         </AlertDialog>
 
+        <StartCallSheet
+          open={startSheetOpen}
+          onOpenChange={setStartSheetOpen}
+          projectId={project.id}
+          projectName={project.title}
+          projectMembers={projectMembersForPicker}
+          onStart={handleStartCall}
+          starting={startingCall}
+        />
+
         <VideoCallSheet
           open={callOpen}
           onOpenChange={setCallOpen}
@@ -516,6 +526,16 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <StartCallSheet
+        open={startSheetOpen}
+        onOpenChange={setStartSheetOpen}
+        projectId={project.id}
+        projectName={project.title}
+        projectMembers={projectMembersForPicker}
+        onStart={handleStartCall}
+        starting={startingCall}
+      />
 
       <VideoCallSheet
         open={callOpen}

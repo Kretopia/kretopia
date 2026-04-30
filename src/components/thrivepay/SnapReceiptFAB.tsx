@@ -4,7 +4,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,7 +41,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
   const { user } = useAuth();
   const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
-  const inputRef = cameraRef; // back-compat alias
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -82,6 +81,8 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     if (!file || !user) return;
 
     setPreviewUrl(URL.createObjectURL(file));
+    setScanned(null);
+    setReviewOpen(true);
     setScanning(true);
     toast.loading("Reading your receipt…", { id: "snap-receipt" });
     try {
@@ -113,7 +114,6 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       toast.success("Got it — review and add.", { id: "snap-receipt" });
     } catch (err: any) {
       toast.error(err?.message || "Couldn't read that receipt", { id: "snap-receipt" });
-      setPreviewUrl(null);
     } finally {
       setScanning(false);
       if (cameraRef.current) cameraRef.current.value = "";

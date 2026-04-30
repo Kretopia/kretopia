@@ -56,9 +56,9 @@ export const TodayStrip = ({ onVoice, onCommandPalette }: TodayStripProps) => {
 
       const invoicesPromise = (supabase as any)
         .from("invoices")
-        .select("amount, currency, status")
-        .eq("user_id", user.id)
-        .in("status", ["pending", "sent"])
+        .select("total_amount, currency, status")
+        .eq("issued_by", user.id)
+        .in("status", ["pending", "sent", "overdue"])
         .then((r: any) => r, () => ({ data: [] }));
 
       const [tasksRes, invoicesRes] = await Promise.all([tasksPromise, invoicesPromise]);

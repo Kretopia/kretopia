@@ -361,7 +361,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         {scanning ? (
           <Loader2 className="h-6 w-6 animate-spin text-primary-foreground" />
         ) : (
-          <Camera className="h-6 w-6 text-primary-foreground" />
+          <CameraIcon className="h-6 w-6 text-primary-foreground" />
         )}
         <span className="text-xs font-semibold text-primary-foreground">Scan</span>
       </Button>
@@ -387,7 +387,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
               onClick={startInlineCamera}
               disabled={scanning || cameraStarting}
             >
-              <Camera className="h-4 w-4 text-primary shrink-0" />
+              <CameraIcon className="h-4 w-4 text-primary shrink-0" />
               <div className="min-w-0">
                 <div className="text-sm font-medium">{cameraStarting ? "Opening camera…" : "Take photo"}</div>
                 <div className="text-[11px] text-muted-foreground">Snap a paper receipt</div>

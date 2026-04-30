@@ -695,6 +695,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
               >
                 {uploadingFiles ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
               </Button>
+              <VoiceNoteRecorder onSend={handleSendVoiceNote} disabled={sending} />
               <div className="flex-1 relative">
                 <Input
                   ref={inputRef}

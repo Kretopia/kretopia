@@ -36,7 +36,9 @@ interface ScannedReceipt {
  */
 export function SnapReceiptFAB() {
   const { user } = useAuth();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const uploadRef = useRef<HTMLInputElement>(null);
+  const inputRef = cameraRef; // back-compat alias
   const [scanning, setScanning] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);

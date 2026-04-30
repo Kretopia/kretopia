@@ -52,7 +52,19 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a receipt/bill data extractor. Extract financial details from images of receipts, bills, invoices, or screenshots of transactions. Be precise with amounts and dates.",
+            content: `You are a receipt/bill data extractor. Return only valid JSON with this shape:
+{
+  "title": string,
+  "vendor": string | null,
+  "amount": number | null,
+  "currency": string,
+  "date": string | null,
+  "category": "software" | "equipment" | "travel" | "workspace" | "marketing" | "education" | "subscriptions" | "food" | "insurance" | "taxes" | "contractors" | "entertainment" | "carnival" | "events" | "other",
+  "tax_deductible": boolean,
+  "line_items": [{ "description": string, "amount": number }],
+  "notes": string
+}
+Extract financial details from receipts, bills, invoices, or screenshots of transactions. Use null when a field is not visible.`,
           },
           {
             role: "user",
@@ -65,47 +77,7 @@ serve(async (req) => {
             ],
           },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "extract_receipt",
-              description: "Extract structured data from a receipt or bill image",
-              parameters: {
-                type: "object",
-                properties: {
-                  title: { type: "string", description: "Brief description of the expense" },
-                  vendor: { type: "string", description: "Vendor or business name" },
-                  amount: { type: "number", description: "Total amount" },
-                  currency: { type: "string", description: "3-letter currency code (USD, EUR, GBP, etc.)" },
-                  date: { type: "string", description: "Date in YYYY-MM-DD format" },
-                  category: {
-                    type: "string",
-                    enum: ["software", "equipment", "travel", "workspace", "marketing", "education", "subscriptions", "food", "insurance", "taxes", "contractors", "entertainment", "carnival", "events", "other"],
-                    description: "Expense category",
-                  },
-                  tax_deductible: { type: "boolean", description: "Whether this is likely a business/tax deductible expense" },
-                  line_items: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        description: { type: "string" },
-                        amount: { type: "number" },
-                      },
-                      required: ["description", "amount"],
-                    },
-                    description: "Individual line items if visible",
-                  },
-                  notes: { type: "string", description: "Any additional relevant info from the receipt" },
-                },
-                required: ["title", "amount", "currency", "category"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "extract_receipt" } },
+        response_format: { type: "json_object" },
       }),
     });
 
@@ -116,16 +88,21 @@ serve(async (req) => {
       if (response.status === 402) {
         return new Response(JSON.stringify({ error: "AI credits exhausted" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      throw new Error(`AI error: ${response.status}`);
+      const errorText = await response.text();
+      console.error("scan-receipt AI error:", response.status, errorText);
+      throw new Error(`AI error: ${response.status} ${errorText.slice(0, 300)}`);
     }
 
     const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (toolCall?.function?.arguments) {
-      const parsed = JSON.parse(toolCall.function.arguments);
-      parsed.category = normalizeCategory(parsed.category);
-      return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+    const rawContent = data.choices?.[0]?.message?.content;
+    if (!rawContent) throw new Error("AI returned no receipt data");
+    const parsed = JSON.parse(rawContent);
+    parsed.category = normalizeCategory(parsed.category);
+    parsed.currency = typeof parsed.currency === "string" && parsed.currency.trim() ? parsed.currency.toUpperCase().slice(0, 3) : "USD";
+    parsed.amount = typeof parsed.amount === "number" && Number.isFinite(parsed.amount) ? parsed.amount : null;
+    parsed.title = typeof parsed.title === "string" && parsed.title.trim() ? parsed.title.trim() : (parsed.vendor || "Receipt");
+    parsed.line_items = Array.isArray(parsed.line_items) ? parsed.line_items : [];
+    return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     return new Response(JSON.stringify({ error: "Could not extract data from image" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {

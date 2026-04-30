@@ -189,7 +189,7 @@ const ThriveDesk = () => {
         </div>
 
         {/* Mobile back-to-hub bar — visible when drilled into a section */}
-        {isMobile && !isMobileHub && (
+        {isMobile && !isStudioRoom && (
           <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-card/60 shrink-0">
             <Button
               variant="ghost"
@@ -221,7 +221,7 @@ const ThriveDesk = () => {
 
         {/* Content + Quick Panel */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
-          {isMobileHub ? (
+          {isStudioRoom ? (
             <StudioRoom
               project={project}
               tasks={tasks}
@@ -282,7 +282,7 @@ const ThriveDesk = () => {
       </div>
 
       {/* Floating AI Assistant — only show when mobile Hub isn't rendering its own combined FAB */}
-      {user && projectId && !isMobileHub && (
+      {user && projectId && !isStudioRoom && (
         <DeskAILauncher
           projectId={projectId}
           userId={user.id}
@@ -290,6 +290,14 @@ const ThriveDesk = () => {
           hideOnMobile={isMobile && activeTab === "messages"}
         />
       )}
+
+      {/* Global ⌘K palette + voice command — available across the workspace */}
+      <DeskCommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        onVoiceCommand={() => setVoiceCmdOpen(true)}
+      />
+      <VoiceCommandSheet open={voiceCmdOpen} onOpenChange={setVoiceCmdOpen} />
     </div>
   );
 };

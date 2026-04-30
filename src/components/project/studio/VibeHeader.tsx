@@ -91,12 +91,16 @@ export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: V
 
   return (
     <section className="relative">
-      {/* Cover */}
+      {/* Cover — uses mood gradient as guaranteed fallback */}
       <div
         className={cn(
-          "relative w-full aspect-[16/7] sm:aspect-[16/6] overflow-hidden bg-gradient-to-br from-primary/30 via-primary/10 to-accent/20",
-          "border-b border-border"
+          "relative w-full aspect-[16/7] sm:aspect-[16/6] overflow-hidden border-b border-border"
         )}
+        style={
+          project.cover_url
+            ? undefined
+            : { background: require("./moodGradient").moodGradient(project.mood) }
+        }
       >
         {project.cover_url ? (
           <img
@@ -105,11 +109,11 @@ export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: V
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-7xl opacity-40">
+          <div className="absolute inset-0 flex items-center justify-center text-7xl opacity-60 drop-shadow-md">
             {moodGlyph ?? "🎨"}
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
         {isOwner && (
           <>
@@ -123,13 +127,13 @@ export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: V
             <Button
               type="button"
               variant="secondary"
-              size="sm"
-              className="absolute top-3 right-3 gap-1.5 bg-background/80 hover:bg-background"
+              size="icon"
+              aria-label="Change cover"
+              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/85 hover:bg-background"
               disabled={uploading}
               onClick={() => fileRef.current?.click()}
             >
               {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
-              Cover
             </Button>
           </>
         )}

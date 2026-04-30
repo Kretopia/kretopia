@@ -372,25 +372,18 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 9.5rem)" }}
           >
             <div className="space-y-1">
-            <div
-              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden"
+            <button
+              type="button"
+              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden disabled:opacity-50"
+              onClick={startInlineCamera}
+              disabled={scanning || cameraStarting}
             >
               <Camera className="h-4 w-4 text-primary shrink-0" />
               <div className="min-w-0">
-                <div className="text-sm font-medium">Take photo</div>
+                <div className="text-sm font-medium">{cameraStarting ? "Opening camera…" : "Take photo"}</div>
                 <div className="text-[11px] text-muted-foreground">Snap a paper receipt</div>
               </div>
-              <input
-                ref={cameraRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                onClick={() => beginPicker("camera")}
-                onChange={handleFile}
-                disabled={scanning}
-              />
-            </div>
+            </button>
             <div
               className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden"
             >
@@ -410,6 +403,20 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
               />
             </div>
           </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {cameraOpen && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[95] bg-background" role="dialog" aria-modal="true" aria-label="Receipt camera">
+          <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+          <div className="absolute inset-x-0 top-0 bg-background/80 px-4 py-3 text-center text-sm font-semibold text-foreground">
+            Fit the receipt inside the frame
+          </div>
+          <div className="absolute inset-x-0 bottom-0 flex gap-3 bg-background/90 px-4 py-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}>
+            <Button type="button" variant="outline" className="flex-1" onClick={stopInlineCamera}>Cancel</Button>
+            <Button type="button" className="flex-1 bg-primary" onClick={captureInlinePhoto}>Use photo</Button>
           </div>
         </div>,
         document.body,

@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { MoodPicker, moodEmoji, type MoodId } from "./MoodPicker";
+import { moodGradient } from "./moodGradient";
 import { format } from "date-fns";
 import { InviteCollaboratorDialog } from "@/components/project/InviteCollaboratorDialog";
 

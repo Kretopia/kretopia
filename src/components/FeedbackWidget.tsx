@@ -120,25 +120,7 @@ export function FeedbackWidget() {
 
   return (
     <>
-      {/* FAB */}
-      {!open && (
-        <div className="fixed bottom-24 right-4 lg:bottom-6 lg:right-6 z-50 flex items-center gap-1">
-          <button
-            onClick={() => { setDismissed(true); sessionStorage.setItem("feedback-dismissed", "true"); }}
-            className="h-6 w-6 rounded-full bg-muted/80 text-muted-foreground hover:bg-destructive/20 hover:text-destructive shadow transition-all flex items-center justify-center"
-            aria-label="Dismiss feedback"
-          >
-            <X className="h-3 w-3" />
-          </button>
-          <button
-            onClick={() => setOpen(true)}
-            className="h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center"
-            aria-label="Send feedback"
-          >
-            <MessageSquarePlus className="h-5 w-5" />
-          </button>
-        </div>
-      )}
+      {/* FAB removed — feedback is now opened from the hamburger menu via the "open-feedback" event */}
 
       {/* Chat panel */}
       {open && (

@@ -16,6 +16,8 @@ import { ProjectFlowTimeline } from "@/components/project/flow/ProjectFlowTimeli
 import { NextStepBar } from "@/components/project/flow/NextStepBar";
 import { MobileProjectHub } from "@/components/project/mobile/MobileProjectHub";
 import { StudioRoom } from "@/components/project/studio/StudioRoom";
+import { DeskCommandPalette } from "@/components/desk/DeskCommandPalette";
+import { VoiceCommandSheet } from "@/components/desk/VoiceCommandSheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ArrowLeft } from "lucide-react";
 import { useProjectData } from "@/hooks/useProjectData";
@@ -36,8 +38,11 @@ const ThriveDesk = () => {
   const [activeTab, setActiveTab] = useState("today");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
   const isMobile = useIsMobile();
-  const isMobileHub = isMobile && activeTab === "today";
+  // Studio Room is the default for "today" tab on BOTH mobile and desktop now
+  const isStudioRoom = activeTab === "today";
 
   const agentRole = useAgentRole(project, user?.id || "");
 

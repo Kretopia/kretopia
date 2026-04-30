@@ -53,10 +53,59 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [collaboratorToRemove, setCollaboratorToRemove] = useState<{ id: string; name: string } | null>(null);
   const [removing, setRemoving] = useState(false);
-  
+  const [callOpen, setCallOpen] = useState(false);
+  const [startingCall, setStartingCall] = useState(false);
+  const [callRoomUrl, setCallRoomUrl] = useState<string | null>(null);
+  const [callToken, setCallToken] = useState<string | null>(null);
+  const [callId, setCallId] = useState<string | null>(null);
+
   const isOwner = user?.id === project.created_by;
-  
-  const getStatusColor = (status: string | null) => {
+
+  const myName =
+    collaborators.find((c) => c.id === user?.id)?.full_name ||
+    user?.user_metadata?.full_name ||
+    user?.email?.split("@")[0] ||
+    "Someone";
+
+  const handleStartCall = async () => {
+    if (startingCall) return;
+    setStartingCall(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-video-room", {
+        body: { project_id: project.id, user_name: myName },
+      });
+      if (error) throw error;
+      if (!data?.room_url) throw new Error("No room URL returned");
+
+      setCallRoomUrl(data.room_url);
+      setCallToken(data.token ?? null);
+      setCallId(data.call_id ?? null);
+      setCallOpen(true);
+
+      // Notify other collaborators (in-app + push) — fire and forget
+      const others = collaborators.filter((c) => c.id !== user?.id);
+      others.forEach((c) => {
+        sendPushNotification({
+          userId: c.id,
+          title: "Live call started",
+          body: `${myName} started a call on ${project.title}. Join now →`,
+          type: "general",
+          link: `/desk/${project.id}`,
+          data: { project_id: project.id, kind: "video_call" },
+        }).catch((e) => console.error("[startCall] notify failed", e));
+      });
+    } catch (e: any) {
+      console.error("[startCall]", e);
+      toast({
+        title: "Couldn't start the call",
+        description: e?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setStartingCall(false);
+    }
+  };
+
     switch (status) {
       case 'active': return 'bg-green-500/10 text-green-500 border-green-500/20';
       case 'completed': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';

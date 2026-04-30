@@ -273,18 +273,20 @@ export default function Onboarding() {
           analytics.onboardingStep(3, "review_phase_entered_via_ai");
         } catch {}
       } else {
-        setNotFound(true);
+        setEnteredEmpty(true);
+        setPhase("review");
         try {
           const { analytics } = await import("@/lib/analytics");
-          analytics.onboardingStep(2, "ai_search_no_results");
+          analytics.onboardingStep(3, "review_phase_entered_empty_no_results");
         } catch {}
       }
     } catch (e) {
       console.error("Discovery error:", e);
-      setNotFound(true);
+      setEnteredEmpty(true);
+      setPhase("review");
       try {
         const { analytics } = await import("@/lib/analytics");
-        analytics.onboardingStep(2, "ai_search_failed");
+        analytics.onboardingStep(3, "review_phase_entered_empty_error");
       } catch {}
     } finally {
       setSearching(false);

@@ -445,9 +445,28 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
 
               {scanError && !scanning && (
                 <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-                  The receipt is open for review, but the automatic breakdown hit an issue. Add or correct the fields below, then save it.
+                  <div className="font-semibold">Receipt scan/save issue</div>
+                  <div className="mt-1">{scanError}</div>
+                  <div className="mt-1 text-xs text-destructive/80">The receipt stays open so you can fill anything missing and try saving again.</div>
                 </div>
               )}
+
+              <details open className="rounded-lg border bg-muted/30 p-3 text-xs">
+                <summary className="cursor-pointer font-semibold text-foreground">Receipt scan debug</summary>
+                <div className="mt-2 max-h-44 overflow-y-auto space-y-1.5">
+                  {debugSteps.length === 0 ? (
+                    <p className="text-muted-foreground">No debug events yet.</p>
+                  ) : debugSteps.map((step, index) => (
+                    <div key={`${step.time}-${index}`} className="rounded-md border bg-background p-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={step.level === "error" ? "font-semibold text-destructive" : step.level === "success" ? "font-semibold text-primary" : "font-semibold text-foreground"}>{step.message}</span>
+                        <span className="shrink-0 text-muted-foreground">{step.time}</span>
+                      </div>
+                      {step.detail && <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[10px] text-muted-foreground">{step.detail}</pre>}
+                    </div>
+                  ))}
+                </div>
+              </details>
 
               <div className="rounded-xl border bg-card p-4">
                 <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Amount</Label>

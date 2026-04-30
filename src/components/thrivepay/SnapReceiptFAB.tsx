@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Camera, Loader2, Check, X, Sparkles, ImagePlus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -52,6 +52,13 @@ interface ScannedReceipt {
   line_items?: Array<{ description: string; amount: number }>;
 }
 
+interface DebugStep {
+  time: string;
+  message: string;
+  detail?: string;
+  level?: "info" | "success" | "error";
+}
+
 interface SnapReceiptFABProps {
   projectId?: string;
 }
@@ -67,6 +74,9 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
   const { user } = useAuth();
   const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
+  const pendingPickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cameraInputId = useId();
+  const uploadInputId = useId();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -74,7 +84,65 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
   const [saving, setSaving] = useState(false);
   const [scanned, setScanned] = useState<ScannedReceipt | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [debugOpen, setDebugOpen] = useState(false);
+  const [debugSteps, setDebugSteps] = useState<DebugStep[]>([]);
   const [form, setForm] = useState(emptyReceiptForm);
+
+  const addDebug = (message: string, detail?: string, level: DebugStep["level"] = "info") => {
+    setDebugSteps((prev) => [
+      ...prev.slice(-9),
+      {
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+        message,
+        detail: detail ? detail.slice(0, 1400) : undefined,
+        level,
+      },
+    ]);
+  };
+
+  const formatErrorDetail = (err: unknown) => {
+    if (!err) return "No error object was returned.";
+    if (err instanceof Error) return `${err.name}: ${err.message}${err.stack ? `\n${err.stack.slice(0, 900)}` : ""}`;
+    if (typeof err === "object") {
+      try {
+        return JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+      } catch {
+        return String(err);
+      }
+    }
+    return String(err);
+  };
+
+  const clearPickerTimer = () => {
+    if (pendingPickerTimer.current) {
+      clearTimeout(pendingPickerTimer.current);
+      pendingPickerTimer.current = null;
+    }
+  };
+
+  const beginPicker = (mode: "camera" | "upload") => {
+    clearPickerTimer();
+    setDebugOpen(true);
+    setScanError(null);
+    const inputReady = mode === "camera" ? Boolean(cameraRef.current) : Boolean(uploadRef.current);
+    addDebug(
+      mode === "camera" ? "Take photo tapped" : "Upload screenshot tapped",
+      `Input ready: ${inputReady ? "yes" : "no"}. Signed in: ${user?.id ? "yes" : "no"}. Browser: ${navigator.userAgent}`,
+      inputReady ? "info" : "error",
+    );
+    pendingPickerTimer.current = setTimeout(() => {
+      addDebug(
+        "No image reached the app yet",
+        "If the camera/gallery did not open, the browser may have blocked the file picker, camera permission may be denied, or the picker was cancelled before a file was selected.",
+        "error",
+      );
+    }, 4500);
+  };
+
+  useEffect(() => () => {
+    clearPickerTimer();
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   const compressImage = (f: File, maxWidth = 1200, quality = 0.7): Promise<string> =>
     new Promise((resolve, reject) => {

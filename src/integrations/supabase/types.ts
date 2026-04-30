@@ -4715,6 +4715,36 @@ export type Database = {
         }
         Relationships: []
       }
+      founding_member_quests: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          quest_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          quest_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          quest_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       guest_rsvps: {
         Row: {
           check_in_token: string
@@ -13209,6 +13239,10 @@ export type Database = {
       auto_join_circles_for_role: {
         Args: { p_role: string; p_user_id: string }
         Returns: undefined
+      }
+      award_founding_member_badge: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
       backfill_vouch_requests: { Args: never; Returns: Json }
       calculate_distance: {

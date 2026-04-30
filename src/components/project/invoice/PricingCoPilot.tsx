@@ -267,7 +267,7 @@ export function PricingCoPilot({
     { label: "💬 Help me price this", prompt: `I need help creating a ${docLabel}. Let me tell you about the project and my costs...` },
     { label: "📊 Calculate markups", prompt: `I have my supplier/subcontractor costs. Help me calculate competitive markups for my client ${docLabel} in ${currency}.` },
     { label: "✍️ Enhance descriptions", prompt: "Can you improve my current line item descriptions to sound more professional?" },
-    { label: "📝 Full ${docLabel} from scratch", prompt: `I want to create a complete ${docLabel} from scratch. I'll describe the project and client — help me with everything from line items to terms.` },
+    { label: `📝 Full ${docLabel} from scratch`, prompt: `I want to create a complete ${docLabel} from scratch. I'll describe the project and client — help me with everything from line items to terms.` },
   ];
 
   if (!isOpen) {

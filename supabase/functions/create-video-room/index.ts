@@ -80,7 +80,10 @@ serve(async (req) => {
       enable_screenshare: true,
       start_video_off: false,
       start_audio_off: false,
-      enable_knocking: true,
+      // WhatsApp-style: anyone with a valid token/guest link drops straight in.
+      // No knocking lobby (we use our own PreCallLobby on the client).
+      enable_knocking: false,
+      enable_prejoin_ui: false,
     };
 
     async function createRoom(name: string) {

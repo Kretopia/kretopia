@@ -19,7 +19,7 @@ interface MoneySectionProps {
 interface InvoiceLite {
   id: string;
   status: string;
-  total: number;
+  total_amount: number | null;
 }
 
 const fmt = (n: number | null | undefined, ccy: string | null | undefined) => {
@@ -46,12 +46,12 @@ export const MoneySection = ({ project, isOwner, onOpenInvoice }: MoneySectionPr
       try {
         const { data } = await supabase
           .from("invoices")
-          .select("id, status, total")
+          .select("id, status, total_amount")
           .eq("project_id", project.id)
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-        if (!cancelled) setInvoice(data as InvoiceLite | null);
+        if (!cancelled) setInvoice((data as unknown as InvoiceLite) ?? null);
       } catch (e) {
         console.error("[MoneySection] fetch invoice", e);
       } finally {

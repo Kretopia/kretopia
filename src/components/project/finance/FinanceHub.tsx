@@ -91,7 +91,7 @@ export function FinanceHub({
     const { data } = await supabase
       .from("invoices")
       .select(
-        "id, invoice_number, status, total_amount, amount, currency, recipient_name, due_date, document_type, milestone_id, created_at"
+        "id, invoice_number, status, total_amount, amount, currency, recipient_name, due_date, document_type, milestone_id, created_at, issued_to"
       )
       .eq("project_id", projectId)
       .order("created_at", { ascending: false });

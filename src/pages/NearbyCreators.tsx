@@ -320,7 +320,40 @@ const NearbyCreators = () => {
               </Button>
             </div>
 
-            {viewMode === 'map' ? (
+            {(() => {
+              const within50 = creators.filter(c => (c.distance_km ?? 0) <= 50).length;
+              const showEmpty = !loading && within50 < 3;
+              if (showEmpty) {
+                const cityLabel = cityName || "your area";
+                return (
+                  <div className="rounded-xl border border-dashed border-border bg-gradient-to-br from-primary/5 via-card to-accent/5 p-6 sm:p-8 text-center space-y-4">
+                    <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <MapPin className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h2 className="text-base sm:text-lg font-bold">No creators nearby yet</h2>
+                      <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                        But your city is growing. Invite someone to put {cityLabel} on the map.
+                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                      <Button onClick={() => setShowInviteDialog(true)} className="gap-2">
+                        <Share2 className="h-4 w-4" />
+                        Invite a creative
+                      </Button>
+                      <Button variant="outline" onClick={() => setDiscoverMode('browse')}>
+                        Browse all creators
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      {within50 === 0
+                        ? "0 within 50 km"
+                        : `${within50} within 50 km — needs at least 3 to unlock the map`}
+                    </p>
+                  </div>
+                );
+              }
+              return viewMode === 'map' ? (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Map takes priority */}
                 <div className="lg:col-span-2">

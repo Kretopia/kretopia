@@ -731,6 +731,21 @@ export default function Onboarding() {
               </div>
 
               <div className="p-6 sm:p-8 space-y-5">
+                {/* Warm empty-state — shown when discovery returned nothing or timed out */}
+                {enteredEmpty && (
+                  <div className="rounded-xl border border-energy/30 bg-gradient-to-br from-energy/5 via-card to-primary/5 p-4 animate-fade-in">
+                    <div className="flex items-start gap-3">
+                      <div className="h-9 w-9 rounded-lg bg-energy/15 flex items-center justify-center shrink-0">
+                        <Sparkles className="h-4 w-4 text-energy" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold">We couldn't find your work online yet — that's okay.</p>
+                        <p className="text-xs text-muted-foreground">Let's build your profile together. Start with your role and a short bio below.</p>
+                        <p className="text-[11px] text-muted-foreground/80 pt-1">You can always import credits later from your ThriveCredits page.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {/* Photo + Name row */}
                 <div className="flex items-start gap-4">
                   <div className="relative shrink-0">

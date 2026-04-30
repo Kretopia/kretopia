@@ -150,6 +150,23 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     }
   }, [cameraOpen, cameraStream]);
 
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const mode = (event as CustomEvent<{ mode?: "camera" | "upload" }>).detail?.mode;
+      if (mode === "camera") {
+        isNativeCameraReady() ? openNativeImage(CameraSource.Camera) : startInlineCamera();
+        return;
+      }
+      if (mode === "upload") {
+        isNativeCameraReady() ? openNativeImage(CameraSource.Photos) : uploadRef.current?.click();
+        return;
+      }
+      setPickerOpen(true);
+    };
+    window.addEventListener("thrivepay:scan-receipt", handler as EventListener);
+    return () => window.removeEventListener("thrivepay:scan-receipt", handler as EventListener);
+  }, [cameraStream, scanning, user?.id]);
+
   useEffect(() => () => {
     clearPickerTimer();
     if (previewUrl) URL.revokeObjectURL(previewUrl);

@@ -373,22 +373,6 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
                 {scanError}
               </p>
             )}
-            <details open className="rounded-md border bg-muted/30 p-2 text-[11px]">
-              <summary className="cursor-pointer font-semibold text-foreground">Receipt scan debug</summary>
-              <div className="mt-2 max-h-36 overflow-y-auto space-y-1.5">
-                {debugSteps.length === 0 ? (
-                  <p className="text-muted-foreground">No debug events yet.</p>
-                ) : debugSteps.map((step, index) => (
-                  <div key={`${step.time}-${index}`} className="rounded border bg-background p-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={step.level === "error" ? "font-semibold text-destructive" : step.level === "success" ? "font-semibold text-primary" : "font-semibold text-foreground"}>{step.message}</span>
-                      <span className="shrink-0 text-muted-foreground">{step.time}</span>
-                    </div>
-                    {step.detail && <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[10px] text-muted-foreground">{step.detail}</pre>}
-                  </div>
-                ))}
-              </div>
-            </details>
           </div>
 
           <div className="relative flex items-center">

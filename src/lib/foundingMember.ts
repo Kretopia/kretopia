@@ -32,9 +32,10 @@ export const FOUNDING_QUESTS: FoundingQuest[] = [
   },
 ];
 
-// Trinidad launch + 6 weeks. Update this constant when the launch date shifts.
-// Format: ISO date (UTC midnight) — used purely for display + countdown.
-export const FOUNDING_MEMBER_DEADLINE_ISO = "2026-06-15T23:59:59Z";
+// Founding Member program closes June 1, 2026 — or earlier if all 100 active spots fill first.
+// Format: ISO date (UTC) — used for display + countdown only.
+export const FOUNDING_MEMBER_DEADLINE_ISO = "2026-06-01T23:59:59Z";
+export const FOUNDING_MEMBER_CAP = 100;
 
 export function foundingDeadlineLabel(): string {
   try {

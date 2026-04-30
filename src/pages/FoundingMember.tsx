@@ -58,6 +58,9 @@ export default function FoundingMember() {
                 <Calendar className="h-3 w-3" />
                 Closes {deadline} · {daysLeft} day{daysLeft === 1 ? "" : "s"} left
               </div>
+              <p className="text-[11px] text-muted-foreground mt-2">
+                Or sooner — only 100 active spots, first come, first earned.
+              </p>
             </div>
           </div>
 

@@ -18,7 +18,10 @@ import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown
 import { ProfileHubCard } from "@/components/home/ProfileHubCard";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
+// TODO: Replace with real community photos before launch
+// To swap the hero visual, change this single import path:
 import heroCreators from "@/assets/hero-creators.jpg";
+const HERO_IMAGE = heroCreators;
 
 import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
 import { CreatorDashboardSection } from "@/components/landing/CreatorDashboardSection";
@@ -340,20 +343,71 @@ export const UnifiedHome = () => {
             {/* Two-column cinematic stage */}
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-10 sm:mb-14">
 
-              {/* LEFT — Headline + CTA */}
-              <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
+              {/* LEFT — Headline + Search + Stats (search is FIRST interactive element above the fold on mobile) */}
+              <div className="relative z-10 text-center lg:text-left order-1 lg:order-1">
                 <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
                   <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
                   The Creative OS
                 </p>
 
-                <h1 className="text-[2.5rem] sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[-0.04em] text-foreground leading-[0.92] mb-5">
-                  Find Your<br />People.<br />
-                  Build{" "}
-                  <span className="text-energy-glow">Real.</span>
+                {/* PRIMARY HEADLINE */}
+                <h1 className="text-[2.25rem] sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.035em] text-foreground leading-[0.95] mb-4">
+                  Search Your Name.<br />
+                  Claim Your Credits.<br />
+                  <span className="text-energy-glow">Get Paid.</span>
                 </h1>
 
-                <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mb-6">
+                {/* Secondary headline */}
+                <p className="text-sm sm:text-base text-muted-foreground/90 font-semibold mb-5">
+                  Find Your People. Build Real.
+                </p>
+
+                {/* SEARCH BAR — first interactive element above the fold */}
+                <div className="max-w-xl mx-auto lg:mx-0 mb-3">
+                  <div className="text-center lg:text-left mb-2">
+                    <p className="inline-flex items-center gap-2 text-sm sm:text-base font-black text-energy">
+                      Already have work? Search your name
+                      <ArrowRight className="h-4 w-4 text-energy" />
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      We'll find your verified credits across the web
+                    </p>
+                  </div>
+
+                  <div className="relative rounded-2xl p-[2px] bg-gradient-to-r from-energy via-primary to-energy shadow-[0_0_30px_-5px_hsl(var(--energy)/0.5)]">
+                    <div className="rounded-[14px] bg-card">
+                      <UnifiedSearchDropdown
+                        variant="hero"
+                        placeholder={t("landing.searchPlaceholder")}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* STATS BAR — strongest social proof, immediately after search */}
+                <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-5 mt-4 mb-2 flex-wrap">
+                  <div className="text-center lg:text-left">
+                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.creators.toLocaleString()}+</p>
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCreators")}</p>
+                  </div>
+                  <div className="w-px h-7 bg-border" />
+                  <div className="text-center lg:text-left">
+                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.connections.toLocaleString()}+</p>
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Connections</p>
+                  </div>
+                  <div className="w-px h-7 bg-border" />
+                  <div className="text-center lg:text-left">
+                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.credits.toLocaleString()}+</p>
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCredits")}</p>
+                  </div>
+                  <div className="w-px h-7 bg-border" />
+                  <div className="text-center lg:text-left">
+                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.gigs.toLocaleString()}+</p>
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsGigs")}</p>
+                  </div>
+                </div>
+
+                <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mt-5">
                   Where{" "}
                   <span className="text-primary font-semibold inline-block min-w-[100px]">
                     <AnimatePresence mode="wait">
@@ -371,19 +425,19 @@ export const UnifiedHome = () => {
                   </span>{" "}
                   build verified credits, connect with collaborators, and get paid.
                 </p>
-
-                {/* Primary CTAs moved below the social-proof row for stronger conversion */}
               </div>
 
-              {/* RIGHT — Cinematic creator image with overlays */}
-              <div className="relative order-1 lg:order-2">
+              {/* RIGHT — Cinematic creator image with overlays. On mobile this loads BELOW the search bar. */}
+              {/* TODO: Replace with real community photos before launch */}
+              <div className="relative order-2 lg:order-2">
                 <div className="relative aspect-[4/5] lg:aspect-[3/4] rounded-3xl overflow-hidden border border-primary/25 shadow-glow">
                   <img
-                    src={heroCreators}
+                    src={HERO_IMAGE}
                     alt="Two creative collaborators captured in cinematic editorial light"
                     className="absolute inset-0 w-full h-full object-cover"
                     width={1280}
                     height={1600}
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-background/10" />
 
@@ -421,33 +475,11 @@ export const UnifiedHome = () => {
               </div>
             </div>
 
-            {/* Highlighted "Search yourself" block — primary entry for creators with existing work */}
-            <div className="max-w-xl mx-auto mb-6">
-              <div className="text-center mb-3">
-                <p className="inline-flex items-center gap-2 text-sm sm:text-base font-black text-energy">
-                  <Sparkles className="h-4 w-4 text-energy" />
-                  Already have work? Search your name
-                  <Sparkles className="h-4 w-4 text-energy" />
-                </p>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  We'll find your verified credits across the web
-                </p>
-              </div>
-
-              <div className="relative rounded-2xl p-[2px] bg-gradient-to-r from-energy via-primary to-energy shadow-[0_0_30px_-5px_hsl(var(--energy)/0.5)]">
-                <div className="rounded-[14px] bg-card">
-                  <UnifiedSearchDropdown
-                    variant="hero"
-                    placeholder={t("landing.searchPlaceholder")}
-                  />
-                </div>
-              </div>
-            </div>
             <div className="mb-6">
               <DiscoverCreativesRow />
             </div>
 
-            {/* PRIMARY CTA — moved here, after social proof, with inline OAuth */}
+            {/* PRIMARY CTA — inline OAuth */}
             <div className="max-w-md mx-auto mb-8 text-center">
               <h3 className="text-xl sm:text-2xl font-black text-foreground mb-1.5 tracking-tight">
                 Claim your spot
@@ -484,28 +516,6 @@ export const UnifiedHome = () => {
                     <p className="text-[10px] text-muted-foreground leading-relaxed">{s.desc}</p>
                   </motion.div>
                 ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-4 sm:gap-6 mb-4 flex-wrap">
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.creators.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCreators")}</p>
-              </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.connections.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Connections</p>
-              </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.credits.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCredits")}</p>
-              </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="text-center">
-                <p className="text-xl sm:text-2xl font-extrabold text-foreground">{stats.gigs.toLocaleString()}+</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsGigs")}</p>
               </div>
             </div>
 

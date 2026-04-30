@@ -310,9 +310,8 @@ export const HeroSection = () => {
             {/* Highlighted call-to-action above search */}
             <div className="text-center mb-3">
               <p className="inline-flex items-center gap-2 text-sm sm:text-base font-black text-energy-glow">
-                <Sparkles className="h-4 w-4 text-energy" />
                 Already have work? Search your name
-                <Sparkles className="h-4 w-4 text-energy" />
+                <ArrowRight className="h-4 w-4 text-energy" />
               </p>
               <p className="text-[11px] text-muted-foreground mt-1">
                 We'll find your verified credits across the web

@@ -193,15 +193,7 @@ export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: V
         {/* Share */}
         {isOwner && (
           <div className="pt-1">
-            <InviteCollaboratorDialog
-              projectId={project.id}
-              onInvite={onUpdated}
-              triggerLabel={
-                <span className="inline-flex items-center gap-1.5">
-                  <Share2 className="h-3.5 w-3.5" /> Invite a collaborator
-                </span>
-              }
-            />
+            <InviteCollaboratorDialog projectId={project.id} onInvite={onUpdated} />
           </div>
         )}
       </div>

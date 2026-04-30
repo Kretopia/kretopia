@@ -5,6 +5,24 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const allowedCategories = new Set([
+  "software", "equipment", "travel", "workspace", "marketing", "education", "subscriptions", "food", "insurance", "taxes", "contractors", "entertainment", "carnival", "events", "other",
+]);
+
+const normalizeCategory = (category: unknown) => {
+  const raw = typeof category === "string" ? category.toLowerCase().trim() : "other";
+  const aliases: Record<string, string> = {
+    contractor: "contractors",
+    transport: "travel",
+    transportation: "travel",
+    rent: "workspace",
+    utilities: "workspace",
+    supplies: "equipment",
+  };
+  const candidate = aliases[raw] || raw || "other";
+  return allowedCategories.has(candidate) ? candidate : "other";
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -63,7 +81,7 @@ serve(async (req) => {
                   date: { type: "string", description: "Date in YYYY-MM-DD format" },
                   category: {
                     type: "string",
-                    enum: ["software", "equipment", "travel", "food", "supplies", "marketing", "education", "rent", "transport", "entertainment", "insurance", "utilities", "subscriptions", "contractor", "other"],
+                    enum: ["software", "equipment", "travel", "workspace", "marketing", "education", "subscriptions", "food", "insurance", "taxes", "contractors", "entertainment", "carnival", "events", "other"],
                     description: "Expense category",
                   },
                   tax_deductible: { type: "boolean", description: "Whether this is likely a business/tax deductible expense" },
@@ -105,6 +123,7 @@ serve(async (req) => {
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall?.function?.arguments) {
       const parsed = JSON.parse(toolCall.function.arguments);
+      parsed.category = normalizeCategory(parsed.category);
       return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

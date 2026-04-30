@@ -268,7 +268,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       </Popover>
 
       {/* Review & approve panel */}
-      {reviewOpen && (
+      {reviewOpen && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[90]" role="presentation">
           <button
             type="button"
@@ -311,6 +311,12 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
                 <div className="flex items-center gap-2 rounded-lg border bg-card p-3 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   Capturing the breakdown…
+                </div>
+              )}
+
+              {scanError && !scanning && (
+                <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+                  The receipt is open for review, but the automatic breakdown hit an issue. Add or correct the fields below, then save it.
                 </div>
               )}
 
@@ -416,7 +422,8 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
               </Button>
             </div>
           </section>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

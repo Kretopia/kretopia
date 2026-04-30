@@ -165,6 +165,7 @@ const BrandWorkHome = () => {
         <TodayStrip
           onVoice={() => setVoiceCmdOpen(true)}
           onCommandPalette={() => setPaletteOpen(true)}
+          onWrapWeek={() => setWrapWeekOpen(true)}
         />
 
         <div className="grid grid-cols-4 gap-2">
@@ -389,6 +390,7 @@ const CreatorWorkHome = () => {
         <TodayStrip
           onVoice={() => setVoiceCmdOpen(true)}
           onCommandPalette={() => setPaletteOpen(true)}
+          onWrapWeek={() => setWrapWeekOpen(true)}
         />
 
         {/* Pending invites */}

@@ -98,20 +98,56 @@ serve(async (req) => {
       const room = await createRes.json();
       roomUrl = room.url;
     } else {
-      const err = await createRes.json().catch(() => ({}));
-      // Room may already exist
-      if (createRes.status === 409 || err?.error === "invalid-request-error") {
+      const errText = await createRes.text();
+      let errJson: any = {};
+      try { errJson = JSON.parse(errText); } catch (_) {}
+      console.error("[create-video-room] Daily create response:", createRes.status, errText);
+
+      // If the room already exists, Daily returns 409 with info containing "already exists"
+      const alreadyExists =
+        createRes.status === 409 ||
+        (typeof errJson?.info === "string" && errJson.info.toLowerCase().includes("already exist"));
+
+      if (alreadyExists) {
         const getRes = await fetch(`${DAILY_API}/rooms/${roomName}`, {
           headers: { Authorization: `Bearer ${DAILY_API_KEY}` },
         });
-        if (!getRes.ok) {
-          const ge = await getRes.text();
-          throw new Error(`Daily room fetch failed: ${getRes.status} ${ge}`);
+        if (getRes.ok) {
+          const room = await getRes.json();
+          roomUrl = room.url;
+        } else {
+          // Stale local reference — try creating with a fresh suffix
+          const freshName = `${roomName.slice(0, 30)}-${Date.now().toString(36).slice(-6)}`;
+          const retryRes = await fetch(`${DAILY_API}/rooms`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${DAILY_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: freshName,
+              privacy: "private",
+              properties: {
+                exp,
+                max_participants: 10,
+                enable_chat: true,
+                enable_screenshare: true,
+                enable_recording: "cloud",
+                start_video_off: false,
+                start_audio_off: false,
+                enable_knocking: true,
+              },
+            }),
+          });
+          if (!retryRes.ok) {
+            const rt = await retryRes.text();
+            throw new Error(`Daily retry create failed: ${retryRes.status} ${rt}`);
+          }
+          const room = await retryRes.json();
+          roomUrl = room.url;
         }
-        const room = await getRes.json();
-        roomUrl = room.url;
       } else {
-        throw new Error(`Daily create failed: ${createRes.status} ${JSON.stringify(err)}`);
+        throw new Error(`Daily create failed: ${createRes.status} ${errText}`);
       }
     }
 

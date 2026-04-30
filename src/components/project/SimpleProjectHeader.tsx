@@ -298,6 +298,8 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           token={callToken}
           callId={callId}
           userName={myName}
+          projectId={project.id}
+          roomName={callRoomUrl?.split("/").pop() ?? null}
         />
       </>
     );

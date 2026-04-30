@@ -355,32 +355,36 @@ export const OpportunitiesFeed = () => {
       )}
 
       {/* Empty */}
-      {!loading && opportunities.length === 0 && (
-        <div className="text-center py-14 px-6">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-            <Briefcase className="h-8 w-8 text-primary" />
+      {!loading && opportunities.length === 0 && (() => {
+        const hasFilters = activeFilter !== "all" || !!searchQuery || selectedSkill !== "all" || locationFilter !== "all" || compensationFilter !== "all";
+        const clearAll = () => { setActiveFilter("all"); setSearchQuery(""); setSelectedSkill("all"); setLocationFilter("all"); setCompensationFilter("all"); };
+        return (
+          <div className="text-center py-14 px-6">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+              <Briefcase className="h-8 w-8 text-primary" />
+            </div>
+            <h4 className="text-lg font-bold mb-2">
+              {hasFilters ? "Nothing here yet" : "No gigs here yet"}
+            </h4>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
+              {hasFilters
+                ? "Nothing here yet — but opportunities are posted daily. Try widening your filters or check back tomorrow."
+                : "Be the first to post an opportunity — paid gig, barter, or collab."}
+            </p>
+            <div className="flex justify-center">
+              {hasFilters ? (
+                <Button onClick={clearAll} className="gap-2">
+                  Clear filters
+                </Button>
+              ) : (
+                <Button onClick={() => setPostDialogOpen(true)} className="gap-2">
+                  <Plus className="h-4 w-4" /> Post a Gig
+                </Button>
+              )}
+            </div>
           </div>
-          <h4 className="text-lg font-bold mb-2">No gigs here yet</h4>
-          <p className="text-sm text-muted-foreground mb-1 max-w-xs mx-auto">
-            {activeFilter !== "all" || searchQuery
-              ? "Try adjusting your filters to see more results."
-              : "Be the first to post an opportunity — paid gig, barter, or collab."}
-          </p>
-          <p className="text-xs text-muted-foreground/70 mb-6">
-            New gigs are posted daily by creatives worldwide.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
-            <Button onClick={() => setPostDialogOpen(true)} className="gap-2">
-              <Plus className="h-4 w-4" /> Post a Gig
-            </Button>
-            {(activeFilter !== "all" || searchQuery || selectedSkill !== "all" || locationFilter !== "all") && (
-              <Button variant="outline" onClick={() => { setActiveFilter("all"); setSearchQuery(""); setSelectedSkill("all"); setLocationFilter("all"); setCompensationFilter("all"); }}>
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Cards — responsive grid: 1 col mobile, 2 cols tablet, 3 cols desktop */}
       {!loading && opportunities.length > 0 && (

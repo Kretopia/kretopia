@@ -118,7 +118,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
         "If the camera/gallery did not open, the browser may have blocked the file picker, camera permission may be denied, or the picker was cancelled before a file was selected.",
         "error",
       );
-    }, 4500);
+    }, 15000);
   };
 
   // Listen for global "open expense" event (from ThrivePay quick-add menu / Snap FAB)

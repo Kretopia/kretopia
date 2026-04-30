@@ -195,7 +195,7 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
   // Listen for global "start video call" event (e.g. from voice command)
   useEffect(() => {
     const onStart = () => {
-      if (!startingCall && !callOpen) handleStartCall();
+      if (!startingCall && !callOpen) openStartSheet();
     };
     window.addEventListener("thrivedesk:start-video-call", onStart);
     return () => window.removeEventListener("thrivedesk:start-video-call", onStart);
@@ -325,7 +325,7 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
             size="icon"
             variant="default"
             className="h-8 w-8 rounded-full"
-            onClick={handleStartCall}
+            onClick={openStartSheet}
             disabled={startingCall}
             aria-label="Start video call"
             title="Start video call"
@@ -478,7 +478,7 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           size="sm"
           variant="default"
           className="gap-2 shrink-0"
-          onClick={handleStartCall}
+          onClick={openStartSheet}
           disabled={startingCall}
         >
           {startingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}

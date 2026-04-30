@@ -70,15 +70,19 @@ export const VideoCallSheet = ({
         : 0;
 
       if (callId && duration > 0) {
-        supabase
-          .from("project_video_calls")
-          .update({
-            ended_at: new Date(ended).toISOString(),
-            duration_seconds: duration,
-          })
-          .eq("id", callId)
-          .then(() => {})
-          .catch((e) => console.error("[VideoCallSheet] log end failed", e));
+        void (async () => {
+          try {
+            await supabase
+              .from("project_video_calls")
+              .update({
+                ended_at: new Date(ended).toISOString(),
+                duration_seconds: duration,
+              })
+              .eq("id", callId);
+          } catch (e) {
+            console.error("[VideoCallSheet] log end failed", e);
+          }
+        })();
       }
 
       try {

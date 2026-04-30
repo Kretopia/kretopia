@@ -155,8 +155,7 @@ export const VideoCallSheet = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        hideClose
-        className="h-[100dvh] sm:h-[92dvh] p-0 flex flex-col bg-[#0b0b0f] border-t-0 gap-0"
+        className="h-[100dvh] sm:h-[92dvh] p-0 flex flex-col bg-[#0b0b0f] border-t-0 gap-0 [&>button.absolute]:hidden"
       >
         {/* Header */}
         <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 shrink-0 bg-[#0b0b0f]">

@@ -184,6 +184,18 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
               </div>
             )}
           </div>
+          <Button
+            type="button"
+            size="icon"
+            variant="default"
+            className="h-8 w-8 rounded-full"
+            onClick={handleStartCall}
+            disabled={startingCall}
+            aria-label="Start video call"
+            title="Start video call"
+          >
+            {startingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+          </Button>
           {isOwner && (
             <InviteCollaboratorDialog projectId={project.id} onInvite={() => onCollaboratorsChanged?.()} />
           )}

@@ -309,6 +309,11 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     }
   };
 
+  const openReceiptScanner = (mode: "camera" | "upload") => {
+    setOpen(false);
+    window.dispatchEvent(new CustomEvent("thrivepay:scan-receipt", { detail: { mode } }));
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -346,32 +351,22 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div className="relative flex h-9 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-md border border-input bg-background px-3 text-xs font-medium hover:bg-accent hover:text-accent-foreground">
+              <button
+                type="button"
+                className="relative flex h-9 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-md border border-input bg-background px-3 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
+                onClick={() => openReceiptScanner("camera")}
+                disabled={scanning}
+              >
                 <Camera className="h-3.5 w-3.5" /> Take photo
-                <input
-                  ref={cameraInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  data-scan-receipt-input="true"
-                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                  onClick={() => beginPicker("camera")}
-                  onChange={handleScanReceipt}
-                  disabled={scanning}
-                />
-              </div>
-              <div className="relative flex h-9 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-md border border-input bg-background px-3 text-xs font-medium hover:bg-accent hover:text-accent-foreground">
+              </button>
+              <button
+                type="button"
+                className="relative flex h-9 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-md border border-input bg-background px-3 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
+                onClick={() => openReceiptScanner("upload")}
+                disabled={scanning}
+              >
                 <ScanLine className="h-3.5 w-3.5" /> Upload
-                <input
-                  ref={uploadInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                  onClick={() => beginPicker("upload")}
-                  onChange={handleScanReceipt}
-                  disabled={scanning}
-                />
-              </div>
+              </button>
             </div>
             {scanError && !scanning && (
               <p className="rounded-md bg-destructive/10 p-2 text-[11px] text-destructive">

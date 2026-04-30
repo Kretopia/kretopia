@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Camera, Loader2, Check, X, Sparkles, ImagePlus } from "lucide-react";
+import { Camera as CameraIcon, Loader2, Check, X, Sparkles, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { recordMoneyAction } from "@/lib/moneyStreak";
 import { EXPENSE_CATEGORIES, getCategoryInfo } from "@/components/project/expense/ExpenseCategories";
+import { Capacitor } from "@capacitor/core";
+import { Camera as NativeCamera, CameraResultType, CameraSource } from "@capacitor/camera";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY", "INR", "BRL", "TTD", "AED"];
 
@@ -61,6 +63,13 @@ interface DebugStep {
 interface SnapReceiptFABProps {
   projectId?: string;
 }
+
+type ReceiptImageInput = {
+  base64: string;
+  previewUrl: string;
+  label: string;
+  sizeKb?: number;
+};
 
 /**
  * SnapReceiptFAB
@@ -141,6 +150,23 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     }
   }, [cameraOpen, cameraStream]);
 
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const mode = (event as CustomEvent<{ mode?: "camera" | "upload" }>).detail?.mode;
+      if (mode === "camera") {
+        isNativeCameraReady() ? openNativeImage(CameraSource.Camera) : startInlineCamera();
+        return;
+      }
+      if (mode === "upload") {
+        isNativeCameraReady() ? openNativeImage(CameraSource.Photos) : uploadRef.current?.click();
+        return;
+      }
+      setPickerOpen(true);
+    };
+    window.addEventListener("thrivepay:scan-receipt", handler as EventListener);
+    return () => window.removeEventListener("thrivepay:scan-receipt", handler as EventListener);
+  }, [cameraStream, scanning, user?.id]);
+
   useEffect(() => () => {
     clearPickerTimer();
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -149,6 +175,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
 
   const compressImage = (f: File, maxWidth = 1200, quality = 0.7): Promise<string> =>
     new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(f);
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
@@ -159,11 +186,17 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         if (!ctx) return reject(new Error("Canvas not supported"));
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        URL.revokeObjectURL(objectUrl);
         resolve(dataUrl.split(",")[1]);
       };
-      img.onerror = () => reject(new Error("The selected image could not be loaded for compression."));
-      img.src = URL.createObjectURL(f);
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("The selected image could not be loaded for compression."));
+      };
+      img.src = objectUrl;
     });
+
+  const isNativeCameraReady = () => Capacitor.isNativePlatform() && Capacitor.isPluginAvailable("Camera");
 
   const stopInlineCamera = () => {
     cameraStream?.getTracks().forEach((track) => track.stop());
@@ -183,6 +216,13 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       setCameraOpen(true);
       addDebug("Camera opened", "Using the in-app camera preview instead of the Android file-picker capture flow.", "success");
     } catch (err) {
+      if (cameraRef.current) {
+        addDebug("Camera preview unavailable", "Falling back to the browser camera picker.", "info");
+        beginPicker("camera");
+        cameraRef.current.click();
+        setCameraStarting(false);
+        return;
+      }
       setDebugOpen(true);
       setScanError(err instanceof Error ? err.message : "Camera could not open");
       addDebug("Camera open failed", formatErrorDetail(err), "error");
@@ -192,7 +232,39 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     }
   };
 
-  const processReceiptFile = async (file: File) => {
+  const openNativeImage = async (source: CameraSource) => {
+    clearPickerTimer();
+    setPickerOpen(false);
+    setScanError(null);
+    try {
+      const photo = await NativeCamera.getPhoto({
+        quality: 80,
+        allowEditing: false,
+        resultType: CameraResultType.Base64,
+        source,
+        correctOrientation: true,
+      });
+
+      if (!photo.base64String) throw new Error("The selected image did not return image data.");
+      const preview = `data:image/${photo.format || "jpeg"};base64,${photo.base64String}`;
+      await processReceiptImage({
+        base64: photo.base64String,
+        previewUrl: preview,
+        label: source === CameraSource.Camera ? "camera-photo" : "uploaded-receipt",
+        sizeKb: Math.round((photo.base64String.length * 3) / 4 / 1024),
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err || "Image picker was closed");
+      if (!/cancel/i.test(message)) {
+        setDebugOpen(true);
+        setScanError(message);
+        addDebug(source === CameraSource.Camera ? "Native camera failed" : "Native upload failed", formatErrorDetail(err), "error");
+        toast.error(source === CameraSource.Camera ? "Camera could not open. Try Upload screenshot." : "Upload could not open.");
+      }
+    }
+  };
+
+  const processReceiptImage = async (image: ReceiptImageInput) => {
     if (!user) {
       addDebug("Scan stopped: no signed-in user", "The image was selected, but there is no active user session for saving expenses.", "error");
       toast.error("Sign in again before scanning receipts.");
@@ -201,9 +273,9 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
 
     setPickerOpen(false);
     setDebugOpen(false);
-    addDebug("Image received", `${file.name || "camera-photo"} • ${file.type || "unknown type"} • ${(file.size / 1024).toFixed(1)} KB`);
+    addDebug("Image received", `${image.label} • image/jpeg • ${image.sizeKb ? `${image.sizeKb.toFixed(1)} KB` : "ready"}`);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(URL.createObjectURL(file));
+    setPreviewUrl(image.previewUrl);
     setScanned(null);
     setScanError(null);
     setForm(emptyReceiptForm());
@@ -211,12 +283,10 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     setScanning(true);
     toast.loading("Reading your receipt…", { id: "snap-receipt" });
     try {
-      addDebug("Compressing image for scanner");
-      const base64 = await compressImage(file);
-      addDebug("Image compressed", `Base64 payload length: ${base64.length.toLocaleString()} characters`);
+      addDebug("Image ready for scanner", `Base64 payload length: ${image.base64.length.toLocaleString()} characters`);
       addDebug("Calling receipt scanner function");
       const { data, error } = await supabase.functions
-        .invoke("scan-receipt", { body: { image_base64: base64 } })
+        .invoke("scan-receipt", { body: { image_base64: image.base64 } })
         .catch((err) => {
           addDebug("Receipt scanner request failed", formatErrorDetail(err), "error");
           return { data: null, error: err };
@@ -255,6 +325,27 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       setScanning(false);
       if (cameraRef.current) cameraRef.current.value = "";
       if (uploadRef.current) uploadRef.current.value = "";
+    }
+  };
+
+  const processReceiptFile = async (file: File) => {
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      addDebug("Compressing image for scanner");
+      const base64 = await compressImage(file);
+      await processReceiptImage({
+        base64,
+        previewUrl: objectUrl,
+        label: file.name || "receipt-image",
+        sizeKb: file.size / 1024,
+      });
+    } catch (err) {
+      URL.revokeObjectURL(objectUrl);
+      const message = err instanceof Error ? err.message : "Could not prepare the image";
+      setScanError(message);
+      setDebugOpen(true);
+      addDebug("Image preparation failed", formatErrorDetail(err), "error");
+      toast.error(message);
     }
   };
 
@@ -352,10 +443,31 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         {scanning ? (
           <Loader2 className="h-6 w-6 animate-spin text-primary-foreground" />
         ) : (
-          <Camera className="h-6 w-6 text-primary-foreground" />
+          <CameraIcon className="h-6 w-6 text-primary-foreground" />
         )}
         <span className="text-xs font-semibold text-primary-foreground">Scan</span>
       </Button>
+
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="sr-only"
+        onClick={() => beginPicker("camera")}
+        onChange={handleFile}
+        disabled={scanning}
+      />
+
+      <input
+        ref={uploadRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        onClick={() => beginPicker("upload")}
+        onChange={handleFile}
+        disabled={scanning}
+      />
 
       {pickerOpen && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[80]" role="presentation">
@@ -375,33 +487,27 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             <button
               type="button"
               className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden disabled:opacity-50"
-              onClick={startInlineCamera}
+              onClick={() => isNativeCameraReady() ? openNativeImage(CameraSource.Camera) : startInlineCamera()}
               disabled={scanning || cameraStarting}
             >
-              <Camera className="h-4 w-4 text-primary shrink-0" />
+              <CameraIcon className="h-4 w-4 text-primary shrink-0" />
               <div className="min-w-0">
                 <div className="text-sm font-medium">{cameraStarting ? "Opening camera…" : "Take photo"}</div>
                 <div className="text-[11px] text-muted-foreground">Snap a paper receipt</div>
               </div>
             </button>
-            <div
-              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden"
+            <button
+              type="button"
+              className="relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors cursor-pointer overflow-hidden disabled:opacity-50"
+              onClick={() => isNativeCameraReady() ? openNativeImage(CameraSource.Photos) : uploadRef.current?.click()}
+              disabled={scanning}
             >
               <ImagePlus className="h-4 w-4 text-primary shrink-0" />
               <div className="min-w-0">
                 <div className="text-sm font-medium">Upload screenshot</div>
                 <div className="text-[11px] text-muted-foreground">From gallery or files</div>
               </div>
-              <input
-                ref={uploadRef}
-                type="file"
-                accept="image/*"
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                onClick={() => beginPicker("upload")}
-                onChange={handleFile}
-                disabled={scanning}
-              />
-            </div>
+            </button>
           </div>
           </div>
         </div>,

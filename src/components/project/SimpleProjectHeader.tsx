@@ -334,6 +334,19 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           </DropdownMenu>
         </div>
         
+        {/* Start Call Button */}
+        <Button
+          type="button"
+          size="sm"
+          variant="default"
+          className="gap-2 shrink-0"
+          onClick={handleStartCall}
+          disabled={startingCall}
+        >
+          {startingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+          Start call
+        </Button>
+
         {/* Quick Invite Button */}
         {isOwner && (
           <InviteCollaboratorDialog 

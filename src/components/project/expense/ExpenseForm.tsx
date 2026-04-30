@@ -262,9 +262,16 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   };
 
   const handleSave = async () => {
-    if (!user || !form.title || !form.amount) return;
+    if (!user || !form.title || !form.amount) {
+      addDebug("Save blocked", `Signed in: ${user?.id ? "yes" : "no"}. Title: ${form.title || "empty"}. Amount: ${form.amount || "empty"}.`, "error");
+      return;
+    }
     if (!guardExpense()) return;
     setSaving(true);
+    addDebug(
+      "Saving expense",
+      JSON.stringify({ project_id: projectId || null, title: form.title, amount: form.amount, currency: form.currency, category: form.category, vendor: form.vendor, date: form.date }, null, 2),
+    );
     try {
       const { error } = await supabase.from("expenses").insert({
         user_id: user.id,
@@ -283,6 +290,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
       });
       if (error) throw error;
       recordMoneyAction("expense_added");
+      addDebug("Expense saved", "The expense insert succeeded and the list refresh callback ran.", "success");
       toast.success("Expense added");
       setOpen(false);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -295,6 +303,8 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
       });
       onExpenseAdded();
     } catch (err: any) {
+      setScanError(err.message || "Failed to add expense");
+      addDebug("Save failed", formatErrorDetail(err), "error");
       toast.error(err.message || "Failed to add expense");
     } finally {
       setSaving(false);

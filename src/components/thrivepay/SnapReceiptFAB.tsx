@@ -119,18 +119,12 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
 
   const beginPicker = (mode: "camera" | "upload") => {
     clearPickerTimer();
-    setDebugOpen(true);
-    setScanError(null);
-    const inputReady = mode === "camera" ? Boolean(cameraRef.current) : Boolean(uploadRef.current);
-    addDebug(
-      mode === "camera" ? "Take photo tapped" : "Upload screenshot tapped",
-      `Input ready: ${inputReady ? "yes" : "no"}. Signed in: ${user?.id ? "yes" : "no"}. Browser: ${navigator.userAgent}`,
-      inputReady ? "info" : "error",
-    );
     pendingPickerTimer.current = setTimeout(() => {
+      const inputReady = mode === "camera" ? Boolean(cameraRef.current) : Boolean(uploadRef.current);
+      setDebugOpen(true);
       addDebug(
-        "No image reached the app yet",
-        "If the camera/gallery did not open, the browser may have blocked the file picker, camera permission may be denied, or the picker was cancelled before a file was selected.",
+        mode === "camera" ? "Take photo did not return an image" : "Upload did not return an image",
+        `Input ready: ${inputReady ? "yes" : "no"}. Signed in: ${user?.id ? "yes" : "no"}. Browser: ${navigator.userAgent}\n\nIf the camera/gallery did not open, this WebView may be blocking native file picking or camera permission may be denied.`,
         "error",
       );
     }, 15000);

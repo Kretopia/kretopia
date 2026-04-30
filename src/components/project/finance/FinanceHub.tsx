@@ -48,6 +48,7 @@ interface InvoiceLite {
   document_type: string | null;
   milestone_id: string | null;
   created_at: string;
+  issued_to: string | null;
 }
 
 const STATUS_TONE: Record<string, string> = {

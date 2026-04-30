@@ -9572,6 +9572,50 @@ export type Database = {
         }
         Relationships: []
       }
+      project_video_calls: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          participants: Json
+          project_id: string
+          room_url: string
+          started_at: string
+          started_by: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          participants?: Json
+          project_id: string
+          room_url: string
+          started_at?: string
+          started_by: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          participants?: Json
+          project_id?: string
+          room_url?: string
+          started_at?: string
+          started_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_video_calls_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           agent_mode: boolean
@@ -9597,6 +9641,9 @@ export type Database = {
           status: string | null
           title: string
           updated_at: string | null
+          video_room_started_at: string | null
+          video_room_started_by: string | null
+          video_room_url: string | null
           workspace_type: string
         }
         Insert: {
@@ -9623,6 +9670,9 @@ export type Database = {
           status?: string | null
           title: string
           updated_at?: string | null
+          video_room_started_at?: string | null
+          video_room_started_by?: string | null
+          video_room_url?: string | null
           workspace_type?: string
         }
         Update: {
@@ -9649,6 +9699,9 @@ export type Database = {
           status?: string | null
           title?: string
           updated_at?: string | null
+          video_room_started_at?: string | null
+          video_room_started_by?: string | null
+          video_room_url?: string | null
           workspace_type?: string
         }
         Relationships: [

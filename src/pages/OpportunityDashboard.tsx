@@ -976,6 +976,21 @@ const ApplicantCard = ({
               size="sm"
               variant="outline"
               className="text-xs"
+              onClick={handleInterview}
+              disabled={callStarting}
+              title="Start a quick video interview"
+            >
+              {callStarting ? (
+                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              ) : (
+                <Video className="w-3 h-3 mr-1" />
+              )}
+              Interview
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs"
               onClick={() => setShareOpen(true)}
               title="Share this profile with the client"
             >

@@ -152,6 +152,8 @@ export const StudioRoom = ({
           isOwner={isOwner}
           projectId={project.id}
           onUpdated={onUpdated}
+          onlineUserIds={onlineUserIds}
+          onKnock={knock}
         />
 
         <AddCreditSection project={project} collaborators={people} />

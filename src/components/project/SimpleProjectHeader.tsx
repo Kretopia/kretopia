@@ -3,13 +3,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, ArrowLeft, UserPlus, X, Crown, Video, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { InviteCollaboratorDialog } from "./InviteCollaboratorDialog";
 import { VideoCallSheet } from "./VideoCallSheet";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sendPushNotification } from "@/lib/pushNotifications";
+import { ringUsers } from "@/hooks/useIncomingCall";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,15 +83,35 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
       setCallId(data.call_id ?? null);
       setCallOpen(true);
 
-      // Notify other collaborators (in-app + push) — fire and forget
+      // Notify other collaborators (Realtime ring + push fallback) — fire and forget
       const others = collaborators.filter((c) => c.id !== user?.id);
+      const myAvatar =
+        collaborators.find((c) => c.id === user?.id)?.avatar_url ?? null;
+
+      // Realtime ringer (instant)
+      void ringUsers(
+        others.map((c) => c.id),
+        {
+          kind: "project",
+          projectId: project.id,
+          projectName: project.title,
+          callerId: user!.id,
+          callerName: myName,
+          callerAvatar: myAvatar,
+          roomUrl: data.room_url,
+          roomName: data.room_url.split("/").pop(),
+          callId: data.call_id ?? null,
+        },
+      );
+
+      // Push notification (delivery if user is offline)
       others.forEach((c) => {
         sendPushNotification({
           userId: c.id,
           title: "Live call started",
           body: `${myName} started a call on ${project.title}. Join now →`,
           type: "general",
-          link: `/desk/${project.id}`,
+          link: `/desk/${project.id}?joinCall=1`,
           data: { project_id: project.id, kind: "video_call" },
         }).catch((e) => console.error("[startCall] notify failed", e));
       });
@@ -115,6 +136,46 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
     return () => window.removeEventListener("thrivedesk:start-video-call", onStart);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startingCall, callOpen]);
+
+  // Auto-join via ?joinCall=1 (from accept-call deep link). Members mint
+  // their own meeting token using mint-video-token.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("joinCall") !== "1" || !user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        // Refetch room url from the project to ensure it's still live.
+        const { data: prj } = await supabase
+          .from("projects")
+          .select("video_room_url")
+          .eq("id", project.id)
+          .maybeSingle();
+        if (!prj?.video_room_url) return;
+        const roomName = prj.video_room_url.split("/").pop();
+        const { data, error } = await supabase.functions.invoke("mint-video-token", {
+          body: { room_name: roomName, user_name: myName },
+        });
+        if (error) throw error;
+        if (cancelled) return;
+        setCallRoomUrl(prj.video_room_url);
+        setCallToken(data?.token ?? null);
+        setCallId(null);
+        setCallOpen(true);
+      } catch (e) {
+        console.error("[auto-join]", e);
+      } finally {
+        // Strip the param so refresh doesn't re-trigger
+        const next = new URLSearchParams(searchParams);
+        next.delete("joinCall");
+        setSearchParams(next, { replace: true });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, user?.id, project.id]);
 
   const getStatusColor = (status: string | null) => {
     switch (status) {
@@ -237,6 +298,8 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           token={callToken}
           callId={callId}
           userName={myName}
+          projectId={project.id}
+          roomName={callRoomUrl?.split("/").pop() ?? null}
         />
       </>
     );
@@ -397,6 +460,8 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
         token={callToken}
         callId={callId}
         userName={myName}
+        projectId={project.id}
+        roomName={callRoomUrl?.split("/").pop() ?? null}
       />
     </div>
   );

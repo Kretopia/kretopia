@@ -3113,6 +3113,42 @@ export type Database = {
         }
         Relationships: []
       }
+      direct_video_calls: {
+        Row: {
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          invited_user_id: string | null
+          participants: Json
+          room_name: string
+          room_url: string
+          started_at: string
+          started_by: string
+        }
+        Insert: {
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          invited_user_id?: string | null
+          participants?: Json
+          room_name: string
+          room_url: string
+          started_at?: string
+          started_by: string
+        }
+        Update: {
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          invited_user_id?: string | null
+          participants?: Json
+          room_name?: string
+          room_url?: string
+          started_at?: string
+          started_by?: string
+        }
+        Relationships: []
+      }
       discovered_credits: {
         Row: {
           ai_confidence: number | null
@@ -11765,6 +11801,48 @@ export type Database = {
           social_verified?: boolean | null
           status?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      video_call_guest_tokens: {
+        Row: {
+          created_at: string
+          created_by: string
+          direct_call_id: string | null
+          expires_at: string
+          guest_label: string | null
+          id: string
+          project_id: string | null
+          room_name: string
+          room_url: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          direct_call_id?: string | null
+          expires_at: string
+          guest_label?: string | null
+          id?: string
+          project_id?: string | null
+          room_name: string
+          room_url: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          direct_call_id?: string | null
+          expires_at?: string
+          guest_label?: string | null
+          id?: string
+          project_id?: string | null
+          room_name?: string
+          room_url?: string
+          token?: string
+          used_at?: string | null
         }
         Relationships: []
       }

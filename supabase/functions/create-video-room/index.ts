@@ -83,11 +83,13 @@ serve(async (req) => {
         privacy: "private",
         properties: {
           exp,
-          max_participants: 4,
+          max_participants: 10,
           enable_chat: true,
-          enable_screenshare: false,
+          enable_screenshare: true,
+          enable_recording: "cloud",
           start_video_off: false,
           start_audio_off: false,
+          enable_knocking: true,
         },
       }),
     });

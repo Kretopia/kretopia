@@ -29,6 +29,7 @@ import { OnboardingTour } from "./components/OnboardingTour";
 import { NewsletterPopup } from "./components/NewsletterPopup";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import UnifiedHome from "./components/home/UnifiedHome";
+import { GlobalIncomingCall } from "./components/calls/GlobalIncomingCall";
 
 // Lazy load active page components
 const Auth = lazy(() => import("./pages/Auth"));
@@ -74,6 +75,7 @@ const NotificationsPage = lazy(() => import("./pages/Notifications"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
 const Install = lazy(() => import("./pages/Install"));
+const GuestCall = lazy(() => import("./pages/GuestCall"));
 const FoundingMember = lazy(() => import("./pages/FoundingMember"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
@@ -234,6 +236,7 @@ const AppContent = () => {
       {showBottomNav && <QuickActionFab />}
       
       {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
+      {user && <GlobalIncomingCall />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />
       {showGuestBanner && <GuestBanner />}
@@ -322,6 +325,9 @@ const AppContent = () => {
             
             {/* PWA Install Page */}
             <Route path="/install" element={<Install />} />
+
+            {/* Public guest video call join */}
+            <Route path="/call/:token" element={<GuestCall />} />
             
             {/* Invite Link with Code */}
             <Route path="/join/:code" element={<JoinWithCode />} />

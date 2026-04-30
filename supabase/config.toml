@@ -145,3 +145,6 @@ project_id = "kwmcocsitwssrtzkdojh"
     verify_jwt = false
   [functions.og-campaign]
     verify_jwt = false
+  [functions.redeem-video-guest-link]
+    verify_jwt = false
+

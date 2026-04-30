@@ -5,6 +5,7 @@ import { WorkSection } from "./WorkSection";
 import { MoneySection } from "./MoneySection";
 import { PeopleSection } from "./PeopleSection";
 import { AddCreditSection } from "./AddCreditSection";
+import { CallHistorySection } from "./CallHistorySection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
@@ -156,6 +157,8 @@ export const StudioRoom = ({
         />
 
         <AddCreditSection project={project} collaborators={people} />
+
+        <CallHistorySection projectId={project.id} />
       </div>
 
       {/* Bottom breathing room above mobile nav */}

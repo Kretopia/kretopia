@@ -216,6 +216,13 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       setCameraOpen(true);
       addDebug("Camera opened", "Using the in-app camera preview instead of the Android file-picker capture flow.", "success");
     } catch (err) {
+      if (cameraRef.current) {
+        addDebug("Camera preview unavailable", "Falling back to the browser camera picker.", "info");
+        beginPicker("camera");
+        cameraRef.current.click();
+        setCameraStarting(false);
+        return;
+      }
       setDebugOpen(true);
       setScanError(err instanceof Error ? err.message : "Camera could not open");
       addDebug("Camera open failed", formatErrorDetail(err), "error");
@@ -440,6 +447,17 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         )}
         <span className="text-xs font-semibold text-primary-foreground">Scan</span>
       </Button>
+
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="sr-only"
+        onClick={() => beginPicker("camera")}
+        onChange={handleFile}
+        disabled={scanning}
+      />
 
       <input
         ref={uploadRef}

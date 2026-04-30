@@ -29,6 +29,7 @@ import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A
 import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
 import { FoundingMemberCard } from "@/components/founding/FoundingMemberCard";
+import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
@@ -559,6 +560,12 @@ export const UnifiedHome = () => {
       {/* ═══════════ AUTH HUB ═══════════ */}
       {user && profile && (
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
+          {/* New-user setup checklist — only shows while profile completion < 50% */}
+          {checkProfileCompletion(profileFull || profile, myCredits).percentage < 50 && (
+            <div className="mb-4">
+              <GetStartedChecklist />
+            </div>
+          )}
           {/* Compact greeting + messages shortcut */}
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-muted-foreground">

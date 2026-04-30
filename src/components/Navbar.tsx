@@ -231,17 +231,30 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       )}
                     </>
                   ) : (
-                    /* ====== UNIFIED MENU (single nav) ====== */
+                    /* ====== UNIFIED MENU — grouped: Primary · More · (My stuff) ====== */
                     <>
-                      <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-                      <MenuButton icon={Wallet} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} />
-                      <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
-                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
-                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />
-                      <MenuButton icon={MapPin} label="Discover Map" onClick={() => handleNavigation("/nearby")} />
+                      {/* Primary — mirrors bottom nav for parity */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Primary</p>
+                      <MenuButton icon={Home} label="Home" onClick={() => handleNavigation("/")} />
+                      <MenuButton icon={Sparkles} label="Match" onClick={() => handleNavigation("/circle")} />
+                      <MenuButton icon={Briefcase} label="Gigs" onClick={() => handleNavigation("/opportunities")} />
+                      <MenuButton icon={FolderKanban} label="Desk" onClick={() => handleNavigation("/desk")} />
+                      <MenuButton icon={Wallet} label="Pay" onClick={() => handleNavigation("/thrivepay")} />
 
                       <Separator className="my-3" />
 
+                      {/* More — secondary surfaces */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">More</p>
+                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
+                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />
+                      <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} />
+                      <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} />
+                      <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
+
+                      <Separator className="my-3" />
+
+                      {/* My stuff */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Manage</p>
                       <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} />
                       <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
                       <MenuButton icon={CalendarDays} label="My Events" onClick={() => handleNavigation("/events/backstage")} />
@@ -269,11 +282,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   <Separator className="my-3" />
 
                   <MenuButton icon={Globe} label="About Us" onClick={() => handleNavigation("/about")} />
-                  <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} />
 
                   <Separator className="my-3" />
 
                   {/* Account section */}
+                  <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
+                  {!isCompany && (
+                    <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
+                  )}
                   <Button
                     variant="ghost"
                     className="justify-start gap-3 h-auto w-full py-3"

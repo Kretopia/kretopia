@@ -6,7 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, MapPin, Navigation, Users, Plus, Sparkles, List, Map, Search, SlidersHorizontal, RefreshCw } from "lucide-react";
+import { Loader2, MapPin, Navigation, Users, Plus, Sparkles, List, Map, Search, SlidersHorizontal, RefreshCw, Share2 } from "lucide-react";
+import { InviteDialog } from "@/components/InviteDialog";
 import { UnifiedNearbyMap, type MapItemType } from "@/components/nearby/UnifiedNearbyMap";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionCard } from "@/components/sessions/SessionCard";
@@ -58,6 +59,8 @@ const NearbyCreators = () => {
   const [atlasFilter, setAtlasFilter] = useState<AtlasFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [discoverMode, setDiscoverMode] = useState<'nearby' | 'browse'>('nearby');
+  const [cityName, setCityName] = useState<string>("");
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
   const { bookmarkedIds, toggleBookmark } = useLocationBookmarks();
   const { connectedIds, isConnected } = useConnectedUsers();
   const { isBlocked, refetch: refetchBlocks } = useUserBlocks();
@@ -71,14 +74,15 @@ const NearbyCreators = () => {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data } = await supabase.from('profiles').select('location_visible, location_precision, latitude, longitude').eq('user_id', user.id).single();
+      const { data } = await supabase.from('profiles').select('location_visible, location_precision, latitude, longitude, location').eq('user_id', user.id).single();
       if (data) {
         setLocationVisible(data.location_visible ?? true);
         setLocationPrecision((data.location_precision as LocationPrecision) ?? 'approximate');
         if (data.latitude && data.longitude) setUserLocation({ lat: data.latitude, lng: data.longitude });
+        if ((data as any).location) setCityName(String((data as any).location).split(',')[0].trim());
       }
     };
-    load();
+    load().catch(err => console.warn('[NearbyCreators] profile prefs load failed:', err));
   }, [user]);
 
   const detectLocation = useCallback(async () => {
@@ -316,7 +320,40 @@ const NearbyCreators = () => {
               </Button>
             </div>
 
-            {viewMode === 'map' ? (
+            {(() => {
+              const within50 = creators.filter(c => (c.distance_km ?? 0) <= 50).length;
+              const showEmpty = !loading && within50 < 3;
+              if (showEmpty) {
+                const cityLabel = cityName || "your area";
+                return (
+                  <div className="rounded-xl border border-dashed border-border bg-gradient-to-br from-primary/5 via-card to-accent/5 p-6 sm:p-8 text-center space-y-4">
+                    <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <MapPin className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h2 className="text-base sm:text-lg font-bold">No creators nearby yet</h2>
+                      <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                        But your city is growing. Invite someone to put {cityLabel} on the map.
+                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                      <Button onClick={() => setShowInviteDialog(true)} className="gap-2">
+                        <Share2 className="h-4 w-4" />
+                        Invite a creative
+                      </Button>
+                      <Button variant="outline" onClick={() => setDiscoverMode('browse')}>
+                        Browse all creators
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      {within50 === 0
+                        ? "0 within 50 km"
+                        : `${within50} within 50 km — needs at least 3 to unlock the map`}
+                    </p>
+                  </div>
+                );
+              }
+              return viewMode === 'map' ? (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Map takes priority */}
                 <div className="lg:col-span-2">
@@ -469,7 +506,8 @@ const NearbyCreators = () => {
                   </>
                 )}
               </div>
-            )}
+            );
+            })()}
           </div>
         )}
         </>
@@ -483,6 +521,7 @@ const NearbyCreators = () => {
       <SessionDetailDialog session={selectedSession} open={!!selectedSession} onOpenChange={(open) => { if (!open) setSelectedSession(null); }} onRefresh={fetchNearbyData} />
       <LocationDetailDialog location={selectedLocation} open={!!selectedLocation} onOpenChange={(open) => { if (!open) setSelectedLocation(null); }}
         isBookmarked={selectedLocation ? bookmarkedIds.has(selectedLocation.id) : false} onToggleBookmark={selectedLocation ? () => toggleBookmark(selectedLocation.id) : undefined} />
+      <InviteDialog open={showInviteDialog} onOpenChange={setShowInviteDialog} />
     </div>
   );
 };

@@ -15,6 +15,7 @@ import { DeskAILauncher } from "@/components/project/ai/DeskAILauncher";
 import { ProjectFlowTimeline } from "@/components/project/flow/ProjectFlowTimeline";
 import { NextStepBar } from "@/components/project/flow/NextStepBar";
 import { MobileProjectHub } from "@/components/project/mobile/MobileProjectHub";
+import { StudioRoom } from "@/components/project/studio/StudioRoom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ArrowLeft } from "lucide-react";
 import { useProjectData } from "@/hooks/useProjectData";

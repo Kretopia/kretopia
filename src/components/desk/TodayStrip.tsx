@@ -140,6 +140,14 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
       onClick: () => navigate("/calendar"),
     },
     {
+      key: "wrap",
+      icon: Wand2,
+      label: "Wrap week",
+      value: "1 tap",
+      tone: "primary",
+      onClick: () => onWrapWeek?.(),
+    },
+    {
       key: "cmdk",
       icon: Sparkles,
       label: "Quick jump",

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Camera, Loader2, Check, X, Sparkles, ImagePlus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,31 @@ import { recordMoneyAction } from "@/lib/moneyStreak";
 import { EXPENSE_CATEGORIES, getCategoryInfo } from "@/components/project/expense/ExpenseCategories";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY", "INR", "BRL", "TTD", "AED"];
+
+const normalizeCategory = (category?: string) => {
+  const raw = category?.toLowerCase().trim();
+  const aliases: Record<string, string> = {
+    contractor: "contractors",
+    rent: "workspace",
+    utilities: "workspace",
+    transport: "travel",
+    transportation: "travel",
+    supplies: "equipment",
+  };
+  const candidate = aliases[raw || ""] || raw || "other";
+  return EXPENSE_CATEGORIES.some((c) => c.value === candidate) ? candidate : "other";
+};
+
+const emptyReceiptForm = () => ({
+  title: "",
+  vendor: "",
+  amount: "",
+  currency: "USD",
+  date: new Date().toISOString().split("T")[0],
+  category: "other",
+  tax_deductible: false,
+  notes: "",
+});
 
 interface ScannedReceipt {
   title?: string;
@@ -47,16 +73,8 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [scanned, setScanned] = useState<ScannedReceipt | null>(null);
-  const [form, setForm] = useState({
-    title: "",
-    vendor: "",
-    amount: "",
-    currency: "USD",
-    date: new Date().toISOString().split("T")[0],
-    category: "other",
-    tax_deductible: false,
-    notes: "",
-  });
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyReceiptForm);
 
   const compressImage = (f: File, maxWidth = 1200, quality = 0.7): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -80,8 +98,11 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
     setScanned(null);
+    setScanError(null);
+    setForm(emptyReceiptForm());
     setReviewOpen(true);
     setScanning(true);
     toast.loading("Reading your receipt…", { id: "snap-receipt" });
@@ -102,7 +123,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         amount: d.amount?.toString() || "",
         currency: d.currency || "USD",
         date: d.date || new Date().toISOString().split("T")[0],
-        category: d.category || "other",
+        category: normalizeCategory(d.category),
         tax_deductible: d.tax_deductible ?? false,
         notes:
           d.notes ||
@@ -110,10 +131,14 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             ? `Items: ${d.line_items.map((i) => `${i.description} (${d.currency || ""} ${i.amount})`).join(", ")}`
             : ""),
       });
+      setScanError(null);
       setReviewOpen(true);
       toast.success("Got it — review and add.", { id: "snap-receipt" });
     } catch (err: any) {
-      toast.error(err?.message || "Couldn't read that receipt", { id: "snap-receipt" });
+      const message = err?.message || "Couldn't read that receipt";
+      setScanError(message);
+      setReviewOpen(true);
+      toast.error("Couldn't read it automatically — review it here.", { id: "snap-receipt" });
     } finally {
       setScanning(false);
       if (cameraRef.current) cameraRef.current.value = "";
@@ -243,7 +268,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
       </Popover>
 
       {/* Review & approve panel */}
-      {reviewOpen && (
+      {reviewOpen && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[90]" role="presentation">
           <button
             type="button"
@@ -286,6 +311,12 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
                 <div className="flex items-center gap-2 rounded-lg border bg-card p-3 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   Capturing the breakdown…
+                </div>
+              )}
+
+              {scanError && !scanning && (
+                <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+                  The receipt is open for review, but the automatic breakdown hit an issue. Add or correct the fields below, then save it.
                 </div>
               )}
 
@@ -391,7 +422,8 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
               </Button>
             </div>
           </section>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

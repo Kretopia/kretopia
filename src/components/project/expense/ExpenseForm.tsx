@@ -21,6 +21,20 @@ interface ExpenseFormProps {
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY", "INR", "BRL", "IDR", "TTD", "AED", "CHF"];
 
+const normalizeCategory = (category?: string) => {
+  const raw = category?.toLowerCase().trim();
+  const aliases: Record<string, string> = {
+    contractor: "contractors",
+    rent: "workspace",
+    utilities: "workspace",
+    transport: "travel",
+    transportation: "travel",
+    supplies: "equipment",
+  };
+  const candidate = aliases[raw || ""] || raw || "other";
+  return EXPENSE_CATEGORIES.some((c) => c.value === candidate) ? candidate : "other";
+};
+
 export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   const { user } = useAuth();
   const { guard: guardExpense } = useFeatureGate("expenses");
@@ -30,6 +44,8 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   const [saving, setSaving] = useState(false);
   const [categorizing, setCategorizing] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: "",
     amount: "",
@@ -56,7 +72,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
           title: data.title || prev.title,
           amount: data.amount?.toString() || prev.amount,
           currency: data.currency || prev.currency,
-          category: data.category || prev.category,
+          category: normalizeCategory(data.category || prev.category),
           vendor: data.vendor || prev.vendor,
           date: data.date || prev.date,
           tax_deductible: data.tax_deductible ?? prev.tax_deductible,
@@ -75,6 +91,10 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(URL.createObjectURL(file));
+    setScanError(null);
+    setOpen(true);
     setScanning(true);
     try {
       // Compress image before sending to reduce payload size on mobile
@@ -99,12 +119,14 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
 
       const base64 = await compressImage(file);
 
-      const { data, error } = await supabase.functions.invoke("scan-receipt", {
-        body: { image_base64: base64 },
-      });
+      const { data, error } = await supabase.functions
+        .invoke("scan-receipt", { body: { image_base64: base64 } })
+        .catch((err) => ({ data: null, error: err }));
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+
+      setScanError(null);
 
       // Auto-fill the form
       setForm(prev => ({
@@ -112,7 +134,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
         title: data.title || prev.title,
         amount: data.amount?.toString() || prev.amount,
         currency: data.currency || prev.currency,
-        category: data.category || prev.category,
+        category: normalizeCategory(data.category || prev.category),
         vendor: data.vendor || prev.vendor,
         date: data.date || prev.date,
         tax_deductible: data.tax_deductible ?? prev.tax_deductible,
@@ -124,7 +146,8 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
       recordMoneyAction("receipt_scanned");
       toast.success("Receipt scanned! Review the details below.");
     } catch (err: any) {
-      toast.error(err.message || "Failed to scan receipt");
+      setScanError(err.message || "Failed to scan receipt");
+      toast.error("Couldn't read it automatically — review it here.");
     } finally {
       setScanning(false);
       // Reset file input
@@ -178,6 +201,9 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
       recordMoneyAction("expense_added");
       toast.success("Expense added");
       setOpen(false);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+      setScanError(null);
       setForm({
         title: "", amount: "", currency: "USD", category: "other", vendor: "",
         date: new Date().toISOString().split("T")[0], notes: "", tax_deductible: false,
@@ -207,6 +233,11 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
         <div className="space-y-3">
           {/* Scan Receipt CTA */}
           <div className={`space-y-3 p-3 rounded-lg border-2 border-dashed transition-all ${scanning ? "border-primary bg-primary/5" : "border-border"}`}>
+            {previewUrl && (
+              <div className="overflow-hidden rounded-lg border bg-muted/30 max-h-40 flex items-center justify-center">
+                <img src={previewUrl} alt="Receipt preview" className="max-h-40 object-contain" />
+              </div>
+            )}
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               {scanning ? (
                 <Loader2 className="h-5 w-5 text-primary animate-spin" />
@@ -262,6 +293,11 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
               onChange={handleScanReceipt}
               disabled={scanning}
             />
+            {scanError && !scanning && (
+              <p className="rounded-md bg-destructive/10 p-2 text-[11px] text-destructive">
+                The image is ready for review, but the automatic breakdown hit an issue. Fill anything missing, then add it.
+              </p>
+            )}
           </div>
 
           <div className="relative flex items-center">

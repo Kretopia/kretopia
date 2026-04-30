@@ -158,14 +158,26 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         const dataUrl = canvas.toDataURL("image/jpeg", quality);
         resolve(dataUrl.split(",")[1]);
       };
-      img.onerror = reject;
+      img.onerror = () => reject(new Error("The selected image could not be loaded for compression."));
       img.src = URL.createObjectURL(f);
     });
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    clearPickerTimer();
     const file = e.target.files?.[0];
-    if (!file || !user) return;
+    if (!file) {
+      addDebug("File picker closed without a file", "No file was returned from the camera/gallery input.", "error");
+      return;
+    }
+    if (!user) {
+      addDebug("Scan stopped: no signed-in user", "The image was selected, but there is no active user session for saving expenses.", "error");
+      toast.error("Sign in again before scanning receipts.");
+      return;
+    }
 
+    setPickerOpen(false);
+    setDebugOpen(true);
+    addDebug("Image received", `${file.name || "camera-photo"} • ${file.type || "unknown type"} • ${(file.size / 1024).toFixed(1)} KB`);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
     setScanned(null);
@@ -175,15 +187,22 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     setScanning(true);
     toast.loading("Reading your receipt…", { id: "snap-receipt" });
     try {
+      addDebug("Compressing image for scanner");
       const base64 = await compressImage(file);
+      addDebug("Image compressed", `Base64 payload length: ${base64.length.toLocaleString()} characters`);
+      addDebug("Calling receipt scanner function");
       const { data, error } = await supabase.functions
         .invoke("scan-receipt", { body: { image_base64: base64 } })
-        .catch((err) => ({ data: null, error: err }));
+        .catch((err) => {
+          addDebug("Receipt scanner request failed", formatErrorDetail(err), "error");
+          return { data: null, error: err };
+        });
 
       if (error) throw error;
       if (!data || data?.error) throw new Error(data?.error || "No data extracted");
 
       const d = data as ScannedReceipt;
+      addDebug("Receipt data extracted", JSON.stringify(d, null, 2), "success");
       setScanned(d);
       setForm({
         title: d.title || d.vendor || "Receipt",
@@ -205,6 +224,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
     } catch (err: any) {
       const message = err?.message || "Couldn't read that receipt";
       setScanError(message);
+      addDebug("Scan failed", formatErrorDetail(err), "error");
       setReviewOpen(true);
       toast.error("Couldn't read it automatically — review it here.", { id: "snap-receipt" });
     } finally {

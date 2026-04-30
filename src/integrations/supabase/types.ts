@@ -13274,6 +13274,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_circle_from_event: {
+        Args: {
+          _category?: string
+          _cover_image_url?: string
+          _description?: string
+          _event_id: string
+          _title: string
+        }
+        Returns: string
+      }
       create_multi_use_code: {
         Args: { num_uses: number; owner_email: string }
         Returns: string

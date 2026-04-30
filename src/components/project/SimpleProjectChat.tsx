@@ -243,6 +243,36 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     }
   };
 
+  const handleSendVoiceNote = async (url: string, duration: number) => {
+    try {
+      const { data: inserted, error } = await supabase
+        .from("project_messages")
+        .insert({
+          project_id: projectId,
+          user_id: currentUserId,
+          message: "🎙️ Voice note",
+          voice_url: url,
+          voice_duration: duration,
+          attachments: [],
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      onMessageSent();
+
+      // Fire-and-forget transcription
+      if (inserted?.id) {
+        supabase.functions
+          .invoke("transcribe-voice-note", {
+            body: { message_id: inserted.id, audio_url: url, table: "project_messages" },
+          })
+          .catch((err) => console.error("[transcribe-voice-note] failed:", err));
+      }
+    } catch (e: any) {
+      toast({ title: "Failed to send voice note", description: e.message, variant: "destructive" });
+    }
+  };
+
   const toggleReaction = async (messageId: string, emoji: string) => {
     const existing = reactions.find(r => r.message_id === messageId && r.user_id === currentUserId && r.emoji === emoji);
     if (existing) {

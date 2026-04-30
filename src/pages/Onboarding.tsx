@@ -47,6 +47,7 @@ export default function Onboarding() {
   const [searching, setSearching] = useState(false);
   const [searchAttempted, setSearchAttempted] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [enteredEmpty, setEnteredEmpty] = useState(false);
 
   // Review phase — AI-populated, user-editable
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -272,18 +273,20 @@ export default function Onboarding() {
           analytics.onboardingStep(3, "review_phase_entered_via_ai");
         } catch {}
       } else {
-        setNotFound(true);
+        setEnteredEmpty(true);
+        setPhase("review");
         try {
           const { analytics } = await import("@/lib/analytics");
-          analytics.onboardingStep(2, "ai_search_no_results");
+          analytics.onboardingStep(3, "review_phase_entered_empty_no_results");
         } catch {}
       }
     } catch (e) {
       console.error("Discovery error:", e);
-      setNotFound(true);
+      setEnteredEmpty(true);
+      setPhase("review");
       try {
         const { analytics } = await import("@/lib/analytics");
-        analytics.onboardingStep(2, "ai_search_failed");
+        analytics.onboardingStep(3, "review_phase_entered_empty_error");
       } catch {}
     } finally {
       setSearching(false);
@@ -517,6 +520,17 @@ export default function Onboarding() {
     }
   }, [phase, navigate]);
 
+  // Auto-focus the role selector when entering Review via the empty/timeout fallback
+  useEffect(() => {
+    if (phase === "review" && enteredEmpty) {
+      const t = setTimeout(() => {
+        const el = document.getElementById("review-role-trigger") as HTMLElement | null;
+        el?.focus();
+      }, 80);
+      return () => clearTimeout(t);
+    }
+  }, [phase, enteredEmpty]);
+
   const toggleCredit = (index: number) => {
     setSelectedCredits(prev => {
       const next = new Set(prev);
@@ -717,6 +731,21 @@ export default function Onboarding() {
               </div>
 
               <div className="p-6 sm:p-8 space-y-5">
+                {/* Warm empty-state — shown when discovery returned nothing or timed out */}
+                {enteredEmpty && (
+                  <div className="rounded-xl border border-energy/30 bg-gradient-to-br from-energy/5 via-card to-primary/5 p-4 animate-fade-in">
+                    <div className="flex items-start gap-3">
+                      <div className="h-9 w-9 rounded-lg bg-energy/15 flex items-center justify-center shrink-0">
+                        <Sparkles className="h-4 w-4 text-energy" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold">We couldn't find your work online yet — that's okay.</p>
+                        <p className="text-xs text-muted-foreground">Let's build your profile together. Start with your role and a short bio below.</p>
+                        <p className="text-[11px] text-muted-foreground/80 pt-1">You can always import credits later from your ThriveCredits page.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {/* Photo + Name row */}
                 <div className="flex items-start gap-4">
                   <div className="relative shrink-0">
@@ -756,14 +785,14 @@ export default function Onboarding() {
                   <Label className="text-xs text-muted-foreground">Role</Label>
                   {showCustomRole || (!isRoleInOptions && role) ? (
                     <div className="space-y-1.5">
-                      <Input value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Music Producer" className="h-10" />
+                      <Input id="review-role-trigger" value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Music Producer" className="h-10" />
                       <button type="button" className="text-xs text-primary hover:underline" onClick={() => { setShowCustomRole(false); setRole(""); }}>
                         Choose from list
                       </button>
                     </div>
                   ) : (
                     <Select value={role || undefined} onValueChange={v => { if (v === "Other") { setShowCustomRole(true); setRole(""); } else setRole(v); }}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Select your role" /></SelectTrigger>
+                      <SelectTrigger id="review-role-trigger" className="h-10"><SelectValue placeholder="Select your role" /></SelectTrigger>
                       <SelectContent>{ROLE_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                     </Select>
                   )}

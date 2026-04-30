@@ -73,7 +73,7 @@ export const TodayStrip = ({ onVoice, onCommandPalette }: TodayStripProps) => {
         overdue: tasks.filter((t: any) => t.due_date < today).length,
         unreadMessages: 0, // best-effort placeholder — wire when feed available
         pendingInvoices: invoices.length,
-        pendingAmount: invoices.reduce((s: number, i: any) => s + (i.amount || 0), 0),
+        pendingAmount: invoices.reduce((s: number, i: any) => s + (Number(i.total_amount) || 0), 0),
         upcomingCalls: 0,
       });
     };

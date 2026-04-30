@@ -33,23 +33,22 @@ const QuickActionFab = () => {
   const [isCompany, setIsCompany] = useState(false);
   const [dismissed, setDismissed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
-    return sessionStorage.getItem("quickFab.dismissed") === "1";
+    return localStorage.getItem("quickFab.dismissed") === "1";
   });
 
-  // Routes where the FAB always returns even after dismissal (primary surfaces)
-  const isAutoShowRoute =
-    location.pathname === "/" || location.pathname.startsWith("/circle");
-
-  // Auto-restore visibility when user lands on Home or Match
+  // Keep state in sync if dismissed from another tab
   useEffect(() => {
-    if (isAutoShowRoute && dismissed) {
-      sessionStorage.removeItem("quickFab.dismissed");
-      setDismissed(false);
-    }
-  }, [isAutoShowRoute, dismissed]);
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "quickFab.dismissed") {
+        setDismissed(e.newValue === "1");
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   const dismissFab = () => {
-    sessionStorage.setItem("quickFab.dismissed", "1");
+    localStorage.setItem("quickFab.dismissed", "1");
     setDismissed(true);
     setOpen(false);
   };

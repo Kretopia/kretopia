@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useId } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -48,8 +48,6 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const pendingPickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cameraInputId = useId();
-  const uploadInputId = useId();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categorizing, setCategorizing] = useState(false);
@@ -348,51 +346,33 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Button
-                asChild
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-9 gap-1.5 text-xs"
-                disabled={scanning}
-              >
-                <label htmlFor={cameraInputId} onClick={() => beginPicker("camera")}>
-                  <Camera className="h-3.5 w-3.5" /> Take photo
-                </label>
-              </Button>
-              <Button
-                asChild
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-9 gap-1.5 text-xs"
-                disabled={scanning}
-              >
-                <label htmlFor={uploadInputId} onClick={() => beginPicker("upload")}>
-                  <ScanLine className="h-3.5 w-3.5" /> Upload
-                </label>
-              </Button>
+              <div className="relative flex h-9 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-md border border-input bg-background px-3 text-xs font-medium hover:bg-accent hover:text-accent-foreground">
+                <Camera className="h-3.5 w-3.5" /> Take photo
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  data-scan-receipt-input="true"
+                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  onClick={() => beginPicker("camera")}
+                  onChange={handleScanReceipt}
+                  disabled={scanning}
+                />
+              </div>
+              <div className="relative flex h-9 cursor-pointer items-center justify-center gap-1.5 overflow-hidden rounded-md border border-input bg-background px-3 text-xs font-medium hover:bg-accent hover:text-accent-foreground">
+                <ScanLine className="h-3.5 w-3.5" /> Upload
+                <input
+                  ref={uploadInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  onClick={() => beginPicker("upload")}
+                  onChange={handleScanReceipt}
+                  disabled={scanning}
+                />
+              </div>
             </div>
-            <input
-              id={cameraInputId}
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              data-scan-receipt-input="true"
-              className="sr-only"
-              onChange={handleScanReceipt}
-              disabled={scanning}
-            />
-            <input
-              id={uploadInputId}
-              ref={uploadInputRef}
-              type="file"
-              accept="image/*"
-              className="sr-only"
-              onChange={handleScanReceipt}
-              disabled={scanning}
-            />
             {scanError && !scanning && (
               <p className="rounded-md bg-destructive/10 p-2 text-[11px] text-destructive">
                 {scanError}

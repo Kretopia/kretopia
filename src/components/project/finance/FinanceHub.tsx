@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
+import { MarkPaidBankTransferDialog } from "@/components/project/finance/MarkPaidBankTransferDialog";
+import { Landmark } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -46,6 +48,7 @@ interface InvoiceLite {
   document_type: string | null;
   milestone_id: string | null;
   created_at: string;
+  issued_to: string | null;
 }
 
 const STATUS_TONE: Record<string, string> = {
@@ -68,6 +71,7 @@ export function FinanceHub({
   const navigate = useNavigate();
   const [invoices, setInvoices] = useState<InvoiceLite[]>([]);
   const [loading, setLoading] = useState(false);
+  const [markPaidInvoice, setMarkPaidInvoice] = useState<InvoiceLite | null>(null);
   const invoiceTriggerRef = useRef<HTMLDivElement>(null);
   const milestonesRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +91,7 @@ export function FinanceHub({
     const { data } = await supabase
       .from("invoices")
       .select(
-        "id, invoice_number, status, total_amount, amount, currency, recipient_name, due_date, document_type, milestone_id, created_at"
+        "id, invoice_number, status, total_amount, amount, currency, recipient_name, due_date, document_type, milestone_id, created_at, issued_to"
       )
       .eq("project_id", projectId)
       .order("created_at", { ascending: false });
@@ -424,6 +428,17 @@ export function FinanceHub({
                         Copy pay link
                       </Button>
                     )}
+                    {userRole === "creator" && !isQuote && inv.status !== "paid" && inv.status !== "cancelled" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setMarkPaidInvoice(inv)}
+                        className="h-7 text-xs gap-1 border-success/40 text-success hover:bg-success/10 hover:text-success"
+                      >
+                        <Landmark className="h-3 w-3" />
+                        Mark paid · bank
+                      </Button>
+                    )}
                     {userRole === "client" && ["sent", "viewed", "overdue"].includes(inv.status) && (
                       <Button
                         size="sm"
@@ -441,6 +456,15 @@ export function FinanceHub({
           </div>
         )}
       </div>
+
+      {markPaidInvoice && (
+        <MarkPaidBankTransferDialog
+          open={!!markPaidInvoice}
+          onOpenChange={(v) => { if (!v) setMarkPaidInvoice(null); }}
+          invoice={markPaidInvoice}
+          onSuccess={() => { setMarkPaidInvoice(null); fetchInvoices(); onUpdate?.(); }}
+        />
+      )}
     </div>
   );
 }

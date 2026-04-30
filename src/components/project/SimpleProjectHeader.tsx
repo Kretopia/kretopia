@@ -57,6 +57,7 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
   const [collaboratorToRemove, setCollaboratorToRemove] = useState<{ id: string; name: string } | null>(null);
   const [removing, setRemoving] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
+  const [startSheetOpen, setStartSheetOpen] = useState(false);
   const [startingCall, setStartingCall] = useState(false);
   const [callRoomUrl, setCallRoomUrl] = useState<string | null>(null);
   const [callToken, setCallToken] = useState<string | null>(null);
@@ -70,7 +71,28 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
     user?.email?.split("@")[0] ||
     "Someone";
 
-  const handleStartCall = async () => {
+  // Project members shaped for the StartCallSheet (excluding self)
+  const projectMembersForPicker: StartCallPerson[] = collaborators
+    .filter((c) => c.id !== user?.id)
+    .map((c) => ({
+      user_id: c.id,
+      full_name: c.full_name,
+      avatar_url: c.avatar_url,
+      role: c.role ?? null,
+      source: "project" as const,
+    }));
+
+  // Step 1: Camera tap → just open the "who's joining?" sheet.
+  const openStartSheet = () => {
+    if (startingCall || callOpen) return;
+    setStartSheetOpen(true);
+  };
+
+  // Step 2: Sheet "Start call" → mint room, ring selected, drop into lobby.
+  const handleStartCall = async (opts: {
+    inviteUserIds: string[];
+    sharedGuestLink: boolean;
+  }) => {
     if (startingCall) return;
     setStartingCall(true);
     try {
@@ -83,17 +105,16 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
       setCallRoomUrl(data.room_url);
       setCallToken(data.token ?? null);
       setCallId(data.call_id ?? null);
+      setStartSheetOpen(false);
       setCallOpen(true);
 
-      // Notify other collaborators (Realtime ring + push fallback) — fire and forget
-      const others = collaborators.filter((c) => c.id !== user?.id);
       const myAvatar =
         collaborators.find((c) => c.id === user?.id)?.avatar_url ?? null;
+      const roomName = data.room_url.split("/").pop();
 
-      // Realtime ringer (instant)
-      void ringUsers(
-        others.map((c) => c.id),
-        {
+      // Ring selected people via Realtime (instant) + push (offline fallback)
+      if (opts.inviteUserIds.length > 0) {
+        void ringUsers(opts.inviteUserIds, {
           kind: "project",
           projectId: project.id,
           projectName: project.title,
@@ -101,22 +122,64 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           callerName: myName,
           callerAvatar: myAvatar,
           roomUrl: data.room_url,
-          roomName: data.room_url.split("/").pop(),
+          roomName,
           callId: data.call_id ?? null,
-        },
-      );
+        });
 
-      // Push notification (delivery if user is offline)
-      others.forEach((c) => {
-        sendPushNotification({
-          userId: c.id,
-          title: "Live call started",
-          body: `${myName} started a call on ${project.title}. Join now →`,
-          type: "general",
-          link: `/desk/${project.id}?joinCall=1`,
-          data: { project_id: project.id, kind: "video_call" },
-        }).catch((e) => console.error("[startCall] notify failed", e));
-      });
+        opts.inviteUserIds.forEach((uid) => {
+          sendPushNotification({
+            userId: uid,
+            title: "Live call started",
+            body: `${myName} started a call on ${project.title}. Join now →`,
+            type: "general",
+            link: `/desk/${project.id}?joinCall=1`,
+            data: { project_id: project.id, kind: "video_call" },
+          }).catch((e) => console.error("[startCall] notify failed", e));
+        });
+      }
+
+      // Generate + share a guest link (WhatsApp etc.) if requested
+      if (opts.sharedGuestLink) {
+        try {
+          const { data: linkData, error: linkErr } = await supabase.functions.invoke(
+            "create-video-guest-link",
+            {
+              body: {
+                project_id: project.id,
+                direct_call_id: null,
+                room_name: roomName,
+                room_url: data.room_url,
+                guest_label: project.title,
+              },
+            },
+          );
+          if (linkErr) throw linkErr;
+          const guestUrl = `${APP_URL}/call/${linkData.token}`;
+          const shareText = `${myName} is inviting you to a live video call on ${project.title}. Join here:`;
+          if (navigator.share) {
+            try {
+              await navigator.share({
+                title: `Join "${project.title}" on ThriveIN`,
+                text: shareText,
+                url: guestUrl,
+              });
+            } catch {
+              await navigator.clipboard.writeText(`${shareText} ${guestUrl}`);
+              toast({ title: "Guest link copied", description: "Paste it in WhatsApp or anywhere." });
+            }
+          } else {
+            await navigator.clipboard.writeText(`${shareText} ${guestUrl}`);
+            toast({ title: "Guest link copied", description: "Paste it in WhatsApp or anywhere." });
+          }
+        } catch (le: any) {
+          console.error("[startCall] guest link", le);
+          toast({
+            title: "Couldn't create guest link",
+            description: le?.message,
+            variant: "destructive",
+          });
+        }
+      }
     } catch (e: any) {
       console.error("[startCall]", e);
       toast({

@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  FolderKanban, Briefcase, DollarSign, ArrowRight, Plus,
+  FolderKanban, Briefcase, DollarSign, ArrowRight, Plus, Mic,
   Clock, CheckCircle2, Loader2,
   Building2, Users, UserSearch, Star, Wallet
 } from "lucide-react";
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CreateProjectDialog } from "@/components/project/CreateProjectDialog";
+import { VoiceFirstCreateModal } from "@/components/project/studio/VoiceFirstCreateModal";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -281,10 +281,10 @@ const BrandWorkHome = () => {
         </div>
       </div>
 
-      <CreateProjectDialog
+      <VoiceFirstCreateModal
         open={showCreateProject}
         onOpenChange={setShowCreateProject}
-        onSuccess={() => setShowCreateProject(false)}
+        onCreated={() => setShowCreateProject(false)}
       />
     </PageTransition>
   );
@@ -396,7 +396,7 @@ const CreatorWorkHome = () => {
           onClick={() => setShowCreateProject(true)}
           className="w-full h-12 gap-2 font-bold"
         >
-          <Plus className="h-4 w-4" /> New Project Workspace
+          <Mic className="h-4 w-4" /> What are you making?
         </Button>
 
         {/* Active Projects */}
@@ -488,10 +488,10 @@ const CreatorWorkHome = () => {
         )}
       </div>
 
-      <CreateProjectDialog
+      <VoiceFirstCreateModal
         open={showCreateProject}
         onOpenChange={setShowCreateProject}
-        onSuccess={() => setShowCreateProject(false)}
+        onCreated={() => setShowCreateProject(false)}
       />
     </PageTransition>
   );

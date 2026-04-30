@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { TrustSignals } from "@/components/profile/TrustSignals";
 import { CredentialVerificationCard } from "@/components/profile/CredentialVerificationCard";
 import { WhoViewedProfile } from "@/components/profile/WhoViewedProfile";
+import { FoundingMemberCard } from "@/components/founding/FoundingMemberCard";
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 
 interface ProfileVerificationSectionProps {
@@ -17,6 +18,11 @@ export const ProfileVerificationSection = ({
 }: ProfileVerificationSectionProps) => {
   return (
     <>
+      {/* Founding Member quest entry — only relevant pre-OG/founder users */}
+      {profile.badge !== "founder" && profile.badge !== "og" && (
+        <FoundingMemberCard className="mb-4" compact />
+      )}
+
       {/* Trust Signals */}
       <Card className="p-4 mb-4">
         <TrustSignals

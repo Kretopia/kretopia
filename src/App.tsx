@@ -74,6 +74,7 @@ const NotificationsPage = lazy(() => import("./pages/Notifications"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
 const Install = lazy(() => import("./pages/Install"));
+const FoundingMember = lazy(() => import("./pages/FoundingMember"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 
@@ -245,6 +246,7 @@ const AppContent = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/claim" element={<Claim />} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/founding-member" element={<ProtectedRoute><FoundingMember /></ProtectedRoute>} />
             <Route path="/company-onboarding" element={<ProtectedRoute><CompanyOnboarding /></ProtectedRoute>} />
             
             {/* Core Feature Pages - Public browsable, actions gated */}

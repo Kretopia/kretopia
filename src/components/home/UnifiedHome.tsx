@@ -28,6 +28,7 @@ import { PricingPreviewSection } from "@/components/landing/PricingPreviewSectio
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A
 import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
+import { FoundingMemberCard } from "@/components/founding/FoundingMemberCard";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
@@ -580,6 +581,7 @@ export const UnifiedHome = () => {
           <WeeklyIntentCard className="mb-4" />
           <MoneyBrief variant="compact" className="mb-4" />
           <NewMemberStarterCard className="mb-4" />
+          <FoundingMemberCard className="mb-4" />
           <InviteCircleCard variant="home" className="mb-4" />
           {/* StartCircleNudgeCard hidden — Circles paused on discovery surfaces (Pass A) */}
 

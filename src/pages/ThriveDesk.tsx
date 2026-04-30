@@ -217,25 +217,14 @@ const ThriveDesk = () => {
         {/* Content + Quick Panel */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
           {isMobileHub ? (
-            <MobileProjectHub
-              flow={flow}
+            <StudioRoom
               project={project}
               tasks={tasks}
-              messages={messages}
               files={files}
-              milestones={milestones}
-              noteCount={flowExtras.noteCount}
-              approvalPendingCount={flowExtras.approvalPendingCount}
-              contractCount={flowExtras.contractCount}
-              invoiceCount={flowExtras.invoiceCount}
-              invoicePaidCount={flowExtras.invoicePaidCount}
-              projectId={projectId!}
+              collaborators={collaborators as any}
               currentUserId={user?.id || ""}
-              collaborators={collaborators}
-              onTasksChanged={fetchProjectData}
+              onUpdated={fetchProjectData}
               onNavigateToTab={goToTabWithIntent}
-              onPinStage={handlePinStage}
-              isPro={isPro}
             />
           ) : (
             <DeskTabContent

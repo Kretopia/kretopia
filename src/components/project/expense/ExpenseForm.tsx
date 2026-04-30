@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,13 @@ import { recordMoneyAction } from "@/lib/moneyStreak";
 interface ExpenseFormProps {
   projectId?: string;
   onExpenseAdded: () => void;
+}
+
+interface DebugStep {
+  time: string;
+  message: string;
+  detail?: string;
+  level?: "info" | "success" | "error";
 }
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY", "INR", "BRL", "IDR", "TTD", "AED", "CHF"];
@@ -40,12 +47,16 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   const { guard: guardExpense } = useFeatureGate("expenses");
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+  const pendingPickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cameraInputId = useId();
+  const uploadInputId = useId();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categorizing, setCategorizing] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [debugSteps, setDebugSteps] = useState<DebugStep[]>([]);
   const [form, setForm] = useState({
     title: "",
     amount: "",
@@ -59,6 +70,56 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     recurring_interval: "monthly",
     payment_method: "card",
   });
+
+  const addDebug = (message: string, detail?: string, level: DebugStep["level"] = "info") => {
+    setDebugSteps((prev) => [
+      ...prev.slice(-9),
+      {
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+        message,
+        detail: detail ? detail.slice(0, 1400) : undefined,
+        level,
+      },
+    ]);
+  };
+
+  const formatErrorDetail = (err: unknown) => {
+    if (!err) return "No error object was returned.";
+    if (err instanceof Error) return `${err.name}: ${err.message}${err.stack ? `\n${err.stack.slice(0, 900)}` : ""}`;
+    if (typeof err === "object") {
+      try {
+        return JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+      } catch {
+        return String(err);
+      }
+    }
+    return String(err);
+  };
+
+  const clearPickerTimer = () => {
+    if (pendingPickerTimer.current) {
+      clearTimeout(pendingPickerTimer.current);
+      pendingPickerTimer.current = null;
+    }
+  };
+
+  const beginPicker = (mode: "camera" | "upload") => {
+    clearPickerTimer();
+    setScanError(null);
+    const inputReady = mode === "camera" ? Boolean(cameraInputRef.current) : Boolean(uploadInputRef.current);
+    addDebug(
+      mode === "camera" ? "Take photo tapped" : "Upload tapped",
+      `Input ready: ${inputReady ? "yes" : "no"}. Signed in: ${user?.id ? "yes" : "no"}. Browser: ${navigator.userAgent}`,
+      inputReady ? "info" : "error",
+    );
+    pendingPickerTimer.current = setTimeout(() => {
+      addDebug(
+        "No image reached the app yet",
+        "If the camera/gallery did not open, the browser may have blocked the file picker, camera permission may be denied, or the picker was cancelled before a file was selected.",
+        "error",
+      );
+    }, 4500);
+  };
 
   // Listen for global "open expense" event (from ThrivePay quick-add menu / Snap FAB)
   useEffect(() => {

@@ -9621,8 +9621,10 @@ export type Database = {
           agent_mode: boolean
           agent_user_id: string | null
           budget: string | null
+          client_name: string | null
           client_price: number | null
           client_user_id: string | null
+          cover_url: string | null
           created_at: string | null
           created_by: string
           creative_payout: number | null
@@ -9635,6 +9637,7 @@ export type Database = {
           margin_type: string | null
           margin_value: number | null
           match_id: string | null
+          mood: string | null
           pinned_stage: string | null
           setup_completed: boolean
           spark_room_id: string | null
@@ -9650,8 +9653,10 @@ export type Database = {
           agent_mode?: boolean
           agent_user_id?: string | null
           budget?: string | null
+          client_name?: string | null
           client_price?: number | null
           client_user_id?: string | null
+          cover_url?: string | null
           created_at?: string | null
           created_by: string
           creative_payout?: number | null
@@ -9664,6 +9669,7 @@ export type Database = {
           margin_type?: string | null
           margin_value?: number | null
           match_id?: string | null
+          mood?: string | null
           pinned_stage?: string | null
           setup_completed?: boolean
           spark_room_id?: string | null
@@ -9679,8 +9685,10 @@ export type Database = {
           agent_mode?: boolean
           agent_user_id?: string | null
           budget?: string | null
+          client_name?: string | null
           client_price?: number | null
           client_user_id?: string | null
+          cover_url?: string | null
           created_at?: string | null
           created_by?: string
           creative_payout?: number | null
@@ -9693,6 +9701,7 @@ export type Database = {
           margin_type?: string | null
           margin_value?: number | null
           match_id?: string | null
+          mood?: string | null
           pinned_stage?: string | null
           setup_completed?: boolean
           spark_room_id?: string | null

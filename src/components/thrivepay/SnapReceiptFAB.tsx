@@ -27,6 +27,10 @@ interface ScannedReceipt {
   line_items?: Array<{ description: string; amount: number }>;
 }
 
+interface SnapReceiptFABProps {
+  projectId?: string;
+}
+
 /**
  * SnapReceiptFAB
  * - Tap → opens camera immediately
@@ -34,7 +38,7 @@ interface ScannedReceipt {
  * - Shows REVIEW SHEET with all fields editable + line items preview
  * - User taps "Add to expenses" → saves directly to DB
  */
-export function SnapReceiptFAB() {
+export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
   const { user } = useAuth();
   const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
@@ -131,7 +135,7 @@ export function SnapReceiptFAB() {
     try {
       const { error } = await supabase.from("expenses").insert({
         user_id: user.id,
-        project_id: null,
+        project_id: projectId || null,
         title: form.title.trim(),
         amount: parseFloat(form.amount),
         currency: form.currency,
@@ -188,7 +192,7 @@ export function SnapReceiptFAB() {
             type="button"
             disabled={scanning}
             aria-label="Scan a receipt"
-            className="fixed right-4 z-40 h-14 w-14 rounded-full p-0 shadow-lg shadow-primary/30 bg-primary hover:bg-primary/90"
+            className="fixed right-4 z-[60] h-14 rounded-full px-4 gap-2 shadow-lg shadow-primary/30 bg-primary hover:bg-primary/90"
             style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 5.5rem)" }}
           >
             {scanning ? (
@@ -196,6 +200,7 @@ export function SnapReceiptFAB() {
             ) : (
               <Camera className="h-6 w-6 text-primary-foreground" />
             )}
+            <span className="text-xs font-semibold text-primary-foreground">Scan</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent

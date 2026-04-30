@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AccountingDashboard } from "@/components/project/AccountingDashboard";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { Navigate } from "react-router-dom";
+import { SnapReceiptFAB } from "@/components/thrivepay/SnapReceiptFAB";
 
 const Accounting = () => {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ const Accounting = () => {
       >
         <AccountingDashboard />
       </FreeTierGate>
+      <SnapReceiptFAB />
     </div>
   );
 };

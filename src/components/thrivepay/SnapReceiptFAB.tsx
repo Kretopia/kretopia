@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
@@ -186,7 +187,7 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         disabled={scanning}
       />
 
-      <Popover>
+      <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
         <PopoverTrigger asChild>
           <Button
             type="button"
@@ -212,7 +213,10 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
           <div className="space-y-1">
             <button
               type="button"
-              onClick={() => cameraRef.current?.click()}
+              onClick={() => {
+                setPickerOpen(false);
+                requestAnimationFrame(() => cameraRef.current?.click());
+              }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
             >
               <Camera className="h-4 w-4 text-primary shrink-0" />
@@ -223,7 +227,10 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             </button>
             <button
               type="button"
-              onClick={() => uploadRef.current?.click()}
+              onClick={() => {
+                setPickerOpen(false);
+                requestAnimationFrame(() => uploadRef.current?.click());
+              }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted text-left transition-colors"
             >
               <ImagePlus className="h-4 w-4 text-primary shrink-0" />

@@ -9080,6 +9080,9 @@ export type Database = {
           project_id: string
           reply_to: string | null
           user_id: string
+          voice_duration: number | null
+          voice_transcript: string | null
+          voice_url: string | null
         }
         Insert: {
           attachments?: Json
@@ -9094,6 +9097,9 @@ export type Database = {
           project_id: string
           reply_to?: string | null
           user_id: string
+          voice_duration?: number | null
+          voice_transcript?: string | null
+          voice_url?: string | null
         }
         Update: {
           attachments?: Json
@@ -9108,6 +9114,9 @@ export type Database = {
           project_id?: string
           reply_to?: string | null
           user_id?: string
+          voice_duration?: number | null
+          voice_transcript?: string | null
+          voice_url?: string | null
         }
         Relationships: [
           {

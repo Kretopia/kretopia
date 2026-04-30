@@ -233,18 +233,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   ) : (
                     /* ====== UNIFIED MENU — grouped: Primary · More · (My stuff) ====== */
                     <>
-                      {/* Primary — mirrors bottom nav for parity */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Primary</p>
-                      <MenuButton icon={Home} label="Home" onClick={() => handleNavigation("/")} />
-                      <MenuButton icon={Sparkles} label="Match" onClick={() => handleNavigation("/circle")} />
-                      <MenuButton icon={Briefcase} label="Gigs" onClick={() => handleNavigation("/opportunities")} />
-                      <MenuButton icon={FolderKanban} label="Desk" onClick={() => handleNavigation("/desk")} />
-                      <MenuButton icon={Wallet} label="Pay" onClick={() => handleNavigation("/thrivepay")} />
-
-                      <Separator className="my-3" />
-
-                      {/* More — secondary surfaces */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">More</p>
+                      {/* Explore — secondary surfaces (primary tabs live in bottom nav) */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Explore</p>
                       <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />
                       <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} />

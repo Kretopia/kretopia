@@ -19,6 +19,7 @@ import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
 import { TodayStrip } from "@/components/desk/TodayStrip";
 import { DeskCommandPalette } from "@/components/desk/DeskCommandPalette";
 import { VoiceCommandSheet } from "@/components/desk/VoiceCommandSheet";
+import { WrapMyWeekSheet } from "@/components/desk/WrapMyWeekSheet";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";

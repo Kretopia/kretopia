@@ -441,6 +441,16 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         <span className="text-xs font-semibold text-primary-foreground">Scan</span>
       </Button>
 
+      <input
+        ref={uploadRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        onClick={() => beginPicker("upload")}
+        onChange={handleFile}
+        disabled={scanning}
+      />
+
       {pickerOpen && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[80]" role="presentation">
           <button
@@ -482,15 +492,6 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
             </button>
           </div>
           </div>
-          <input
-            ref={uploadRef}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onClick={() => beginPicker("upload")}
-            onChange={handleFile}
-            disabled={scanning}
-          />
         </div>,
         document.body,
       )}

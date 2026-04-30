@@ -51,6 +51,16 @@ export const StudioRoom = ({
     role: c.role ?? null,
   }));
 
+  // Identify current user from the people list for presence metadata
+  const me = useMemo(
+    () => people.find((p) => p.id === currentUserId) ?? null,
+    [people, currentUserId],
+  );
+  const { onlineUserIds, knock } = useStudioPresence(
+    project?.id,
+    me ? { id: me.id, full_name: me.full_name, avatar_url: me.avatar_url } : null,
+  );
+
   const handleAddReference = () => {
     if (!isOwner) {
       toast({ title: "Only the owner can add references" });

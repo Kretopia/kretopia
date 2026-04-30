@@ -63,6 +63,7 @@ const BrandWorkHome = () => {
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
+  const [wrapWeekOpen, setWrapWeekOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -308,6 +309,7 @@ const CreatorWorkHome = () => {
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
+  const [wrapWeekOpen, setWrapWeekOpen] = useState(false);
 
   const fetchProjects = async () => {
     if (!user) return;

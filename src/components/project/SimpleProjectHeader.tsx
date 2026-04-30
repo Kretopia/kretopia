@@ -3,13 +3,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, ArrowLeft, UserPlus, X, Crown, Video, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { InviteCollaboratorDialog } from "./InviteCollaboratorDialog";
 import { VideoCallSheet } from "./VideoCallSheet";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sendPushNotification } from "@/lib/pushNotifications";
+import { ringUsers } from "@/hooks/useIncomingCall";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,15 +83,35 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
       setCallId(data.call_id ?? null);
       setCallOpen(true);
 
-      // Notify other collaborators (in-app + push) — fire and forget
+      // Notify other collaborators (Realtime ring + push fallback) — fire and forget
       const others = collaborators.filter((c) => c.id !== user?.id);
+      const myAvatar =
+        collaborators.find((c) => c.id === user?.id)?.avatar_url ?? null;
+
+      // Realtime ringer (instant)
+      void ringUsers(
+        others.map((c) => c.id),
+        {
+          kind: "project",
+          projectId: project.id,
+          projectName: project.title,
+          callerId: user!.id,
+          callerName: myName,
+          callerAvatar: myAvatar,
+          roomUrl: data.room_url,
+          roomName: data.room_url.split("/").pop(),
+          callId: data.call_id ?? null,
+        },
+      );
+
+      // Push notification (delivery if user is offline)
       others.forEach((c) => {
         sendPushNotification({
           userId: c.id,
           title: "Live call started",
           body: `${myName} started a call on ${project.title}. Join now →`,
           type: "general",
-          link: `/desk/${project.id}`,
+          link: `/desk/${project.id}?joinCall=1`,
           data: { project_id: project.id, kind: "video_call" },
         }).catch((e) => console.error("[startCall] notify failed", e));
       });

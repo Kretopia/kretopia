@@ -16,6 +16,8 @@ import { ProjectFlowTimeline } from "@/components/project/flow/ProjectFlowTimeli
 import { NextStepBar } from "@/components/project/flow/NextStepBar";
 import { MobileProjectHub } from "@/components/project/mobile/MobileProjectHub";
 import { StudioRoom } from "@/components/project/studio/StudioRoom";
+import { DeskCommandPalette } from "@/components/desk/DeskCommandPalette";
+import { VoiceCommandSheet } from "@/components/desk/VoiceCommandSheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ArrowLeft } from "lucide-react";
 import { useProjectData } from "@/hooks/useProjectData";
@@ -36,8 +38,11 @@ const ThriveDesk = () => {
   const [activeTab, setActiveTab] = useState("today");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
   const isMobile = useIsMobile();
-  const isMobileHub = isMobile && activeTab === "today";
+  // Studio Room is the default for "today" tab on BOTH mobile and desktop now
+  const isStudioRoom = activeTab === "today";
 
   const agentRole = useAgentRole(project, user?.id || "");
 
@@ -184,7 +189,7 @@ const ThriveDesk = () => {
         </div>
 
         {/* Mobile back-to-hub bar — visible when drilled into a section */}
-        {isMobile && !isMobileHub && (
+        {isMobile && !isStudioRoom && (
           <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-card/60 shrink-0">
             <Button
               variant="ghost"
@@ -216,7 +221,7 @@ const ThriveDesk = () => {
 
         {/* Content + Quick Panel */}
         <div className="flex-1 flex min-h-0 overflow-hidden">
-          {isMobileHub ? (
+          {isStudioRoom ? (
             <StudioRoom
               project={project}
               tasks={tasks}
@@ -277,7 +282,7 @@ const ThriveDesk = () => {
       </div>
 
       {/* Floating AI Assistant — only show when mobile Hub isn't rendering its own combined FAB */}
-      {user && projectId && !isMobileHub && (
+      {user && projectId && !isStudioRoom && (
         <DeskAILauncher
           projectId={projectId}
           userId={user.id}
@@ -285,6 +290,14 @@ const ThriveDesk = () => {
           hideOnMobile={isMobile && activeTab === "messages"}
         />
       )}
+
+      {/* Global ⌘K palette + voice command — available across the workspace */}
+      <DeskCommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        onVoiceCommand={() => setVoiceCmdOpen(true)}
+      />
+      <VoiceCommandSheet open={voiceCmdOpen} onOpenChange={setVoiceCmdOpen} />
     </div>
   );
 };

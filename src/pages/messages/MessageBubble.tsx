@@ -71,7 +71,23 @@ export const MessageBubble = ({ msg, isOwn, showAvatar, reactions, currentUserId
           )}
 
           {nativeVoice && (
-            <VoiceNotePlayer url={msg.attachment_url!} duration={msg.attachment_duration || undefined} isOwn={isOwn} />
+            <div className="flex flex-col gap-1">
+              <VoiceNotePlayer url={msg.attachment_url!} duration={msg.attachment_duration || undefined} isOwn={isOwn} />
+              {msg.voice_note_transcript === null || msg.voice_note_transcript === undefined ? (
+                <span className={`text-xs italic ${isOwn ? "text-primary-foreground/60 self-end" : "text-muted-foreground"} px-2`}>
+                  Transcribing…
+                </span>
+              ) : msg.voice_note_transcript.trim() ? (
+                <details className="group/transcript px-2 max-w-[260px]">
+                  <summary className={`text-xs italic cursor-pointer ${isOwn ? "text-primary-foreground/70" : "text-muted-foreground"} list-none select-none hover:underline`}>
+                    Show transcript
+                  </summary>
+                  <p className={`text-xs italic mt-1 whitespace-pre-wrap break-words ${isOwn ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                    {msg.voice_note_transcript}
+                  </p>
+                </details>
+              ) : null}
+            </div>
           )}
 
           {nativeImage && (

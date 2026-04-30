@@ -71,6 +71,7 @@ export function FinanceHub({
   const navigate = useNavigate();
   const [invoices, setInvoices] = useState<InvoiceLite[]>([]);
   const [loading, setLoading] = useState(false);
+  const [markPaidInvoice, setMarkPaidInvoice] = useState<InvoiceLite | null>(null);
   const invoiceTriggerRef = useRef<HTMLDivElement>(null);
   const milestonesRef = useRef<HTMLDivElement>(null);
 

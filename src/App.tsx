@@ -74,6 +74,7 @@ const NotificationsPage = lazy(() => import("./pages/Notifications"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
 const Install = lazy(() => import("./pages/Install"));
+const GuestCall = lazy(() => import("./pages/GuestCall"));
 const FoundingMember = lazy(() => import("./pages/FoundingMember"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
@@ -322,6 +323,9 @@ const AppContent = () => {
             
             {/* PWA Install Page */}
             <Route path="/install" element={<Install />} />
+
+            {/* Public guest video call join */}
+            <Route path="/call/:token" element={<GuestCall />} />
             
             {/* Invite Link with Code */}
             <Route path="/join/:code" element={<JoinWithCode />} />

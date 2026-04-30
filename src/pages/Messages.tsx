@@ -22,6 +22,7 @@ import { ChatHeader } from "./messages/ChatHeader";
 import { MessageBubble } from "./messages/MessageBubble";
 import { MessageComposer } from "./messages/MessageComposer";
 import { EmptyChatState } from "./messages/EmptyChatState";
+import { VibeCheckPrompt } from "@/components/calls/VibeCheckPrompt";
 import type { Attachment, ReplyTo, Message } from "./messages/types";
 
 const Messages = () => {
@@ -232,6 +233,14 @@ const Messages = () => {
                 recipientRole={otherUser.role}
                 currentUserRole={currentUserRole}
                 onSelectIceBreaker={(message) => setNewMessage(message)}
+              />
+            )}
+
+            {messages.length >= 3 && selectedConversation && (
+              <VibeCheckPrompt
+                conversationId={selectedConversation}
+                recipientId={otherUser.id}
+                recipientName={otherUser.name || 'Creator'}
               />
             )}
 

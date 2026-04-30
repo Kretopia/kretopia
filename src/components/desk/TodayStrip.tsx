@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, DollarSign, MessageSquare, Mic, Calendar, Sparkles, ArrowRight } from "lucide-react";
+import { CheckCircle2, DollarSign, MessageSquare, Mic, Calendar, Sparkles, ArrowRight, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 interface TodayStripProps {
   onVoice: () => void;
   onCommandPalette?: () => void;
+  onWrapWeek?: () => void;
 }
 
 interface Stats {

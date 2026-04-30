@@ -436,11 +436,14 @@ export default function ThrivePay() {
                 <Card>
                   <EmptyState
                     icon={Wallet}
-                    eyebrow="Money moves"
-                    title="No transactions yet"
-                    description="Top up your wallet or get paid for a gig — every move shows up here in real time."
-                    action={{ label: "Top Up Wallet", onClick: () => setTopUpDialogOpen(true), icon: Plus }}
-                    secondaryAction={{ label: "Browse Gigs", onClick: () => navigate('/gigs'), icon: Briefcase }}
+                    eyebrow="Your creative finances"
+                    title="Ready to get paid"
+                    description="Send your first invoice or set up a payment link — your creative finances start here."
+                    action={{
+                      label: "Create Invoice",
+                      icon: Plus,
+                      onClick: () => window.dispatchEvent(new CustomEvent("thrivepay:create-document", { detail: { type: "invoice" } })),
+                    }}
                   />
                 </Card>
               ) : (

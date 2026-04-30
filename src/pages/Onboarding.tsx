@@ -785,14 +785,14 @@ export default function Onboarding() {
                   <Label className="text-xs text-muted-foreground">Role</Label>
                   {showCustomRole || (!isRoleInOptions && role) ? (
                     <div className="space-y-1.5">
-                      <Input value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Music Producer" className="h-10" />
+                      <Input id="review-role-trigger" value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Music Producer" className="h-10" />
                       <button type="button" className="text-xs text-primary hover:underline" onClick={() => { setShowCustomRole(false); setRole(""); }}>
                         Choose from list
                       </button>
                     </div>
                   ) : (
                     <Select value={role || undefined} onValueChange={v => { if (v === "Other") { setShowCustomRole(true); setRole(""); } else setRole(v); }}>
-                      <SelectTrigger className="h-10"><SelectValue placeholder="Select your role" /></SelectTrigger>
+                      <SelectTrigger id="review-role-trigger" className="h-10"><SelectValue placeholder="Select your role" /></SelectTrigger>
                       <SelectContent>{ROLE_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                     </Select>
                   )}

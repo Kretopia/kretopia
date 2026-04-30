@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { PhoneOff, Loader2, Link2, Circle, ScreenShare } from "lucide-react";
+import { PhoneOff, Loader2, Link2, Circle, ScreenShare, X } from "lucide-react";
 import DailyIframe, { type DailyCall } from "@daily-co/daily-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { APP_URL } from "@/lib/constants";
 
 interface VideoCallSheetProps {
   open: boolean;
@@ -14,11 +15,8 @@ interface VideoCallSheetProps {
   token: string | null;
   callId: string | null;
   userName: string;
-  /** Optional — enables the "Copy guest link" button. */
   projectId?: string | null;
-  /** Optional — direct (1:1) call id, enables guest link for that call. */
   directCallId?: string | null;
-  /** Optional — extracted from room URL if missing. Used to mint guest links. */
   roomName?: string | null;
 }
 
@@ -102,6 +100,8 @@ export const VideoCallSheet = ({
 
   const handleEnd = async () => {
     try { await callRef.current?.leave(); } catch {}
+    try { callRef.current?.destroy(); } catch {}
+    callRef.current = null;
     onOpenChange(false);
   };
 
@@ -138,9 +138,12 @@ export const VideoCallSheet = ({
         },
       });
       if (error) throw error;
-      const url = `${window.location.origin}/call/${data.token}`;
+      const url = `${APP_URL}/call/${data.token}`;
       await navigator.clipboard.writeText(url);
-      toast({ title: "Guest link copied", description: "Valid for 4 hours." });
+      toast({
+        title: "Guest link copied",
+        description: "Share with clients or collaborators — valid for 4 hours.",
+      });
     } catch (e: any) {
       toast({ title: "Couldn't create link", description: e?.message, variant: "destructive" });
     } finally {
@@ -152,70 +155,115 @@ export const VideoCallSheet = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="h-[100dvh] sm:h-[90dvh] p-0 flex flex-col bg-background"
+        hideClose
+        className="h-[100dvh] sm:h-[92dvh] p-0 flex flex-col bg-[#0b0b0f] border-t-0 gap-0"
       >
-        <SheetHeader className="px-4 py-3 border-b border-border shrink-0">
-          <SheetTitle className="text-sm font-semibold truncate">
-            📹 {projectName}
-            {recording && (
-              <span className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-destructive">
-                <Circle className="h-2 w-2 fill-destructive" /> REC
-              </span>
-            )}
-          </SheetTitle>
-        </SheetHeader>
+        {/* Header */}
+        <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 shrink-0 bg-[#0b0b0f]">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="h-7 w-7 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <span className="text-base">📹</span>
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate leading-tight">
+                {projectName}
+              </p>
+              <p className="text-[11px] text-white/50 leading-tight flex items-center gap-1.5">
+                {recording ? (
+                  <>
+                    <Circle className="h-2 w-2 fill-destructive text-destructive" />
+                    <span className="text-destructive font-medium">Recording</span>
+                  </>
+                ) : joining ? (
+                  "Connecting…"
+                ) : (
+                  "Live call"
+                )}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleEnd}
+            aria-label="Close call"
+            className="h-9 w-9 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/80 transition-colors shrink-0"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </header>
 
+        {/* Video area */}
         <div className="relative flex-1 min-h-0 bg-black">
           <div ref={containerRef} className="absolute inset-0" />
           {joining && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white">
-              <Loader2 className="h-6 w-6 animate-spin mr-2" />
-              Joining call…
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white gap-3">
+              <Loader2 className="h-7 w-7 animate-spin text-primary" />
+              <p className="text-sm text-white/80">Connecting to the room…</p>
             </div>
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-2 px-3 py-3 border-t border-border shrink-0">
-          <Button
-            type="button"
-            variant={sharing ? "default" : "outline"}
-            size="sm"
-            className="rounded-full gap-2"
-            onClick={toggleScreenShare}
-          >
-            <ScreenShare className="h-4 w-4" />
-            {sharing ? "Stop share" : "Share"}
-          </Button>
-          <Button
-            type="button"
-            variant={recording ? "default" : "outline"}
-            size="sm"
-            className="rounded-full gap-2"
-            onClick={toggleRecording}
-          >
-            <Circle className={`h-3 w-3 ${recording ? "fill-current" : ""}`} />
-            {recording ? "Stop rec" : "Record"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="rounded-full gap-2"
-            onClick={handleCopyGuestLink}
-            disabled={generatingLink}
-          >
-            {generatingLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
-            Invite
-          </Button>
-          <Button
-            variant="destructive"
-            size="lg"
-            className="rounded-full px-5 gap-2"
-            onClick={handleEnd}
-          >
-            <PhoneOff className="h-4 w-4" />
-            End
-          </Button>
+        {/* Controls */}
+        <div
+          className="px-3 pt-3 border-t border-white/5 bg-[#0b0b0f] shrink-0"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+        >
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={toggleScreenShare}
+              className={`rounded-full gap-2 h-10 px-4 border border-white/10 ${
+                sharing
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90 border-transparent"
+                  : "bg-white/5 text-white hover:bg-white/10"
+              }`}
+            >
+              <ScreenShare className="h-4 w-4" />
+              <span className="text-sm font-medium">{sharing ? "Stop" : "Share"}</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={toggleRecording}
+              className={`rounded-full gap-2 h-10 px-4 border border-white/10 ${
+                recording
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 border-transparent"
+                  : "bg-white/5 text-white hover:bg-white/10"
+              }`}
+            >
+              <Circle className={`h-3 w-3 ${recording ? "fill-current" : ""}`} />
+              <span className="text-sm font-medium">{recording ? "Stop" : "Record"}</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCopyGuestLink}
+              disabled={generatingLink}
+              className="rounded-full gap-2 h-10 px-4 border border-white/10 bg-white/5 text-white hover:bg-white/10"
+            >
+              {generatingLink ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Link2 className="h-4 w-4" />
+              )}
+              <span className="text-sm font-medium">Invite</span>
+            </Button>
+
+            <Button
+              type="button"
+              onClick={handleEnd}
+              className="rounded-full gap-2 h-11 px-6 bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-lg"
+            >
+              <PhoneOff className="h-4 w-4" />
+              <span className="text-sm font-semibold">End</span>
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

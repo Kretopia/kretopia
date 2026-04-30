@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { message_id, audio_url } = await req.json();
+    const { message_id, audio_url, table } = await req.json();
 
     if (!message_id || !audio_url) {
       return new Response(
@@ -20,6 +20,14 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    // Whitelist tables we can write a transcript back to
+    const allowedTables: Record<string, string> = {
+      messages: "voice_note_transcript",
+      project_messages: "voice_transcript",
+    };
+    const targetTable = allowedTables[table as string] ? (table as string) : "messages";
+    const transcriptColumn = allowedTables[targetTable];
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
@@ -97,10 +105,10 @@ Deno.serve(async (req) => {
     const transcript: string =
       aiData.choices?.[0]?.message?.content?.trim() || "";
 
-    // Update the message row
+    // Update the message row in the correct table
     const { error: updateError } = await supabase
-      .from("messages")
-      .update({ voice_note_transcript: transcript })
+      .from(targetTable)
+      .update({ [transcriptColumn]: transcript })
       .eq("id", message_id);
 
     if (updateError) {

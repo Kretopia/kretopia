@@ -13,6 +13,7 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ChatActionChips } from "./chat/ChatActionChips";
 import { ChatAttachment } from "./chat/ChatAttachment";
+import { VoiceNoteRecorder } from "@/components/messages/VoiceNoteRecorder";
 
 interface Attachment {
   url: string;
@@ -29,6 +30,9 @@ interface Message {
   reply_to?: string | null;
   is_pinned?: boolean;
   attachments?: Attachment[] | null;
+  voice_url?: string | null;
+  voice_duration?: number | null;
+  voice_transcript?: string | null;
   profiles?: {
     full_name: string;
     avatar_url: string | null;
@@ -236,6 +240,36 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
       toast({ title: "Failed to send message", description: error.message, variant: "destructive" });
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleSendVoiceNote = async (url: string, duration: number) => {
+    try {
+      const { data: inserted, error } = await supabase
+        .from("project_messages")
+        .insert({
+          project_id: projectId,
+          user_id: currentUserId,
+          message: "🎙️ Voice note",
+          voice_url: url,
+          voice_duration: duration,
+          attachments: [],
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      onMessageSent();
+
+      // Fire-and-forget transcription
+      if (inserted?.id) {
+        supabase.functions
+          .invoke("transcribe-voice-note", {
+            body: { message_id: inserted.id, audio_url: url, table: "project_messages" },
+          })
+          .catch((err) => console.error("[transcribe-voice-note] failed:", err));
+      }
+    } catch (e: any) {
+      toast({ title: "Failed to send voice note", description: e.message, variant: "destructive" });
     }
   };
 
@@ -465,6 +499,21 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                                 </p>
                               )}
 
+                              {/* Voice note */}
+                              {msg.voice_url && (
+                                <div className="mt-2 space-y-1 max-w-[280px]">
+                                  <audio src={msg.voice_url} controls className="h-9 w-full" />
+                                  {msg.voice_transcript === null || msg.voice_transcript === undefined ? (
+                                    <p className="text-[11px] text-muted-foreground italic">Transcribing…</p>
+                                  ) : msg.voice_transcript ? (
+                                    <details className="text-xs text-muted-foreground">
+                                      <summary className="cursor-pointer hover:text-foreground">Show transcript</summary>
+                                      <p className="mt-1 whitespace-pre-wrap leading-relaxed">{msg.voice_transcript}</p>
+                                    </details>
+                                  ) : null}
+                                </div>
+                              )}
+
                               {/* Attachments */}
                               {msg.attachments && msg.attachments.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
@@ -646,6 +695,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
               >
                 {uploadingFiles ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
               </Button>
+              <VoiceNoteRecorder onSend={handleSendVoiceNote} disabled={sending} />
               <div className="flex-1 relative">
                 <Input
                   ref={inputRef}

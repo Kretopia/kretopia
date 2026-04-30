@@ -61,52 +61,16 @@ export const ContinueAsCircle = ({
     if (!user) return;
     setCreating(true);
     try {
-      // 1. Create the Circle
-      const { data: room, error: roomErr } = await supabase
-        .from("spark_rooms")
-        .insert({
-          created_by: user.id,
-          title: eventTitle,
-          description: `Group chat continued from the event "${eventTitle}".`,
-          category: category || "general",
-          cover_image_url: coverImageUrl || null,
-          is_private: true,
-          circle_type: "event",
-        })
-        .select("id")
-        .single();
-      if (roomErr || !room) throw roomErr || new Error("Failed to create Circle");
-
-      // 2. Add host as admin
-      await supabase.from("spark_room_members").insert({
-        room_id: room.id,
-        user_id: user.id,
-        role: "admin",
+      const { data: roomId, error: rpcErr } = await supabase.rpc("create_circle_from_event", {
+        _event_id: eventId,
+        _title: eventTitle,
+        _description: `Group chat continued from the event "${eventTitle}".`,
+        _category: category || "general",
+        _cover_image_url: coverImageUrl || null,
       });
+      if (rpcErr || !roomId) throw rpcErr || new Error("Failed to create Circle");
 
-      // 3. Add all attendees as members
-      const { data: attendees } = await supabase
-        .from("jam_participants")
-        .select("user_id")
-        .eq("jam_id", eventId)
-        .in("status", ["going", "interested", "maybe"]);
-
-      if (attendees && attendees.length > 0) {
-        const memberRows = attendees
-          .filter(a => a.user_id !== user.id)
-          .map(a => ({ room_id: room.id, user_id: a.user_id, role: "member" as const }));
-        if (memberRows.length > 0) {
-          await supabase.from("spark_room_members").insert(memberRows);
-        }
-      }
-
-      // 4. Link to event
-      await supabase
-        .from("creative_jams")
-        .update({ circle_id: room.id })
-        .eq("id", eventId);
-
-      setResolvedCircleId(room.id);
+      setResolvedCircleId(roomId as string);
       setIsMember(true);
       toast({
         title: "🎉 Circle created",

@@ -115,23 +115,37 @@ serve(async (req) => {
         (typeof errJson?.info === "string" && errJson.info.toLowerCase().includes("already exist"));
 
       if (alreadyExists) {
-        // Try to fetch the existing room
-        const getRes = await fetch(`${DAILY_API}/rooms/${roomName}`, {
-          headers: { Authorization: `Bearer ${DAILY_API_KEY}` },
+        // Room exists — PATCH it so its properties match our latest config
+        // (e.g., disable knocking/prejoin if they were enabled previously).
+        const patchRes = await fetch(`${DAILY_API}/rooms/${roomName}`, {
+          method: "POST", // Daily uses POST to update room properties
+          headers: {
+            Authorization: `Bearer ${DAILY_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ properties: roomProperties }),
         });
-        if (getRes.ok) {
-          const room = await getRes.json();
+        if (patchRes.ok) {
+          const room = await patchRes.json();
           roomUrl = room.url;
         } else {
-          // Name conflict but room not retrievable — create with a fresh suffix
-          const freshName = `${roomName.slice(0, 30)}-${Date.now().toString(36).slice(-6)}`.toLowerCase();
-          const retryRes = await createRoom(freshName);
-          if (!retryRes.ok) {
-            const rt = await retryRes.text();
-            throw new Error(`Daily retry create failed: ${retryRes.status} ${rt}`);
+          // Fallback: just GET the existing room
+          const getRes = await fetch(`${DAILY_API}/rooms/${roomName}`, {
+            headers: { Authorization: `Bearer ${DAILY_API_KEY}` },
+          });
+          if (getRes.ok) {
+            const room = await getRes.json();
+            roomUrl = room.url;
+          } else {
+            const freshName = `${roomName.slice(0, 30)}-${Date.now().toString(36).slice(-6)}`.toLowerCase();
+            const retryRes = await createRoom(freshName);
+            if (!retryRes.ok) {
+              const rt = await retryRes.text();
+              throw new Error(`Daily retry create failed: ${retryRes.status} ${rt}`);
+            }
+            const room = await retryRes.json();
+            roomUrl = room.url;
           }
-          const room = await retryRes.json();
-          roomUrl = room.url;
         }
       } else {
         throw new Error(`Daily create failed: ${createRes.status} ${errText}`);

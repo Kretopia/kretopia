@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, ArrowLeft, UserPlus, X, Crown } from "lucide-react";
+import { Users, ArrowLeft, UserPlus, X, Crown, Video, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { InviteCollaboratorDialog } from "./InviteCollaboratorDialog";
+import { VideoCallSheet } from "./VideoCallSheet";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sendPushNotification } from "@/lib/pushNotifications";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,9 +53,59 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [collaboratorToRemove, setCollaboratorToRemove] = useState<{ id: string; name: string } | null>(null);
   const [removing, setRemoving] = useState(false);
-  
+  const [callOpen, setCallOpen] = useState(false);
+  const [startingCall, setStartingCall] = useState(false);
+  const [callRoomUrl, setCallRoomUrl] = useState<string | null>(null);
+  const [callToken, setCallToken] = useState<string | null>(null);
+  const [callId, setCallId] = useState<string | null>(null);
+
   const isOwner = user?.id === project.created_by;
-  
+
+  const myName =
+    collaborators.find((c) => c.id === user?.id)?.full_name ||
+    user?.user_metadata?.full_name ||
+    user?.email?.split("@")[0] ||
+    "Someone";
+
+  const handleStartCall = async () => {
+    if (startingCall) return;
+    setStartingCall(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-video-room", {
+        body: { project_id: project.id, user_name: myName },
+      });
+      if (error) throw error;
+      if (!data?.room_url) throw new Error("No room URL returned");
+
+      setCallRoomUrl(data.room_url);
+      setCallToken(data.token ?? null);
+      setCallId(data.call_id ?? null);
+      setCallOpen(true);
+
+      // Notify other collaborators (in-app + push) — fire and forget
+      const others = collaborators.filter((c) => c.id !== user?.id);
+      others.forEach((c) => {
+        sendPushNotification({
+          userId: c.id,
+          title: "Live call started",
+          body: `${myName} started a call on ${project.title}. Join now →`,
+          type: "general",
+          link: `/desk/${project.id}`,
+          data: { project_id: project.id, kind: "video_call" },
+        }).catch((e) => console.error("[startCall] notify failed", e));
+      });
+    } catch (e: any) {
+      console.error("[startCall]", e);
+      toast({
+        title: "Couldn't start the call",
+        description: e?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setStartingCall(false);
+    }
+  };
+
   const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'active': return 'bg-green-500/10 text-green-500 border-green-500/20';
@@ -132,6 +184,18 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
               </div>
             )}
           </div>
+          <Button
+            type="button"
+            size="icon"
+            variant="default"
+            className="h-8 w-8 rounded-full"
+            onClick={handleStartCall}
+            disabled={startingCall}
+            aria-label="Start video call"
+            title="Start video call"
+          >
+            {startingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+          </Button>
           {isOwner && (
             <InviteCollaboratorDialog projectId={project.id} onInvite={() => onCollaboratorsChanged?.()} />
           )}
@@ -154,6 +218,16 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <VideoCallSheet
+          open={callOpen}
+          onOpenChange={setCallOpen}
+          projectName={project.title}
+          roomUrl={callRoomUrl}
+          token={callToken}
+          callId={callId}
+          userName={myName}
+        />
       </>
     );
   }
@@ -260,6 +334,19 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           </DropdownMenu>
         </div>
         
+        {/* Start Call Button */}
+        <Button
+          type="button"
+          size="sm"
+          variant="default"
+          className="gap-2 shrink-0"
+          onClick={handleStartCall}
+          disabled={startingCall}
+        >
+          {startingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+          Start call
+        </Button>
+
         {/* Quick Invite Button */}
         {isOwner && (
           <InviteCollaboratorDialog 
@@ -291,6 +378,16 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <VideoCallSheet
+        open={callOpen}
+        onOpenChange={setCallOpen}
+        projectName={project.title}
+        roomUrl={callRoomUrl}
+        token={callToken}
+        callId={callId}
+        userName={myName}
+      />
     </div>
   );
 };

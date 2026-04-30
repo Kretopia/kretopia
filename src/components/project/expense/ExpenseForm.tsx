@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,13 @@ import { recordMoneyAction } from "@/lib/moneyStreak";
 interface ExpenseFormProps {
   projectId?: string;
   onExpenseAdded: () => void;
+}
+
+interface DebugStep {
+  time: string;
+  message: string;
+  detail?: string;
+  level?: "info" | "success" | "error";
 }
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "ZAR", "NGN", "KES", "JPY", "INR", "BRL", "IDR", "TTD", "AED", "CHF"];
@@ -40,12 +47,16 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   const { guard: guardExpense } = useFeatureGate("expenses");
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+  const pendingPickerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cameraInputId = useId();
+  const uploadInputId = useId();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categorizing, setCategorizing] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [debugSteps, setDebugSteps] = useState<DebugStep[]>([]);
   const [form, setForm] = useState({
     title: "",
     amount: "",
@@ -59,6 +70,56 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     recurring_interval: "monthly",
     payment_method: "card",
   });
+
+  const addDebug = (message: string, detail?: string, level: DebugStep["level"] = "info") => {
+    setDebugSteps((prev) => [
+      ...prev.slice(-9),
+      {
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+        message,
+        detail: detail ? detail.slice(0, 1400) : undefined,
+        level,
+      },
+    ]);
+  };
+
+  const formatErrorDetail = (err: unknown) => {
+    if (!err) return "No error object was returned.";
+    if (err instanceof Error) return `${err.name}: ${err.message}${err.stack ? `\n${err.stack.slice(0, 900)}` : ""}`;
+    if (typeof err === "object") {
+      try {
+        return JSON.stringify(err, Object.getOwnPropertyNames(err), 2);
+      } catch {
+        return String(err);
+      }
+    }
+    return String(err);
+  };
+
+  const clearPickerTimer = () => {
+    if (pendingPickerTimer.current) {
+      clearTimeout(pendingPickerTimer.current);
+      pendingPickerTimer.current = null;
+    }
+  };
+
+  const beginPicker = (mode: "camera" | "upload") => {
+    clearPickerTimer();
+    setScanError(null);
+    const inputReady = mode === "camera" ? Boolean(cameraInputRef.current) : Boolean(uploadInputRef.current);
+    addDebug(
+      mode === "camera" ? "Take photo tapped" : "Upload tapped",
+      `Input ready: ${inputReady ? "yes" : "no"}. Signed in: ${user?.id ? "yes" : "no"}. Browser: ${navigator.userAgent}`,
+      inputReady ? "info" : "error",
+    );
+    pendingPickerTimer.current = setTimeout(() => {
+      addDebug(
+        "No image reached the app yet",
+        "If the camera/gallery did not open, the browser may have blocked the file picker, camera permission may be denied, or the picker was cancelled before a file was selected.",
+        "error",
+      );
+    }, 15000);
+  };
 
   // Listen for global "open expense" event (from ThrivePay quick-add menu / Snap FAB)
   useEffect(() => {
@@ -87,10 +148,25 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
     return () => window.removeEventListener("thrivepay:add-expense", handler as EventListener);
   }, []);
 
-  const handleScanReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+  useEffect(() => () => {
+    clearPickerTimer();
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
+  const handleScanReceipt = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    clearPickerTimer();
+    const file = e.target.files?.[0];
+    if (!file) {
+      addDebug("File picker closed without a file", "No file was returned from the camera/gallery input.", "error");
+      return;
+    }
+    if (!user) {
+      addDebug("Scan stopped: no signed-in user", "The image was selected, but there is no active user session for saving expenses.", "error");
+      toast.error("Sign in again before scanning receipts.");
+      return;
+    }
+
+    addDebug("Image received", `${file.name || "camera-photo"} • ${file.type || "unknown type"} • ${(file.size / 1024).toFixed(1)} KB`);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
     setScanError(null);
@@ -112,21 +188,28 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
             const dataUrl = canvas.toDataURL("image/jpeg", quality);
             resolve(dataUrl.split(",")[1]);
           };
-          img.onerror = reject;
+          img.onerror = () => reject(new Error("The selected image could not be loaded for compression."));
           img.src = URL.createObjectURL(f);
         });
       };
 
+      addDebug("Compressing image for scanner");
       const base64 = await compressImage(file);
+      addDebug("Image compressed", `Base64 payload length: ${base64.length.toLocaleString()} characters`);
+      addDebug("Calling receipt scanner function");
 
       const { data, error } = await supabase.functions
         .invoke("scan-receipt", { body: { image_base64: base64 } })
-        .catch((err) => ({ data: null, error: err }));
+        .catch((err) => {
+          addDebug("Receipt scanner request failed", formatErrorDetail(err), "error");
+          return { data: null, error: err };
+        });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
       setScanError(null);
+      addDebug("Receipt data extracted", JSON.stringify(data, null, 2), "success");
 
       // Auto-fill the form
       setForm(prev => ({
@@ -147,6 +230,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
       toast.success("Receipt scanned! Review the details below.");
     } catch (err: any) {
       setScanError(err.message || "Failed to scan receipt");
+      addDebug("Scan failed", formatErrorDetail(err), "error");
       toast.error("Couldn't read it automatically — review it here.");
     } finally {
       setScanning(false);
@@ -178,9 +262,16 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
   };
 
   const handleSave = async () => {
-    if (!user || !form.title || !form.amount) return;
+    if (!user || !form.title || !form.amount) {
+      addDebug("Save blocked", `Signed in: ${user?.id ? "yes" : "no"}. Title: ${form.title || "empty"}. Amount: ${form.amount || "empty"}.`, "error");
+      return;
+    }
     if (!guardExpense()) return;
     setSaving(true);
+    addDebug(
+      "Saving expense",
+      JSON.stringify({ project_id: projectId || null, title: form.title, amount: form.amount, currency: form.currency, category: form.category, vendor: form.vendor, date: form.date }, null, 2),
+    );
     try {
       const { error } = await supabase.from("expenses").insert({
         user_id: user.id,
@@ -199,6 +290,7 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
       });
       if (error) throw error;
       recordMoneyAction("expense_added");
+      addDebug("Expense saved", "The expense insert succeeded and the list refresh callback ran.", "success");
       toast.success("Expense added");
       setOpen(false);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -211,6 +303,8 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
       });
       onExpenseAdded();
     } catch (err: any) {
+      setScanError(err.message || "Failed to add expense");
+      addDebug("Save failed", formatErrorDetail(err), "error");
       toast.error(err.message || "Failed to add expense");
     } finally {
       setSaving(false);
@@ -255,49 +349,71 @@ export function ExpenseForm({ projectId, onExpenseAdded }: ExpenseFormProps) {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button
+                asChild
                 type="button"
                 variant="outline"
                 size="sm"
                 className="h-9 gap-1.5 text-xs"
-                onClick={() => cameraInputRef.current?.click()}
                 disabled={scanning}
               >
-                <Camera className="h-3.5 w-3.5" /> Take photo
+                <label htmlFor={cameraInputId} onClick={() => beginPicker("camera")}>
+                  <Camera className="h-3.5 w-3.5" /> Take photo
+                </label>
               </Button>
               <Button
+                asChild
                 type="button"
                 variant="outline"
                 size="sm"
                 className="h-9 gap-1.5 text-xs"
-                onClick={() => uploadInputRef.current?.click()}
                 disabled={scanning}
               >
-                <ScanLine className="h-3.5 w-3.5" /> Upload
+                <label htmlFor={uploadInputId} onClick={() => beginPicker("upload")}>
+                  <ScanLine className="h-3.5 w-3.5" /> Upload
+                </label>
               </Button>
             </div>
             <input
+              id={cameraInputId}
               ref={cameraInputRef}
               type="file"
               accept="image/*"
               capture="environment"
               data-scan-receipt-input="true"
-              className="hidden"
+              className="sr-only"
               onChange={handleScanReceipt}
               disabled={scanning}
             />
             <input
+              id={uploadInputId}
               ref={uploadInputRef}
               type="file"
               accept="image/*"
-              className="hidden"
+              className="sr-only"
               onChange={handleScanReceipt}
               disabled={scanning}
             />
             {scanError && !scanning && (
               <p className="rounded-md bg-destructive/10 p-2 text-[11px] text-destructive">
-                The image is ready for review, but the automatic breakdown hit an issue. Fill anything missing, then add it.
+                {scanError}
               </p>
             )}
+            <details open className="rounded-md border bg-muted/30 p-2 text-[11px]">
+              <summary className="cursor-pointer font-semibold text-foreground">Receipt scan debug</summary>
+              <div className="mt-2 max-h-36 overflow-y-auto space-y-1.5">
+                {debugSteps.length === 0 ? (
+                  <p className="text-muted-foreground">No debug events yet.</p>
+                ) : debugSteps.map((step, index) => (
+                  <div key={`${step.time}-${index}`} className="rounded border bg-background p-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={step.level === "error" ? "font-semibold text-destructive" : step.level === "success" ? "font-semibold text-primary" : "font-semibold text-foreground"}>{step.message}</span>
+                      <span className="shrink-0 text-muted-foreground">{step.time}</span>
+                    </div>
+                    {step.detail && <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[10px] text-muted-foreground">{step.detail}</pre>}
+                  </div>
+                ))}
+              </div>
+            </details>
           </div>
 
           <div className="relative flex items-center">

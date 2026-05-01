@@ -255,7 +255,8 @@ export const NotificationCenter = () => {
                                 {notification.action_url &&
                                   !notification.action_url.includes('/messages') &&
                                   !notification.action_url.includes('/circle') &&
-                                  !notification.action_url.includes('/desk/') && (
+                                  !notification.action_url.includes('/desk/') &&
+                                  !(notification.link && notification.link.includes('/profile/') && notification.action_url.includes('/profile/')) && (
                                     <Button variant="default" size="sm" className="h-7 text-xs"
                                       onClick={(e) => handleActionClick(e, notification)}>
                                       <ExternalLink className="h-3 w-3 mr-1" />

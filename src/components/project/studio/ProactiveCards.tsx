@@ -38,14 +38,17 @@ export const ProactiveCards = ({
   useEffect(() => {
     if (!project?.id) return;
     let cancelled = false;
-    supabase
-      .from("invoices")
-      .select("id, status")
-      .eq("project_id", project.id)
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("invoices")
+          .select("id, status")
+          .eq("project_id", project.id);
         if (!cancelled) setInvoices(data || []);
-      })
-      .catch(() => {});
+      } catch {
+        // silent — proactive cards are non-critical
+      }
+    })();
     return () => {
       cancelled = true;
     };

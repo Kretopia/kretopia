@@ -52,7 +52,15 @@ const STATUS_LABELS: Record<string, { label: string; tone: string; dot: string }
   },
 };
 
-export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: VibeHeaderProps) => {
+export const VibeHeader = ({
+  project,
+  clientDisplayName,
+  isOwner,
+  onUpdated,
+  collaborators = [],
+  onlineUserIds,
+  currentUserId,
+}: VibeHeaderProps) => {
   const { toast } = useToast();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(project.title);

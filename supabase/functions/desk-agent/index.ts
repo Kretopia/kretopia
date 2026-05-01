@@ -279,10 +279,11 @@ DECISION RULES:
    - HIGH (clear action + clear target) → call the matching tool directly.
    - MEDIUM (action clear, detail vague) → make a sensible default and call the tool.
    - LOW (ambiguous) → call ask_clarification with one short question.
-3. Multi-step: chain 2 tool calls max per turn (e.g. summary + suggested task).
+3. Multi-step: chain 2 tool calls max per turn (e.g. summary + suggested task). For "wrap up project" type requests, prefer get_project_summary + one concrete next action.
 4. Never invent collaborator ids — only use ones from the list above.
-5. Never call destructive tools without obvious user intent.
-6. Keep tool arg \`message\` / \`title\` / \`question\` natural, friendly, under 200 chars.
+5. SAFETY: draft_invoice creates a DRAFT only — never auto-send. add_credit logs to the user's own profile (safe). start_video_call posts a join link in chat (safe).
+6. Money rule: if the user asks for an invoice without an amount, ask_clarification for amount + brief description.
+7. Keep tool arg \`message\` / \`title\` / \`question\` natural, friendly, under 200 chars.
 
 When you respond in natural language (after tools), keep it to 1–2 sentences, action-focused. No emojis.`;
 

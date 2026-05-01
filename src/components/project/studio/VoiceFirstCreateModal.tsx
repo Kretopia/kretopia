@@ -153,17 +153,11 @@ export const VoiceFirstCreateModal = ({
       });
       if (error) throw error;
       const result = (data ?? {}) as ExtractedBrief;
-      if (!result?.project?.title) {
-        // Soft fallback: use first 60 chars of input as title
-        setBrief({
-          project: {
-            title: trimmed.slice(0, 60),
-            summary: trimmed,
-          },
-        });
-      } else {
-        setBrief(result);
-      }
+      const finalBrief: ExtractedBrief = !result?.project?.title
+        ? { project: { title: trimmed.slice(0, 60), summary: trimmed } }
+        : result;
+      setBrief(finalBrief);
+      setSelected(new Set((finalBrief.deliverables ?? []).slice(0, 8).map((_, i) => i)));
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -174,6 +168,7 @@ export const VoiceFirstCreateModal = ({
           summary: trimmed,
         },
       });
+      setSelected(new Set());
       setMode("review");
     }
   };

@@ -92,26 +92,7 @@ serve(async (req) => {
       );
     }
 
-    // RSVP / ticket gate
-    const { data: canJoin, error: gateErr } = await admin.rpc("can_join_event_online", {
-      _event_id: event_id,
-      _user_id: userId,
-    });
-    if (gateErr) {
-      console.error("[create-event-room] gate err", gateErr);
-      return new Response(JSON.stringify({ error: "Access check failed" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    if (!canJoin) {
-      return new Response(
-        JSON.stringify({ error: "RSVP or ticket required to join this room" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    // Role: host (owner or co-host) vs attendee
+    // Role: host (owner or co-host) vs attendee — compute first so we can gate test mode
     const isOwner = event.created_by === userId;
     let isCoHost = false;
     if (!isOwner) {
@@ -124,6 +105,34 @@ serve(async (req) => {
       isCoHost = !!ch;
     }
     const isHost = isOwner || isCoHost;
+
+    if (isTestMode) {
+      if (!isHost) {
+        return new Response(
+          JSON.stringify({ error: "Only hosts can open the soundcheck room" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    } else {
+      // RSVP / ticket gate (skipped for host soundcheck)
+      const { data: canJoin, error: gateErr } = await admin.rpc("can_join_event_online", {
+        _event_id: event_id,
+        _user_id: userId,
+      });
+      if (gateErr) {
+        console.error("[create-event-room] gate err", gateErr);
+        return new Response(JSON.stringify({ error: "Access check failed" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (!canJoin) {
+        return new Response(
+          JSON.stringify({ error: "RSVP or ticket required to join this room" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
 
     const formatCfg = FORMAT_CAPS[event.online_format] ?? FORMAT_CAPS.group_room;
     const cap = Math.min(

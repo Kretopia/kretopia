@@ -61,6 +61,8 @@ Deno.serve(async (req) => {
           draft_invoices: 0,
           deadlines_soon: [],
           any_project_id: null,
+          overdue_tasks: [],
+          drafts: [],
         });
       }
       return perUser.get(uid)!;
@@ -98,6 +100,22 @@ Deno.serve(async (req) => {
         const s = ensure(target);
         s.overdue += 1;
         s.any_project_id ||= p.id;
+        if (t.assigned_to && t.assigned_to !== target) {
+          // owner is being notified about someone else's task — record for nudge
+          s.overdue_tasks.push({
+            task_id: t.id,
+            project_id: p.id,
+            project_title: p.title,
+            assignee_id: t.assigned_to,
+          });
+        } else if (t.assigned_to) {
+          s.overdue_tasks.push({
+            task_id: t.id,
+            project_id: p.id,
+            project_title: p.title,
+            assignee_id: t.assigned_to,
+          });
+        }
       }
 
       // Draft invoices per issuer
@@ -111,6 +129,7 @@ Deno.serve(async (req) => {
         const s = ensure(inv.issued_by);
         s.draft_invoices += 1;
         s.any_project_id ||= p.id;
+        s.drafts.push({ invoice_id: inv.id, project_id: p.id, project_title: p.title });
       }
     }
 

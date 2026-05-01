@@ -67,6 +67,17 @@ export const useStartDirectCall = () => {
         callId: next.callId,
       }).catch((err) => console.error("[useStartDirectCall] ring failed", err));
 
+      // After 30s with no pickup, mark the call as missed so it shows in
+      // history and notifies the recipient. The DB function is a no-op if
+      // the call has already ended (someone picked up).
+      if (next.callId) {
+        const callIdToMark = next.callId;
+        setTimeout(() => {
+          supabase.rpc("mark_direct_call_missed" as any, { _call_id: callIdToMark })
+            .then(({ error }) => { if (error) console.warn("[mark missed]", error); });
+        }, 30_000);
+      }
+
       return next;
     } catch (e: any) {
       console.error(`[useStartDirectCall${opts.context ? `:${opts.context}` : ""}]`, e);

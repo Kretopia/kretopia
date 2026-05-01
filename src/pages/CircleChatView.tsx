@@ -11,13 +11,14 @@ import {
   ArrowLeft, Hash, Megaphone, Calendar, ShoppingBag, Image,
   Plus, Send, Settings, Users, Lock, Globe, DollarSign, Loader2,
   Share2, Check, Pin, Reply, MessageSquare, Crown, BarChart3,
-  Menu, ChevronDown, UserPlus, LogIn,
+  Menu, ChevronDown, UserPlus, LogIn, Video,
 } from "lucide-react";
 import { CircleMessageBubble, type CircleMessage } from "@/components/circle/CircleMessageBubble";
 import { CircleAdminPanel } from "@/components/circle/CircleAdminPanel";
 import { CirclePollCreator } from "@/components/circle/CirclePollCreator";
 import { CircleMemberDirectory } from "@/components/circle/CircleMemberDirectory";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
+import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { cn } from "@/lib/utils";
 
 interface Channel {
@@ -67,6 +68,39 @@ const CircleDetail = () => {
   const [newChannelType, setNewChannelType] = useState("text");
   const [copied, setCopied] = useState(false);
   const [showPollCreator, setShowPollCreator] = useState(false);
+  // Group video call state
+  const [callOpen, setCallOpen] = useState(false);
+  const [callSession, setCallSession] = useState<{ roomUrl: string; token: string; callId: string | null; roomName: string } | null>(null);
+  const [startingCall, setStartingCall] = useState(false);
+
+  const startGroupCall = async () => {
+    if (!user || !circleId || startingCall) return;
+    setStartingCall(true);
+    try {
+      const myName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Member";
+      const { data, error } = await supabase.functions.invoke("create-circle-room", {
+        body: { circle_id: circleId, user_name: myName },
+      });
+      if (error) throw error;
+      if (!data?.room_url || !data?.token) throw new Error("No room");
+      setCallSession({
+        roomUrl: data.room_url,
+        token: data.token,
+        callId: data.call_id ?? null,
+        roomName: data.room_name,
+      });
+      setCallOpen(true);
+    } catch (e: any) {
+      console.error("[startGroupCall]", e);
+      toast({
+        title: "Couldn't start the call",
+        description: e?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setStartingCall(false);
+    }
+  };
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const circleAvatarRef = useRef<HTMLInputElement>(null);
@@ -600,6 +634,19 @@ const CircleDetail = () => {
               <Pin className="h-2.5 w-2.5" /> {pinnedMessages.length}
             </Badge>
           )}
+          {isMember && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary hover:bg-primary/10"
+              onClick={startGroupCall}
+              disabled={startingCall}
+              aria-label="Start group video call"
+              title="Start group video call"
+            >
+              {startingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+            </Button>
+          )}
           <Button variant="ghost" size="icon" className="h-8 w-8 lg:hidden" onClick={() => { setShowSidebar(true); setShowMembers(true); }}>
             <Users className="h-4 w-4" />
           </Button>
@@ -765,6 +812,22 @@ const CircleDetail = () => {
         }}
         defaultCircleId={circleId}
       />
+
+      {callSession && (
+        <VideoCallSheet
+          open={callOpen}
+          onOpenChange={(o) => {
+            setCallOpen(o);
+            if (!o) setCallSession(null);
+          }}
+          projectName={circle?.title ? `${circle.title} · group call` : "Circle group call"}
+          roomUrl={callSession.roomUrl}
+          token={callSession.token}
+          callId={callSession.callId}
+          userName={user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member"}
+          roomName={callSession.roomName}
+        />
+      )}
     </div>
   );
 };

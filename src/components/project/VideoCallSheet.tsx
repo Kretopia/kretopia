@@ -101,10 +101,69 @@ export const VideoCallSheet = ({
       });
 
     frame.on("left-meeting", () => onOpenChange(false));
-    frame.on("recording-started", () => setRecording(true));
+    frame.on("recording-started", (ev: any) => {
+      setRecording(true);
+      // Notify everyone in the room that recording is on (besides the
+      // person who started it). Daily already shows a small system badge,
+      // but we add an explicit toast so non-hosts see it clearly.
+      const startedByMe = ev?.local;
+      if (!startedByMe) {
+        toast({
+          title: "🔴 This call is being recorded",
+          description: "The host has started recording.",
+        });
+      }
+    });
     frame.on("recording-stopped", () => setRecording(false));
     frame.on("local-screen-share-started", () => setSharing(true));
     frame.on("local-screen-share-stopped", () => setSharing(false));
+
+    // Auto-fallback to audio-only when network quality drops to low for
+    // 5+ seconds. Daily emits "network-quality-change" with quality 0-100;
+    // <25 is "low". We only auto-disable video, never re-enable.
+    let lowSince: number | null = null;
+    let fellBack = false;
+    frame.on("network-quality-change", (ev: any) => {
+      const q = ev?.threshold ?? ev?.quality;
+      // Daily's `threshold` is "good" | "low" | "very-low"
+      const isLow = q === "low" || q === "very-low" || (typeof q === "number" && q < 25);
+      const now = Date.now();
+      if (isLow) {
+        if (lowSince === null) lowSince = now;
+        if (!fellBack && now - lowSince > 5_000) {
+          fellBack = true;
+          try {
+            void frame.setLocalVideo(false);
+            toast({
+              title: "Switched to audio-only",
+              description: "Your connection looks weak — video is off so the call stays clear.",
+            });
+          } catch (e) {
+            console.warn("[VideoCallSheet] fallback failed", e);
+          }
+        }
+      } else {
+        lowSince = null;
+      }
+    });
+
+    // Notify viewers when someone shares their screen.
+    frame.on("participant-updated", (ev: any) => {
+      const p = ev?.participant;
+      if (p && !p.local && p.screen) {
+        // Only fire once per share by checking a per-participant marker.
+        const key = `__screenSharedShown_${p.session_id}`;
+        if (!(frame as any)[key]) {
+          (frame as any)[key] = true;
+          toast({
+            title: "Screen sharing started",
+            description: `${p.user_name || "Someone"} is sharing their screen.`,
+          });
+        }
+      } else if (p && !p.local && !p.screen) {
+        delete (frame as any)[`__screenSharedShown_${p.session_id}`];
+      }
+    });
 
     return () => {
       cancelled = true;

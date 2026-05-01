@@ -12,12 +12,16 @@ import { GroupsList, type GroupRoom } from "@/components/messages/GroupsList";
 import { MessageRequests } from "@/components/messages/MessageRequests";
 import { OnlineDot } from "@/components/messages/OnlinePresence";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
+import { CallHistoryPanel } from "@/components/calls/CallHistoryPanel";
+import { useMissedCallBadge } from "@/hooks/useCallHistory";
 import type { Conversation } from "./types";
+
+type MessagesTab = 'inbox' | 'groups' | 'calls' | 'requests';
 
 interface Props {
   hidden: boolean;
-  activeTab: 'inbox' | 'groups' | 'requests';
-  setActiveTab: (t: 'inbox' | 'groups' | 'requests') => void;
+  activeTab: MessagesTab;
+  setActiveTab: (t: MessagesTab) => void;
   requestCount: number;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
@@ -42,6 +46,7 @@ export const ConversationListPanel = ({
   setSelectedConversation, selectedGroupId, onSelectGroup, onCreateGroup, groupsRefreshKey,
   onlineUsers, unreadCounts, onAcceptRequest, navigate,
 }: Props) => {
+  const { count: missedCount } = useMissedCallBadge();
   const getPartner = (conv: Conversation) =>
     conv.sender_id === currentUserId
       ? { id: conv.receiver_id, name: conv.receiver_name, avatar: conv.receiver_avatar }
@@ -63,6 +68,9 @@ export const ConversationListPanel = ({
           <TabsList className="w-full">
             <TabsTrigger value="inbox" className="flex-1 text-xs sm:text-sm">Direct</TabsTrigger>
             <TabsTrigger value="groups" className="flex-1 text-xs sm:text-sm">Groups</TabsTrigger>
+            <TabsTrigger value="calls" className="flex-1 text-xs sm:text-sm">
+              Calls {missedCount > 0 && <Badge variant="destructive" className="ml-1">{missedCount}</Badge>}
+            </TabsTrigger>
             <TabsTrigger value="requests" className="flex-1 text-xs sm:text-sm">
               Requests {requestCount > 0 && <Badge variant="destructive" className="ml-1">{requestCount}</Badge>}
             </TabsTrigger>
@@ -81,6 +89,9 @@ export const ConversationListPanel = ({
         )}
       </div>
 
+      {activeTab === 'calls' ? (
+        <CallHistoryPanel />
+      ) : (
       <ScrollArea className="flex-1">
         {activeTab === 'groups' ? (
           <GroupsList currentUserId={currentUserId} selectedGroupId={selectedGroupId} onSelect={onSelectGroup} onCreate={onCreateGroup} refreshKey={groupsRefreshKey} />
@@ -169,6 +180,7 @@ export const ConversationListPanel = ({
           </div>
         )}
       </ScrollArea>
+      )}
     </div>
   );
 };

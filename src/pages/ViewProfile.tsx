@@ -24,8 +24,11 @@ import {
   Users,
   UserCheck,
   Share2,
-  Handshake
+  Handshake,
+  Video
 } from "lucide-react";
+import { useStartDirectCall } from "@/hooks/useStartDirectCall";
+import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { ShareUnclaimedProfileDialog } from "@/components/profile/ShareUnclaimedProfileDialog";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";
@@ -113,7 +116,14 @@ const ViewProfile = () => {
   const [showClaimDialog, setShowClaimDialog] = useState(searchParams.get('showClaim') === 'true');
   const [showShareToChat, setShowShareToChat] = useState(false);
   const [gateResult, setGateResult] = useState<GateCheckResult | null>(null);
-  
+
+  // 1:1 video call from profile (connected/matched users only)
+  const directCall = useStartDirectCall();
+  const startCall = () => {
+    if (!profile?.user_id) return;
+    void directCall.start(profile.user_id, profile.full_name || "there", { context: "profile-call" });
+  };
+
   const isFromMatch = searchParams.get('from') === 'match';
   
   // Get connection degree info
@@ -599,6 +609,16 @@ const ViewProfile = () => {
                       <MessageCircle className="h-4 w-4" />
                       Message
                     </Button>
+                    <Button
+                      variant="outline"
+                      onClick={startCall}
+                      disabled={directCall.starting}
+                      className="gap-2"
+                      aria-label={`Video call ${profile?.full_name ?? "creator"}`}
+                    >
+                      <Video className="h-4 w-4" />
+                      Call
+                    </Button>
                     <Button variant="outline" onClick={() => setIsStartProjectOpen(true)} className="gap-2">
                       <Rocket className="h-4 w-4" />
                       Start Project
@@ -616,6 +636,16 @@ const ViewProfile = () => {
                     <Button onClick={() => setIsMessageDialogOpen(true)} className="gap-2">
                       <MessageCircle className="h-4 w-4" />
                       Message
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={startCall}
+                      disabled={directCall.starting}
+                      className="gap-2"
+                      aria-label={`Video call ${profile?.full_name ?? "creator"}`}
+                    >
+                      <Video className="h-4 w-4" />
+                      Call
                     </Button>
                     <Button variant="outline" onClick={() => setIsStartProjectOpen(true)} className="gap-2">
                       <Rocket className="h-4 w-4" />
@@ -785,6 +815,20 @@ const ViewProfile = () => {
         externalUrl={`${APP_URL}/profile/${profile.user_id}`}
         externalText={`Check out ${profile.full_name} on ThriveIN — ${APP_URL}/profile/${profile.user_id}`}
       />
+
+      {directCall.session && (
+        <VideoCallSheet
+          open={directCall.open}
+          onOpenChange={directCall.setOpen}
+          projectName={`Call with ${profile?.full_name ?? "creator"}`}
+          roomUrl={directCall.session.roomUrl}
+          token={directCall.session.token}
+          callId={directCall.session.callId}
+          userName={directCall.myName}
+          directCallId={directCall.session.callId}
+          roomName={directCall.session.roomName}
+        />
+      )}
     </>
   );
 };

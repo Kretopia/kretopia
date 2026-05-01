@@ -1239,6 +1239,53 @@ export type Database = {
           },
         ]
       }
+      circle_video_calls: {
+        Row: {
+          circle_id: string
+          created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          participants: Json
+          room_name: string
+          room_url: string
+          started_at: string
+          started_by: string
+        }
+        Insert: {
+          circle_id: string
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          participants?: Json
+          room_name: string
+          room_url: string
+          started_at?: string
+          started_by: string
+        }
+        Update: {
+          circle_id?: string
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          participants?: Json
+          room_name?: string
+          room_url?: string
+          started_at?: string
+          started_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "circle_video_calls_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "spark_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_error_logs: {
         Row: {
           component_name: string | null
@@ -3143,33 +3190,39 @@ export type Database = {
           ended_at: string | null
           id: string
           invited_user_id: string | null
+          missed_at: string | null
           participants: Json
           room_name: string
           room_url: string
           started_at: string
           started_by: string
+          was_missed: boolean
         }
         Insert: {
           duration_seconds?: number | null
           ended_at?: string | null
           id?: string
           invited_user_id?: string | null
+          missed_at?: string | null
           participants?: Json
           room_name: string
           room_url: string
           started_at?: string
           started_by: string
+          was_missed?: boolean
         }
         Update: {
           duration_seconds?: number | null
           ended_at?: string | null
           id?: string
           invited_user_id?: string | null
+          missed_at?: string | null
           participants?: Json
           room_name?: string
           room_url?: string
           started_at?: string
           started_by?: string
+          was_missed?: boolean
         }
         Relationships: []
       }
@@ -13807,6 +13860,10 @@ export type Database = {
         Returns: boolean
       }
       join_group_by_invite: { Args: { _invite_code: string }; Returns: string }
+      mark_direct_call_missed: {
+        Args: { _call_id: string }
+        Returns: undefined
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string

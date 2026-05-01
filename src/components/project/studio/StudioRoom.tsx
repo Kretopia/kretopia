@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import { VibeHeader } from "./VibeHeader";
 import { NextStepCard } from "./NextStepCard";
+import { ProactiveCards } from "./ProactiveCards";
 import { BriefSection } from "./BriefSection";
 import { WorkSection } from "./WorkSection";
 import { MoneySection } from "./MoneySection";

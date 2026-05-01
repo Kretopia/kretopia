@@ -291,19 +291,25 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
   if (compact) {
     return (
       <>
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           <div className="flex-1 min-w-0">
-            <div className="flex items-start gap-2 flex-wrap">
-              <h1 className="text-base font-semibold leading-tight line-clamp-2 break-words">
-                {project.title}
-              </h1>
-              <Badge variant="outline" className={`${getStatusColor(project.status)} text-[10px] px-1.5 py-0 mt-0.5 shrink-0`}>
-                {project.status || 'Planning'}
-              </Badge>
+            <h1 className="text-sm sm:text-base font-semibold leading-tight line-clamp-2 break-words">
+              {project.title}
+            </h1>
+            {/* Status dot only on mobile (saves room for the title) */}
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full shrink-0",
+                  project.status === "completed" && "bg-blue-500",
+                  project.status === "planning" && "bg-yellow-500",
+                  (!project.status || project.status === "active") && "bg-green-500",
+                )}
+              />
+              <span className="text-[10px] text-muted-foreground capitalize truncate">
+                {project.status || "active"}
+              </span>
             </div>
-            {project.description && (
-              <p className="text-xs text-muted-foreground truncate mt-0.5">{project.description}</p>
-            )}
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">

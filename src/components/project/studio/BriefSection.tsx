@@ -170,9 +170,28 @@ export const BriefSection = ({
           </div>
         </div>
       ) : project.description ? (
-        <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
-          {project.description}
-        </p>
+        <div className="space-y-3">
+          <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
+            {project.description}
+          </p>
+          {isOwner && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={breakIntoTasks}
+              disabled={breakingDown}
+            >
+              {breakingDown ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <ListChecks className="h-3.5 w-3.5" />
+              )}
+              {breakingDown ? "Breaking it down…" : "Break into tasks"}
+            </Button>
+          )}
+        </div>
       ) : (
         <div
           className={cn(

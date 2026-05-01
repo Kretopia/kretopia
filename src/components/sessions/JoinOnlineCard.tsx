@@ -202,6 +202,21 @@ export const JoinOnlineCard = ({
           )}
 
           {renderCta()}
+
+          {isHost && (
+            <div className="pt-1 border-t border-border/40">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full gap-2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => handleJoin(true)}
+                disabled={starting}
+              >
+                <Headphones className="h-3.5 w-3.5" />
+                Soundcheck — test cam, mic & screenshare (private to you)
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 

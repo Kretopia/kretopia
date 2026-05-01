@@ -203,6 +203,44 @@ export const ThriveAgentFab = () => {
           },
           signal: controller.signal,
         });
+
+        // ---- Cross-surface action extraction ----
+        // After streaming completes, scan the assistant text for <action> tags,
+        // strip them from the visible bubble, and ask the orchestrator to
+        // propose them as approval cards.
+        const { visible, actions: parsed } = extractActions(assistantSoFar);
+        if (parsed.length > 0) {
+          let assistantIdx = -1;
+          setMessages((prev) => {
+            const idx = prev.length - 1;
+            if (prev[idx]?.role === "assistant") {
+              assistantIdx = idx;
+              return prev.map((m, i) =>
+                i === idx ? { ...m, content: visible || "On it." } : m,
+              );
+            }
+            return prev;
+          });
+
+          // Fan out: each parsed action becomes a queued orchestrator run.
+          for (const intentObj of parsed) {
+            try {
+              const run = await sendAgentIntent(intentObj.intent, {
+                surface: intentObj.surface ?? surface,
+                ...surfaceContext,
+              });
+              if (assistantIdx >= 0 && run.actions?.length) {
+                setActionsByMsg((prev) => ({
+                  ...prev,
+                  [assistantIdx]: [...(prev[assistantIdx] ?? []), ...run.actions],
+                }));
+              }
+            } catch (err) {
+              console.warn("Copilot action propose failed", err);
+              toast.error("Couldn't queue that action — try again.");
+            }
+          }
+        }
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Something went wrong");
         setSending(false);

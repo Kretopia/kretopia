@@ -71,7 +71,7 @@ export function VaultTab({
     let cancelled = false;
     const load = async () => {
       const { count } = await supabase
-        .from("deliverables")
+        .from("project_deliverables")
         .select("id", { count: "exact", head: true })
         .eq("project_id", projectId)
         .eq("status", "submitted");

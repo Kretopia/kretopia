@@ -24,8 +24,11 @@ import {
   Users,
   UserCheck,
   Share2,
-  Handshake
+  Handshake,
+  Video
 } from "lucide-react";
+import { useStartDirectCall } from "@/hooks/useStartDirectCall";
+import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { ShareUnclaimedProfileDialog } from "@/components/profile/ShareUnclaimedProfileDialog";
 import { DirectMessageDialog } from "@/components/DirectMessageDialog";

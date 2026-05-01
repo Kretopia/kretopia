@@ -182,7 +182,27 @@ export const WorkSection = ({
     onUpdated();
   };
 
-  const TaskRow = ({ task, isDone }: { task: Task; isDone: boolean }) => {
+  const TaskRow = useCallback(({ task, isDone }: { task: Task; isDone: boolean }) => {
+    return (
+      <TaskRowInner
+        task={task}
+        isDone={isDone}
+        expanded={expandedId === task.id}
+        onToggleExpand={() => setExpandedId((id) => (id === task.id ? null : task.id))}
+        collaborators={collaborators}
+        collabMap={collabMap}
+        currentUserId={currentUserId}
+        busy={busyId === task.id}
+        assigning={assigningId === task.id}
+        onMarkDone={() => markDone(task)}
+        onReopen={() => reopen(task)}
+        onAssign={(uid) => assignTo(task, uid)}
+      />
+    );
+  }, [expandedId, collaborators, collabMap, currentUserId, busyId, assigningId]);
+
+  // unreachable below — kept temporarily for diff context
+  const _UNUSED_TaskRow = ({ task, isDone }: { task: Task; isDone: boolean }) => {
     const expanded = expandedId === task.id;
     const blocking = isBlocking(task);
     const assignee = task.assigned_to ? collabMap.get(task.assigned_to) : null;

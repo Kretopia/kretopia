@@ -187,3 +187,32 @@ export const SURFACE_LABEL: Record<CopilotSurface, string> = {
   credit: "Credits",
   event: "Events",
 };
+
+/**
+ * Pull <action>{...}</action> tags out of an assistant message.
+ * Returns the cleaned visible text + the parsed intent payloads.
+ */
+const ACTION_TAG_RE = /<action>\s*([\s\S]*?)\s*<\/action>/g;
+
+export interface ParsedAction {
+  intent: string;
+  surface?: string;
+  [k: string]: unknown;
+}
+
+export function extractActions(raw: string): { visible: string; actions: ParsedAction[] } {
+  const actions: ParsedAction[] = [];
+  const visible = raw
+    .replace(ACTION_TAG_RE, (_, json) => {
+      try {
+        const parsed = JSON.parse(json);
+        if (parsed && typeof parsed.intent === "string") actions.push(parsed);
+      } catch {
+        // ignore malformed tag
+      }
+      return "";
+    })
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return { visible, actions };
+}

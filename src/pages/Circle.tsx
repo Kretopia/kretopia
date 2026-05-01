@@ -22,6 +22,7 @@ import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { PageTransition } from "@/components/PageTransition";
 import { SwipeCardSkeleton, ConnectionListSkeleton } from "@/components/skeletons/CircleSkeletons";
+import { CopilotLauncher } from "@/components/agent/CopilotLauncher";
 
 
 export default function Circle() {
@@ -180,7 +181,14 @@ export default function Circle() {
               </p>
             </div>
             {activeTab === 'foryou' && (
-              <SwipeFilters filters={filters} onFiltersChange={handleFiltersChange} isPro={isPro} profilesCount={profilesCount} />
+              <div className="flex items-center gap-2">
+                <CopilotLauncher
+                  variant="icon"
+                  label="Find collaborators with Copilot"
+                  prompt="Find me a collaborator who matches what I'm working on right now."
+                />
+                <SwipeFilters filters={filters} onFiltersChange={handleFiltersChange} isPro={isPro} profilesCount={profilesCount} />
+              </div>
             )}
           </div>
         </div>

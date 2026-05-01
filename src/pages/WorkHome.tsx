@@ -23,6 +23,7 @@ import { WrapMyWeekSheet } from "@/components/desk/WrapMyWeekSheet";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
+import { CopilotLauncher } from "@/components/agent/CopilotLauncher";
 
 interface WidgetProps {
   title: string;
@@ -380,6 +381,11 @@ const CreatorWorkHome = () => {
                 {activeProjects.length} Active
               </Badge>
             )}
+            <CopilotLauncher
+              label="Ask Copilot"
+              prompt="What's the most useful thing I can do across my projects today?"
+              className="ml-auto"
+            />
           </div>
           <p className="text-sm text-muted-foreground mt-2">
             Built for creatives. Save time — use your voice.

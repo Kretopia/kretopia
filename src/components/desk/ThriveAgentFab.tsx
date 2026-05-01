@@ -20,9 +20,12 @@ import {
   loadCopilotHistory,
   inferSurface,
   SURFACE_LABEL,
+  extractActions,
   type CopilotMessage,
   type CopilotSurface,
 } from "@/lib/thriveCopilot";
+import { sendAgentIntent, type OrchAction } from "@/lib/agentOrchestrator";
+import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
 
 /**
  * Thrive Copilot — the SINGLE assistant for the whole platform.
@@ -93,6 +96,8 @@ export const ThriveAgentFab = () => {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
+  // Map message index -> orchestrator actions proposed for that assistant turn.
+  const [actionsByMsg, setActionsByMsg] = useState<Record<number, OrchAction[]>>({});
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [surfaceContext, setSurfaceContext] = useState<Record<string, unknown>>({});
@@ -100,6 +105,21 @@ export const ThriveAgentFab = () => {
   const abortRef = useRef<AbortController | null>(null);
 
   const surface: CopilotSurface = inferSurface(location.pathname);
+
+  // Allow any surface to open the Copilot with a preset prompt:
+  //   window.dispatchEvent(new CustomEvent("thrive-copilot:open", { detail: { prompt: "..." } }))
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { prompt?: string } | undefined;
+      setOpen(true);
+      if (detail?.prompt) {
+        // Defer so the drawer mounts before we autofill.
+        setTimeout(() => setText(detail.prompt!), 50);
+      }
+    };
+    window.addEventListener("thrive-copilot:open", handler);
+    return () => window.removeEventListener("thrive-copilot:open", handler);
+  }, []);
 
   // Resolve surface_context from the URL where helpful (project_id from /desk/:id)
   useEffect(() => {
@@ -183,6 +203,44 @@ export const ThriveAgentFab = () => {
           },
           signal: controller.signal,
         });
+
+        // ---- Cross-surface action extraction ----
+        // After streaming completes, scan the assistant text for <action> tags,
+        // strip them from the visible bubble, and ask the orchestrator to
+        // propose them as approval cards.
+        const { visible, actions: parsed } = extractActions(assistantSoFar);
+        if (parsed.length > 0) {
+          let assistantIdx = -1;
+          setMessages((prev) => {
+            const idx = prev.length - 1;
+            if (prev[idx]?.role === "assistant") {
+              assistantIdx = idx;
+              return prev.map((m, i) =>
+                i === idx ? { ...m, content: visible || "On it." } : m,
+              );
+            }
+            return prev;
+          });
+
+          // Fan out: each parsed action becomes a queued orchestrator run.
+          for (const intentObj of parsed) {
+            try {
+              const run = await sendAgentIntent(intentObj.intent, {
+                surface: intentObj.surface ?? surface,
+                ...surfaceContext,
+              });
+              if (assistantIdx >= 0 && run.actions?.length) {
+                setActionsByMsg((prev) => ({
+                  ...prev,
+                  [assistantIdx]: [...(prev[assistantIdx] ?? []), ...run.actions],
+                }));
+              }
+            } catch (err) {
+              console.warn("Copilot action propose failed", err);
+              toast.error("Couldn't queue that action — try again.");
+            }
+          }
+        }
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Something went wrong");
         setSending(false);
@@ -207,6 +265,7 @@ export const ThriveAgentFab = () => {
         await supabase.from("ai_messages").delete().eq("conversation_id", convo.id);
       }
       setMessages([]);
+      setActionsByMsg({});
       toast.success("History cleared");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not clear history");
@@ -297,22 +356,52 @@ export const ThriveAgentFab = () => {
             )}
 
             {messages.map((m, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "max-w-[90%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
-                  m.role === "user"
-                    ? "ml-auto bg-primary text-primary-foreground"
-                    : "mr-auto bg-accent/60 text-foreground",
-                )}
-              >
-                {m.role === "assistant" ? (
-                  <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_pre]:my-1 [&_pre]:text-xs">
-                    <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
+              <div key={i} className="space-y-2">
+                <div
+                  className={cn(
+                    "max-w-[90%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                    m.role === "user"
+                      ? "ml-auto bg-primary text-primary-foreground"
+                      : "mr-auto bg-accent/60 text-foreground",
+                  )}
+                >
+                  {m.role === "assistant" ? (
+                    <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_pre]:my-1 [&_pre]:text-xs">
+                      <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap">{m.content}</div>
+                  )}
+                </div>
+                {/* Approval cards for any actions this assistant turn proposed */}
+                {m.role === "assistant" && actionsByMsg[i]?.length ? (
+                  <div className="space-y-2 max-w-[95%]">
+                    {actionsByMsg[i].map((action) => (
+                      <AgentApprovalCard
+                        key={action.id}
+                        action={action}
+                        compact
+                        onResolved={(decision) => {
+                          // Mark the local copy as resolved so the card hides itself.
+                          setActionsByMsg((prev) => ({
+                            ...prev,
+                            [i]: (prev[i] ?? []).map((a) =>
+                              a.id === action.id
+                                ? {
+                                    ...a,
+                                    status:
+                                      decision === "approved"
+                                        ? "executed"
+                                        : "rejected",
+                                  }
+                                : a,
+                            ),
+                          }));
+                        }}
+                      />
+                    ))}
                   </div>
-                ) : (
-                  <div className="whitespace-pre-wrap">{m.content}</div>
-                )}
+                ) : null}
               </div>
             ))}
 

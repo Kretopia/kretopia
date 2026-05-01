@@ -32,6 +32,7 @@ import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { MoneyStreakChip } from "@/components/thrivepay/MoneyStreakChip";
 import { WeeklyMoneyInsights } from "@/components/thrivepay/WeeklyMoneyInsights";
 import { SnapReceiptFAB } from "@/components/thrivepay/SnapReceiptFAB";
+import { CopilotLauncher } from "@/components/agent/CopilotLauncher";
 import {
   DollarSign,
   TrendingUp,
@@ -292,6 +293,10 @@ export default function ThrivePay() {
               </h1>
               {getStatusBadge()}
               <MoneyStreakChip />
+              <CopilotLauncher
+                label="Ask Copilot"
+                prompt="How much am I owed right now, and what should I send today?"
+              />
             </div>
             <p className="text-sm text-muted-foreground">Invoices, expenses, earnings & payouts — one place.</p>
           </div>

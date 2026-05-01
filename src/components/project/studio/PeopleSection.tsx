@@ -118,12 +118,6 @@ export const PeopleSection = ({
             );
           })}
 
-          {isOwner && (
-            <div className="shrink-0 flex flex-col items-center gap-1.5 w-16">
-              <InviteCollaboratorDialog projectId={projectId} onInvite={onUpdated} />
-              <p className="text-[11px] text-muted-foreground">Add</p>
-            </div>
-          )}
         </div>
       </div>
     </section>

@@ -812,6 +812,22 @@ const CircleDetail = () => {
         }}
         defaultCircleId={circleId}
       />
+
+      {callSession && (
+        <VideoCallSheet
+          open={callOpen}
+          onOpenChange={(o) => {
+            setCallOpen(o);
+            if (!o) setCallSession(null);
+          }}
+          projectName={circle?.title ? `${circle.title} · group call` : "Circle group call"}
+          roomUrl={callSession.roomUrl}
+          token={callSession.token}
+          callId={callSession.callId}
+          userName={user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member"}
+          roomName={callSession.roomName}
+        />
+      )}
     </div>
   );
 };

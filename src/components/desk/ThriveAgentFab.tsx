@@ -355,22 +355,52 @@ export const ThriveAgentFab = () => {
             )}
 
             {messages.map((m, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "max-w-[90%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
-                  m.role === "user"
-                    ? "ml-auto bg-primary text-primary-foreground"
-                    : "mr-auto bg-accent/60 text-foreground",
-                )}
-              >
-                {m.role === "assistant" ? (
-                  <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_pre]:my-1 [&_pre]:text-xs">
-                    <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
+              <div key={i} className="space-y-2">
+                <div
+                  className={cn(
+                    "max-w-[90%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                    m.role === "user"
+                      ? "ml-auto bg-primary text-primary-foreground"
+                      : "mr-auto bg-accent/60 text-foreground",
+                  )}
+                >
+                  {m.role === "assistant" ? (
+                    <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_pre]:my-1 [&_pre]:text-xs">
+                      <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap">{m.content}</div>
+                  )}
+                </div>
+                {/* Approval cards for any actions this assistant turn proposed */}
+                {m.role === "assistant" && actionsByMsg[i]?.length ? (
+                  <div className="space-y-2 max-w-[95%]">
+                    {actionsByMsg[i].map((action) => (
+                      <AgentApprovalCard
+                        key={action.id}
+                        action={action}
+                        compact
+                        onResolved={(decision) => {
+                          // Mark the local copy as resolved so the card hides itself.
+                          setActionsByMsg((prev) => ({
+                            ...prev,
+                            [i]: (prev[i] ?? []).map((a) =>
+                              a.id === action.id
+                                ? {
+                                    ...a,
+                                    status:
+                                      decision === "approved"
+                                        ? "executed"
+                                        : "rejected",
+                                  }
+                                : a,
+                            ),
+                          }));
+                        }}
+                      />
+                    ))}
                   </div>
-                ) : (
-                  <div className="whitespace-pre-wrap">{m.content}</div>
-                )}
+                ) : null}
               </div>
             ))}
 

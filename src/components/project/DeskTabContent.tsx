@@ -1,6 +1,9 @@
 import { memo } from "react";
 import { TodayWorkspace } from "@/components/project/today/TodayWorkspace";
 import { FileBrowser } from "@/components/project/files/FileBrowser";
+import { VaultTab } from "@/components/project/studio/VaultTab";
+import { WorkflowShell } from "@/components/project/studio/WorkflowShell";
+import { StickyNote, Clapperboard, ListChecks, UserCheck, Music2, History } from "lucide-react";
 import { TasksWorkspace } from "@/components/project/tasks/TasksWorkspace";
 import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
 import { FinanceHub } from "@/components/project/finance/FinanceHub";

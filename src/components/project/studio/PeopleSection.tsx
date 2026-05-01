@@ -77,7 +77,7 @@ export const PeopleSection = ({
                     className={cn(
                       "h-14 w-14 ring-2 transition-all",
                       isOnline
-                        ? "ring-green-500"
+                        ? "ring-[hsl(var(--energy))] shadow-[0_0_10px_hsl(var(--energy)/0.5)]"
                         : "ring-border group-enabled:group-hover:ring-primary",
                     )}
                   >
@@ -90,7 +90,7 @@ export const PeopleSection = ({
                     <Crown className="absolute -top-1 -right-1 h-3.5 w-3.5 text-primary fill-primary/30" />
                   )}
                   {isOnline && (
-                    <span className="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full bg-green-500 ring-2 ring-background" />
+                    <span className="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full bg-[hsl(var(--energy))] ring-2 ring-background" />
                   )}
                 </button>
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Video, Loader2, Lock, Clock, Radio, CheckCircle2 } from "lucide-react";
+import { Video, Loader2, Lock, Clock, Radio, CheckCircle2, Headphones } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +28,8 @@ interface Props {
   hasAccess: boolean;
   /** True when the viewer can sign up — used to nudge them toward RSVP. */
   needsRsvp: boolean;
+  /** True when viewer is the event owner or a co-host — unlocks Soundcheck. */
+  isHost?: boolean;
 }
 
 const JOIN_WINDOW_MIN = 15; // minutes before start_time the room unlocks
@@ -44,6 +46,7 @@ export const JoinOnlineCard = ({
   videoRoomStartedAt,
   hasAccess,
   needsRsvp,
+  isHost = false,
 }: Props) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -71,12 +74,12 @@ export const JoinOnlineCard = ({
   const myName =
     user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest";
 
-  const handleJoin = async () => {
+  const handleJoin = async (test = false) => {
     if (!user) {
       toast({ title: "Sign in to join", description: "Free 1-tap signup gets you in." });
       return;
     }
-    if (!hasAccess) {
+    if (!test && !hasAccess) {
       toast({
         title: needsRsvp ? "Save your spot first" : "Ticket required",
         description: "Then come back here to join the room.",
@@ -86,12 +89,18 @@ export const JoinOnlineCard = ({
     setStarting(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-event-room", {
-        body: { event_id: eventId, user_name: myName },
+        body: { event_id: eventId, user_name: myName, ...(test ? { mode: "test" } : {}) },
       });
       if (error) throw error;
       if (!data?.room_url || !data?.token) throw new Error("No room returned");
       setRoom({ url: data.room_url, name: data.room_name, token: data.token });
       setCallOpen(true);
+      if (test) {
+        toast({
+          title: "Soundcheck room opened",
+          description: "Private to you — guests won't see this as live.",
+        });
+      }
     } catch (e: any) {
       console.error("[JoinOnlineCard] start failed", e);
       toast({
@@ -130,7 +139,7 @@ export const JoinOnlineCard = ({
       <Button
         variant="gradient"
         className="w-full gap-2 py-6 text-base"
-        onClick={handleJoin}
+        onClick={() => handleJoin(false)}
         disabled={starting}
       >
         {starting ? (
@@ -193,6 +202,21 @@ export const JoinOnlineCard = ({
           )}
 
           {renderCta()}
+
+          {isHost && (
+            <div className="pt-1 border-t border-border/40">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full gap-2 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => handleJoin(true)}
+                disabled={starting}
+              >
+                <Headphones className="h-3.5 w-3.5" />
+                Soundcheck — test cam, mic & screenshare (private to you)
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 

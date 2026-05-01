@@ -54,7 +54,8 @@ serve(async (req) => {
     }
     const userId = claims.claims.sub as string;
 
-    const { event_id, user_name } = await req.json();
+    const { event_id, user_name, mode } = await req.json();
+    const isTestMode = mode === "test";
     if (!event_id || typeof event_id !== "string") {
       return new Response(JSON.stringify({ error: "event_id required" }), {
         status: 400,
@@ -91,26 +92,7 @@ serve(async (req) => {
       );
     }
 
-    // RSVP / ticket gate
-    const { data: canJoin, error: gateErr } = await admin.rpc("can_join_event_online", {
-      _event_id: event_id,
-      _user_id: userId,
-    });
-    if (gateErr) {
-      console.error("[create-event-room] gate err", gateErr);
-      return new Response(JSON.stringify({ error: "Access check failed" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    if (!canJoin) {
-      return new Response(
-        JSON.stringify({ error: "RSVP or ticket required to join this room" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    // Role: host (owner or co-host) vs attendee
+    // Role: host (owner or co-host) vs attendee — compute first so we can gate test mode
     const isOwner = event.created_by === userId;
     let isCoHost = false;
     if (!isOwner) {
@@ -124,15 +106,44 @@ serve(async (req) => {
     }
     const isHost = isOwner || isCoHost;
 
+    if (isTestMode) {
+      if (!isHost) {
+        return new Response(
+          JSON.stringify({ error: "Only hosts can open the soundcheck room" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    } else {
+      // RSVP / ticket gate (skipped for host soundcheck)
+      const { data: canJoin, error: gateErr } = await admin.rpc("can_join_event_online", {
+        _event_id: event_id,
+        _user_id: userId,
+      });
+      if (gateErr) {
+        console.error("[create-event-room] gate err", gateErr);
+        return new Response(JSON.stringify({ error: "Access check failed" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (!canJoin) {
+        return new Response(
+          JSON.stringify({ error: "RSVP or ticket required to join this room" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     const formatCfg = FORMAT_CAPS[event.online_format] ?? FORMAT_CAPS.group_room;
     const cap = Math.min(
       formatCfg.max,
       Math.max(2, event.online_max_attendees || formatCfg.max),
     );
 
-    // Daily room name (max 41 chars, lowercase + dash)
-    const roomName = `ev-${event_id.replace(/-/g, "").slice(0, 30)}`.toLowerCase();
-    const exp = Math.floor(Date.now() / 1000) + 6 * 60 * 60; // 6h window
+    // Daily room name (max 41 chars, lowercase + dash). Test mode uses a separate room.
+    const baseId = event_id.replace(/-/g, "").slice(0, 28).toLowerCase();
+    const roomName = isTestMode ? `evt-${baseId}` : `ev-${baseId}`;
+    const exp = Math.floor(Date.now() / 1000) + (isTestMode ? 60 * 60 : 6 * 60 * 60); // test = 1h
 
     // Stage / watch party: audience joins muted + cam off, hosts can promote.
     // Group room / podcast: everyone joins normally.
@@ -232,8 +243,8 @@ serve(async (req) => {
     }
     const { token: meetingToken } = await tokenRes.json();
 
-    // Persist room url on event when host starts/refreshes it
-    if (isHost) {
+    // Persist room url on event when host actually goes live (not in test mode)
+    if (isHost && !isTestMode) {
       await admin
         .from("creative_jams")
         .update({
@@ -251,6 +262,7 @@ serve(async (req) => {
         token: meetingToken,
         is_host: isHost,
         format: event.online_format,
+        test_mode: isTestMode,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );

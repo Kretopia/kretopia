@@ -669,6 +669,26 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
           )}
         </div>
 
+        {/* Live typing indicator */}
+        {typingUsers.length > 0 && (
+          <div className="px-4 pt-1.5 pb-0.5 shrink-0 bg-background">
+            <div className="inline-flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span className="flex gap-0.5">
+                <span className="h-1 w-1 rounded-full bg-[hsl(var(--energy))] animate-bounce [animation-delay:-0.3s]" />
+                <span className="h-1 w-1 rounded-full bg-[hsl(var(--energy))] animate-bounce [animation-delay:-0.15s]" />
+                <span className="h-1 w-1 rounded-full bg-[hsl(var(--energy))] animate-bounce" />
+              </span>
+              <span className="font-medium">
+                {typingUsers.length === 1
+                  ? `${typingUsers[0].full_name.split(" ")[0]} is typing…`
+                  : typingUsers.length === 2
+                    ? `${typingUsers[0].full_name.split(" ")[0]} & ${typingUsers[1].full_name.split(" ")[0]} are typing…`
+                    : `${typingUsers.length} people are typing…`}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Reply Preview */}
         {replyTo && (
           <div className="border-t border-border bg-accent/30 px-4 py-2 flex items-center gap-3 shrink-0">

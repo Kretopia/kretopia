@@ -283,9 +283,6 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
             {[
               { tab: "scope", label: "Scope Guardian" },
               { tab: "board", label: "Creative Board" },
-              { tab: "assets", label: "Asset Library" },
-              { tab: "templates", label: "Templates" },
-              { tab: "ai", label: "AI Tools" },
             ].map((item) => (
               <button
                 key={item.tab}

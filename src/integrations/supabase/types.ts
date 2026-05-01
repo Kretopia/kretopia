@@ -1819,6 +1819,7 @@ export type Database = {
           created_by: string
           description: string | null
           end_time: string | null
+          event_mode: string
           event_type: string | null
           external_ticket_url: string | null
           group_chat_enabled: boolean
@@ -1831,9 +1832,12 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           max_participants: number | null
+          online_format: string | null
+          online_max_attendees: number | null
           original_source_text: string | null
           parent_event_id: string | null
           photo_wall_enabled: boolean
+          recording_enabled: boolean
           refund_policy: string | null
           scouted_by: string | null
           source_platform: string | null
@@ -1850,7 +1854,11 @@ export type Database = {
           updated_at: string
           venue_address: string | null
           venue_name: string | null
+          video_room_started_at: string | null
+          video_room_started_by: string | null
+          video_room_url: string | null
           waitlist_enabled: boolean
+          watch_party_video_url: string | null
         }
         Insert: {
           approval_required?: boolean
@@ -1866,6 +1874,7 @@ export type Database = {
           created_by: string
           description?: string | null
           end_time?: string | null
+          event_mode?: string
           event_type?: string | null
           external_ticket_url?: string | null
           group_chat_enabled?: boolean
@@ -1878,9 +1887,12 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           max_participants?: number | null
+          online_format?: string | null
+          online_max_attendees?: number | null
           original_source_text?: string | null
           parent_event_id?: string | null
           photo_wall_enabled?: boolean
+          recording_enabled?: boolean
           refund_policy?: string | null
           scouted_by?: string | null
           source_platform?: string | null
@@ -1897,7 +1909,11 @@ export type Database = {
           updated_at?: string
           venue_address?: string | null
           venue_name?: string | null
+          video_room_started_at?: string | null
+          video_room_started_by?: string | null
+          video_room_url?: string | null
           waitlist_enabled?: boolean
+          watch_party_video_url?: string | null
         }
         Update: {
           approval_required?: boolean
@@ -1913,6 +1929,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           end_time?: string | null
+          event_mode?: string
           event_type?: string | null
           external_ticket_url?: string | null
           group_chat_enabled?: boolean
@@ -1925,9 +1942,12 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           max_participants?: number | null
+          online_format?: string | null
+          online_max_attendees?: number | null
           original_source_text?: string | null
           parent_event_id?: string | null
           photo_wall_enabled?: boolean
+          recording_enabled?: boolean
           refund_policy?: string | null
           scouted_by?: string | null
           source_platform?: string | null
@@ -1944,7 +1964,11 @@ export type Database = {
           updated_at?: string
           venue_address?: string | null
           venue_name?: string | null
+          video_room_started_at?: string | null
+          video_room_started_by?: string | null
+          video_room_url?: string | null
           waitlist_enabled?: boolean
+          watch_party_video_url?: string | null
         }
         Relationships: [
           {
@@ -13405,6 +13429,10 @@ export type Database = {
       calculate_network_tier: {
         Args: { ref_count: number }
         Returns: Database["public"]["Enums"]["network_tier"]
+      }
+      can_join_event_online: {
+        Args: { _event_id: string; _user_id: string }
+        Returns: boolean
       }
       check_storage_available: {
         Args: { file_size_param: number; user_id_param: string }

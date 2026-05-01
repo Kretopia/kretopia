@@ -483,6 +483,12 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
       else if (a.tool === "send_message_to_collaborator" && a.ok) finalReply = "Message posted to project chat.";
       else if (a.tool === "get_project_summary" && a.ok)
         finalReply = `${a.result.open_tasks} open tasks, ${a.result.overdue} overdue.`;
+      else if (a.tool === "draft_invoice" && a.ok)
+        finalReply = `Draft invoice ${a.result.invoice_number} for ${a.result.currency} ${a.result.total_amount} created. Review & send from Money tab.`;
+      else if (a.tool === "start_video_call" && a.ok)
+        finalReply = "Video room is live and link posted in chat.";
+      else if (a.tool === "add_credit" && a.ok)
+        finalReply = `Credit added: ${a.result.role} on "${a.result.project_name}".`;
       else if (a.tool === "ask_clarification") finalReply = a.result.question;
       else finalReply = "Done.";
     }

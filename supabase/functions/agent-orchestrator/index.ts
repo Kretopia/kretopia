@@ -227,6 +227,115 @@ async function executeAction(
   }
 }
 
+/**
+ * Cross-agent bundle: Talent → Project handoff.
+ * Atomically: 1) creates a project owned by the user, 2) inserts a pending
+ * project_collaborators invite for the chosen creator, 3) sends a kickoff DM.
+ * Any partial failure returns a structured error; the action row is marked failed
+ * so the user sees what happened.
+ */
+async function executeSpinUpProject(
+  userId: string,
+  args: Record<string, unknown>,
+  authHeader: string,
+): Promise<{ ok: boolean; result?: unknown; error?: string }> {
+  try {
+    const projectTitle = String(args.project_title ?? "Untitled project").slice(0, 200);
+    const brief = String(args.brief ?? "").slice(0, 2000);
+    const creatorUserId = String(args.creator_user_id ?? "");
+    const kickoff = String(args.kickoff_message ?? "").slice(0, 4000);
+
+    if (!creatorUserId || !kickoff) {
+      return { ok: false, error: "creator_user_id and kickoff_message are required" };
+    }
+
+    // 1) Create the project (as service role; created_by = user)
+    const { data: project, error: projErr } = await admin
+      .from("projects")
+      .insert({
+        title: projectTitle,
+        description: brief || null,
+        created_by: userId,
+        status: "active",
+        workspace_type: "general",
+        deal_type: "paid",
+        currency: "USD",
+      })
+      .select("id, title")
+      .single();
+    if (projErr || !project) {
+      return { ok: false, error: `Project create failed: ${projErr?.message ?? "unknown"}` };
+    }
+
+    // 2) Owner as collaborator (accepted) + chosen creator as pending invite
+    const collabRows = [
+      {
+        project_id: project.id,
+        user_id: userId,
+        role: "owner",
+        status: "accepted",
+        invited_by: userId,
+        accepted_at: new Date().toISOString(),
+      },
+      {
+        project_id: project.id,
+        user_id: creatorUserId,
+        role: "creative",
+        agent_role: "creative",
+        status: "pending",
+        invited_by: userId,
+      },
+    ];
+    const { error: collabErr } = await admin
+      .from("project_collaborators")
+      .insert(collabRows);
+    if (collabErr) {
+      console.warn("Collaborator insert failed", collabErr);
+      // Don't roll back — project still exists; surface the error
+      return {
+        ok: false,
+        error: `Project created but invite failed: ${collabErr.message}`,
+        result: { project_id: project.id, partial: true },
+      };
+    }
+
+    // 3) Send kickoff DM via the existing agent-send-dm edge function (as the user)
+    let dmOk = true;
+    let dmError: string | null = null;
+    try {
+      const dmResp = await fetch(`${SUPABASE_URL}/functions/v1/agent-send-dm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: authHeader },
+        body: JSON.stringify({
+          to_user_id: creatorUserId,
+          body: kickoff,
+          context: `Project kickoff: ${project.title}`,
+        }),
+      });
+      if (!dmResp.ok) {
+        dmOk = false;
+        dmError = (await dmResp.text()).slice(0, 200);
+      }
+    } catch (e) {
+      dmOk = false;
+      dmError = e instanceof Error ? e.message : String(e);
+    }
+
+    return {
+      ok: true,
+      result: {
+        project_id: project.id,
+        project_title: project.title,
+        creator_user_id: creatorUserId,
+        dm_sent: dmOk,
+        dm_error: dmError,
+      },
+    };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 

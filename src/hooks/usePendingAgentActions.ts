@@ -18,16 +18,18 @@ export function usePendingAgentActions() {
       setLoading(false);
       return;
     }
-    const { data } = await supabase
-      .from("orch_actions" as any)
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("status", "proposed")
-      .order("proposed_at", { ascending: false })
-      .limit(20)
-      .then((r) => r)
-      .catch(() => ({ data: [] as any[] }));
-    setActions((data as unknown as OrchAction[]) ?? []);
+    try {
+      const { data } = await (supabase as any)
+        .from("orch_actions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "proposed")
+        .order("proposed_at", { ascending: false })
+        .limit(20);
+      setActions((data as OrchAction[]) ?? []);
+    } catch {
+      setActions([]);
+    }
     setLoading(false);
   }, [user]);
 

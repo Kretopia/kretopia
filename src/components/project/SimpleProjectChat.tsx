@@ -82,6 +82,20 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Identify current user's display name from collaborators or messages
+  const currentUserName = useMemo(() => {
+    const fromCollabs = collaborators.find((c) => c.id === currentUserId)?.full_name;
+    if (fromCollabs) return fromCollabs;
+    const fromMsg = messages.find((m) => m.user_id === currentUserId)?.profiles?.full_name;
+    return fromMsg || "Someone";
+  }, [collaborators, messages, currentUserId]);
+
+  // Realtime typing indicator (separate channel from presence to keep payloads tiny)
+  const { typingUsers, notifyTyping } = useTypingIndicator(
+    projectId ? `chat-typing:${projectId}` : undefined,
+    { id: currentUserId, full_name: currentUserName },
+  );
+
   useEffect(() => {
     // Scroll the messages container only — avoid scrollIntoView which can
     // steal focus from the parent window (e.g. the Lovable preview iframe

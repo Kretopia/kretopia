@@ -416,6 +416,54 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
             },
             ok: true,
           });
+        } else if (name === "draft_invoice") {
+          const dueDays = Number(args.due_in_days ?? 14);
+          const dueDate = new Date(Date.now() + dueDays * 86400000).toISOString();
+          const amount = Number(args.amount || 0);
+          const invNum = `INV-${Date.now().toString().slice(-8)}`;
+          const { data, error } = await admin
+            .from("invoices")
+            .insert({
+              invoice_number: invNum,
+              project_id,
+              issued_by: user.id,
+              issued_to: project?.client_user_id ?? null,
+              amount,
+              total_amount: amount,
+              currency: (args.currency || project?.currency || "USD").toUpperCase(),
+              status: "draft",
+              due_date: dueDate,
+              notes: args.notes || null,
+              document_type: "invoice",
+            })
+            .select("id, invoice_number, total_amount, currency")
+            .single();
+          if (error) throw error;
+          actions.push({ tool: name, args, result: data, ok: true });
+        } else if (name === "start_video_call") {
+          // Reuse existing create-video-room edge fn (handles Daily.co + chat post)
+          const { data, error } = await admin.functions.invoke("create-video-room", {
+            body: { project_id, user_name: user.email?.split("@")[0] || "Member" },
+            headers: { Authorization: authHeader },
+          });
+          if (error) throw error;
+          actions.push({ tool: name, args, result: { url: (data as any)?.url }, ok: true });
+        } else if (name === "add_credit") {
+          const { data, error } = await admin
+            .from("credits")
+            .insert({
+              user_id: user.id,
+              project_name: project?.title || "Untitled project",
+              role: String(args.role || "Contributor").slice(0, 80),
+              year: args.year || new Date().getFullYear(),
+              description: args.description || null,
+              source: "thrive_agent",
+              verification_status: "self_reported",
+            })
+            .select("id, project_name, role")
+            .single();
+          if (error) throw error;
+          actions.push({ tool: name, args, result: data, ok: true });
         } else if (name === "ask_clarification") {
           actions.push({ tool: name, args, result: { question: args.question }, ok: true });
         }

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Pencil, Loader2, Plus, ImageIcon, Mic } from "lucide-react";
+import { Pencil, Loader2, Plus, ImageIcon, Mic, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { MoodboardThumb } from "./MoodboardThumb";
 import { BriefVoiceRecorder } from "./BriefVoiceRecorder";
@@ -27,10 +28,58 @@ export const BriefSection = ({
   onAddReference,
 }: BriefSectionProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(project.description ?? "");
   const [saving, setSaving] = useState(false);
   const [voiceOpen, setVoiceOpen] = useState(false);
+  const [breakingDown, setBreakingDown] = useState(false);
+
+  const breakIntoTasks = async () => {
+    if (!project.description?.trim() || !user) return;
+    setBreakingDown(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("extract-brief", {
+        body: { source: "text", text: project.description, project_title: undefined },
+      });
+      if (error) throw error;
+      const list: Array<{ title: string; description?: string | null }> = Array.isArray(
+        (data as any)?.deliverables,
+      )
+        ? (data as any).deliverables.slice(0, 8)
+        : [];
+      if (!list.length) {
+        toast({
+          title: "Nothing to break down yet",
+          description: "Add more detail to the brief and try again.",
+        });
+        return;
+      }
+      const rows = list.map((d) => ({
+        project_id: project.id,
+        title: d.title.slice(0, 200),
+        description: d.description ?? null,
+        status: "todo",
+        created_by: user.id,
+      }));
+      const { error: insErr } = await supabase.from("project_tasks").insert(rows);
+      if (insErr) throw insErr;
+      toast({
+        title: `${rows.length} task${rows.length === 1 ? "" : "s"} added`,
+        description: "Find them in the Studio feed.",
+      });
+      onUpdated();
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Couldn't break it down",
+        description: err.message ?? "Try again in a moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setBreakingDown(false);
+    }
+  };
 
   // Image files attached to the project become moodboard references
   const moodboard = files.filter((f) => {
@@ -121,9 +170,28 @@ export const BriefSection = ({
           </div>
         </div>
       ) : project.description ? (
-        <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
-          {project.description}
-        </p>
+        <div className="space-y-3">
+          <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
+            {project.description}
+          </p>
+          {isOwner && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={breakIntoTasks}
+              disabled={breakingDown}
+            >
+              {breakingDown ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <ListChecks className="h-3.5 w-3.5" />
+              )}
+              {breakingDown ? "Breaking it down…" : "Break into tasks"}
+            </Button>
+          )}
+        </div>
       ) : (
         <div
           className={cn(
@@ -210,9 +278,12 @@ export const BriefSection = ({
       <BriefVoiceRecorder
         open={voiceOpen}
         onOpenChange={setVoiceOpen}
+        projectId={project.id}
+        userId={user?.id}
         onSave={async (text) => {
           await persist(text);
         }}
+        onTasksCreated={onUpdated}
       />
     </section>
   );

@@ -370,19 +370,26 @@ export const VoiceFirstCreateModal = ({
                 className="min-h-[100px] text-sm"
               />
             </div>
-            {brief.deliverables && brief.deliverables.length > 0 && (
-              <div className="rounded-lg border border-border bg-muted/30 p-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                  Starter tasks ({brief.deliverables.length})
+            {brief.deliverables && brief.deliverables.length > 0 ? (
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-2">
+                  Starter tasks we'll create ({brief.deliverables.length})
                 </p>
                 <ul className="space-y-1.5 text-sm">
-                  {brief.deliverables.slice(0, 5).map((d, i) => (
+                  {brief.deliverables.slice(0, 8).map((d, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="text-muted-foreground">·</span>
-                      <span className="line-clamp-1">{d.title}</span>
+                      <span className="text-primary/60">{i + 1}.</span>
+                      <span className="line-clamp-2">{d.title}</span>
                     </li>
                   ))}
                 </ul>
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  You can edit, reorder, or delete any of these inside the room.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-border bg-muted/20 p-3 text-xs text-muted-foreground">
+                We couldn't pull starter tasks from that. You can add them inside the room — or tap "Start over" and give a bit more detail.
               </div>
             )}
           </div>

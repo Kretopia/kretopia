@@ -378,19 +378,54 @@ export const VoiceFirstCreateModal = ({
             </div>
             {brief.deliverables && brief.deliverables.length > 0 ? (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-2">
-                  Starter tasks we'll create ({brief.deliverables.length})
-                </p>
-                <ul className="space-y-1.5 text-sm">
-                  {brief.deliverables.slice(0, 8).map((d, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="text-primary/60">{i + 1}.</span>
-                      <span className="line-clamp-2">{d.title}</span>
-                    </li>
-                  ))}
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                    Starter tasks ({selected.size}/{Math.min(brief.deliverables.length, 8)})
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const all = brief.deliverables!.slice(0, 8);
+                      setSelected(
+                        selected.size === all.length
+                          ? new Set()
+                          : new Set(all.map((_, i) => i))
+                      );
+                    }}
+                    className="text-[11px] font-medium text-primary hover:underline"
+                  >
+                    {selected.size === Math.min(brief.deliverables.length, 8)
+                      ? "Clear all"
+                      : "Select all"}
+                  </button>
+                </div>
+                <ul className="space-y-1">
+                  {brief.deliverables.slice(0, 8).map((d, i) => {
+                    const checked = selected.has(i);
+                    return (
+                      <li key={i}>
+                        <label className="flex items-start gap-2 py-1.5 px-1 rounded cursor-pointer hover:bg-primary/10">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              const next = new Set(selected);
+                              if (checked) next.delete(i);
+                              else next.add(i);
+                              setSelected(next);
+                            }}
+                            className="mt-0.5 h-4 w-4 accent-primary shrink-0"
+                          />
+                          <span className={cn("text-sm leading-snug", !checked && "text-muted-foreground line-through")}>
+                            {d.title}
+                          </span>
+                        </label>
+                      </li>
+                    );
+                  })}
                 </ul>
                 <p className="text-[11px] text-muted-foreground mt-2">
-                  You can edit, reorder, or delete any of these inside the room.
+                  Pick what to seed — you can always add more inside the room.
                 </p>
               </div>
             ) : (
@@ -404,21 +439,41 @@ export const VoiceFirstCreateModal = ({
 
       {/* Footer */}
       {mode === "review" && brief && (
-        <div className="shrink-0 border-t border-border/40 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center justify-end gap-2 bg-background">
+        <div className="shrink-0 border-t border-border/40 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center justify-between gap-2 bg-background">
           <Button
             variant="ghost"
+            size="sm"
             onClick={() => {
               setBrief(null);
+              setSelected(new Set());
               setMode("prompt");
             }}
             disabled={creating}
           >
             Start over
           </Button>
-          <Button onClick={createProject} disabled={creating || !brief.project.title.trim()} className="gap-1">
-            {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-            Open the room
-          </Button>
+          <div className="flex items-center gap-2">
+            {brief.deliverables && brief.deliverables.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => createProject("selected")}
+                disabled={creating || !brief.project.title.trim() || selected.size === 0}
+                className="gap-1"
+              >
+                Create {selected.size} selected
+              </Button>
+            )}
+            <Button
+              onClick={() => createProject(brief.deliverables?.length ? "all" : "none")}
+              disabled={creating || !brief.project.title.trim()}
+              className="gap-1"
+              size="sm"
+            >
+              {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+              {brief.deliverables?.length ? "Create all & open" : "Open the room"}
+            </Button>
+          </div>
         </div>
       )}
     </div>

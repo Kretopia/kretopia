@@ -24,10 +24,13 @@ interface StudioCardsGridProps {
 }
 
 const STATUS_PILL: Record<string, { label: string; tone: string }> = {
-  active: { label: "In Progress", tone: "bg-primary/15 text-primary" },
-  planning: { label: "Planning", tone: "bg-muted text-muted-foreground" },
-  wrapping: { label: "Wrapping Up", tone: "bg-accent/40 text-accent-foreground" },
-  completed: { label: "Delivered ✓", tone: "bg-secondary text-secondary-foreground" },
+  active: {
+    label: "In Progress",
+    tone: "bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))] ring-1 ring-[hsl(var(--energy)/0.4)]",
+  },
+  planning: { label: "Planning", tone: "bg-background/80 text-foreground ring-1 ring-border" },
+  wrapping: { label: "Wrapping Up", tone: "bg-primary/20 text-primary-foreground ring-1 ring-primary/40" },
+  completed: { label: "Delivered", tone: "bg-card/80 text-foreground ring-1 ring-border" },
 };
 
 const PAY_DOT: Record<string, string> = {
@@ -51,18 +54,21 @@ export const StudioCardsGrid = ({
 
   if (projects.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border p-10 text-center">
+      <div className="rounded-3xl border border-dashed border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card p-10 text-center">
+        <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase mb-3">
+          ThriveDesk · Studio
+        </p>
         <div
-          className="mx-auto h-16 w-16 rounded-2xl flex items-center justify-center text-3xl mb-4"
+          className="mx-auto h-20 w-20 rounded-3xl flex items-center justify-center text-4xl mb-5 shadow-[var(--shadow-glow)]"
           style={{ background: moodGradient("creative") }}
         >
           🎨
         </div>
-        <h2 className="text-lg font-bold mb-1">Open your first room</h2>
-        <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-5">
+        <h2 className="text-2xl font-black tracking-[-0.02em] mb-1">Open your first room</h2>
+        <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-6">
           Built for creatives. Tell us what you're making — voice or text. We'll set up the room.
         </p>
-        <Button onClick={onNewProject} className="gap-2">
+        <Button onClick={onNewProject} size="lg" className="gap-2 rounded-full">
           <Mic className="h-4 w-4" />
           What are you making?
         </Button>
@@ -86,7 +92,7 @@ export const StudioCardsGrid = ({
               className={cn(
                 "group relative text-left overflow-hidden rounded-2xl",
                 "border border-border bg-card",
-                "transition-all hover:border-primary/40 hover:shadow-lg hover:-translate-y-0.5",
+                "transition-all hover:border-primary/50 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5",
                 "focus:outline-none focus:ring-2 focus:ring-primary"
               )}
             >
@@ -97,7 +103,7 @@ export const StudioCardsGrid = ({
                     src={project.cover_url}
                     alt=""
                     loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div
@@ -109,10 +115,20 @@ export const StudioCardsGrid = ({
                   </div>
                 )}
 
+                {/* Brand veil — pulls every cover into the violet world */}
+                {project.cover_url && (
+                  <div
+                    className="absolute inset-0 mix-blend-multiply opacity-40 transition-opacity group-hover:opacity-25"
+                    style={{ background: "var(--gradient-primary)" }}
+                  />
+                )}
+                {/* Bottom fade for text legibility */}
+                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-card via-card/40 to-transparent" />
+
                 {/* Status pill */}
                 <span
                   className={cn(
-                    "absolute top-3 left-3 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full",
+                    "absolute top-3 left-3 text-[10px] font-bold uppercase tracking-[0.12em] px-2.5 py-1 rounded-full backdrop-blur-md",
                     status.tone
                   )}
                 >
@@ -122,7 +138,7 @@ export const StudioCardsGrid = ({
                 {/* Payment dot */}
                 {pay && (
                   <span
-                    className="absolute top-3 right-3 flex items-center gap-1.5 text-[10px] font-medium text-white/95 bg-black/40 backdrop-blur-[2px] px-2 py-0.5 rounded-full"
+                    className="absolute top-3 right-3 flex items-center gap-1.5 text-[10px] font-medium text-white/95 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full"
                     title={PAY_LABEL[pay]}
                   >
                     <span className={cn("h-1.5 w-1.5 rounded-full", PAY_DOT[pay])} />

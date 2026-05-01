@@ -113,6 +113,10 @@ export async function loadCopilotContext(
     },
   };
 
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const sevenDaysAhead = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const nowIso = new Date().toISOString();
+
   // Parallel fan-out, each capped at ~1.5s. Total worst-case stays under 2s.
   const [
     profileRes,
@@ -120,6 +124,15 @@ export async function loadCopilotContext(
     invoicesRes,
     eventsRes,
     creditsRes,
+    // --- recent activity (last 7 days) ---
+    tasksDoneRes,
+    tasksDueRes,
+    creditsRecentRes,
+    connectionsRes,
+    invoicesPaidRes,
+    invoicesSentRes,
+    notifUnreadRes,
+    notifRecentRes,
   ] = await Promise.all([
     withTimeout(
       admin
@@ -151,7 +164,7 @@ export async function loadCopilotContext(
         .from("creative_jams")
         .select("id, title, start_time, venue_name")
         .eq("created_by", userId)
-        .gte("start_time", new Date().toISOString())
+        .gte("start_time", nowIso)
         .order("start_time", { ascending: true })
         .limit(3),
     ),
@@ -161,6 +174,89 @@ export async function loadCopilotContext(
         .select("id", { count: "exact", head: true })
         .eq("user_id", userId)
         .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+    ),
+    // tasks completed in last 7 days (assigned to or created by user)
+    withTimeout(
+      admin
+        .from("project_tasks")
+        .select("title, project_id, updated_at, status, assigned_to, created_by")
+        .eq("status", "done")
+        .or(`assigned_to.eq.${userId},created_by.eq.${userId}`)
+        .gte("updated_at", sevenDaysAgo)
+        .order("updated_at", { ascending: false })
+        .limit(5),
+    ),
+    // tasks due in next 7 days, not done, assigned to user
+    withTimeout(
+      admin
+        .from("project_tasks")
+        .select("title, due_date, project_id, status")
+        .neq("status", "done")
+        .eq("assigned_to", userId)
+        .not("due_date", "is", null)
+        .gte("due_date", nowIso)
+        .lte("due_date", sevenDaysAhead)
+        .order("due_date", { ascending: true })
+        .limit(5),
+    ),
+    // credits added in last 7 days
+    withTimeout(
+      admin
+        .from("credits")
+        .select("project_name, role, created_at")
+        .eq("user_id", userId)
+        .gte("created_at", sevenDaysAgo)
+        .order("created_at", { ascending: false })
+        .limit(5),
+    ),
+    // new accepted connections in last 7 days (where user is recipient)
+    withTimeout(
+      admin
+        .from("connections")
+        .select("id", { count: "exact", head: true })
+        .eq("connected_user_id", userId)
+        .eq("status", "accepted")
+        .gte("created_at", sevenDaysAgo),
+    ),
+    // invoices paid in last 7 days
+    withTimeout(
+      admin
+        .from("invoices")
+        .select("invoice_number, total_amount, currency, paid_at")
+        .eq("issued_by", userId)
+        .eq("status", "paid")
+        .gte("paid_at", sevenDaysAgo)
+        .order("paid_at", { ascending: false })
+        .limit(5),
+    ),
+    // invoices sent in last 7 days
+    withTimeout(
+      admin
+        .from("invoices")
+        .select("invoice_number, total_amount, currency, created_at, recipient_name, status")
+        .eq("issued_by", userId)
+        .in("status", ["sent", "viewed", "overdue"])
+        .gte("created_at", sevenDaysAgo)
+        .order("created_at", { ascending: false })
+        .limit(5),
+    ),
+    // unread notifications count
+    withTimeout(
+      admin
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("read", false),
+    ),
+    // last 5 notification titles (for "what's new" summary)
+    withTimeout(
+      admin
+        .from("notifications")
+        .select("title, created_at")
+        .eq("user_id", userId)
+        .gte("created_at", sevenDaysAgo)
+        .order("created_at", { ascending: false })
+        .limit(5),
     ),
   ]);
 

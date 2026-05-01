@@ -123,7 +123,7 @@ export async function loadCopilotContext(
         .from("invoices")
         .select("total_amount, currency, status")
         .eq("issued_by", userId)
-        .in("status", ["sent", "overdue", "viewed"]),
+        .in("status", ["sent", "overdue", "viewed", "draft"]),
     ),
     withTimeout(
       admin

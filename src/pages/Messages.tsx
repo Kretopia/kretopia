@@ -39,7 +39,7 @@ const Messages = () => {
   );
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<'inbox' | 'groups' | 'requests'>('inbox');
+  const [activeTab, setActiveTab] = useState<'inbox' | 'groups' | 'calls' | 'requests'>('inbox');
   const [requestCount] = useState(0);
   const [selectedGroup, setSelectedGroup] = useState<GroupRoom | null>(null);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);

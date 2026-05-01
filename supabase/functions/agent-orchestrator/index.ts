@@ -194,6 +194,12 @@ async function executeAction(
     return { ok: true, result: { question: args.question } };
   }
 
+  // Cross-agent bundle: spin_up_project executes 3 things atomically server-side
+  // (create project → invite collaborator → send kickoff DM).
+  if (tool.handler === "inline_bundle" && tool.tool_name === "spin_up_project") {
+    return await executeSpinUpProject(userId, args, authHeader);
+  }
+
   // Invoke the underlying edge function as the user (so RLS applies correctly)
   try {
     const url = `${SUPABASE_URL}/functions/v1/${tool.handler}`;
@@ -216,6 +222,115 @@ async function executeAction(
       return { ok: false, error: typeof parsed === "string" ? parsed : JSON.stringify(parsed) };
     }
     return { ok: true, result: parsed };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+/**
+ * Cross-agent bundle: Talent → Project handoff.
+ * Atomically: 1) creates a project owned by the user, 2) inserts a pending
+ * project_collaborators invite for the chosen creator, 3) sends a kickoff DM.
+ * Any partial failure returns a structured error; the action row is marked failed
+ * so the user sees what happened.
+ */
+async function executeSpinUpProject(
+  userId: string,
+  args: Record<string, unknown>,
+  authHeader: string,
+): Promise<{ ok: boolean; result?: unknown; error?: string }> {
+  try {
+    const projectTitle = String(args.project_title ?? "Untitled project").slice(0, 200);
+    const brief = String(args.brief ?? "").slice(0, 2000);
+    const creatorUserId = String(args.creator_user_id ?? "");
+    const kickoff = String(args.kickoff_message ?? "").slice(0, 4000);
+
+    if (!creatorUserId || !kickoff) {
+      return { ok: false, error: "creator_user_id and kickoff_message are required" };
+    }
+
+    // 1) Create the project (as service role; created_by = user)
+    const { data: project, error: projErr } = await admin
+      .from("projects")
+      .insert({
+        title: projectTitle,
+        description: brief || null,
+        created_by: userId,
+        status: "active",
+        workspace_type: "general",
+        deal_type: "paid",
+        currency: "USD",
+      })
+      .select("id, title")
+      .single();
+    if (projErr || !project) {
+      return { ok: false, error: `Project create failed: ${projErr?.message ?? "unknown"}` };
+    }
+
+    // 2) Owner as collaborator (accepted) + chosen creator as pending invite
+    const collabRows = [
+      {
+        project_id: project.id,
+        user_id: userId,
+        role: "owner",
+        status: "accepted",
+        invited_by: userId,
+        accepted_at: new Date().toISOString(),
+      },
+      {
+        project_id: project.id,
+        user_id: creatorUserId,
+        role: "creative",
+        agent_role: "creative",
+        status: "pending",
+        invited_by: userId,
+      },
+    ];
+    const { error: collabErr } = await admin
+      .from("project_collaborators")
+      .insert(collabRows);
+    if (collabErr) {
+      console.warn("Collaborator insert failed", collabErr);
+      // Don't roll back — project still exists; surface the error
+      return {
+        ok: false,
+        error: `Project created but invite failed: ${collabErr.message}`,
+        result: { project_id: project.id, partial: true },
+      };
+    }
+
+    // 3) Send kickoff DM via the existing agent-send-dm edge function (as the user)
+    let dmOk = true;
+    let dmError: string | null = null;
+    try {
+      const dmResp = await fetch(`${SUPABASE_URL}/functions/v1/agent-send-dm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: authHeader },
+        body: JSON.stringify({
+          to_user_id: creatorUserId,
+          body: kickoff,
+          context: `Project kickoff: ${project.title}`,
+        }),
+      });
+      if (!dmResp.ok) {
+        dmOk = false;
+        dmError = (await dmResp.text()).slice(0, 200);
+      }
+    } catch (e) {
+      dmOk = false;
+      dmError = e instanceof Error ? e.message : String(e);
+    }
+
+    return {
+      ok: true,
+      result: {
+        project_id: project.id,
+        project_title: project.title,
+        creator_user_id: creatorUserId,
+        dm_sent: dmOk,
+        dm_error: dmError,
+      },
+    };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }
@@ -525,6 +640,167 @@ serve(async (req) => {
           status: "awaiting_approval",
           agent_kind: "talent",
           actions: insertedActions ?? [],
+          awaiting_approval: true,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ============ SPIN UP PROJECT (Talent → Project handoff) ============
+    // Body: { mode: "spin_up_project", creator_user_id, creator_name, creator_avatar_url?,
+    //         brief, project_title? }
+    // Creates ONE proposed action — the user taps Approve once and the orchestrator
+    // atomically: creates a project, invites the creator, queues a kickoff DM.
+    if (body.mode === "spin_up_project") {
+      const creatorUserId = String(body.creator_user_id ?? "").trim();
+      const creatorName = String(body.creator_name ?? "Collaborator").trim();
+      const creatorAvatar = body.creator_avatar_url ? String(body.creator_avatar_url) : null;
+      const brief = String(body.brief ?? "").trim();
+      const projectTitle =
+        String(body.project_title ?? "").trim() ||
+        (brief ? brief.split(/[.!?\n]/)[0].slice(0, 80) : `Project with ${creatorName}`);
+
+      if (!creatorUserId) {
+        return new Response(
+          JSON.stringify({ error: "creator_user_id required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // Settings + daily cap
+      const { data: settingsRow } = await admin
+        .from("orch_settings")
+        .select("agents_enabled, daily_action_limit")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (settingsRow && settingsRow.agents_enabled === false) {
+        return new Response(
+          JSON.stringify({ error: "Agents disabled in your settings" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const dailyCap = settingsRow?.daily_action_limit ?? 50;
+      const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count: usedToday } = await admin
+        .from("orch_actions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .gte("proposed_at", since24);
+      if ((usedToday ?? 0) >= dailyCap) {
+        return new Response(
+          JSON.stringify({ error: `Daily agent action limit (${dailyCap}) reached` }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const { data: senderProfile } = await admin
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", userId)
+        .maybeSingle();
+      const senderFirst = ((senderProfile?.full_name as string | null) ?? "").split(" ")[0] || "I";
+
+      // Draft a warm kickoff DM (best-effort; falls back to template)
+      let kickoff = "";
+      try {
+        if (LOVABLE_API_KEY) {
+          const aiResp = await fetch(
+            "https://ai.gateway.lovable.dev/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "google/gemini-2.5-flash-lite",
+                messages: [
+                  {
+                    role: "system",
+                    content:
+                      "Draft a 2-3 sentence project kickoff message from one creative inviting another to collaborate. " +
+                      "Conversational, no emojis, no 'Hope you're well'. Mention the project title and brief naturally. " +
+                      "End with a soft next step. Sign off with the sender's first name only.",
+                  },
+                  {
+                    role: "user",
+                    content: JSON.stringify({
+                      project_title: projectTitle,
+                      brief,
+                      recipient_first_name: (creatorName ?? "").split(" ")[0] || "there",
+                      sender_first_name: senderFirst,
+                    }),
+                  },
+                ],
+              }),
+            },
+          );
+          if (aiResp.ok) {
+            const j = await aiResp.json();
+            kickoff = (j.choices?.[0]?.message?.content ?? "").trim();
+          }
+        }
+      } catch (e) {
+        console.warn("kickoff draft failed", e);
+      }
+      if (!kickoff) {
+        const first = (creatorName ?? "").split(" ")[0] || "there";
+        kickoff =
+          `Hey ${first} — kicking off "${projectTitle}". ` +
+          (brief ? `Quick brief: ${brief.slice(0, 200)}. ` : "") +
+          `Sent you a project invite — down to jump in?\n\n— ${senderFirst}`;
+      }
+
+      const { data: run, error: runErr } = await admin
+        .from("orch_runs")
+        .insert({
+          user_id: userId,
+          agent_kind: "project_manager",
+          intent_text: `Spin up project with ${creatorName}: ${projectTitle}`,
+          intent_classified: "Talent → Project handoff",
+          context: { creator_user_id: creatorUserId, brief },
+          status: "awaiting_approval",
+        })
+        .select("id")
+        .single();
+      if (runErr || !run) throw new Error("Could not create run");
+
+      const { data: insertedAction, error: insErr } = await admin
+        .from("orch_actions")
+        .insert({
+          run_id: run.id,
+          user_id: userId,
+          tool_name: "spin_up_project",
+          tool_args: {
+            project_title: projectTitle,
+            brief,
+            creator_user_id: creatorUserId,
+            creator_name: creatorName,
+            creator_avatar_url: creatorAvatar,
+            kickoff_message: kickoff,
+            _preview: {
+              avatar_url: creatorAvatar,
+              context_line: `Project: ${projectTitle}`,
+            },
+          },
+          risk_level: "requires_approval",
+          status: "proposed",
+          preview_title: `Start "${projectTitle}" with ${creatorName}`,
+          preview_body:
+            `Creates the project, sends ${creatorName} an invite, and DMs them this kickoff:\n\n` +
+            kickoff,
+          agent_kind: "project_manager",
+        })
+        .select("*")
+        .single();
+      if (insErr) throw insErr;
+
+      return new Response(
+        JSON.stringify({
+          run_id: run.id,
+          status: "awaiting_approval",
+          agent_kind: "project_manager",
+          actions: [insertedAction],
           awaiting_approval: true,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },

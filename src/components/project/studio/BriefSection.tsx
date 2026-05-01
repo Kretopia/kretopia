@@ -364,6 +364,13 @@ export const BriefSection = ({
         }}
         onTasksCreated={onUpdated}
       />
+
+      <FileCommentsSheet
+        open={!!activeFile}
+        onOpenChange={(o) => !o && setActiveFile(null)}
+        file={activeFile}
+        currentUserId={viewerId}
+      />
     </section>
   );
 };

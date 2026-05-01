@@ -40,9 +40,12 @@ export interface CopilotContext {
   bio: string | null;
   // Live state
   active_projects: CopilotProject[];
-  unpaid_invoices_count: number;
+  unpaid_invoices_count: number; // sent/viewed/overdue — money owed TO user
   unpaid_invoices_total: number;
   invoice_currency: string | null;
+  draft_invoices_count: number; // unsent drafts — not owed yet, but pending action
+  draft_invoices_total: number;
+  draft_invoices_currency: string | null;
   upcoming_events: CopilotEvent[];
   recent_credits_count: number;
 }

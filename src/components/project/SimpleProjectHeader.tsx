@@ -340,7 +340,9 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
             {startingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
           </Button>
           {isOwner && (
-            <InviteCollaboratorDialog projectId={project.id} onInvite={() => onCollaboratorsChanged?.()} />
+            <div className="hidden sm:block">
+              <InviteCollaboratorDialog projectId={project.id} onInvite={() => onCollaboratorsChanged?.()} />
+            </div>
           )}
         </div>
 

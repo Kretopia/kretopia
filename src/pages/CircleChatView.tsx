@@ -11,13 +11,14 @@ import {
   ArrowLeft, Hash, Megaphone, Calendar, ShoppingBag, Image,
   Plus, Send, Settings, Users, Lock, Globe, DollarSign, Loader2,
   Share2, Check, Pin, Reply, MessageSquare, Crown, BarChart3,
-  Menu, ChevronDown, UserPlus, LogIn,
+  Menu, ChevronDown, UserPlus, LogIn, Video,
 } from "lucide-react";
 import { CircleMessageBubble, type CircleMessage } from "@/components/circle/CircleMessageBubble";
 import { CircleAdminPanel } from "@/components/circle/CircleAdminPanel";
 import { CirclePollCreator } from "@/components/circle/CirclePollCreator";
 import { CircleMemberDirectory } from "@/components/circle/CircleMemberDirectory";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
+import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { cn } from "@/lib/utils";
 
 interface Channel {

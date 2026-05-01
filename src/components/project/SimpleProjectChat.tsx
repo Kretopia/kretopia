@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { ChatActionChips } from "./chat/ChatActionChips";
 import { ChatAttachment } from "./chat/ChatAttachment";
 import { VoiceNoteRecorder } from "@/components/messages/VoiceNoteRecorder";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 
 interface Attachment {
   url: string;

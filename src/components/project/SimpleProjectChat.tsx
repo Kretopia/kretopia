@@ -486,14 +486,24 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                       const replyMsg = getReplyMessage(msg.reply_to);
                       const msgReactions = getReactionsForMessage(msg.id);
                       const isHovered = hoveredMessage === msg.id;
+                      const mentionsMe = !isOwn && messageMentionsMe(msg.message);
 
                       return (
                         <div
                           key={msg.id}
-                          className={cn("group relative px-2 py-1.5 rounded-lg transition-colors", isHovered && "bg-accent/30")}
+                          className={cn(
+                            "group relative px-2 py-1.5 rounded-lg transition-colors",
+                            isHovered && "bg-accent/30",
+                            mentionsMe && "border-l-2 border-[hsl(var(--energy))] bg-[hsl(var(--energy)/0.06)] pl-3",
+                          )}
                           onMouseEnter={() => setHoveredMessage(msg.id)}
                           onMouseLeave={() => setHoveredMessage(null)}
                         >
+                          {mentionsMe && (
+                            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[hsl(var(--energy))] mb-1 ml-11">
+                              Mentioned you
+                            </p>
+                          )}
                           {/* Reply context */}
                           {replyMsg && (
                             <div className={cn("flex items-center gap-2 mb-1 ml-11 text-xs text-muted-foreground")}>

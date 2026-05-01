@@ -226,10 +226,56 @@ export const WorkSection = ({
           <TaskRow key={t.id} task={t} isDone={false} />
         ))}
 
-        {active.length === 0 && blocking.length === 0 && tasks.length === 0 && (
-          <p className="text-xs text-muted-foreground py-2 text-center">
-            No tasks yet. Add the first thing below.
-          </p>
+        {active.length === 0 && blocking.length === 0 && tasks.length === 0 && !adding && (
+          <div className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Check className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold leading-tight">
+                  Break the project into small wins
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                  Tasks are the moves that get this project done — anything
+                  with a clear "done" you can tick off. Small &amp; specific
+                  beats vague every time.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Try one of these
+              </p>
+              {[
+                "Send draft to client",
+                "Edit final cut",
+                "Confirm shoot date",
+              ].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => {
+                    setDraft(suggestion);
+                    setAdding(true);
+                  }}
+                  className="w-full text-left text-xs px-3 py-2 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/40 transition-colors flex items-center gap-2"
+                >
+                  <Plus className="h-3 w-3 text-primary shrink-0" />
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              size="sm"
+              className="w-full gap-1.5"
+              onClick={() => setAdding(true)}
+            >
+              <Plus className="h-4 w-4" /> Add first task
+            </Button>
+          </div>
         )}
         {active.length === 0 && blocking.length === 0 && done.length > 0 && (
           <p className="text-xs text-muted-foreground py-2 text-center">
@@ -271,7 +317,7 @@ export const WorkSection = ({
               </Button>
             </div>
           </div>
-        ) : (
+        ) : tasks.length === 0 ? null : (
           <button
             type="button"
             onClick={() => setAdding(true)}

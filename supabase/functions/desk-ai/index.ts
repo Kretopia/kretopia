@@ -68,14 +68,15 @@ Deno.serve(async (req) => {
       }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Gather project context (parallel)
-    const [projectRes, tasksRes, milestonesRes, filesRes, messagesRes, notesRes] = await Promise.all([
+    // Gather project context AND unified user identity (parallel)
+    const [projectRes, tasksRes, milestonesRes, filesRes, messagesRes, notesRes, copilotCtx] = await Promise.all([
       admin.from("projects").select("id, title, description, status, deadline, budget, currency, created_by").eq("id", project_id).single(),
       admin.from("project_tasks").select("title, status, due_date, assigned_to, priority").eq("project_id", project_id).order("created_at", { ascending: false }).limit(50),
       admin.from("milestones").select("title, status, due_date, amount").eq("project_id", project_id).order("created_at").limit(20),
       admin.from("project_files").select("file_name, file_type, created_at").eq("project_id", project_id).order("created_at", { ascending: false }).limit(20),
       admin.from("project_messages").select("user_id, message, created_at").eq("project_id", project_id).order("created_at", { ascending: false }).limit(30),
       admin.from("project_notes").select("title, content").eq("project_id", project_id).limit(10),
+      loadCopilotContext(admin, user.id).catch(() => null),
     ]);
 
     const project = projectRes.data;

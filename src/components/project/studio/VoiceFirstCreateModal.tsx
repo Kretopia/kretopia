@@ -41,6 +41,7 @@ export const VoiceFirstCreateModal = ({
   const [seconds, setSeconds] = useState(0);
   const [creating, setCreating] = useState(false);
   const [brief, setBrief] = useState<ExtractedBrief | null>(null);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -58,6 +59,7 @@ export const VoiceFirstCreateModal = ({
       setTextInput("");
       setSeconds(0);
       setBrief(null);
+      setSelected(new Set());
       setCreating(false);
     }
   }, [open]);
@@ -127,6 +129,7 @@ export const VoiceFirstCreateModal = ({
       const result = (data ?? {}) as ExtractedBrief;
       if (!result?.project?.title) throw new Error("Couldn't catch what you said");
       setBrief(result);
+      setSelected(new Set((result.deliverables ?? []).slice(0, 8).map((_, i) => i)));
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -150,17 +153,11 @@ export const VoiceFirstCreateModal = ({
       });
       if (error) throw error;
       const result = (data ?? {}) as ExtractedBrief;
-      if (!result?.project?.title) {
-        // Soft fallback: use first 60 chars of input as title
-        setBrief({
-          project: {
-            title: trimmed.slice(0, 60),
-            summary: trimmed,
-          },
-        });
-      } else {
-        setBrief(result);
-      }
+      const finalBrief: ExtractedBrief = !result?.project?.title
+        ? { project: { title: trimmed.slice(0, 60), summary: trimmed } }
+        : result;
+      setBrief(finalBrief);
+      setSelected(new Set((finalBrief.deliverables ?? []).slice(0, 8).map((_, i) => i)));
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -171,11 +168,12 @@ export const VoiceFirstCreateModal = ({
           summary: trimmed,
         },
       });
+      setSelected(new Set());
       setMode("review");
     }
   };
 
-  const createProject = async () => {
+  const createProject = async (mode: "all" | "selected" | "none" = "all") => {
     if (!user || !brief) return;
     setCreating(true);
     try {
@@ -194,9 +192,17 @@ export const VoiceFirstCreateModal = ({
         .single();
       if (error) throw error;
 
-      // Best-effort seed deliverables if extract-brief returned any
-      if (brief.deliverables?.length) {
-        const rows = brief.deliverables.slice(0, 8).map((d) => ({
+      // Pick which deliverables to seed
+      const all = (brief.deliverables ?? []).slice(0, 8);
+      const picked =
+        mode === "all"
+          ? all
+          : mode === "selected"
+          ? all.filter((_, i) => selected.has(i))
+          : [];
+
+      if (picked.length) {
+        const rows = picked.map((d) => ({
           project_id: project.id,
           title: d.title.slice(0, 200),
           description: d.description ?? null,
@@ -372,19 +378,54 @@ export const VoiceFirstCreateModal = ({
             </div>
             {brief.deliverables && brief.deliverables.length > 0 ? (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-2">
-                  Starter tasks we'll create ({brief.deliverables.length})
-                </p>
-                <ul className="space-y-1.5 text-sm">
-                  {brief.deliverables.slice(0, 8).map((d, i) => (
-                    <li key={i} className="flex gap-2">
-                      <span className="text-primary/60">{i + 1}.</span>
-                      <span className="line-clamp-2">{d.title}</span>
-                    </li>
-                  ))}
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                    Starter tasks ({selected.size}/{Math.min(brief.deliverables.length, 8)})
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const all = brief.deliverables!.slice(0, 8);
+                      setSelected(
+                        selected.size === all.length
+                          ? new Set()
+                          : new Set(all.map((_, i) => i))
+                      );
+                    }}
+                    className="text-[11px] font-medium text-primary hover:underline"
+                  >
+                    {selected.size === Math.min(brief.deliverables.length, 8)
+                      ? "Clear all"
+                      : "Select all"}
+                  </button>
+                </div>
+                <ul className="space-y-1">
+                  {brief.deliverables.slice(0, 8).map((d, i) => {
+                    const checked = selected.has(i);
+                    return (
+                      <li key={i}>
+                        <label className="flex items-start gap-2 py-1.5 px-1 rounded cursor-pointer hover:bg-primary/10">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              const next = new Set(selected);
+                              if (checked) next.delete(i);
+                              else next.add(i);
+                              setSelected(next);
+                            }}
+                            className="mt-0.5 h-4 w-4 accent-primary shrink-0"
+                          />
+                          <span className={cn("text-sm leading-snug", !checked && "text-muted-foreground line-through")}>
+                            {d.title}
+                          </span>
+                        </label>
+                      </li>
+                    );
+                  })}
                 </ul>
                 <p className="text-[11px] text-muted-foreground mt-2">
-                  You can edit, reorder, or delete any of these inside the room.
+                  Pick what to seed — you can always add more inside the room.
                 </p>
               </div>
             ) : (
@@ -398,21 +439,41 @@ export const VoiceFirstCreateModal = ({
 
       {/* Footer */}
       {mode === "review" && brief && (
-        <div className="shrink-0 border-t border-border/40 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center justify-end gap-2 bg-background">
+        <div className="shrink-0 border-t border-border/40 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] flex items-center justify-between gap-2 bg-background">
           <Button
             variant="ghost"
+            size="sm"
             onClick={() => {
               setBrief(null);
+              setSelected(new Set());
               setMode("prompt");
             }}
             disabled={creating}
           >
             Start over
           </Button>
-          <Button onClick={createProject} disabled={creating || !brief.project.title.trim()} className="gap-1">
-            {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-            Open the room
-          </Button>
+          <div className="flex items-center gap-2">
+            {brief.deliverables && brief.deliverables.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => createProject("selected")}
+                disabled={creating || !brief.project.title.trim() || selected.size === 0}
+                className="gap-1"
+              >
+                Create {selected.size} selected
+              </Button>
+            )}
+            <Button
+              onClick={() => createProject(brief.deliverables?.length ? "all" : "none")}
+              disabled={creating || !brief.project.title.trim()}
+              className="gap-1"
+              size="sm"
+            >
+              {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+              {brief.deliverables?.length ? "Create all & open" : "Open the room"}
+            </Button>
+          </div>
         </div>
       )}
     </div>

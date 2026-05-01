@@ -57,6 +57,8 @@ project_id = "kwmcocsitwssrtzkdojh"
     verify_jwt = false
   [functions.generate-vapid-keys]
     verify_jwt = false
+  [functions.gig-moderator]
+    verify_jwt = false
   [functions.get-onboarding-matches]
     verify_jwt = true
   [functions.handle-unsubscribe]

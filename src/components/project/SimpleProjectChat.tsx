@@ -143,6 +143,9 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     const val = e.target.value;
     setNewMessage(val);
 
+    // Broadcast that we're typing (throttled inside the hook)
+    if (val.trim().length > 0) notifyTyping();
+
     // Check for @mention trigger
     const lastAtIndex = val.lastIndexOf("@");
     if (lastAtIndex !== -1 && (lastAtIndex === 0 || val[lastAtIndex - 1] === " ")) {

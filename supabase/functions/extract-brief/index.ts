@@ -59,6 +59,8 @@ Output STRICT JSON matching this TypeScript type:
 }
 
 Rules:
+- ALWAYS return at least 3 deliverables when the brief describes a creative project, even if the user only spoke a sentence or two. Infer the obvious next steps a creative would take (e.g. "Lock concept & references", "Confirm shoot date", "Shot list", "Shoot day", "Edit v1", "Client review", "Final delivery"). Tailor them to the medium (video, photo, design, music, web, etc.).
+- Cap at 8 deliverables. Order them chronologically (pre-production → production → post → delivery).
 - Every distinct asset, post, scene, deliverable, or task = ONE row.
 - If the source is a spreadsheet, treat each ROW as one deliverable. Map columns intelligently:
     Title/Name/Asset → title

@@ -32,20 +32,25 @@ export const PeopleSection = ({
 
   return (
     <section className="px-4 py-5 space-y-3">
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-            The People
-          </h2>
-          {onlineCount > 0 && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-600 dark:text-green-500">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+      <header className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">
+            The Crew
+          </p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-black leading-none tracking-tight">
+              The People
+            </h2>
+            {onlineCount > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--energy)/0.15)] ring-1 ring-[hsl(var(--energy)/0.35)] px-2 py-0.5 text-[10px] font-bold text-[hsl(var(--energy))]">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[hsl(var(--energy))] opacity-70" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[hsl(var(--energy))]" />
+                </span>
+                {onlineCount} live
               </span>
-              {onlineCount} in the room
-            </span>
-          )}
+            )}
+          </div>
         </div>
         {isOwner && (
           <div className="-mr-2 scale-90 origin-right">

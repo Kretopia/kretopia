@@ -27,6 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Settings, Trash2, Archive, AlertTriangle } from "lucide-react";
+import { AgentModeToggle } from "@/components/agent/AgentModeToggle";
 
 interface ProjectSettingsProps {
   project: any;
@@ -284,6 +285,17 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
                 </div>
               </div>
             )}
+
+            {/* Copilot / Agent Mode — visible to all collaborators (per-user setting) */}
+            <Separator />
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold">Project Copilot</h3>
+              <AgentModeToggle
+                domain="agent_mode_projects"
+                title="Agent Mode for projects"
+                description="Let the Copilot watch this project and propose follow-ups, task nudges and recap drafts. Nothing is sent without your tap."
+              />
+            </div>
 
             {userRole === 'client' && <Separator />}
 

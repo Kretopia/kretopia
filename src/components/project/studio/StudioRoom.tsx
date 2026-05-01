@@ -151,6 +151,7 @@ export const StudioRoom = ({
           tasks={tasks}
           projectId={project.id}
           currentUserId={currentUserId}
+          collaborators={people}
           onUpdated={onUpdated}
         />
 

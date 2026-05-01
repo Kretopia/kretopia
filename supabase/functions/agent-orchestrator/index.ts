@@ -330,6 +330,207 @@ serve(async (req) => {
       );
     }
 
+    // ============ DRAFT OUTREACH BATCH (Talent Copilot) ============
+    // Body: { mode: "draft_outreach_batch", brief: string, creators: [{ user_id, full_name, role, headline?, match_reasons? }] }
+    // Drafts a personalized DM per creator and inserts ONE orch_run + N proposed `send_dm` actions.
+    // The frontend then renders the existing AgentApprovalCard for tap-to-send.
+    if (body.mode === "draft_outreach_batch") {
+      const brief = String(body.brief ?? "").trim();
+      const creators = Array.isArray(body.creators) ? body.creators.slice(0, 8) : [];
+      if (!brief || creators.length === 0) {
+        return new Response(
+          JSON.stringify({ error: "brief and creators[] required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // Fetch sender display name for personalization
+      const { data: senderProfile } = await admin
+        .from("profiles")
+        .select("full_name, role")
+        .eq("user_id", userId)
+        .maybeSingle();
+      const senderName = (senderProfile?.full_name as string | null) ?? "A collaborator";
+
+      // Daily limit guard (counts proposed in last 24h)
+      const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data: settingsRow } = await admin
+        .from("orch_settings")
+        .select("agents_enabled, daily_action_limit")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (settingsRow && settingsRow.agents_enabled === false) {
+        return new Response(
+          JSON.stringify({ error: "Agents disabled in your settings" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const dailyCap = settingsRow?.daily_action_limit ?? 50;
+      const { count: usedToday } = await admin
+        .from("orch_actions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .gte("proposed_at", since24);
+      const remaining = Math.max(0, dailyCap - (usedToday ?? 0));
+      if (remaining <= 0) {
+        return new Response(
+          JSON.stringify({ error: `Daily agent action limit (${dailyCap}) reached` }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const targets = creators.slice(0, remaining);
+
+      // Draft messages with one Lovable AI call (cheap, fast)
+      let drafts: Array<{ user_id: string; body: string }> = [];
+      try {
+        if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+        const aiResp = await fetch(
+          "https://ai.gateway.lovable.dev/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash-lite",
+              messages: [
+                {
+                  role: "system",
+                  content:
+                    "You draft warm, short outreach messages from one creative to another on a creator-economy platform. " +
+                    "Rules: 2–4 sentences, first-person, conversational, NO emojis, NO 'Hope you're well', NO 'I came across your profile'. " +
+                    "Reference one specific thing from their role/headline if useful. End with a soft question. Sign off as the sender's first name only.",
+                },
+                {
+                  role: "user",
+                  content: JSON.stringify({
+                    brief,
+                    sender_name: senderName,
+                    creators: targets.map((c: any) => ({
+                      user_id: c.user_id,
+                      first_name: (c.full_name ?? "").split(" ")[0] || "there",
+                      role: c.role ?? null,
+                      headline: c.headline ?? null,
+                      match_reasons: c.match_reasons ?? null,
+                    })),
+                  }),
+                },
+              ],
+              tools: [
+                {
+                  type: "function",
+                  function: {
+                    name: "return_drafts",
+                    description: "Return one personalized message per creator.",
+                    parameters: {
+                      type: "object",
+                      properties: {
+                        drafts: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              user_id: { type: "string" },
+                              body: { type: "string" },
+                            },
+                            required: ["user_id", "body"],
+                            additionalProperties: false,
+                          },
+                        },
+                      },
+                      required: ["drafts"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+              ],
+              tool_choice: { type: "function", function: { name: "return_drafts" } },
+            }),
+          },
+        );
+        if (aiResp.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "Rate limited, please try again in a moment." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+        if (aiResp.status === 402) {
+          return new Response(
+            JSON.stringify({ error: "AI credits exhausted. Top up in Settings." }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+        if (!aiResp.ok) throw new Error(`AI gateway ${aiResp.status}`);
+        const aiJson = await aiResp.json();
+        const argsStr =
+          aiJson.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments ?? "{}";
+        const parsed = JSON.parse(argsStr);
+        drafts = Array.isArray(parsed.drafts) ? parsed.drafts : [];
+      } catch (e) {
+        console.warn("Draft AI failed, using fallback", e);
+      }
+
+      // Fallback: simple template if AI failed or returned partial
+      const draftFor = (c: any) => {
+        const ai = drafts.find((d) => d.user_id === c.user_id)?.body;
+        if (ai && ai.length > 10) return ai;
+        const first = (c.full_name ?? "").split(" ")[0] || "there";
+        return (
+          `Hey ${first} — I'm working on something and your work caught my eye. ` +
+          `Quick brief: ${brief.slice(0, 220)}. ` +
+          `Open to a chat about it?\n\n— ${senderName.split(" ")[0]}`
+        );
+      };
+
+      // Create one run, then proposed send_dm actions
+      const { data: run, error: runErr } = await admin
+        .from("orch_runs")
+        .insert({
+          user_id: userId,
+          agent_kind: "talent",
+          intent_text: brief,
+          intent_classified: "Talent Copilot — draft outreach to shortlist",
+          context: { creator_count: targets.length },
+          status: "awaiting_approval",
+        })
+        .select("id")
+        .single();
+      if (runErr || !run) throw new Error("Could not create run");
+
+      const rows = targets.map((c: any) => ({
+        run_id: run.id,
+        user_id: userId,
+        tool_name: "send_dm",
+        tool_args: {
+          to_user_id: c.user_id,
+          body: draftFor(c),
+          context: brief.slice(0, 500),
+        },
+        risk_level: "requires_approval",
+        status: "proposed",
+        preview_title: `Send to ${c.full_name ?? "creator"}`,
+        preview_body: draftFor(c),
+      }));
+
+      const { data: insertedActions, error: insErr } = await admin
+        .from("orch_actions")
+        .insert(rows)
+        .select("*");
+      if (insErr) throw insErr;
+
+      return new Response(
+        JSON.stringify({
+          run_id: run.id,
+          status: "awaiting_approval",
+          agent_kind: "talent",
+          actions: insertedActions ?? [],
+          awaiting_approval: true,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // ============ INTENT PATH ============
     const { intent, context = {} } = body;
     if (!intent || typeof intent !== "string") {

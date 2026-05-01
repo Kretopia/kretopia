@@ -123,7 +123,7 @@ export const ThriveAgentFab = () => {
     [text, sending, activeProjectId],
   );
 
-  if (!user || !onDeskRoute) return null;
+  if (!user || !onProjectPage) return null;
 
   return (
     <>

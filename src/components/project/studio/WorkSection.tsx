@@ -524,7 +524,7 @@ const Section = ({
       {blocking.length > 0 && (
         <div className="space-y-2">
           {blocking.map((t) => (
-            <TaskRow key={t.id} task={t} isDone={false} />
+            <div key={t.id}>{renderRow(t, false)}</div>
           ))}
         </div>
       )}
@@ -532,7 +532,7 @@ const Section = ({
       {/* Active stream */}
       <div className="space-y-2">
         {active.map((t) => (
-          <TaskRow key={t.id} task={t} isDone={false} />
+          <div key={t.id}>{renderRow(t, false)}</div>
         ))}
 
         {active.length === 0 && blocking.length === 0 && tasks.length === 0 && !adding && (
@@ -658,7 +658,7 @@ const Section = ({
           {folderOpen && (
             <div className="p-2 space-y-1.5 border-t border-border/60">
               {done.map((t) => (
-                <TaskRow key={t.id} task={t} isDone />
+                <div key={t.id}>{renderRow(t, true)}</div>
               ))}
             </div>
           )}

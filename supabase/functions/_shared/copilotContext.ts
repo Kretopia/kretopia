@@ -101,6 +101,16 @@ export async function loadCopilotContext(
     draft_invoices_currency: null,
     upcoming_events: [],
     recent_credits_count: 0,
+    recent_activity: {
+      tasks_completed: [],
+      tasks_due_soon: [],
+      credits_added: [],
+      new_connections: 0,
+      invoices_paid: [],
+      invoices_sent: [],
+      unread_notifications: 0,
+      last_notification_titles: [],
+    },
   };
 
   // Parallel fan-out, each capped at ~1.5s. Total worst-case stays under 2s.

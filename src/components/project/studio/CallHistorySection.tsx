@@ -56,14 +56,19 @@ export const CallHistorySection = ({ projectId }: Props) => {
 
   return (
     <section className="px-4 py-5 space-y-3">
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <History className="h-3.5 w-3.5 text-muted-foreground" />
-          <h2 className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
+      <header className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">
+            Replay
+          </p>
+          <h2 className="text-lg font-black leading-none tracking-tight flex items-center gap-2">
+            <History className="h-4 w-4 text-muted-foreground" />
             Call history
           </h2>
         </div>
-        <span className="text-[10px] text-muted-foreground">{rows.length} total</span>
+        <span className="text-[10px] font-semibold text-muted-foreground tabular-nums">
+          {rows.length} total
+        </span>
       </header>
       <ul className="space-y-2">
         {visible.map((r) => {

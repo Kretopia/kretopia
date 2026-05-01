@@ -80,25 +80,59 @@ export const MoneySection = ({ project, isOwner, onOpenInvoice }: MoneySectionPr
 
   return (
     <section className="px-4 py-5 space-y-3">
-      <h2 className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-        The Money
-      </h2>
+      <header>
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">
+          Cashflow
+        </p>
+        <h2 className="text-lg font-black leading-none tracking-tight">
+          The Money
+        </h2>
+      </header>
 
-      <div className="rounded-2xl bg-card ring-1 ring-border p-4 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Wallet className="h-5 w-5 text-primary" />
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-2xl ring-1 p-4 space-y-3 transition-all",
+          isPaid
+            ? "bg-gradient-to-br from-[hsl(var(--energy)/0.18)] via-[hsl(var(--energy)/0.06)] to-transparent ring-[hsl(var(--energy)/0.35)]"
+            : "bg-gradient-to-br from-primary/12 via-primary/[0.04] to-transparent ring-border"
+        )}
+      >
+        {/* Decorative glow */}
+        <div
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl opacity-50",
+            isPaid ? "bg-[hsl(var(--energy)/0.4)]" : "bg-primary/30"
+          )}
+        />
+
+        <div className="relative flex items-start gap-3">
+          <div
+            className={cn(
+              "h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ring-1",
+              isPaid
+                ? "bg-[hsl(var(--energy)/0.2)] ring-[hsl(var(--energy)/0.4)] text-[hsl(var(--energy))]"
+                : "bg-primary/15 ring-primary/30 text-primary"
+            )}
+          >
+            <Wallet className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-muted-foreground">Project value</p>
-            <p className="text-2xl font-bold leading-tight">{fmt(value, project.currency)}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              Project value
+            </p>
+            <p className="text-3xl font-black leading-none tracking-tight mt-1">
+              {fmt(value, project.currency)}
+            </p>
           </div>
         </div>
 
         {/* Status row */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="rounded-lg bg-muted/50 p-2.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Invoice</p>
+        <div className="relative grid grid-cols-2 gap-2 text-xs">
+          <div className="rounded-lg bg-background/60 backdrop-blur-sm ring-1 ring-border/60 p-2.5">
+            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+              Invoice
+            </p>
             <p className="font-semibold flex items-center gap-1 mt-0.5">
               {loading ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -113,12 +147,14 @@ export const MoneySection = ({ project, isOwner, onOpenInvoice }: MoneySectionPr
               )}
             </p>
           </div>
-          <div className="rounded-lg bg-muted/50 p-2.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Payment</p>
+          <div className="rounded-lg bg-background/60 backdrop-blur-sm ring-1 ring-border/60 p-2.5">
+            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+              Payment
+            </p>
             <p
               className={cn(
                 "font-semibold flex items-center gap-1 mt-0.5",
-                isPaid && "text-primary"
+                isPaid && "text-[hsl(var(--energy))]"
               )}
             >
               {loading ? (
@@ -138,25 +174,31 @@ export const MoneySection = ({ project, isOwner, onOpenInvoice }: MoneySectionPr
 
         {/* Primary CTA */}
         {isOwner && (
-          isPaid ? (
-            <Button disabled className="w-full gap-2" variant="secondary">
-              <CheckCircle2 className="h-4 w-4" /> Paid ✓
-            </Button>
-          ) : isSent ? (
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" className="gap-1.5" onClick={onOpenInvoice}>
-                <FileText className="h-4 w-4" /> View
+          <div className="relative">
+            {isPaid ? (
+              <div className="w-full rounded-lg bg-[hsl(var(--energy)/0.18)] ring-1 ring-[hsl(var(--energy)/0.4)] py-2.5 flex items-center justify-center gap-2 text-[hsl(var(--energy))] font-bold text-sm">
+                <CheckCircle2 className="h-4 w-4" /> Paid in full
+              </div>
+            ) : isSent ? (
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="outline" className="gap-1.5" onClick={onOpenInvoice}>
+                  <FileText className="h-4 w-4" /> View
+                </Button>
+                <Button
+                  onClick={markPaid}
+                  disabled={marking}
+                  className="gap-1.5 bg-[hsl(var(--energy))] text-[hsl(var(--background))] hover:bg-[hsl(var(--energy)/0.9)] shadow-[0_0_12px_hsl(var(--energy)/0.4)]"
+                >
+                  {marking ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                  Mark Paid
+                </Button>
+              </div>
+            ) : (
+              <Button onClick={onOpenInvoice} className="w-full gap-2">
+                <FileText className="h-4 w-4" /> Send Invoice
               </Button>
-              <Button onClick={markPaid} disabled={marking} className="gap-1.5">
-                {marking ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                Mark Paid
-              </Button>
-            </div>
-          ) : (
-            <Button onClick={onOpenInvoice} className="w-full gap-2">
-              <FileText className="h-4 w-4" /> Send Invoice
-            </Button>
-          )
+            )}
+          </div>
         )}
       </div>
     </section>

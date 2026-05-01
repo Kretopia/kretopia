@@ -32,20 +32,25 @@ export const PeopleSection = ({
 
   return (
     <section className="px-4 py-5 space-y-3">
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-            The People
-          </h2>
-          {onlineCount > 0 && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-600 dark:text-green-500">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+      <header className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">
+            The Crew
+          </p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-black leading-none tracking-tight">
+              The People
+            </h2>
+            {onlineCount > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--energy)/0.15)] ring-1 ring-[hsl(var(--energy)/0.35)] px-2 py-0.5 text-[10px] font-bold text-[hsl(var(--energy))]">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[hsl(var(--energy))] opacity-70" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[hsl(var(--energy))]" />
+                </span>
+                {onlineCount} live
               </span>
-              {onlineCount} in the room
-            </span>
-          )}
+            )}
+          </div>
         </div>
         {isOwner && (
           <div className="-mr-2 scale-90 origin-right">
@@ -72,7 +77,7 @@ export const PeopleSection = ({
                     className={cn(
                       "h-14 w-14 ring-2 transition-all",
                       isOnline
-                        ? "ring-green-500"
+                        ? "ring-[hsl(var(--energy))] shadow-[0_0_10px_hsl(var(--energy)/0.5)]"
                         : "ring-border group-enabled:group-hover:ring-primary",
                     )}
                   >
@@ -85,7 +90,7 @@ export const PeopleSection = ({
                     <Crown className="absolute -top-1 -right-1 h-3.5 w-3.5 text-primary fill-primary/30" />
                   )}
                   {isOnline && (
-                    <span className="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full bg-green-500 ring-2 ring-background" />
+                    <span className="absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full bg-[hsl(var(--energy))] ring-2 ring-background" />
                   )}
                 </button>
 
@@ -102,7 +107,7 @@ export const PeopleSection = ({
                   <button
                     type="button"
                     onClick={() => onKnock(c.id, c.full_name)}
-                    className="inline-flex items-center gap-1 rounded-full bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 px-2 py-0.5 text-[10px] font-semibold transition-colors"
+                    className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--energy)/0.15)] hover:bg-[hsl(var(--energy)/0.25)] text-[hsl(var(--energy))] ring-1 ring-[hsl(var(--energy)/0.3)] px-2 py-0.5 text-[10px] font-bold transition-colors"
                     aria-label={`Knock ${c.full_name}`}
                   >
                     <Hand className="h-2.5 w-2.5" />

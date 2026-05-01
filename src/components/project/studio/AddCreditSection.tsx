@@ -28,17 +28,27 @@ export const AddCreditSection = ({ project, collaborators }: AddCreditSectionPro
 
   return (
     <section className="px-4 py-5">
-      <div className="rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 p-5 text-center space-y-3">
-        <div className="h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto">
-          <Award className="h-6 w-6 text-primary" />
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[hsl(var(--energy)/0.18)] via-primary/8 to-transparent ring-1 ring-[hsl(var(--energy)/0.35)] p-5 text-center space-y-3">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 h-24 w-24 rounded-full bg-[hsl(var(--energy)/0.4)] blur-3xl opacity-60"
+        />
+        <p className="relative text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">
+          Wrap it up
+        </p>
+        <div className="relative h-12 w-12 rounded-2xl bg-[hsl(var(--energy)/0.2)] ring-1 ring-[hsl(var(--energy)/0.4)] flex items-center justify-center mx-auto shadow-[0_0_16px_hsl(var(--energy)/0.4)]">
+          <Award className="h-6 w-6 text-[hsl(var(--energy))]" />
         </div>
-        <div>
-          <p className="font-semibold">This project is complete.</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Add it to your verified credits — collaborators will be tagged automatically.
+        <div className="relative">
+          <p className="text-base font-black tracking-tight">This project is complete.</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-snug">
+            Add it to your verified credits — collaborators get tagged automatically.
           </p>
         </div>
-        <Button onClick={handleAdd} className="w-full">
+        <Button
+          onClick={handleAdd}
+          className="relative w-full bg-[hsl(var(--energy))] text-[hsl(var(--background))] hover:bg-[hsl(var(--energy)/0.9)] font-bold shadow-[0_0_16px_hsl(var(--energy)/0.4)]"
+        >
           Add Credit
         </Button>
       </div>

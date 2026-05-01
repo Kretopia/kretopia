@@ -609,6 +609,16 @@ const ViewProfile = () => {
                       <MessageCircle className="h-4 w-4" />
                       Message
                     </Button>
+                    <Button
+                      variant="outline"
+                      onClick={startCall}
+                      disabled={directCall.starting}
+                      className="gap-2"
+                      aria-label={`Video call ${profile?.full_name ?? "creator"}`}
+                    >
+                      <Video className="h-4 w-4" />
+                      Call
+                    </Button>
                     <Button variant="outline" onClick={() => setIsStartProjectOpen(true)} className="gap-2">
                       <Rocket className="h-4 w-4" />
                       Start Project
@@ -626,6 +636,16 @@ const ViewProfile = () => {
                     <Button onClick={() => setIsMessageDialogOpen(true)} className="gap-2">
                       <MessageCircle className="h-4 w-4" />
                       Message
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={startCall}
+                      disabled={directCall.starting}
+                      className="gap-2"
+                      aria-label={`Video call ${profile?.full_name ?? "creator"}`}
+                    >
+                      <Video className="h-4 w-4" />
+                      Call
                     </Button>
                     <Button variant="outline" onClick={() => setIsStartProjectOpen(true)} className="gap-2">
                       <Rocket className="h-4 w-4" />

@@ -17,6 +17,7 @@ import { LocationSearchInput } from "./LocationSearchInput";
 import { Switch } from "@/components/ui/switch";
 import { EventCoverPicker } from "./EventCoverPicker";
 import { ScanFlyerDialog, type ScannedEventDetails } from "./ScanFlyerDialog";
+import { EventModeFormatPicker, type EventFormatValue } from "./EventModeFormatPicker";
 
 interface CreateSessionDialogProps {
   open: boolean;
@@ -72,6 +73,14 @@ export const CreateSessionDialog = ({
     event_type: 'session' as 'session' | 'event',
     external_ticket_url: '',
     circle_id: defaultCircleId || '',
+  });
+
+  const [formatValue, setFormatValue] = useState<EventFormatValue>({
+    event_mode: 'irl',
+    online_format: null,
+    online_max_attendees: null,
+    watch_party_video_url: '',
+    recording_enabled: false,
   });
 
   // Fetch user's circles for the dropdown
@@ -188,6 +197,11 @@ export const CreateSessionDialog = ({
         cover_image_url: coverUrl,
         external_ticket_url: formData.external_ticket_url || null,
         circle_id: formData.circle_id || null,
+        event_mode: formatValue.event_mode,
+        online_format: formatValue.online_format,
+        online_max_attendees: formatValue.online_max_attendees,
+        watch_party_video_url: formatValue.watch_party_video_url || null,
+        recording_enabled: formatValue.recording_enabled,
       } as any);
 
       if (error) throw error;
@@ -220,6 +234,13 @@ export const CreateSessionDialog = ({
       setDate(undefined);
       setCoverFile(null);
       setCoverPreview(null);
+      setFormatValue({
+        event_mode: 'irl',
+        online_format: null,
+        online_max_attendees: null,
+        watch_party_video_url: '',
+        recording_enabled: false,
+      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -309,6 +330,9 @@ export const CreateSessionDialog = ({
             <Textarea id="description" placeholder="What's the vibe? What should people bring?" value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))} rows={3} />
           </div>
+
+          {/* Hybrid mode + online format */}
+          <EventModeFormatPicker value={formatValue} onChange={setFormatValue} />
 
           {/* Date & Time - stacked on mobile */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

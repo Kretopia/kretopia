@@ -36,6 +36,7 @@ import { GuestRsvpDialog } from "@/components/sessions/GuestRsvpDialog";
 import { GuestPassDialog } from "@/components/sessions/GuestPassDialog";
 import { BringAFriendCard } from "@/components/sessions/BringAFriendCard";
 import { EventPhotoWall } from "@/components/sessions/EventPhotoWall";
+import { JoinOnlineCard } from "@/components/sessions/JoinOnlineCard";
 import { APP_URL } from "@/lib/constants";
 import { downloadIcs, openDirections, captureRefFromUrl, buildWarmShareMessage, buildEventShareUrl } from "@/lib/eventActions";
 
@@ -599,6 +600,23 @@ const EventPage = () => {
                 </p>
               </div>
             </div>
+          )}
+
+          {/* Online room (only for online/hybrid events) */}
+          {event.event_mode && event.event_mode !== 'irl' && !isPast && !isCancelled && (
+            <JoinOnlineCard
+              eventId={event.id}
+              eventTitle={event.title}
+              startTime={event.start_time}
+              eventMode={event.event_mode}
+              onlineFormat={event.online_format}
+              onlineMaxAttendees={event.online_max_attendees}
+              watchPartyVideoUrl={event.watch_party_video_url}
+              recordingEnabled={!!event.recording_enabled}
+              videoRoomStartedAt={event.video_room_started_at}
+              hasAccess={isCreator || !!participation || (isTicketed && !!participation)}
+              needsRsvp={!participation && !isTicketed}
+            />
           )}
 
           {/* Ticket Banner (for ticketed events) */}

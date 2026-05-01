@@ -131,12 +131,48 @@ export function ProjectSettingsMenu({
     }
   };
 
-  const secondaryTabs = [
-    { id: "notes", label: "Notes", icon: StickyNote, proOnly: false },
-    { id: "assets", label: "Assets", icon: Library, proOnly: false },
-    { id: "templates", label: "Templates", icon: LayoutTemplate, proOnly: true },
-    { id: "ai", label: "AI Tools", icon: Sparkles, proOnly: true },
+  // Always-on Studio essentials
+  const coreTools = [
+    { id: "vault", label: "The Vault", icon: FolderLock, hint: "Files & approvals", proOnly: false },
+    { id: "notes", label: "The Pad", icon: StickyNote, hint: "Notes & scratch", proOnly: false },
   ];
+
+  // Adaptive workflow tools per project type
+  const wsType = project.workspace_type || "general";
+  const adaptiveTools = (() => {
+    if (wsType === "event_production") {
+      return [
+        { id: "call_sheet", label: "Call Sheet", icon: Clapperboard, hint: "Date, location, contacts", proOnly: false },
+        { id: "run_of_show", label: "Run of Show", icon: ListChecks, hint: "Minute-by-minute timeline", proOnly: false },
+        { id: "roll_call", label: "Roll Call", icon: UserCheck, hint: "Who's confirmed & arrived", proOnly: false },
+      ];
+    }
+    if (wsType === "photo_shoot" || wsType === "video_production") {
+      return [
+        { id: "call_sheet", label: "Call Sheet", icon: Clapperboard, hint: "Shoot day details", proOnly: false },
+        { id: "roll_call", label: "Roll Call", icon: UserCheck, hint: "Talent + crew check-in", proOnly: false },
+        { id: "revisions", label: "Revisions", icon: History, hint: "Track edit rounds", proOnly: false },
+      ];
+    }
+    if (wsType === "music" || wsType === "music_production") {
+      return [
+        { id: "split_sheet", label: "Split Sheet", icon: Music2, hint: "Songwriter splits", proOnly: false },
+        { id: "revisions", label: "Revisions", icon: History, hint: "Mix/master rounds", proOnly: false },
+      ];
+    }
+    // general fallback
+    return [
+      { id: "revisions", label: "Revisions", icon: History, hint: "Track change rounds", proOnly: false },
+    ];
+  })();
+
+  const adaptiveLabel = wsType === "event_production"
+    ? "Event Tools"
+    : wsType === "music" || wsType === "music_production"
+    ? "Music Tools"
+    : wsType === "photo_shoot" || wsType === "video_production"
+    ? "Production Tools"
+    : "Workflow";
 
   return (
     <>

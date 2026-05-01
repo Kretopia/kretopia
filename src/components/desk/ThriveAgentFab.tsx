@@ -20,9 +20,12 @@ import {
   loadCopilotHistory,
   inferSurface,
   SURFACE_LABEL,
+  extractActions,
   type CopilotMessage,
   type CopilotSurface,
 } from "@/lib/thriveCopilot";
+import { sendAgentIntent, type OrchAction } from "@/lib/agentOrchestrator";
+import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
 
 /**
  * Thrive Copilot — the SINGLE assistant for the whole platform.

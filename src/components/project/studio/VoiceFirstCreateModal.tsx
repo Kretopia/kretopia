@@ -173,7 +173,7 @@ export const VoiceFirstCreateModal = ({
     }
   };
 
-  const createProject = async () => {
+  const createProject = async (mode: "all" | "selected" | "none" = "all") => {
     if (!user || !brief) return;
     setCreating(true);
     try {
@@ -192,9 +192,17 @@ export const VoiceFirstCreateModal = ({
         .single();
       if (error) throw error;
 
-      // Best-effort seed deliverables if extract-brief returned any
-      if (brief.deliverables?.length) {
-        const rows = brief.deliverables.slice(0, 8).map((d) => ({
+      // Pick which deliverables to seed
+      const all = (brief.deliverables ?? []).slice(0, 8);
+      const picked =
+        mode === "all"
+          ? all
+          : mode === "selected"
+          ? all.filter((_, i) => selected.has(i))
+          : [];
+
+      if (picked.length) {
+        const rows = picked.map((d) => ({
           project_id: project.id,
           title: d.title.slice(0, 200),
           description: d.description ?? null,

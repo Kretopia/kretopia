@@ -15,7 +15,8 @@ import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { InviteDialog } from "@/components/InviteDialog";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Users, Sparkles, UserPlus } from "lucide-react";
+import { Users, Sparkles, UserPlus, Search } from "lucide-react";
+import { TalentCopilot } from "@/components/match/TalentCopilot";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
@@ -192,10 +193,14 @@ export default function Circle() {
           surfaceLabel="Match"
         >
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-3 sm:mb-4 h-10 sm:h-11">
+          <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
             <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               For You
+            </TabsTrigger>
+            <TabsTrigger value="find" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+              <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Find
             </TabsTrigger>
             <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -213,6 +218,16 @@ export default function Circle() {
               <SwipeFeature onMatch={handleMatch} filters={filters} onProfilesCountChange={setProfilesCount} />
             ) : (
               <GuestSwipePreview />
+            )}
+          </TabsContent>
+
+          <TabsContent value="find" className="space-y-4">
+            {user ? (
+              <TalentCopilot />
+            ) : (
+              <AuthGate>
+                <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />
+              </AuthGate>
             )}
           </TabsContent>
 

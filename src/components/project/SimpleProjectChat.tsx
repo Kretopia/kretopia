@@ -398,11 +398,28 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     return parts.map((part, i) => {
       const isMention = collaborators.some(c => part === `@${c.full_name}`);
       if (isMention) {
-        return <span key={i} className="font-semibold text-primary">{part}</span>;
+        const mentionsMe = part === `@${currentUserName}`;
+        return (
+          <span
+            key={i}
+            className={cn(
+              "font-semibold rounded px-1",
+              mentionsMe
+                ? "bg-[hsl(var(--energy)/0.18)] text-[hsl(var(--energy))] ring-1 ring-[hsl(var(--energy)/0.4)]"
+                : "text-primary",
+            )}
+          >
+            {part}
+          </span>
+        );
       }
       return <span key={i}>{part}</span>;
     });
   };
+
+  // Quick check: does this message @ me?
+  const messageMentionsMe = (text: string) =>
+    !!currentUserName && text.includes(`@${currentUserName}`);
 
   // Group messages by date
   const groupedMessages: { date: string; messages: Message[] }[] = [];

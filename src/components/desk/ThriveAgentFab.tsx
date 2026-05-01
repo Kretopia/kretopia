@@ -52,13 +52,16 @@ export const ThriveAgentFab = () => {
   const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [lastResult, setLastResult] = useState<AgentResponse | null>(null);
 
-  const onDeskRoute = location.pathname.startsWith("/desk");
-
   // Detect project_id from /desk/:projectId
   const routeProjectId = (() => {
     const m = location.pathname.match(/^\/desk\/([0-9a-f-]{36})/i);
     return m?.[1] || null;
   })();
+
+  // Only show on individual project pages — the /desk list page already has
+  // the voice "create new project" FAB, and stacking two sparkles+mic FABs
+  // creates visual collision (see screenshot bug 2026-05-01).
+  const onProjectPage = !!routeProjectId;
 
   useEffect(() => {
     if (routeProjectId) setActiveProjectId(routeProjectId);

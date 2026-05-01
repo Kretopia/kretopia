@@ -30,10 +30,27 @@ interface NudgeCard {
 export const ProactiveCards = ({
   project,
   tasks,
-  invoices = [],
   onAction,
   className,
 }: ProactiveCardsProps) => {
+  const [invoices, setInvoices] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!project?.id) return;
+    let cancelled = false;
+    supabase
+      .from("invoices")
+      .select("id, status")
+      .eq("project_id", project.id)
+      .then(({ data }) => {
+        if (!cancelled) setInvoices(data || []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [project?.id]);
+
   const cards = useMemo<NudgeCard[]>(() => {
     const out: NudgeCard[] = [];
     const open = (tasks || []).filter((t) => t.status !== "done");

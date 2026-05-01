@@ -51,6 +51,7 @@ interface ProjectSettingsMenuProps {
     description: string | null;
     status: string | null;
     created_by: string;
+    workspace_type?: string | null;
   };
   collaborators?: Array<{ id: string; full_name: string; avatar_url: string | null }>;
   currentUserId: string;

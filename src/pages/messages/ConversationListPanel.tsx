@@ -180,6 +180,7 @@ export const ConversationListPanel = ({
           </div>
         )}
       </ScrollArea>
+      )}
     </div>
   );
 };

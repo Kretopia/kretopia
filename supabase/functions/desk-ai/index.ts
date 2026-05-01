@@ -119,8 +119,16 @@ ${(notesRes.data || []).slice(0, 5).map((n: any) => `- ${n.title}: ${(n.content 
       ? "You are speaking with the CREATOR (the freelancer/agency delivering the work). Focus on: production timeline, scope protection, getting client approvals, payment milestones, deliverables, and avoiding scope creep. Be a protective producer for them."
       : "You are speaking with the CLIENT (the project owner/brand). Focus on: tracking deliverables, what needs your approval, timeline visibility, budget status, and clear next steps for you. Be their accountable producer.";
 
+    const userPreamble = copilotCtx
+      ? renderContextPreamble(copilotCtx, "desk", { project_id })
+      : "";
+
     const systemPrompt = `You are DeskAI, the in-project assistant for ThriveDesk — a creative project workspace.
 ${roleGuidance}
+
+${userPreamble}
+
+Address the user by their first name from USER FACTS. NEVER use bracketed placeholders like "[Name]" or "[Project]". If a fact isn't in USER FACTS, omit it — don't invent it.
 
 Be concise, specific, and actionable. Use short paragraphs and bullet lists. Reference the actual tasks/milestones/files by name when relevant. If asked to draft something (reply, brief, invoice, status update), produce it ready-to-send. If you spot risks (overdue tasks, missing approvals, scope drift, payment delays), call them out.
 

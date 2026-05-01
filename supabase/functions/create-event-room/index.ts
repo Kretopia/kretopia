@@ -140,9 +140,10 @@ serve(async (req) => {
       Math.max(2, event.online_max_attendees || formatCfg.max),
     );
 
-    // Daily room name (max 41 chars, lowercase + dash)
-    const roomName = `ev-${event_id.replace(/-/g, "").slice(0, 30)}`.toLowerCase();
-    const exp = Math.floor(Date.now() / 1000) + 6 * 60 * 60; // 6h window
+    // Daily room name (max 41 chars, lowercase + dash). Test mode uses a separate room.
+    const baseId = event_id.replace(/-/g, "").slice(0, 28).toLowerCase();
+    const roomName = isTestMode ? `evt-${baseId}` : `ev-${baseId}`;
+    const exp = Math.floor(Date.now() / 1000) + (isTestMode ? 60 * 60 : 6 * 60 * 60); // test = 1h
 
     // Stage / watch party: audience joins muted + cam off, hosts can promote.
     // Group room / podcast: everyone joins normally.

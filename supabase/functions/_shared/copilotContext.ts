@@ -48,7 +48,7 @@ export interface CopilotContext {
 }
 
 /** Race a promise against a timeout; returns null on timeout or error. */
-async function withTimeout<T>(p: Promise<T>, ms = 1500): Promise<T | null> {
+async function withTimeout<T>(p: Promise<T>, ms = 4000): Promise<T | null> {
   try {
     return await Promise.race([
       p,
@@ -188,44 +188,52 @@ export function renderContextPreamble(
   surfaceContext?: Record<string, unknown>,
 ): string {
   const parts: string[] = [];
-  parts.push(`You are talking to ${ctx.full_name ?? "a creator"} (first name: ${ctx.first_name}).`);
-  parts.push(`ALWAYS address them by their first name in the first sentence of every reply.`);
 
-  const idLine: string[] = [];
-  if (ctx.role) idLine.push(ctx.role);
-  if (ctx.sub_roles && ctx.sub_roles.length) idLine.push(`(also: ${ctx.sub_roles.slice(0, 3).join(", ")})`);
-  if (ctx.location) idLine.push(`based in ${ctx.location}`);
-  if (idLine.length) parts.push(`They are a ${idLine.join(" ")}.`);
-  if (ctx.account_type === "company") parts.push(`Their account is a Company / brand account.`);
+  // ---- Identity (always present) ----
+  const displayName = ctx.full_name?.trim() || ctx.username || "this creator";
+  const firstName = ctx.first_name && ctx.first_name !== "there" ? ctx.first_name : null;
 
+  parts.push(`=== USER FACTS (verified, from database) ===`);
+  parts.push(`Full name: ${ctx.full_name ?? "(not set)"}`);
+  if (firstName) {
+    parts.push(`First name to use when addressing them: ${firstName}`);
+  } else {
+    parts.push(`First name: NOT SET — do NOT use a placeholder. Greet warmly without a name (e.g. "Hey —").`);
+  }
+  if (ctx.username) parts.push(`Username: @${ctx.username}`);
+  if (ctx.role) parts.push(`Role: ${ctx.role}`);
+  if (ctx.sub_roles?.length) parts.push(`Also: ${ctx.sub_roles.slice(0, 4).join(", ")}`);
+  if (ctx.location) parts.push(`Location: ${ctx.location}`);
+  if (ctx.account_type === "company") parts.push(`Account type: Company / brand account`);
+
+  // ---- Live state (only include sections that have data) ----
   if (ctx.active_projects.length) {
     const list = ctx.active_projects
-      .map((p) => `"${p.title}"${p.pinned_stage ? ` (stage: ${p.pinned_stage})` : ""}`)
-      .join(", ");
-    parts.push(`Active projects: ${list}.`);
+      .map((p) => `- "${p.title}"${p.pinned_stage ? ` (stage: ${p.pinned_stage})` : ""} [id: ${p.id}]`)
+      .join("\n");
+    parts.push(`Active projects (${ctx.active_projects.length}):\n${list}`);
   } else {
-    parts.push(`They have no active projects right now.`);
+    parts.push(`Active projects: NONE`);
   }
 
   if (ctx.unpaid_invoices_count > 0) {
     parts.push(
-      `Money: ${ctx.unpaid_invoices_count} unpaid invoice${ctx.unpaid_invoices_count === 1 ? "" : "s"} ` +
-      `totalling ${ctx.invoice_currency ?? "USD"} ${ctx.unpaid_invoices_total.toFixed(2)}.`,
+      `Unpaid invoices: ${ctx.unpaid_invoices_count} totalling ${ctx.invoice_currency ?? "USD"} ${ctx.unpaid_invoices_total.toFixed(2)}`,
     );
+  } else {
+    parts.push(`Unpaid invoices: NONE`);
   }
 
   if (ctx.upcoming_events.length) {
-    parts.push(
-      `Upcoming event${ctx.upcoming_events.length === 1 ? "" : "s"} they're hosting: ` +
-      ctx.upcoming_events
-        .map((e) => `"${e.title}"${e.start_time ? ` on ${new Date(e.start_time).toLocaleDateString()}` : ""}`)
-        .join(", ") + ".",
-    );
+    const evs = ctx.upcoming_events
+      .map((e) => `- "${e.title}"${e.start_time ? ` on ${new Date(e.start_time).toLocaleDateString()}` : ""}`)
+      .join("\n");
+    parts.push(`Upcoming events they're hosting:\n${evs}`);
+  } else {
+    parts.push(`Upcoming events they're hosting: NONE`);
   }
 
-  if (ctx.recent_credits_count > 0) {
-    parts.push(`They've added ${ctx.recent_credits_count} credit${ctx.recent_credits_count === 1 ? "" : "s"} in the last 30 days.`);
-  }
+  parts.push(`Credits added in last 30 days: ${ctx.recent_credits_count}`);
 
   // Surface awareness — tells the model where the user just clicked from.
   if (surface) {
@@ -239,11 +247,20 @@ export function renderContextPreamble(
       credit: "Credits (resume/IMDb-style portfolio)",
       event: "Events / Sessions",
     };
-    parts.push(`They are currently on ${surfaceMap[surface] ?? surface}.`);
+    parts.push(`Currently on surface: ${surfaceMap[surface] ?? surface}.`);
     if (surfaceContext && Object.keys(surfaceContext).length) {
       parts.push(`Surface context: ${JSON.stringify(surfaceContext).slice(0, 400)}.`);
     }
   }
+
+  parts.push(`=== END USER FACTS ===`);
+  parts.push(
+    `CRITICAL: Treat the facts above as the ONLY ground truth about this user's activity. ` +
+    `Do NOT invent projects, applications, payments, amounts, dates, collaborators, or events that are not listed above. ` +
+    `If a section says NONE, do not pretend otherwise. ` +
+    `If the user asks "catch me up" or "what's new" and there's nothing new in the facts, say so honestly ` +
+    `(e.g. "Nothing new since you were last here — want me to suggest a next move?").`,
+  );
 
   return parts.join("\n");
 }

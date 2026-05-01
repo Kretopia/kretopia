@@ -1,5 +1,16 @@
 import { useState, useMemo } from "react";
-import { Plus, Image as ImageIcon, FileText, AudioLines, Loader2, Check } from "lucide-react";
+import {
+  Plus,
+  Image as ImageIcon,
+  FileText,
+  AudioLines,
+  Loader2,
+  Check,
+  Flame,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +24,7 @@ interface Task {
   title: string;
   description?: string | null;
   status: TaskStatus | string;
+  priority?: string | null;
   attachment_url?: string | null;
   attachment_kind?: string | null;
 }
@@ -24,12 +36,6 @@ interface WorkSectionProps {
   onUpdated: () => void;
 }
 
-const LANES: Array<{ id: TaskStatus; label: string }> = [
-  { id: "todo", label: "To Do" },
-  { id: "in_progress", label: "In Progress" },
-  { id: "done", label: "Done" },
-];
-
 const attachmentIcon = (url?: string | null, kind?: string | null) => {
   if (!url) return null;
   if (kind === "audio" || /\.(mp3|wav|m4a|ogg|webm)$/i.test(url))
@@ -39,6 +45,17 @@ const attachmentIcon = (url?: string | null, kind?: string | null) => {
   return <FileText className="h-3.5 w-3.5" />;
 };
 
+const isBlocking = (t: Task) => {
+  const p = (t.priority || "").toLowerCase();
+  return p === "blocking" || p === "urgent" || p === "high";
+};
+
+/**
+ * Scroll-native task feed (replaces Kanban).
+ * - Blocking tasks pinned at top with flame badge
+ * - Active tasks in a single vertical list with one-tap complete
+ * - Completed work auto-collapses into a "Completed (X)" folder
+ */
 export const WorkSection = ({
   tasks,
   projectId,
@@ -50,14 +67,19 @@ export const WorkSection = ({
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [folderOpen, setFolderOpen] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const lanes = useMemo(() => {
-    const map: Record<TaskStatus, Task[]> = { todo: [], in_progress: [], done: [] };
+  const { blocking, active, done } = useMemo(() => {
+    const blocking: Task[] = [];
+    const active: Task[] = [];
+    const done: Task[] = [];
     for (const t of tasks) {
-      const s = (t.status as TaskStatus) in map ? (t.status as TaskStatus) : "todo";
-      map[s].push(t);
+      if (t.status === "done") done.push(t);
+      else if (isBlocking(t)) blocking.push(t);
+      else active.push(t);
     }
-    return map;
+    return { blocking, active, done };
   }, [tasks]);
 
   const handleAdd = async () => {
@@ -79,18 +101,103 @@ export const WorkSection = ({
     onUpdated();
   };
 
-  const cycleStatus = async (task: Task) => {
-    const next: TaskStatus =
-      task.status === "todo" ? "in_progress" : task.status === "in_progress" ? "done" : "todo";
+  const markDone = async (task: Task) => {
+    setBusyId(task.id);
     const { error } = await supabase
       .from("project_tasks")
-      .update({ status: next })
+      .update({ status: "done" })
       .eq("id", task.id);
+    setBusyId(null);
     if (error) {
-      toast({ title: "Couldn't update task", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
       return;
     }
     onUpdated();
+  };
+
+  const reopen = async (task: Task) => {
+    setBusyId(task.id);
+    const { error } = await supabase
+      .from("project_tasks")
+      .update({ status: "todo" })
+      .eq("id", task.id);
+    setBusyId(null);
+    if (error) {
+      toast({ title: "Couldn't reopen", description: error.message, variant: "destructive" });
+      return;
+    }
+    onUpdated();
+  };
+
+  const TaskRow = ({ task, isDone }: { task: Task; isDone: boolean }) => {
+    const expanded = expandedId === task.id;
+    const blocking = isBlocking(task);
+    return (
+      <button
+        type="button"
+        onClick={() => setExpandedId(expanded ? null : task.id)}
+        className={cn(
+          "w-full text-left rounded-xl bg-card ring-1 ring-border p-3 transition-all hover:ring-primary/40",
+          blocking && !isDone && "ring-destructive/40 bg-destructive/5",
+          isDone && "opacity-60"
+        )}
+      >
+        <div className="flex items-start gap-3">
+          <button
+            type="button"
+            aria-label={isDone ? "Reopen task" : "Mark done"}
+            disabled={busyId === task.id}
+            onClick={(e) => {
+              e.stopPropagation();
+              isDone ? reopen(task) : markDone(task);
+            }}
+            className={cn(
+              "mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
+              isDone
+                ? "bg-primary border-primary"
+                : blocking
+                ? "border-destructive hover:bg-destructive/10"
+                : "border-muted-foreground/40 hover:border-primary"
+            )}
+          >
+            {busyId === task.id ? (
+              <Loader2 className="h-3 w-3 animate-spin text-foreground" />
+            ) : isDone ? (
+              <Check className="h-3 w-3 text-primary-foreground" />
+            ) : null}
+          </button>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {blocking && !isDone && (
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-destructive">
+                  <Flame className="h-2.5 w-2.5" /> Blocking
+                </span>
+              )}
+              <p
+                className={cn(
+                  "text-sm leading-snug break-words",
+                  isDone && "line-through text-muted-foreground"
+                )}
+              >
+                {task.title}
+              </p>
+            </div>
+            {task.attachment_url && (
+              <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                {attachmentIcon(task.attachment_url, task.attachment_kind)}
+                attachment
+              </span>
+            )}
+            {expanded && task.description && (
+              <p className="mt-1.5 text-xs text-muted-foreground whitespace-pre-wrap">
+                {task.description}
+              </p>
+            )}
+          </div>
+        </div>
+      </button>
+    );
   };
 
   return (
@@ -100,135 +207,124 @@ export const WorkSection = ({
           The Work
         </h2>
         <span className="text-[11px] text-muted-foreground">
-          {lanes.done.length}/{tasks.length} done
+          {done.length}/{tasks.length} done
         </span>
       </header>
 
-      {/* Mobile = horizontal swim lanes */}
-      <div className="-mx-4 px-4 overflow-x-auto">
-        <div className="grid grid-flow-col auto-cols-[80vw] gap-3 sm:auto-cols-[18rem]">
-          {LANES.map((lane) => {
-            const items = lanes[lane.id];
-            return (
-              <div
-                key={lane.id}
-                className="rounded-xl bg-muted/40 ring-1 ring-border p-2.5 flex flex-col gap-2 min-h-[180px]"
-              >
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    {lane.label}
-                  </p>
-                  <span className="text-[10px] text-muted-foreground">{items.length}</span>
-                </div>
-
-                {items.map((task) => {
-                  const isExpanded = expandedId === task.id;
-                  const isDone = task.status === "done";
-                  return (
-                    <button
-                      key={task.id}
-                      type="button"
-                      onClick={() => setExpandedId(isExpanded ? null : task.id)}
-                      className={cn(
-                        "text-left rounded-lg bg-card ring-1 ring-border p-2.5 hover:ring-primary/40 transition-all",
-                        isDone && "opacity-70"
-                      )}
-                    >
-                      <div className="flex items-start gap-2">
-                        <button
-                          type="button"
-                          aria-label="Toggle status"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            cycleStatus(task);
-                          }}
-                          className={cn(
-                            "mt-0.5 h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
-                            isDone
-                              ? "bg-primary border-primary"
-                              : task.status === "in_progress"
-                              ? "border-primary"
-                              : "border-muted-foreground/40"
-                          )}
-                        >
-                          {isDone && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
-                        </button>
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={cn(
-                              "text-sm leading-snug break-words",
-                              isDone && "line-through text-muted-foreground"
-                            )}
-                          >
-                            {task.title}
-                          </p>
-                          {task.attachment_url && (
-                            <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-                              {attachmentIcon(task.attachment_url, task.attachment_kind)}
-                              attachment
-                            </span>
-                          )}
-                          {isExpanded && task.description && (
-                            <p className="mt-1.5 text-xs text-muted-foreground whitespace-pre-wrap">
-                              {task.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-
-                {/* Add task at end of To Do */}
-                {lane.id === "todo" && (
-                  adding ? (
-                    <div className="space-y-1.5">
-                      <Input
-                        autoFocus
-                        value={draft}
-                        onChange={(e) => setDraft(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleAdd();
-                          if (e.key === "Escape") {
-                            setAdding(false);
-                            setDraft("");
-                          }
-                        }}
-                        placeholder="What's the next thing?"
-                        className="h-8 text-sm"
-                      />
-                      <div className="flex gap-1.5">
-                        <Button size="sm" className="h-7 text-xs" onClick={handleAdd} disabled={saving}>
-                          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs"
-                          onClick={() => {
-                            setAdding(false);
-                            setDraft("");
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setAdding(true)}
-                      className="rounded-lg border border-dashed border-border p-2.5 text-xs text-muted-foreground hover:border-primary hover:text-foreground transition-colors flex items-center justify-center gap-1"
-                    >
-                      <Plus className="h-3.5 w-3.5" /> Add task
-                    </button>
-                  )
-                )}
-              </div>
-            );
-          })}
+      {/* Blocking — pinned top */}
+      {blocking.length > 0 && (
+        <div className="space-y-2">
+          {blocking.map((t) => (
+            <TaskRow key={t.id} task={t} isDone={false} />
+          ))}
         </div>
+      )}
+
+      {/* Active stream */}
+      <div className="space-y-2">
+        {active.map((t) => (
+          <TaskRow key={t.id} task={t} isDone={false} />
+        ))}
+
+        {active.length === 0 && blocking.length === 0 && tasks.length === 0 && (
+          <p className="text-xs text-muted-foreground py-2 text-center">
+            No tasks yet. Add the first thing below.
+          </p>
+        )}
+        {active.length === 0 && blocking.length === 0 && done.length > 0 && (
+          <p className="text-xs text-muted-foreground py-2 text-center">
+            All caught up. Nice work.
+          </p>
+        )}
+
+        {/* Add task — always visible */}
+        {adding ? (
+          <div className="space-y-1.5 rounded-xl border border-primary/40 p-2.5">
+            <Input
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAdd();
+                if (e.key === "Escape") {
+                  setAdding(false);
+                  setDraft("");
+                }
+              }}
+              placeholder="What's the next thing?"
+              className="h-9 text-sm border-0 focus-visible:ring-0 px-1"
+            />
+            <div className="flex gap-1.5">
+              <Button size="sm" className="h-8 text-xs" onClick={handleAdd} disabled={saving}>
+                {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 text-xs"
+                onClick={() => {
+                  setAdding(false);
+                  setDraft("");
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="w-full rounded-xl border border-dashed border-border p-3 text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
+          >
+            <Plus className="h-4 w-4" /> Add task
+          </button>
+        )}
       </div>
+
+      {/* Completed folder */}
+      {done.length > 0 && (
+        <div className="rounded-xl bg-muted/40 ring-1 ring-border overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setFolderOpen((v) => !v)}
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-muted/60 transition-colors"
+          >
+            <span className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+              <Check className="h-3.5 w-3.5 text-primary" />
+              Completed ({done.length})
+            </span>
+            {folderOpen ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+          {folderOpen && (
+            <div className="p-2 space-y-1.5 border-t border-border/60">
+              {done.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center gap-2 rounded-lg bg-card/60 px-2.5 py-2"
+                >
+                  <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="flex-1 text-xs line-through text-muted-foreground truncate">
+                    {t.title}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => reopen(t)}
+                    disabled={busyId === t.id}
+                    className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"
+                  >
+                    <RotateCcw className="h-3 w-3" /> Reopen
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 };

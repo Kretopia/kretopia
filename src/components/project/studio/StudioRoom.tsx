@@ -1,5 +1,6 @@
 import { useMemo, useRef } from "react";
 import { VibeHeader } from "./VibeHeader";
+import { NextStepCard } from "./NextStepCard";
 import { BriefSection } from "./BriefSection";
 import { WorkSection } from "./WorkSection";
 import { MoneySection } from "./MoneySection";
@@ -9,6 +10,7 @@ import { CallHistorySection } from "./CallHistorySection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
+import type { NextStep } from "@/hooks/useProjectFlow";
 
 interface StudioRoomProps {
   project: any;
@@ -23,6 +25,7 @@ interface StudioRoomProps {
   currentUserId: string;
   onUpdated: () => void;
   onNavigateToTab: (tab: string, intent?: string) => void;
+  nextStep?: NextStep;
 }
 
 /**
@@ -38,6 +41,7 @@ export const StudioRoom = ({
   currentUserId,
   onUpdated,
   onNavigateToTab,
+  nextStep,
 }: StudioRoomProps) => {
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -122,6 +126,10 @@ export const StudioRoom = ({
         isOwner={isOwner}
         onUpdated={onUpdated}
       />
+
+      {nextStep && (
+        <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />
+      )}
 
       <div className="divide-y divide-border/60">
         <BriefSection

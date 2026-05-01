@@ -96,6 +96,8 @@ export const ThriveAgentFab = () => {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
+  // Map message index -> orchestrator actions proposed for that assistant turn.
+  const [actionsByMsg, setActionsByMsg] = useState<Record<number, OrchAction[]>>({});
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [surfaceContext, setSurfaceContext] = useState<Record<string, unknown>>({});
@@ -103,6 +105,21 @@ export const ThriveAgentFab = () => {
   const abortRef = useRef<AbortController | null>(null);
 
   const surface: CopilotSurface = inferSurface(location.pathname);
+
+  // Allow any surface to open the Copilot with a preset prompt:
+  //   window.dispatchEvent(new CustomEvent("thrive-copilot:open", { detail: { prompt: "..." } }))
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { prompt?: string } | undefined;
+      setOpen(true);
+      if (detail?.prompt) {
+        // Defer so the drawer mounts before we autofill.
+        setTimeout(() => setText(detail.prompt!), 50);
+      }
+    };
+    window.addEventListener("thrive-copilot:open", handler);
+    return () => window.removeEventListener("thrive-copilot:open", handler);
+  }, []);
 
   // Resolve surface_context from the URL where helpful (project_id from /desk/:id)
   useEffect(() => {

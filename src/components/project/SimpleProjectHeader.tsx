@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { sendPushNotification } from "@/lib/pushNotifications";
 import { ringUsers } from "@/hooks/useIncomingCall";
 import { APP_URL } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,

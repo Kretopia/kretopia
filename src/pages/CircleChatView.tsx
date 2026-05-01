@@ -68,6 +68,39 @@ const CircleDetail = () => {
   const [newChannelType, setNewChannelType] = useState("text");
   const [copied, setCopied] = useState(false);
   const [showPollCreator, setShowPollCreator] = useState(false);
+  // Group video call state
+  const [callOpen, setCallOpen] = useState(false);
+  const [callSession, setCallSession] = useState<{ roomUrl: string; token: string; callId: string | null; roomName: string } | null>(null);
+  const [startingCall, setStartingCall] = useState(false);
+
+  const startGroupCall = async () => {
+    if (!user || !circleId || startingCall) return;
+    setStartingCall(true);
+    try {
+      const myName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Member";
+      const { data, error } = await supabase.functions.invoke("create-circle-room", {
+        body: { circle_id: circleId, user_name: myName },
+      });
+      if (error) throw error;
+      if (!data?.room_url || !data?.token) throw new Error("No room");
+      setCallSession({
+        roomUrl: data.room_url,
+        token: data.token,
+        callId: data.call_id ?? null,
+        roomName: data.room_name,
+      });
+      setCallOpen(true);
+    } catch (e: any) {
+      console.error("[startGroupCall]", e);
+      toast({
+        title: "Couldn't start the call",
+        description: e?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setStartingCall(false);
+    }
+  };
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const circleAvatarRef = useRef<HTMLInputElement>(null);

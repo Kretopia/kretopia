@@ -4899,6 +4899,47 @@ export type Database = {
         }
         Relationships: []
       }
+      gig_moderation_log: {
+        Row: {
+          action: string
+          confidence: number | null
+          created_at: string
+          detected_deadline: string | null
+          id: string
+          metadata: Json | null
+          opportunity_id: string
+          reason: string
+        }
+        Insert: {
+          action: string
+          confidence?: number | null
+          created_at?: string
+          detected_deadline?: string | null
+          id?: string
+          metadata?: Json | null
+          opportunity_id: string
+          reason: string
+        }
+        Update: {
+          action?: string
+          confidence?: number | null
+          created_at?: string
+          detected_deadline?: string | null
+          id?: string
+          metadata?: Json | null
+          opportunity_id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gig_moderation_log_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guest_rsvps: {
         Row: {
           check_in_token: string

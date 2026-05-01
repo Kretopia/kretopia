@@ -194,6 +194,12 @@ async function executeAction(
     return { ok: true, result: { question: args.question } };
   }
 
+  // Cross-agent bundle: spin_up_project executes 3 things atomically server-side
+  // (create project → invite collaborator → send kickoff DM).
+  if (tool.handler === "inline_bundle" && tool.tool_name === "spin_up_project") {
+    return await executeSpinUpProject(userId, args, authHeader);
+  }
+
   // Invoke the underlying edge function as the user (so RLS applies correctly)
   try {
     const url = `${SUPABASE_URL}/functions/v1/${tool.handler}`;

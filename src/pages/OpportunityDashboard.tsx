@@ -1043,6 +1043,17 @@ const ApplicantCard = ({
           ).filter(Boolean),
         }}
       />
+      <VideoCallSheet
+        open={callOpen}
+        onOpenChange={setCallOpen}
+        projectName={`Interview with ${applicant.full_name}`}
+        roomUrl={callSession?.roomUrl ?? null}
+        token={callSession?.token ?? null}
+        callId={callSession?.callId ?? null}
+        userName={myName}
+        directCallId={callSession?.callId ?? null}
+        roomName={callSession?.roomName ?? null}
+      />
     </Card>
   );
 };

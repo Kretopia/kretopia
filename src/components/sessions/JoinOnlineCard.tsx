@@ -46,6 +46,7 @@ export const JoinOnlineCard = ({
   videoRoomStartedAt,
   hasAccess,
   needsRsvp,
+  isHost = false,
 }: Props) => {
   const { user } = useAuth();
   const { toast } = useToast();

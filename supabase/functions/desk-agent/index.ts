@@ -16,6 +16,9 @@ type ToolName =
   | "send_message_to_collaborator"
   | "get_project_summary"
   | "schedule_reminder"
+  | "draft_invoice"
+  | "start_video_call"
+  | "add_credit"
   | "ask_clarification";
 
 const TOOLS = [

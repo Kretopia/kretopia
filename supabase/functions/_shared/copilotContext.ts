@@ -403,6 +403,71 @@ export function renderContextPreamble(
 
   parts.push(`Credits added in last 30 days: ${ctx.recent_credits_count}`);
 
+  // ---- Recent activity (last 7 days) — for "catch me up" / "what's new" ----
+  const ra = ctx.recent_activity;
+  const fmtDate = (iso: string) => {
+    try {
+      const d = new Date(iso);
+      const now = new Date();
+      const diffH = Math.round((now.getTime() - d.getTime()) / 3_600_000);
+      if (diffH < 1) return "just now";
+      if (diffH < 24) return `${diffH}h ago`;
+      const diffD = Math.round(diffH / 24);
+      return diffD === 1 ? "yesterday" : `${diffD}d ago`;
+    } catch { return iso; }
+  };
+
+  parts.push(`\n=== RECENT ACTIVITY (last 7 days) ===`);
+  const activityLines: string[] = [];
+
+  if (ra.tasks_completed.length) {
+    activityLines.push(
+      `Tasks completed (${ra.tasks_completed.length}):\n` +
+      ra.tasks_completed.map((t) => `  - "${t.title}" (${fmtDate(t.updated_at)})`).join("\n"),
+    );
+  }
+  if (ra.tasks_due_soon.length) {
+    activityLines.push(
+      `Tasks due in next 7 days (${ra.tasks_due_soon.length}):\n` +
+      ra.tasks_due_soon.map((t) => `  - "${t.title}" due ${new Date(t.due_date).toLocaleDateString()}`).join("\n"),
+    );
+  }
+  if (ra.credits_added.length) {
+    activityLines.push(
+      `New credits added (${ra.credits_added.length}):\n` +
+      ra.credits_added.map((c) => `  - ${c.role} on "${c.project_name}" (${fmtDate(c.created_at)})`).join("\n"),
+    );
+  }
+  if (ra.new_connections > 0) {
+    activityLines.push(`New connections accepted: ${ra.new_connections}`);
+  }
+  if (ra.invoices_paid.length) {
+    activityLines.push(
+      `Invoices PAID (${ra.invoices_paid.length}):\n` +
+      ra.invoices_paid.map((i) => `  - ${i.invoice_number}: ${i.currency} ${Number(i.total_amount).toFixed(2)} (${fmtDate(i.paid_at)})`).join("\n"),
+    );
+  }
+  if (ra.invoices_sent.length) {
+    activityLines.push(
+      `Invoices SENT (${ra.invoices_sent.length}):\n` +
+      ra.invoices_sent.map((i) => `  - ${i.invoice_number} to ${i.recipient ?? "client"}: ${i.currency} ${Number(i.total_amount).toFixed(2)} (${fmtDate(i.created_at)})`).join("\n"),
+    );
+  }
+  if (ra.unread_notifications > 0) {
+    const titles = ra.last_notification_titles.length
+      ? ` Recent: ${ra.last_notification_titles.slice(0, 3).map((t) => `"${t}"`).join(", ")}`
+      : "";
+    activityLines.push(`Unread notifications: ${ra.unread_notifications}.${titles}`);
+  }
+
+  if (activityLines.length === 0) {
+    parts.push(`NOTHING happened in the last 7 days. No tasks completed, no credits added, no invoices sent or paid, no new connections, no unread notifications. If the user asks "what's new" or "catch me up", be honest that it's been quiet — then suggest ONE concrete next move based on their active projects, drafts, or upcoming events above.`);
+  } else {
+    parts.push(activityLines.join("\n"));
+    parts.push(`When summarising "what's new" / "catch me up", reference these specific items by name (project, invoice number, task title) — never invent or generalise.`);
+  }
+  parts.push(`=== END RECENT ACTIVITY ===\n`);
+
   // Surface awareness — tells the model where the user just clicked from.
   if (surface) {
     const surfaceMap: Record<string, string> = {

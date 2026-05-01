@@ -48,6 +48,17 @@ export interface CopilotContext {
   draft_invoices_currency: string | null;
   upcoming_events: CopilotEvent[];
   recent_credits_count: number;
+  // Recent activity (last 7 days) — what the user has actually been doing
+  recent_activity: {
+    tasks_completed: Array<{ title: string; project_id: string | null; updated_at: string }>;
+    tasks_due_soon: Array<{ title: string; due_date: string; project_id: string | null }>;
+    credits_added: Array<{ project_name: string; role: string; created_at: string }>;
+    new_connections: number;
+    invoices_paid: Array<{ invoice_number: string; total_amount: number; currency: string; paid_at: string }>;
+    invoices_sent: Array<{ invoice_number: string; total_amount: number; currency: string; created_at: string; recipient: string | null }>;
+    unread_notifications: number;
+    last_notification_titles: string[];
+  };
 }
 
 /** Race a promise against a timeout; returns null on timeout or error. */

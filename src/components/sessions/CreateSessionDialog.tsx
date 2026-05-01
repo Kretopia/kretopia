@@ -234,6 +234,13 @@ export const CreateSessionDialog = ({
       setDate(undefined);
       setCoverFile(null);
       setCoverPreview(null);
+      setFormatValue({
+        event_mode: 'irl',
+        online_format: null,
+        online_max_attendees: null,
+        watch_party_video_url: '',
+        recording_enabled: false,
+      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -323,6 +330,9 @@ export const CreateSessionDialog = ({
             <Textarea id="description" placeholder="What's the vibe? What should people bring?" value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))} rows={3} />
           </div>
+
+          {/* Hybrid mode + online format */}
+          <EventModeFormatPicker value={formatValue} onChange={setFormatValue} />
 
           {/* Date & Time - stacked on mobile */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -59,6 +59,7 @@ export const VoiceFirstCreateModal = ({
       setTextInput("");
       setSeconds(0);
       setBrief(null);
+      setSelected(new Set());
       setCreating(false);
     }
   }, [open]);

@@ -144,40 +144,60 @@ export const ProactiveCards = ({
   if (cards.length === 0) return null;
 
   const toneClasses: Record<NudgeCard["tone"], string> = {
-    warn: "border-destructive/40 bg-destructive/5",
-    money: "border-primary/40 bg-primary/5",
-    info: "border-border bg-accent/30",
-    celebrate: "border-primary/40 bg-gradient-to-br from-primary/10 to-transparent",
+    warn: "border-destructive/40 bg-gradient-to-br from-destructive/10 to-transparent",
+    money: "border-[hsl(var(--energy)/0.45)] bg-gradient-to-br from-[hsl(var(--energy)/0.08)] to-transparent",
+    info: "border-primary/30 bg-gradient-to-br from-primary/8 to-transparent",
+    celebrate: "border-primary/45 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent",
   };
   const iconBgClasses: Record<NudgeCard["tone"], string> = {
-    warn: "bg-destructive/15 text-destructive",
-    money: "bg-primary/15 text-primary",
-    info: "bg-muted text-muted-foreground",
-    celebrate: "bg-primary text-primary-foreground",
+    warn: "bg-destructive text-destructive-foreground shadow-[0_0_14px_hsl(var(--destructive)/0.4)]",
+    money: "bg-[hsl(var(--energy))] text-[hsl(var(--energy-foreground))] shadow-[0_0_14px_hsl(var(--energy)/0.5)]",
+    info: "bg-primary/15 text-primary",
+    celebrate: "bg-primary text-primary-foreground shadow-[var(--shadow-glow)]",
+  };
+  const eyebrowText: Record<NudgeCard["tone"], string> = {
+    warn: "Heads Up",
+    money: "Money Move",
+    info: "Quick Tip",
+    celebrate: "Almost There",
+  };
+  const eyebrowColor: Record<NudgeCard["tone"], string> = {
+    warn: "text-destructive",
+    money: "text-[hsl(var(--energy))]",
+    info: "text-primary",
+    celebrate: "text-primary",
   };
 
   return (
-    <section className={cn("px-4 pt-2 pb-1 space-y-2", className)}>
+    <section className={cn("px-4 pt-3 pb-1 space-y-2.5", className)}>
       {cards.map((c) => {
         const Icon = c.icon;
         return (
           <div
             key={c.id}
             className={cn(
-              "rounded-xl border p-3 flex items-start gap-3 transition-all",
+              "relative overflow-hidden rounded-xl border p-3.5 flex items-start gap-3 transition-all",
               toneClasses[c.tone],
             )}
           >
             <div
               className={cn(
-                "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
+                "h-9 w-9 rounded-xl flex items-center justify-center shrink-0",
                 iconBgClasses[c.tone],
               )}
             >
               <Icon className="h-4 w-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold leading-tight text-foreground">
+              <p
+                className={cn(
+                  "text-[9px] font-bold uppercase tracking-[0.22em] mb-0.5",
+                  eyebrowColor[c.tone],
+                )}
+              >
+                {eyebrowText[c.tone]}
+              </p>
+              <p className="text-sm font-bold leading-tight text-foreground">
                 {c.title}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
@@ -186,7 +206,7 @@ export const ProactiveCards = ({
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-7 px-2 mt-1.5 text-xs gap-1 text-foreground hover:bg-background/60"
+                className="h-7 px-2 mt-2 -ml-2 text-xs gap-1 text-foreground hover:bg-background/60 rounded-full font-semibold"
                 onClick={() => onAction(c.ctaTab, c.ctaIntent)}
               >
                 {c.ctaLabel}

@@ -78,6 +78,10 @@ const Messages = () => {
     if (userIdFromUrl && userIdFromUrl !== selectedConversation) {
       setSelectedConversation(userIdFromUrl);
     }
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl === 'calls' || tabFromUrl === 'groups' || tabFromUrl === 'requests' || tabFromUrl === 'inbox') {
+      setActiveTab(tabFromUrl);
+    }
   }, [searchParams, navigationState]);
 
   useEffect(() => {

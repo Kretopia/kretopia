@@ -12,12 +12,26 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
 
+interface OverdueTaskRef {
+  task_id: string;
+  project_id: string;
+  project_title: string;
+  assignee_id: string;
+}
+interface DraftInvoiceRef {
+  invoice_id: string;
+  project_id: string;
+  project_title: string;
+}
 interface PerUserSignal {
   user_id: string;
   overdue: number;
   draft_invoices: number;
   deadlines_soon: Array<{ project_id: string; title: string; deadline: string }>;
   any_project_id: string | null;
+  // Agent-mode follow-up targets
+  overdue_tasks: OverdueTaskRef[];
+  drafts: DraftInvoiceRef[];
 }
 
 Deno.serve(async (req) => {

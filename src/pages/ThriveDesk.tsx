@@ -230,6 +230,7 @@ const ThriveDesk = () => {
               currentUserId={user?.id || ""}
               onUpdated={fetchProjectData}
               onNavigateToTab={goToTabWithIntent}
+              nextStep={flow.nextStep}
             />
           ) : (
             <DeskTabContent

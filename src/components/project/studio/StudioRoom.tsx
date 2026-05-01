@@ -127,6 +127,10 @@ export const StudioRoom = ({
         onUpdated={onUpdated}
       />
 
+      {nextStep && (
+        <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />
+      )}
+
       <div className="divide-y divide-border/60">
         <BriefSection
           project={project}

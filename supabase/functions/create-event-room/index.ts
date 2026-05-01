@@ -243,8 +243,8 @@ serve(async (req) => {
     }
     const { token: meetingToken } = await tokenRes.json();
 
-    // Persist room url on event when host starts/refreshes it
-    if (isHost) {
+    // Persist room url on event when host actually goes live (not in test mode)
+    if (isHost && !isTestMode) {
       await admin
         .from("creative_jams")
         .update({

@@ -116,7 +116,14 @@ const ViewProfile = () => {
   const [showClaimDialog, setShowClaimDialog] = useState(searchParams.get('showClaim') === 'true');
   const [showShareToChat, setShowShareToChat] = useState(false);
   const [gateResult, setGateResult] = useState<GateCheckResult | null>(null);
-  
+
+  // 1:1 video call from profile (connected/matched users only)
+  const directCall = useStartDirectCall();
+  const startCall = () => {
+    if (!profile?.user_id) return;
+    void directCall.start(profile.user_id, profile.full_name || "there", { context: "profile-call" });
+  };
+
   const isFromMatch = searchParams.get('from') === 'match';
   
   // Get connection degree info

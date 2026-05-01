@@ -11,10 +11,7 @@ import {
 import { OnlineDot } from "@/components/messages/OnlinePresence";
 import { InviteToProjectDialog } from "@/components/project/InviteToProjectDialog";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { ringUsers } from "@/hooks/useIncomingCall";
+import { useStartDirectCall } from "@/hooks/useStartDirectCall";
 import type { OtherUser } from "./types";
 
 interface Props {
@@ -28,54 +25,11 @@ interface Props {
 export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStartProject }: Props) => {
   const [inviteOpen, setInviteOpen] = useState(false);
   const recipientId = (otherUser as any).id || (otherUser as any).user_id;
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [starting, setStarting] = useState(false);
-  const [callOpen, setCallOpen] = useState(false);
-  const [callRoomUrl, setCallRoomUrl] = useState<string | null>(null);
-  const [callRoomName, setCallRoomName] = useState<string | null>(null);
-  const [callToken, setCallToken] = useState<string | null>(null);
-  const [callId, setCallId] = useState<string | null>(null);
+  const { starting, session, open, setOpen, start, myName } = useStartDirectCall();
 
-  const myName =
-    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Someone";
-
-  const handleStartCall = async () => {
-    if (!recipientId || starting) return;
-    setStarting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("create-direct-video-call", {
-        body: { invited_user_id: recipientId, user_name: myName },
-      });
-      if (error) throw error;
-      if (!data?.room_url || !data?.token) throw new Error("No room");
-
-      setCallRoomUrl(data.room_url);
-      setCallRoomName(data.room_name);
-      setCallToken(data.token);
-      setCallId(data.call_id);
-      setCallOpen(true);
-
-      // Ring the recipient via Realtime
-      void ringUsers([recipientId], {
-        kind: "direct",
-        callerId: user!.id,
-        callerName: myName,
-        callerAvatar: user?.user_metadata?.avatar_url ?? null,
-        roomUrl: data.room_url,
-        roomName: data.room_name,
-        callId: data.call_id ?? null,
-      });
-    } catch (e: any) {
-      console.error("[ChatHeader call]", e);
-      toast({
-        title: "Couldn't start call",
-        description: e?.message || "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setStarting(false);
-    }
+  const handleStartCall = () => {
+    if (!recipientId) return;
+    void start(recipientId, otherUser.name || "guest", { context: "chat-header" });
   };
 
   return (
@@ -149,15 +103,15 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
         />
       )}
       <VideoCallSheet
-        open={callOpen}
-        onOpenChange={setCallOpen}
+        open={open}
+        onOpenChange={setOpen}
         projectName={`Call with ${otherUser.name || 'guest'}`}
-        roomUrl={callRoomUrl}
-        token={callToken}
-        callId={callId}
+        roomUrl={session?.roomUrl ?? null}
+        token={session?.token ?? null}
+        callId={session?.callId ?? null}
         userName={myName}
-        directCallId={callId}
-        roomName={callRoomName}
+        directCallId={session?.callId ?? null}
+        roomName={session?.roomName ?? null}
       />
     </div>
   );

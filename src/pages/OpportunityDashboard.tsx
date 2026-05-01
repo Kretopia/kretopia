@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Briefcase, MapPin, DollarSign, User, Users, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter, LayoutGrid, List, BarChart3, ChevronDown, ChevronUp, ExternalLink, Clock, Share2, ArrowLeft } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, User, Users, Star, Sparkles, Mail, Eye, Edit, Crown, Trophy, TrendingUp, Filter, LayoutGrid, List, BarChart3, ChevronDown, ChevronUp, ExternalLink, Clock, Share2, ArrowLeft, Video, Loader2 } from "lucide-react";
 import { ShareProfileDialog } from "@/components/profile/ShareProfileDialog";
+import { useStartDirectCall } from "@/hooks/useStartDirectCall";
+import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -791,6 +793,14 @@ const ApplicantCard = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const { starting: callStarting, session: callSession, open: callOpen, setOpen: setCallOpen, start: startCall, myName } = useStartDirectCall();
+
+  const handleInterview = () => {
+    void startCall(applicant.applicant_id, applicant.full_name, {
+      context: "gig-interview",
+      errorTitle: "Couldn't start interview",
+    });
+  };
 
   const handleMessage = async () => {
     // Ensure a bidirectional connection exists so the conversation shows in inbox
@@ -974,6 +984,21 @@ const ApplicantCard = ({
               size="sm"
               variant="outline"
               className="text-xs"
+              onClick={handleInterview}
+              disabled={callStarting}
+              title="Start a quick video interview"
+            >
+              {callStarting ? (
+                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              ) : (
+                <Video className="w-3 h-3 mr-1" />
+              )}
+              Interview
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs"
               onClick={() => setShareOpen(true)}
               title="Share this profile with the client"
             >
@@ -1025,6 +1050,17 @@ const ApplicantCard = ({
             typeof s === 'string' ? s : (s?.skill || s?.name || s?.label || '')
           ).filter(Boolean),
         }}
+      />
+      <VideoCallSheet
+        open={callOpen}
+        onOpenChange={setCallOpen}
+        projectName={`Interview with ${applicant.full_name}`}
+        roomUrl={callSession?.roomUrl ?? null}
+        token={callSession?.token ?? null}
+        callId={callSession?.callId ?? null}
+        userName={myName}
+        directCallId={callSession?.callId ?? null}
+        roomName={callSession?.roomName ?? null}
       />
     </Card>
   );

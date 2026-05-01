@@ -352,7 +352,7 @@ const TaskRow = ({
           >
             <div className="flex items-center gap-1.5 flex-wrap">
               {blocking && !isDone && (
-                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-destructive">
+                <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 text-destructive px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.15em] ring-1 ring-destructive/30">
                   <Flame className="h-2.5 w-2.5" /> Blocking
                 </span>
               )}

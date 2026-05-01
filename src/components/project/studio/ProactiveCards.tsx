@@ -1,12 +1,12 @@
-import { useMemo } from "react";
-import { AlertTriangle, Receipt, FileText, PartyPopper, ArrowRight, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, Receipt, FileText, PartyPopper, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProactiveCardsProps {
   project: any;
   tasks: any[];
-  invoices?: any[];
   onAction: (tab: string, intent?: string) => void;
   className?: string;
 }

@@ -793,6 +793,14 @@ const ApplicantCard = ({
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const { starting: callStarting, session: callSession, open: callOpen, setOpen: setCallOpen, start: startCall, myName } = useStartDirectCall();
+
+  const handleInterview = () => {
+    void startCall(applicant.applicant_id, applicant.full_name, {
+      context: "gig-interview",
+      errorTitle: "Couldn't start interview",
+    });
+  };
 
   const handleMessage = async () => {
     // Ensure a bidirectional connection exists so the conversation shows in inbox

@@ -117,7 +117,7 @@ export const DeskTabContent = memo(({
         {activeTab === "brief" && (
           <div className="space-y-4">
             <BriefHub projectId={projectId} projectTitle={project.title} onCreated={onUpdate} />
-            <DeliverablesBoard projectId={projectId} currentUserId={currentUserId} />
+            <DeliverablesBoard projectId={projectId} projectTitle={project.title} currentUserId={currentUserId} />
           </div>
         )}
 

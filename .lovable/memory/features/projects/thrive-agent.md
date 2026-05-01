@@ -16,8 +16,9 @@ Thrive Agent = action-taking copilot for ThriveDesk projects.
 **Memory table**: `agent_project_context(project_id, user_id, role, content, intent, tool_calls jsonb)` — auto-trim to last 20 per (project_id, user_id) via trigger
 
 **UI**: `src/components/desk/ThriveAgentFab.tsx`
-- Mounted globally in App.tsx, only renders when authed AND route starts with `/desk`
-- Auto-detects project_id from `/desk/:projectId`; falls back to project picker (last 20 owned/client projects)
+- Mounted globally in App.tsx
+- Renders ONLY on individual project pages (`/desk/:projectId`) — NOT on the `/desk` list page (would collide with the voice-create FAB from StudioCardsGrid)
+- Auto-detects project_id from the route; project picker code retained but unused
 
 **Proactive cards**: `src/components/project/studio/ProactiveCards.tsx`
 - Injected into StudioRoom feed under NextStepCard

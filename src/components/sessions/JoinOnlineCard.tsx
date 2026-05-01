@@ -74,12 +74,12 @@ export const JoinOnlineCard = ({
   const myName =
     user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest";
 
-  const handleJoin = async () => {
+  const handleJoin = async (test = false) => {
     if (!user) {
       toast({ title: "Sign in to join", description: "Free 1-tap signup gets you in." });
       return;
     }
-    if (!hasAccess) {
+    if (!test && !hasAccess) {
       toast({
         title: needsRsvp ? "Save your spot first" : "Ticket required",
         description: "Then come back here to join the room.",
@@ -89,12 +89,18 @@ export const JoinOnlineCard = ({
     setStarting(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-event-room", {
-        body: { event_id: eventId, user_name: myName },
+        body: { event_id: eventId, user_name: myName, ...(test ? { mode: "test" } : {}) },
       });
       if (error) throw error;
       if (!data?.room_url || !data?.token) throw new Error("No room returned");
       setRoom({ url: data.room_url, name: data.room_name, token: data.token });
       setCallOpen(true);
+      if (test) {
+        toast({
+          title: "Soundcheck room opened",
+          description: "Private to you — guests won't see this as live.",
+        });
+      }
     } catch (e: any) {
       console.error("[JoinOnlineCard] start failed", e);
       toast({

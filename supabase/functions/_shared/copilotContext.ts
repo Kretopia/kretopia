@@ -235,10 +235,19 @@ export function renderContextPreamble(
 
   if (ctx.unpaid_invoices_count > 0) {
     parts.push(
-      `Unpaid invoices: ${ctx.unpaid_invoices_count} totalling ${ctx.invoice_currency ?? "USD"} ${ctx.unpaid_invoices_total.toFixed(2)}`,
+      `Invoices SENT and awaiting payment (money owed TO user): ${ctx.unpaid_invoices_count} totalling ${ctx.invoice_currency ?? "USD"} ${ctx.unpaid_invoices_total.toFixed(2)}`,
     );
   } else {
-    parts.push(`Unpaid invoices: NONE`);
+    parts.push(`Invoices SENT and awaiting payment: NONE`);
+  }
+
+  if (ctx.draft_invoices_count > 0) {
+    parts.push(
+      `DRAFT invoices (created but NOT sent yet — user still needs to send or mark as paid): ${ctx.draft_invoices_count} totalling ${ctx.draft_invoices_currency ?? "USD"} ${ctx.draft_invoices_total.toFixed(2)}. ` +
+      `IMPORTANT: When the user asks about "outstanding payments", "unpaid invoices", or "what am I owed", mention these drafts too — they may have forgotten to mark one as paid or send it.`,
+    );
+  } else {
+    parts.push(`Draft (unsent) invoices: NONE`);
   }
 
   if (ctx.upcoming_events.length) {

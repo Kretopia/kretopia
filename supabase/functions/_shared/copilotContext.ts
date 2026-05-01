@@ -152,17 +152,25 @@ export async function loadCopilotContext(
   const fullName = profile?.full_name ?? null;
   const firstName = (fullName ?? "").trim().split(/\s+/)[0] || "there";
 
-  // Total unpaid in the user's most-common invoice currency (good enough for chat)
-  const currencyCounts: Record<string, number> = {};
-  for (const r of invoiceRows) {
-    const c = r.currency ?? "USD";
-    currencyCounts[c] = (currencyCounts[c] ?? 0) + 1;
+  // Split into "owed to user" (sent/viewed/overdue) vs "drafts" (not sent yet)
+  const owedRows = invoiceRows.filter((r) => r.status !== "draft");
+  const draftRows = invoiceRows.filter((r) => r.status === "draft");
+
+  function dominantCurrencyAndTotal(rows: typeof invoiceRows) {
+    const counts: Record<string, number> = {};
+    for (const r of rows) {
+      const c = r.currency ?? "USD";
+      counts[c] = (counts[c] ?? 0) + 1;
+    }
+    const dom = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    const total = rows
+      .filter((r) => (r.currency ?? "USD") === dom)
+      .reduce((sum, r) => sum + Number(r.total_amount ?? 0), 0);
+    return { dom, total };
   }
-  const dominantCurrency =
-    Object.entries(currencyCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
-  const unpaidTotal = invoiceRows
-    .filter((r) => (r.currency ?? "USD") === dominantCurrency)
-    .reduce((sum, r) => sum + Number(r.total_amount ?? 0), 0);
+
+  const owed = dominantCurrencyAndTotal(owedRows);
+  const drafts = dominantCurrencyAndTotal(draftRows);
 
   return {
     ...empty,
@@ -175,9 +183,12 @@ export async function loadCopilotContext(
     account_type: profile?.account_type ?? null,
     bio: profile?.bio ?? null,
     active_projects: projects,
-    unpaid_invoices_count: invoiceRows.length,
-    unpaid_invoices_total: unpaidTotal,
-    invoice_currency: dominantCurrency,
+    unpaid_invoices_count: owedRows.length,
+    unpaid_invoices_total: owed.total,
+    invoice_currency: owed.dom,
+    draft_invoices_count: draftRows.length,
+    draft_invoices_total: drafts.total,
+    draft_invoices_currency: drafts.dom,
     upcoming_events: events,
     recent_credits_count: creditsCount,
   };

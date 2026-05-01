@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { MoodPicker, moodEmoji, type MoodId } from "./MoodPicker";
 import { moodGradient } from "./moodGradient";
+import { LivePresencePile } from "./LivePresencePile";
 import { format } from "date-fns";
 
 
@@ -23,6 +24,9 @@ interface VibeHeaderProps {
   clientDisplayName?: string | null;
   isOwner: boolean;
   onUpdated: () => void;
+  collaborators?: Array<{ id: string; full_name: string; avatar_url?: string | null }>;
+  onlineUserIds?: Set<string>;
+  currentUserId?: string;
 }
 
 const STATUS_LABELS: Record<string, { label: string; tone: string; dot: string }> = {

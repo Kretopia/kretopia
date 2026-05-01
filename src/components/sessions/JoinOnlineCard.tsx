@@ -139,7 +139,7 @@ export const JoinOnlineCard = ({
       <Button
         variant="gradient"
         className="w-full gap-2 py-6 text-base"
-        onClick={handleJoin}
+        onClick={() => handleJoin(false)}
         disabled={starting}
       >
         {starting ? (

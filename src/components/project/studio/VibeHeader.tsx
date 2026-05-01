@@ -162,7 +162,7 @@ export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: V
       </div>
 
       {/* Body */}
-      <div className="px-4 -mt-10 relative z-10 space-y-3">
+      <div className={cn("px-4 relative z-10 space-y-3", hasCover ? "-mt-10" : "pt-3")}>
         {/* Mood + Status */}
         <div className="flex items-center justify-between gap-2">
           <MoodPicker value={project.mood ?? null} onChange={handleMood} />

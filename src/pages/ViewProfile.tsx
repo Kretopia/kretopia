@@ -815,6 +815,20 @@ const ViewProfile = () => {
         externalUrl={`${APP_URL}/profile/${profile.user_id}`}
         externalText={`Check out ${profile.full_name} on ThriveIN — ${APP_URL}/profile/${profile.user_id}`}
       />
+
+      {directCall.session && (
+        <VideoCallSheet
+          open={directCall.open}
+          onOpenChange={directCall.setOpen}
+          projectName={`Call with ${profile?.full_name ?? "creator"}`}
+          roomUrl={directCall.session.roomUrl}
+          token={directCall.session.token}
+          callId={directCall.session.callId}
+          userName={directCall.myName}
+          directCallId={directCall.session.callId}
+          roomName={directCall.session.roomName}
+        />
+      )}
     </>
   );
 };

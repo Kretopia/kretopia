@@ -634,6 +634,19 @@ const CircleDetail = () => {
               <Pin className="h-2.5 w-2.5" /> {pinnedMessages.length}
             </Badge>
           )}
+          {isMember && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-primary hover:bg-primary/10"
+              onClick={startGroupCall}
+              disabled={startingCall}
+              aria-label="Start group video call"
+              title="Start group video call"
+            >
+              {startingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+            </Button>
+          )}
           <Button variant="ghost" size="icon" className="h-8 w-8 lg:hidden" onClick={() => { setShowSidebar(true); setShowMembers(true); }}>
             <Users className="h-4 w-4" />
           </Button>

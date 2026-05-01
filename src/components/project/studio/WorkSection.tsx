@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import {
   Plus,
   Image as ImageIcon,
@@ -10,9 +10,16 @@ import {
   ChevronDown,
   ChevronUp,
   RotateCcw,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -27,12 +34,20 @@ interface Task {
   priority?: string | null;
   attachment_url?: string | null;
   attachment_kind?: string | null;
+  assigned_to?: string | null;
+}
+
+interface Collaborator {
+  id: string;
+  full_name: string;
+  avatar_url?: string | null;
 }
 
 interface WorkSectionProps {
   tasks: Task[];
   projectId: string;
   currentUserId: string;
+  collaborators?: Collaborator[];
   onUpdated: () => void;
 }
 
@@ -50,16 +65,29 @@ const isBlocking = (t: Task) => {
   return p === "blocking" || p === "urgent" || p === "high";
 };
 
+const initials = (name: string) =>
+  name
+    .split(" ")
+    .map((s) => s[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+const SWIPE_THRESHOLD = 70; // px
+
 /**
  * Scroll-native task feed (replaces Kanban).
  * - Blocking tasks pinned at top with flame badge
- * - Active tasks in a single vertical list with one-tap complete
- * - Completed work auto-collapses into a "Completed (X)" folder
+ * - Swipe right → mark done. Swipe left on a done task → reopen.
+ * - Inline assignee picker (Add UserPlus → menu of collaborators).
+ * - Completed work auto-collapses into a "Completed (X)" folder.
  */
 export const WorkSection = ({
   tasks,
   projectId,
   currentUserId,
+  collaborators = [],
   onUpdated,
 }: WorkSectionProps) => {
   const { toast } = useToast();
@@ -69,6 +97,13 @@ export const WorkSection = ({
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [folderOpen, setFolderOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [assigningId, setAssigningId] = useState<string | null>(null);
+
+  const collabMap = useMemo(() => {
+    const m = new Map<string, Collaborator>();
+    for (const c of collaborators) m.set(c.id, c);
+    return m;
+  }, [collaborators]);
 
   const { blocking, active, done } = useMemo(() => {
     const blocking: Task[] = [];
@@ -129,74 +164,248 @@ export const WorkSection = ({
     onUpdated();
   };
 
+  const assignTo = async (task: Task, userId: string | null) => {
+    setAssigningId(task.id);
+    const { error } = await supabase
+      .from("project_tasks")
+      .update({ assigned_to: userId })
+      .eq("id", task.id);
+    setAssigningId(null);
+    if (error) {
+      toast({
+        title: "Couldn't assign",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+    onUpdated();
+  };
+
   const TaskRow = ({ task, isDone }: { task: Task; isDone: boolean }) => {
     const expanded = expandedId === task.id;
     const blocking = isBlocking(task);
+    const assignee = task.assigned_to ? collabMap.get(task.assigned_to) : null;
+    const [pickerOpen, setPickerOpen] = useState(false);
+
+    // Swipe state — refs so re-renders don't reset mid-gesture
+    const startXRef = useRef<number | null>(null);
+    const [dx, setDx] = useState(0);
+    const [released, setReleased] = useState(false);
+
+    const onTouchStart = (e: React.TouchEvent) => {
+      startXRef.current = e.touches[0].clientX;
+      setReleased(false);
+    };
+    const onTouchMove = (e: React.TouchEvent) => {
+      if (startXRef.current == null) return;
+      const delta = e.touches[0].clientX - startXRef.current;
+      // Only allow right swipe for active, left swipe for done
+      if (!isDone && delta > 0) setDx(Math.min(delta, 140));
+      else if (isDone && delta < 0) setDx(Math.max(delta, -140));
+    };
+    const onTouchEnd = () => {
+      startXRef.current = null;
+      setReleased(true);
+      if (!isDone && dx > SWIPE_THRESHOLD) {
+        setDx(320);
+        markDone(task);
+      } else if (isDone && dx < -SWIPE_THRESHOLD) {
+        setDx(-320);
+        reopen(task);
+      } else {
+        setDx(0);
+      }
+    };
+
+    const showSwipeHint = Math.abs(dx) > 10;
+
     return (
-      <button
-        type="button"
-        onClick={() => setExpandedId(expanded ? null : task.id)}
-        className={cn(
-          "w-full text-left rounded-xl bg-card ring-1 ring-border p-3 transition-all hover:ring-primary/40",
-          blocking && !isDone && "ring-destructive/40 bg-destructive/5",
-          isDone && "opacity-60"
-        )}
-      >
-        <div className="flex items-start gap-3">
-          <button
-            type="button"
-            aria-label={isDone ? "Reopen task" : "Mark done"}
-            disabled={busyId === task.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              isDone ? reopen(task) : markDone(task);
-            }}
+      <div className="relative">
+        {/* Action surface revealed by the swipe */}
+        {showSwipeHint && (
+          <div
             className={cn(
-              "mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
-              isDone
-                ? "bg-primary border-primary"
-                : blocking
-                ? "border-destructive hover:bg-destructive/10"
-                : "border-muted-foreground/40 hover:border-primary"
+              "absolute inset-0 rounded-xl flex items-center px-4 text-xs font-bold uppercase tracking-wider",
+              !isDone
+                ? "bg-primary/15 text-primary justify-start"
+                : "bg-muted text-muted-foreground justify-end",
             )}
           >
-            {busyId === task.id ? (
-              <Loader2 className="h-3 w-3 animate-spin text-foreground" />
-            ) : isDone ? (
-              <Check className="h-3 w-3 text-primary-foreground" />
-            ) : null}
-          </button>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {blocking && !isDone && (
-                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-destructive">
-                  <Flame className="h-2.5 w-2.5" /> Blocking
-                </span>
-              )}
-              <p
-                className={cn(
-                  "text-sm leading-snug break-words",
-                  isDone && "line-through text-muted-foreground"
-                )}
-              >
-                {task.title}
-              </p>
-            </div>
-            {task.attachment_url && (
-              <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-                {attachmentIcon(task.attachment_url, task.attachment_kind)}
-                attachment
+            {!isDone ? (
+              <span className="flex items-center gap-1.5">
+                <Check className="h-4 w-4" /> Done
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <RotateCcw className="h-4 w-4" /> Reopen
               </span>
             )}
-            {expanded && task.description && (
-              <p className="mt-1.5 text-xs text-muted-foreground whitespace-pre-wrap">
-                {task.description}
-              </p>
-            )}
+          </div>
+        )}
+
+        <div
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          style={{
+            transform: `translateX(${dx}px)`,
+            transition: released ? "transform 200ms ease-out" : "none",
+          }}
+          className={cn(
+            "relative w-full rounded-xl bg-card ring-1 ring-border p-3 transition-shadow hover:ring-primary/40",
+            blocking && !isDone && "ring-destructive/40 bg-destructive/5",
+            isDone && "opacity-60",
+          )}
+        >
+          <div className="flex items-start gap-3">
+            <button
+              type="button"
+              aria-label={isDone ? "Reopen task" : "Mark done"}
+              disabled={busyId === task.id}
+              onClick={(e) => {
+                e.stopPropagation();
+                isDone ? reopen(task) : markDone(task);
+              }}
+              className={cn(
+                "mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
+                isDone
+                  ? "bg-primary border-primary"
+                  : blocking
+                    ? "border-destructive hover:bg-destructive/10"
+                    : "border-muted-foreground/40 hover:border-primary",
+              )}
+            >
+              {busyId === task.id ? (
+                <Loader2 className="h-3 w-3 animate-spin text-foreground" />
+              ) : isDone ? (
+                <Check className="h-3 w-3 text-primary-foreground" />
+              ) : null}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setExpandedId(expanded ? null : task.id)}
+              className="flex-1 min-w-0 text-left"
+            >
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {blocking && !isDone && (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-destructive">
+                    <Flame className="h-2.5 w-2.5" /> Blocking
+                  </span>
+                )}
+                <p
+                  className={cn(
+                    "text-sm leading-snug break-words",
+                    isDone && "line-through text-muted-foreground",
+                  )}
+                >
+                  {task.title}
+                </p>
+              </div>
+              {task.attachment_url && (
+                <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                  {attachmentIcon(task.attachment_url, task.attachment_kind)}
+                  attachment
+                </span>
+              )}
+              {expanded && task.description && (
+                <p className="mt-1.5 text-xs text-muted-foreground whitespace-pre-wrap">
+                  {task.description}
+                </p>
+              )}
+            </button>
+
+            {/* Assignee picker */}
+            <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  aria-label={
+                    assignee ? `Assigned to ${assignee.full_name}` : "Assign someone"
+                  }
+                  className="shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {assigningId === task.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : assignee ? (
+                    <Avatar className="h-6 w-6 ring-1 ring-border">
+                      <AvatarImage src={assignee.avatar_url || undefined} />
+                      <AvatarFallback className="text-[9px] font-semibold">
+                        {initials(assignee.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <span className="h-6 w-6 rounded-full border border-dashed border-muted-foreground/40 flex items-center justify-center hover:border-primary hover:text-primary text-muted-foreground transition-colors">
+                      <UserPlus className="h-3 w-3" />
+                    </span>
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                className="w-56 p-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <p className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Assign to
+                </p>
+                {collaborators.length === 0 ? (
+                  <p className="px-2 py-3 text-xs text-muted-foreground text-center">
+                    Invite someone first.
+                  </p>
+                ) : (
+                  <div className="max-h-64 overflow-y-auto">
+                    {collaborators.map((c) => {
+                      const selected = task.assigned_to === c.id;
+                      return (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            assignTo(task, selected ? null : c.id);
+                            setPickerOpen(false);
+                          }}
+                          className={cn(
+                            "w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-accent text-left",
+                            selected && "bg-primary/10",
+                          )}
+                        >
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={c.avatar_url || undefined} />
+                            <AvatarFallback className="text-[9px] font-semibold">
+                              {initials(c.full_name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs flex-1 truncate">
+                            {c.id === currentUserId ? "Me" : c.full_name}
+                          </span>
+                          {selected && (
+                            <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {task.assigned_to && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      assignTo(task, null);
+                      setPickerOpen(false);
+                    }}
+                    className="w-full text-left px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent rounded-md mt-1 border-t border-border pt-2"
+                  >
+                    Unassign
+                  </button>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
-      </button>
+      </div>
     );
   };
 
@@ -210,6 +419,13 @@ export const WorkSection = ({
           {done.length}/{tasks.length} done
         </span>
       </header>
+
+      {/* Swipe hint — only when there's something to swipe */}
+      {tasks.length > 0 && (active.length > 0 || blocking.length > 0) && (
+        <p className="text-[10px] text-muted-foreground text-center">
+          Tip: swipe a task right to mark done →
+        </p>
+      )}
 
       {/* Blocking — pinned top */}
       {blocking.length > 0 && (
@@ -349,23 +565,7 @@ export const WorkSection = ({
           {folderOpen && (
             <div className="p-2 space-y-1.5 border-t border-border/60">
               {done.map((t) => (
-                <div
-                  key={t.id}
-                  className="flex items-center gap-2 rounded-lg bg-card/60 px-2.5 py-2"
-                >
-                  <Check className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span className="flex-1 text-xs line-through text-muted-foreground truncate">
-                    {t.title}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => reopen(t)}
-                    disabled={busyId === t.id}
-                    className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"
-                  >
-                    <RotateCcw className="h-3 w-3" /> Reopen
-                  </button>
-                </div>
+                <TaskRow key={t.id} task={t} isDone />
               ))}
             </div>
           )}

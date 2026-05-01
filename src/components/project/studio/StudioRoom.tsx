@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import { VibeHeader } from "./VibeHeader";
 import { NextStepCard } from "./NextStepCard";
+import { ProactiveCards } from "./ProactiveCards";
 import { BriefSection } from "./BriefSection";
 import { WorkSection } from "./WorkSection";
 import { MoneySection } from "./MoneySection";
@@ -130,6 +131,12 @@ export const StudioRoom = ({
       {nextStep && (
         <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />
       )}
+
+      <ProactiveCards
+        project={project}
+        tasks={tasks}
+        onAction={onNavigateToTab}
+      />
 
       <div className="divide-y divide-border/60">
         <BriefSection

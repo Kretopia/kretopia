@@ -16,6 +16,9 @@ type ToolName =
   | "send_message_to_collaborator"
   | "get_project_summary"
   | "schedule_reminder"
+  | "draft_invoice"
+  | "start_video_call"
+  | "add_credit"
   | "ask_clarification";
 
 const TOOLS = [
@@ -95,6 +98,50 @@ const TOOLS = [
           when_iso: { type: "string", description: "ISO YYYY-MM-DD" },
         },
         required: ["what", "when_iso"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "draft_invoice",
+      description:
+        "Create a DRAFT invoice for this project (NEVER auto-sent). User must confirm in next turn to send. Use when user says 'invoice', 'bill', 'charge'.",
+      parameters: {
+        type: "object",
+        properties: {
+          amount: { type: "number", description: "Invoice total amount." },
+          currency: { type: ["string", "null"], description: "ISO code, defaults to USD." },
+          notes: { type: ["string", "null"], description: "Short line-item description." },
+          due_in_days: { type: ["number", "null"], description: "Days until due, defaults to 14." },
+        },
+        required: ["amount", "currency", "notes", "due_in_days"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "start_video_call",
+      description: "Spin up a Daily video room for this project and post the join link in chat. Use for 'jump on a call', 'start meeting'.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_credit",
+      description: "Add a ThriveCredit to the user's profile from this project (e.g. 'log this as a credit', 'add to my resume').",
+      parameters: {
+        type: "object",
+        properties: {
+          role: { type: "string", description: "User's role on the project, e.g. Director, Editor." },
+          year: { type: ["number", "null"] },
+          description: { type: ["string", "null"] },
+        },
+        required: ["role", "year", "description"],
         additionalProperties: false,
       },
     },
@@ -232,10 +279,11 @@ DECISION RULES:
    - HIGH (clear action + clear target) → call the matching tool directly.
    - MEDIUM (action clear, detail vague) → make a sensible default and call the tool.
    - LOW (ambiguous) → call ask_clarification with one short question.
-3. Multi-step: chain 2 tool calls max per turn (e.g. summary + suggested task).
+3. Multi-step: chain 2 tool calls max per turn (e.g. summary + suggested task). For "wrap up project" type requests, prefer get_project_summary + one concrete next action.
 4. Never invent collaborator ids — only use ones from the list above.
-5. Never call destructive tools without obvious user intent.
-6. Keep tool arg \`message\` / \`title\` / \`question\` natural, friendly, under 200 chars.
+5. SAFETY: draft_invoice creates a DRAFT only — never auto-send. add_credit logs to the user's own profile (safe). start_video_call posts a join link in chat (safe).
+6. Money rule: if the user asks for an invoice without an amount, ask_clarification for amount + brief description.
+7. Keep tool arg \`message\` / \`title\` / \`question\` natural, friendly, under 200 chars.
 
 When you respond in natural language (after tools), keep it to 1–2 sentences, action-focused. No emojis.`;
 
@@ -369,6 +417,54 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
             },
             ok: true,
           });
+        } else if (name === "draft_invoice") {
+          const dueDays = Number(args.due_in_days ?? 14);
+          const dueDate = new Date(Date.now() + dueDays * 86400000).toISOString();
+          const amount = Number(args.amount || 0);
+          const invNum = `INV-${Date.now().toString().slice(-8)}`;
+          const { data, error } = await admin
+            .from("invoices")
+            .insert({
+              invoice_number: invNum,
+              project_id,
+              issued_by: user.id,
+              issued_to: project?.client_user_id ?? null,
+              amount,
+              total_amount: amount,
+              currency: (args.currency || project?.currency || "USD").toUpperCase(),
+              status: "draft",
+              due_date: dueDate,
+              notes: args.notes || null,
+              document_type: "invoice",
+            })
+            .select("id, invoice_number, total_amount, currency")
+            .single();
+          if (error) throw error;
+          actions.push({ tool: name, args, result: data, ok: true });
+        } else if (name === "start_video_call") {
+          // Reuse existing create-video-room edge fn (handles Daily.co + chat post)
+          const { data, error } = await admin.functions.invoke("create-video-room", {
+            body: { project_id, user_name: user.email?.split("@")[0] || "Member" },
+            headers: { Authorization: authHeader },
+          });
+          if (error) throw error;
+          actions.push({ tool: name, args, result: { url: (data as any)?.url }, ok: true });
+        } else if (name === "add_credit") {
+          const { data, error } = await admin
+            .from("credits")
+            .insert({
+              user_id: user.id,
+              project_name: project?.title || "Untitled project",
+              role: String(args.role || "Contributor").slice(0, 80),
+              year: args.year || new Date().getFullYear(),
+              description: args.description || null,
+              source: "thrive_agent",
+              verification_status: "self_reported",
+            })
+            .select("id, project_name, role")
+            .single();
+          if (error) throw error;
+          actions.push({ tool: name, args, result: data, ok: true });
         } else if (name === "ask_clarification") {
           actions.push({ tool: name, args, result: { question: args.question }, ok: true });
         }
@@ -388,6 +484,12 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
       else if (a.tool === "send_message_to_collaborator" && a.ok) finalReply = "Message posted to project chat.";
       else if (a.tool === "get_project_summary" && a.ok)
         finalReply = `${a.result.open_tasks} open tasks, ${a.result.overdue} overdue.`;
+      else if (a.tool === "draft_invoice" && a.ok)
+        finalReply = `Draft invoice ${a.result.invoice_number} for ${a.result.currency} ${a.result.total_amount} created. Review & send from Money tab.`;
+      else if (a.tool === "start_video_call" && a.ok)
+        finalReply = "Video room is live and link posted in chat.";
+      else if (a.tool === "add_credit" && a.ok)
+        finalReply = `Credit added: ${a.result.role} on "${a.result.project_name}".`;
       else if (a.tool === "ask_clarification") finalReply = a.result.question;
       else finalReply = "Done.";
     }

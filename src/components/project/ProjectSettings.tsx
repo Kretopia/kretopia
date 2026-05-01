@@ -295,6 +295,16 @@ export function ProjectSettings({ project, onUpdate, userRole }: ProjectSettings
                 title="Agent Mode for projects"
                 description="Let the Copilot watch this project and propose follow-ups, task nudges and recap drafts. Nothing is sent without your tap."
               />
+              <AgentModeToggle
+                domain="agent_mode_payments"
+                title="Auto close-out: Payments"
+                description="When a milestone is marked complete, the Copilot drafts an invoice card for you to tap-send."
+              />
+              <AgentModeToggle
+                domain="agent_mode_credits"
+                title="Auto close-out: Credits & Vouches"
+                description="After the invoice is sent, the Copilot queues a credit and a vouch request — one tap each."
+              />
             </div>
 
             {userRole === 'client' && <Separator />}

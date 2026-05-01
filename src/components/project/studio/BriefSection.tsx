@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { MoodboardThumb } from "./MoodboardThumb";
 import { BriefVoiceRecorder } from "./BriefVoiceRecorder";
+import { FileCommentsSheet } from "./FileCommentsSheet";
 
 interface BriefSectionProps {
   project: {
@@ -18,6 +19,7 @@ interface BriefSectionProps {
   isOwner: boolean;
   onUpdated: () => void;
   onAddReference: () => void;
+  currentUserId?: string;
 }
 
 export const BriefSection = ({

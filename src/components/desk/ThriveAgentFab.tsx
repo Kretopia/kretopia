@@ -1,136 +1,232 @@
-import { useEffect, useState, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Sparkles, Send, Loader2, X, Mic, CheckCircle2, AlertCircle, MessageSquare } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useLocation } from "react-router-dom";
+import { Sparkles, Send, Loader2, Trash2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+  streamCopilot,
+  loadCopilotHistory,
+  inferSurface,
+  SURFACE_LABEL,
+  type CopilotMessage,
+  type CopilotSurface,
+} from "@/lib/thriveCopilot";
 
-interface ProjectOption {
-  id: string;
-  title: string;
-}
+/**
+ * Thrive Copilot — the SINGLE assistant for the whole platform.
+ *
+ * - Persistent thread across surfaces (Desk, Pay, Match, Credits, Events, Profile…)
+ *   — server stores both turns in ai_messages so reopening anywhere shows full history.
+ * - Surface chip tells the model where the user opened it from, so replies stay
+ *   relevant to the page in front of them ("On: ThrivePay · Invoice #1042").
+ * - Greets the user by first name on every reply (server-side prompt).
+ *
+ * Hidden on auth, landing, and other unauthenticated/full-screen surfaces.
+ */
 
-interface AgentAction {
-  tool: string;
-  ok: boolean;
-  args: any;
-  result: any;
-}
-
-interface AgentResponse {
-  reply: string;
-  actions?: AgentAction[];
-  error?: string;
-}
-
-const QUICK_PROMPTS = [
-  "Summarize where this project stands",
-  "Add task: send draft tomorrow",
-  "Tell the team I'll send the brief by EOD",
-  "What's overdue?",
+const HIDDEN_PATH_PREFIXES = [
+  "/auth",
+  "/login",
+  "/signup",
+  "/onboarding",
+  "/claim",
+  "/accept-invite",
+  "/landing",
+  "/check-in",
+  "/call/",
+  "/guest-call",
 ];
 
+const QUICK_PROMPTS_BY_SURFACE: Partial<Record<CopilotSurface, string[]>> = {
+  desk: [
+    "Where does my main project stand?",
+    "What's overdue?",
+    "Draft tomorrow's first task for me",
+  ],
+  pay: [
+    "How much am I owed right now?",
+    "Draft a payment-due reminder",
+    "Summarize this week's money",
+  ],
+  match: [
+    "Find me a videographer in my city",
+    "Draft an outreach DM",
+  ],
+  gigs: [
+    "Find gigs that match my skills",
+    "Help me write a strong application",
+  ],
+  home: [
+    "What's the most useful thing I can do today?",
+    "Catch me up since yesterday",
+  ],
+  profile: [
+    "What's missing from my profile?",
+    "Suggest a stronger bio for me",
+  ],
+  credit: [
+    "Which credits should I verify next?",
+    "Tag collaborators on my latest credit",
+  ],
+  event: [
+    "Help me write a kickoff post for my next event",
+    "Recap my last event for me",
+  ],
+};
+
 export const ThriveAgentFab = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
-  const [projects, setProjects] = useState<ProjectOption[]>([]);
-  const [lastResult, setLastResult] = useState<AgentResponse | null>(null);
+  const [messages, setMessages] = useState<CopilotMessage[]>([]);
+  const [conversationId, setConversationId] = useState<string | undefined>();
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [surfaceContext, setSurfaceContext] = useState<Record<string, unknown>>({});
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  // Detect project_id from /desk/:projectId
-  const routeProjectId = (() => {
-    const m = location.pathname.match(/^\/desk\/([0-9a-f-]{36})/i);
-    return m?.[1] || null;
-  })();
+  const surface: CopilotSurface = inferSurface(location.pathname);
 
-  // Only show on individual project pages — the /desk list page already has
-  // the voice "create new project" FAB, and stacking two sparkles+mic FABs
-  // creates visual collision (see screenshot bug 2026-05-01).
-  const onProjectPage = !!routeProjectId;
-
+  // Resolve surface_context from the URL where helpful (project_id from /desk/:id)
   useEffect(() => {
-    if (routeProjectId) setActiveProjectId(routeProjectId);
-  }, [routeProjectId]);
+    const ctx: Record<string, unknown> = { pathname: location.pathname };
+    const deskMatch = location.pathname.match(/^\/desk\/([0-9a-f-]{36})/i);
+    if (deskMatch) ctx.project_id = deskMatch[1];
+    const eventMatch = location.pathname.match(/^\/event\/([^/]+)/i);
+    if (eventMatch) ctx.event_slug_or_id = eventMatch[1];
+    setSurfaceContext(ctx);
+  }, [location.pathname]);
 
-  // Load projects list when sheet opens without a route project
+  // When the drawer opens for the first time, hydrate persisted history.
   useEffect(() => {
-    if (!open || !user || routeProjectId) return;
-    (async () => {
-      const { data } = await supabase
-        .from("projects")
-        .select("id, title")
-        .or(`created_by.eq.${user.id},client_user_id.eq.${user.id}`)
-        .order("updated_at", { ascending: false })
-        .limit(20);
-      setProjects(data || []);
-      if (!activeProjectId && data?.[0]) setActiveProjectId(data[0].id);
-    })().catch(() => {});
-  }, [open, user, routeProjectId, activeProjectId]);
+    if (!open || historyLoaded || !user) return;
+    let cancelled = false;
+    loadCopilotHistory()
+      .then((rows) => {
+        if (cancelled) return;
+        setMessages(rows);
+        setHistoryLoaded(true);
+      })
+      .catch(() => {
+        if (!cancelled) setHistoryLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, historyLoaded, user]);
+
+  // Auto-scroll on new content
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages, sending]);
 
   const send = useCallback(
-    async (msg?: string) => {
-      const message = (msg ?? text).trim();
-      if (!message || sending) return;
-      if (!activeProjectId) {
-        toast.error("Pick a project first");
-        return;
-      }
+    async (msgText?: string) => {
+      const content = (msgText ?? text).trim();
+      if (!content || sending) return;
+      const userMsg: CopilotMessage = { role: "user", content };
+      const next = [...messages, userMsg];
+      setMessages(next);
+      setText("");
       setSending(true);
-      setLastResult(null);
-      try {
-        const { data, error } = await supabase.functions.invoke("desk-agent", {
-          body: { project_id: activeProjectId, message },
+
+      // Optimistic empty assistant placeholder so streaming can fill it
+      let assistantSoFar = "";
+      const upsertAssistant = (chunk: string) => {
+        assistantSoFar += chunk;
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant") {
+            return prev.map((m, i) =>
+              i === prev.length - 1 ? { ...m, content: assistantSoFar } : m,
+            );
+          }
+          return [...prev, { role: "assistant", content: assistantSoFar }];
         });
-        if (error) throw error;
-        if ((data as any)?.error) throw new Error((data as any).error);
+      };
 
-        const resp = data as AgentResponse;
-        setLastResult(resp);
-        setText("");
+      const controller = new AbortController();
+      abortRef.current = controller;
 
-        // Toast-style summary
-        const firstAction = resp.actions?.[0];
-        if (firstAction?.ok && firstAction.tool !== "ask_clarification") {
-          toast.success(resp.reply, { duration: 4000 });
-          // Auto-close on successful action
-          setTimeout(() => setOpen(false), 1200);
-        } else if (firstAction?.tool === "ask_clarification") {
-          // Keep open for follow-up
-        } else if (!resp.actions?.length) {
-          toast(resp.reply, { duration: 4000 });
-        }
-      } catch (e: any) {
-        toast.error(e.message || "Agent error");
-      } finally {
+      try {
+        await streamCopilot({
+          // Server already has prior history; send only the latest user turn
+          messages: [userMsg],
+          surface,
+          surfaceContext,
+          conversationId,
+          onConversationId: setConversationId,
+          onDelta: upsertAssistant,
+          onDone: () => setSending(false),
+          onError: (err) => {
+            toast.error(err);
+            // Roll back the optimistic user message if nothing came back
+            if (!assistantSoFar) {
+              setMessages((prev) => prev.filter((m) => m !== userMsg));
+            }
+            setSending(false);
+          },
+          signal: controller.signal,
+        });
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Something went wrong");
         setSending(false);
+      } finally {
+        abortRef.current = null;
       }
     },
-    [text, sending, activeProjectId],
+    [text, sending, messages, surface, surfaceContext, conversationId],
   );
 
-  if (!user || !onProjectPage) return null;
+  const clearHistory = useCallback(async () => {
+    if (!user) return;
+    if (!confirm("Clear your Thrive Copilot history? This can't be undone.")) return;
+    try {
+      const { data: convo } = await supabase
+        .from("ai_conversations")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("title", "__copilot__")
+        .maybeSingle();
+      if (convo?.id) {
+        await supabase.from("ai_messages").delete().eq("conversation_id", convo.id);
+      }
+      setMessages([]);
+      toast.success("History cleared");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not clear history");
+    }
+  }, [user]);
+
+  const hidden =
+    !user ||
+    HIDDEN_PATH_PREFIXES.some((p) => location.pathname.startsWith(p));
+
+  if (hidden) return null;
+
+  const quickPrompts = QUICK_PROMPTS_BY_SURFACE[surface] ?? QUICK_PROMPTS_BY_SURFACE.home!;
+  const surfaceLabel = SURFACE_LABEL[surface];
 
   return (
     <>
-      {/* Floating button — sits above bottom nav */}
       <button
         onClick={() => setOpen(true)}
-        aria-label="Open Thrive Agent"
+        aria-label="Open Thrive Copilot"
         className={cn(
           "fixed right-4 z-40 h-14 w-14 rounded-full shadow-xl",
           "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground",
@@ -144,42 +240,93 @@ export const ThriveAgentFab = () => {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="bottom"
-          className="rounded-t-3xl border-t border-border p-0 max-h-[85vh] overflow-y-auto"
+          className="rounded-t-3xl border-t border-border p-0 h-[85vh] flex flex-col"
         >
-          <SheetHeader className="px-5 pt-5 pb-2">
-            <SheetTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="h-4 w-4 text-primary" />
-              Thrive Agent
-            </SheetTitle>
+          <SheetHeader className="px-5 pt-5 pb-3 border-b border-border shrink-0">
+            <div className="flex items-center justify-between gap-3">
+              <SheetTitle className="flex items-center gap-2 text-base">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Thrive Copilot
+              </SheetTitle>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
+                  On: {surfaceLabel}
+                </Badge>
+                {messages.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-muted-foreground"
+                    onClick={clearHistory}
+                    aria-label="Clear chat history"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            </div>
           </SheetHeader>
 
-          <div className="px-5 pb-8 pt-2 space-y-4">
-            {/* Project picker (only when not on a project page) */}
-            {!routeProjectId && projects.length > 0 && (
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Project
-                </label>
-                <Select
-                  value={activeProjectId || undefined}
-                  onValueChange={setActiveProjectId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pick a project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          {/* Scrollable chat area */}
+          <div
+            ref={scrollRef}
+            className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-3"
+          >
+            {messages.length === 0 && historyLoaded && !sending && (
+              <div className="space-y-3">
+                <div className="text-sm text-muted-foreground">
+                  Hey — I'm your Thrive Copilot. I know your profile, projects, money
+                  and events, and I follow you across the platform. What's up?
+                </div>
+                <div className="space-y-1.5">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Try
+                  </div>
+                  {quickPrompts.map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => send(p)}
+                      disabled={sending}
+                      className="w-full text-left text-xs px-3 py-2 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/40 transition-colors"
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Composer */}
-            <div className="space-y-2">
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "max-w-[90%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                  m.role === "user"
+                    ? "ml-auto bg-primary text-primary-foreground"
+                    : "mr-auto bg-accent/60 text-foreground",
+                )}
+              >
+                {m.role === "assistant" ? (
+                  <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_pre]:my-1 [&_pre]:text-xs">
+                    <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-wrap">{m.content}</div>
+                )}
+              </div>
+            ))}
+
+            {sending && messages[messages.length - 1]?.role === "user" && (
+              <div className="mr-auto bg-accent/60 rounded-2xl px-3.5 py-2.5 text-sm text-muted-foreground inline-flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Thinking…
+              </div>
+            )}
+          </div>
+
+          {/* Composer */}
+          <div className="border-t border-border bg-background p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shrink-0">
+            <div className="flex items-end gap-2">
               <Textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -189,67 +336,23 @@ export const ThriveAgentFab = () => {
                     send();
                   }
                 }}
-                placeholder='Tell the agent what to do… e.g. "Add task: edit reel by Friday"'
-                rows={3}
-                className="resize-none text-sm"
-                autoFocus
+                placeholder={`Ask anything from ${surfaceLabel}…`}
+                rows={2}
+                className="resize-none text-sm flex-1 min-h-[44px]"
               />
-              <div className="flex items-center gap-2">
-                <Button
-                  className="flex-1"
-                  onClick={() => send()}
-                  disabled={!text.trim() || sending || !activeProjectId}
-                >
-                  {sending ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                  ) : (
-                    <Send className="h-4 w-4 mr-1" />
-                  )}
-                  Run
-                </Button>
-              </div>
-            </div>
-
-            {/* Quick prompts */}
-            {!lastResult && !sending && (
-              <div className="space-y-1.5">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Try
-                </div>
-                {QUICK_PROMPTS.map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => send(p)}
-                    disabled={sending || !activeProjectId}
-                    className="w-full text-left text-xs px-3 py-2 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/40 transition-colors flex items-center gap-2 disabled:opacity-50"
-                  >
-                    <MessageSquare className="h-3 w-3 text-primary shrink-0" />
-                    {p}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Result card */}
-            {lastResult && (
-              <div className="rounded-xl border border-border bg-accent/40 p-3 space-y-2">
-                <div className="flex items-start gap-2">
-                  {lastResult.actions?.[0]?.ok !== false ? (
-                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-                  )}
-                  <div className="text-sm leading-snug">{lastResult.reply}</div>
-                </div>
-                {lastResult.actions && lastResult.actions.length > 0 && (
-                  <div className="text-[10px] text-muted-foreground pl-6">
-                    {lastResult.actions
-                      .map((a) => a.tool.replace(/_/g, " "))
-                      .join(" → ")}
-                  </div>
+              <Button
+                onClick={() => send()}
+                disabled={!text.trim() || sending}
+                size="icon"
+                className="h-11 w-11 shrink-0"
+              >
+                {sending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
                 )}
-              </div>
-            )}
+              </Button>
+            </div>
           </div>
         </SheetContent>
       </Sheet>

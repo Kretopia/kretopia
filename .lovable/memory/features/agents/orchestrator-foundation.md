@@ -1,37 +1,34 @@
 ---
-name: Agent Orchestrator Foundation (Week 1-2)
-description: Single agent-orchestrator edge fn + orch_* tables + 3-tier approval system; Week 2 wires Home tray, per-domain Agent Mode toggle, and desk-daily-nudge auto-proposals
+name: Agent Orchestrator Foundation (Week 1-4)
+description: Single agent-orchestrator edge fn + orch_* tables + 3-tier approval system. W2 wires Home tray + per-domain Agent Mode + desk-daily-nudge auto-proposals. W3 adds Talent Copilot (Match→Find). W4 adds Money & Proof chain (milestone→invoice→credit→vouch) via DB triggers.
 type: feature
 ---
-**Goal**: Turn ThriveIN's 185 edge functions into agent-callable tools with audit + approval.
+**Goal**: Turn ThriveIN's edge functions into agent-callable tools with audit + approval.
 
-**Tables (namespaced `orch_*` to avoid collision with legacy `agent_actions`/`agent_settings`)**:
-- `orch_runs` — one row per intent invocation (user_id, agent_kind, intent_text, status, latency_ms)
-- `orch_actions` — every tool call proposed/executed (risk_level, status, preview_title/body, tool_args, result)
-- `orch_approvals` — user decisions on Level-2 (approved/rejected/edited)
-- `orch_tool_registry` — catalog of ~25 seeded tools mapped to existing edge fns, w/ JSON schema + risk_level
-- `orch_settings` — per-user kill switch, auto_run_safe, agent_mode_{projects|talent|payments|credits}, daily_action_limit (default 25)
+**Tables (namespaced `orch_*`)**:
+- `orch_runs` — one row per intent invocation
+- `orch_actions` — every tool call proposed/executed (risk_level, status, preview, tool_args, result). `tool_args._chain = {kind, step, milestone_id}` marks chain membership.
+- `orch_approvals` — user decisions on Level-2
+- `orch_tool_registry` — catalog of ~25 seeded tools mapped to existing edge fns
+- `orch_settings` — per-user kill switch + auto_run_safe + agent_mode_{projects|talent|payments|credits} + daily_action_limit (default 25)
 
-**Edge fn**: `supabase/functions/agent-orchestrator/index.ts`
-- Two paths: intent (classify→plan→execute) and approval ({action_id, decision})
-- safe_auto auto-runs, requires_approval queued as `proposed`, locked blocked
-- Calls handlers via `${SUPABASE_URL}/functions/v1/${handler}` with user's JWT (RLS-safe)
+**Edge fn**: `supabase/functions/agent-orchestrator/index.ts` — intent path (classify→plan→execute) + approval path ({action_id, decision}) + `mode: "draft_outreach_batch"` for Talent Copilot.
 
 **Frontend**:
 - `src/lib/agentOrchestrator.ts` — `sendAgentIntent()` + `decideAgentAction()`
-- `src/components/agent/AgentApprovalCard.tsx` — Approve/Dismiss card primitive
-- `src/components/agent/AgentApprovalsTray.tsx` — drop anywhere; self-fetches + realtime
-- `src/components/agent/AgentModeToggle.tsx` — per-domain switch; writes orch_settings.agent_mode_*
-- `src/hooks/usePendingAgentActions.ts` — realtime subscription to user's pending actions
+- `AgentApprovalCard` / `AgentApprovalsTray` (mounted on UnifiedHome) / `AgentModeToggle` (4 domains)
+- `usePendingAgentActions` — realtime subscription
+- `TalentCopilot` — Match → Find tab. Uses `ai-talent-match` to rank, then `mode:draft_outreach_batch` for personalized DMs → per-creator approval cards.
 
-**Week 2 wiring**:
-- Tray mounted on `UnifiedHome.tsx` (auth hub, above WeeklyIntentCard) — silent when empty
-- `AgentModeToggle` (`agent_mode_projects`) lives in `ProjectSettings.tsx` "Project Copilot" section, visible to all collaborators
-- `desk-daily-nudge` extended: after the daily push, for users with `agent_mode_projects=true` it inserts a `client_followup` orch_run + Level-2 `orch_actions` (≤2 `send_reminder` for overdue tasks, ≤2 `send_payment_link` for draft invoices). Throttled by `orch_settings.daily_action_limit` (counts proposals today).
+**Week 4: Money & Proof Chain (DB-trigger driven, sequential)**:
+- Trigger `trg_milestone_money_proof_chain` on `milestones` AFTER UPDATE OF status: when status→`completed` AND project owner has `agent_mode_payments=true` AND under daily cap → creates `orch_run` (kind=`payment`) + first `proposed` action `send_payment_link` (invoice card).
+- Trigger `trg_advance_money_proof_chain` on `orch_actions` AFTER UPDATE OF status: when an action with `tool_args._chain.kind='money_proof'` becomes `executed`:
+  - step `invoice` → propose `publish_credit` (only if `agent_mode_credits=true`)
+  - step `credit` → propose `request_vouch`
+  - step `vouch` → mark run `completed`
+- Both functions are SECURITY DEFINER with `SET search_path = public`. Settings re-checked on every step (toggle off mid-chain stops it).
+- Toggles surface in `ProjectSettings.tsx` "Project Copilot" section: 3 toggles (projects / payments / credits).
 
-**3-tier risk model**:
-- safe_auto: search/rank/draft/summarize → auto-runs
-- requires_approval: send_message, send_reminder, send_payment_link, create_gig, request_vouch, publish_credit → approval card
-- locked: charge_card → never callable via API
+**3-tier risk model**: safe_auto auto-runs · requires_approval queued as `proposed` · locked never callable.
 
-**Next (Week 3-4)**: Talent Agent vertical slice ("videographer Trinidad <$500" → shortlist → tap-to-send) → Payment+Credit chain (milestone→invoice→credit→vouch).
+**Next**: Week 5 — Cross-agent intent linking (e.g., Talent Copilot result → auto-creates Project + invites shortlisted creator) and richer preview cards (avatar + amount + project context inline).

@@ -217,6 +217,15 @@ export const VibeHeader = ({
           </span>
         </div>
 
+        {/* Live presence — face-pile of collaborators currently in the room */}
+        {onlineUserIds && currentUserId && collaborators.length > 0 && (
+          <LivePresencePile
+            collaborators={collaborators}
+            onlineUserIds={onlineUserIds}
+            currentUserId={currentUserId}
+          />
+        )}
+
         {/* Title — sculptural, magazine-grade */}
         {editingTitle ? (
           <input

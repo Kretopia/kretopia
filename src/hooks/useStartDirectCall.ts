@@ -73,7 +73,8 @@ export const useStartDirectCall = () => {
       if (next.callId) {
         const callIdToMark = next.callId;
         setTimeout(() => {
-          void supabase.rpc("mark_direct_call_missed" as any, { _call_id: callIdToMark }).catch(() => {});
+          supabase.rpc("mark_direct_call_missed" as any, { _call_id: callIdToMark })
+            .then(({ error }) => { if (error) console.warn("[mark missed]", error); });
         }, 30_000);
       }
 

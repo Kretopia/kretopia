@@ -117,6 +117,19 @@ export const DeskTabContent = memo(({
           </>
         )}
 
+        {activeTab === "vault" && (
+          <>
+            <UsageLimitBanner current={files.length} limit={FREE_LIMITS.files} itemName="files" isPro={isPro} />
+            <VaultTab
+              projectId={projectId}
+              files={files}
+              currentUserId={currentUserId}
+              onFileUploaded={onUpdate}
+              onJumpToBrief={() => setTab("brief")}
+            />
+          </>
+        )}
+
         {activeTab === "brief" && (
           <div className="space-y-4">
             <BriefHub projectId={projectId} projectTitle={project.title} onCreated={onUpdate} />
@@ -168,40 +181,69 @@ export const DeskTabContent = memo(({
           </FreeTierGate>
         )}
 
-        {activeTab === "notes" && <ProjectNotes projectId={projectId} />}
-
-        {activeTab === "templates" && (
-          <FreeTierGate feature="templateUses" featureLabel="Project Templates" description="Upgrade to Pro for unlimited templates for music videos, brand campaigns, podcasts, and more.">
-            <ProjectTemplatePicker projectId={projectId} currentUserId={currentUserId} onApplied={onUpdate} />
-          </FreeTierGate>
-        )}
-
-        {activeTab === "ai" && (
-          <FreeTierGate feature="aiBriefs" featureLabel="AI Tools" description="Upgrade to Pro for unlimited AI-powered briefs, automation, and creative tools.">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <AIBriefBuilder projectId={projectId} projectTitle={project.title} projectDescription={project.description} />
-              <AIAutomation projectId={projectId} projectTitle={project.title} projectDescription={project.description} onUpdate={onUpdate} />
-            </div>
-          </FreeTierGate>
+        {activeTab === "notes" && (
+          <WorkflowShell
+            eyebrow="The Pad"
+            title="Notes & Scratch"
+            subtitle="Quick captures, decisions, and creative direction."
+            icon={StickyNote}
+          >
+            <ProjectNotes projectId={projectId} />
+          </WorkflowShell>
         )}
 
         {activeTab === "call_sheet" && (
-          <CallSheetTab projectId={projectId} currentUserId={currentUserId} />
+          <WorkflowShell
+            eyebrow="Production"
+            title="Call Sheet"
+            subtitle="Date, location, contacts, weather — everything for shoot day."
+            icon={Clapperboard}
+          >
+            <CallSheetTab projectId={projectId} currentUserId={currentUserId} />
+          </WorkflowShell>
         )}
         {activeTab === "run_of_show" && (
-          <RunOfShowTab projectId={projectId} currentUserId={currentUserId} />
+          <WorkflowShell
+            eyebrow="Event"
+            title="Run of Show"
+            subtitle="Minute-by-minute timeline of segments, sets, and scenes."
+            icon={ListChecks}
+          >
+            <RunOfShowTab projectId={projectId} currentUserId={currentUserId} />
+          </WorkflowShell>
         )}
         {activeTab === "roll_call" && (
-          <RollCallTab projectId={projectId} collaborators={collaborators} currentUserId={currentUserId} />
+          <WorkflowShell
+            eyebrow="On the Day"
+            title="Roll Call"
+            subtitle="Who's confirmed, who's on the way, who's in the room."
+            icon={UserCheck}
+          >
+            <RollCallTab projectId={projectId} collaborators={collaborators} currentUserId={currentUserId} />
+          </WorkflowShell>
         )}
         {activeTab === "split_sheet" && (
-          <SplitSheetTab projectId={projectId} collaborators={collaborators} currentUserId={currentUserId} />
+          <WorkflowShell
+            eyebrow="Music"
+            title="Split Sheet"
+            subtitle="Songwriter splits & contribution percentages."
+            icon={Music2}
+          >
+            <SplitSheetTab projectId={projectId} collaborators={collaborators} currentUserId={currentUserId} />
+          </WorkflowShell>
         )}
         {activeTab === "exchange" && (
           <ExchangeLedgerTab projectId={projectId} currentUserId={currentUserId} />
         )}
         {activeTab === "revisions" && (
-          <RevisionsTab projectId={projectId} currentUserId={currentUserId} />
+          <WorkflowShell
+            eyebrow="Iteration"
+            title="Revisions"
+            subtitle="Track every round of edits, mixes, and notes."
+            icon={History}
+          >
+            <RevisionsTab projectId={projectId} currentUserId={currentUserId} />
+          </WorkflowShell>
         )}
       </div>
     )}

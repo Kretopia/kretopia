@@ -1,6 +1,7 @@
 // Thrive Agent — project operator with intent classification, confidence-gated
 // tool calling, and conversational memory.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { loadCopilotContext, renderContextPreamble } from "../_shared/copilotContext.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

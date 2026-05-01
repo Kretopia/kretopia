@@ -182,19 +182,47 @@ export function ProjectSettingsMenu({
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52">
-          <DropdownMenuLabel className="text-xs text-muted-foreground">More Tools</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-[0.18em] text-[hsl(var(--energy))]">
+            Studio Tools
+          </DropdownMenuLabel>
           <DropdownMenuGroup>
-            {secondaryTabs.map((tab) => {
+            {coreTools.map((tab) => {
               const Icon = tab.icon;
               return (
                 <DropdownMenuItem
                   key={tab.id}
                   onClick={() => onNavigateToTab(tab.id)}
-                  className="gap-2"
+                  className="gap-3 py-2"
                 >
-                  <Icon className="h-4 w-4" />
-                  {tab.label}
+                  <Icon className="h-4 w-4 text-primary" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold">{tab.label}</span>
+                    <span className="text-[10px] text-muted-foreground leading-none">{tab.hint}</span>
+                  </div>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuGroup>
+
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            {adaptiveLabel}
+          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            {adaptiveTools.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <DropdownMenuItem
+                  key={tab.id}
+                  onClick={() => onNavigateToTab(tab.id)}
+                  className="gap-3 py-2"
+                >
+                  <Icon className="h-4 w-4 text-primary" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold">{tab.label}</span>
+                    <span className="text-[10px] text-muted-foreground leading-none">{tab.hint}</span>
+                  </div>
                   {tab.proOnly && !isPro && (
                     <Crown className="h-3 w-3 text-amber-500 ml-auto" />
                   )}
@@ -204,7 +232,7 @@ export function ProjectSettingsMenu({
           </DropdownMenuGroup>
 
           <DropdownMenuSeparator />
-          <DropdownMenuLabel className="text-xs text-muted-foreground">Project</DropdownMenuLabel>
+          <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Project</DropdownMenuLabel>
 
           {isOwner && (
             <DropdownMenuItem

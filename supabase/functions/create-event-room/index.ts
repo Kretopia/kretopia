@@ -262,6 +262,7 @@ serve(async (req) => {
         token: meetingToken,
         is_host: isHost,
         format: event.online_format,
+        test_mode: isTestMode,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );

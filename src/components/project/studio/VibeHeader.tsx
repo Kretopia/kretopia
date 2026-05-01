@@ -195,12 +195,7 @@ export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: V
           )}
         </div>
 
-        {/* Share */}
-        {isOwner && (
-          <div className="pt-1">
-            <InviteCollaboratorDialog projectId={project.id} onInvite={onUpdated} />
-          </div>
-        )}
+        {/* Invite lives in The People section + the workspace header — no dup here */}
       </div>
     </section>
   );

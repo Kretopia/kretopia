@@ -149,6 +149,13 @@ export const StudioRoom = ({
           isOwner={isOwner}
           onUpdated={onUpdated}
           onAddReference={handleAddReference}
+          currentUserId={currentUserId}
+        />
+
+        <DeliverablesSection
+          projectId={project.id}
+          currentUserId={currentUserId}
+          isOwner={isOwner}
         />
 
         <WorkSection

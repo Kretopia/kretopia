@@ -90,31 +90,47 @@ export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: V
     }
   };
 
+  const hasCover = !!project.cover_url;
+
   return (
     <section className="relative">
-      {/* Cover — uses mood gradient as guaranteed fallback */}
+      {/* Cover — uploaded photo gets a hero treatment.
+          Without a cover we show a slim mood strip (no giant emoji) so the
+          page doesn't feel dominated by a placeholder. */}
       <div
         className={cn(
-          "relative w-full aspect-[16/7] sm:aspect-[16/6] overflow-hidden border-b border-border"
+          "relative w-full overflow-hidden border-b border-border",
+          hasCover ? "aspect-[16/7] sm:aspect-[16/6]" : "h-20 sm:h-24",
         )}
         style={
-          project.cover_url
+          hasCover
             ? undefined
             : { background: moodGradient(project.mood) }
         }
       >
-        {project.cover_url ? (
+        {hasCover && (
           <img
-            src={project.cover_url}
+            src={project.cover_url!}
             alt={`${project.title} cover`}
             className="absolute inset-0 w-full h-full object-cover"
           />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-7xl opacity-60 drop-shadow-md">
-            {moodGlyph ?? "🎨"}
-          </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        {/* Soft fade so text reads on top */}
+        <div
+          className={cn(
+            "absolute inset-0",
+            hasCover
+              ? "bg-gradient-to-t from-background via-background/40 to-transparent"
+              : "bg-gradient-to-t from-background via-background/30 to-transparent",
+          )}
+        />
+
+        {/* Tiny mood glyph in the corner — never the centerpiece */}
+        {!hasCover && moodGlyph && (
+          <span className="absolute top-2 left-3 text-base opacity-70 select-none">
+            {moodGlyph}
+          </span>
+        )}
 
         {isOwner && (
           <>
@@ -128,13 +144,18 @@ export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: V
             <Button
               type="button"
               variant="secondary"
-              size="icon"
-              aria-label="Change cover"
-              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/85 hover:bg-background"
+              size="sm"
+              aria-label={hasCover ? "Change cover" : "Add cover photo"}
+              className="absolute top-2 right-2 h-7 gap-1 rounded-full bg-background/85 hover:bg-background text-xs"
               disabled={uploading}
               onClick={() => fileRef.current?.click()}
             >
-              {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+              {uploading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Camera className="h-3.5 w-3.5" />
+              )}
+              {!hasCover && <span>Add cover</span>}
             </Button>
           </>
         )}

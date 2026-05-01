@@ -265,6 +265,7 @@ export const ThriveAgentFab = () => {
         await supabase.from("ai_messages").delete().eq("conversation_id", convo.id);
       }
       setMessages([]);
+      setActionsByMsg({});
       toast.success("History cleared");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not clear history");

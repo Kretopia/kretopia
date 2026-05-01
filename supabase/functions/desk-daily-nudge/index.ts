@@ -181,8 +181,102 @@ Deno.serve(async (req) => {
       sent += 1;
     }
 
+    // 4. Agent-Mode follow-ups: for users who opted in (orch_settings.agent_mode_projects),
+    //    queue Level-2 (requires_approval) actions in orch_actions so they appear in the
+    //    Home approvals tray. Cap to keep things calm.
+    let proposed = 0;
+    const userIds = Array.from(perUser.keys());
+    if (userIds.length) {
+      const { data: settingsRows } = await admin
+        .from("orch_settings")
+        .select("user_id, agent_mode_projects, daily_action_limit")
+        .in("user_id", userIds);
+      const optedIn = new Map<string, { limit: number }>();
+      for (const r of settingsRows || []) {
+        if ((r as any).agent_mode_projects) {
+          optedIn.set((r as any).user_id, { limit: (r as any).daily_action_limit ?? 25 });
+        }
+      }
+
+      const todayStart = new Date();
+      todayStart.setUTCHours(0, 0, 0, 0);
+
+      for (const [uid, cfg] of optedIn) {
+        const sig = perUser.get(uid);
+        if (!sig) continue;
+
+        const { count: pendingToday } = await admin
+          .from("orch_actions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", uid)
+          .gte("proposed_at", todayStart.toISOString());
+        if ((pendingToday ?? 0) >= cfg.limit) continue;
+
+        const { data: run, error: runErr } = await admin
+          .from("orch_runs")
+          .insert({
+            user_id: uid,
+            agent_kind: "client_followup",
+            intent: "Daily Desk follow-ups",
+            status: "awaiting_approval",
+            reasoning: "Auto-proposed from desk-daily-nudge based on overdue tasks and unsent invoices.",
+          })
+          .select("id")
+          .single();
+        if (runErr || !run) continue;
+
+        const actions: any[] = [];
+        const seenTasks = new Set<string>();
+        for (const t of sig.overdue_tasks) {
+          if (seenTasks.has(t.task_id)) continue;
+          seenTasks.add(t.task_id);
+          if (actions.filter((a) => a.tool_name === "send_reminder").length >= 2) break;
+          actions.push({
+            run_id: run.id,
+            user_id: uid,
+            tool_name: "send_reminder",
+            tool_args: {
+              to_user_id: t.assignee_id,
+              context: `Friendly nudge about an overdue task on "${t.project_title}".`,
+              project_id: t.project_id,
+              task_id: t.task_id,
+            },
+            risk_level: "requires_approval",
+            status: "proposed",
+            preview_title: `Nudge collaborator on "${t.project_title}"`,
+            preview_body: "Send a polite reminder about an overdue task. Tap Approve to send.",
+          });
+        }
+
+        for (const d of sig.drafts.slice(0, 2)) {
+          actions.push({
+            run_id: run.id,
+            user_id: uid,
+            tool_name: "send_payment_link",
+            tool_args: { invoice_id: d.invoice_id, project_id: d.project_id },
+            risk_level: "requires_approval",
+            status: "proposed",
+            preview_title: `Send payment link for "${d.project_title}"`,
+            preview_body: "You have a draft invoice ready. Tap Approve to send the payment link.",
+          });
+        }
+
+        if (actions.length === 0) {
+          await admin.from("orch_runs").update({ status: "completed" }).eq("id", run.id);
+          continue;
+        }
+
+        const { error: insErr } = await admin.from("orch_actions").insert(actions);
+        if (insErr) {
+          console.warn("orch_actions insert failed for", uid, insErr.message);
+          continue;
+        }
+        proposed += actions.length;
+      }
+    }
+
     return new Response(
-      JSON.stringify({ users_signaled: perUser.size, notified: sent }),
+      JSON.stringify({ users_signaled: perUser.size, notified: sent, agent_proposals: proposed }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {

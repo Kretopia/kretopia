@@ -646,6 +646,167 @@ serve(async (req) => {
       );
     }
 
+    // ============ SPIN UP PROJECT (Talent → Project handoff) ============
+    // Body: { mode: "spin_up_project", creator_user_id, creator_name, creator_avatar_url?,
+    //         brief, project_title? }
+    // Creates ONE proposed action — the user taps Approve once and the orchestrator
+    // atomically: creates a project, invites the creator, queues a kickoff DM.
+    if (body.mode === "spin_up_project") {
+      const creatorUserId = String(body.creator_user_id ?? "").trim();
+      const creatorName = String(body.creator_name ?? "Collaborator").trim();
+      const creatorAvatar = body.creator_avatar_url ? String(body.creator_avatar_url) : null;
+      const brief = String(body.brief ?? "").trim();
+      const projectTitle =
+        String(body.project_title ?? "").trim() ||
+        (brief ? brief.split(/[.!?\n]/)[0].slice(0, 80) : `Project with ${creatorName}`);
+
+      if (!creatorUserId) {
+        return new Response(
+          JSON.stringify({ error: "creator_user_id required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // Settings + daily cap
+      const { data: settingsRow } = await admin
+        .from("orch_settings")
+        .select("agents_enabled, daily_action_limit")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (settingsRow && settingsRow.agents_enabled === false) {
+        return new Response(
+          JSON.stringify({ error: "Agents disabled in your settings" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      const dailyCap = settingsRow?.daily_action_limit ?? 50;
+      const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count: usedToday } = await admin
+        .from("orch_actions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .gte("proposed_at", since24);
+      if ((usedToday ?? 0) >= dailyCap) {
+        return new Response(
+          JSON.stringify({ error: `Daily agent action limit (${dailyCap}) reached` }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const { data: senderProfile } = await admin
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", userId)
+        .maybeSingle();
+      const senderFirst = ((senderProfile?.full_name as string | null) ?? "").split(" ")[0] || "I";
+
+      // Draft a warm kickoff DM (best-effort; falls back to template)
+      let kickoff = "";
+      try {
+        if (LOVABLE_API_KEY) {
+          const aiResp = await fetch(
+            "https://ai.gateway.lovable.dev/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "google/gemini-2.5-flash-lite",
+                messages: [
+                  {
+                    role: "system",
+                    content:
+                      "Draft a 2-3 sentence project kickoff message from one creative inviting another to collaborate. " +
+                      "Conversational, no emojis, no 'Hope you're well'. Mention the project title and brief naturally. " +
+                      "End with a soft next step. Sign off with the sender's first name only.",
+                  },
+                  {
+                    role: "user",
+                    content: JSON.stringify({
+                      project_title: projectTitle,
+                      brief,
+                      recipient_first_name: (creatorName ?? "").split(" ")[0] || "there",
+                      sender_first_name: senderFirst,
+                    }),
+                  },
+                ],
+              }),
+            },
+          );
+          if (aiResp.ok) {
+            const j = await aiResp.json();
+            kickoff = (j.choices?.[0]?.message?.content ?? "").trim();
+          }
+        }
+      } catch (e) {
+        console.warn("kickoff draft failed", e);
+      }
+      if (!kickoff) {
+        const first = (creatorName ?? "").split(" ")[0] || "there";
+        kickoff =
+          `Hey ${first} — kicking off "${projectTitle}". ` +
+          (brief ? `Quick brief: ${brief.slice(0, 200)}. ` : "") +
+          `Sent you a project invite — down to jump in?\n\n— ${senderFirst}`;
+      }
+
+      const { data: run, error: runErr } = await admin
+        .from("orch_runs")
+        .insert({
+          user_id: userId,
+          agent_kind: "project_manager",
+          intent_text: `Spin up project with ${creatorName}: ${projectTitle}`,
+          intent_classified: "Talent → Project handoff",
+          context: { creator_user_id: creatorUserId, brief },
+          status: "awaiting_approval",
+        })
+        .select("id")
+        .single();
+      if (runErr || !run) throw new Error("Could not create run");
+
+      const { data: insertedAction, error: insErr } = await admin
+        .from("orch_actions")
+        .insert({
+          run_id: run.id,
+          user_id: userId,
+          tool_name: "spin_up_project",
+          tool_args: {
+            project_title: projectTitle,
+            brief,
+            creator_user_id: creatorUserId,
+            creator_name: creatorName,
+            creator_avatar_url: creatorAvatar,
+            kickoff_message: kickoff,
+            _preview: {
+              avatar_url: creatorAvatar,
+              context_line: `Project: ${projectTitle}`,
+            },
+          },
+          risk_level: "requires_approval",
+          status: "proposed",
+          preview_title: `Start "${projectTitle}" with ${creatorName}`,
+          preview_body:
+            `Creates the project, sends ${creatorName} an invite, and DMs them this kickoff:\n\n` +
+            kickoff,
+          agent_kind: "project_manager",
+        })
+        .select("*")
+        .single();
+      if (insErr) throw insErr;
+
+      return new Response(
+        JSON.stringify({
+          run_id: run.id,
+          status: "awaiting_approval",
+          agent_kind: "project_manager",
+          actions: [insertedAction],
+          awaiting_approval: true,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // ============ INTENT PATH ============
     const { intent, context = {} } = body;
     if (!intent || typeof intent !== "string") {

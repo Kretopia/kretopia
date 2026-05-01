@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { ChatActionChips } from "./chat/ChatActionChips";
 import { ChatAttachment } from "./chat/ChatAttachment";
 import { VoiceNoteRecorder } from "@/components/messages/VoiceNoteRecorder";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 
 interface Attachment {
   url: string;
@@ -81,6 +82,20 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Identify current user's display name from collaborators or messages
+  const currentUserName = useMemo(() => {
+    const fromCollabs = collaborators.find((c) => c.id === currentUserId)?.full_name;
+    if (fromCollabs) return fromCollabs;
+    const fromMsg = messages.find((m) => m.user_id === currentUserId)?.profiles?.full_name;
+    return fromMsg || "Someone";
+  }, [collaborators, messages, currentUserId]);
+
+  // Realtime typing indicator (separate channel from presence to keep payloads tiny)
+  const { typingUsers, notifyTyping } = useTypingIndicator(
+    projectId ? `chat-typing:${projectId}` : undefined,
+    { id: currentUserId, full_name: currentUserName },
+  );
+
   useEffect(() => {
     // Scroll the messages container only — avoid scrollIntoView which can
     // steal focus from the parent window (e.g. the Lovable preview iframe
@@ -127,6 +142,9 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setNewMessage(val);
+
+    // Broadcast that we're typing (throttled inside the hook)
+    if (val.trim().length > 0) notifyTyping();
 
     // Check for @mention trigger
     const lastAtIndex = val.lastIndexOf("@");
@@ -380,11 +398,28 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     return parts.map((part, i) => {
       const isMention = collaborators.some(c => part === `@${c.full_name}`);
       if (isMention) {
-        return <span key={i} className="font-semibold text-primary">{part}</span>;
+        const mentionsMe = part === `@${currentUserName}`;
+        return (
+          <span
+            key={i}
+            className={cn(
+              "font-semibold rounded px-1",
+              mentionsMe
+                ? "bg-[hsl(var(--energy)/0.18)] text-[hsl(var(--energy))] ring-1 ring-[hsl(var(--energy)/0.4)]"
+                : "text-primary",
+            )}
+          >
+            {part}
+          </span>
+        );
       }
       return <span key={i}>{part}</span>;
     });
   };
+
+  // Quick check: does this message @ me?
+  const messageMentionsMe = (text: string) =>
+    !!currentUserName && text.includes(`@${currentUserName}`);
 
   // Group messages by date
   const groupedMessages: { date: string; messages: Message[] }[] = [];
@@ -451,14 +486,24 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                       const replyMsg = getReplyMessage(msg.reply_to);
                       const msgReactions = getReactionsForMessage(msg.id);
                       const isHovered = hoveredMessage === msg.id;
+                      const mentionsMe = !isOwn && messageMentionsMe(msg.message);
 
                       return (
                         <div
                           key={msg.id}
-                          className={cn("group relative px-2 py-1.5 rounded-lg transition-colors", isHovered && "bg-accent/30")}
+                          className={cn(
+                            "group relative px-2 py-1.5 rounded-lg transition-colors",
+                            isHovered && "bg-accent/30",
+                            mentionsMe && "border-l-2 border-[hsl(var(--energy))] bg-[hsl(var(--energy)/0.06)] pl-3",
+                          )}
                           onMouseEnter={() => setHoveredMessage(msg.id)}
                           onMouseLeave={() => setHoveredMessage(null)}
                         >
+                          {mentionsMe && (
+                            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[hsl(var(--energy))] mb-1 ml-11">
+                              Mentioned you
+                            </p>
+                          )}
                           {/* Reply context */}
                           {replyMsg && (
                             <div className={cn("flex items-center gap-2 mb-1 ml-11 text-xs text-muted-foreground")}>
@@ -623,6 +668,26 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
             </div>
           )}
         </div>
+
+        {/* Live typing indicator */}
+        {typingUsers.length > 0 && (
+          <div className="px-4 pt-1.5 pb-0.5 shrink-0 bg-background">
+            <div className="inline-flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span className="flex gap-0.5">
+                <span className="h-1 w-1 rounded-full bg-[hsl(var(--energy))] animate-bounce [animation-delay:-0.3s]" />
+                <span className="h-1 w-1 rounded-full bg-[hsl(var(--energy))] animate-bounce [animation-delay:-0.15s]" />
+                <span className="h-1 w-1 rounded-full bg-[hsl(var(--energy))] animate-bounce" />
+              </span>
+              <span className="font-medium">
+                {typingUsers.length === 1
+                  ? `${typingUsers[0].full_name.split(" ")[0]} is typing…`
+                  : typingUsers.length === 2
+                    ? `${typingUsers[0].full_name.split(" ")[0]} & ${typingUsers[1].full_name.split(" ")[0]} are typing…`
+                    : `${typingUsers.length} people are typing…`}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Reply Preview */}
         {replyTo && (

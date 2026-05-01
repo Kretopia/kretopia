@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { MoodPicker, moodEmoji, type MoodId } from "./MoodPicker";
 import { moodGradient } from "./moodGradient";
+import { LivePresencePile } from "./LivePresencePile";
 import { format } from "date-fns";
 
 
@@ -23,6 +24,9 @@ interface VibeHeaderProps {
   clientDisplayName?: string | null;
   isOwner: boolean;
   onUpdated: () => void;
+  collaborators?: Array<{ id: string; full_name: string; avatar_url?: string | null }>;
+  onlineUserIds?: Set<string>;
+  currentUserId?: string;
 }
 
 const STATUS_LABELS: Record<string, { label: string; tone: string; dot: string }> = {
@@ -48,7 +52,15 @@ const STATUS_LABELS: Record<string, { label: string; tone: string; dot: string }
   },
 };
 
-export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: VibeHeaderProps) => {
+export const VibeHeader = ({
+  project,
+  clientDisplayName,
+  isOwner,
+  onUpdated,
+  collaborators = [],
+  onlineUserIds,
+  currentUserId,
+}: VibeHeaderProps) => {
   const { toast } = useToast();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(project.title);
@@ -204,6 +216,15 @@ export const VibeHeader = ({ project, clientDisplayName, isOwner, onUpdated }: V
             {status.label}
           </span>
         </div>
+
+        {/* Live presence — face-pile of collaborators currently in the room */}
+        {onlineUserIds && currentUserId && collaborators.length > 0 && (
+          <LivePresencePile
+            collaborators={collaborators}
+            onlineUserIds={onlineUserIds}
+            currentUserId={currentUserId}
+          />
+        )}
 
         {/* Title — sculptural, magazine-grade */}
         {editingTitle ? (

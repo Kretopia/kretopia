@@ -126,6 +126,9 @@ export const StudioRoom = ({
         clientDisplayName={project.client_name}
         isOwner={isOwner}
         onUpdated={onUpdated}
+        collaborators={people}
+        onlineUserIds={onlineUserIds}
+        currentUserId={currentUserId}
       />
 
       {nextStep && (

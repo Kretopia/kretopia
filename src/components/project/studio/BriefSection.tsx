@@ -28,14 +28,17 @@ export const BriefSection = ({
   isOwner,
   onUpdated,
   onAddReference,
+  currentUserId,
 }: BriefSectionProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const viewerId = currentUserId ?? user?.id ?? "";
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(project.description ?? "");
   const [saving, setSaving] = useState(false);
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [breakingDown, setBreakingDown] = useState(false);
+  const [activeFile, setActiveFile] = useState<any | null>(null);
 
   const breakIntoTasks = async () => {
     if (!project.description?.trim() || !user) return;

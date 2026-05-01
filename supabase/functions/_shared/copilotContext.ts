@@ -289,6 +289,21 @@ export async function loadCopilotContext(
   const owed = dominantCurrencyAndTotal(owedRows);
   const drafts = dominantCurrencyAndTotal(draftRows);
 
+  const tasksDone = ((tasksDoneRes as any)?.data ?? []) as Array<{ title: string; project_id: string | null; updated_at: string }>;
+  const tasksDue = ((tasksDueRes as any)?.data ?? []) as Array<{ title: string; due_date: string; project_id: string | null }>;
+  const creditsRecent = ((creditsRecentRes as any)?.data ?? []) as Array<{ project_name: string; role: string; created_at: string }>;
+  const newConnections = ((connectionsRes as any)?.count ?? 0) as number;
+  const invoicesPaid = ((invoicesPaidRes as any)?.data ?? []) as Array<{ invoice_number: string; total_amount: number; currency: string; paid_at: string }>;
+  const invoicesSent = (((invoicesSentRes as any)?.data ?? []) as Array<{ invoice_number: string; total_amount: number; currency: string; created_at: string; recipient_name: string | null }>).map((r) => ({
+    invoice_number: r.invoice_number,
+    total_amount: Number(r.total_amount),
+    currency: r.currency,
+    created_at: r.created_at,
+    recipient: r.recipient_name,
+  }));
+  const unreadNotifs = ((notifUnreadRes as any)?.count ?? 0) as number;
+  const notifTitles = (((notifRecentRes as any)?.data ?? []) as Array<{ title: string }>).map((r) => r.title);
+
   return {
     ...empty,
     full_name: fullName,
@@ -308,6 +323,16 @@ export async function loadCopilotContext(
     draft_invoices_currency: drafts.dom,
     upcoming_events: events,
     recent_credits_count: creditsCount,
+    recent_activity: {
+      tasks_completed: tasksDone.map((t) => ({ title: t.title, project_id: t.project_id, updated_at: t.updated_at })),
+      tasks_due_soon: tasksDue.map((t) => ({ title: t.title, due_date: t.due_date, project_id: t.project_id })),
+      credits_added: creditsRecent,
+      new_connections: newConnections,
+      invoices_paid: invoicesPaid.map((i) => ({ ...i, total_amount: Number(i.total_amount) })),
+      invoices_sent: invoicesSent,
+      unread_notifications: unreadNotifs,
+      last_notification_titles: notifTitles,
+    },
   };
 }
 

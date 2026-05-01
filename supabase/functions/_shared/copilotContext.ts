@@ -48,7 +48,7 @@ export interface CopilotContext {
 }
 
 /** Race a promise against a timeout; returns null on timeout or error. */
-async function withTimeout<T>(p: Promise<T>, ms = 1500): Promise<T | null> {
+async function withTimeout<T>(p: Promise<T>, ms = 4000): Promise<T | null> {
   try {
     return await Promise.race([
       p,

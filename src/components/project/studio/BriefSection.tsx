@@ -278,9 +278,12 @@ export const BriefSection = ({
       <BriefVoiceRecorder
         open={voiceOpen}
         onOpenChange={setVoiceOpen}
+        projectId={project.id}
+        userId={user?.id}
         onSave={async (text) => {
           await persist(text);
         }}
+        onTasksCreated={onUpdated}
       />
     </section>
   );

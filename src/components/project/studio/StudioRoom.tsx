@@ -8,6 +8,7 @@ import { MoneySection } from "./MoneySection";
 import { PeopleSection } from "./PeopleSection";
 import { AddCreditSection } from "./AddCreditSection";
 import { CallHistorySection } from "./CallHistorySection";
+import { DeliverablesSection } from "./DeliverablesSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
@@ -148,6 +149,13 @@ export const StudioRoom = ({
           isOwner={isOwner}
           onUpdated={onUpdated}
           onAddReference={handleAddReference}
+          currentUserId={currentUserId}
+        />
+
+        <DeliverablesSection
+          projectId={project.id}
+          currentUserId={currentUserId}
+          isOwner={isOwner}
         />
 
         <WorkSection

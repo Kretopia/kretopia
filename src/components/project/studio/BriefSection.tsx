@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { MoodboardThumb } from "./MoodboardThumb";
 import { BriefVoiceRecorder } from "./BriefVoiceRecorder";
+import { FileCommentsSheet } from "./FileCommentsSheet";
 
 interface BriefSectionProps {
   project: {
@@ -18,6 +19,7 @@ interface BriefSectionProps {
   isOwner: boolean;
   onUpdated: () => void;
   onAddReference: () => void;
+  currentUserId?: string;
 }
 
 export const BriefSection = ({
@@ -26,14 +28,17 @@ export const BriefSection = ({
   isOwner,
   onUpdated,
   onAddReference,
+  currentUserId,
 }: BriefSectionProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const viewerId = currentUserId ?? user?.id ?? "";
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(project.description ?? "");
   const [saving, setSaving] = useState(false);
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [breakingDown, setBreakingDown] = useState(false);
+  const [activeFile, setActiveFile] = useState<any | null>(null);
 
   const breakIntoTasks = async () => {
     if (!project.description?.trim() || !user) return;
@@ -306,12 +311,15 @@ export const BriefSection = ({
           <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
             <div className="flex gap-3 pb-2 snap-x">
               {moodboard.map((f, i) => (
-                <div
+                <button
+                  type="button"
                   key={f.id ?? f.file_url}
+                  onClick={() => setActiveFile(f)}
+                  aria-label={`Open notes for ${f.file_name || "reference"}`}
                   className={cn(
                     "shrink-0 snap-start w-32 h-32 rounded-xl overflow-hidden",
                     "bg-muted ring-1 ring-border shadow-[var(--shadow-sm)]",
-                    "transition-transform hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]",
+                    "transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] hover:ring-primary/40",
                     // subtle alternating tilt for polaroid feel
                     i % 3 === 0 && "rotate-[-1deg]",
                     i % 3 === 2 && "rotate-[1deg]",
@@ -322,7 +330,7 @@ export const BriefSection = ({
                     alt={f.file_name || "Reference"}
                     className="w-full h-full object-cover"
                   />
-                </div>
+                </button>
               ))}
               {/* Inline + tile at end of strip */}
               <button
@@ -355,6 +363,13 @@ export const BriefSection = ({
           await persist(text);
         }}
         onTasksCreated={onUpdated}
+      />
+
+      <FileCommentsSheet
+        open={!!activeFile}
+        onOpenChange={(o) => !o && setActiveFile(null)}
+        file={activeFile}
+        currentUserId={viewerId}
       />
     </section>
   );

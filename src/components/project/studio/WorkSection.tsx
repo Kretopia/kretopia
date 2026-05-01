@@ -317,7 +317,7 @@ export const WorkSection = ({
               </Button>
             </div>
           </div>
-        ) : (
+        ) : tasks.length === 0 ? null : (
           <button
             type="button"
             onClick={() => setAdding(true)}

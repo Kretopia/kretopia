@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { LocationSearchInput } from "./LocationSearchInput";
 import { Switch } from "@/components/ui/switch";
 import { EventCoverPicker } from "./EventCoverPicker";
+import { EventModeFormatPicker, type EventFormatValue } from "./EventModeFormatPicker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -77,6 +78,14 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
     external_ticket_url: '',
   });
 
+  const [formatValue, setFormatValue] = useState<EventFormatValue>({
+    event_mode: 'irl',
+    online_format: null,
+    online_max_attendees: null,
+    watch_party_video_url: '',
+    recording_enabled: false,
+  });
+
   useEffect(() => {
     if (open && eventId) fetchEvent();
   }, [open, eventId]);
@@ -114,6 +123,13 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
       ticket_currency: data.ticket_currency || 'USD',
       event_type: (data.event_type as any) || 'session',
       external_ticket_url: (data as any).external_ticket_url || '',
+    });
+    setFormatValue({
+      event_mode: ((data as any).event_mode as any) || 'irl',
+      online_format: (data as any).online_format || null,
+      online_max_attendees: (data as any).online_max_attendees || null,
+      watch_party_video_url: (data as any).watch_party_video_url || '',
+      recording_enabled: (data as any).recording_enabled || false,
     });
     setFetching(false);
   };
@@ -173,6 +189,11 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
           event_type: formData.event_type,
           cover_image_url: coverUrl,
           external_ticket_url: formData.external_ticket_url || null,
+          event_mode: formatValue.event_mode,
+          online_format: formatValue.online_format,
+          online_max_attendees: formatValue.online_max_attendees,
+          watch_party_video_url: formatValue.watch_party_video_url || null,
+          recording_enabled: formatValue.recording_enabled,
         } as any)
         .eq('id', eventId)
         .eq('created_by', user.id);
@@ -261,6 +282,8 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
             <Label>Description</Label>
             <Textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} rows={3} />
           </div>
+
+          <EventModeFormatPicker value={formatValue} onChange={setFormatValue} />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-2">

@@ -107,7 +107,7 @@ export const PeopleSection = ({
                   <button
                     type="button"
                     onClick={() => onKnock(c.id, c.full_name)}
-                    className="inline-flex items-center gap-1 rounded-full bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400 px-2 py-0.5 text-[10px] font-semibold transition-colors"
+                    className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--energy)/0.15)] hover:bg-[hsl(var(--energy)/0.25)] text-[hsl(var(--energy))] ring-1 ring-[hsl(var(--energy)/0.3)] px-2 py-0.5 text-[10px] font-bold transition-colors"
                     aria-label={`Knock ${c.full_name}`}
                   >
                     <Hand className="h-2.5 w-2.5" />

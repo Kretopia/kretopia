@@ -54,7 +54,8 @@ serve(async (req) => {
     }
     const userId = claims.claims.sub as string;
 
-    const { event_id, user_name } = await req.json();
+    const { event_id, user_name, mode } = await req.json();
+    const isTestMode = mode === "test";
     if (!event_id || typeof event_id !== "string") {
       return new Response(JSON.stringify({ error: "event_id required" }), {
         status: 400,

@@ -502,15 +502,35 @@ const Section = ({
   renderRow,
 }: SectionProps) => {
 
+  const total = tasks.length;
+  const pct = total > 0 ? Math.round((done.length / total) * 100) : 0;
+
   return (
     <section className="px-4 py-5 space-y-3">
-      <header className="flex items-center justify-between">
-        <h2 className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase">
-          The Work
-        </h2>
-        <span className="text-[11px] text-muted-foreground">
-          {done.length}/{tasks.length} done
-        </span>
+      <header className="space-y-1.5">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">
+              Momentum
+            </p>
+            <h2 className="text-lg font-black leading-none tracking-tight">
+              The Work
+            </h2>
+          </div>
+          {total > 0 && (
+            <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">
+              {done.length}<span className="text-muted-foreground/60">/{total}</span>
+            </span>
+          )}
+        </div>
+        {total > 0 && (
+          <div className="h-1 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[hsl(var(--energy))] shadow-[0_0_8px_hsl(var(--energy)/0.6)] transition-all duration-500"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        )}
       </header>
 
       {/* Swipe hint — only when there's something to swipe */}

@@ -186,7 +186,7 @@ export const ProactiveCards = ({
                 iconBgClasses[c.tone],
               )}
             >
-              <Icon className="h-4 w-4" strokeWidth={2.5} />
+              <Icon className="h-4 w-4" />
             </div>
             <div className="flex-1 min-w-0">
               <p

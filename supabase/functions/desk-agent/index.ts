@@ -105,6 +105,50 @@ const TOOLS = [
   {
     type: "function",
     function: {
+      name: "draft_invoice",
+      description:
+        "Create a DRAFT invoice for this project (NEVER auto-sent). User must confirm in next turn to send. Use when user says 'invoice', 'bill', 'charge'.",
+      parameters: {
+        type: "object",
+        properties: {
+          amount: { type: "number", description: "Invoice total amount." },
+          currency: { type: ["string", "null"], description: "ISO code, defaults to USD." },
+          notes: { type: ["string", "null"], description: "Short line-item description." },
+          due_in_days: { type: ["number", "null"], description: "Days until due, defaults to 14." },
+        },
+        required: ["amount", "currency", "notes", "due_in_days"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "start_video_call",
+      description: "Spin up a Daily video room for this project and post the join link in chat. Use for 'jump on a call', 'start meeting'.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_credit",
+      description: "Add a ThriveCredit to the user's profile from this project (e.g. 'log this as a credit', 'add to my resume').",
+      parameters: {
+        type: "object",
+        properties: {
+          role: { type: "string", description: "User's role on the project, e.g. Director, Editor." },
+          year: { type: ["number", "null"] },
+          description: { type: ["string", "null"] },
+        },
+        required: ["role", "year", "description"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "ask_clarification",
       description:
         "Use when intent or details are unclear. Ask one short follow-up question. No side effects.",

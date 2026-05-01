@@ -1,6 +1,7 @@
 // Thrive Agent — project operator with intent classification, confidence-gated
 // tool calling, and conversational memory.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { loadCopilotContext, renderContextPreamble } from "../_shared/copilotContext.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -234,12 +235,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Gather context
-    const [projectRes, tasksRes, collabRes, history] = await Promise.all([
+    // Gather context — project facts AND unified user identity
+    const [projectRes, tasksRes, collabRes, history, copilotCtx] = await Promise.all([
       admin.from("projects").select("id, title, description, status, deadline, created_by, client_user_id").eq("id", project_id).single(),
       admin.from("project_tasks").select("id, title, status, due_date, assigned_to, priority").eq("project_id", project_id).order("created_at", { ascending: false }).limit(40),
       admin.from("project_collaborators").select("user_id, role, profiles:profiles!project_collaborators_user_id_fkey(full_name)").eq("project_id", project_id),
       admin.from("agent_project_context").select("role, content").eq("project_id", project_id).eq("user_id", user.id).order("created_at", { ascending: true }).limit(10),
+      loadCopilotContext(admin, user.id).catch(() => null),
     ]);
 
     const project = projectRes.data;
@@ -263,9 +265,15 @@ Deno.serve(async (req) => {
       .map((t) => `- [${t.id}] ${t.title}${t.due_date ? ` (due ${String(t.due_date).slice(0, 10)})` : ""}${t.priority ? ` [${t.priority}]` : ""}`)
       .join("\n") || "(no open tasks)";
 
+    const userPreamble = copilotCtx
+      ? renderContextPreamble(copilotCtx, "desk", { project_id })
+      : "";
+
     const systemPrompt = `You are Thrive Agent — a hands-on project operator inside ThriveDesk. You DO things, not just talk.
 
-PROJECT: "${project?.title}" · status: ${project?.status} · deadline: ${project?.deadline || "n/a"}
+${userPreamble}
+
+CURRENT PROJECT: "${project?.title}" · status: ${project?.status} · deadline: ${project?.deadline || "n/a"}
 Description: ${(project?.description || "").slice(0, 300)}
 Open tasks (${openTasks.length}, ${overdue.length} overdue):
 ${taskList}
@@ -274,16 +282,18 @@ ${collabList}
 Today: ${today}.
 
 DECISION RULES:
-1. Classify intent: create | update | communicate | analyze.
-2. Confidence:
+1. Address the user by their first name from USER FACTS. NEVER use bracketed placeholders like "[Name]".
+2. Classify intent: create | update | communicate | analyze.
+3. Confidence:
    - HIGH (clear action + clear target) → call the matching tool directly.
    - MEDIUM (action clear, detail vague) → make a sensible default and call the tool.
    - LOW (ambiguous) → call ask_clarification with one short question.
-3. Multi-step: chain 2 tool calls max per turn (e.g. summary + suggested task). For "wrap up project" type requests, prefer get_project_summary + one concrete next action.
-4. Never invent collaborator ids — only use ones from the list above.
-5. SAFETY: draft_invoice creates a DRAFT only — never auto-send. add_credit logs to the user's own profile (safe). start_video_call posts a join link in chat (safe).
-6. Money rule: if the user asks for an invoice without an amount, ask_clarification for amount + brief description.
-7. Keep tool arg \`message\` / \`title\` / \`question\` natural, friendly, under 200 chars.
+4. Multi-step: chain 2 tool calls max per turn (e.g. summary + suggested task). For "wrap up project" type requests, prefer get_project_summary + one concrete next action.
+5. Never invent collaborator ids — only use ones from the list above.
+6. SAFETY: draft_invoice creates a DRAFT only — never auto-send. add_credit logs to the user's own profile (safe). start_video_call posts a join link in chat (safe).
+7. Money rule: if the user asks for an invoice without an amount, ask_clarification for amount + brief description.
+8. Keep tool arg \`message\` / \`title\` / \`question\` natural, friendly, under 200 chars.
+9. Treat USER FACTS as the only ground truth — never invent projects, invoices, or activity not listed.
 
 When you respond in natural language (after tools), keep it to 1–2 sentences, action-focused. No emojis.`;
 

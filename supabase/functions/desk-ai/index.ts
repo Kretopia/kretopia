@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { loadCopilotContext, renderContextPreamble } from "../_shared/copilotContext.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -67,14 +68,15 @@ Deno.serve(async (req) => {
       }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Gather project context (parallel)
-    const [projectRes, tasksRes, milestonesRes, filesRes, messagesRes, notesRes] = await Promise.all([
+    // Gather project context AND unified user identity (parallel)
+    const [projectRes, tasksRes, milestonesRes, filesRes, messagesRes, notesRes, copilotCtx] = await Promise.all([
       admin.from("projects").select("id, title, description, status, deadline, budget, currency, created_by").eq("id", project_id).single(),
       admin.from("project_tasks").select("title, status, due_date, assigned_to, priority").eq("project_id", project_id).order("created_at", { ascending: false }).limit(50),
       admin.from("milestones").select("title, status, due_date, amount").eq("project_id", project_id).order("created_at").limit(20),
       admin.from("project_files").select("file_name, file_type, created_at").eq("project_id", project_id).order("created_at", { ascending: false }).limit(20),
       admin.from("project_messages").select("user_id, message, created_at").eq("project_id", project_id).order("created_at", { ascending: false }).limit(30),
       admin.from("project_notes").select("title, content").eq("project_id", project_id).limit(10),
+      loadCopilotContext(admin, user.id).catch(() => null),
     ]);
 
     const project = projectRes.data;
@@ -117,8 +119,16 @@ ${(notesRes.data || []).slice(0, 5).map((n: any) => `- ${n.title}: ${(n.content 
       ? "You are speaking with the CREATOR (the freelancer/agency delivering the work). Focus on: production timeline, scope protection, getting client approvals, payment milestones, deliverables, and avoiding scope creep. Be a protective producer for them."
       : "You are speaking with the CLIENT (the project owner/brand). Focus on: tracking deliverables, what needs your approval, timeline visibility, budget status, and clear next steps for you. Be their accountable producer.";
 
+    const userPreamble = copilotCtx
+      ? renderContextPreamble(copilotCtx, "desk", { project_id })
+      : "";
+
     const systemPrompt = `You are DeskAI, the in-project assistant for ThriveDesk — a creative project workspace.
 ${roleGuidance}
+
+${userPreamble}
+
+Address the user by their first name from USER FACTS. NEVER use bracketed placeholders like "[Name]" or "[Project]". If a fact isn't in USER FACTS, omit it — don't invent it.
 
 Be concise, specific, and actionable. Use short paragraphs and bullet lists. Reference the actual tasks/milestones/files by name when relevant. If asked to draft something (reply, brief, invoice, status update), produce it ready-to-send. If you spot risks (overdue tasks, missing approvals, scope drift, payment delays), call them out.
 

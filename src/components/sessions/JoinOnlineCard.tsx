@@ -28,6 +28,8 @@ interface Props {
   hasAccess: boolean;
   /** True when the viewer can sign up — used to nudge them toward RSVP. */
   needsRsvp: boolean;
+  /** True when viewer is the event owner or a co-host — unlocks Soundcheck. */
+  isHost?: boolean;
 }
 
 const JOIN_WINDOW_MIN = 15; // minutes before start_time the room unlocks

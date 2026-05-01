@@ -616,6 +616,7 @@ const EventPage = () => {
               videoRoomStartedAt={event.video_room_started_at}
               hasAccess={isCreator || !!participation || (isTicketed && !!participation)}
               needsRsvp={!participation && !isTicketed}
+              isHost={isCreator}
             />
           )}
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MoreVertical, Settings, Trash2, StickyNote, Library, LayoutTemplate, Sparkles, Crown, Archive } from "lucide-react";
+import { MoreVertical, Settings, Trash2, StickyNote, FolderLock, Clapperboard, ListChecks, UserCheck, Music2, History, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -51,6 +51,7 @@ interface ProjectSettingsMenuProps {
     description: string | null;
     status: string | null;
     created_by: string;
+    workspace_type?: string | null;
   };
   collaborators?: Array<{ id: string; full_name: string; avatar_url: string | null }>;
   currentUserId: string;
@@ -130,12 +131,48 @@ export function ProjectSettingsMenu({
     }
   };
 
-  const secondaryTabs = [
-    { id: "notes", label: "Notes", icon: StickyNote, proOnly: false },
-    { id: "assets", label: "Assets", icon: Library, proOnly: false },
-    { id: "templates", label: "Templates", icon: LayoutTemplate, proOnly: true },
-    { id: "ai", label: "AI Tools", icon: Sparkles, proOnly: true },
+  // Always-on Studio essentials
+  const coreTools = [
+    { id: "vault", label: "The Vault", icon: FolderLock, hint: "Files & approvals", proOnly: false },
+    { id: "notes", label: "The Pad", icon: StickyNote, hint: "Notes & scratch", proOnly: false },
   ];
+
+  // Adaptive workflow tools per project type
+  const wsType = project.workspace_type || "general";
+  const adaptiveTools = (() => {
+    if (wsType === "event_production") {
+      return [
+        { id: "call_sheet", label: "Call Sheet", icon: Clapperboard, hint: "Date, location, contacts", proOnly: false },
+        { id: "run_of_show", label: "Run of Show", icon: ListChecks, hint: "Minute-by-minute timeline", proOnly: false },
+        { id: "roll_call", label: "Roll Call", icon: UserCheck, hint: "Who's confirmed & arrived", proOnly: false },
+      ];
+    }
+    if (wsType === "photo_shoot" || wsType === "video_production") {
+      return [
+        { id: "call_sheet", label: "Call Sheet", icon: Clapperboard, hint: "Shoot day details", proOnly: false },
+        { id: "roll_call", label: "Roll Call", icon: UserCheck, hint: "Talent + crew check-in", proOnly: false },
+        { id: "revisions", label: "Revisions", icon: History, hint: "Track edit rounds", proOnly: false },
+      ];
+    }
+    if (wsType === "music" || wsType === "music_production") {
+      return [
+        { id: "split_sheet", label: "Split Sheet", icon: Music2, hint: "Songwriter splits", proOnly: false },
+        { id: "revisions", label: "Revisions", icon: History, hint: "Mix/master rounds", proOnly: false },
+      ];
+    }
+    // general fallback
+    return [
+      { id: "revisions", label: "Revisions", icon: History, hint: "Track change rounds", proOnly: false },
+    ];
+  })();
+
+  const adaptiveLabel = wsType === "event_production"
+    ? "Event Tools"
+    : wsType === "music" || wsType === "music_production"
+    ? "Music Tools"
+    : wsType === "photo_shoot" || wsType === "video_production"
+    ? "Production Tools"
+    : "Workflow";
 
   return (
     <>
@@ -145,19 +182,47 @@ export function ProjectSettingsMenu({
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52">
-          <DropdownMenuLabel className="text-xs text-muted-foreground">More Tools</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-[0.18em] text-[hsl(var(--energy))]">
+            Studio Tools
+          </DropdownMenuLabel>
           <DropdownMenuGroup>
-            {secondaryTabs.map((tab) => {
+            {coreTools.map((tab) => {
               const Icon = tab.icon;
               return (
                 <DropdownMenuItem
                   key={tab.id}
                   onClick={() => onNavigateToTab(tab.id)}
-                  className="gap-2"
+                  className="gap-3 py-2"
                 >
-                  <Icon className="h-4 w-4" />
-                  {tab.label}
+                  <Icon className="h-4 w-4 text-primary" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold">{tab.label}</span>
+                    <span className="text-[10px] text-muted-foreground leading-none">{tab.hint}</span>
+                  </div>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuGroup>
+
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+            {adaptiveLabel}
+          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            {adaptiveTools.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <DropdownMenuItem
+                  key={tab.id}
+                  onClick={() => onNavigateToTab(tab.id)}
+                  className="gap-3 py-2"
+                >
+                  <Icon className="h-4 w-4 text-primary" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold">{tab.label}</span>
+                    <span className="text-[10px] text-muted-foreground leading-none">{tab.hint}</span>
+                  </div>
                   {tab.proOnly && !isPro && (
                     <Crown className="h-3 w-3 text-amber-500 ml-auto" />
                   )}
@@ -167,7 +232,7 @@ export function ProjectSettingsMenu({
           </DropdownMenuGroup>
 
           <DropdownMenuSeparator />
-          <DropdownMenuLabel className="text-xs text-muted-foreground">Project</DropdownMenuLabel>
+          <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Project</DropdownMenuLabel>
 
           {isOwner && (
             <DropdownMenuItem

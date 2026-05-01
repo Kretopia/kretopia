@@ -163,6 +163,7 @@ const ThriveDesk = () => {
           />
           <ProjectSettingsMenu
             project={project}
+            collaborators={collaborators}
             currentUserId={user?.id || ""}
             isPro={isPro}
             onProjectUpdated={fetchProjectData}

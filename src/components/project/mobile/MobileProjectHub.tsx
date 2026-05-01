@@ -248,15 +248,15 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
             />
             <DrillCard
               icon={<StickyNote className="h-4 w-4" />}
-              label="Notes"
+              label="The Pad"
               metric={noteCount > 0 ? `${noteCount}` : "Empty"}
               onClick={() => onNavigateToTab("notes")}
             />
             <DrillCard
               icon={<FileText className="h-4 w-4" />}
-              label="Files"
+              label="The Vault"
               metric={files.length > 0 ? `${files.length}` : "Empty"}
-              onClick={() => onNavigateToTab("files")}
+              onClick={() => onNavigateToTab("vault")}
             />
             <DrillCard
               icon={<CheckCircle2 className="h-4 w-4" />}
@@ -283,9 +283,6 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
             {[
               { tab: "scope", label: "Scope Guardian" },
               { tab: "board", label: "Creative Board" },
-              { tab: "assets", label: "Asset Library" },
-              { tab: "templates", label: "Templates" },
-              { tab: "ai", label: "AI Tools" },
             ].map((item) => (
               <button
                 key={item.tab}

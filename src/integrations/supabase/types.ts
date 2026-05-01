@@ -7122,6 +7122,243 @@ export type Database = {
           },
         ]
       }
+      orch_actions: {
+        Row: {
+          created_record_ids: Json | null
+          decided_at: string | null
+          error: string | null
+          executed_at: string | null
+          id: string
+          preview_body: string | null
+          preview_title: string | null
+          proposed_at: string
+          result: Json | null
+          risk_level: Database["public"]["Enums"]["orch_risk_level"]
+          run_id: string
+          status: Database["public"]["Enums"]["orch_action_status"]
+          tool_args: Json
+          tool_name: string
+          user_id: string
+        }
+        Insert: {
+          created_record_ids?: Json | null
+          decided_at?: string | null
+          error?: string | null
+          executed_at?: string | null
+          id?: string
+          preview_body?: string | null
+          preview_title?: string | null
+          proposed_at?: string
+          result?: Json | null
+          risk_level?: Database["public"]["Enums"]["orch_risk_level"]
+          run_id: string
+          status?: Database["public"]["Enums"]["orch_action_status"]
+          tool_args?: Json
+          tool_name: string
+          user_id: string
+        }
+        Update: {
+          created_record_ids?: Json | null
+          decided_at?: string | null
+          error?: string | null
+          executed_at?: string | null
+          id?: string
+          preview_body?: string | null
+          preview_title?: string | null
+          proposed_at?: string
+          result?: Json | null
+          risk_level?: Database["public"]["Enums"]["orch_risk_level"]
+          run_id?: string
+          status?: Database["public"]["Enums"]["orch_action_status"]
+          tool_args?: Json
+          tool_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orch_actions_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "orch_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orch_approvals: {
+        Row: {
+          action_id: string
+          decided_at: string
+          decision: Database["public"]["Enums"]["orch_approval_decision"]
+          edited_args: Json | null
+          id: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          action_id: string
+          decided_at?: string
+          decision: Database["public"]["Enums"]["orch_approval_decision"]
+          edited_args?: Json | null
+          id?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          action_id?: string
+          decided_at?: string
+          decision?: Database["public"]["Enums"]["orch_approval_decision"]
+          edited_args?: Json | null
+          id?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orch_approvals_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "orch_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orch_runs: {
+        Row: {
+          agent_kind: Database["public"]["Enums"]["orch_agent_kind"]
+          context: Json | null
+          created_at: string
+          error: string | null
+          id: string
+          intent_classified: string | null
+          intent_text: string | null
+          latency_ms: number | null
+          parent_run_id: string | null
+          status: Database["public"]["Enums"]["orch_run_status"]
+          summary: string | null
+          tokens_used: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_kind?: Database["public"]["Enums"]["orch_agent_kind"]
+          context?: Json | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          intent_classified?: string | null
+          intent_text?: string | null
+          latency_ms?: number | null
+          parent_run_id?: string | null
+          status?: Database["public"]["Enums"]["orch_run_status"]
+          summary?: string | null
+          tokens_used?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_kind?: Database["public"]["Enums"]["orch_agent_kind"]
+          context?: Json | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          intent_classified?: string | null
+          intent_text?: string | null
+          latency_ms?: number | null
+          parent_run_id?: string | null
+          status?: Database["public"]["Enums"]["orch_run_status"]
+          summary?: string | null
+          tokens_used?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orch_runs_parent_run_id_fkey"
+            columns: ["parent_run_id"]
+            isOneToOne: false
+            referencedRelation: "orch_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orch_settings: {
+        Row: {
+          agent_mode_credits: boolean
+          agent_mode_payments: boolean
+          agent_mode_projects: boolean
+          agent_mode_talent: boolean
+          agents_enabled: boolean
+          auto_run_safe: boolean
+          created_at: string
+          daily_action_limit: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_mode_credits?: boolean
+          agent_mode_payments?: boolean
+          agent_mode_projects?: boolean
+          agent_mode_talent?: boolean
+          agents_enabled?: boolean
+          auto_run_safe?: boolean
+          created_at?: string
+          daily_action_limit?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_mode_credits?: boolean
+          agent_mode_payments?: boolean
+          agent_mode_projects?: boolean
+          agent_mode_talent?: boolean
+          agents_enabled?: boolean
+          auto_run_safe?: boolean
+          created_at?: string
+          daily_action_limit?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      orch_tool_registry: {
+        Row: {
+          agent_kind: Database["public"]["Enums"]["orch_agent_kind"]
+          args_schema: Json
+          created_at: string
+          description: string
+          enabled: boolean
+          handler: string
+          id: string
+          risk_level: Database["public"]["Enums"]["orch_risk_level"]
+          tool_name: string
+          updated_at: string
+        }
+        Insert: {
+          agent_kind: Database["public"]["Enums"]["orch_agent_kind"]
+          args_schema?: Json
+          created_at?: string
+          description: string
+          enabled?: boolean
+          handler: string
+          id?: string
+          risk_level: Database["public"]["Enums"]["orch_risk_level"]
+          tool_name: string
+          updated_at?: string
+        }
+        Update: {
+          agent_kind?: Database["public"]["Enums"]["orch_agent_kind"]
+          args_schema?: Json
+          created_at?: string
+          description?: string
+          enabled?: boolean
+          handler?: string
+          id?: string
+          risk_level?: Database["public"]["Enums"]["orch_risk_level"]
+          tool_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       outreach_sequences: {
         Row: {
           completed_steps: number | null
@@ -14032,6 +14269,36 @@ export type Database = {
         | "networker"
         | "mogul"
         | "icon"
+      orch_action_status:
+        | "proposed"
+        | "approved"
+        | "rejected"
+        | "executed"
+        | "failed"
+        | "auto_executed"
+      orch_agent_kind:
+        | "orchestrator"
+        | "profile"
+        | "talent"
+        | "gig"
+        | "project_manager"
+        | "client_followup"
+        | "payment"
+        | "credit"
+        | "opportunity"
+        | "event"
+        | "site_epk"
+        | "money_admin"
+        | "community"
+      orch_approval_decision: "approved" | "rejected" | "edited"
+      orch_risk_level: "safe_auto" | "requires_approval" | "locked"
+      orch_run_status:
+        | "pending"
+        | "running"
+        | "awaiting_approval"
+        | "completed"
+        | "failed"
+        | "cancelled"
       user_badge:
         | "og"
         | "beta"
@@ -14177,6 +14444,39 @@ export const Constants = {
         "networker",
         "mogul",
         "icon",
+      ],
+      orch_action_status: [
+        "proposed",
+        "approved",
+        "rejected",
+        "executed",
+        "failed",
+        "auto_executed",
+      ],
+      orch_agent_kind: [
+        "orchestrator",
+        "profile",
+        "talent",
+        "gig",
+        "project_manager",
+        "client_followup",
+        "payment",
+        "credit",
+        "opportunity",
+        "event",
+        "site_epk",
+        "money_admin",
+        "community",
+      ],
+      orch_approval_decision: ["approved", "rejected", "edited"],
+      orch_risk_level: ["safe_auto", "requires_approval", "locked"],
+      orch_run_status: [
+        "pending",
+        "running",
+        "awaiting_approval",
+        "completed",
+        "failed",
+        "cancelled",
       ],
       user_badge: [
         "og",

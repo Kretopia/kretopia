@@ -1,0 +1,469 @@
+// Agent Orchestrator
+// Single entrypoint for all agent intents. Classifies the request, picks tools
+// from the registry, enforces 3-tier approval, logs everything to orch_runs/orch_actions.
+//
+// Request body:
+//   { intent: string, context?: object, run_id?: string }
+//
+// Response (non-streaming):
+//   {
+//     run_id, status, summary, agent_kind,
+//     actions: [{ id, tool_name, status, preview_title, preview_body, risk_level }],
+//     awaiting_approval: boolean
+//   }
+//
+// Approval flow: Level 2 actions are inserted as 'proposed'. Client renders
+// AgentApprovalCard, user taps Approve, client calls /functions/v1/agent-orchestrator
+// with { action_id, decision: 'approved' } to execute.
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+
+type Tool = {
+  tool_name: string;
+  agent_kind: string;
+  description: string;
+  risk_level: "safe_auto" | "requires_approval" | "locked";
+  args_schema: Record<string, unknown>;
+  handler: string;
+};
+
+async function classifyIntent(
+  intent: string,
+  tools: Tool[],
+): Promise<{ agent_kind: string; reasoning: string }> {
+  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+  const kinds = [
+    "talent",
+    "gig",
+    "project_manager",
+    "client_followup",
+    "payment",
+    "credit",
+    "opportunity",
+    "event",
+    "site_epk",
+    "money_admin",
+    "profile",
+  ];
+
+  const resp = await fetch(
+    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an intent router for a creative-economy platform. Given a user request, pick the single best sub-agent from this list:\n\n" +
+              kinds.join(", ") +
+              "\n\nReturn JSON only: {\"agent_kind\":\"<one_of_the_above>\",\"reasoning\":\"<one short sentence>\"}",
+          },
+          { role: "user", content: intent },
+        ],
+        response_format: { type: "json_object" },
+      }),
+    },
+  );
+
+  if (!resp.ok) {
+    // Fall back to project_manager so the run still completes
+    return { agent_kind: "project_manager", reasoning: "classifier unavailable" };
+  }
+  const j = await resp.json();
+  try {
+    const parsed = JSON.parse(j.choices?.[0]?.message?.content ?? "{}");
+    if (kinds.includes(parsed.agent_kind)) return parsed;
+  } catch (_) {
+    // ignore
+  }
+  return { agent_kind: "project_manager", reasoning: "classifier returned invalid kind" };
+}
+
+async function planTools(
+  intent: string,
+  agentKind: string,
+  tools: Tool[],
+  context: Record<string, unknown>,
+): Promise<Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string }>> {
+  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+  const toolsForAgent = tools.filter(
+    (t) => t.agent_kind === agentKind || t.agent_kind === "orchestrator",
+  );
+
+  // Build OpenAI-style tool list for function calling
+  const toolDefs = toolsForAgent.map((t) => ({
+    type: "function",
+    function: {
+      name: t.tool_name,
+      description: `[${t.risk_level}] ${t.description}`,
+      parameters: t.args_schema,
+    },
+  }));
+
+  const resp = await fetch(
+    "https://ai.gateway.lovable.dev/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          {
+            role: "system",
+            content:
+              `You are the ${agentKind} sub-agent inside ThriveIN, a platform for creators. ` +
+              `Plan 1-4 tool calls to satisfy the user's intent. Prefer fewer tools. ` +
+              `Tools tagged [safe_auto] run automatically. [requires_approval] tools are drafted and shown to the user for one-tap approval. [locked] tools cannot be called. ` +
+              `For each tool call, also include a brief 'preview_title' and 'preview_body' in the arguments under a special "_preview" key so the approval card has human-readable copy. ` +
+              `If you do not have enough info, call ask_clarification.`,
+          },
+          {
+            role: "user",
+            content:
+              `Intent: ${intent}\n\nContext: ${JSON.stringify(context).slice(0, 2000)}`,
+          },
+        ],
+        tools: toolDefs,
+        tool_choice: "auto",
+      }),
+    },
+  );
+
+  if (!resp.ok) {
+    if (resp.status === 429)
+      throw new Error("Rate limited. Try again in a moment.");
+    if (resp.status === 402)
+      throw new Error("AI credits exhausted. Add funds in Settings.");
+    throw new Error(`Planner error: ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  const calls = data.choices?.[0]?.message?.tool_calls ?? [];
+
+  return calls.map((c: any) => {
+    let args: Record<string, unknown> = {};
+    try {
+      args = JSON.parse(c.function?.arguments ?? "{}");
+    } catch {
+      args = {};
+    }
+    const preview = (args._preview as { title?: string; body?: string }) ?? {};
+    delete args._preview;
+    return {
+      tool_name: c.function?.name,
+      tool_args: args,
+      preview_title: preview.title ?? c.function?.name,
+      preview_body: preview.body ?? "",
+    };
+  });
+}
+
+async function executeAction(
+  actionId: string,
+  userId: string,
+  tool: Tool,
+  args: Record<string, unknown>,
+  authHeader: string,
+): Promise<{ ok: boolean; result?: unknown; error?: string }> {
+  // ask_clarification doesn't run anything — it surfaces the question to the user
+  if (tool.handler === "inline") {
+    return { ok: true, result: { question: args.question } };
+  }
+
+  // Invoke the underlying edge function as the user (so RLS applies correctly)
+  try {
+    const url = `${SUPABASE_URL}/functions/v1/${tool.handler}`;
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader, // pass through the user's JWT
+      },
+      body: JSON.stringify({ ...args, _agent_action_id: actionId }),
+    });
+    const text = await resp.text();
+    let parsed: unknown = text;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      // keep as text
+    }
+    if (!resp.ok) {
+      return { ok: false, error: typeof parsed === "string" ? parsed : JSON.stringify(parsed) };
+    }
+    return { ok: true, result: parsed };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  try {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: "Invalid session" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = userData.user.id;
+
+    const body = await req.json().catch(() => ({}));
+
+    // ============ APPROVAL PATH ============
+    // Client calls back with { action_id, decision } to execute a previously-proposed action.
+    if (body.action_id && body.decision) {
+      const { action_id, decision, edited_args, note } = body;
+      const { data: action, error: aErr } = await admin
+        .from("orch_actions")
+        .select("*")
+        .eq("id", action_id)
+        .eq("user_id", userId)
+        .single();
+      if (aErr || !action) {
+        return new Response(JSON.stringify({ error: "Action not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (action.status !== "proposed") {
+        return new Response(JSON.stringify({ error: "Action already decided" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      await admin.from("orch_approvals").insert({
+        action_id,
+        user_id: userId,
+        decision,
+        edited_args: edited_args ?? null,
+        note: note ?? null,
+      });
+
+      if (decision === "rejected") {
+        await admin
+          .from("orch_actions")
+          .update({ status: "rejected", decided_at: new Date().toISOString() })
+          .eq("id", action_id);
+        return new Response(JSON.stringify({ ok: true, status: "rejected" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Approved (possibly edited) — execute now
+      const { data: tool } = await admin
+        .from("orch_tool_registry")
+        .select("*")
+        .eq("tool_name", action.tool_name)
+        .single();
+      if (!tool) {
+        return new Response(JSON.stringify({ error: "Tool no longer available" }), {
+          status: 410,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (tool.risk_level === "locked") {
+        return new Response(JSON.stringify({ error: "Tool is locked and cannot run" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const argsToRun = edited_args ?? action.tool_args;
+      await admin
+        .from("orch_actions")
+        .update({ status: "approved", decided_at: new Date().toISOString() })
+        .eq("id", action_id);
+
+      const result = await executeAction(action_id, userId, tool as Tool, argsToRun, authHeader);
+      await admin
+        .from("orch_actions")
+        .update({
+          status: result.ok ? "executed" : "failed",
+          result: result.ok ? (result.result as object) : null,
+          error: result.ok ? null : result.error,
+          executed_at: new Date().toISOString(),
+        })
+        .eq("id", action_id);
+
+      return new Response(
+        JSON.stringify({ ok: result.ok, action_id, result: result.result, error: result.error }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ============ INTENT PATH ============
+    const { intent, context = {} } = body;
+    if (!intent || typeof intent !== "string") {
+      return new Response(JSON.stringify({ error: "intent (string) is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check user settings (kill switch + daily limit)
+    const { data: settings } = await admin
+      .from("orch_settings")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (settings && !settings.agents_enabled) {
+      return new Response(JSON.stringify({ error: "Agents disabled in your settings" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const dailyLimit = settings?.daily_action_limit ?? 50;
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count: usedToday } = await admin
+      .from("orch_actions")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .gte("proposed_at", since);
+    if ((usedToday ?? 0) >= dailyLimit) {
+      return new Response(
+        JSON.stringify({ error: `Daily agent action limit (${dailyLimit}) reached` }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const t0 = Date.now();
+    const { data: tools } = await admin
+      .from("orch_tool_registry")
+      .select("*")
+      .eq("enabled", true);
+    if (!tools?.length) throw new Error("Tool registry is empty");
+
+    const { agent_kind, reasoning } = await classifyIntent(intent, tools as Tool[]);
+
+    const { data: run } = await admin
+      .from("orch_runs")
+      .insert({
+        user_id: userId,
+        agent_kind,
+        intent_text: intent,
+        intent_classified: reasoning,
+        context,
+        status: "running",
+      })
+      .select()
+      .single();
+
+    const planned = await planTools(intent, agent_kind, tools as Tool[], context);
+
+    // Insert action rows; auto-execute safe_auto, leave requires_approval as proposed
+    const actionRows: Array<Record<string, unknown>> = [];
+    for (const p of planned) {
+      const tool = (tools as Tool[]).find((t) => t.tool_name === p.tool_name);
+      if (!tool) continue;
+      if (tool.risk_level === "locked") continue;
+
+      const { data: action } = await admin
+        .from("orch_actions")
+        .insert({
+          run_id: run!.id,
+          user_id: userId,
+          tool_name: p.tool_name,
+          tool_args: p.tool_args,
+          risk_level: tool.risk_level,
+          status: "proposed",
+          preview_title: p.preview_title,
+          preview_body: p.preview_body,
+        })
+        .select()
+        .single();
+
+      if (tool.risk_level === "safe_auto" && (settings?.auto_run_safe ?? true)) {
+        const result = await executeAction(action!.id, userId, tool, p.tool_args, authHeader);
+        await admin
+          .from("orch_actions")
+          .update({
+            status: result.ok ? "auto_executed" : "failed",
+            result: result.ok ? (result.result as object) : null,
+            error: result.ok ? null : result.error,
+            executed_at: new Date().toISOString(),
+          })
+          .eq("id", action!.id);
+        actionRows.push({
+          ...action,
+          status: result.ok ? "auto_executed" : "failed",
+          result: result.result,
+        });
+      } else {
+        actionRows.push(action!);
+      }
+    }
+
+    const awaiting = actionRows.some((a) => (a as any).status === "proposed");
+    const finalStatus = awaiting ? "awaiting_approval" : "completed";
+
+    await admin
+      .from("orch_runs")
+      .update({
+        status: finalStatus,
+        latency_ms: Date.now() - t0,
+        summary: planned.length
+          ? `Planned ${planned.length} action(s) in ${agent_kind}.`
+          : "No action needed.",
+      })
+      .eq("id", run!.id);
+
+    return new Response(
+      JSON.stringify({
+        run_id: run!.id,
+        status: finalStatus,
+        agent_kind,
+        reasoning,
+        actions: actionRows,
+        awaiting_approval: awaiting,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  } catch (e) {
+    console.error("agent-orchestrator error:", e);
+    return new Response(
+      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+});

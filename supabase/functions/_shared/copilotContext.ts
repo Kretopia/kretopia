@@ -85,6 +85,9 @@ export async function loadCopilotContext(
     unpaid_invoices_count: 0,
     unpaid_invoices_total: 0,
     invoice_currency: null,
+    draft_invoices_count: 0,
+    draft_invoices_total: 0,
+    draft_invoices_currency: null,
     upcoming_events: [],
     recent_credits_count: 0,
   };

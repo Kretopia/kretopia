@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MoreVertical, Settings, Trash2, StickyNote, Library, LayoutTemplate, Sparkles, Crown, Archive } from "lucide-react";
+import { MoreVertical, Settings, Trash2, StickyNote, FolderLock, Clapperboard, ListChecks, UserCheck, Music2, History, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

@@ -453,9 +453,10 @@ interface PinCardProps {
   onChange: (content: string) => void;
   onColorChange: (color: PinColor) => void;
   onDelete: () => void;
+  onConvertToTask: () => void;
 }
 
-function PinCard({ pin, onPointerDown, onChange, onColorChange, onDelete }: PinCardProps) {
+function PinCard({ pin, onPointerDown, onChange, onColorChange, onDelete, onConvertToTask }: PinCardProps) {
   const styles = COLOR_STYLES[pin.color];
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(pin.content || "");

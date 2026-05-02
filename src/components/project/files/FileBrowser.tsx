@@ -176,52 +176,70 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const list = event.target.files;
     if (!list?.length) return;
-    setUploading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      for (const file of Array.from(list)) {
-        if (file.size > 50 * 1024 * 1024) {
-          toast({ title: "Skipped", description: `${file.name} exceeds 50MB`, variant: "destructive" });
-          continue;
-        }
-        const nameParts = file.name.split(".");
-        const rawExt = nameParts.length > 1 ? nameParts.pop() : "bin";
-        const ext = (rawExt || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) || "bin";
-        const path = `${projectId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        console.log("[file-upload] uploading", { path, size: file.size, type: file.type });
-        const { error: upErr } = await supabase.storage.from("project-files").upload(path, file, {
-          contentType: file.type || "application/octet-stream",
-          upsert: false,
-        });
-        if (upErr) {
-          console.error("[file-upload] storage failed", upErr);
-          throw new Error(`Storage: ${(upErr as any)?.message || JSON.stringify(upErr)}`);
-        }
-        const { error: dbErr } = await supabase.from("project_files").insert({
-          project_id: projectId,
-          user_id: user.id,
-          file_name: file.name,
-          file_url: path,
-          file_size: file.size,
-          file_type: file.type,
-          folder_id: currentFolder,
-        });
-        if (dbErr) {
-          console.error("[file-upload] db insert failed", dbErr);
-          throw new Error(`DB: ${dbErr.message}`);
-        }
-      }
-      toast({ title: "Uploaded", description: `${list.length} file(s) added` });
-      onFileUploaded();
-    } catch (e: any) {
-      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "Not signed in", variant: "destructive" });
+      return;
     }
+
+    const accepted: UploadJob[] = [];
+    for (const file of Array.from(list)) {
+      const check = sizeLimit.check(file.size);
+      if (!check.ok) {
+        toast({ title: "File too large", description: check.reason, variant: "destructive" });
+        continue;
+      }
+      const nameParts = file.name.split(".");
+      const rawExt = nameParts.length > 1 ? nameParts.pop() : "bin";
+      const ext = (rawExt || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) || "bin";
+      const path = `${projectId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const folderAtEnqueue = currentFolder;
+      accepted.push({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        file,
+        bucket: "project-files",
+        path,
+        onComplete: async () => {
+          const { error: dbErr } = await supabase.from("project_files").insert({
+            project_id: projectId,
+            user_id: user.id,
+            file_name: file.name,
+            file_url: path,
+            file_size: file.size,
+            file_type: file.type,
+            folder_id: folderAtEnqueue,
+          });
+          if (dbErr) throw new Error(dbErr.message);
+          onFileUploaded();
+        },
+      });
+    }
+    if (accepted.length > 0) {
+      setUploadJobs((prev) => [...prev, ...accepted]);
+      setUploading(true);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  const handleJobFinished = useCallback((_id: string) => {
+    // Keep finished cards visible briefly so users see "Done"; auto-clear after 4s.
+    setTimeout(() => {
+      setUploadJobs((prev) => {
+        const next = prev.filter((j) => j.id !== _id);
+        if (next.length === 0) setUploading(false);
+        return next;
+      });
+    }, 4000);
+  }, []);
+
+  const handleJobRemoved = useCallback((id: string) => {
+    setUploadJobs((prev) => {
+      const next = prev.filter((j) => j.id !== id);
+      if (next.length === 0) setUploading(false);
+      return next;
+    });
+  }, []);
+
 
   const createFolder = async () => {
     const name = newFolderName.trim();

@@ -596,13 +596,15 @@ function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange
     <div
       className={cn(
         "absolute group touch-none cursor-grab active:cursor-grabbing",
-        "transition-transform",
+        "transition-transform duration-150 will-change-transform",
+        dragging && "z-50",
       )}
       style={{
         left: pin.pos_x,
         top: pin.pos_y,
-        transform: `rotate(${pin.rotation}deg)`,
-        zIndex: pin.z_index,
+        transform: `rotate(${dragging ? 0 : pin.rotation}deg) scale(${dragging ? 1.06 : 1})`,
+        zIndex: dragging ? 9999 : pin.z_index,
+        filter: dragging ? "drop-shadow(0 18px 24px hsl(0 0% 0% / 0.45))" : undefined,
       }}
       onPointerDown={onPointerDown}
     >

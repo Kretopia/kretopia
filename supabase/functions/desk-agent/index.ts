@@ -221,6 +221,25 @@ const TOOLS = [
   {
     type: "function",
     function: {
+      name: "propose_multistep_plan",
+      description:
+        "Use when the user's goal needs 3+ tools chained (e.g. 'wrap up this project', 'kick off the new shoot with Sarah and Tom', 'follow up on every overdue invoice'). Hands off to the Planner which returns a numbered plan card the user approves with one tap. DO NOT use for single-action requests.",
+      parameters: {
+        type: "object",
+        properties: {
+          goal: {
+            type: "string",
+            description: "The user's full goal in their own words, e.g. 'wrap up Q1 — send pending invoices, mark resolved tasks done, post a recap'.",
+          },
+        },
+        required: ["goal"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "ask_clarification",
       description:
         "Use when intent or details are unclear. Ask one short follow-up question. No side effects.",

@@ -434,6 +434,17 @@ export const BriefSection = ({
         projectId={project.id}
         onGenerated={onUpdated}
       />
+
+      <MoodboardViewer
+        files={moodboard}
+        index={viewerIndex}
+        onClose={() => setViewerIndex(null)}
+        onIndexChange={setViewerIndex}
+        onOpenNotes={(f) => {
+          setViewerIndex(null);
+          setActiveFile(f);
+        }}
+      />
     </section>
   );
 };

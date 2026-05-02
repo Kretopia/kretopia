@@ -237,8 +237,8 @@ export const ThriveAgentFab = () => {
         // After streaming completes, scan the assistant text for <action> tags,
         // strip them from the visible bubble, and ask the orchestrator to
         // propose them as approval cards.
-        const { visible, actions: parsed } = extractActions(assistantSoFar);
-        if (parsed.length > 0) {
+        const { visible, actions: parsed, plans: parsedPlans } = extractActions(assistantSoFar);
+        if (parsed.length > 0 || parsedPlans.length > 0) {
           let assistantIdx = -1;
           setMessages((prev) => {
             const idx = prev.length - 1;
@@ -267,6 +267,40 @@ export const ThriveAgentFab = () => {
             } catch (err) {
               console.warn("Copilot action propose failed", err);
               toast.error("Couldn't queue that action — try again.");
+            }
+          }
+
+          // Fan out: each parsed plan calls the planner directly and renders a PlanCard.
+          for (const planReq of parsedPlans) {
+            try {
+              const { data, error } = await supabase.functions.invoke("copilot-planner", {
+                body: {
+                  goal: planReq.goal,
+                  surface: planReq.surface ?? surface,
+                  project_id: (surfaceContext as any)?.active_project?.id ?? null,
+                },
+              });
+              if (error) throw error;
+              if (assistantIdx >= 0 && data?.plan_id) {
+                setPlansByMsg((prev) => ({
+                  ...prev,
+                  [assistantIdx]: [
+                    ...(prev[assistantIdx] ?? []),
+                    {
+                      id: data.plan_id,
+                      goal: planReq.goal,
+                      summary: data.summary,
+                      status: data.status ?? "proposed",
+                      steps: data.steps ?? [],
+                    },
+                  ],
+                }));
+              } else if (data?.summary) {
+                toast.message(data.summary);
+              }
+            } catch (err) {
+              console.warn("Copilot plan propose failed", err);
+              toast.error("Couldn't draft that plan — try again.");
             }
           }
         }

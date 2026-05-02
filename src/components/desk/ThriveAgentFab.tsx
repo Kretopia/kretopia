@@ -329,6 +329,7 @@ export const ThriveAgentFab = () => {
       }
       setMessages([]);
       setActionsByMsg({});
+      setPlansByMsg({});
       toast.success("History cleared");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not clear history");

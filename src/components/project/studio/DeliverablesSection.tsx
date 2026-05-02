@@ -3,6 +3,7 @@ import { CheckCircle2, MessageCircle, RefreshCw, Loader2, Eye } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MoodboardThumb } from "./MoodboardThumb";
 import { DeliverableCommentsSheet } from "./DeliverableCommentsSheet";

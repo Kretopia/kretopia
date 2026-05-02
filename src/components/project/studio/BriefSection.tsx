@@ -280,35 +280,67 @@ export const BriefSection = ({
               </span>
             )}
           </div>
-          {moodboard.length > 0 && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs gap-1 rounded-full"
-              onClick={onAddReference}
-            >
-              <Plus className="h-3 w-3" /> Add
-            </Button>
+          {isOwner && (
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs gap-1 rounded-full text-primary hover:bg-primary/10"
+                onClick={() => setAiOpen(true)}
+              >
+                <Sparkles className="h-3 w-3" /> Generate
+              </Button>
+              {moodboard.length > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs gap-1 rounded-full"
+                  onClick={onAddReference}
+                >
+                  <Plus className="h-3 w-3" /> Add
+                </Button>
+              )}
+            </div>
           )}
         </div>
 
         {moodboard.length === 0 ? (
-          <button
-            type="button"
-            onClick={onAddReference}
-            className={cn(
-              "group flex flex-col items-center justify-center gap-2 w-full rounded-2xl",
-              "border border-dashed border-border h-28",
-              "bg-gradient-to-br from-muted/30 to-transparent",
-              "hover:border-primary/50 hover:from-primary/5 transition-all",
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={onAddReference}
+              className={cn(
+                "group flex flex-col items-center justify-center gap-2 w-full rounded-2xl",
+                "border border-dashed border-border h-28",
+                "bg-gradient-to-br from-muted/30 to-transparent",
+                "hover:border-primary/50 hover:from-primary/5 transition-all",
+              )}
+            >
+              <ImageIcon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                Drop images to set the mood
+              </span>
+            </button>
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => setAiOpen(true)}
+                className={cn(
+                  "group flex items-center justify-center gap-2 w-full rounded-2xl",
+                  "border border-dashed border-primary/40 h-11",
+                  "bg-gradient-to-br from-primary/5 to-transparent",
+                  "hover:border-primary/70 hover:from-primary/10 transition-all",
+                )}
+              >
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold text-primary">
+                  Generate one with AI
+                </span>
+              </button>
             )}
-          >
-            <ImageIcon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-            <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-              Drop images to set the mood
-            </span>
-          </button>
+          </div>
         ) : (
           <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
             <div className="flex gap-3 pb-2 snap-x">

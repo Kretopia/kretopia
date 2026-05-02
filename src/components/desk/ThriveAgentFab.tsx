@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Sparkles, Send, Loader2, Trash2 } from "lucide-react";
+import { Sparkles, Send, Loader2, Trash2, HelpCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import {
   Sheet,
@@ -27,6 +27,7 @@ import {
 import { sendAgentIntent, type OrchAction } from "@/lib/agentOrchestrator";
 import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
 import { CopilotPlanCard, type CopilotPlan } from "@/components/agent/CopilotPlanCard";
+import { CopilotCapabilities } from "@/components/agent/CopilotCapabilities";
 
 /**
  * Thrive Copilot — the SINGLE assistant for the whole platform.
@@ -109,6 +110,7 @@ export const ThriveAgentFab = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [deskTab, setDeskTab] = useState<string>("today");
+  const [capsOpen, setCapsOpen] = useState(false);
 
   const surface: CopilotSurface = inferSurface(location.pathname);
 
@@ -403,6 +405,16 @@ export const ThriveAgentFab = () => {
                 <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
                   On: {surfaceLabel}
                 </Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 gap-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => setCapsOpen(true)}
+                  aria-label="What can Copilot do?"
+                >
+                  <HelpCircle className="h-3.5 w-3.5" />
+                  <span className="text-[11px] font-medium">What can I do?</span>
+                </Button>
                 {messages.length > 0 && (
                   <Button
                     variant="ghost"
@@ -431,8 +443,16 @@ export const ThriveAgentFab = () => {
                   across the platform. What's up?
                 </div>
                 <div className="space-y-1.5">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Try
+                  <div className="flex items-center justify-between">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Try
+                    </div>
+                    <button
+                      onClick={() => setCapsOpen(true)}
+                      className="text-[10px] font-semibold text-primary hover:underline"
+                    >
+                      See everything →
+                    </button>
                   </div>
                   {quickPrompts.map((p) => (
                     <button
@@ -546,6 +566,15 @@ export const ThriveAgentFab = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      <CopilotCapabilities
+        open={capsOpen}
+        onOpenChange={setCapsOpen}
+        onPick={(prompt) => {
+          setOpen(true);
+          setTimeout(() => send(prompt), 60);
+        }}
+      />
     </>
   );
 };

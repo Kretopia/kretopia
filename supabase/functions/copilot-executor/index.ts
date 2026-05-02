@@ -178,6 +178,16 @@ Deno.serve(async (req) => {
     let failureReason: string | null = null;
 
     for (let i = 0; i < steps.length; i++) {
+      // User opted out of this step — mark skipped and continue
+      if (skipIndices.includes(steps[i].index)) {
+        completed.push({ ...steps[i], status: "skipped", result: { skipped_by_user: true } });
+        await admin
+          .from("copilot_plans")
+          .update({ current_step: i + 1, steps: completed.concat(steps.slice(i + 1)) })
+          .eq("id", planId);
+        continue;
+      }
+
       const step = { ...steps[i], status: "running" as const };
       completed.push(step);
       await admin

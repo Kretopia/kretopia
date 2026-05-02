@@ -331,6 +331,7 @@ const AppContent = () => {
 
             {/* Public guest video call join */}
             <Route path="/call/:token" element={<GuestCall />} />
+            <Route path="/review/:token" element={<ProjectReview />} />
             
             {/* Invite Link with Code */}
             <Route path="/join/:code" element={<JoinWithCode />} />

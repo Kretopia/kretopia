@@ -101,6 +101,7 @@ export const ThriveAgentFab = () => {
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [surfaceContext, setSurfaceContext] = useState<Record<string, unknown>>({});
+  const [firstName, setFirstName] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -124,12 +125,37 @@ export const ThriveAgentFab = () => {
   // Resolve surface_context from the URL where helpful (project_id from /desk/:id)
   useEffect(() => {
     const ctx: Record<string, unknown> = { pathname: location.pathname };
+    if (firstName) ctx.first_name_hint = firstName;
     const deskMatch = location.pathname.match(/^\/desk\/([0-9a-f-]{36})/i);
     if (deskMatch) ctx.project_id = deskMatch[1];
     const eventMatch = location.pathname.match(/^\/event\/([^/]+)/i);
     if (eventMatch) ctx.event_slug_or_id = eventMatch[1];
     setSurfaceContext(ctx);
-  }, [location.pathname]);
+  }, [location.pathname, firstName]);
+
+  // Pull the user's first name for the personalized greeting + as a hint to
+  // the model via surface_context (the server already loads this, but sending
+  // it client-side guarantees the empty-state greeting is never "Hey —").
+  useEffect(() => {
+    if (!user) {
+      setFirstName(null);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const fn = (data?.full_name ?? "").trim().split(/\s+/)[0] || null;
+        setFirstName(fn);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // When the drawer opens for the first time, hydrate persisted history.
   useEffect(() => {
@@ -334,8 +360,9 @@ export const ThriveAgentFab = () => {
             {messages.length === 0 && historyLoaded && !sending && (
               <div className="space-y-3">
                 <div className="text-sm text-muted-foreground">
-                  Hey — I'm your Thrive Copilot. I know your profile, projects, money
-                  and events, and I follow you across the platform. What's up?
+                  {firstName ? `Hey ${firstName} — ` : "Hey — "}I'm your Thrive Copilot.
+                  I know your profile, projects, money and events, and I follow you
+                  across the platform. What's up?
                 </div>
                 <div className="space-y-1.5">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">

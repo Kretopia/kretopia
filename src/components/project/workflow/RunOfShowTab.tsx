@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 interface Props { projectId: string; currentUserId: string; }
 interface Segment {
   id: string; project_id: string; time_slot: string | null;
-  duration_min: number | null; segment_title: string; owner_name: string | null;
+  duration_min: number | null; segment_title: string; owner_id: string | null;
   notes: string | null; position: number;
 }
 
@@ -88,8 +88,8 @@ export function RunOfShowTab({ projectId, currentUserId }: Props) {
                 <Input defaultValue={s.segment_title} onBlur={(e) => update(s.id, { segment_title: e.target.value })} />
               </div>
               <div className="col-span-12 space-y-1">
-                <div className="text-[10px] uppercase text-muted-foreground">Owner / notes</div>
-                <Input defaultValue={s.owner_name ?? ""} placeholder="Who runs this segment?" onBlur={(e) => update(s.id, { owner_name: e.target.value })} />
+                <div className="text-[10px] uppercase text-muted-foreground">Notes</div>
+                <Input defaultValue={s.notes ?? ""} placeholder="Cue, owner, setup, backstage note…" onBlur={(e) => update(s.id, { notes: e.target.value || null })} />
               </div>
             </div>
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => remove(s.id)}>

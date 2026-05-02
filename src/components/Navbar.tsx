@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
-  DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
+  DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2, Rocket,
   MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus
 } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
@@ -199,11 +199,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   >
                     <Sparkles className="h-[18px] w-[18px]" />
                   </Button>
-                  <Link to="/thrivepay" aria-label="ThrivePay">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
-                      <Wallet className="h-[18px] w-[18px]" />
-                    </Button>
-                  </Link>
                   <Link to="/messages" aria-label="Messages">
                     <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
                       <MessageCircle className="h-[18px] w-[18px]" />

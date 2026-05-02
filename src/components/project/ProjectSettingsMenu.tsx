@@ -140,21 +140,22 @@ export function ProjectSettingsMenu({
   // Adaptive workflow tools per project type
   const wsType = project.workspace_type || "general";
   const adaptiveTools = (() => {
-    if (wsType === "event_production") {
+    if (wsType === "event_production" || wsType === "fashion_show") {
       return [
         { id: "call_sheet", label: "Call Sheet", icon: Clapperboard, hint: "Date, location, contacts", proOnly: false },
         { id: "run_of_show", label: "Run of Show", icon: ListChecks, hint: "Minute-by-minute timeline", proOnly: false },
         { id: "roll_call", label: "Roll Call", icon: UserCheck, hint: "Who's confirmed & arrived", proOnly: false },
       ];
     }
-    if (wsType === "photo_shoot" || wsType === "video_production") {
+    if (wsType === "photo_shoot" || wsType === "video_shoot") {
       return [
         { id: "call_sheet", label: "Call Sheet", icon: Clapperboard, hint: "Shoot day details", proOnly: false },
+        ...(wsType === "video_shoot" ? [{ id: "run_of_show", label: "Run of Show", icon: ListChecks, hint: "Scenes, setups & timing", proOnly: false }] : []),
         { id: "roll_call", label: "Roll Call", icon: UserCheck, hint: "Talent + crew check-in", proOnly: false },
         { id: "revisions", label: "Revisions", icon: History, hint: "Track edit rounds", proOnly: false },
       ];
     }
-    if (wsType === "music" || wsType === "music_production") {
+    if (wsType === "music_project") {
       return [
         { id: "split_sheet", label: "Split Sheet", icon: Music2, hint: "Songwriter splits", proOnly: false },
         { id: "revisions", label: "Revisions", icon: History, hint: "Mix/master rounds", proOnly: false },
@@ -166,11 +167,11 @@ export function ProjectSettingsMenu({
     ];
   })();
 
-  const adaptiveLabel = wsType === "event_production"
-    ? "Event Tools"
-    : wsType === "music" || wsType === "music_production"
+  const adaptiveLabel = wsType === "event_production" || wsType === "fashion_show"
+    ? "Production Tools"
+    : wsType === "music_project"
     ? "Music Tools"
-    : wsType === "photo_shoot" || wsType === "video_production"
+    : wsType === "photo_shoot" || wsType === "video_shoot"
     ? "Production Tools"
     : "Workflow";
 

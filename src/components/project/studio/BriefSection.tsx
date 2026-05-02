@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Loader2, Plus, ImageIcon, Mic, ListChecks, Sparkles } from "lucide-react";
+import { Pencil, Loader2, Plus, ImageIcon, Mic, ListChecks, Sparkles, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import { MoodboardThumb } from "./MoodboardThumb";
 import { BriefVoiceRecorder } from "./BriefVoiceRecorder";
 import { FileCommentsSheet } from "./FileCommentsSheet";
 import { MoodboardAIDialog } from "./MoodboardAIDialog";
+import { MoodboardViewer } from "./MoodboardViewer";
 
 interface BriefSectionProps {
   project: {
@@ -40,6 +41,7 @@ export const BriefSection = ({
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [breakingDown, setBreakingDown] = useState(false);
   const [activeFile, setActiveFile] = useState<any | null>(null);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
 
   const breakIntoTasks = async () => {
@@ -345,26 +347,46 @@ export const BriefSection = ({
           <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
             <div className="flex gap-3 pb-2 snap-x">
               {moodboard.map((f, i) => (
-                <button
-                  type="button"
+                <div
                   key={f.id ?? f.file_url}
-                  onClick={() => setActiveFile(f)}
-                  aria-label={`Open notes for ${f.file_name || "reference"}`}
                   className={cn(
-                    "shrink-0 snap-start w-32 h-32 rounded-xl overflow-hidden",
+                    "relative shrink-0 snap-start w-32 h-32 rounded-xl overflow-hidden",
                     "bg-muted ring-1 ring-border shadow-[var(--shadow-sm)]",
-                    "transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] hover:ring-primary/40",
-                    // subtle alternating tilt for polaroid feel
+                    "transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)] hover:ring-primary/40 group",
                     i % 3 === 0 && "rotate-[-1deg]",
                     i % 3 === 2 && "rotate-[1deg]",
                   )}
                 >
-                  <MoodboardThumb
-                    storedUrl={f.file_url}
-                    alt={f.file_name || "Reference"}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewerIndex(i)}
+                    aria-label={`Open ${f.file_name || "reference"}`}
+                    className="block w-full h-full"
+                  >
+                    <MoodboardThumb
+                      storedUrl={f.file_url}
+                      alt={f.file_name || "Reference"}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveFile(f);
+                    }}
+                    aria-label={`Notes for ${f.file_name || "reference"}`}
+                    className={cn(
+                      "absolute bottom-1.5 right-1.5 h-7 w-7 rounded-full",
+                      "bg-black/55 text-white backdrop-blur-sm",
+                      "flex items-center justify-center",
+                      "opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity",
+                      "hover:bg-black/75",
+                    )}
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               ))}
               {/* Inline + tile at end of strip */}
               <button
@@ -411,6 +433,17 @@ export const BriefSection = ({
         onOpenChange={setAiOpen}
         projectId={project.id}
         onGenerated={onUpdated}
+      />
+
+      <MoodboardViewer
+        files={moodboard}
+        index={viewerIndex}
+        onClose={() => setViewerIndex(null)}
+        onIndexChange={setViewerIndex}
+        onOpenNotes={(f) => {
+          setViewerIndex(null);
+          setActiveFile(f);
+        }}
       />
     </section>
   );

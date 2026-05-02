@@ -479,6 +479,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         style={{ minHeight: 600 }}
         onPointerMove={onPinPointerMove}
         onPointerUp={onPinPointerUp}
+        onPointerCancel={onPinPointerCancel}
+        onPointerLeave={onPinPointerCancel}
       >
         <div style={{ position: "relative", width: "100%", height: BOARD_HEIGHT }}>
           {loading && (

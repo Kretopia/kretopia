@@ -24,6 +24,7 @@ type ToolName =
   | "list_my_projects"
   | "add_collaborator"
   | "remove_collaborator"
+  | "propose_multistep_plan"
   | "ask_clarification";
 
 const TOOLS = [
@@ -220,6 +221,25 @@ const TOOLS = [
   {
     type: "function",
     function: {
+      name: "propose_multistep_plan",
+      description:
+        "Use when the user's goal needs 3+ tools chained (e.g. 'wrap up this project', 'kick off the new shoot with Sarah and Tom', 'follow up on every overdue invoice'). Hands off to the Planner which returns a numbered plan card the user approves with one tap. DO NOT use for single-action requests.",
+      parameters: {
+        type: "object",
+        properties: {
+          goal: {
+            type: "string",
+            description: "The user's full goal in their own words, e.g. 'wrap up Q1 — send pending invoices, mark resolved tasks done, post a recap'.",
+          },
+        },
+        required: ["goal"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "ask_clarification",
       description:
         "Use when intent or details are unclear. Ask one short follow-up question. No side effects.",
@@ -366,7 +386,8 @@ DECISION RULES:
 9. Treat USER FACTS as the only ground truth — never invent projects, invoices, or activity not listed.
 
 ABSOLUTE NO-LYING RULE:
-- The tools listed above are the ONLY things you can do here in Desk: create_task, mark_task_done, send_message_to_collaborator, get_project_summary, schedule_reminder, draft_invoice, start_video_call, add_credit, find_user, list_my_projects, add_collaborator, remove_collaborator, ask_clarification.
+- The tools listed above are the ONLY things you can do here in Desk: create_task, mark_task_done, send_message_to_collaborator, get_project_summary, schedule_reminder, draft_invoice, start_video_call, add_credit, find_user, list_my_projects, add_collaborator, remove_collaborator, propose_multistep_plan, ask_clarification.
+- MULTI-STEP REQUESTS: If the goal needs 3+ chained actions (e.g. "wrap up this project", "kick off the new shoot with Sarah and Tom", "follow up on every overdue invoice", "close out Q1") → call propose_multistep_plan with the user's goal verbatim. Do NOT try to do it inline. The Planner builds a numbered plan card the user approves with one tap.
 - COLLABORATION REQUESTS: When the user says "add <name> to <project>" or "invite <name>", you MUST chain tools: (1) call list_my_projects if they named a project that isn't the current one, (2) call find_user with the person's name, (3) call add_collaborator with the resolved user_id and target_project_id. NEVER skip find_user. NEVER invent user_ids.
 - If find_user returns 0 candidates → ask_clarification ("I couldn't find anyone called X — got their @username or email?"). If 2+ candidates → ask_clarification listing the matches.
 - If the user asks for something NOT in the tool list (e.g. "send Rene the brief file", "change the deadline", "post to Instagram"), DO NOT pretend. Reply: "I can't do that from here yet — but I can [closest available thing], or you can do it from [where in the UI]." Never use future-tense promises like "I'm on it" for things you have no tool for.
@@ -571,6 +592,19 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
           if (error) throw error;
           const ok = (data as any)?.ok !== false && !(data as any)?.error;
           actions.push({ tool: name, args, result: data, ok });
+        } else if (name === "propose_multistep_plan") {
+          // Hand off to the planner — returns a plan_id the UI renders as a PlanCard
+          const { data, error } = await admin.functions.invoke("copilot-planner", {
+            body: {
+              goal: String(args.goal ?? message).slice(0, 1000),
+              project_id,
+              surface: "desk",
+            },
+            headers: { Authorization: authHeader },
+          });
+          if (error) throw error;
+          const ok = (data as any)?.ok !== false && !(data as any)?.error;
+          actions.push({ tool: name, args, result: data, ok });
         } else if (name === "ask_clarification") {
           actions.push({ tool: name, args, result: { question: args.question }, ok: true });
         }
@@ -613,6 +647,11 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
       else if (a.tool === "list_my_projects" && a.ok) {
         const ps: any[] = (a.result as any)?.projects ?? [];
         finalReply = ps.length ? `You have ${ps.length} active projects.` : "No active projects yet.";
+      }
+      else if (a.tool === "propose_multistep_plan" && a.ok) {
+        const r: any = a.result || {};
+        if (!r.plan_id) finalReply = r.summary ?? "I couldn't break that into clean steps — try being more specific.";
+        else finalReply = `Here's the plan — review the ${(r.steps?.length ?? 0)} steps and tap Approve.`;
       }
       else if (a.tool === "ask_clarification") finalReply = a.result.question;
       else if (!a.ok) finalReply = `Couldn't complete that — ${(a.result as any)?.error ?? "unknown error"}.`;

@@ -26,6 +26,7 @@ import {
 } from "@/lib/thriveCopilot";
 import { sendAgentIntent, type OrchAction } from "@/lib/agentOrchestrator";
 import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
+import { CopilotPlanCard, type CopilotPlan } from "@/components/agent/CopilotPlanCard";
 
 /**
  * Thrive Copilot — the SINGLE assistant for the whole platform.
@@ -98,6 +99,8 @@ export const ThriveAgentFab = () => {
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
   // Map message index -> orchestrator actions proposed for that assistant turn.
   const [actionsByMsg, setActionsByMsg] = useState<Record<number, OrchAction[]>>({});
+  // Map message index -> multi-step plans proposed for that assistant turn.
+  const [plansByMsg, setPlansByMsg] = useState<Record<number, CopilotPlan[]>>({});
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [surfaceContext, setSurfaceContext] = useState<Record<string, unknown>>({});
@@ -234,8 +237,8 @@ export const ThriveAgentFab = () => {
         // After streaming completes, scan the assistant text for <action> tags,
         // strip them from the visible bubble, and ask the orchestrator to
         // propose them as approval cards.
-        const { visible, actions: parsed } = extractActions(assistantSoFar);
-        if (parsed.length > 0) {
+        const { visible, actions: parsed, plans: parsedPlans } = extractActions(assistantSoFar);
+        if (parsed.length > 0 || parsedPlans.length > 0) {
           let assistantIdx = -1;
           setMessages((prev) => {
             const idx = prev.length - 1;
@@ -266,6 +269,40 @@ export const ThriveAgentFab = () => {
               toast.error("Couldn't queue that action — try again.");
             }
           }
+
+          // Fan out: each parsed plan calls the planner directly and renders a PlanCard.
+          for (const planReq of parsedPlans) {
+            try {
+              const { data, error } = await supabase.functions.invoke("copilot-planner", {
+                body: {
+                  goal: planReq.goal,
+                  surface: planReq.surface ?? surface,
+                  project_id: (surfaceContext as any)?.active_project?.id ?? null,
+                },
+              });
+              if (error) throw error;
+              if (assistantIdx >= 0 && data?.plan_id) {
+                setPlansByMsg((prev) => ({
+                  ...prev,
+                  [assistantIdx]: [
+                    ...(prev[assistantIdx] ?? []),
+                    {
+                      id: data.plan_id,
+                      goal: planReq.goal,
+                      summary: data.summary,
+                      status: data.status ?? "proposed",
+                      steps: data.steps ?? [],
+                    },
+                  ],
+                }));
+              } else if (data?.summary) {
+                toast.message(data.summary);
+              }
+            } catch (err) {
+              console.warn("Copilot plan propose failed", err);
+              toast.error("Couldn't draft that plan — try again.");
+            }
+          }
         }
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Something went wrong");
@@ -292,6 +329,7 @@ export const ThriveAgentFab = () => {
       }
       setMessages([]);
       setActionsByMsg({});
+      setPlansByMsg({});
       toast.success("History cleared");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not clear history");
@@ -426,6 +464,14 @@ export const ThriveAgentFab = () => {
                           }));
                         }}
                       />
+                    ))}
+                  </div>
+                ) : null}
+                {/* Plan cards for multi-step plans this turn proposed */}
+                {m.role === "assistant" && plansByMsg[i]?.length ? (
+                  <div className="space-y-2 max-w-[95%]">
+                    {plansByMsg[i].map((plan) => (
+                      <CopilotPlanCard key={plan.id} plan={plan} />
                     ))}
                   </div>
                 ) : null}

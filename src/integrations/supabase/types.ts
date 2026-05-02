@@ -1823,6 +1823,51 @@ export type Database = {
         }
         Relationships: []
       }
+      copilot_plans: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_step: number
+          goal: string
+          id: string
+          project_id: string | null
+          status: string
+          steps: Json
+          summary: string | null
+          surface: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          goal: string
+          id?: string
+          project_id?: string | null
+          status?: string
+          steps?: Json
+          summary?: string | null
+          surface?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_step?: number
+          goal?: string
+          id?: string
+          project_id?: string | null
+          status?: string
+          steps?: Json
+          summary?: string | null
+          surface?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       creative_assets: {
         Row: {
           created_at: string

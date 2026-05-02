@@ -176,7 +176,19 @@ Tag rules:
 - Only emit a tag when the user clearly asked for a real action AND it's in the supported list.
 - Emit at most ONE tag per reply unless the user asked for multiple distinct things.
 - Never ask the user to "tap the card" — the card appears automatically below your message.
-- Never use future-tense receipts ("I've added", "Done!", "Added Rene") — those come from the system AFTER the action runs.`;
+- Never use future-tense receipts ("I've added", "Done!", "Added Rene") — those come from the system AFTER the action runs.
+
+MULTI-STEP PLANS (the agentic loop):
+If the user's goal needs 3+ different actions chained (e.g. "wrap up Q1 — send pending invoices, mark resolved tasks done, post a recap", "kick off the Smith shoot: create the project, invite Sarah and Tom, draft the kickoff message", "follow up on every overdue invoice this week"), do NOT emit individual <action> tags. Instead emit ONE <plan> tag and the system will hand off to the Planner which produces a numbered plan card the user approves once.
+
+Format:
+<plan>{"goal":"<the user's goal in their own words, full sentence>","surface":"<current surface>"}</plan>
+
+Examples:
+- "Wrap up the Atlas project for me" → "I can wrap that up in a few steps — review the plan below.\n<plan>{\"goal\":\"Wrap up the Atlas Rebrand project: send any pending invoices, mark resolved tasks done, post a recap message in chat\",\"surface\":\"desk\"}</plan>"
+- "Kick off the Smith wedding shoot with Sarah and Tom" → "Here's the kickoff plan — approve to run it.\n<plan>{\"goal\":\"Create a new project 'Smith Wedding Shoot', add Sarah and Tom as collaborators, draft a kickoff message\",\"surface\":\"desk\"}</plan>"
+
+Use <plan> ONLY for true multi-step goals. Single-action requests stay on <action>.`;
 
     // Persist the latest user turn before calling the model, so it's saved
     // even if streaming fails partway. Only the last user message is new

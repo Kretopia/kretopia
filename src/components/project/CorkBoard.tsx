@@ -546,7 +546,12 @@ function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange
         }}
         onPointerDown={onPointerDown}
       >
-        <div className="relative bg-card p-2 shadow-xl ring-1 ring-border rounded-sm">
+        <div className="relative bg-card p-2 pt-4 shadow-xl ring-1 ring-border rounded-sm">
+          <div
+            data-pin-drag-handle
+            className="absolute inset-x-0 top-0 h-6 cursor-grab active:cursor-grabbing rounded-t-sm"
+            aria-hidden
+          />
           <img
             src={pin.image_url}
             alt={pin.content || "pinned"}
@@ -600,8 +605,13 @@ function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange
       >
         {/* Pushpin */}
         <div
-          data-pin-no-drag
+          data-pin-drag-handle
           className="absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md"
+        />
+        <div
+          data-pin-drag-handle
+          className="absolute inset-x-0 top-0 h-8 cursor-grab active:cursor-grabbing"
+          aria-hidden
         />
 
         {pin.generated_by_ai && (

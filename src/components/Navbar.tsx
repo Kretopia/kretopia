@@ -17,6 +17,7 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getTierDisplayName } from "@/lib/subscriptionConfig";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
+import { StorageMeter } from "@/components/storage/StorageMeter";
 // useNavMode removed — single unified nav
 import {
   Sheet,

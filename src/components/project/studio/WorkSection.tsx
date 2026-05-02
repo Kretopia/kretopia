@@ -150,7 +150,10 @@ export const WorkSection = ({
         collaborators: collaborators.map((c) => ({ id: c.id, full_name: c.full_name })),
       }).then((res) => {
         if (res.ok && res.patched && Object.keys(res.patched).length > 0) {
+          toast({ title: "Polished", description: "Smart fields filled in for you." });
           onUpdated();
+        } else if (!res.ok) {
+          console.warn("[enhance-task] failed:", res.error);
         }
       });
     }

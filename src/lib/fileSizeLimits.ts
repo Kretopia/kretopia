@@ -53,5 +53,15 @@ export const TIER_FILE_SUMMARY = [
   { tier: "free",        label: "Spark",    perFile: "250 MB", total: "2 GB" },
   { tier: "pro",         label: "Creator",  perFile: "2 GB",   total: "25 GB" },
   { tier: "creator_pro", label: "Creator+", perFile: "10 GB",  total: "100 GB" },
-  { tier: "founder",     label: "Founder",  perFile: "25 GB",  total: "Unlimited" },
+  { tier: "founder",     label: "Founder",  perFile: "25 GB",  total: "1 TB" },
 ] as const;
+
+/** Total storage caps (mirror of get_tier_storage_limit in DB). */
+export const TOTAL_STORAGE_LIMITS: Record<string, number> = {
+  free:              2 * 1024 ** 3,           //   2 GB
+  pro:              25 * 1024 ** 3,           //  25 GB
+  creator_pro:     100 * 1024 ** 3,           // 100 GB
+  founder:        1024 * 1024 ** 3,           //   1 TB
+  brand_pro:       100 * 1024 ** 3,
+  brand_enterprise: 512 * 1024 ** 3,          // 512 GB
+};

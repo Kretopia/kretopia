@@ -14405,6 +14405,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_ambassador_referral_stats: {
+        Args: never
+        Returns: {
+          recent: Json
+          total_signups: number
+        }[]
+      }
       get_brand_verification_by_token: {
         Args: { p_token: string }
         Returns: {

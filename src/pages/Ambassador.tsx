@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { Navigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { APP_URL } from "@/lib/constants";
+import { AmbassadorAttributionVerifier } from "@/components/ambassador/AmbassadorAttributionVerifier";
+import { formatDistanceToNow } from "date-fns";
 
 interface Application {
   id: string;
@@ -36,6 +38,7 @@ export default function Ambassador() {
   const [application, setApplication] = useState<Application | null>(null);
   const [ambassadorCode, setAmbassadorCode] = useState<string | null>(null);
   const [signupCount, setSignupCount] = useState(0);
+  const [recentSignups, setRecentSignups] = useState<Array<{ first_name: string; signed_up_at: string }>>([]);
   const [copied, setCopied] = useState(false);
 
   // Form state
@@ -57,11 +60,13 @@ export default function Ambassador() {
       const p = profile as { ambassador_code: string | null; full_name: string | null } | null;
       if (p?.ambassador_code) {
         setAmbassadorCode(p.ambassador_code);
-        const { count } = await supabase
-          .from("profiles")
-          .select("user_id", { count: "exact", head: true })
-          .eq("referred_by_ambassador", p.ambassador_code);
-        setSignupCount(count ?? 0);
+        const { data: stats } = await supabase.rpc("get_ambassador_referral_stats");
+        const row = Array.isArray(stats) ? stats[0] : stats;
+        if (row) {
+          setSignupCount(Number((row as any).total_signups ?? 0));
+          const recent = (row as any).recent;
+          if (Array.isArray(recent)) setRecentSignups(recent as any);
+        }
       }
       if (p?.full_name) setFullName(p.full_name);
       if (user.email) setEmail(user.email);
@@ -160,6 +165,30 @@ export default function Ambassador() {
             <p className="text-lg font-bold mt-1">{currentTier ? `${currentTier.icon} ${currentTier.label}` : "—"}</p>
           </CardContent></Card>
         </div>
+
+        <AmbassadorAttributionVerifier ownAmbassadorCode={ambassadorCode} />
+
+        <Card>
+          <CardHeader><CardTitle className="text-lg">Recent signups</CardTitle></CardHeader>
+          <CardContent>
+            {recentSignups.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No attributed signups yet. Share your link — they'll show up here within seconds of sign-up.
+              </p>
+            ) : (
+              <ul className="divide-y divide-border/40">
+                {recentSignups.map((r, i) => (
+                  <li key={i} className="py-2 flex items-center justify-between text-sm">
+                    <span className="font-medium">{r.first_name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(r.signed_up_at), { addSuffix: true })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader><CardTitle className="text-lg">Tier rewards</CardTitle></CardHeader>

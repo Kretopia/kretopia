@@ -171,8 +171,10 @@ const Ambassadors = () => {
                   ? "We're not moving forward right now — keep building, the door stays open."
                   : "We open new seats every few weeks. If there's a fit, we'll reach out personally."}
               </p>
-              <Button asChild variant="outline">
-                <Link to="/profile">Back to profile</Link>
+              <Button asChild variant={existing.status === "approved" ? "default" : "outline"}>
+                <Link to={existing.status === "approved" ? "/ambassador" : "/profile"}>
+                  {existing.status === "approved" ? "Open ambassador hub" : "Back to profile"}
+                </Link>
               </Button>
             </Card>
           ) : (

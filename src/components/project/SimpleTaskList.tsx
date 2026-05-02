@@ -56,16 +56,20 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
     if (!newTask.trim()) return;
 
     setAdding(true);
+    const rawTitle = newTask.trim();
+    const userPickedAssignee = assignTo !== "unassigned";
     try {
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('project_tasks')
         .insert({
           project_id: projectId,
-          title: newTask.trim(),
+          title: rawTitle,
           created_by: currentUserId,
           status: 'todo',
-          assigned_to: assignTo === "unassigned" ? null : assignTo,
-        });
+          assigned_to: userPickedAssignee ? assignTo : null,
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
 
@@ -74,8 +78,22 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
       onTasksChanged();
       toast({
         title: "Task added",
-        description: "New task added to the list",
+        description: "Polishing with AI…",
       });
+
+      if (inserted?.id) {
+        enhanceTaskInBackground({
+          taskId: inserted.id,
+          rawTitle,
+          projectId,
+          collaborators: collaborators.map((c) => ({ id: c.id, full_name: c.full_name, role: c.role })),
+          preserveAssignee: userPickedAssignee,
+        }).then((res) => {
+          if (res.ok && res.patched && Object.keys(res.patched).length > 0) {
+            onTasksChanged();
+          }
+        });
+      }
     } catch (error: any) {
       console.error('Add task error:', error);
       toast({

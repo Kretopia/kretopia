@@ -51,20 +51,20 @@ export default function Ambassador() {
     (async () => {
       const [{ data: app }, { data: profile }] = await Promise.all([
         supabase.from("ambassador_applications").select("*").eq("user_id", user.id).maybeSingle(),
-        supabase.from("profiles").select("ambassador_code, full_name, email").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("ambassador_code, full_name").eq("user_id", user.id).maybeSingle(),
       ]);
       if (app) setApplication(app as Application);
-      if (profile?.ambassador_code) {
-        setAmbassadorCode(profile.ambassador_code);
+      const p = profile as { ambassador_code: string | null; full_name: string | null } | null;
+      if (p?.ambassador_code) {
+        setAmbassadorCode(p.ambassador_code);
         const { count } = await supabase
           .from("profiles")
           .select("user_id", { count: "exact", head: true })
-          .eq("referred_by_ambassador", profile.ambassador_code);
+          .eq("referred_by_ambassador", p.ambassador_code);
         setSignupCount(count ?? 0);
       }
-      if (profile?.full_name) setFullName(profile.full_name);
-      if (profile?.email) setEmail(profile.email);
-      else if (user.email) setEmail(user.email);
+      if (p?.full_name) setFullName(p.full_name);
+      if (user.email) setEmail(user.email);
       setLoading(false);
     })().catch((e) => {
       console.error("[Ambassador] load failed", e);

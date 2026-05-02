@@ -534,7 +534,7 @@ function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange
     return (
       <div
         className={cn(
-          "absolute touch-none cursor-grab active:cursor-grabbing transition-transform duration-150 will-change-transform",
+          "absolute touch-pan-y cursor-grab active:cursor-grabbing transition-transform duration-150 will-change-transform",
           dragging && "z-50",
         )}
         style={{
@@ -549,7 +549,7 @@ function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange
         <div className="relative bg-card p-2 pt-4 shadow-xl ring-1 ring-border rounded-sm">
           <div
             data-pin-drag-handle
-            className="absolute inset-x-0 top-0 h-6 cursor-grab active:cursor-grabbing rounded-t-sm"
+            className="absolute inset-x-0 top-0 h-6 cursor-grab touch-none active:cursor-grabbing rounded-t-sm"
             aria-hidden
           />
           <img
@@ -579,7 +579,7 @@ function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange
   return (
     <div
       className={cn(
-        "absolute group touch-none cursor-grab active:cursor-grabbing",
+        "absolute group touch-pan-y cursor-grab active:cursor-grabbing",
         "transition-transform duration-150 will-change-transform",
         dragging && "z-50",
       )}
@@ -610,7 +610,7 @@ function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange
         />
         <div
           data-pin-drag-handle
-          className="absolute inset-x-0 top-0 h-8 cursor-grab active:cursor-grabbing"
+          className="absolute inset-x-0 top-0 h-8 cursor-grab touch-none active:cursor-grabbing"
           aria-hidden
         />
 

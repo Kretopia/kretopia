@@ -54,7 +54,7 @@ export interface WorkspaceConfig {
   defaultTab: DeskTabKey;
   /** Friendly rename of "tasks" tab when relevant (e.g. "Shot List"). */
   tasksLabel?: string;
-  /** AI persona system prompt addendum for Thrive Ops in this context. */
+  /** Persona system prompt addendum for Project Copilot in this context. */
   aiPersonaPrompt: string;
   /** Suggested gradient hue for visual identity (uses semantic tokens). */
   accent: "primary" | "accent" | "secondary";

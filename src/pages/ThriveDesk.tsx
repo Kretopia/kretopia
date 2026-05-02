@@ -11,7 +11,7 @@ import { AgentModeBanner } from "@/components/project/AgentModeBanner";
 import { ProjectInviteAcceptBanner } from "@/components/project/ProjectInviteAcceptBanner";
 import { DeskTabContent } from "@/components/project/DeskTabContent";
 import { useAgentRole } from "@/hooks/useAgentRole";
-import { DeskAILauncher } from "@/components/project/ai/DeskAILauncher";
+
 import { ProjectFlowTimeline } from "@/components/project/flow/ProjectFlowTimeline";
 import { NextStepBar } from "@/components/project/flow/NextStepBar";
 import { MobileProjectHub } from "@/components/project/mobile/MobileProjectHub";
@@ -283,15 +283,7 @@ const ThriveDesk = () => {
         </div>
       </div>
 
-      {/* Floating AI Assistant — only show when mobile Hub isn't rendering its own combined FAB */}
-      {user && projectId && !isStudioRoom && (
-        <DeskAILauncher
-          projectId={projectId}
-          userId={user.id}
-          isPro={isPro}
-          hideOnMobile={isMobile && activeTab === "messages"}
-        />
-      )}
+      {/* Thrive Copilot is mounted globally via ThriveAgentFab — no per-page launcher needed. */}
 
       {/* Global ⌘K palette + voice command — available across the workspace */}
       <DeskCommandPalette

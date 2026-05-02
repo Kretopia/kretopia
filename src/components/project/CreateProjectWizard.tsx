@@ -490,7 +490,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
                   </Label>
                   <Textarea
                     id="desc"
-                    placeholder="What's the vibe? Who's it for? Anything that helps Thrive Ops set things up."
+                    placeholder="What's the vibe? Who's it for? Anything that helps Project Copilot set things up."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}

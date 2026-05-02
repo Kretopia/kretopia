@@ -328,6 +328,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                   <Separator className="my-3" />
 
+                  <div className="px-1 pb-2">
+                    <StorageMeter variant="compact" />
+                  </div>
+
+                  <Separator className="my-1" />
+
                   <Button
                     variant="outline"
                     className="justify-start gap-3 h-12 text-destructive hover:text-destructive"

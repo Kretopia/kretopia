@@ -491,6 +491,17 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         </Button>
         <Button
           size="sm"
+          variant="outline"
+          onClick={importMoodboard}
+          disabled={adding}
+          className="gap-1.5 h-8"
+          title="Bring your brief moodboard onto the board"
+        >
+          <Layers className="h-3.5 w-3.5" />
+          <span className="text-xs font-semibold hidden sm:inline">Moodboard</span>
+        </Button>
+        <Button
+          size="sm"
           variant="ghost"
           onClick={sparkIdeas}
           disabled={sparking}
@@ -501,7 +512,18 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           ) : (
             <Sparkles className="h-3.5 w-3.5" />
           )}
-          <span className="text-xs font-semibold">Spark Ideas</span>
+          <span className="text-xs font-semibold hidden sm:inline">Spark Ideas</span>
+        </Button>
+        <Button
+          size="sm"
+          variant={qaMode ? "default" : "ghost"}
+          onClick={() => setQaMode((q) => !q)}
+          className="gap-1.5 h-8"
+          title="QA mode: show drag handles, snap bounds and last-saved positions"
+          aria-pressed={qaMode}
+        >
+          <Bug className="h-3.5 w-3.5" />
+          <span className="text-xs font-semibold hidden sm:inline">QA</span>
         </Button>
         <input
           ref={fileRef}

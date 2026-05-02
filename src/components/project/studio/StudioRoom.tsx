@@ -219,6 +219,15 @@ export const StudioRoom = ({
           onKnock={knock}
         />
 
+        <WrapProjectCard
+          project={project}
+          tasks={tasks}
+          collaborators={people}
+          currentUserId={currentUserId}
+          isOwner={isOwner}
+          onUpdated={onUpdated}
+        />
+
         <AddCreditSection project={project} collaborators={people} />
 
         <CallHistorySection projectId={project.id} />

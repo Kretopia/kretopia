@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2 } from "lucide-react";
 import { type Task, STATUSES, PRIORITIES, getInitials } from "./taskUtils";
+import { enhanceTaskInBackground } from "@/lib/taskEnhancer";
 
 interface Collaborator {
   id: string;

@@ -10,6 +10,7 @@ import { MoodboardThumb } from "./MoodboardThumb";
 import { BriefVoiceRecorder } from "./BriefVoiceRecorder";
 import { FileCommentsSheet } from "./FileCommentsSheet";
 import { MoodboardAIDialog } from "./MoodboardAIDialog";
+import { MoodboardViewer } from "./MoodboardViewer";
 
 interface BriefSectionProps {
   project: {

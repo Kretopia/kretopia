@@ -405,6 +405,13 @@ export const BriefSection = ({
         file={activeFile}
         currentUserId={viewerId}
       />
+
+      <MoodboardAIDialog
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        projectId={project.id}
+        onGenerated={onUpdated}
+      />
     </section>
   );
 };

@@ -542,7 +542,9 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       {!loading && pins.length > 0 && (
         <div className="px-3 py-1.5 border-b border-border/60 bg-background/80">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 text-center">
-            Tap note to edit · drag from the red pin/top edge
+            {qaMode
+              ? "QA mode · handles highlighted · ghost = last saved · dashed line = snap bound"
+              : "Tap note to edit · drag from the red pin/top edge"}
           </p>
         </div>
       )}
@@ -557,6 +559,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           "[background-image:radial-gradient(hsl(30_30%_45%/0.08)_1px,transparent_1px),radial-gradient(hsl(30_25%_30%/0.05)_1.5px,transparent_1.5px)]",
           "[background-size:24px_24px,40px_40px]",
           "[background-position:0_0,12px_12px]",
+          qaMode && "[--qa:1]",
         )}
         style={{ minHeight: 600 }}
         onPointerMove={onPinPointerMove}
@@ -564,7 +567,38 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         onPointerCancel={onPinPointerCancel}
         onPointerLeave={onPinPointerCancel}
       >
-        <div style={{ position: "relative", width: "100%", height: BOARD_HEIGHT }}>
+        <div
+          ref={surfaceRef}
+          style={{ position: "relative", width: "100%", height: BOARD_HEIGHT }}
+        >
+          {/* QA: snap-bounds overlay (60px inset reflects the clamp in onPinPointerMove) */}
+          {qaMode && (
+            <>
+              <div
+                aria-hidden
+                className="pointer-events-none absolute border border-dashed border-primary/60"
+                style={{ left: 0, top: 0, right: 60, bottom: 60 }}
+              />
+              {/* Last-saved ghost positions */}
+              {pins.map((p) => {
+                const saved = savedPosRef.current.get(p.id);
+                if (!saved) return null;
+                return (
+                  <div
+                    key={`ghost-${p.id}`}
+                    aria-hidden
+                    className="pointer-events-none absolute w-44 h-32 rounded-sm border-2 border-dashed border-primary/50 bg-primary/5"
+                    style={{ left: saved.x, top: saved.y }}
+                  >
+                    <div className="absolute -top-4 left-0 text-[9px] font-mono text-primary bg-background/80 px-1 rounded">
+                      saved {Math.round(saved.x)},{Math.round(saved.y)}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
               Loading board…

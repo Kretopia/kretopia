@@ -185,11 +185,11 @@ export const DeskTabContent = memo(({
         {activeTab === "notes" && (
           <WorkflowShell
             eyebrow="The Pad"
-            title="Notes & Scratch"
-            subtitle="Quick captures, decisions, and creative direction."
+            title="Cork Board"
+            subtitle="Pin sticky notes, drop references, spark ideas. Drag anything anywhere."
             icon={StickyNote}
           >
-            <ProjectNotes projectId={projectId} />
+            <CorkBoard projectId={projectId} currentUserId={currentUserId} />
           </WorkflowShell>
         )}
 

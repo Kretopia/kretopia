@@ -84,6 +84,25 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [previewFile, setPreviewFile] = useState<ProjectFile | null>(null);
+  const [commentFile, setCommentFile] = useState<ProjectFile | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setCurrentUserId(data.user.id);
+    }).catch(() => {});
+  }, []);
+
+  // Route file clicks: media + images → comments sheet (timestamps + notes),
+  // everything else → standard preview dialog.
+  const openFile = useCallback((file: ProjectFile) => {
+    const t = file.file_type || "";
+    if (t.startsWith("video/") || t.startsWith("audio/") || t.startsWith("image/")) {
+      setCommentFile(file);
+    } else {
+      setPreviewFile(file);
+    }
+  }, []);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [renameTarget, setRenameTarget] = useState<{ type: "folder" | "file"; id: string; name: string } | null>(null);

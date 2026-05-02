@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDeskIntent } from "@/hooks/useDeskIntent";
+import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFiles";
 
 interface Pin {
   id: string;
@@ -204,11 +205,6 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           .from("project-files")
           .upload(path, file, { cacheControl: "3600", upsert: false });
         if (upErr) throw upErr;
-        const { data: signed } = await supabase.storage
-          .from("project-files")
-          .createSignedUrl(path, 60 * 60 * 24 * 7);
-        const url = signed?.signedUrl ?? path;
-
         const { x, y } = nextPosition();
         const { data, error } = await supabase
           .from("project_pins")
@@ -216,7 +212,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
             project_id: projectId,
             created_by: currentUserId,
             kind: "image",
-            image_url: url,
+            image_url: path,
             content: file.name,
             color: "yellow",
             pos_x: x,

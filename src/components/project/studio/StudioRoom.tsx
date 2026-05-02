@@ -141,6 +141,24 @@ export const StudioRoom = ({
         collaborators={people}
       />
 
+      {/* Persistent entry point into the room chat */}
+      <button
+        type="button"
+        onClick={() => onNavigateToTab("messages")}
+        className="mx-4 mb-3 mt-1 w-[calc(100%-2rem)] flex items-center gap-3 rounded-xl border border-border bg-card hover:bg-accent/40 transition-colors p-3 text-left"
+      >
+        <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <span aria-hidden className="text-base">💬</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold leading-tight">Room chat</p>
+          <p className="text-[11px] text-muted-foreground leading-tight">
+            Talk to everyone here · @mentions, files & voice
+          </p>
+        </div>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Open</span>
+      </button>
+
       {nextStep && (
         <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />
       )}

@@ -15,6 +15,7 @@ import {
   FileText,
   CheckCircle2,
   X,
+  MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -405,11 +406,176 @@ export const StudioPulseFeed = ({
                     Changes requested
                   </p>
                 )}
+
+                <PulseComments
+                  postId={p.id}
+                  projectId={projectId}
+                  currentUserId={currentUserId}
+                  peopleById={peopleById}
+                />
               </article>
             );
           })}
         </div>
       )}
     </section>
+  );
+};
+
+// ----------------------------------------------------------------------------
+// Inline comments thread per Pulse post
+// ----------------------------------------------------------------------------
+
+interface PulseComment {
+  id: string;
+  post_id: string;
+  author_id: string;
+  content: string;
+  created_at: string;
+}
+
+interface CommentsProps {
+  postId: string;
+  projectId: string;
+  currentUserId: string;
+  peopleById: Map<string, Person>;
+}
+
+const PulseComments = ({ postId, projectId, currentUserId, peopleById }: CommentsProps) => {
+  const { toast } = useToast();
+  const [comments, setComments] = useState<PulseComment[]>([]);
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from("studio_pulse_comments")
+        .select("*")
+        .eq("post_id", postId)
+        .order("created_at", { ascending: true });
+      if (active && data) setComments(data as any);
+    })().catch((e) => console.warn("[pulse comments] load:", e?.message));
+
+    const channel = supabase
+      .channel(`pulse-comments:${postId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "studio_pulse_comments",
+          filter: `post_id=eq.${postId}`,
+        },
+        (payload: any) => {
+          if (payload.eventType === "INSERT") {
+            setComments((c) =>
+              c.find((x) => x.id === payload.new.id) ? c : [...c, payload.new as PulseComment],
+            );
+          } else if (payload.eventType === "DELETE") {
+            setComments((c) => c.filter((x) => x.id !== payload.old.id));
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      active = false;
+      supabase.removeChannel(channel);
+    };
+  }, [postId]);
+
+  const send = async () => {
+    const text = draft.trim();
+    if (!text) return;
+    setSending(true);
+    try {
+      const { error } = await supabase.from("studio_pulse_comments").insert({
+        post_id: postId,
+        project_id: projectId,
+        author_id: currentUserId,
+        content: text,
+      });
+      if (error) throw error;
+      setDraft("");
+    } catch (e: any) {
+      toast({
+        title: "Couldn't comment",
+        description: e?.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const count = comments.length;
+
+  return (
+    <div className="pt-2 mt-1 border-t border-border/60 space-y-2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="text-[11px] font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
+      >
+        <MessageCircle className="h-3 w-3" />
+        {count === 0 ? "Comment" : `${count} ${count === 1 ? "comment" : "comments"}`}
+      </button>
+
+      {open && (
+        <div className="space-y-2">
+          {comments.map((c) => {
+            const a = peopleById.get(c.author_id);
+            return (
+              <div key={c.id} className="flex gap-2">
+                <Avatar className="h-6 w-6 mt-0.5">
+                  <AvatarImage src={a?.avatar_url || undefined} />
+                  <AvatarFallback className="text-[9px]">
+                    {initials(a?.full_name ?? "?")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0 rounded-lg bg-muted/60 px-2.5 py-1.5">
+                  <p className="text-[11px] font-semibold leading-tight">
+                    {a?.full_name ?? "Someone"}
+                  </p>
+                  <p className="text-[12px] leading-snug whitespace-pre-wrap break-words">
+                    {c.content}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+
+          <div className="flex gap-1.5">
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  send();
+                }
+              }}
+              placeholder="Add a comment…"
+              className="flex-1 h-8 text-xs rounded-lg bg-muted/60 px-2.5 border-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+            />
+            <Button
+              size="sm"
+              className="h-8 px-2"
+              onClick={send}
+              disabled={sending || !draft.trim()}
+            >
+              {sending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Send className="h-3 w-3" />
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };

@@ -79,12 +79,14 @@ const formatSize = (bytes: number | null) => {
 export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserProps) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sizeLimit = useFileSizeLimit();
   const [view, setView] = useState<"grid" | "list">(() =>
     (localStorage.getItem("td_files_view") as "grid" | "list") || "grid"
   );
   const [folders, setFolders] = useState<FolderRow[]>([]);
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadJobs, setUploadJobs] = useState<UploadJob[]>([]);
   const [search, setSearch] = useState("");
   const [previewFile, setPreviewFile] = useState<ProjectFile | null>(null);
   const [commentFile, setCommentFile] = useState<ProjectFile | null>(null);

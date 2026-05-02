@@ -195,8 +195,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           .single();
         if (error) throw error;
         if (data) setPins((p) => [...p.filter((q) => q.id !== data.id), data as Pin]);
-      } catch (e: any) {
-        toast.error(e.message || "Couldn't add sticky");
+      } catch (e: unknown) {
+        toast.error(errorMessage(e, "Couldn't add sticky"));
       } finally {
         setAdding(false);
       }
@@ -233,8 +233,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           .single();
         if (error) throw error;
         if (data) setPins((p) => [...p.filter((q) => q.id !== data.id), data as Pin]);
-      } catch (e: any) {
-        toast.error(e.message || "Couldn't pin image");
+      } catch (e: unknown) {
+        toast.error(errorMessage(e, "Couldn't pin image"));
       } finally {
         setAdding(false);
       }

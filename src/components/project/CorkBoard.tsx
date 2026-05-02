@@ -49,6 +49,9 @@ const COLOR_STYLES: Record<PinColor, { bg: string; ring: string; text: string }>
 };
 
 const BOARD_HEIGHT = 1400;
+const BOARD_MIN_WIDTH = 960;
+const DRAG_EDGE = 44;
+const DRAG_SCROLL_STEP = 22;
 
 interface CorkBoardProps {
   projectId: string;
@@ -74,6 +77,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     offsetY: number;
     pointerId: number;
     el: HTMLElement;
+    width: number;
+    height: number;
     latestX: number;
     latestY: number;
   } | null>(null);
@@ -114,6 +119,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
             }
             if (payload.eventType === "UPDATE") {
               const row = payload.new as Pin;
+              savedPosRef.current.set(row.id, { x: row.pos_x, y: row.pos_y });
               return prev.map((p) => (p.id === row.id ? { ...p, ...row } : p));
             }
             if (payload.eventType === "DELETE") {

@@ -38,6 +38,7 @@ export default function Ambassador() {
   const [application, setApplication] = useState<Application | null>(null);
   const [ambassadorCode, setAmbassadorCode] = useState<string | null>(null);
   const [signupCount, setSignupCount] = useState(0);
+  const [recentSignups, setRecentSignups] = useState<Array<{ first_name: string; signed_up_at: string }>>([]);
   const [copied, setCopied] = useState(false);
 
   // Form state

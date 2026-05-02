@@ -514,6 +514,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
             <PinCard
               key={pin.id}
               pin={pin}
+              dragging={draggingId === pin.id}
               onPointerDown={(e) => onPinPointerDown(e, pin)}
               onChange={(content) => updatePin(pin.id, { content })}
               onColorChange={(color) => updatePin(pin.id, { color })}

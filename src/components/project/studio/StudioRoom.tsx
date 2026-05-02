@@ -135,6 +135,12 @@ export const StudioRoom = ({
         currentUserId={currentUserId}
       />
 
+      <StudioPulseFeed
+        projectId={project.id}
+        currentUserId={currentUserId}
+        collaborators={people}
+      />
+
       {nextStep && (
         <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />
       )}

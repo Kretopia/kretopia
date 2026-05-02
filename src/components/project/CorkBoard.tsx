@@ -11,7 +11,6 @@ import {
   Pin,
   ListChecks,
   Layers,
-  Bug,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -76,9 +75,6 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
-  const [qaMode, setQaMode] = useState(false);
-  // Snapshot of last-saved positions, used by QA mode to render ghosts.
-  const savedPosRef = useRef<Map<string, { x: number; y: number }>>(new Map());
 
   // Drag state — drag starts from the pin/header handle, not the editable body.
   const dragRef = useRef<{

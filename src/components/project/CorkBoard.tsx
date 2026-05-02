@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useDeskIntent } from "@/hooks/useDeskIntent";
+import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFiles";
 
 interface Pin {
   id: string;
@@ -35,6 +36,13 @@ interface Pin {
 }
 
 type PinColor = "yellow" | "pink" | "mint" | "sky" | "lavender" | "peach";
+type MoodboardFile = {
+  id: string;
+  file_name: string;
+  file_url: string;
+  file_type: string | null;
+};
+type SparkIdeasResponse = { ideas?: unknown };
 
 const COLORS: PinColor[] = ["yellow", "pink", "mint", "sky", "lavender", "peach"];
 
@@ -49,6 +57,11 @@ const COLOR_STYLES: Record<PinColor, { bg: string; ring: string; text: string }>
 };
 
 const BOARD_HEIGHT = 1400;
+const BOARD_MIN_WIDTH = 960;
+const DRAG_EDGE = 44;
+const DRAG_SCROLL_STEP = 22;
+const errorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
 
 interface CorkBoardProps {
   projectId: string;
@@ -74,6 +87,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     offsetY: number;
     pointerId: number;
     el: HTMLElement;
+    width: number;
+    height: number;
     latestX: number;
     latestY: number;
   } | null>(null);
@@ -114,6 +129,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
             }
             if (payload.eventType === "UPDATE") {
               const row = payload.new as Pin;
+              savedPosRef.current.set(row.id, { x: row.pos_x, y: row.pos_y });
               return prev.map((p) => (p.id === row.id ? { ...p, ...row } : p));
             }
             if (payload.eventType === "DELETE") {
@@ -179,8 +195,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           .single();
         if (error) throw error;
         if (data) setPins((p) => [...p.filter((q) => q.id !== data.id), data as Pin]);
-      } catch (e: any) {
-        toast.error(e.message || "Couldn't add sticky");
+      } catch (e: unknown) {
+        toast.error(errorMessage(e, "Couldn't add sticky"));
       } finally {
         setAdding(false);
       }
@@ -198,11 +214,6 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           .from("project-files")
           .upload(path, file, { cacheControl: "3600", upsert: false });
         if (upErr) throw upErr;
-        const { data: signed } = await supabase.storage
-          .from("project-files")
-          .createSignedUrl(path, 60 * 60 * 24 * 7);
-        const url = signed?.signedUrl ?? path;
-
         const { x, y } = nextPosition();
         const { data, error } = await supabase
           .from("project_pins")
@@ -210,7 +221,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
             project_id: projectId,
             created_by: currentUserId,
             kind: "image",
-            image_url: url,
+            image_url: path,
             content: file.name,
             color: "yellow",
             pos_x: x,
@@ -222,8 +233,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           .single();
         if (error) throw error;
         if (data) setPins((p) => [...p.filter((q) => q.id !== data.id), data as Pin]);
-      } catch (e: any) {
-        toast.error(e.message || "Couldn't pin image");
+      } catch (e: unknown) {
+        toast.error(errorMessage(e, "Couldn't pin image"));
       } finally {
         setAdding(false);
       }
@@ -241,7 +252,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         .select("id, file_name, file_url, file_type")
         .eq("project_id", projectId);
       if (filesErr) throw filesErr;
-      const images = (files || []).filter((f: any) =>
+      const images = ((files || []) as MoodboardFile[]).filter((f) =>
         (f.file_type || "").startsWith("image/"),
       );
       if (!images.length) {
@@ -250,16 +261,18 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         });
         return;
       }
-      const existingUrls = new Set(
-        pins.filter((p) => p.kind === "image" && p.image_url).map((p) => p.image_url!),
+      const existingPaths = new Set(
+        pins
+          .filter((p) => p.kind === "image" && p.image_url)
+          .map((p) => extractProjectFilePath(p.image_url!)),
       );
-      const fresh = images.filter((f: any) => !existingUrls.has(f.file_url));
+      const fresh = images.filter((f) => !existingPaths.has(extractProjectFilePath(f.file_url)));
       if (!fresh.length) {
         toast.message("Moodboard already on the board");
         return;
       }
       const baseLen = pins.length;
-      const rows = fresh.map((f: any, i: number) => {
+      const rows = fresh.map((f, i) => {
         const x = 24 + ((baseLen + i) % 4) * 180 + Math.random() * 30;
         const y = 24 + Math.floor((baseLen + i) / 4) * 200 + Math.random() * 30;
         return {
@@ -289,8 +302,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           `${inserted.length} reference${inserted.length === 1 ? "" : "s"} pinned`,
         );
       }
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't import moodboard");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Couldn't import moodboard"));
     } finally {
       setAdding(false);
     }
@@ -303,7 +316,10 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         body: { project_id: projectId },
       });
       if (error) throw error;
-      const ideas: string[] = Array.isArray((data as any)?.ideas) ? (data as any).ideas : [];
+      const ideasRaw = (data as SparkIdeasResponse | null)?.ideas;
+      const ideas: string[] = Array.isArray(ideasRaw)
+        ? ideasRaw.filter((idea): idea is string => typeof idea === "string")
+        : [];
       if (!ideas.length) {
         toast.message("No ideas this round", {
           description: "Add more to your brief and try again.",
@@ -339,8 +355,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         });
         toast.success(`${inserted.length} idea${inserted.length === 1 ? "" : "s"} pinned`);
       }
-    } catch (e: any) {
-      toast.error(e.message || "Spark Ideas failed");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Spark Ideas failed"));
     } finally {
       setSparking(false);
     }
@@ -384,6 +400,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   const beginDrag = (pin: Pin, clientX: number, clientY: number, pointerId: number, el: HTMLElement) => {
     const surface = surfaceRef.current?.getBoundingClientRect();
     if (!surface) return;
+    const card = el.getBoundingClientRect();
     try {
       el.setPointerCapture(pointerId);
     } catch {
@@ -395,12 +412,14 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       el,
       offsetX: clientX - surface.left - pin.pos_x,
       offsetY: clientY - surface.top - pin.pos_y,
+      width: card.width,
+      height: card.height,
       latestX: pin.pos_x,
       latestY: pin.pos_y,
     };
     setDraggingId(pin.id);
     // Haptic on supported devices
-    try { (navigator as any)?.vibrate?.(15); } catch {}
+    if ("vibrate" in navigator) navigator.vibrate?.(15);
   };
 
   const onPinPointerDown = (e: React.PointerEvent, pin: Pin) => {
@@ -416,13 +435,22 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     if (!dragRef.current) return;
     e.preventDefault();
     const surface = surfaceRef.current;
+    const board = boardRef.current;
     if (!surface) return;
+    if (board) {
+      const boardRect = board.getBoundingClientRect();
+      if (e.clientX > boardRect.right - DRAG_EDGE) {
+        board.scrollLeft += DRAG_SCROLL_STEP;
+      } else if (e.clientX < boardRect.left + DRAG_EDGE) {
+        board.scrollLeft -= DRAG_SCROLL_STEP;
+      }
+    }
     const rect = surface.getBoundingClientRect();
-    // Use the inner surface's full size (clientWidth/offsetHeight), not the
-    // scroll viewport — otherwise pins hit an "invisible wall" at the right edge
-    // on small screens.
-    const maxX = Math.max(0, surface.clientWidth - 60);
-    const maxY = Math.max(0, BOARD_HEIGHT - 60);
+    // Clamp against the full canvas and the actual card size. The previous
+    // 100%-wide surface collapsed to the mobile viewport, creating a right-side
+    // "wall" for everyone on narrow screens.
+    const maxX = Math.max(0, surface.scrollWidth - dragRef.current.width);
+    const maxY = Math.max(0, BOARD_HEIGHT - dragRef.current.height);
     const x = Math.max(0, Math.min(maxX, e.clientX - rect.left - dragRef.current.offsetX));
     const y = Math.max(0, Math.min(maxY, e.clientY - rect.top - dragRef.current.offsetY));
     const id = dragRef.current.id;
@@ -569,16 +597,22 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       >
         <div
           ref={surfaceRef}
-          style={{ position: "relative", width: "100%", height: BOARD_HEIGHT }}
+          style={{ position: "relative", width: `max(100%, ${BOARD_MIN_WIDTH}px)`, height: BOARD_HEIGHT }}
         >
-          {/* QA: snap-bounds overlay (60px inset reflects the clamp in onPinPointerMove) */}
+          {/* QA: snap-bounds overlay mirrors the full horizontal canvas. */}
           {qaMode && (
             <>
               <div
                 aria-hidden
                 className="pointer-events-none absolute border border-dashed border-primary/60"
-                style={{ left: 0, top: 0, right: 60, bottom: 60 }}
+                style={{ left: 0, top: 0, right: 0, bottom: 0 }}
               />
+              <div
+                aria-hidden
+                className="pointer-events-none sticky left-2 top-2 z-20 inline-flex rounded-full border border-primary/40 bg-background/95 px-2 py-1 text-[9px] font-mono text-primary shadow-sm"
+              >
+                canvas {BOARD_MIN_WIDTH}px · edge auto-pan on
+              </div>
               {/* Last-saved ghost positions */}
               {pins.map((p) => {
                 const saved = savedPosRef.current.get(p.id);
@@ -661,8 +695,25 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(pin.content || "");
   const [showOpts, setShowOpts] = useState(false);
+  const [displayUrl, setDisplayUrl] = useState(pin.image_url || "");
 
   useEffect(() => setDraft(pin.content || ""), [pin.content]);
+  useEffect(() => {
+    let active = true;
+    if (pin.kind !== "image" || !pin.image_url) return;
+    if (pin.image_url.startsWith("http") && !pin.image_url.includes("project-files")) {
+      setDisplayUrl(pin.image_url);
+      return;
+    }
+    getProjectFileSignedUrl(pin.image_url, { expiresIn: 60 * 60 * 24 * 7 })
+      .then((url) => {
+        if (active && url) setDisplayUrl(url);
+      })
+      .catch((e) => console.warn("[corkboard] image signed URL failed", e));
+    return () => {
+      active = false;
+    };
+  }, [pin.kind, pin.image_url]);
 
   const commit = () => {
     setEditing(false);
@@ -695,14 +746,17 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
             aria-hidden
           />
           <img
-            src={pin.image_url}
+            src={displayUrl || pin.image_url}
             alt={pin.content || "pinned"}
             className="block w-40 h-40 object-cover rounded-sm pointer-events-none"
             draggable={false}
           />
           <div
-            data-pin-no-drag
-            className="absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md"
+            data-pin-drag-handle
+            className={cn(
+              "absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md cursor-grab touch-none active:cursor-grabbing",
+              qaMode && "ring-4 ring-primary",
+            )}
           />
           <button
             data-pin-no-drag
@@ -845,6 +899,7 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
             <ListChecks className="h-3.5 w-3.5" />
           </button>
           <button
+            data-pin-no-drag
             onClick={onDelete}
             className="opacity-50 hover:opacity-100 transition-opacity"
             aria-label="Delete sticky"

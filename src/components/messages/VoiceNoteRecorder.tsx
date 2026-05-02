@@ -59,15 +59,25 @@ export const VoiceNoteRecorder = ({ onSend, disabled }: VoiceNoteRecorderProps) 
     if (!previewBlob) return;
     setUploading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Please sign in to send voice notes.");
       const fileName = `voice-${Date.now()}.webm`;
-      const filePath = `messages/voice/${fileName}`;
-      const { error } = await supabase.storage.from("portfolio").upload(filePath, previewBlob, { contentType: "audio/webm" });
+      // RLS: portfolio bucket requires the first folder = auth.uid()
+      const filePath = `${user.id}/voice-notes/${fileName}`;
+      const { error } = await supabase.storage
+        .from("portfolio")
+        .upload(filePath, previewBlob, { contentType: "audio/webm", upsert: false });
       if (error) throw error;
       const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
       onSend(publicUrl, duration);
       cancel();
-    } catch (e) {
-      toast({ title: "Upload failed", description: "Could not send voice note.", variant: "destructive" });
+    } catch (e: any) {
+      console.error("[VoiceNoteRecorder] upload failed:", e);
+      toast({
+        title: "Upload failed",
+        description: e?.message || "Could not send voice note.",
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
     }

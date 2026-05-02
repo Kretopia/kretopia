@@ -196,7 +196,7 @@ export const StudioPulseFeed = ({
       .eq("id", post.id);
   };
 
-  // Resolve image URLs (kept simple)
+  // Resolve image URLs to signed when needed
   const renderImage = (path: string) => {
     const isFull = /^https?:\/\//.test(path);
     if (isFull) return path;

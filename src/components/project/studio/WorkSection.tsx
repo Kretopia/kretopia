@@ -338,8 +338,9 @@ interface TaskRowProps {
   currentUserId: string;
   busy: boolean;
   assigning: boolean;
-  onMarkDone: () => void;
-  onReopen: () => void;
+  onRequestComplete: () => void;
+  onRequestReopen: () => void;
+  onRequestDelete: () => void;
   onAssign: (userId: string | null) => void;
 }
 
@@ -353,8 +354,9 @@ const TaskRow = ({
   currentUserId,
   busy,
   assigning,
-  onMarkDone,
-  onReopen,
+  onRequestComplete,
+  onRequestReopen,
+  onRequestDelete,
   onAssign,
 }: TaskRowProps) => {
   const blocking = isBlocking(task);
@@ -372,24 +374,27 @@ const TaskRow = ({
   const onTouchMove = (e: React.TouchEvent) => {
     if (startXRef.current == null) return;
     const delta = e.touches[0].clientX - startXRef.current;
-    if (!isDone && delta > 0) setDx(Math.min(delta, 140));
-    else if (isDone && delta < 0) setDx(Math.max(delta, -140));
+    // Right swipe = complete (only when not done). Left swipe = delete (always).
+    if (delta > 0 && !isDone) setDx(Math.min(delta, 140));
+    else if (delta < 0) setDx(Math.max(delta, -140));
   };
   const onTouchEnd = () => {
     startXRef.current = null;
     setReleased(true);
     if (!isDone && dx > SWIPE_THRESHOLD) {
-      setDx(320);
-      onMarkDone();
-    } else if (isDone && dx < -SWIPE_THRESHOLD) {
-      setDx(-320);
-      onReopen();
+      setDx(0);
+      onRequestComplete();
+    } else if (dx < -SWIPE_THRESHOLD) {
+      setDx(0);
+      onRequestDelete();
     } else {
       setDx(0);
     }
   };
 
   const showSwipeHint = Math.abs(dx) > 10;
+  const swipingRight = dx > 10;
+  const swipingLeft = dx < -10;
 
   return (
     <div className="relative">
@@ -397,18 +402,17 @@ const TaskRow = ({
         <div
           className={cn(
             "absolute inset-0 rounded-xl flex items-center px-4 text-xs font-bold uppercase tracking-wider",
-            !isDone
-              ? "bg-primary/15 text-primary justify-start"
-              : "bg-muted text-muted-foreground justify-end",
+            swipingRight && "bg-primary/15 text-primary justify-start",
+            swipingLeft && "bg-destructive/15 text-destructive justify-end",
           )}
         >
-          {!isDone ? (
+          {swipingRight ? (
             <span className="flex items-center gap-1.5">
-              <Check className="h-4 w-4" /> Done
+              <Check className="h-4 w-4" /> Complete
             </span>
           ) : (
             <span className="flex items-center gap-1.5">
-              <RotateCcw className="h-4 w-4" /> Reopen
+              <Trash2 className="h-4 w-4" /> Delete
             </span>
           )}
         </div>
@@ -435,7 +439,7 @@ const TaskRow = ({
             disabled={busy}
             onClick={(e) => {
               e.stopPropagation();
-              isDone ? onReopen() : onMarkDone();
+              isDone ? onRequestReopen() : onRequestComplete();
             }}
             className={cn(
               "mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",

@@ -29,6 +29,7 @@ interface SimpleFileSharingProps {
 
 export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFileSharingProps) => {
   const { toast } = useToast();
+  const sizeLimit = useFileSizeLimit();
   const [uploading, setUploading] = useState(false);
   const [replacingFileId, setReplacingFileId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);

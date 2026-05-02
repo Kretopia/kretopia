@@ -11844,6 +11844,41 @@ export type Database = {
         }
         Relationships: []
       }
+      studio_pulse_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          project_id: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          project_id: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_pulse_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "studio_pulse_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       studio_pulse_posts: {
         Row: {
           approval_status: string | null

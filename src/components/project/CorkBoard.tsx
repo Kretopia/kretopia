@@ -91,7 +91,9 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       if (error) {
         console.error(error);
       } else {
-        setPins((data || []) as Pin[]);
+        const rows = (data || []) as Pin[];
+        setPins(rows);
+        savedPosRef.current = new Map(rows.map((p) => [p.id, { x: p.pos_x, y: p.pos_y }]));
       }
       setLoading(false);
     })().catch((e) => console.warn("[corkboard] load failed", e));

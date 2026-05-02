@@ -439,7 +439,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       {!loading && pins.length > 0 && (
         <div className="px-3 py-1.5 border-b border-border/60 bg-background/80">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 text-center">
-            Tap to edit · Hold to drag
+            Tap note to edit · drag from the red pin/top edge
           </p>
         </div>
       )}
@@ -476,7 +476,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
               <p className="text-base font-bold">Your studio cork board</p>
               <p className="text-xs text-muted-foreground mt-1 max-w-[260px]">
                 Pin sticky notes, drop reference images, spark ideas with AI.
-                Drag anything anywhere.
+                Move cards from the red pin or top edge.
               </p>
               <div className="flex gap-2 mt-4">
                 <Button size="sm" onClick={() => addSticky()} className="gap-1.5">

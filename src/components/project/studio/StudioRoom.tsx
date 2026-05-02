@@ -186,6 +186,11 @@ export const StudioRoom = ({
           isOwner={isOwner}
         />
 
+        <PadPreviewSection
+          projectId={project.id}
+          onOpen={() => onNavigateToTab("notes")}
+        />
+
         <WorkSection
           tasks={tasks}
           projectId={project.id}

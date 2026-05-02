@@ -315,21 +315,62 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     toast.success("Pinned to your tasks");
   }, [projectId, currentUserId]);
 
-  // ---- Drag handlers (pointer events for mobile + desktop) ----
+  // ---- Drag handlers (long-press to lift, then drag) ----
+  const cancelPending = () => {
+    if (pendingRef.current) {
+      clearTimeout(pendingRef.current.timer);
+      pendingRef.current = null;
+    }
+  };
+
+  const beginDrag = (pin: Pin, clientX: number, clientY: number, pointerId: number, el: HTMLElement) => {
+    const board = boardRef.current?.getBoundingClientRect();
+    if (!board) return;
+    try {
+      el.setPointerCapture(pointerId);
+    } catch {
+      /* noop */
+    }
+    dragRef.current = {
+      id: pin.id,
+      pointerId,
+      el,
+      offsetX: clientX - board.left - pin.pos_x,
+      offsetY: clientY - board.top - pin.pos_y,
+    };
+    setDraggingId(pin.id);
+    // Haptic on supported devices
+    try { (navigator as any)?.vibrate?.(15); } catch {}
+  };
+
   const onPinPointerDown = (e: React.PointerEvent, pin: Pin) => {
     if ((e.target as HTMLElement).closest("[data-pin-no-drag]")) return;
     const el = e.currentTarget as HTMLElement;
-    el.setPointerCapture(e.pointerId);
-    const board = boardRef.current?.getBoundingClientRect();
-    if (!board) return;
-    dragRef.current = {
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const pointerId = e.pointerId;
+    cancelPending();
+    pendingRef.current = {
       id: pin.id,
-      offsetX: e.clientX - board.left - pin.pos_x,
-      offsetY: e.clientY - board.top - pin.pos_y,
+      pointerId,
+      el,
+      startX,
+      startY,
+      timer: window.setTimeout(() => {
+        if (!pendingRef.current || pendingRef.current.id !== pin.id) return;
+        beginDrag(pin, startX, startY, pointerId, el);
+        pendingRef.current = null;
+      }, LIFT_MS),
     };
   };
 
   const onPinPointerMove = (e: React.PointerEvent) => {
+    // Cancel pending lift if user moves before threshold (likely a tap/scroll)
+    if (pendingRef.current) {
+      const dx = Math.abs(e.clientX - pendingRef.current.startX);
+      const dy = Math.abs(e.clientY - pendingRef.current.startY);
+      if (dx > MOVE_TOLERANCE || dy > MOVE_TOLERANCE) cancelPending();
+    }
     if (!dragRef.current) return;
     const board = boardRef.current?.getBoundingClientRect();
     if (!board) return;
@@ -341,12 +382,31 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   };
 
   const onPinPointerUp = (e: React.PointerEvent) => {
+    cancelPending();
     if (!dragRef.current) return;
     const id = dragRef.current.id;
     const pin = pins.find((p) => p.id === id);
+    try {
+      dragRef.current.el.releasePointerCapture?.(dragRef.current.pointerId);
+    } catch {
+      /* noop */
+    }
     dragRef.current = null;
-    (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+    setDraggingId(null);
     if (pin) void updatePin(id, { pos_x: pin.pos_x, pos_y: pin.pos_y });
+  };
+
+  const onPinPointerCancel = () => {
+    cancelPending();
+    if (dragRef.current) {
+      try {
+        dragRef.current.el.releasePointerCapture?.(dragRef.current.pointerId);
+      } catch {
+        /* noop */
+      }
+      dragRef.current = null;
+      setDraggingId(null);
+    }
   };
 
   const sortedPins = useMemo(

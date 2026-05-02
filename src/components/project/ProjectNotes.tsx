@@ -126,6 +126,7 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
 
         if (error) throw error;
         setSelectedNote(data as Note);
+        setIsComposing(false);
         toast.success("Note created");
       }
       fetchNotes();
@@ -193,8 +194,8 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
 
   return (
     <div className="flex flex-col md:flex-row gap-4 h-full">
-      {/* Notes List */}
-      {!selectedNote || !isMobileView ? (
+      {/* Notes List — hide on mobile when viewing or composing a note */}
+      {(!(selectedNote || isComposing) || !isMobileView) ? (
         <Card className={cn(
           "p-4 flex flex-col gap-2 shrink-0",
           "w-full md:w-64",

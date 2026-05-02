@@ -90,7 +90,10 @@ export const SimpleTaskList = ({ projectId, tasks, onTasksChanged, currentUserId
           preserveAssignee: userPickedAssignee,
         }).then((res) => {
           if (res.ok && res.patched && Object.keys(res.patched).length > 0) {
+            toast({ title: "Polished", description: "Smart fields filled in for you." });
             onTasksChanged();
+          } else if (!res.ok) {
+            console.warn("[enhance-task] failed:", res.error);
           }
         });
       }

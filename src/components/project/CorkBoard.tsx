@@ -296,6 +296,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     }
     toast.success("Pinned to your tasks");
   }, [projectId, currentUserId]);
+
+  // ---- Drag handlers (pointer events for mobile + desktop) ----
   const onPinPointerDown = (e: React.PointerEvent, pin: Pin) => {
     if ((e.target as HTMLElement).closest("[data-pin-no-drag]")) return;
     const el = e.currentTarget as HTMLElement;

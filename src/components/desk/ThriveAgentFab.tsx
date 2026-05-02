@@ -119,7 +119,11 @@ export const ThriveAgentFab = () => {
       if (typeof detail === "string") setDeskTab(detail);
     };
     window.addEventListener("thrivedesk:set-tab", onTab);
-    return () => window.removeEventListener("thrivedesk:set-tab", onTab);
+    window.addEventListener("thrivedesk:tab-changed", onTab);
+    return () => {
+      window.removeEventListener("thrivedesk:set-tab", onTab);
+      window.removeEventListener("thrivedesk:tab-changed", onTab);
+    };
   }, []);
 
   // Reset deskTab when leaving /desk

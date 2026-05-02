@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { CalendarClock, CheckCircle2, Clapperboard, ListChecks, Loader2, Music2, Palette, Shirt, Sparkles, UserCheck, Wand2 } from "lucide-react";
+import { CalendarClock, CheckCircle2, Clapperboard, ListChecks, Loader2, Music2, Shirt, Sparkles, UserCheck, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";

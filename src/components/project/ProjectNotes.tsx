@@ -199,7 +199,7 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
         <Card className={cn(
           "p-4 flex flex-col gap-2 shrink-0",
           "w-full md:w-64",
-          selectedNote && "hidden md:flex"
+          (selectedNote || isComposing) && "hidden md:flex"
         )}>
           <Button onClick={() => handleNew()} className="w-full mb-2">
             <Plus className="h-4 w-4 mr-2" /> New Note
@@ -213,6 +213,7 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
                   setSelectedNote(note);
                   setTitle(note.title);
                   setContent(note.content || "");
+                  setIsComposing(false);
                 }}
                 className={`w-full p-3 text-left rounded-lg border transition-colors ${
                   selectedNote?.id === note.id
@@ -246,15 +247,16 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
       ) : null}
 
       {/* Note Editor */}
-      {(selectedNote || title || !isMobileView) && (
+      {(selectedNote || isComposing || !isMobileView) && (
         <Card className="flex-1 p-4 md:p-6 flex flex-col gap-4 min-h-0">
-          {isMobileView && selectedNote && (
+          {isMobileView && (selectedNote || isComposing) && (
             <Button
               variant="ghost"
               size="sm"
               className="self-start -ml-2 mb-1"
               onClick={() => {
                 setSelectedNote(null);
+                setIsComposing(false);
                 setTitle("");
                 setContent("");
               }}

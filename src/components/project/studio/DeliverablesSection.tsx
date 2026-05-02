@@ -3,6 +3,7 @@ import { CheckCircle2, MessageCircle, RefreshCw, Loader2, Eye } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MoodboardThumb } from "./MoodboardThumb";
 import { DeliverableCommentsSheet } from "./DeliverableCommentsSheet";
@@ -117,6 +118,7 @@ export const DeliverablesSection = ({
 
   const updateStatus = async (id: string, status: "approved" | "changes_requested") => {
     setUpdatingId(id);
+    const item = items.find((d) => d.id === id);
     const { error } = await supabase
       .from("project_deliverables")
       .update({
@@ -130,9 +132,38 @@ export const DeliverablesSection = ({
       toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
       return;
     }
-    toast({
-      title: status === "approved" ? "Approved 🎉" : "Changes requested",
-      description: status === "approved" ? "The creative will be notified." : "Drop a note so they know what's next.",
+    if (status === "changes_requested") {
+      toast({
+        title: "Changes requested",
+        description: "Drop a note so they know what's next.",
+      });
+      return;
+    }
+
+    // Approved → nudge to invoice it
+    sonnerToast.success("Approved 🎉", {
+      description: "Ready to bill it? Draft an invoice for this drop.",
+      duration: 8000,
+      action: {
+        label: "Draft invoice",
+        onClick: () => {
+          // Switch the Desk to the Finance tab, then dispatch a prefill intent.
+          window.dispatchEvent(
+            new CustomEvent("thrivedesk:set-tab", { detail: "finance" }),
+          );
+          setTimeout(() => {
+            window.dispatchEvent(
+              new CustomEvent("thrivedesk:intent", {
+                detail: {
+                  tab: "finance",
+                  intent: "draft-from-deliverable",
+                  payload: { deliverable_id: id, title: item?.title ?? "Deliverable" },
+                },
+              }),
+            );
+          }, 60);
+        },
+      },
     });
   };
 

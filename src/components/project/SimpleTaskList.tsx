@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/ui/empty-state";
 import { VoiceTaskCapture } from "@/components/project/mobile/VoiceTaskCapture";
+import { enhanceTaskInBackground } from "@/lib/taskEnhancer";
 
 interface Task {
   id: string;

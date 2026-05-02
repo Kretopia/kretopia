@@ -648,7 +648,7 @@ const Section = ({
       {/* Swipe hint — only when there's something to swipe */}
       {tasks.length > 0 && (active.length > 0 || blocking.length > 0) && (
         <p className="text-[10px] text-muted-foreground text-center">
-          Tip: swipe a task right to mark done →
+          Tip: swipe right to complete · swipe left to delete
         </p>
       )}
 

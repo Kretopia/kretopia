@@ -438,6 +438,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
               onChange={(content) => updatePin(pin.id, { content })}
               onColorChange={(color) => updatePin(pin.id, { color })}
               onDelete={() => deletePin(pin.id)}
+              onConvertToTask={() => convertToTask(pin)}
             />
           ))}
         </div>

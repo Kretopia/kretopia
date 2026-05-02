@@ -99,11 +99,17 @@ async function classifyIntent(
   return { agent_kind: "project_manager", reasoning: "classifier returned invalid kind" };
 }
 
+/**
+ * Agentic planner: lets the LLM call safe_auto tools (find_user, list_my_projects)
+ * to gather context, then propose the final action(s). Up to 3 reasoning turns.
+ */
 async function planTools(
   intent: string,
   agentKind: string,
   tools: Tool[],
   context: Record<string, unknown>,
+  userId: string,
+  authHeader: string,
 ): Promise<Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string }>> {
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -111,7 +117,6 @@ async function planTools(
     (t) => t.agent_kind === agentKind || t.agent_kind === "orchestrator",
   );
 
-  // Build OpenAI-style tool list for function calling
   const toolDefs = toolsForAgent.map((t) => ({
     type: "function",
     function: {
@@ -121,66 +126,102 @@ async function planTools(
     },
   }));
 
-  const resp = await fetch(
-    "https://ai.gateway.lovable.dev/v1/chat/completions",
+  const messages: any[] = [
     {
+      role: "system",
+      content:
+        `You are the ${agentKind} sub-agent inside ThriveIN, a creative-economy platform. ` +
+        `Your job: turn the user's natural-language intent into the right tool calls. ` +
+        `\n\nRules:\n` +
+        `- Tools tagged [safe_auto] (find_user, list_my_projects, etc.) run automatically — call them first to RESOLVE names/IDs before proposing destructive actions.\n` +
+        `- Tools tagged [requires_approval] need user approval — only call them with REAL UUIDs you obtained from safe_auto results or context.\n` +
+        `- NEVER invent UUIDs. If you don't have an ID, look it up first.\n` +
+        `- For each [requires_approval] call, include "_preview": { "title": "...", "body": "..." } in the args so the user sees a clear approval card.\n` +
+        `- If after lookups the request is still ambiguous (e.g., 2+ matching users), call ask_clarification.\n` +
+        `- The current user's ID is ${userId}.\n` +
+        `- Caller context: ${JSON.stringify(context).slice(0, 1500)}`,
+    },
+    { role: "user", content: intent },
+  ];
+
+  const proposals: Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string }> = [];
+  const MAX_TURNS = 3;
+
+  for (let turn = 0; turn < MAX_TURNS; turn++) {
+    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content:
-              `You are the ${agentKind} sub-agent inside ThriveIN, a platform for creators. ` +
-              `Plan 1-4 tool calls to satisfy the user's intent. Prefer fewer tools. ` +
-              `Tools tagged [safe_auto] run automatically. [requires_approval] tools are drafted and shown to the user for one-tap approval. [locked] tools cannot be called. ` +
-              `For each tool call, also include a brief 'preview_title' and 'preview_body' in the arguments under a special "_preview" key so the approval card has human-readable copy. ` +
-              `If you do not have enough info, call ask_clarification.`,
-          },
-          {
-            role: "user",
-            content:
-              `Intent: ${intent}\n\nContext: ${JSON.stringify(context).slice(0, 2000)}`,
-          },
-        ],
+        messages,
         tools: toolDefs,
-        tool_choice: "auto",
+        tool_choice: turn === 0 ? "auto" : "auto",
       }),
-    },
-  );
+    });
 
-  if (!resp.ok) {
-    if (resp.status === 429)
-      throw new Error("Rate limited. Try again in a moment.");
-    if (resp.status === 402)
-      throw new Error("AI credits exhausted. Add funds in Settings.");
-    throw new Error(`Planner error: ${resp.status}`);
+    if (!resp.ok) {
+      if (resp.status === 429) throw new Error("Rate limited. Try again in a moment.");
+      if (resp.status === 402) throw new Error("AI credits exhausted. Add funds in Settings.");
+      throw new Error(`Planner error: ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const msg = data.choices?.[0]?.message;
+    const calls = msg?.tool_calls ?? [];
+
+    if (!calls.length) break; // model is done
+
+    // Append assistant turn so the model has a complete trace
+    messages.push({ role: "assistant", content: msg.content ?? "", tool_calls: calls });
+
+    let didAutoExecute = false;
+    for (const c of calls) {
+      let args: Record<string, unknown> = {};
+      try { args = JSON.parse(c.function?.arguments ?? "{}"); } catch { args = {}; }
+      const preview = (args._preview as { title?: string; body?: string }) ?? {};
+      delete args._preview;
+      const toolName = c.function?.name as string;
+      const tool = toolsForAgent.find((t) => t.tool_name === toolName);
+      if (!tool) {
+        messages.push({ role: "tool", tool_call_id: c.id, content: JSON.stringify({ error: `Unknown tool: ${toolName}` }) });
+        continue;
+      }
+
+      // safe_auto with no preview required → execute now and feed result back so the model can chain
+      if (tool.risk_level === "safe_auto" && tool.handler !== "inline" && tool.handler !== "inline_bundle") {
+        try {
+          const url = `${SUPABASE_URL}/functions/v1/${tool.handler}`;
+          const execResp = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: authHeader },
+            body: JSON.stringify(args),
+          });
+          const execText = await execResp.text();
+          messages.push({ role: "tool", tool_call_id: c.id, content: execText.slice(0, 4000) });
+          didAutoExecute = true;
+          // Also surface the lookup as a (silent) action row by NOT pushing to proposals — only the final destructive action becomes a proposal
+        } catch (e) {
+          messages.push({ role: "tool", tool_call_id: c.id, content: JSON.stringify({ error: String(e) }) });
+        }
+      } else {
+        // requires_approval / locked / inline → record as a proposal and tell the model it's queued
+        proposals.push({
+          tool_name: toolName,
+          tool_args: args,
+          preview_title: preview.title ?? toolName,
+          preview_body: preview.body ?? "",
+        });
+        messages.push({ role: "tool", tool_call_id: c.id, content: JSON.stringify({ ok: true, queued: true, awaiting_user_approval: true }) });
+      }
+    }
+
+    // If the model only proposed approval actions (no lookups), we can stop
+    if (!didAutoExecute) break;
   }
 
-  const data = await resp.json();
-  const calls = data.choices?.[0]?.message?.tool_calls ?? [];
-
-  return calls.map((c: any) => {
-    let args: Record<string, unknown> = {};
-    try {
-      args = JSON.parse(c.function?.arguments ?? "{}");
-    } catch {
-      args = {};
-    }
-    const preview = (args._preview as { title?: string; body?: string }) ?? {};
-    delete args._preview;
-    return {
-      tool_name: c.function?.name,
-      tool_args: args,
-      preview_title: preview.title ?? c.function?.name,
-      preview_body: preview.body ?? "",
-    };
-  });
+  return proposals;
 }
+
 
 async function executeAction(
   actionId: string,

@@ -591,6 +591,19 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
           if (error) throw error;
           const ok = (data as any)?.ok !== false && !(data as any)?.error;
           actions.push({ tool: name, args, result: data, ok });
+        } else if (name === "propose_multistep_plan") {
+          // Hand off to the planner — returns a plan_id the UI renders as a PlanCard
+          const { data, error } = await admin.functions.invoke("copilot-planner", {
+            body: {
+              goal: String(args.goal ?? message).slice(0, 1000),
+              project_id,
+              surface: "desk",
+            },
+            headers: { Authorization: authHeader },
+          });
+          if (error) throw error;
+          const ok = (data as any)?.ok !== false && !(data as any)?.error;
+          actions.push({ tool: name, args, result: data, ok });
         } else if (name === "ask_clarification") {
           actions.push({ tool: name, args, result: { question: args.question }, ok: true });
         }

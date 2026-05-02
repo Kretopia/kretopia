@@ -61,9 +61,27 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
 
-  // Drag state
-  const dragRef = useRef<{ id: string; offsetX: number; offsetY: number } | null>(null);
+  // Drag state — long-press to lift, then drag
+  const dragRef = useRef<{
+    id: string;
+    offsetX: number;
+    offsetY: number;
+    pointerId: number;
+    el: HTMLElement;
+  } | null>(null);
+  const pendingRef = useRef<{
+    id: string;
+    pointerId: number;
+    el: HTMLElement;
+    startX: number;
+    startY: number;
+    timer: number;
+  } | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   const [, force] = useState(0);
+
+  const LIFT_MS = 220;
+  const MOVE_TOLERANCE = 8;
 
   // Initial fetch + realtime
   useEffect(() => {

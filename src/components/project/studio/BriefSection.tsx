@@ -41,6 +41,7 @@ export const BriefSection = ({
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [breakingDown, setBreakingDown] = useState(false);
   const [activeFile, setActiveFile] = useState<any | null>(null);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [aiOpen, setAiOpen] = useState(false);
 
   const breakIntoTasks = async () => {

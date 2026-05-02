@@ -54,8 +54,9 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 50 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Maximum file size is 50MB", variant: "destructive" });
+    const check = sizeLimit.check(file.size);
+    if (!check.ok) {
+      toast({ title: "File too large", description: check.reason, variant: "destructive" });
       return;
     }
 
@@ -116,8 +117,9 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
     const existingFile = files.find(f => f.id === replacingFileId);
     if (!existingFile) return;
 
-    if (file.size > 50 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Maximum file size is 50MB", variant: "destructive" });
+    const check = sizeLimit.check(file.size);
+    if (!check.ok) {
+      toast({ title: "File too large", description: check.reason, variant: "destructive" });
       return;
     }
 

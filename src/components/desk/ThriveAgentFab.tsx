@@ -125,12 +125,13 @@ export const ThriveAgentFab = () => {
   // Resolve surface_context from the URL where helpful (project_id from /desk/:id)
   useEffect(() => {
     const ctx: Record<string, unknown> = { pathname: location.pathname };
+    if (firstName) ctx.first_name_hint = firstName;
     const deskMatch = location.pathname.match(/^\/desk\/([0-9a-f-]{36})/i);
     if (deskMatch) ctx.project_id = deskMatch[1];
     const eventMatch = location.pathname.match(/^\/event\/([^/]+)/i);
     if (eventMatch) ctx.event_slug_or_id = eventMatch[1];
     setSurfaceContext(ctx);
-  }, [location.pathname]);
+  }, [location.pathname, firstName]);
 
   // Pull the user's first name for the personalized greeting + as a hint to
   // the model via surface_context (the server already loads this, but sending

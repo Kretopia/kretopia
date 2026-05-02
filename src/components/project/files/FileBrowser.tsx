@@ -37,6 +37,7 @@ import { formatDistanceToNow } from "date-fns";
 import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFiles";
 import { FileThumbnail } from "./FileThumbnail";
 import { FilePreviewDialog } from "./FilePreviewDialog";
+import { FileCommentsSheet } from "@/components/project/studio/FileCommentsSheet";
 import { cn } from "@/lib/utils";
 
 interface ProjectFile {
@@ -83,6 +84,25 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [previewFile, setPreviewFile] = useState<ProjectFile | null>(null);
+  const [commentFile, setCommentFile] = useState<ProjectFile | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setCurrentUserId(data.user.id);
+    }).catch(() => {});
+  }, []);
+
+  // Route file clicks: media + images → comments sheet (timestamps + notes),
+  // everything else → standard preview dialog.
+  const openFile = useCallback((file: ProjectFile) => {
+    const t = file.file_type || "";
+    if (t.startsWith("video/") || t.startsWith("audio/") || t.startsWith("image/")) {
+      setCommentFile(file);
+    } else {
+      setPreviewFile(file);
+    }
+  }, []);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [renameTarget, setRenameTarget] = useState<{ type: "folder" | "file"; id: string; name: string } | null>(null);
@@ -418,7 +438,7 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
               key={file.id}
               draggable
               onDragStart={(e) => onDragStartFile(e, file.id)}
-              onClick={() => setPreviewFile(file)}
+              onClick={() => openFile(file)}
               className="group relative aspect-square rounded-xl border border-border bg-card overflow-hidden hover:ring-2 hover:ring-primary/40 transition-all cursor-pointer"
             >
               <FileThumbnail fileUrl={file.file_url} fileType={file.file_type} className="w-full h-full" />
@@ -490,7 +510,7 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
               key={file.id}
               draggable
               onDragStart={(e) => onDragStartFile(e, file.id)}
-              onClick={() => setPreviewFile(file)}
+              onClick={() => openFile(file)}
               className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40 cursor-pointer"
             >
               <div className="w-10 h-10 rounded overflow-hidden shrink-0">
@@ -526,6 +546,13 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
       )}
 
       <FilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
+
+      <FileCommentsSheet
+        open={!!commentFile}
+        onOpenChange={(v) => !v && setCommentFile(null)}
+        file={commentFile}
+        currentUserId={currentUserId}
+      />
 
       {/* New folder dialog */}
       <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>

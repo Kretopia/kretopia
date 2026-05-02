@@ -647,6 +647,11 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
         const ps: any[] = (a.result as any)?.projects ?? [];
         finalReply = ps.length ? `You have ${ps.length} active projects.` : "No active projects yet.";
       }
+      else if (a.tool === "propose_multistep_plan" && a.ok) {
+        const r: any = a.result || {};
+        if (!r.plan_id) finalReply = r.summary ?? "I couldn't break that into clean steps — try being more specific.";
+        else finalReply = `Here's the plan — review the ${(r.steps?.length ?? 0)} steps and tap Approve.`;
+      }
       else if (a.tool === "ask_clarification") finalReply = a.result.question;
       else if (!a.ok) finalReply = `Couldn't complete that — ${(a.result as any)?.error ?? "unknown error"}.`;
       else finalReply = "Done.";

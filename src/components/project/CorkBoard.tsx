@@ -587,16 +587,22 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       >
         <div
           ref={surfaceRef}
-          style={{ position: "relative", width: "100%", height: BOARD_HEIGHT }}
+          style={{ position: "relative", width: `max(100%, ${BOARD_MIN_WIDTH}px)`, height: BOARD_HEIGHT }}
         >
-          {/* QA: snap-bounds overlay (60px inset reflects the clamp in onPinPointerMove) */}
+          {/* QA: snap-bounds overlay mirrors the full horizontal canvas. */}
           {qaMode && (
             <>
               <div
                 aria-hidden
                 className="pointer-events-none absolute border border-dashed border-primary/60"
-                style={{ left: 0, top: 0, right: 60, bottom: 60 }}
+                style={{ left: 0, top: 0, right: 0, bottom: 0 }}
               />
+              <div
+                aria-hidden
+                className="pointer-events-none sticky left-2 top-2 z-20 inline-flex rounded-full border border-primary/40 bg-background/95 px-2 py-1 text-[9px] font-mono text-primary shadow-sm"
+              >
+                canvas {BOARD_MIN_WIDTH}px · edge auto-pan on
+              </div>
               {/* Last-saved ghost positions */}
               {pins.map((p) => {
                 const saved = savedPosRef.current.get(p.id);

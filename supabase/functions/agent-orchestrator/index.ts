@@ -392,14 +392,16 @@ serve(async (req) => {
     const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData?.user) {
-      return new Response(JSON.stringify({ error: "Invalid session" }), {
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: userErr } = await userClient.auth.getClaims(token);
+    const userId = claimsData?.claims?.sub as string | undefined;
+    if (userErr || !userId) {
+      console.error("[orchestrator] auth failed:", userErr?.message);
+      return new Response(JSON.stringify({ error: "Invalid session", detail: userErr?.message }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const userId = userData.user.id;
 
     const body = await req.json().catch(() => ({}));
 

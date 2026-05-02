@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFiles";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useFileSizeLimit } from "@/hooks/useFileSizeLimit";
 
 interface ProjectFile {
   id: string;

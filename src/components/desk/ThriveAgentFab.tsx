@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Sparkles, Send, Loader2, Trash2 } from "lucide-react";
+import { Sparkles, Send, Loader2, Trash2, HelpCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import {
   Sheet,
@@ -27,6 +27,7 @@ import {
 import { sendAgentIntent, type OrchAction } from "@/lib/agentOrchestrator";
 import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
 import { CopilotPlanCard, type CopilotPlan } from "@/components/agent/CopilotPlanCard";
+import { CopilotCapabilities } from "@/components/agent/CopilotCapabilities";
 
 /**
  * Thrive Copilot — the SINGLE assistant for the whole platform.
@@ -109,6 +110,7 @@ export const ThriveAgentFab = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [deskTab, setDeskTab] = useState<string>("today");
+  const [capsOpen, setCapsOpen] = useState(false);
 
   const surface: CopilotSurface = inferSurface(location.pathname);
 

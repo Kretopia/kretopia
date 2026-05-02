@@ -331,15 +331,6 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       latestX: pin.pos_x,
       latestY: pin.pos_y,
     };
-    dragRef.current = {
-      id: pin.id,
-      pointerId,
-      el,
-      offsetX: clientX - board.left - pin.pos_x,
-      offsetY: clientY - board.top - pin.pos_y,
-      latestX: pin.pos_x,
-      latestY: pin.pos_y,
-    };
     setDraggingId(pin.id);
     // Haptic on supported devices
     try { (navigator as any)?.vibrate?.(15); } catch {}

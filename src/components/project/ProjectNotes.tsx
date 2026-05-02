@@ -198,16 +198,8 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
           "w-full md:w-64",
           selectedNote && "hidden md:flex"
         )}>
-          <Button onClick={() => handleNew()} className="w-full mb-1">
+          <Button onClick={() => handleNew()} className="w-full mb-2">
             <Plus className="h-4 w-4 mr-2" /> New Note
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateDeskTab("brief")}
-            className="w-full mb-2 gap-1.5"
-          >
-            <Sparkles className="h-3.5 w-3.5" /> Smart Brief
           </Button>
 
           <div className="flex-1 overflow-y-auto space-y-2">
@@ -241,17 +233,9 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
               <div className="text-center py-8 px-2">
                 <FileText className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
                 <p className="text-sm font-medium">No notes yet</p>
-                <p className="text-xs text-muted-foreground mt-1 mb-3">
-                  Capture scope, briefs, and creative direction.
+                <p className="text-xs text-muted-foreground mt-1">
+                  Quick scratch, links, and decisions for the team.
                 </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="gap-1.5"
-                  onClick={() => navigateDeskTab("brief")}
-                >
-                  <Sparkles className="h-3.5 w-3.5" /> Start with Smart Brief
-                </Button>
               </div>
             )}
           </div>

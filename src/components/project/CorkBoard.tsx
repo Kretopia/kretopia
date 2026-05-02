@@ -277,7 +277,25 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     if (error) toast.error("Couldn't delete pin");
   }, []);
 
-  // ---- Drag handlers (pointer events for mobile + desktop) ----
+  // ---- Convert sticky → task ----
+  const convertToTask = useCallback(async (pin: Pin) => {
+    const title = (pin.content || "").trim();
+    if (!title) {
+      toast.error("Add some text first");
+      return;
+    }
+    const { error } = await supabase.from("project_tasks").insert({
+      project_id: projectId,
+      title: title.slice(0, 200),
+      status: "todo",
+      created_by: currentUserId,
+    } as never);
+    if (error) {
+      toast.error("Couldn't create task");
+      return;
+    }
+    toast.success("Pinned to your tasks");
+  }, [projectId, currentUserId]);
   const onPinPointerDown = (e: React.PointerEvent, pin: Pin) => {
     if ((e.target as HTMLElement).closest("[data-pin-no-drag]")) return;
     const el = e.currentTarget as HTMLElement;

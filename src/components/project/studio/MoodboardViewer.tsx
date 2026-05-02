@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Button } from "@/components/ui/button";
 import { Loader2, X, Download, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
 import { getProjectFileSignedUrl } from "@/lib/projectFiles";

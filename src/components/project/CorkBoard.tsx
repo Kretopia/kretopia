@@ -688,7 +688,10 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
         <div className="relative bg-card p-2 pt-4 shadow-xl ring-1 ring-border rounded-sm">
           <div
             data-pin-drag-handle
-            className="absolute inset-x-0 top-0 h-6 cursor-grab touch-none active:cursor-grabbing rounded-t-sm"
+            className={cn(
+              "absolute inset-x-0 top-0 h-6 cursor-grab touch-none active:cursor-grabbing rounded-t-sm",
+              qaMode && "bg-primary/30 ring-1 ring-primary",
+            )}
             aria-hidden
           />
           <img

@@ -9,6 +9,7 @@ import {
   Trash2,
   Loader2,
   Pin,
+  ListChecks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -276,6 +277,26 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     if (error) toast.error("Couldn't delete pin");
   }, []);
 
+  // ---- Convert sticky → task ----
+  const convertToTask = useCallback(async (pin: Pin) => {
+    const title = (pin.content || "").trim();
+    if (!title) {
+      toast.error("Add some text first");
+      return;
+    }
+    const { error } = await supabase.from("project_tasks").insert({
+      project_id: projectId,
+      title: title.slice(0, 200),
+      status: "todo",
+      created_by: currentUserId,
+    } as never);
+    if (error) {
+      toast.error("Couldn't create task");
+      return;
+    }
+    toast.success("Pinned to your tasks");
+  }, [projectId, currentUserId]);
+
   // ---- Drag handlers (pointer events for mobile + desktop) ----
   const onPinPointerDown = (e: React.PointerEvent, pin: Pin) => {
     if ((e.target as HTMLElement).closest("[data-pin-no-drag]")) return;
@@ -417,6 +438,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
               onChange={(content) => updatePin(pin.id, { content })}
               onColorChange={(color) => updatePin(pin.id, { color })}
               onDelete={() => deletePin(pin.id)}
+              onConvertToTask={() => convertToTask(pin)}
             />
           ))}
         </div>
@@ -431,9 +453,10 @@ interface PinCardProps {
   onChange: (content: string) => void;
   onColorChange: (color: PinColor) => void;
   onDelete: () => void;
+  onConvertToTask: () => void;
 }
 
-function PinCard({ pin, onPointerDown, onChange, onColorChange, onDelete }: PinCardProps) {
+function PinCard({ pin, onPointerDown, onChange, onColorChange, onDelete, onConvertToTask }: PinCardProps) {
   const styles = COLOR_STYLES[pin.color];
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(pin.content || "");
@@ -587,6 +610,15 @@ function PinCard({ pin, onPointerDown, onChange, onColorChange, onDelete }: PinC
               ))}
             </div>
           )}
+          <button
+            data-pin-no-drag
+            onClick={onConvertToTask}
+            className="opacity-50 hover:opacity-100 transition-opacity"
+            aria-label="Make a task from this sticky"
+            title="Make a task"
+          >
+            <ListChecks className="h-3.5 w-3.5" />
+          </button>
           <button
             onClick={onDelete}
             className="opacity-50 hover:opacity-100 transition-opacity"

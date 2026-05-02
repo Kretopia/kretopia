@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Loader2, X, Download, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
 import { getProjectFileSignedUrl } from "@/lib/projectFiles";
 
+// Module-level cache shared across mounts to avoid refetching signed URLs
+const signedUrlCache = new Map<string, string>();
+
 interface MoodboardFile {
   id: string;
   file_name: string;
@@ -27,19 +30,29 @@ export const MoodboardViewer = ({
   onOpenNotes,
 }: MoodboardViewerProps) => {
   const file = index != null ? files[index] : null;
+  const storedUrl = file?.file_url ?? null;
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!file) {
+    if (!storedUrl) {
       setUrl(null);
+      return;
+    }
+    // Reuse cached signed URL if available
+    const cached = signedUrlCache.get(storedUrl);
+    if (cached) {
+      setUrl(cached);
+      setLoading(false);
       return;
     }
     let cancelled = false;
     setLoading(true);
-    getProjectFileSignedUrl(file.file_url, { expiresIn: 3600 })
+    setUrl(null);
+    getProjectFileSignedUrl(storedUrl, { expiresIn: 3600 })
       .then((signed) => {
         if (cancelled) return;
+        if (signed) signedUrlCache.set(storedUrl, signed);
         setUrl(signed);
         setLoading(false);
       })
@@ -47,7 +60,7 @@ export const MoodboardViewer = ({
     return () => {
       cancelled = true;
     };
-  }, [file]);
+  }, [storedUrl]);
 
   // Keyboard navigation
   useEffect(() => {

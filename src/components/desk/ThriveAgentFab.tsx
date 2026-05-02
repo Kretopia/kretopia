@@ -357,30 +357,36 @@ export const ThriveAgentFab = () => {
     }
   }, [user]);
 
-  const hidden =
+  // FAB visibility: hide the floating orb on chat surfaces & unauthenticated paths.
+  // The Sheet itself remains mounted so the global header sparkle (thrive-copilot:open)
+  // can still open the Copilot from anywhere — including /messages and Desk chat.
+  const fabHidden =
     !user ||
     HIDDEN_PATH_PREFIXES.some((p) => location.pathname.startsWith(p)) ||
     (location.pathname.startsWith("/desk/") && deskTab === "messages");
 
-  if (hidden) return null;
+  // If there's no user at all, don't mount anything (avoids flashing the drawer pre-auth).
+  if (!user) return null;
 
   const quickPrompts = QUICK_PROMPTS_BY_SURFACE[surface] ?? QUICK_PROMPTS_BY_SURFACE.home!;
   const surfaceLabel = SURFACE_LABEL[surface];
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Open Thrive Copilot"
-        className={cn(
-          "fixed right-4 z-40 h-14 w-14 rounded-full shadow-xl",
-          "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground",
-          "flex items-center justify-center active:scale-95 transition-transform",
-          "bottom-[calc(env(safe-area-inset-bottom)+5rem)]",
-        )}
-      >
-        <Sparkles className="h-6 w-6" />
-      </button>
+      {!fabHidden && (
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Open Thrive Copilot"
+          className={cn(
+            "fixed right-4 z-40 h-14 w-14 rounded-full shadow-xl",
+            "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground",
+            "flex items-center justify-center active:scale-95 transition-transform",
+            "bottom-[calc(env(safe-area-inset-bottom)+5rem)]",
+          )}
+        >
+          <Sparkles className="h-6 w-6" />
+        </button>
+      )}
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent

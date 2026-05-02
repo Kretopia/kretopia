@@ -8,7 +8,7 @@ import { TasksWorkspace } from "@/components/project/tasks/TasksWorkspace";
 import { SimpleProjectChat } from "@/components/project/SimpleProjectChat";
 import { FinanceHub } from "@/components/project/finance/FinanceHub";
 import { AgentFinanceSummary } from "@/components/project/finance/AgentFinanceSummary";
-import { ProjectNotes } from "@/components/project/ProjectNotes";
+import { CorkBoard } from "@/components/project/CorkBoard";
 import { AIBriefBuilder } from "@/components/project/AIBriefBuilder";
 import { AIAutomation } from "@/components/project/AIAutomation";
 import { ApprovalWorkflows } from "@/components/project/ApprovalWorkflows";
@@ -185,11 +185,11 @@ export const DeskTabContent = memo(({
         {activeTab === "notes" && (
           <WorkflowShell
             eyebrow="The Pad"
-            title="Notes & Scratch"
-            subtitle="Quick captures, decisions, and creative direction."
+            title="Cork Board"
+            subtitle="Pin sticky notes, drop references, spark ideas. Drag anything anywhere."
             icon={StickyNote}
           >
-            <ProjectNotes projectId={projectId} />
+            <CorkBoard projectId={projectId} currentUserId={currentUserId} />
           </WorkflowShell>
         )}
 

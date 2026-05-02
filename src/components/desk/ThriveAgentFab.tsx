@@ -51,6 +51,7 @@ const HIDDEN_PATH_PREFIXES = [
   "/check-in",
   "/call/",
   "/guest-call",
+  "/messages",
 ];
 
 const QUICK_PROMPTS_BY_SURFACE: Partial<Record<CopilotSurface, string[]>> = {
@@ -107,8 +108,28 @@ export const ThriveAgentFab = () => {
   const [firstName, setFirstName] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const [deskTab, setDeskTab] = useState<string>("today");
 
   const surface: CopilotSurface = inferSurface(location.pathname);
+
+  // Track Desk's active tab so we can hide the FAB when the chat tab is open.
+  useEffect(() => {
+    const onTab = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (typeof detail === "string") setDeskTab(detail);
+    };
+    window.addEventListener("thrivedesk:set-tab", onTab);
+    window.addEventListener("thrivedesk:tab-changed", onTab);
+    return () => {
+      window.removeEventListener("thrivedesk:set-tab", onTab);
+      window.removeEventListener("thrivedesk:tab-changed", onTab);
+    };
+  }, []);
+
+  // Reset deskTab when leaving /desk
+  useEffect(() => {
+    if (!location.pathname.startsWith("/desk")) setDeskTab("today");
+  }, [location.pathname]);
 
   // Allow any surface to open the Copilot with a preset prompt:
   //   window.dispatchEvent(new CustomEvent("thrive-copilot:open", { detail: { prompt: "..." } }))
@@ -338,7 +359,8 @@ export const ThriveAgentFab = () => {
 
   const hidden =
     !user ||
-    HIDDEN_PATH_PREFIXES.some((p) => location.pathname.startsWith(p));
+    HIDDEN_PATH_PREFIXES.some((p) => location.pathname.startsWith(p)) ||
+    (location.pathname.startsWith("/desk/") && deskTab === "messages");
 
   if (hidden) return null;
 

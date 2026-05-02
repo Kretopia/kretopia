@@ -24,6 +24,7 @@ type ToolName =
   | "list_my_projects"
   | "add_collaborator"
   | "remove_collaborator"
+  | "propose_multistep_plan"
   | "ask_clarification";
 
 const TOOLS = [

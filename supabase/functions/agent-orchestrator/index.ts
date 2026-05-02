@@ -907,7 +907,7 @@ serve(async (req) => {
       .select()
       .single();
 
-    const planned = await planTools(intent, agent_kind, tools as Tool[], context);
+    const planned = await planTools(intent, agent_kind, tools as Tool[], context, userId, authHeader);
 
     // Insert action rows; auto-execute safe_auto, leave requires_approval as proposed
     const actionRows: Array<Record<string, unknown>> = [];

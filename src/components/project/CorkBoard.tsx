@@ -316,7 +316,10 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         body: { project_id: projectId },
       });
       if (error) throw error;
-      const ideas: string[] = Array.isArray((data as any)?.ideas) ? (data as any).ideas : [];
+      const ideasRaw = (data as SparkIdeasResponse | null)?.ideas;
+      const ideas: string[] = Array.isArray(ideasRaw)
+        ? ideasRaw.filter((idea): idea is string => typeof idea === "string")
+        : [];
       if (!ideas.length) {
         toast.message("No ideas this round", {
           description: "Add more to your brief and try again.",
@@ -352,8 +355,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         });
         toast.success(`${inserted.length} idea${inserted.length === 1 ? "" : "s"} pinned`);
       }
-    } catch (e: any) {
-      toast.error(e.message || "Spark Ideas failed");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Spark Ideas failed"));
     } finally {
       setSparking(false);
     }
@@ -416,7 +419,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     };
     setDraggingId(pin.id);
     // Haptic on supported devices
-    try { (navigator as any)?.vibrate?.(15); } catch {}
+    if ("vibrate" in navigator) navigator.vibrate?.(15);
   };
 
   const onPinPointerDown = (e: React.PointerEvent, pin: Pin) => {

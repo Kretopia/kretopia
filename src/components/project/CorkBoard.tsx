@@ -229,6 +229,71 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     [projectId, currentUserId, nextPosition, pins.length],
   );
 
+  // Pull existing brief moodboard images into the Pad as image pins so the
+  // board doubles as a unified moodboard + sticky-note space.
+  const importMoodboard = useCallback(async () => {
+    setAdding(true);
+    try {
+      const { data: files, error: filesErr } = await supabase
+        .from("project_files")
+        .select("id, file_name, file_url, file_type")
+        .eq("project_id", projectId);
+      if (filesErr) throw filesErr;
+      const images = (files || []).filter((f: any) =>
+        (f.file_type || "").startsWith("image/"),
+      );
+      if (!images.length) {
+        toast.message("No moodboard images yet", {
+          description: "Add references in the Brief first.",
+        });
+        return;
+      }
+      const existingUrls = new Set(
+        pins.filter((p) => p.kind === "image" && p.image_url).map((p) => p.image_url!),
+      );
+      const fresh = images.filter((f: any) => !existingUrls.has(f.file_url));
+      if (!fresh.length) {
+        toast.message("Moodboard already on the board");
+        return;
+      }
+      const baseLen = pins.length;
+      const rows = fresh.map((f: any, i: number) => {
+        const x = 24 + ((baseLen + i) % 4) * 180 + Math.random() * 30;
+        const y = 24 + Math.floor((baseLen + i) / 4) * 200 + Math.random() * 30;
+        return {
+          project_id: projectId,
+          created_by: currentUserId,
+          kind: "image" as const,
+          image_url: f.file_url,
+          content: f.file_name,
+          color: "yellow" as PinColor,
+          pos_x: x,
+          pos_y: y,
+          rotation: (Math.random() - 0.5) * 6,
+          z_index: baseLen + i + 1,
+        };
+      });
+      const { data: inserted, error: insErr } = await supabase
+        .from("project_pins")
+        .insert(rows)
+        .select();
+      if (insErr) throw insErr;
+      if (inserted) {
+        setPins((prev) => {
+          const ids = new Set(prev.map((p) => p.id));
+          return [...prev, ...(inserted as Pin[]).filter((p) => !ids.has(p.id))];
+        });
+        toast.success(
+          `${inserted.length} reference${inserted.length === 1 ? "" : "s"} pinned`,
+        );
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Couldn't import moodboard");
+    } finally {
+      setAdding(false);
+    }
+  }, [projectId, currentUserId, pins]);
+
   const sparkIdeas = useCallback(async () => {
     setSparking(true);
     try {

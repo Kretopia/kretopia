@@ -5,6 +5,7 @@ import { FileBrowser } from "@/components/project/files/FileBrowser";
 import { WorkflowShell } from "@/components/project/studio/WorkflowShell";
 import { SmartBriefBuilder } from "@/components/project/SmartBriefBuilder";
 import { ShareReviewLinkDialog } from "@/components/project/studio/ShareReviewLinkDialog";
+import { StorageMeter } from "@/components/storage/StorageMeter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -169,6 +170,10 @@ export function VaultTab({
         projectId={projectId}
         projectTitle={projectTitle}
       />
+
+      <div className="px-1 mb-3">
+        <StorageMeter variant="compact" />
+      </div>
 
       <FileBrowser
         projectId={projectId}

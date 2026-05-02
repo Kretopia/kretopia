@@ -1,5 +1,7 @@
 /**
- * Per-file upload size caps by subscription tier.
+ * Per-file upload size caps + total storage caps by subscription tier.
+ * These are the single source of truth referenced by the DB function
+ * `get_tier_storage_limit` and the client-side `useStorageQuota` hook.
  *
  * Industry context (per-file):
  *   - Frame.io Pro: 8GB · Team: 20GB
@@ -7,11 +9,11 @@
  *   - Vimeo Premium: 8GB · Behance: 500MB video
  *   - Notion paid: unlimited · Slack: 1GB
  *
- * Our structure (matches `storage-tiers-and-sub-roles` total caps):
- *   Free (Spark):    250 MB / file   ·   2 GB total
- *   Creator:           2 GB / file   ·  25 GB total
- *   Creator+:         10 GB / file   · 100 GB total
- *   Founder:          25 GB / file   · unlimited total
+ * Our tiers:
+ *   Spark (free):  250 MB / file   ·   2 GB total
+ *   Creator:         2 GB / file   ·  25 GB total
+ *   Creator+:       10 GB / file   · 100 GB total
+ *   Founder:        25 GB / file   ·   1 TB total
  */
 
 import type { SubscriptionTier } from "./subscriptionConfig";
@@ -51,5 +53,15 @@ export const TIER_FILE_SUMMARY = [
   { tier: "free",        label: "Spark",    perFile: "250 MB", total: "2 GB" },
   { tier: "pro",         label: "Creator",  perFile: "2 GB",   total: "25 GB" },
   { tier: "creator_pro", label: "Creator+", perFile: "10 GB",  total: "100 GB" },
-  { tier: "founder",     label: "Founder",  perFile: "25 GB",  total: "Unlimited" },
+  { tier: "founder",     label: "Founder",  perFile: "25 GB",  total: "1 TB" },
 ] as const;
+
+/** Total storage caps (mirror of get_tier_storage_limit in DB). */
+export const TOTAL_STORAGE_LIMITS: Record<string, number> = {
+  free:              2 * 1024 ** 3,           //   2 GB
+  pro:              25 * 1024 ** 3,           //  25 GB
+  creator_pro:     100 * 1024 ** 3,           // 100 GB
+  founder:        1024 * 1024 ** 3,           //   1 TB
+  brand_pro:       100 * 1024 ** 3,
+  brand_enterprise: 512 * 1024 ** 3,          // 512 GB
+};

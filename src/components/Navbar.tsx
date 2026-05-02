@@ -17,6 +17,7 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getTierDisplayName } from "@/lib/subscriptionConfig";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
+import { StorageMeter } from "@/components/storage/StorageMeter";
 // useNavMode removed — single unified nav
 import {
   Sheet,
@@ -327,6 +328,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   )}
 
                   <Separator className="my-3" />
+
+                  <div className="px-1 pb-2">
+                    <StorageMeter variant="compact" />
+                  </div>
+
+                  <Separator className="my-1" />
 
                   <Button
                     variant="outline"

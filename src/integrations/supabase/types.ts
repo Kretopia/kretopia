@@ -12176,6 +12176,24 @@ export type Database = {
           },
         ]
       }
+      tracked_storage_buckets: {
+        Row: {
+          bucket_id: string
+          created_at: string | null
+          description: string | null
+        }
+        Insert: {
+          bucket_id: string
+          created_at?: string | null
+          description?: string | null
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string | null
+          description?: string | null
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -14227,6 +14245,14 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_my_storage_quota: {
+        Args: never
+        Returns: {
+          limit_bytes: number
+          tier: string
+          used_bytes: number
+        }[]
+      }
       get_nearby_creators: {
         Args: {
           limit_count?: number
@@ -14488,6 +14514,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      recompute_all_storage_usage: { Args: never; Returns: undefined }
       recompute_verification_tier: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -14521,6 +14548,10 @@ export type Database = {
           scope_ref_id: string
           share_link_id: string
         }[]
+      }
+      resolve_storage_owner: {
+        Args: { _name: string; _owner: string }
+        Returns: string
       }
       rsvp_to_event: {
         Args: {

@@ -396,13 +396,26 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
             <FolderPlus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">New folder</span>
           </Button>
-          <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-            {uploading ? <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" /> : <Upload className="h-4 w-4 sm:mr-2" />}
-            <span className="hidden sm:inline">{uploading ? "Uploading" : "Upload"}</span>
+          <Button size="sm" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Upload</span>
           </Button>
           <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleUpload} />
         </div>
       </div>
+
+      {/* Tier hint + active uploads */}
+      {uploadJobs.length > 0 ? (
+        <ResumableUploadList
+          jobs={uploadJobs}
+          onJobFinished={handleJobFinished}
+          onJobRemoved={handleJobRemoved}
+        />
+      ) : (
+        <p className="text-[11px] text-muted-foreground px-1">
+          Up to <strong className="text-foreground">{formatBytes(sizeLimit.limit)}</strong> per file on {sizeLimit.tierLabel}. Big uploads pause &amp; resume automatically.
+        </p>
+      )}
 
       {filtered.folders.length === 0 && filtered.files.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border rounded-xl">

@@ -108,13 +108,13 @@ function buildNextStep(stageId: ProjectFlowStageId, s: ProjectFlowSignals): Next
       };
     case "tasks":
       return {
-        id: "create-tasks",
-        title: "Break the work into tasks",
-        description: "Add deliverables so everyone knows what to do next.",
-        ctaLabel: "Create First Task",
-        ctaTab: "tasks",
-        ctaIntent: "create-task",
-        secondary: { label: "Auto-generate from brief", tab: "ai", intent: "ai-tasks" },
+        id: "spark-or-tasks",
+        title: "Spark ideas, then break it down",
+        description: "Pin concepts to your cork board, or jump straight to tasks.",
+        ctaLabel: "Spark Ideas",
+        ctaTab: "notes",
+        ctaIntent: "spark-ideas",
+        secondary: { label: "Create first task", tab: "tasks", intent: "create-task" },
       };
     case "work":
       return {

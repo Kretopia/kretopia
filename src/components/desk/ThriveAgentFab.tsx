@@ -359,8 +359,9 @@ export const ThriveAgentFab = () => {
             {messages.length === 0 && historyLoaded && !sending && (
               <div className="space-y-3">
                 <div className="text-sm text-muted-foreground">
-                  Hey — I'm your Thrive Copilot. I know your profile, projects, money
-                  and events, and I follow you across the platform. What's up?
+                  {firstName ? `Hey ${firstName} — ` : "Hey — "}I'm your Thrive Copilot.
+                  I know your profile, projects, money and events, and I follow you
+                  across the platform. What's up?
                 </div>
                 <div className="space-y-1.5">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">

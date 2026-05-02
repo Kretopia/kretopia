@@ -202,6 +202,21 @@ export const WorkSection = ({
     onUpdated();
   };
 
+  const deleteTask = async (task: Task) => {
+    setBusyId(task.id);
+    const { error } = await supabase
+      .from("project_tasks")
+      .delete()
+      .eq("id", task.id);
+    setBusyId(null);
+    if (error) {
+      toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Task deleted" });
+    onUpdated();
+  };
+
   const assignTo = async (task: Task, userId: string | null) => {
     setAssigningId(task.id);
     const { error } = await supabase

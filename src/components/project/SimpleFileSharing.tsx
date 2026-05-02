@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFiles";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useFileSizeLimit } from "@/hooks/useFileSizeLimit";
+import { QuotaExceededDialog, deriveQuotaReason, type QuotaBlockReason } from "@/components/storage/QuotaExceededDialog";
 
 interface ProjectFile {
   id: string;
@@ -32,6 +33,7 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
   const sizeLimit = useFileSizeLimit();
   const [uploading, setUploading] = useState(false);
   const [replacingFileId, setReplacingFileId] = useState<string | null>(null);
+  const [quotaBlock, setQuotaBlock] = useState<QuotaBlockReason | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,9 +56,9 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const check = sizeLimit.check(file.size);
-    if (!check.ok) {
-      toast({ title: "File too large", description: check.reason, variant: "destructive" });
+    const reason = deriveQuotaReason({ name: file.name, size: file.size }, sizeLimit.limit, sizeLimit.quota?.remaining);
+    if (reason) {
+      setQuotaBlock(reason);
       return;
     }
 
@@ -117,9 +119,9 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
     const existingFile = files.find(f => f.id === replacingFileId);
     if (!existingFile) return;
 
-    const check = sizeLimit.check(file.size);
-    if (!check.ok) {
-      toast({ title: "File too large", description: check.reason, variant: "destructive" });
+    const reason = deriveQuotaReason({ name: file.name, size: file.size }, sizeLimit.limit, sizeLimit.quota?.remaining);
+    if (reason) {
+      setQuotaBlock(reason);
       return;
     }
 
@@ -236,6 +238,11 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
           </ScrollArea>
         )}
       </CardContent>
+      <QuotaExceededDialog
+        open={!!quotaBlock}
+        onOpenChange={(o) => { if (!o) setQuotaBlock(null); }}
+        reason={quotaBlock}
+      />
     </Card>
   );
 };

@@ -41,6 +41,7 @@ import { FileCommentsSheet } from "@/components/project/studio/FileCommentsSheet
 import { ResumableUploadList, type UploadJob } from "./ResumableUploadList";
 import { useFileSizeLimit } from "@/hooks/useFileSizeLimit";
 import { formatBytes } from "@/lib/fileSizeLimits";
+import { QuotaExceededDialog, deriveQuotaReason, type QuotaBlockReason } from "@/components/storage/QuotaExceededDialog";
 import { cn } from "@/lib/utils";
 
 interface ProjectFile {
@@ -91,6 +92,7 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
   const [previewFile, setPreviewFile] = useState<ProjectFile | null>(null);
   const [commentFile, setCommentFile] = useState<ProjectFile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [quotaBlock, setQuotaBlock] = useState<QuotaBlockReason | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -183,12 +185,14 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
     }
 
     const accepted: UploadJob[] = [];
+    let runningRemaining = sizeLimit.quota?.remaining;
     for (const file of Array.from(list)) {
-      const check = sizeLimit.check(file.size);
-      if (!check.ok) {
-        toast({ title: "File too large", description: check.reason, variant: "destructive" });
+      const reason = deriveQuotaReason({ name: file.name, size: file.size }, sizeLimit.limit, runningRemaining);
+      if (reason) {
+        setQuotaBlock(reason);
         continue;
       }
+      if (runningRemaining !== undefined) runningRemaining -= file.size;
       const nameParts = file.name.split(".");
       const rawExt = nameParts.length > 1 ? nameParts.pop() : "bin";
       const ext = (rawExt || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) || "bin";
@@ -416,6 +420,12 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
           Up to <strong className="text-foreground">{formatBytes(sizeLimit.limit)}</strong> per file on {sizeLimit.tierLabel}. Big uploads pause &amp; resume automatically.
         </p>
       )}
+
+      <QuotaExceededDialog
+        open={!!quotaBlock}
+        onOpenChange={(o) => { if (!o) setQuotaBlock(null); }}
+        reason={quotaBlock}
+      />
 
       {filtered.folders.length === 0 && filtered.files.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border rounded-xl">

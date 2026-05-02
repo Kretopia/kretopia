@@ -61,27 +61,18 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
 
-  // Drag state — long-press to lift, then drag
+  // Drag state — drag starts from the pin/header handle, not the editable body.
   const dragRef = useRef<{
     id: string;
     offsetX: number;
     offsetY: number;
     pointerId: number;
     el: HTMLElement;
-  } | null>(null);
-  const pendingRef = useRef<{
-    id: string;
-    pointerId: number;
-    el: HTMLElement;
-    startX: number;
-    startY: number;
-    timer: number;
+    latestX: number;
+    latestY: number;
   } | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [, force] = useState(0);
-
-  const LIFT_MS = 220;
-  const MOVE_TOLERANCE = 8;
 
   // Initial fetch + realtime
   useEffect(() => {

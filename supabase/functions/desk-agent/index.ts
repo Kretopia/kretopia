@@ -20,6 +20,10 @@ type ToolName =
   | "draft_invoice"
   | "start_video_call"
   | "add_credit"
+  | "find_user"
+  | "list_my_projects"
+  | "add_collaborator"
+  | "remove_collaborator"
   | "ask_clarification";
 
 const TOOLS = [

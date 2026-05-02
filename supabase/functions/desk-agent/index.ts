@@ -20,6 +20,10 @@ type ToolName =
   | "draft_invoice"
   | "start_video_call"
   | "add_credit"
+  | "find_user"
+  | "list_my_projects"
+  | "add_collaborator"
+  | "remove_collaborator"
   | "ask_clarification";
 
 const TOOLS = [
@@ -143,6 +147,72 @@ const TOOLS = [
           description: { type: ["string", "null"] },
         },
         required: ["role", "year", "description"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "find_user",
+      description:
+        "Resolve a spoken/typed person name (e.g. 'Rene Auguste') to a user_id. Searches the caller's accepted connections first, then public profiles. Returns up to 3 candidates. ALWAYS call this BEFORE add_collaborator / remove_collaborator when given a name.",
+      parameters: {
+        type: "object",
+        properties: {
+          name_query: { type: "string", description: "Person name as the user spoke it." },
+        },
+        required: ["name_query"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_my_projects",
+      description:
+        "Return the caller's active projects (id, title, role). Use to disambiguate 'the X project' or to confirm the active project id when the user names a project that isn't the current one.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_collaborator",
+      description:
+        "Add a user to a project as a collaborator (Auto-Accept — they land in the project immediately). Caller MUST be the project owner. Defaults to the CURRENT project_id unless target_project_id is given.",
+      parameters: {
+        type: "object",
+        properties: {
+          user_id_to_add: { type: "string", description: "Resolved user_id from find_user." },
+          target_project_id: {
+            type: ["string", "null"],
+            description: "Project to add to. Null = current project.",
+          },
+          role: {
+            type: ["string", "null"],
+            enum: ["collaborator", "client", "creative", null],
+            description: "Defaults to 'collaborator'.",
+          },
+        },
+        required: ["user_id_to_add", "target_project_id", "role"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "remove_collaborator",
+      description: "Remove a collaborator from a project. Owner-only. Defaults to current project.",
+      parameters: {
+        type: "object",
+        properties: {
+          user_id_to_remove: { type: "string" },
+          target_project_id: { type: ["string", "null"] },
+        },
+        required: ["user_id_to_remove", "target_project_id"],
         additionalProperties: false,
       },
     },
@@ -296,8 +366,10 @@ DECISION RULES:
 9. Treat USER FACTS as the only ground truth — never invent projects, invoices, or activity not listed.
 
 ABSOLUTE NO-LYING RULE:
-- The tools listed above are the ONLY things you can do here in Desk: create_task, mark_task_done, send_message_to_collaborator, get_project_summary, schedule_reminder, draft_invoice, start_video_call, add_credit, ask_clarification.
-- If the user asks for something NOT in that list (e.g. "add Rene as a collaborator", "remove someone from this project", "send Rene the brief file", "change the deadline"), DO NOT pretend to do it. Reply honestly: "I can't do that from here yet — but I can [closest available thing], or you can do it from [where in the UI]." Never use future-tense promises like "I'm on it" or "I'll add them now" for things you have no tool for.
+- The tools listed above are the ONLY things you can do here in Desk: create_task, mark_task_done, send_message_to_collaborator, get_project_summary, schedule_reminder, draft_invoice, start_video_call, add_credit, find_user, list_my_projects, add_collaborator, remove_collaborator, ask_clarification.
+- COLLABORATION REQUESTS: When the user says "add <name> to <project>" or "invite <name>", you MUST chain tools: (1) call list_my_projects if they named a project that isn't the current one, (2) call find_user with the person's name, (3) call add_collaborator with the resolved user_id and target_project_id. NEVER skip find_user. NEVER invent user_ids.
+- If find_user returns 0 candidates → ask_clarification ("I couldn't find anyone called X — got their @username or email?"). If 2+ candidates → ask_clarification listing the matches.
+- If the user asks for something NOT in the tool list (e.g. "send Rene the brief file", "change the deadline", "post to Instagram"), DO NOT pretend. Reply: "I can't do that from here yet — but I can [closest available thing], or you can do it from [where in the UI]." Never use future-tense promises like "I'm on it" for things you have no tool for.
 - Never use future tense for things you ARE doing either. The receipt comes from the system after the tool returns ok=true.
 
 When you respond in natural language (after tools), keep it to 1–2 sentences, action-focused. No emojis.`;
@@ -480,6 +552,25 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
             .single();
           if (error) throw error;
           actions.push({ tool: name, args, result: data, ok: true });
+        } else if (
+          name === "find_user" ||
+          name === "list_my_projects" ||
+          name === "add_collaborator" ||
+          name === "remove_collaborator"
+        ) {
+          // Delegate to copilot-collaborator-tools (runs under caller's JWT, RLS-safe)
+          const payload: Record<string, unknown> = { _tool: name, ...args };
+          if (name === "add_collaborator" || name === "remove_collaborator") {
+            // Default target_project_id to current project_id when null/missing
+            if (!payload.target_project_id) payload.target_project_id = project_id;
+          }
+          const { data, error } = await admin.functions.invoke("copilot-collaborator-tools", {
+            body: payload,
+            headers: { Authorization: authHeader },
+          });
+          if (error) throw error;
+          const ok = (data as any)?.ok !== false && !(data as any)?.error;
+          actions.push({ tool: name, args, result: data, ok });
         } else if (name === "ask_clarification") {
           actions.push({ tool: name, args, result: { question: args.question }, ok: true });
         }
@@ -505,7 +596,26 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
         finalReply = "Video room is live and link posted in chat.";
       else if (a.tool === "add_credit" && a.ok)
         finalReply = `Credit added: ${a.result.role} on "${a.result.project_name}".`;
+      else if (a.tool === "add_collaborator" && a.ok) {
+        const r: any = a.result || {};
+        finalReply = `Added ${r.invitee_name ?? "them"} to ${r.project_title ?? "the project"}. They'll see it in their Desk.`;
+      }
+      else if (a.tool === "remove_collaborator" && a.ok) {
+        const r: any = a.result || {};
+        finalReply = `Removed ${r.removed_name ?? "them"} from ${r.project_title ?? "the project"}.`;
+      }
+      else if (a.tool === "find_user" && a.ok) {
+        const cands: any[] = (a.result as any)?.candidates ?? [];
+        if (!cands.length) finalReply = "I couldn't find anyone by that name in your network.";
+        else if (cands.length === 1) finalReply = `Found ${cands[0].full_name}. What should I do next?`;
+        else finalReply = `I found ${cands.length} matches: ${cands.map((c) => c.full_name).join(", ")}. Which one?`;
+      }
+      else if (a.tool === "list_my_projects" && a.ok) {
+        const ps: any[] = (a.result as any)?.projects ?? [];
+        finalReply = ps.length ? `You have ${ps.length} active projects.` : "No active projects yet.";
+      }
       else if (a.tool === "ask_clarification") finalReply = a.result.question;
+      else if (!a.ok) finalReply = `Couldn't complete that — ${(a.result as any)?.error ?? "unknown error"}.`;
       else finalReply = "Done.";
     }
     if (!finalReply) finalReply = "Got it.";

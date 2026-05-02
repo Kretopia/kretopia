@@ -132,35 +132,69 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
       </div>
 
       <ol className="space-y-1.5 ml-2 mb-3">
-        {plan.steps.map((s) => (
-          <li key={s.index} className="flex items-start gap-2 text-xs">
-            <span className="mt-0.5 shrink-0">{statusIcon(s.status)}</span>
-            <div className="min-w-0 flex-1">
-              <p className={cn(
-                "leading-snug",
-                s.status === "skipped" && "text-muted-foreground/60 line-through",
-                s.status === "failed" && "text-destructive",
-              )}>
-                <span className="font-medium">{s.index}.</span> {s.label}
-              </p>
-              {s.rationale && isProposed && (
-                <p className="text-muted-foreground/80 text-[11px] leading-snug">{s.rationale}</p>
+        {plan.steps.map((s) => {
+          const checked = selected.has(s.index);
+          const showCheckbox = isProposed;
+          return (
+            <li key={s.index} className="flex items-start gap-2 text-xs">
+              {showCheckbox ? (
+                <Checkbox
+                  checked={checked}
+                  onCheckedChange={(v) => {
+                    setSelected((prev) => {
+                      const next = new Set(prev);
+                      if (v) next.add(s.index); else next.delete(s.index);
+                      return next;
+                    });
+                  }}
+                  className="mt-0.5 shrink-0"
+                  aria-label={`Include step ${s.index}`}
+                />
+              ) : (
+                <span className="mt-0.5 shrink-0">{statusIcon(s.status)}</span>
               )}
-            </div>
-          </li>
-        ))}
+              <div className="min-w-0 flex-1">
+                <p className={cn(
+                  "leading-snug",
+                  s.status === "skipped" && "text-muted-foreground/60 line-through",
+                  s.status === "failed" && "text-destructive",
+                  showCheckbox && !checked && "text-muted-foreground/60 line-through",
+                )}>
+                  <span className="font-medium">{s.index}.</span> {s.label}
+                </p>
+                {s.rationale && isProposed && (
+                  <p className="text-muted-foreground/80 text-[11px] leading-snug">{s.rationale}</p>
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ol>
 
       {isProposed && (
-        <div className="flex gap-2">
-          <Button size="sm" className="h-8" onClick={() => handle("approved")} disabled={busy !== null}>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            size="sm"
+            className="h-8"
+            onClick={() => handle("approved")}
+            disabled={busy !== null || selected.size === 0}
+          >
             {busy === "approve" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-            Approve & run
+            Run {selected.size}/{plan.steps.length}
           </Button>
           <Button size="sm" variant="ghost" className="h-8" onClick={() => handle("rejected")} disabled={busy !== null}>
             {busy === "reject" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
             Cancel
           </Button>
+          {selected.size < plan.steps.length && (
+            <button
+              type="button"
+              className="text-[11px] text-muted-foreground hover:text-foreground underline"
+              onClick={() => setSelected(new Set(plan.steps.map((s) => s.index)))}
+            >
+              Select all
+            </button>
+          )}
         </div>
       )}
 

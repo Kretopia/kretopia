@@ -10,6 +10,8 @@ export interface EnhanceTaskInput {
   collaborators?: { id: string; full_name: string; role?: string | null }[];
   /** Don't overwrite the assignee if the user already picked one. */
   preserveAssignee?: boolean;
+  /** If true, return the patch but don't write it to the DB. Caller will apply selectively. */
+  dryRun?: boolean;
 }
 
 export interface EnhanceTaskResult {

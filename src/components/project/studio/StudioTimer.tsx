@@ -98,15 +98,26 @@ export const StudioTimer = ({
     try {
       const rate = parseFloat(rateOverride) || hourlyRate || 0;
       const amount = +(totals.hours * rate).toFixed(2);
+      const invoiceNumber = `TIME-${Date.now().toString().slice(-8)}`;
+      const lineItems = [
+        {
+          description: `${note} · ${totals.hours.toFixed(2)} hrs @ ${fmtMoney(rate, totals.currency)}/hr`,
+          quantity: +totals.hours.toFixed(2),
+          rate,
+          amount,
+        },
+      ];
       const { data: invoice, error } = await supabase
         .from("invoices")
         .insert({
+          invoice_number: invoiceNumber,
           project_id: projectId,
-          created_by: userId,
+          issued_by: userId,
           status: "draft",
-          total_amount: amount,
+          amount,
           currency: totals.currency,
-          notes: `${note} · ${totals.hours.toFixed(2)} hours @ ${fmtMoney(rate, totals.currency)}/hr · generated ${format(new Date(), "MMM d, yyyy")}`,
+          line_items: lineItems,
+          notes: `${note} · auto-generated from tracked time on ${format(new Date(), "MMM d, yyyy")}`,
         } as any)
         .select("id")
         .single();

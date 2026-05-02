@@ -530,6 +530,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
 
 interface PinCardProps {
   pin: Pin;
+  dragging?: boolean;
   onPointerDown: (e: React.PointerEvent) => void;
   onChange: (content: string) => void;
   onColorChange: (color: PinColor) => void;
@@ -537,7 +538,7 @@ interface PinCardProps {
   onConvertToTask: () => void;
 }
 
-function PinCard({ pin, onPointerDown, onChange, onColorChange, onDelete, onConvertToTask }: PinCardProps) {
+function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange, onDelete, onConvertToTask }: PinCardProps) {
   const styles = COLOR_STYLES[pin.color];
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(pin.content || "");

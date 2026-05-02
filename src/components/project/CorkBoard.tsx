@@ -353,7 +353,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     force((n) => n + 1);
   };
 
-  const onPinPointerUp = (e: React.PointerEvent) => {
+  const onPinPointerUp = () => {
     if (!dragRef.current) return;
     const id = dragRef.current.id;
     const finalPos = { pos_x: dragRef.current.latestX, pos_y: dragRef.current.latestY };

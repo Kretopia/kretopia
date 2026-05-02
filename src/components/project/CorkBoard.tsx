@@ -748,11 +748,17 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
         {/* Pushpin */}
         <div
           data-pin-drag-handle
-          className="absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md"
+          className={cn(
+            "absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md",
+            qaMode && "ring-4 ring-primary",
+          )}
         />
         <div
           data-pin-drag-handle
-          className="absolute inset-x-0 top-0 h-8 cursor-grab touch-none active:cursor-grabbing"
+          className={cn(
+            "absolute inset-x-0 top-0 h-8 cursor-grab touch-none active:cursor-grabbing",
+            qaMode && "bg-primary/25 ring-1 ring-primary",
+          )}
           aria-hidden
         />
 

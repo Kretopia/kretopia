@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Loader2, X, Download, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
 import { getProjectFileSignedUrl } from "@/lib/projectFiles";
 
+// Module-level cache shared across mounts to avoid refetching signed URLs
+const signedUrlCache = new Map<string, string>();
+
 interface MoodboardFile {
   id: string;
   file_name: string;

@@ -37,6 +37,7 @@ import { formatDistanceToNow } from "date-fns";
 import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFiles";
 import { FileThumbnail } from "./FileThumbnail";
 import { FilePreviewDialog } from "./FilePreviewDialog";
+import { FileCommentsSheet } from "@/components/project/studio/FileCommentsSheet";
 import { cn } from "@/lib/utils";
 
 interface ProjectFile {

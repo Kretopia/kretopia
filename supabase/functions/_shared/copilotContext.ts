@@ -402,7 +402,7 @@ export function renderContextPreamble(
   // ---- Live state (only include sections that have data) ----
   if (ctx.active_projects.length) {
     const list = ctx.active_projects
-      .map((p) => `- "${p.title}"${p.pinned_stage ? ` (stage: ${p.pinned_stage})` : ""} [id: ${p.id}]`)
+      .map((p) => `- "${p.title}"${p.my_role ? ` (${p.my_role})` : ""}${p.pinned_stage ? ` (stage: ${p.pinned_stage})` : ""} [id: ${p.id}]`)
       .join("\n");
     parts.push(`Active projects (${ctx.active_projects.length}):\n${list}`);
   } else {

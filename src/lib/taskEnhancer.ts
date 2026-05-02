@@ -58,12 +58,13 @@ export async function enhanceTaskInBackground(input: EnhanceTaskInput): Promise<
 
     if (Object.keys(patch).length === 0) return { ok: true, patched: {} };
 
-    const { error: updErr } = await supabase
-      .from("project_tasks")
-      .update(patch)
-      .eq("id", input.taskId);
-
-    if (updErr) return { ok: false, error: updErr.message };
+    if (!input.dryRun) {
+      const { error: updErr } = await supabase
+        .from("project_tasks")
+        .update(patch)
+        .eq("id", input.taskId);
+      if (updErr) return { ok: false, error: updErr.message };
+    }
 
     return { ok: true, patched: patch as EnhanceTaskResult["patched"] };
   } catch (e) {

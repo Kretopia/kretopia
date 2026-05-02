@@ -427,7 +427,6 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     const surface = surfaceRef.current;
     const board = boardRef.current;
     if (!surface) return;
-    const rect = surface.getBoundingClientRect();
     if (board) {
       const boardRect = board.getBoundingClientRect();
       if (e.clientX > boardRect.right - DRAG_EDGE) {
@@ -436,6 +435,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         board.scrollLeft -= DRAG_SCROLL_STEP;
       }
     }
+    const rect = surface.getBoundingClientRect();
     // Clamp against the full canvas and the actual card size. The previous
     // 100%-wide surface collapsed to the mobile viewport, creating a right-side
     // "wall" for everyone on narrow screens.

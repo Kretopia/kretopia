@@ -9870,6 +9870,74 @@ export type Database = {
           },
         ]
       }
+      project_share_links: {
+        Row: {
+          can_approve: boolean
+          can_comment: boolean
+          can_download: boolean
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          label: string | null
+          last_viewed_at: string | null
+          password_hash: string | null
+          project_id: string
+          revoked_at: string | null
+          scope: string
+          scope_ref_id: string | null
+          token: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          can_approve?: boolean
+          can_comment?: boolean
+          can_download?: boolean
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          last_viewed_at?: string | null
+          password_hash?: string | null
+          project_id: string
+          revoked_at?: string | null
+          scope?: string
+          scope_ref_id?: string | null
+          token?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          can_approve?: boolean
+          can_comment?: boolean
+          can_download?: boolean
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          last_viewed_at?: string | null
+          password_hash?: string | null
+          project_id?: string
+          revoked_at?: string | null
+          scope?: string
+          scope_ref_id?: string | null
+          token?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_share_links_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_split_sheets: {
         Row: {
           contributor_name: string
@@ -11140,6 +11208,102 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      share_link_approvals: {
+        Row: {
+          created_at: string
+          decision: string
+          deliverable_id: string | null
+          file_id: string | null
+          id: string
+          note: string | null
+          share_link_id: string
+          signer_email: string | null
+          signer_name: string
+        }
+        Insert: {
+          created_at?: string
+          decision: string
+          deliverable_id?: string | null
+          file_id?: string | null
+          id?: string
+          note?: string | null
+          share_link_id: string
+          signer_email?: string | null
+          signer_name: string
+        }
+        Update: {
+          created_at?: string
+          decision?: string
+          deliverable_id?: string | null
+          file_id?: string | null
+          id?: string
+          note?: string | null
+          share_link_id?: string
+          signer_email?: string | null
+          signer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_link_approvals_deliverable_id_fkey"
+            columns: ["deliverable_id"]
+            isOneToOne: false
+            referencedRelation: "project_deliverables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "share_link_approvals_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "project_files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "share_link_approvals_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "project_share_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      share_link_views: {
+        Row: {
+          id: string
+          ip_hash: string | null
+          share_link_id: string
+          user_agent: string | null
+          viewed_at: string
+          viewer_email: string | null
+          viewer_name: string | null
+        }
+        Insert: {
+          id?: string
+          ip_hash?: string | null
+          share_link_id: string
+          user_agent?: string | null
+          viewed_at?: string
+          viewer_email?: string | null
+          viewer_name?: string | null
+        }
+        Update: {
+          id?: string
+          ip_hash?: string | null
+          share_link_id?: string
+          user_agent?: string | null
+          viewed_at?: string
+          viewer_email?: string | null
+          viewer_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_link_views_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "project_share_links"
             referencedColumns: ["id"]
           },
         ]
@@ -14274,6 +14438,31 @@ export type Database = {
         Returns: boolean
       }
       join_group_by_invite: { Args: { _invite_code: string }; Returns: string }
+      list_share_link_files: {
+        Args: { _token: string }
+        Returns: {
+          created_at: string
+          deliverable_id: string
+          deliverable_status: string
+          deliverable_title: string
+          file_id: string
+          folder: string
+          mime_type: string
+          name: string
+          size_bytes: number
+          storage_path: string
+        }[]
+      }
+      log_share_link_view: {
+        Args: {
+          _ip_hash?: string
+          _token: string
+          _user_agent?: string
+          _viewer_email?: string
+          _viewer_name?: string
+        }
+        Returns: undefined
+      }
       mark_direct_call_missed: {
         Args: { _call_id: string }
         Returns: undefined
@@ -14314,6 +14503,24 @@ export type Database = {
       record_referral: {
         Args: { p_referred_id: string; p_referrer_id: string }
         Returns: undefined
+      }
+      resolve_project_share_link: {
+        Args: { _password?: string; _token: string }
+        Returns: {
+          can_approve: boolean
+          can_comment: boolean
+          can_download: boolean
+          expired: boolean
+          label: string
+          password_ok: boolean
+          project_id: string
+          project_title: string
+          requires_password: boolean
+          revoked: boolean
+          scope: string
+          scope_ref_id: string
+          share_link_id: string
+        }[]
       }
       rsvp_to_event: {
         Args: {

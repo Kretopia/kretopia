@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Loader2, Plus, ImageIcon, Mic, ListChecks } from "lucide-react";
+import { Pencil, Loader2, Plus, ImageIcon, Mic, ListChecks, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { MoodboardThumb } from "./MoodboardThumb";
 import { BriefVoiceRecorder } from "./BriefVoiceRecorder";
 import { FileCommentsSheet } from "./FileCommentsSheet";
+import { MoodboardAIDialog } from "./MoodboardAIDialog";
 
 interface BriefSectionProps {
   project: {
@@ -39,6 +40,7 @@ export const BriefSection = ({
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [breakingDown, setBreakingDown] = useState(false);
   const [activeFile, setActiveFile] = useState<any | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
 
   const breakIntoTasks = async () => {
     if (!project.description?.trim() || !user) return;

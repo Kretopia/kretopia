@@ -190,6 +190,8 @@ const PageViewTracker = () => {
 
   useEffect(() => {
     attachPlatformAnalyticsListeners();
+    // Capture ?amb=CODE referral attribution on first arrival
+    import('@/lib/ambassadorAttribution').then(m => m.captureAmbassadorCodeFromUrl());
   }, []);
 
   useEffect(() => {

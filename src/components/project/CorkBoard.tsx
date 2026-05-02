@@ -611,6 +611,15 @@ function PinCard({ pin, onPointerDown, onChange, onColorChange, onDelete, onConv
             </div>
           )}
           <button
+            data-pin-no-drag
+            onClick={onConvertToTask}
+            className="opacity-50 hover:opacity-100 transition-opacity"
+            aria-label="Make a task from this sticky"
+            title="Make a task"
+          >
+            <ListChecks className="h-3.5 w-3.5" />
+          </button>
+          <button
             onClick={onDelete}
             className="opacity-50 hover:opacity-100 transition-opacity"
             aria-label="Delete sticky"

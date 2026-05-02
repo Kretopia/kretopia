@@ -12,6 +12,7 @@ import { WrapProjectCard } from "./WrapProjectCard";
 import { CallHistorySection } from "./CallHistorySection";
 import { PadPreviewSection } from "./PadPreviewSection";
 import { DeliverablesSection } from "./DeliverablesSection";
+import { ProductionPrepSection } from "./ProductionPrepSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
@@ -190,6 +191,14 @@ export const StudioRoom = ({
         <PadPreviewSection
           projectId={project.id}
           onOpen={() => onNavigateToTab("notes")}
+        />
+
+        <ProductionPrepSection
+          project={project}
+          tasks={tasks}
+          currentUserId={currentUserId}
+          onOpenTool={(tab) => onNavigateToTab(tab)}
+          onUpdated={onUpdated}
         />
 
         <WorkSection

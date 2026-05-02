@@ -467,6 +467,14 @@ export const ThriveAgentFab = () => {
                     ))}
                   </div>
                 ) : null}
+                {/* Plan cards for multi-step plans this turn proposed */}
+                {m.role === "assistant" && plansByMsg[i]?.length ? (
+                  <div className="space-y-2 max-w-[95%]">
+                    {plansByMsg[i].map((plan) => (
+                      <CopilotPlanCard key={plan.id} plan={plan} />
+                    ))}
+                  </div>
+                ) : null}
               </div>
             ))}
 

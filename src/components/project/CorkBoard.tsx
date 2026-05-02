@@ -628,7 +628,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
 interface PinCardProps {
   pin: Pin;
   dragging?: boolean;
-  qaMode?: boolean;
+  
   onPointerDown: (e: React.PointerEvent) => void;
   onChange: (content: string) => void;
   onColorChange: (color: PinColor) => void;
@@ -636,7 +636,7 @@ interface PinCardProps {
   onConvertToTask: () => void;
 }
 
-function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChange, onColorChange, onDelete, onConvertToTask }: PinCardProps) {
+function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange, onDelete, onConvertToTask }: PinCardProps) {
   const styles = COLOR_STYLES[pin.color];
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(pin.content || "");
@@ -687,7 +687,7 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
             data-pin-drag-handle
             className={cn(
               "absolute inset-x-0 top-0 h-6 cursor-grab touch-none active:cursor-grabbing rounded-t-sm",
-              qaMode && "bg-primary/30 ring-1 ring-primary",
+              
             )}
             aria-hidden
           />
@@ -701,7 +701,6 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
             data-pin-drag-handle
             className={cn(
               "absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md cursor-grab touch-none active:cursor-grabbing",
-              qaMode && "ring-4 ring-primary",
             )}
           />
           <button
@@ -750,14 +749,14 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
           data-pin-drag-handle
           className={cn(
             "absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md",
-            qaMode && "ring-4 ring-primary",
+            
           )}
         />
         <div
           data-pin-drag-handle
           className={cn(
             "absolute inset-x-0 top-0 h-8 cursor-grab touch-none active:cursor-grabbing",
-            qaMode && "bg-primary/25 ring-1 ring-primary",
+            
           )}
           aria-hidden
         />

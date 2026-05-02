@@ -141,6 +141,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setTimeout(() => {
             checkSubscription(userId, true).catch(err => console.warn('[AuthContext] checkSubscription error:', err));
             processPendingClaim(userId).catch(err => console.warn('[AuthContext] processPendingClaim error:', err));
+            import('@/lib/ambassadorAttribution')
+              .then(m => m.attachAmbassadorCodeToProfile(userId))
+              .catch(err => console.warn('[AuthContext] ambassador attach error:', err));
             processPendingPost(userId)
               .then(redirectPath => {
                 if (redirectPath) window.location.href = redirectPath;

@@ -390,6 +390,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   const beginDrag = (pin: Pin, clientX: number, clientY: number, pointerId: number, el: HTMLElement) => {
     const surface = surfaceRef.current?.getBoundingClientRect();
     if (!surface) return;
+    const card = el.getBoundingClientRect();
     try {
       el.setPointerCapture(pointerId);
     } catch {
@@ -401,6 +402,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       el,
       offsetX: clientX - surface.left - pin.pos_x,
       offsetY: clientY - surface.top - pin.pos_y,
+      width: card.width,
+      height: card.height,
       latestX: pin.pos_x,
       latestY: pin.pos_y,
     };
@@ -422,13 +425,22 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     if (!dragRef.current) return;
     e.preventDefault();
     const surface = surfaceRef.current;
+    const board = boardRef.current;
     if (!surface) return;
     const rect = surface.getBoundingClientRect();
-    // Use the inner surface's full size (clientWidth/offsetHeight), not the
-    // scroll viewport — otherwise pins hit an "invisible wall" at the right edge
-    // on small screens.
-    const maxX = Math.max(0, surface.clientWidth - 60);
-    const maxY = Math.max(0, BOARD_HEIGHT - 60);
+    if (board) {
+      const boardRect = board.getBoundingClientRect();
+      if (e.clientX > boardRect.right - DRAG_EDGE) {
+        board.scrollLeft += DRAG_SCROLL_STEP;
+      } else if (e.clientX < boardRect.left + DRAG_EDGE) {
+        board.scrollLeft -= DRAG_SCROLL_STEP;
+      }
+    }
+    // Clamp against the full canvas and the actual card size. The previous
+    // 100%-wide surface collapsed to the mobile viewport, creating a right-side
+    // "wall" for everyone on narrow screens.
+    const maxX = Math.max(0, surface.scrollWidth - dragRef.current.width);
+    const maxY = Math.max(0, BOARD_HEIGHT - dragRef.current.height);
     const x = Math.max(0, Math.min(maxX, e.clientX - rect.left - dragRef.current.offsetX));
     const y = Math.max(0, Math.min(maxY, e.clientY - rect.top - dragRef.current.offsetY));
     const id = dragRef.current.id;

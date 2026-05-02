@@ -147,6 +147,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const planId: string = body.plan_id;
     const decision: "approved" | "rejected" = body.decision ?? "approved";
+    const skipIndices: number[] = Array.isArray(body.skip_indices) ? body.skip_indices.map((n: any) => Number(n)) : [];
     if (!planId) return json({ error: "plan_id required" }, 400);
 
     const { data: plan, error: planErr } = await admin

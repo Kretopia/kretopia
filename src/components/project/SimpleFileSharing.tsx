@@ -238,6 +238,11 @@ export const SimpleFileSharing = ({ projectId, files, onFileUploaded }: SimpleFi
           </ScrollArea>
         )}
       </CardContent>
+      <QuotaExceededDialog
+        open={!!quotaBlock}
+        onOpenChange={(o) => { if (!o) setQuotaBlock(null); }}
+        reason={quotaBlock}
+      />
     </Card>
   );
 };

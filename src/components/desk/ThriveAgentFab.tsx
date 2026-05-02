@@ -132,6 +132,30 @@ export const ThriveAgentFab = () => {
     setSurfaceContext(ctx);
   }, [location.pathname]);
 
+  // Pull the user's first name for the personalized greeting + as a hint to
+  // the model via surface_context (the server already loads this, but sending
+  // it client-side guarantees the empty-state greeting is never "Hey —").
+  useEffect(() => {
+    if (!user) {
+      setFirstName(null);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const fn = (data?.full_name ?? "").trim().split(/\s+/)[0] || null;
+        setFirstName(fn);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
   // When the drawer opens for the first time, hydrate persisted history.
   useEffect(() => {
     if (!open || historyLoaded || !user) return;

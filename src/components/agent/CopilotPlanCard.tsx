@@ -42,6 +42,9 @@ const statusIcon = (s: PlanStep["status"]) => {
 export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
   const [plan, setPlan] = useState<CopilotPlan>(initial);
   const [busy, setBusy] = useState<"approve" | "reject" | null>(null);
+  const [selected, setSelected] = useState<Set<number>>(
+    () => new Set(initial.steps.map((s) => s.index))
+  );
   const { toast } = useToast();
 
   // Poll while running

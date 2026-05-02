@@ -252,10 +252,12 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         });
         return;
       }
-      const existingUrls = new Set(
-        pins.filter((p) => p.kind === "image" && p.image_url).map((p) => p.image_url!),
+      const existingPaths = new Set(
+        pins
+          .filter((p) => p.kind === "image" && p.image_url)
+          .map((p) => extractProjectFilePath(p.image_url!)),
       );
-      const fresh = images.filter((f: any) => !existingUrls.has(f.file_url));
+      const fresh = images.filter((f: any) => !existingPaths.has(extractProjectFilePath(f.file_url)));
       if (!fresh.length) {
         toast.message("Moodboard already on the board");
         return;

@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
           {
             role: "system",
             content:
-              "You are a creative collaborator on a creative project. Generate 5 short, punchy, distinct sticky-note ideas a creator could pin to their studio cork board to spark direction. Each idea should be 6-14 words max, tactile, specific, and FOR ACTION (a creative angle, hook, mood, scene, treatment, sound, headline, etc). Avoid filler like 'maybe' or 'consider'. Respond ONLY with JSON: {\"ideas\":[\"...\",\"...\"]}",
+              "You are a creative collaborator on a creative project. Generate 5 short, punchy, distinct sticky-note ideas a creator could pin to their studio cork board to spark direction. Each idea should be 6-14 words max, tactile, specific, and FOR ACTION (a creative angle, hook, mood, scene, treatment, sound, headline, etc). Avoid filler like 'maybe' or 'consider'. If existing pins are provided, do NOT repeat, rephrase, or remix them — invent fresh angles. Respond ONLY with JSON: {\"ideas\":[\"...\",\"...\"]}",
           },
           {
             role: "user",

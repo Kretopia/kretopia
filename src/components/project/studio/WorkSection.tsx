@@ -121,12 +121,17 @@ export const WorkSection = ({
   const handleAdd = async () => {
     if (!draft.trim()) return;
     setSaving(true);
-    const { error } = await supabase.from("project_tasks").insert({
-      project_id: projectId,
-      title: draft.trim(),
-      status: "todo",
-      created_by: currentUserId,
-    });
+    const rawTitle = draft.trim();
+    const { data: inserted, error } = await supabase
+      .from("project_tasks")
+      .insert({
+        project_id: projectId,
+        title: rawTitle,
+        status: "todo",
+        created_by: currentUserId,
+      })
+      .select("id")
+      .single();
     setSaving(false);
     if (error) {
       toast({ title: "Couldn't add task", description: error.message, variant: "destructive" });
@@ -135,6 +140,20 @@ export const WorkSection = ({
     setDraft("");
     setAdding(false);
     onUpdated();
+
+    // Fire-and-forget AI enhancement (refines title, fills description, due date, priority, assignee)
+    if (inserted?.id) {
+      enhanceTaskInBackground({
+        taskId: inserted.id,
+        rawTitle,
+        projectId,
+        collaborators: collaborators.map((c) => ({ id: c.id, full_name: c.full_name })),
+      }).then((res) => {
+        if (res.ok && res.patched && Object.keys(res.patched).length > 0) {
+          onUpdated();
+        }
+      });
+    }
   };
 
   const markDone = async (task: Task) => {

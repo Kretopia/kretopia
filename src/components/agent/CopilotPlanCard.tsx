@@ -47,18 +47,21 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
   useEffect(() => {
     if (plan.status !== "running") return;
     const t = setInterval(async () => {
-      const { data } = await supabase
-        .from("copilot_plans")
-        .select("id, goal, summary, status, steps")
-        .eq("id", plan.id)
-        .maybeSingle()
-        .catch(() => ({ data: null } as any));
-      if (data) {
-        setPlan(data as unknown as CopilotPlan);
-        if (data.status !== "running") {
-          clearInterval(t);
-          onResolved?.(data.status as CopilotPlan["status"]);
+      try {
+        const { data } = await supabase
+          .from("copilot_plans")
+          .select("id, goal, summary, status, steps")
+          .eq("id", plan.id)
+          .maybeSingle();
+        if (data) {
+          setPlan(data as unknown as CopilotPlan);
+          if (data.status !== "running") {
+            clearInterval(t);
+            onResolved?.(data.status as CopilotPlan["status"]);
+          }
         }
+      } catch {
+        /* swallow poll errors */
       }
     }, 1500);
     return () => clearInterval(t);

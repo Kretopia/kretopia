@@ -189,10 +189,11 @@ export const SURFACE_LABEL: Record<CopilotSurface, string> = {
 };
 
 /**
- * Pull <action>{...}</action> tags out of an assistant message.
- * Returns the cleaned visible text + the parsed intent payloads.
+ * Pull <action>{...}</action> and <plan>{...}</plan> tags out of an assistant message.
+ * Returns the cleaned visible text + parsed action/plan payloads.
  */
 const ACTION_TAG_RE = /<action>\s*([\s\S]*?)\s*<\/action>/g;
+const PLAN_TAG_RE = /<plan>\s*([\s\S]*?)\s*<\/plan>/g;
 
 export interface ParsedAction {
   intent: string;
@@ -200,19 +201,33 @@ export interface ParsedAction {
   [k: string]: unknown;
 }
 
-export function extractActions(raw: string): { visible: string; actions: ParsedAction[] } {
+export interface ParsedPlan {
+  goal: string;
+  surface?: string;
+}
+
+export function extractActions(raw: string): {
+  visible: string;
+  actions: ParsedAction[];
+  plans: ParsedPlan[];
+} {
   const actions: ParsedAction[] = [];
-  const visible = raw
+  const plans: ParsedPlan[] = [];
+  let visible = raw
     .replace(ACTION_TAG_RE, (_, json) => {
       try {
         const parsed = JSON.parse(json);
         if (parsed && typeof parsed.intent === "string") actions.push(parsed);
-      } catch {
-        // ignore malformed tag
-      }
+      } catch { /* ignore */ }
       return "";
     })
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-  return { visible, actions };
+    .replace(PLAN_TAG_RE, (_, json) => {
+      try {
+        const parsed = JSON.parse(json);
+        if (parsed && typeof parsed.goal === "string") plans.push(parsed);
+      } catch { /* ignore */ }
+      return "";
+    });
+  visible = visible.replace(/\n{3,}/g, "\n\n").trim();
+  return { visible, actions, plans };
 }

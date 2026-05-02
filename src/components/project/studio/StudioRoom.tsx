@@ -12,6 +12,7 @@ import { DeliverablesSection } from "./DeliverablesSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
+import { useProjectMoneySignal } from "@/hooks/useProjectMoneySignal";
 import type { NextStep } from "@/hooks/useProjectFlow";
 
 interface StudioRoomProps {
@@ -47,6 +48,7 @@ export const StudioRoom = ({
 }: StudioRoomProps) => {
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const moneySignal = useProjectMoneySignal(project);
 
   const isOwner = project?.created_by === currentUserId;
 
@@ -166,11 +168,13 @@ export const StudioRoom = ({
           onUpdated={onUpdated}
         />
 
-        <MoneySection
-          project={project}
-          isOwner={isOwner}
-          onOpenInvoice={() => onNavigateToTab("finance", "create_invoice")}
-        />
+        {moneySignal.visible && (
+          <MoneySection
+            project={project}
+            isOwner={isOwner}
+            onOpenInvoice={() => onNavigateToTab("finance", "create_invoice")}
+          />
+        )}
 
         <PeopleSection
           collaborators={people}

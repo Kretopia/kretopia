@@ -4815,6 +4815,7 @@ export type Database = {
           created_at: string
           file_id: string
           id: string
+          timestamp_seconds: number | null
           updated_at: string
           user_id: string
         }
@@ -4823,6 +4824,7 @@ export type Database = {
           created_at?: string
           file_id: string
           id?: string
+          timestamp_seconds?: number | null
           updated_at?: string
           user_id: string
         }
@@ -4831,6 +4833,7 @@ export type Database = {
           created_at?: string
           file_id?: string
           id?: string
+          timestamp_seconds?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -10038,6 +10041,63 @@ export type Database = {
           usage_count?: number | null
         }
         Relationships: []
+      }
+      project_time_entries: {
+        Row: {
+          billed_invoice_id: string | null
+          created_at: string
+          currency: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          hourly_rate: number | null
+          id: string
+          note: string | null
+          project_id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          billed_invoice_id?: string | null
+          created_at?: string
+          currency?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          hourly_rate?: number | null
+          id?: string
+          note?: string | null
+          project_id: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          billed_invoice_id?: string | null
+          created_at?: string
+          currency?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          hourly_rate?: number | null
+          id?: string
+          note?: string | null
+          project_id?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_time_entries_billed_invoice_id_fkey"
+            columns: ["billed_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_time_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_video_calls: {
         Row: {

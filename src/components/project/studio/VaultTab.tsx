@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
-import { FolderLock, ShieldCheck } from "lucide-react";
+import { FolderLock, ShieldCheck, Lightbulb, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { FileBrowser } from "@/components/project/files/FileBrowser";
 import { WorkflowShell } from "@/components/project/studio/WorkflowShell";
+import { SmartBriefBuilder } from "@/components/project/SmartBriefBuilder";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const STANDARD_FOLDERS = [
   "Brief & References",
@@ -15,6 +21,7 @@ const STANDARD_FOLDERS = [
 
 interface VaultTabProps {
   projectId: string;
+  projectTitle?: string;
   files: any[];
   currentUserId: string;
   onFileUploaded: () => void;
@@ -22,19 +29,21 @@ interface VaultTabProps {
 }
 
 /**
- * The Vault — Studio-styled wrapper around FileBrowser.
- * - Auto-bootstraps the four standard folders on first open.
- * - Surfaces a quick stat strip (total files, pending approvals).
+ * The Vault — Studio-styled wrapper.
+ * - Houses Smart Brief at the top (collapsible) so client/collab scope lives
+ *   alongside the reference files it spawns.
+ * - Auto-bootstraps the four standard folders.
  * - Inline-Drop approvals still live on each Drop card in the Studio feed.
  */
 export function VaultTab({
   projectId,
+  projectTitle = "this project",
   files,
   currentUserId,
   onFileUploaded,
-  onJumpToBrief,
 }: VaultTabProps) {
   const [pendingApprovals, setPendingApprovals] = useState(0);
+  const [briefOpen, setBriefOpen] = useState(false);
 
   // Bootstrap standard folders once
   useEffect(() => {
@@ -66,7 +75,7 @@ export function VaultTab({
     };
   }, [projectId, currentUserId]);
 
-  // Pending approval count (deliverables awaiting review)
+  // Pending approval count
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -86,10 +95,50 @@ export function VaultTab({
   return (
     <WorkflowShell
       eyebrow="The Vault"
-      title="Files & Approvals"
-      subtitle="Brief refs, works-in-progress, final deliverables — all in one place."
+      title="Files, Brief & Approvals"
+      subtitle="Scope from the client, references, work-in-progress, finals — all in one place."
       icon={FolderLock}
     >
+      {/* Smart Brief — collapsible. Pull-down to draft a brief from voice/text;
+          outputs land in this Vault as the source of truth. */}
+      <Collapsible open={briefOpen} onOpenChange={setBriefOpen} className="mb-4">
+        <div className="rounded-2xl border border-border bg-gradient-to-br from-[hsl(var(--energy)/0.06)] via-card to-card overflow-hidden">
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/30 transition-colors"
+            >
+              <div className="h-9 w-9 rounded-lg bg-[hsl(var(--energy)/0.15)] ring-1 ring-[hsl(var(--energy)/0.35)] flex items-center justify-center shrink-0">
+                <Lightbulb className="h-4 w-4 text-[hsl(var(--energy))]" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[hsl(var(--energy))]">
+                  Smart Brief
+                </p>
+                <p className="text-sm font-semibold truncate">
+                  {briefOpen ? "Hide brief composer" : "Capture scope from the client or team"}
+                </p>
+              </div>
+              <ChevronDown
+                className={`h-4 w-4 text-muted-foreground transition-transform ${briefOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="border-t border-border p-3">
+              <SmartBriefBuilder
+                projectId={projectId}
+                projectTitle={projectTitle}
+                onSent={() => {
+                  setBriefOpen(false);
+                  onFileUploaded();
+                }}
+              />
+            </div>
+          </CollapsibleContent>
+        </div>
+      </Collapsible>
+
       {/* Quick stat strip */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Badge variant="secondary" className="rounded-full font-semibold">

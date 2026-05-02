@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { MoodPicker, moodEmoji, type MoodId } from "./MoodPicker";
 import { moodGradient } from "./moodGradient";
 import { LivePresencePile } from "./LivePresencePile";
+import { StudioTimer } from "./StudioTimer";
 import { format } from "date-fns";
 
 
@@ -277,6 +278,13 @@ export const VibeHeader = ({
               {format(due, "MMM d, yyyy")}
             </span>
           )}
+          <div className="ml-auto">
+            <StudioTimer
+              projectId={project.id}
+              userId={currentUserId}
+              isOwner={isOwner}
+            />
+          </div>
         </div>
       </div>
 

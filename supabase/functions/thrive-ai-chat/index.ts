@@ -82,6 +82,45 @@ serve(async (req) => {
         if (user) {
           userId = user.id;
 
+          // ---- Per-tier daily message cap (industry-standard rate limiting) ----
+          // Spark 20 / Pro 150 / Creator+ 500 / Founder 1000 / Brand Pro 200 / Brand Ent unlimited
+          const TIER_DAILY_CAPS: Record<string, number> = {
+            free: 20,
+            pro: 150,
+            creator_pro: 500,
+            founder: 1000,
+            brand_pro: 200,
+            brand_enterprise: -1,
+          };
+          const { data: profile } = await admin
+            .from("profiles")
+            .select("subscription_tier")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          const tier = (profile?.subscription_tier as string) || "free";
+          const dailyCap = TIER_DAILY_CAPS[tier] ?? 20;
+
+          const { data: capCheck, error: capErr } = await admin.rpc(
+            "consume_copilot_message",
+            { _user_id: user.id, _daily_cap: dailyCap },
+          );
+          if (capErr) {
+            console.warn("consume_copilot_message failed", capErr);
+          } else if (Array.isArray(capCheck) && capCheck[0] && !capCheck[0].allowed) {
+            const used = capCheck[0].used;
+            const cap = capCheck[0].cap;
+            return new Response(
+              JSON.stringify({
+                error: `Daily Copilot limit reached (${used}/${cap}). Upgrade your plan or come back tomorrow.`,
+                code: "COPILOT_DAILY_LIMIT",
+                tier,
+                used,
+                cap,
+              }),
+              { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+            );
+          }
+
           // Load the unified context. Bounded internally; never blocks > 2s.
           const ctx = await loadCopilotContext(admin, user.id);
           contextPreamble = renderContextPreamble(ctx, surface, surface_context);

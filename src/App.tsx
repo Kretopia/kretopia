@@ -110,6 +110,7 @@ const WorkHome = lazy(() => import("./pages/WorkHome"));
 const Explore = lazy(() => import("./pages/Explore"));
 const CreativeCircle = lazy(() => import("./pages/CreativeCircle"));
 const Ambassadors = lazy(() => import("./pages/Ambassadors"));
+const Ambassador = lazy(() => import("./pages/Ambassador"));
 const CreatorSite = lazy(() => import("./pages/CreatorSite"));
 const CreatorSiteByUsername = lazy(() => import("./pages/CreatorSiteByUsername"));
 const WebsiteBuilder = lazy(() => import("./pages/WebsiteBuilder"));
@@ -189,6 +190,8 @@ const PageViewTracker = () => {
 
   useEffect(() => {
     attachPlatformAnalyticsListeners();
+    // Capture ?amb=CODE referral attribution on first arrival
+    import('@/lib/ambassadorAttribution').then(m => m.captureAmbassadorCodeFromUrl());
   }, []);
 
   useEffect(() => {
@@ -309,8 +312,8 @@ const AppContent = () => {
             <Route path="/market/:listingId" element={<Navigate to="/opportunities" replace />} />
             <Route path="/talent-manager" element={<ProtectedRoute><TalentManager /></ProtectedRoute>} />
             <Route path="/creative-circle" element={<ProtectedRoute><CreativeCircle /></ProtectedRoute>} />
-            <Route path="/ambassadors" element={<Ambassadors />}
-            />
+            <Route path="/ambassadors" element={<Ambassadors />} />
+            <Route path="/ambassador" element={<ProtectedRoute><Ambassador /></ProtectedRoute>} />
             <Route path="/checkin" element={<Navigate to="/" replace />} />
             
             {/* Public Browsable Routes */}

@@ -8483,6 +8483,7 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"]
           achievement_badges: string[] | null
           age_verified: boolean
+          ambassador_code: string | null
           availability_note: string | null
           availability_status: string | null
           available_from: string | null
@@ -8588,6 +8589,7 @@ export type Database = {
           project_rate: number | null
           rate_currency: string | null
           rate_range: string | null
+          referred_by_ambassador: string | null
           review_share_token: string | null
           role: string
           section_order: Json | null
@@ -8648,6 +8650,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           achievement_badges?: string[] | null
           age_verified?: boolean
+          ambassador_code?: string | null
           availability_note?: string | null
           availability_status?: string | null
           available_from?: string | null
@@ -8753,6 +8756,7 @@ export type Database = {
           project_rate?: number | null
           rate_currency?: string | null
           rate_range?: string | null
+          referred_by_ambassador?: string | null
           review_share_token?: string | null
           role: string
           section_order?: Json | null
@@ -8813,6 +8817,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           achievement_badges?: string[] | null
           age_verified?: boolean
+          ambassador_code?: string | null
           availability_note?: string | null
           availability_status?: string | null
           available_from?: string | null
@@ -8918,6 +8923,7 @@ export type Database = {
           project_rate?: number | null
           rate_currency?: string | null
           rate_range?: string | null
+          referred_by_ambassador?: string | null
           review_share_token?: string | null
           role?: string
           section_order?: Json | null
@@ -14291,6 +14297,14 @@ export type Database = {
         Args: { p_claim_token: string; p_user_id: string }
         Returns: boolean
       }
+      consume_copilot_message: {
+        Args: { _daily_cap: number; _user_id: string }
+        Returns: {
+          allowed: boolean
+          cap: number
+          used: number
+        }[]
+      }
       create_bidirectional_connection: {
         Args: {
           connection_status?: string
@@ -14382,6 +14396,15 @@ export type Database = {
       generate_membership_number: { Args: never; Returns: string }
       generate_secure_token: { Args: never; Returns: string }
       generate_unsubscribe_token: { Args: never; Returns: string }
+      get_ambassador_by_code: {
+        Args: { _code: string }
+        Returns: {
+          ambassador_code: string
+          avatar_url: string
+          full_name: string
+          user_id: string
+        }[]
+      }
       get_brand_verification_by_token: {
         Args: { p_token: string }
         Returns: {

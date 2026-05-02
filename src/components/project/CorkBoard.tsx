@@ -61,9 +61,27 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
 
-  // Drag state
-  const dragRef = useRef<{ id: string; offsetX: number; offsetY: number } | null>(null);
+  // Drag state — long-press to lift, then drag
+  const dragRef = useRef<{
+    id: string;
+    offsetX: number;
+    offsetY: number;
+    pointerId: number;
+    el: HTMLElement;
+  } | null>(null);
+  const pendingRef = useRef<{
+    id: string;
+    pointerId: number;
+    el: HTMLElement;
+    startX: number;
+    startY: number;
+    timer: number;
+  } | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   const [, force] = useState(0);
+
+  const LIFT_MS = 220;
+  const MOVE_TOLERANCE = 8;
 
   // Initial fetch + realtime
   useEffect(() => {
@@ -297,21 +315,62 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     toast.success("Pinned to your tasks");
   }, [projectId, currentUserId]);
 
-  // ---- Drag handlers (pointer events for mobile + desktop) ----
+  // ---- Drag handlers (long-press to lift, then drag) ----
+  const cancelPending = () => {
+    if (pendingRef.current) {
+      clearTimeout(pendingRef.current.timer);
+      pendingRef.current = null;
+    }
+  };
+
+  const beginDrag = (pin: Pin, clientX: number, clientY: number, pointerId: number, el: HTMLElement) => {
+    const board = boardRef.current?.getBoundingClientRect();
+    if (!board) return;
+    try {
+      el.setPointerCapture(pointerId);
+    } catch {
+      /* noop */
+    }
+    dragRef.current = {
+      id: pin.id,
+      pointerId,
+      el,
+      offsetX: clientX - board.left - pin.pos_x,
+      offsetY: clientY - board.top - pin.pos_y,
+    };
+    setDraggingId(pin.id);
+    // Haptic on supported devices
+    try { (navigator as any)?.vibrate?.(15); } catch {}
+  };
+
   const onPinPointerDown = (e: React.PointerEvent, pin: Pin) => {
     if ((e.target as HTMLElement).closest("[data-pin-no-drag]")) return;
     const el = e.currentTarget as HTMLElement;
-    el.setPointerCapture(e.pointerId);
-    const board = boardRef.current?.getBoundingClientRect();
-    if (!board) return;
-    dragRef.current = {
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const pointerId = e.pointerId;
+    cancelPending();
+    pendingRef.current = {
       id: pin.id,
-      offsetX: e.clientX - board.left - pin.pos_x,
-      offsetY: e.clientY - board.top - pin.pos_y,
+      pointerId,
+      el,
+      startX,
+      startY,
+      timer: window.setTimeout(() => {
+        if (!pendingRef.current || pendingRef.current.id !== pin.id) return;
+        beginDrag(pin, startX, startY, pointerId, el);
+        pendingRef.current = null;
+      }, LIFT_MS),
     };
   };
 
   const onPinPointerMove = (e: React.PointerEvent) => {
+    // Cancel pending lift if user moves before threshold (likely a tap/scroll)
+    if (pendingRef.current) {
+      const dx = Math.abs(e.clientX - pendingRef.current.startX);
+      const dy = Math.abs(e.clientY - pendingRef.current.startY);
+      if (dx > MOVE_TOLERANCE || dy > MOVE_TOLERANCE) cancelPending();
+    }
     if (!dragRef.current) return;
     const board = boardRef.current?.getBoundingClientRect();
     if (!board) return;
@@ -323,12 +382,31 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   };
 
   const onPinPointerUp = (e: React.PointerEvent) => {
+    cancelPending();
     if (!dragRef.current) return;
     const id = dragRef.current.id;
     const pin = pins.find((p) => p.id === id);
+    try {
+      dragRef.current.el.releasePointerCapture?.(dragRef.current.pointerId);
+    } catch {
+      /* noop */
+    }
     dragRef.current = null;
-    (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+    setDraggingId(null);
     if (pin) void updatePin(id, { pos_x: pin.pos_x, pos_y: pin.pos_y });
+  };
+
+  const onPinPointerCancel = () => {
+    cancelPending();
+    if (dragRef.current) {
+      try {
+        dragRef.current.el.releasePointerCapture?.(dragRef.current.pointerId);
+      } catch {
+        /* noop */
+      }
+      dragRef.current = null;
+      setDraggingId(null);
+    }
   };
 
   const sortedPins = useMemo(
@@ -387,6 +465,15 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         />
       </div>
 
+      {/* Subtle hint row */}
+      {!loading && pins.length > 0 && (
+        <div className="px-3 py-1.5 border-b border-border/60 bg-background/80">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 text-center">
+            Tap to edit · Hold to drag
+          </p>
+        </div>
+      )}
+
       {/* Board */}
       <div
         ref={boardRef}
@@ -401,6 +488,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         style={{ minHeight: 600 }}
         onPointerMove={onPinPointerMove}
         onPointerUp={onPinPointerUp}
+        onPointerCancel={onPinPointerCancel}
+        onPointerLeave={onPinPointerCancel}
       >
         <div style={{ position: "relative", width: "100%", height: BOARD_HEIGHT }}>
           {loading && (
@@ -434,6 +523,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
             <PinCard
               key={pin.id}
               pin={pin}
+              dragging={draggingId === pin.id}
               onPointerDown={(e) => onPinPointerDown(e, pin)}
               onChange={(content) => updatePin(pin.id, { content })}
               onColorChange={(color) => updatePin(pin.id, { color })}
@@ -449,6 +539,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
 
 interface PinCardProps {
   pin: Pin;
+  dragging?: boolean;
   onPointerDown: (e: React.PointerEvent) => void;
   onChange: (content: string) => void;
   onColorChange: (color: PinColor) => void;
@@ -456,7 +547,7 @@ interface PinCardProps {
   onConvertToTask: () => void;
 }
 
-function PinCard({ pin, onPointerDown, onChange, onColorChange, onDelete, onConvertToTask }: PinCardProps) {
+function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange, onDelete, onConvertToTask }: PinCardProps) {
   const styles = COLOR_STYLES[pin.color];
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(pin.content || "");
@@ -472,12 +563,16 @@ function PinCard({ pin, onPointerDown, onChange, onColorChange, onDelete, onConv
   if (pin.kind === "image" && pin.image_url) {
     return (
       <div
-        className="absolute touch-none cursor-grab active:cursor-grabbing"
+        className={cn(
+          "absolute touch-none cursor-grab active:cursor-grabbing transition-transform duration-150 will-change-transform",
+          dragging && "z-50",
+        )}
         style={{
           left: pin.pos_x,
           top: pin.pos_y,
-          transform: `rotate(${pin.rotation}deg)`,
-          zIndex: pin.z_index,
+          transform: `rotate(${pin.rotation}deg) scale(${dragging ? 1.06 : 1})`,
+          zIndex: dragging ? 9999 : pin.z_index,
+          filter: dragging ? "drop-shadow(0 18px 24px hsl(0 0% 0% / 0.45))" : undefined,
         }}
         onPointerDown={onPointerDown}
       >
@@ -510,13 +605,15 @@ function PinCard({ pin, onPointerDown, onChange, onColorChange, onDelete, onConv
     <div
       className={cn(
         "absolute group touch-none cursor-grab active:cursor-grabbing",
-        "transition-transform",
+        "transition-transform duration-150 will-change-transform",
+        dragging && "z-50",
       )}
       style={{
         left: pin.pos_x,
         top: pin.pos_y,
-        transform: `rotate(${pin.rotation}deg)`,
-        zIndex: pin.z_index,
+        transform: `rotate(${dragging ? 0 : pin.rotation}deg) scale(${dragging ? 1.06 : 1})`,
+        zIndex: dragging ? 9999 : pin.z_index,
+        filter: dragging ? "drop-shadow(0 18px 24px hsl(0 0% 0% / 0.45))" : undefined,
       }}
       onPointerDown={onPointerDown}
     >

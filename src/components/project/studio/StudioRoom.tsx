@@ -8,6 +8,7 @@ import { WorkSection } from "./WorkSection";
 import { MoneySection } from "./MoneySection";
 import { PeopleSection } from "./PeopleSection";
 import { AddCreditSection } from "./AddCreditSection";
+import { WrapProjectCard } from "./WrapProjectCard";
 import { CallHistorySection } from "./CallHistorySection";
 import { PadPreviewSection } from "./PadPreviewSection";
 import { DeliverablesSection } from "./DeliverablesSection";
@@ -216,6 +217,15 @@ export const StudioRoom = ({
           onUpdated={onUpdated}
           onlineUserIds={onlineUserIds}
           onKnock={knock}
+        />
+
+        <WrapProjectCard
+          project={project}
+          tasks={tasks}
+          collaborators={people}
+          currentUserId={currentUserId}
+          isOwner={isOwner}
+          onUpdated={onUpdated}
         />
 
         <AddCreditSection project={project} collaborators={people} />

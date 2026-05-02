@@ -49,10 +49,26 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Pull existing sticky text so the model avoids duplicating angles.
+    const { data: existingPins } = await supabase
+      .from("project_pins")
+      .select("content, kind")
+      .eq("project_id", project_id)
+      .eq("kind", "sticky")
+      .limit(40);
+
+    const existing = (existingPins || [])
+      .map((p: any) => (p.content || "").trim())
+      .filter((s: string) => s.length > 0)
+      .slice(0, 30);
+
     const brief = (project.description || "").slice(0, 2000);
+    const existingBlock = existing.length
+      ? `\n\nAlready pinned (DO NOT repeat or paraphrase any of these — generate fresh, distinct angles):\n${existing.map((s: string) => `- ${s}`).join("\n")}`
+      : "";
     const userPrompt = hint
-      ? `Brief:\n${brief}\n\nFocus area: ${hint}`
-      : `Brief:\n${brief || "(no brief written yet)"}`;
+      ? `Brief:\n${brief}\n\nFocus area: ${hint}${existingBlock}`
+      : `Brief:\n${brief || "(no brief written yet)"}${existingBlock}`;
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

@@ -14446,11 +14446,11 @@ export type Database = {
           deliverable_status: string
           deliverable_title: string
           file_id: string
-          folder: string
-          mime_type: string
-          name: string
-          size_bytes: number
-          storage_path: string
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          folder_id: string
         }[]
       }
       log_share_link_view: {

@@ -99,6 +99,8 @@ export const ThriveAgentFab = () => {
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
   // Map message index -> orchestrator actions proposed for that assistant turn.
   const [actionsByMsg, setActionsByMsg] = useState<Record<number, OrchAction[]>>({});
+  // Map message index -> multi-step plans proposed for that assistant turn.
+  const [plansByMsg, setPlansByMsg] = useState<Record<number, CopilotPlan[]>>({});
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [surfaceContext, setSurfaceContext] = useState<Record<string, unknown>>({});

@@ -136,7 +136,13 @@ async function planTools(
         `- Tools tagged [safe_auto] (find_user, list_my_projects, etc.) run automatically — call them first to RESOLVE names/IDs before proposing destructive actions.\n` +
         `- Tools tagged [requires_approval] need user approval — only call them with REAL UUIDs you obtained from safe_auto results or context.\n` +
         `- NEVER invent UUIDs. If you don't have an ID, look it up first.\n` +
-        `- For each [requires_approval] call, include "_preview": { "title": "...", "body": "..." } in the args so the user sees a clear approval card.\n` +
+        `\nPROJECT RESOLUTION (CRITICAL):\n` +
+        `- When the user mentions a project by name (e.g. "the X project", "add to Y"), you MUST call list_my_projects FIRST and pick the project whose title best matches the words the user used (case-insensitive substring or fuzzy).\n` +
+        `- DO NOT default to active_project from caller context unless the user explicitly says "this project", "here", or gives no project name at all.\n` +
+        `- If list_my_projects returns 0 matches for the spoken name → call ask_clarification with the candidate list. NEVER pick a random project.\n` +
+        `- If 2+ projects match the spoken name → call ask_clarification listing both. NEVER guess.\n` +
+        `- Only after you have the EXACT project_id whose title matches the user's words may you call add_collaborator / remove_collaborator.\n` +
+        `\n- For each [requires_approval] call, include "_preview": { "title": "...", "body": "..." } in the args so the user sees a clear approval card. The preview title MUST include the resolved project title verbatim (e.g. "Add Rene Auguste to ThriveIN Content").\n` +
         `- If after lookups the request is still ambiguous (e.g., 2+ matching users), call ask_clarification.\n` +
         `- The current user's ID is ${userId}.\n` +
         `- Caller context: ${JSON.stringify(context).slice(0, 1500)}`,

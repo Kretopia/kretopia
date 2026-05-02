@@ -10,6 +10,8 @@ import {
   Loader2,
   Pin,
   ListChecks,
+  Layers,
+  Bug,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

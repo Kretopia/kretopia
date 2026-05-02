@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { PROJECT_FLOW_STAGES, type ProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
 import { VoiceTaskCapture } from "@/components/project/mobile/VoiceTaskCapture";
 import { DeskActionFab } from "@/components/project/mobile/DeskActionFab";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+
 
 
 interface MobileProjectHubProps {
@@ -69,7 +69,7 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
   } = props;
 
   const [voiceOpen, setVoiceOpen] = useState(false);
-  const [copilotOpen, setCopilotOpen] = useState(false);
+  
 
   const openTasks = useMemo(() => tasks.filter((t) => t.status !== "done").length, [tasks]);
   const doneTasks = tasks.length - openTasks;

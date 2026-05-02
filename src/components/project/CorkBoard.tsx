@@ -465,6 +465,15 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         />
       </div>
 
+      {/* Subtle hint row */}
+      {!loading && pins.length > 0 && (
+        <div className="px-3 py-1.5 border-b border-border/60 bg-background/80">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 text-center">
+            Tap to edit · Hold to drag
+          </p>
+        </div>
+      )}
+
       {/* Board */}
       <div
         ref={boardRef}

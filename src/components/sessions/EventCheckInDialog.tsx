@@ -46,13 +46,23 @@ export const EventCheckInDialog = ({ eventId, eventTitle, open, onOpenChange }: 
   const fetchParticipants = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('jam_participants')
-        .select('id, user_id, check_in_token, checked_in_at, status, joined_at')
-        .eq('jam_id', eventId)
-        .eq('status', 'going');
+      // Host-scoped RPC returns tokens only for events you own.
+      const [{ data: tokenRows, error: tokErr }, { data, error }] = await Promise.all([
+        supabase.rpc('get_event_check_in_tokens', { _jam_id: eventId }),
+        supabase
+          .from('jam_participants')
+          .select('id, user_id, checked_in_at, status, joined_at')
+          .eq('jam_id', eventId)
+          .eq('status', 'going'),
+      ]);
 
       if (error) throw error;
+      if (tokErr) throw tokErr;
+
+      const tokenMap = new Map<string, string>(
+        ((tokenRows as { user_id: string; check_in_token: string }[]) || [])
+          .map(r => [r.user_id, r.check_in_token])
+      );
 
       const userIds = (data || []).map(p => p.user_id);
       const { data: profiles } = await supabase
@@ -65,6 +75,7 @@ export const EventCheckInDialog = ({ eventId, eventTitle, open, onOpenChange }: 
       setParticipants(
         (data || []).map(p => ({
           ...p,
+          check_in_token: tokenMap.get(p.user_id) || '',
           profile: profileMap.get(p.user_id) || undefined,
         }))
       );

@@ -43,15 +43,18 @@ export const GuestPassDialog = ({
     setLoading(true);
     (async () => {
       try {
-        const { data } = await supabase
-          .from("jam_participants")
-          .select("check_in_token, checked_in_at")
-          .eq("jam_id", eventId)
-          .eq("user_id", userId)
-          .maybeSingle();
+        const [{ data: tokenData }, { data: statusData }] = await Promise.all([
+          supabase.rpc("get_my_check_in_token", { _jam_id: eventId }),
+          supabase
+            .from("jam_participants")
+            .select("checked_in_at")
+            .eq("jam_id", eventId)
+            .eq("user_id", userId)
+            .maybeSingle(),
+        ]);
         if (cancelled) return;
-        setToken(data?.check_in_token || null);
-        setCheckedIn(!!data?.checked_in_at);
+        setToken((tokenData as string | null) || null);
+        setCheckedIn(!!statusData?.checked_in_at);
       } catch {
         // silent
       } finally {

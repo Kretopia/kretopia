@@ -552,6 +552,25 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
             .single();
           if (error) throw error;
           actions.push({ tool: name, args, result: data, ok: true });
+        } else if (
+          name === "find_user" ||
+          name === "list_my_projects" ||
+          name === "add_collaborator" ||
+          name === "remove_collaborator"
+        ) {
+          // Delegate to copilot-collaborator-tools (runs under caller's JWT, RLS-safe)
+          const payload: Record<string, unknown> = { _tool: name, ...args };
+          if (name === "add_collaborator" || name === "remove_collaborator") {
+            // Default target_project_id to current project_id when null/missing
+            if (!payload.target_project_id) payload.target_project_id = project_id;
+          }
+          const { data, error } = await admin.functions.invoke("copilot-collaborator-tools", {
+            body: payload,
+            headers: { Authorization: authHeader },
+          });
+          if (error) throw error;
+          const ok = (data as any)?.ok !== false && !(data as any)?.error;
+          actions.push({ tool: name, args, result: data, ok });
         } else if (name === "ask_clarification") {
           actions.push({ tool: name, args, result: { question: args.question }, ok: true });
         }

@@ -239,37 +239,92 @@ export const WorkSection = ({
     setExpandedId((cur) => (cur === id ? null : id));
 
   return (
-    <Section
-      tasks={tasks}
-      blocking={blocking}
-      active={active}
-      done={done}
-      adding={adding}
-      setAdding={setAdding}
-      draft={draft}
-      setDraft={setDraft}
-      saving={saving}
-      handleAdd={handleAdd}
-      folderOpen={folderOpen}
-      setFolderOpen={setFolderOpen}
-      renderRow={(task, isDone) => (
-        <TaskRow
-          key={task.id}
-          task={task}
-          isDone={isDone}
-          expanded={expandedId === task.id}
-          onToggleExpand={() => handleToggleExpand(task.id)}
-          collaborators={collaborators}
-          collabMap={collabMap}
-          currentUserId={currentUserId}
-          busy={busyId === task.id}
-          assigning={assigningId === task.id}
-          onMarkDone={() => markDone(task)}
-          onReopen={() => reopen(task)}
-          onAssign={(uid) => assignTo(task, uid)}
-        />
-      )}
-    />
+    <>
+      <Section
+        tasks={tasks}
+        blocking={blocking}
+        active={active}
+        done={done}
+        adding={adding}
+        setAdding={setAdding}
+        draft={draft}
+        setDraft={setDraft}
+        saving={saving}
+        handleAdd={handleAdd}
+        folderOpen={folderOpen}
+        setFolderOpen={setFolderOpen}
+        renderRow={(task, isDone) => (
+          <TaskRow
+            key={task.id}
+            task={task}
+            isDone={isDone}
+            expanded={expandedId === task.id}
+            onToggleExpand={() => handleToggleExpand(task.id)}
+            collaborators={collaborators}
+            collabMap={collabMap}
+            currentUserId={currentUserId}
+            busy={busyId === task.id}
+            assigning={assigningId === task.id}
+            onRequestComplete={() => setConfirm({ kind: "complete", task })}
+            onRequestReopen={() => setConfirm({ kind: "reopen", task })}
+            onRequestDelete={() => setConfirm({ kind: "delete", task })}
+            onAssign={(uid) => assignTo(task, uid)}
+          />
+        )}
+      />
+
+      <AlertDialog
+        open={!!confirm}
+        onOpenChange={(open) => !open && setConfirm(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirm?.kind === "delete"
+                ? "Delete this task?"
+                : confirm?.kind === "reopen"
+                  ? "Reopen this task?"
+                  : "Mark this complete?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirm?.kind === "delete"
+                ? "This task will be permanently removed. You can't undo this."
+                : confirm?.kind === "reopen"
+                  ? "It'll move back to the active list."
+                  : "Nice work — this will move to Completed."}
+              {confirm && (
+                <span className="block mt-2 font-medium text-foreground line-clamp-2">
+                  "{confirm.task.title}"
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={cn(
+                confirm?.kind === "delete" &&
+                  "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+              )}
+              onClick={() => {
+                if (!confirm) return;
+                const { kind, task } = confirm;
+                setConfirm(null);
+                if (kind === "complete") markDone(task);
+                else if (kind === "reopen") reopen(task);
+                else deleteTask(task);
+              }}
+            >
+              {confirm?.kind === "delete"
+                ? "Delete"
+                : confirm?.kind === "reopen"
+                  ? "Reopen"
+                  : "Mark complete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

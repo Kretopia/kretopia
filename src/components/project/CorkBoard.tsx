@@ -36,6 +36,13 @@ interface Pin {
 }
 
 type PinColor = "yellow" | "pink" | "mint" | "sky" | "lavender" | "peach";
+type MoodboardFile = {
+  id: string;
+  file_name: string;
+  file_url: string;
+  file_type: string | null;
+};
+type SparkIdeasResponse = { ideas?: unknown };
 
 const COLORS: PinColor[] = ["yellow", "pink", "mint", "sky", "lavender", "peach"];
 
@@ -53,6 +60,8 @@ const BOARD_HEIGHT = 1400;
 const BOARD_MIN_WIDTH = 960;
 const DRAG_EDGE = 44;
 const DRAG_SCROLL_STEP = 22;
+const errorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
 
 interface CorkBoardProps {
   projectId: string;

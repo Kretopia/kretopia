@@ -51,6 +51,7 @@ const HIDDEN_PATH_PREFIXES = [
   "/check-in",
   "/call/",
   "/guest-call",
+  "/messages",
 ];
 
 const QUICK_PROMPTS_BY_SURFACE: Partial<Record<CopilotSurface, string[]>> = {

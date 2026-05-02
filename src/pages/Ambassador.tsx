@@ -60,11 +60,13 @@ export default function Ambassador() {
       const p = profile as { ambassador_code: string | null; full_name: string | null } | null;
       if (p?.ambassador_code) {
         setAmbassadorCode(p.ambassador_code);
-        const { count } = await supabase
-          .from("profiles")
-          .select("user_id", { count: "exact", head: true })
-          .eq("referred_by_ambassador", p.ambassador_code);
-        setSignupCount(count ?? 0);
+        const { data: stats } = await supabase.rpc("get_ambassador_referral_stats");
+        const row = Array.isArray(stats) ? stats[0] : stats;
+        if (row) {
+          setSignupCount(Number((row as any).total_signups ?? 0));
+          const recent = (row as any).recent;
+          if (Array.isArray(recent)) setRecentSignups(recent as any);
+        }
       }
       if (p?.full_name) setFullName(p.full_name);
       if (user.email) setEmail(user.email);

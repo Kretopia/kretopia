@@ -9,6 +9,7 @@ import {
   Trash2,
   Loader2,
   Pin,
+  ListChecks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

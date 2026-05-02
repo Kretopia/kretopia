@@ -122,6 +122,7 @@ export const DeskTabContent = memo(({
             <UsageLimitBanner current={files.length} limit={FREE_LIMITS.files} itemName="files" isPro={isPro} />
             <VaultTab
               projectId={projectId}
+              projectTitle={project.title}
               files={files}
               currentUserId={currentUserId}
               onFileUploaded={onUpdate}

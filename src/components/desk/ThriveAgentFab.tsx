@@ -26,6 +26,7 @@ import {
 } from "@/lib/thriveCopilot";
 import { sendAgentIntent, type OrchAction } from "@/lib/agentOrchestrator";
 import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
+import { CopilotPlanCard, type CopilotPlan } from "@/components/agent/CopilotPlanCard";
 
 /**
  * Thrive Copilot — the SINGLE assistant for the whole platform.

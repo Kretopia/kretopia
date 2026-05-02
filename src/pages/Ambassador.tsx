@@ -166,6 +166,30 @@ export default function Ambassador() {
           </CardContent></Card>
         </div>
 
+        <AmbassadorAttributionVerifier ownAmbassadorCode={ambassadorCode} />
+
+        <Card>
+          <CardHeader><CardTitle className="text-lg">Recent signups</CardTitle></CardHeader>
+          <CardContent>
+            {recentSignups.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No attributed signups yet. Share your link — they'll show up here within seconds of sign-up.
+              </p>
+            ) : (
+              <ul className="divide-y divide-border/40">
+                {recentSignups.map((r, i) => (
+                  <li key={i} className="py-2 flex items-center justify-between text-sm">
+                    <span className="font-medium">{r.first_name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(r.signed_up_at), { addSuffix: true })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader><CardTitle className="text-lg">Tier rewards</CardTitle></CardHeader>
           <CardContent className="space-y-3">

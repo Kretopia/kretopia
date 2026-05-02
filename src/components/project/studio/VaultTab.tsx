@@ -45,6 +45,7 @@ export function VaultTab({
 }: VaultTabProps) {
   const [pendingApprovals, setPendingApprovals] = useState(0);
   const [briefOpen, setBriefOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Bootstrap standard folders once
   useEffect(() => {

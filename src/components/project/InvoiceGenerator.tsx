@@ -97,6 +97,39 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
     DRAFT_KEY, draftData, showCreateDialog && !editingInvoiceId
   );
 
+  // Listen for "Draft invoice from this deliverable" intent dispatched from
+  // the Studio Room when an owner approves a deliverable.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{
+        tab?: string;
+        intent?: string;
+        payload?: { deliverable_id?: string; title?: string; amount?: number };
+      }>).detail;
+      if (!detail || detail.intent !== "draft-from-deliverable") return;
+      const payload = detail.payload || {};
+      const title = (payload.title || "Deliverable").slice(0, 200);
+      const amount = typeof payload.amount === "number" ? payload.amount : 0;
+      // Reset and prefill
+      setEditingInvoiceId(null);
+      setRecipientName("");
+      setRecipientEmail("");
+      setRecipientAddress("");
+      setDueDate("");
+      setTaxRate("0");
+      setNotes("");
+      setDiscountType("");
+      setDiscountValue("0");
+      setLineItems([{ description: title, quantity: 1, rate: amount, amount }]);
+      setCreateStep("details");
+      setDocumentType("invoice");
+      setValidUntil("");
+      setShowCreateDialog(true);
+    };
+    window.addEventListener("thrivedesk:intent", handler);
+    return () => window.removeEventListener("thrivedesk:intent", handler);
+  }, []);
+
   const restoreDraft = () => {
     const draft = loadDraft();
     if (!draft) return;

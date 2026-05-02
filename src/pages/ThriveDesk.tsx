@@ -73,6 +73,13 @@ const ThriveDesk = () => {
     return () => window.removeEventListener("thrivedesk:set-tab", handler);
   }, []);
 
+  // Broadcast tab changes so global UI (e.g. Copilot FAB) can react.
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("thrivedesk:tab-changed", { detail: activeTab }),
+    );
+  }, [activeTab]);
+
   // Navigate to a tab and optionally broadcast an "intent" so the target tab
   // can pre-fill (e.g. open create dialog). Listeners are added in target components.
   const goToTabWithIntent = (tab: string, intent?: string) => {

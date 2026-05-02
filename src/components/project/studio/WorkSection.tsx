@@ -9,7 +9,7 @@ import {
   Flame,
   ChevronDown,
   ChevronUp,
-  RotateCcw,
+  UserPlus,
   UserPlus,
   Trash2,
 } from "lucide-react";

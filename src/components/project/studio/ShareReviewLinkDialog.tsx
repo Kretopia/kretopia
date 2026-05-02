@@ -21,7 +21,7 @@ import {
   Trash2,
   ExternalLink,
 } from "lucide-react";
-import { APP_URL } from "@/lib/appUrl";
+import { APP_URL } from "@/lib/constants";
 
 interface ShareLink {
   id: string;

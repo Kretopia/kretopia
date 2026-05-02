@@ -348,10 +348,16 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   const onPinPointerMove = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
     e.preventDefault();
-    const board = boardRef.current?.getBoundingClientRect();
-    if (!board) return;
-    const x = Math.max(0, Math.min(board.width - 60, e.clientX - board.left - dragRef.current.offsetX));
-    const y = Math.max(0, Math.min(BOARD_HEIGHT - 60, e.clientY - board.top - dragRef.current.offsetY));
+    const surface = surfaceRef.current;
+    if (!surface) return;
+    const rect = surface.getBoundingClientRect();
+    // Use the inner surface's full size (clientWidth/offsetHeight), not the
+    // scroll viewport — otherwise pins hit an "invisible wall" at the right edge
+    // on small screens.
+    const maxX = Math.max(0, surface.clientWidth - 60);
+    const maxY = Math.max(0, BOARD_HEIGHT - 60);
+    const x = Math.max(0, Math.min(maxX, e.clientX - rect.left - dragRef.current.offsetX));
+    const y = Math.max(0, Math.min(maxY, e.clientY - rect.top - dragRef.current.offsetY));
     const id = dragRef.current.id;
     dragRef.current.latestX = x;
     dragRef.current.latestY = y;
@@ -371,6 +377,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     dragRef.current = null;
     setDraggingId(null);
     void updatePin(id, finalPos);
+    // Update last-saved snapshot for QA ghosts
+    savedPosRef.current.set(id, { x: finalPos.pos_x, y: finalPos.pos_y });
   };
 
   const onPinPointerCancel = () => {

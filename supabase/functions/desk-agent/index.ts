@@ -596,7 +596,26 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
         finalReply = "Video room is live and link posted in chat.";
       else if (a.tool === "add_credit" && a.ok)
         finalReply = `Credit added: ${a.result.role} on "${a.result.project_name}".`;
+      else if (a.tool === "add_collaborator" && a.ok) {
+        const r: any = a.result || {};
+        finalReply = `Added ${r.invitee_name ?? "them"} to ${r.project_title ?? "the project"}. They'll see it in their Desk.`;
+      }
+      else if (a.tool === "remove_collaborator" && a.ok) {
+        const r: any = a.result || {};
+        finalReply = `Removed ${r.removed_name ?? "them"} from ${r.project_title ?? "the project"}.`;
+      }
+      else if (a.tool === "find_user" && a.ok) {
+        const cands: any[] = (a.result as any)?.candidates ?? [];
+        if (!cands.length) finalReply = "I couldn't find anyone by that name in your network.";
+        else if (cands.length === 1) finalReply = `Found ${cands[0].full_name}. What should I do next?`;
+        else finalReply = `I found ${cands.length} matches: ${cands.map((c) => c.full_name).join(", ")}. Which one?`;
+      }
+      else if (a.tool === "list_my_projects" && a.ok) {
+        const ps: any[] = (a.result as any)?.projects ?? [];
+        finalReply = ps.length ? `You have ${ps.length} active projects.` : "No active projects yet.";
+      }
       else if (a.tool === "ask_clarification") finalReply = a.result.question;
+      else if (!a.ok) finalReply = `Couldn't complete that — ${(a.result as any)?.error ?? "unknown error"}.`;
       else finalReply = "Done.";
     }
     if (!finalReply) finalReply = "Got it.";

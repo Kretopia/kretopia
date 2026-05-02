@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Save, Plus, Trash2, FileText, Sparkles, CheckSquare } from "lucide-react";
+import { Save, Plus, Trash2, FileText, CheckSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -46,6 +46,7 @@ Anything else worth capturing.
 export function ProjectNotes({ projectId }: ProjectNotesProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [isComposing, setIsComposing] = useState(false);
   const isMobileView = useIsMobile();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -88,6 +89,7 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
     setSelectedNote(null);
     setTitle(prefill?.title ?? "");
     setContent(prefill?.content ?? "");
+    setIsComposing(true);
   }, []);
 
   // Intent listener: from NextStepBar ("create-brief") or chat ("note-from-chat")

@@ -1,5 +1,6 @@
 import { useMemo, useRef } from "react";
 import { VibeHeader } from "./VibeHeader";
+import { StudioPulseFeed } from "./StudioPulseFeed";
 import { NextStepCard } from "./NextStepCard";
 import { ProactiveCards } from "./ProactiveCards";
 import { BriefSection } from "./BriefSection";
@@ -132,6 +133,12 @@ export const StudioRoom = ({
         collaborators={people}
         onlineUserIds={onlineUserIds}
         currentUserId={currentUserId}
+      />
+
+      <StudioPulseFeed
+        projectId={project.id}
+        currentUserId={currentUserId}
+        collaborators={people}
       />
 
       {nextStep && (

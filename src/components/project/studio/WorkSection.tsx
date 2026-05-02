@@ -9,8 +9,8 @@ import {
   Flame,
   ChevronDown,
   ChevronUp,
-  RotateCcw,
   UserPlus,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -99,6 +109,10 @@ export const WorkSection = ({
   const [folderOpen, setFolderOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<
+    | { kind: "complete" | "reopen" | "delete"; task: Task }
+    | null
+  >(null);
 
   const collabMap = useMemo(() => {
     const m = new Map<string, Collaborator>();
@@ -187,6 +201,21 @@ export const WorkSection = ({
     onUpdated();
   };
 
+  const deleteTask = async (task: Task) => {
+    setBusyId(task.id);
+    const { error } = await supabase
+      .from("project_tasks")
+      .delete()
+      .eq("id", task.id);
+    setBusyId(null);
+    if (error) {
+      toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Task deleted" });
+    onUpdated();
+  };
+
   const assignTo = async (task: Task, userId: string | null) => {
     setAssigningId(task.id);
     const { error } = await supabase
@@ -209,37 +238,92 @@ export const WorkSection = ({
     setExpandedId((cur) => (cur === id ? null : id));
 
   return (
-    <Section
-      tasks={tasks}
-      blocking={blocking}
-      active={active}
-      done={done}
-      adding={adding}
-      setAdding={setAdding}
-      draft={draft}
-      setDraft={setDraft}
-      saving={saving}
-      handleAdd={handleAdd}
-      folderOpen={folderOpen}
-      setFolderOpen={setFolderOpen}
-      renderRow={(task, isDone) => (
-        <TaskRow
-          key={task.id}
-          task={task}
-          isDone={isDone}
-          expanded={expandedId === task.id}
-          onToggleExpand={() => handleToggleExpand(task.id)}
-          collaborators={collaborators}
-          collabMap={collabMap}
-          currentUserId={currentUserId}
-          busy={busyId === task.id}
-          assigning={assigningId === task.id}
-          onMarkDone={() => markDone(task)}
-          onReopen={() => reopen(task)}
-          onAssign={(uid) => assignTo(task, uid)}
-        />
-      )}
-    />
+    <>
+      <Section
+        tasks={tasks}
+        blocking={blocking}
+        active={active}
+        done={done}
+        adding={adding}
+        setAdding={setAdding}
+        draft={draft}
+        setDraft={setDraft}
+        saving={saving}
+        handleAdd={handleAdd}
+        folderOpen={folderOpen}
+        setFolderOpen={setFolderOpen}
+        renderRow={(task, isDone) => (
+          <TaskRow
+            key={task.id}
+            task={task}
+            isDone={isDone}
+            expanded={expandedId === task.id}
+            onToggleExpand={() => handleToggleExpand(task.id)}
+            collaborators={collaborators}
+            collabMap={collabMap}
+            currentUserId={currentUserId}
+            busy={busyId === task.id}
+            assigning={assigningId === task.id}
+            onRequestComplete={() => setConfirm({ kind: "complete", task })}
+            onRequestReopen={() => setConfirm({ kind: "reopen", task })}
+            onRequestDelete={() => setConfirm({ kind: "delete", task })}
+            onAssign={(uid) => assignTo(task, uid)}
+          />
+        )}
+      />
+
+      <AlertDialog
+        open={!!confirm}
+        onOpenChange={(open) => !open && setConfirm(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirm?.kind === "delete"
+                ? "Delete this task?"
+                : confirm?.kind === "reopen"
+                  ? "Reopen this task?"
+                  : "Mark this complete?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirm?.kind === "delete"
+                ? "This task will be permanently removed. You can't undo this."
+                : confirm?.kind === "reopen"
+                  ? "It'll move back to the active list."
+                  : "Nice work — this will move to Completed."}
+              {confirm && (
+                <span className="block mt-2 font-medium text-foreground line-clamp-2">
+                  "{confirm.task.title}"
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={cn(
+                confirm?.kind === "delete" &&
+                  "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+              )}
+              onClick={() => {
+                if (!confirm) return;
+                const { kind, task } = confirm;
+                setConfirm(null);
+                if (kind === "complete") markDone(task);
+                else if (kind === "reopen") reopen(task);
+                else deleteTask(task);
+              }}
+            >
+              {confirm?.kind === "delete"
+                ? "Delete"
+                : confirm?.kind === "reopen"
+                  ? "Reopen"
+                  : "Mark complete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
@@ -253,8 +337,9 @@ interface TaskRowProps {
   currentUserId: string;
   busy: boolean;
   assigning: boolean;
-  onMarkDone: () => void;
-  onReopen: () => void;
+  onRequestComplete: () => void;
+  onRequestReopen: () => void;
+  onRequestDelete: () => void;
   onAssign: (userId: string | null) => void;
 }
 
@@ -268,8 +353,9 @@ const TaskRow = ({
   currentUserId,
   busy,
   assigning,
-  onMarkDone,
-  onReopen,
+  onRequestComplete,
+  onRequestReopen,
+  onRequestDelete,
   onAssign,
 }: TaskRowProps) => {
   const blocking = isBlocking(task);
@@ -287,24 +373,27 @@ const TaskRow = ({
   const onTouchMove = (e: React.TouchEvent) => {
     if (startXRef.current == null) return;
     const delta = e.touches[0].clientX - startXRef.current;
-    if (!isDone && delta > 0) setDx(Math.min(delta, 140));
-    else if (isDone && delta < 0) setDx(Math.max(delta, -140));
+    // Right swipe = complete (only when not done). Left swipe = delete (always).
+    if (delta > 0 && !isDone) setDx(Math.min(delta, 140));
+    else if (delta < 0) setDx(Math.max(delta, -140));
   };
   const onTouchEnd = () => {
     startXRef.current = null;
     setReleased(true);
     if (!isDone && dx > SWIPE_THRESHOLD) {
-      setDx(320);
-      onMarkDone();
-    } else if (isDone && dx < -SWIPE_THRESHOLD) {
-      setDx(-320);
-      onReopen();
+      setDx(0);
+      onRequestComplete();
+    } else if (dx < -SWIPE_THRESHOLD) {
+      setDx(0);
+      onRequestDelete();
     } else {
       setDx(0);
     }
   };
 
   const showSwipeHint = Math.abs(dx) > 10;
+  const swipingRight = dx > 10;
+  const swipingLeft = dx < -10;
 
   return (
     <div className="relative">
@@ -312,18 +401,17 @@ const TaskRow = ({
         <div
           className={cn(
             "absolute inset-0 rounded-xl flex items-center px-4 text-xs font-bold uppercase tracking-wider",
-            !isDone
-              ? "bg-primary/15 text-primary justify-start"
-              : "bg-muted text-muted-foreground justify-end",
+            swipingRight && "bg-primary/15 text-primary justify-start",
+            swipingLeft && "bg-destructive/15 text-destructive justify-end",
           )}
         >
-          {!isDone ? (
+          {swipingRight ? (
             <span className="flex items-center gap-1.5">
-              <Check className="h-4 w-4" /> Done
+              <Check className="h-4 w-4" /> Complete
             </span>
           ) : (
             <span className="flex items-center gap-1.5">
-              <RotateCcw className="h-4 w-4" /> Reopen
+              <Trash2 className="h-4 w-4" /> Delete
             </span>
           )}
         </div>
@@ -350,7 +438,7 @@ const TaskRow = ({
             disabled={busy}
             onClick={(e) => {
               e.stopPropagation();
-              isDone ? onReopen() : onMarkDone();
+              isDone ? onRequestReopen() : onRequestComplete();
             }}
             className={cn(
               "mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors",
@@ -559,7 +647,7 @@ const Section = ({
       {/* Swipe hint — only when there's something to swipe */}
       {tasks.length > 0 && (active.length > 0 || blocking.length > 0) && (
         <p className="text-[10px] text-muted-foreground text-center">
-          Tip: swipe a task right to mark done →
+          Tip: swipe right to complete · swipe left to delete
         </p>
       )}
 

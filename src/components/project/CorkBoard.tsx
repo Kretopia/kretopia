@@ -689,7 +689,7 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
   useEffect(() => {
     let active = true;
     if (pin.kind !== "image" || !pin.image_url) return;
-    if (pin.image_url.startsWith("http") && pin.image_url.includes("token=")) {
+    if (pin.image_url.startsWith("http") && !pin.image_url.includes("project-files")) {
       setDisplayUrl(pin.image_url);
       return;
     }

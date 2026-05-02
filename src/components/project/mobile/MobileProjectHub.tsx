@@ -16,7 +16,7 @@ import { PROJECT_FLOW_STAGES, type ProjectFlow, type ProjectFlowStageId } from "
 import { VoiceTaskCapture } from "@/components/project/mobile/VoiceTaskCapture";
 import { DeskActionFab } from "@/components/project/mobile/DeskActionFab";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { DeskAIPanel } from "@/components/project/ai/DeskAIPanel";
+
 
 interface MobileProjectHubProps {
   flow: ProjectFlow;
@@ -297,11 +297,11 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
         </section>
       </div>
 
-      {/* Combined action FAB: voice note + Project Copilot */}
+      {/* Combined action FAB: voice note + Project Copilot (opens global drawer) */}
       <DeskActionFab
         onVoice={() => setVoiceOpen(true)}
         onCopilot={() => {
-          setCopilotOpen(true);
+          window.dispatchEvent(new CustomEvent("thrive-copilot:open"));
           onOpenCopilot?.();
         }}
       />
@@ -316,17 +316,6 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
       collaborators={collaborators}
       onTaskCreated={() => onTasksChanged?.()}
     />
-
-    <Sheet open={copilotOpen} onOpenChange={setCopilotOpen}>
-      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
-        <DeskAIPanel
-          projectId={projectId}
-          userId={currentUserId}
-          isPro={isPro}
-          onClose={() => setCopilotOpen(false)}
-        />
-      </SheetContent>
-    </Sheet>
     </>
   );
 });

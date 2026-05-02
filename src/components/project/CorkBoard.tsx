@@ -683,8 +683,25 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(pin.content || "");
   const [showOpts, setShowOpts] = useState(false);
+  const [displayUrl, setDisplayUrl] = useState(pin.image_url || "");
 
   useEffect(() => setDraft(pin.content || ""), [pin.content]);
+  useEffect(() => {
+    let active = true;
+    if (pin.kind !== "image" || !pin.image_url) return;
+    if (pin.image_url.startsWith("http") && pin.image_url.includes("token=")) {
+      setDisplayUrl(pin.image_url);
+      return;
+    }
+    getProjectFileSignedUrl(pin.image_url, { expiresIn: 60 * 60 * 24 * 7 })
+      .then((url) => {
+        if (active && url) setDisplayUrl(url);
+      })
+      .catch((e) => console.warn("[corkboard] image signed URL failed", e));
+    return () => {
+      active = false;
+    };
+  }, [pin.kind, pin.image_url]);
 
   const commit = () => {
     setEditing(false);
@@ -717,7 +734,7 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
             aria-hidden
           />
           <img
-            src={pin.image_url}
+            src={displayUrl || pin.image_url}
             alt={pin.content || "pinned"}
             className="block w-40 h-40 object-cover rounded-sm pointer-events-none"
             draggable={false}

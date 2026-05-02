@@ -170,6 +170,10 @@ export function VaultTab({
         projectTitle={projectTitle}
       />
 
+      <div className="px-1 mb-3">
+        <StorageMeter variant="compact" />
+      </div>
+
       <FileBrowser
         projectId={projectId}
         files={files}

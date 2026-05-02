@@ -412,7 +412,7 @@ export default function Onboarding() {
       const pendingEventJoin = sessionStorage.getItem("pending_event_join");
       if (pendingEventJoin && user) {
         try {
-          const { data: inserted } = await supabase.from("jam_participants").insert({ jam_id: pendingEventJoin, user_id: user.id, status: "going" }).select("id, check_in_token").single();
+          const { data: inserted } = await supabase.from("jam_participants").insert({ jam_id: pendingEventJoin, user_id: user.id, status: "going" }).select("id").single();
           if (inserted) {
             const { data: ev } = await supabase.from("creative_jams").select("title, start_time, end_time, venue_name, venue_address").eq("id", pendingEventJoin).single();
             if (ev) {

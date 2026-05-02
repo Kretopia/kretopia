@@ -14412,6 +14412,14 @@ export type Database = {
           skill_name: string
         }[]
       }
+      get_event_check_in_tokens: {
+        Args: { _jam_id: string }
+        Returns: {
+          check_in_token: string
+          status: string
+          user_id: string
+        }[]
+      }
       get_founder_circle_count: { Args: never; Returns: number }
       get_mutual_connections: {
         Args: { user1_id: string; user2_id: string }
@@ -14422,6 +14430,7 @@ export type Database = {
           role: string
         }[]
       }
+      get_my_check_in_token: { Args: { _jam_id: string }; Returns: string }
       get_my_group_rooms: {
         Args: never
         Returns: {

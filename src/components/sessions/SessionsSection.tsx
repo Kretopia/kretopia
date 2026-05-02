@@ -186,7 +186,7 @@ export const SessionsSection = ({ userLocation }: SessionsSectionProps) => {
             jam_id: ticketSuccess,
             user_id: user.id,
             status: 'going',
-          }).select('id, check_in_token').single();
+          }).select('id').single();
 
           // Send confirmation email for ticket purchase
           if (inserted) {

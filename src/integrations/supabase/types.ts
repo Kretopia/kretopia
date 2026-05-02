@@ -11844,6 +11844,59 @@ export type Database = {
         }
         Relationships: []
       }
+      studio_pulse_posts: {
+        Row: {
+          approval_status: string | null
+          author_id: string
+          content: string | null
+          created_at: string
+          id: string
+          image_urls: string[]
+          kind: string
+          metadata: Json
+          project_id: string
+          routed_id: string | null
+          routed_to: string | null
+          updated_at: string
+        }
+        Insert: {
+          approval_status?: string | null
+          author_id: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_urls?: string[]
+          kind?: string
+          metadata?: Json
+          project_id: string
+          routed_id?: string | null
+          routed_to?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approval_status?: string | null
+          author_id?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          image_urls?: string[]
+          kind?: string
+          metadata?: Json
+          project_id?: string
+          routed_id?: string | null
+          routed_to?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_pulse_posts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_messages: {
         Row: {
           content: string

@@ -252,7 +252,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         .select("id, file_name, file_url, file_type")
         .eq("project_id", projectId);
       if (filesErr) throw filesErr;
-      const images = (files || []).filter((f: any) =>
+      const images = ((files || []) as MoodboardFile[]).filter((f) =>
         (f.file_type || "").startsWith("image/"),
       );
       if (!images.length) {
@@ -266,13 +266,13 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           .filter((p) => p.kind === "image" && p.image_url)
           .map((p) => extractProjectFilePath(p.image_url!)),
       );
-      const fresh = images.filter((f: any) => !existingPaths.has(extractProjectFilePath(f.file_url)));
+      const fresh = images.filter((f) => !existingPaths.has(extractProjectFilePath(f.file_url)));
       if (!fresh.length) {
         toast.message("Moodboard already on the board");
         return;
       }
       const baseLen = pins.length;
-      const rows = fresh.map((f: any, i: number) => {
+      const rows = fresh.map((f, i) => {
         const x = 24 + ((baseLen + i) % 4) * 180 + Math.random() * 30;
         const y = 24 + Math.floor((baseLen + i) / 4) * 200 + Math.random() * 30;
         return {
@@ -302,8 +302,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           `${inserted.length} reference${inserted.length === 1 ? "" : "s"} pinned`,
         );
       }
-    } catch (e: any) {
-      toast.error(e.message || "Couldn't import moodboard");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Couldn't import moodboard"));
     } finally {
       setAdding(false);
     }

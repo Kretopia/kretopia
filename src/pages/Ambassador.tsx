@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { Navigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { APP_URL } from "@/lib/constants";
+import { AmbassadorAttributionVerifier } from "@/components/ambassador/AmbassadorAttributionVerifier";
+import { formatDistanceToNow } from "date-fns";
 
 interface Application {
   id: string;

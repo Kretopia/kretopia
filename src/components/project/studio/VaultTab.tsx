@@ -5,6 +5,7 @@ import { FileBrowser } from "@/components/project/files/FileBrowser";
 import { WorkflowShell } from "@/components/project/studio/WorkflowShell";
 import { SmartBriefBuilder } from "@/components/project/SmartBriefBuilder";
 import { ShareReviewLinkDialog } from "@/components/project/studio/ShareReviewLinkDialog";
+import { StorageMeter } from "@/components/storage/StorageMeter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

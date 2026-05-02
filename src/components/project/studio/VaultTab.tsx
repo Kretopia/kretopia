@@ -96,18 +96,12 @@ export function VaultTab({
           {files.length} file{files.length === 1 ? "" : "s"}
         </Badge>
         {pendingApprovals > 0 && (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="h-7 rounded-full gap-1.5 border-[hsl(var(--energy)/0.4)] text-[hsl(var(--energy))] hover:bg-[hsl(var(--energy)/0.1)]"
-            onClick={onJumpToBrief}
-          >
-            <ShieldCheck className="h-3.5 w-3.5" />
-            {pendingApprovals} awaiting your review
-          </Button>
+          <Badge variant="outline" className="rounded-full gap-1 font-medium">
+            <ShieldCheck className="h-3 w-3" />
+            {pendingApprovals} awaiting review
+          </Badge>
         )}
-        <span className="text-[11px] text-muted-foreground ml-auto">
+        <span className="text-[11px] text-muted-foreground ml-auto hidden sm:inline">
           Approvals live on each Drop in the Studio feed.
         </span>
       </div>

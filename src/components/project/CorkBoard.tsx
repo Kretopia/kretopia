@@ -740,8 +740,11 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
             draggable={false}
           />
           <div
-            data-pin-no-drag
-            className="absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md"
+            data-pin-drag-handle
+            className={cn(
+              "absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md cursor-grab touch-none active:cursor-grabbing",
+              qaMode && "ring-4 ring-primary",
+            )}
           />
           <button
             data-pin-no-drag
@@ -884,6 +887,7 @@ function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChang
             <ListChecks className="h-3.5 w-3.5" />
           </button>
           <button
+            data-pin-no-drag
             onClick={onDelete}
             className="opacity-50 hover:opacity-100 transition-opacity"
             aria-label="Delete sticky"

@@ -355,7 +355,8 @@ export const ThriveAgentFab = () => {
 
   const hidden =
     !user ||
-    HIDDEN_PATH_PREFIXES.some((p) => location.pathname.startsWith(p));
+    HIDDEN_PATH_PREFIXES.some((p) => location.pathname.startsWith(p)) ||
+    (location.pathname.startsWith("/desk/") && deskTab === "messages");
 
   if (hidden) return null;
 

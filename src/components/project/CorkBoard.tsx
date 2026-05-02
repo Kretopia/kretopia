@@ -315,13 +315,22 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   // ---- Drag handlers ----
 
   const beginDrag = (pin: Pin, clientX: number, clientY: number, pointerId: number, el: HTMLElement) => {
-    const board = boardRef.current?.getBoundingClientRect();
-    if (!board) return;
+    const surface = surfaceRef.current?.getBoundingClientRect();
+    if (!surface) return;
     try {
       el.setPointerCapture(pointerId);
     } catch {
       /* noop */
     }
+    dragRef.current = {
+      id: pin.id,
+      pointerId,
+      el,
+      offsetX: clientX - surface.left - pin.pos_x,
+      offsetY: clientY - surface.top - pin.pos_y,
+      latestX: pin.pos_x,
+      latestY: pin.pos_y,
+    };
     dragRef.current = {
       id: pin.id,
       pointerId,

@@ -110,6 +110,10 @@ export const WorkSection = ({
   const [folderOpen, setFolderOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<
+    | { kind: "complete" | "reopen" | "delete"; task: Task }
+    | null
+  >(null);
 
   const collabMap = useMemo(() => {
     const m = new Map<string, Collaborator>();

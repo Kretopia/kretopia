@@ -89,13 +89,15 @@ export async function streamCopilot({
   if (returnedConvId && onConversationId) onConversationId(returnedConvId);
 
   if (!resp.ok) {
-    const data = await resp.json().catch(() => ({}));
-    if (resp.status === 429) {
+    const data: any = await resp.json().catch(() => ({}));
+    if (resp.status === 429 && data?.code === "COPILOT_DAILY_LIMIT") {
+      onError(`You've used ${data.used}/${data.cap} Copilot messages today. Upgrade your plan for more — resets at midnight UTC.`);
+    } else if (resp.status === 429) {
       onError("Slow down a sec — too many requests. Try again in a moment.");
     } else if (resp.status === 402) {
       onError("Out of AI credits this month. Top up in Settings → Workspace → Usage.");
     } else {
-      onError((data as any).error || `Request failed (${resp.status})`);
+      onError(data?.error || `Request failed (${resp.status})`);
     }
     return;
   }

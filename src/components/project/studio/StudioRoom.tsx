@@ -48,6 +48,7 @@ export const StudioRoom = ({
 }: StudioRoomProps) => {
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const moneySignal = useProjectMoneySignal(project);
 
   const isOwner = project?.created_by === currentUserId;
 
@@ -167,11 +168,13 @@ export const StudioRoom = ({
           onUpdated={onUpdated}
         />
 
-        <MoneySection
-          project={project}
-          isOwner={isOwner}
-          onOpenInvoice={() => onNavigateToTab("finance", "create_invoice")}
-        />
+        {moneySignal.visible && (
+          <MoneySection
+            project={project}
+            isOwner={isOwner}
+            onOpenInvoice={() => onNavigateToTab("finance", "create_invoice")}
+          />
+        )}
 
         <PeopleSection
           collaborators={people}

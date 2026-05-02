@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { FolderLock, ShieldCheck, Lightbulb, ChevronDown } from "lucide-react";
+import { FolderLock, ShieldCheck, Lightbulb, ChevronDown, Link2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { FileBrowser } from "@/components/project/files/FileBrowser";
 import { WorkflowShell } from "@/components/project/studio/WorkflowShell";
 import { SmartBriefBuilder } from "@/components/project/SmartBriefBuilder";
+import { ShareReviewLinkDialog } from "@/components/project/studio/ShareReviewLinkDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

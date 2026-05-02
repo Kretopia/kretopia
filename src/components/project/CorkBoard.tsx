@@ -10,6 +10,8 @@ import {
   Loader2,
   Pin,
   ListChecks,
+  Layers,
+  Bug,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -60,6 +62,10 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   const [sparking, setSparking] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
+  const surfaceRef = useRef<HTMLDivElement>(null);
+  const [qaMode, setQaMode] = useState(false);
+  // Snapshot of last-saved positions, used by QA mode to render ghosts.
+  const savedPosRef = useRef<Map<string, { x: number; y: number }>>(new Map());
 
   // Drag state — drag starts from the pin/header handle, not the editable body.
   const dragRef = useRef<{
@@ -87,7 +93,9 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       if (error) {
         console.error(error);
       } else {
-        setPins((data || []) as Pin[]);
+        const rows = (data || []) as Pin[];
+        setPins(rows);
+        savedPosRef.current = new Map(rows.map((p) => [p.id, { x: p.pos_x, y: p.pos_y }]));
       }
       setLoading(false);
     })().catch((e) => console.warn("[corkboard] load failed", e));
@@ -223,6 +231,71 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     [projectId, currentUserId, nextPosition, pins.length],
   );
 
+  // Pull existing brief moodboard images into the Pad as image pins so the
+  // board doubles as a unified moodboard + sticky-note space.
+  const importMoodboard = useCallback(async () => {
+    setAdding(true);
+    try {
+      const { data: files, error: filesErr } = await supabase
+        .from("project_files")
+        .select("id, file_name, file_url, file_type")
+        .eq("project_id", projectId);
+      if (filesErr) throw filesErr;
+      const images = (files || []).filter((f: any) =>
+        (f.file_type || "").startsWith("image/"),
+      );
+      if (!images.length) {
+        toast.message("No moodboard images yet", {
+          description: "Add references in the Brief first.",
+        });
+        return;
+      }
+      const existingUrls = new Set(
+        pins.filter((p) => p.kind === "image" && p.image_url).map((p) => p.image_url!),
+      );
+      const fresh = images.filter((f: any) => !existingUrls.has(f.file_url));
+      if (!fresh.length) {
+        toast.message("Moodboard already on the board");
+        return;
+      }
+      const baseLen = pins.length;
+      const rows = fresh.map((f: any, i: number) => {
+        const x = 24 + ((baseLen + i) % 4) * 180 + Math.random() * 30;
+        const y = 24 + Math.floor((baseLen + i) / 4) * 200 + Math.random() * 30;
+        return {
+          project_id: projectId,
+          created_by: currentUserId,
+          kind: "image" as const,
+          image_url: f.file_url,
+          content: f.file_name,
+          color: "yellow" as PinColor,
+          pos_x: x,
+          pos_y: y,
+          rotation: (Math.random() - 0.5) * 6,
+          z_index: baseLen + i + 1,
+        };
+      });
+      const { data: inserted, error: insErr } = await supabase
+        .from("project_pins")
+        .insert(rows)
+        .select();
+      if (insErr) throw insErr;
+      if (inserted) {
+        setPins((prev) => {
+          const ids = new Set(prev.map((p) => p.id));
+          return [...prev, ...(inserted as Pin[]).filter((p) => !ids.has(p.id))];
+        });
+        toast.success(
+          `${inserted.length} reference${inserted.length === 1 ? "" : "s"} pinned`,
+        );
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Couldn't import moodboard");
+    } finally {
+      setAdding(false);
+    }
+  }, [projectId, currentUserId, pins]);
+
   const sparkIdeas = useCallback(async () => {
     setSparking(true);
     try {
@@ -309,8 +382,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   // ---- Drag handlers ----
 
   const beginDrag = (pin: Pin, clientX: number, clientY: number, pointerId: number, el: HTMLElement) => {
-    const board = boardRef.current?.getBoundingClientRect();
-    if (!board) return;
+    const surface = surfaceRef.current?.getBoundingClientRect();
+    if (!surface) return;
     try {
       el.setPointerCapture(pointerId);
     } catch {
@@ -320,8 +393,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       id: pin.id,
       pointerId,
       el,
-      offsetX: clientX - board.left - pin.pos_x,
-      offsetY: clientY - board.top - pin.pos_y,
+      offsetX: clientX - surface.left - pin.pos_x,
+      offsetY: clientY - surface.top - pin.pos_y,
       latestX: pin.pos_x,
       latestY: pin.pos_y,
     };
@@ -342,10 +415,16 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
   const onPinPointerMove = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
     e.preventDefault();
-    const board = boardRef.current?.getBoundingClientRect();
-    if (!board) return;
-    const x = Math.max(0, Math.min(board.width - 60, e.clientX - board.left - dragRef.current.offsetX));
-    const y = Math.max(0, Math.min(BOARD_HEIGHT - 60, e.clientY - board.top - dragRef.current.offsetY));
+    const surface = surfaceRef.current;
+    if (!surface) return;
+    const rect = surface.getBoundingClientRect();
+    // Use the inner surface's full size (clientWidth/offsetHeight), not the
+    // scroll viewport — otherwise pins hit an "invisible wall" at the right edge
+    // on small screens.
+    const maxX = Math.max(0, surface.clientWidth - 60);
+    const maxY = Math.max(0, BOARD_HEIGHT - 60);
+    const x = Math.max(0, Math.min(maxX, e.clientX - rect.left - dragRef.current.offsetX));
+    const y = Math.max(0, Math.min(maxY, e.clientY - rect.top - dragRef.current.offsetY));
     const id = dragRef.current.id;
     dragRef.current.latestX = x;
     dragRef.current.latestY = y;
@@ -365,6 +444,8 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
     dragRef.current = null;
     setDraggingId(null);
     void updatePin(id, finalPos);
+    // Update last-saved snapshot for QA ghosts
+    savedPosRef.current.set(id, { x: finalPos.pos_x, y: finalPos.pos_y });
   };
 
   const onPinPointerCancel = () => {
@@ -410,6 +491,17 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         </Button>
         <Button
           size="sm"
+          variant="outline"
+          onClick={importMoodboard}
+          disabled={adding}
+          className="gap-1.5 h-8"
+          title="Bring your brief moodboard onto the board"
+        >
+          <Layers className="h-3.5 w-3.5" />
+          <span className="text-xs font-semibold hidden sm:inline">Moodboard</span>
+        </Button>
+        <Button
+          size="sm"
           variant="ghost"
           onClick={sparkIdeas}
           disabled={sparking}
@@ -420,7 +512,18 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           ) : (
             <Sparkles className="h-3.5 w-3.5" />
           )}
-          <span className="text-xs font-semibold">Spark Ideas</span>
+          <span className="text-xs font-semibold hidden sm:inline">Spark Ideas</span>
+        </Button>
+        <Button
+          size="sm"
+          variant={qaMode ? "default" : "ghost"}
+          onClick={() => setQaMode((q) => !q)}
+          className="gap-1.5 h-8"
+          title="QA mode: show drag handles, snap bounds and last-saved positions"
+          aria-pressed={qaMode}
+        >
+          <Bug className="h-3.5 w-3.5" />
+          <span className="text-xs font-semibold hidden sm:inline">QA</span>
         </Button>
         <input
           ref={fileRef}
@@ -439,7 +542,9 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
       {!loading && pins.length > 0 && (
         <div className="px-3 py-1.5 border-b border-border/60 bg-background/80">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 text-center">
-            Tap note to edit · drag from the red pin/top edge
+            {qaMode
+              ? "QA mode · handles highlighted · ghost = last saved · dashed line = snap bound"
+              : "Tap note to edit · drag from the red pin/top edge"}
           </p>
         </div>
       )}
@@ -454,6 +559,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
           "[background-image:radial-gradient(hsl(30_30%_45%/0.08)_1px,transparent_1px),radial-gradient(hsl(30_25%_30%/0.05)_1.5px,transparent_1.5px)]",
           "[background-size:24px_24px,40px_40px]",
           "[background-position:0_0,12px_12px]",
+          qaMode && "[--qa:1]",
         )}
         style={{ minHeight: 600 }}
         onPointerMove={onPinPointerMove}
@@ -461,7 +567,38 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
         onPointerCancel={onPinPointerCancel}
         onPointerLeave={onPinPointerCancel}
       >
-        <div style={{ position: "relative", width: "100%", height: BOARD_HEIGHT }}>
+        <div
+          ref={surfaceRef}
+          style={{ position: "relative", width: "100%", height: BOARD_HEIGHT }}
+        >
+          {/* QA: snap-bounds overlay (60px inset reflects the clamp in onPinPointerMove) */}
+          {qaMode && (
+            <>
+              <div
+                aria-hidden
+                className="pointer-events-none absolute border border-dashed border-primary/60"
+                style={{ left: 0, top: 0, right: 60, bottom: 60 }}
+              />
+              {/* Last-saved ghost positions */}
+              {pins.map((p) => {
+                const saved = savedPosRef.current.get(p.id);
+                if (!saved) return null;
+                return (
+                  <div
+                    key={`ghost-${p.id}`}
+                    aria-hidden
+                    className="pointer-events-none absolute w-44 h-32 rounded-sm border-2 border-dashed border-primary/50 bg-primary/5"
+                    style={{ left: saved.x, top: saved.y }}
+                  >
+                    <div className="absolute -top-4 left-0 text-[9px] font-mono text-primary bg-background/80 px-1 rounded">
+                      saved {Math.round(saved.x)},{Math.round(saved.y)}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
               Loading board…
@@ -494,6 +631,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
               key={pin.id}
               pin={pin}
               dragging={draggingId === pin.id}
+              qaMode={qaMode}
               onPointerDown={(e) => onPinPointerDown(e, pin)}
               onChange={(content) => updatePin(pin.id, { content })}
               onColorChange={(color) => updatePin(pin.id, { color })}
@@ -510,6 +648,7 @@ export function CorkBoard({ projectId, currentUserId }: CorkBoardProps) {
 interface PinCardProps {
   pin: Pin;
   dragging?: boolean;
+  qaMode?: boolean;
   onPointerDown: (e: React.PointerEvent) => void;
   onChange: (content: string) => void;
   onColorChange: (color: PinColor) => void;
@@ -517,7 +656,7 @@ interface PinCardProps {
   onConvertToTask: () => void;
 }
 
-function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange, onDelete, onConvertToTask }: PinCardProps) {
+function PinCard({ pin, dragging = false, qaMode = false, onPointerDown, onChange, onColorChange, onDelete, onConvertToTask }: PinCardProps) {
   const styles = COLOR_STYLES[pin.color];
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(pin.content || "");
@@ -549,7 +688,10 @@ function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange
         <div className="relative bg-card p-2 pt-4 shadow-xl ring-1 ring-border rounded-sm">
           <div
             data-pin-drag-handle
-            className="absolute inset-x-0 top-0 h-6 cursor-grab touch-none active:cursor-grabbing rounded-t-sm"
+            className={cn(
+              "absolute inset-x-0 top-0 h-6 cursor-grab touch-none active:cursor-grabbing rounded-t-sm",
+              qaMode && "bg-primary/30 ring-1 ring-primary",
+            )}
             aria-hidden
           />
           <img
@@ -606,11 +748,17 @@ function PinCard({ pin, dragging = false, onPointerDown, onChange, onColorChange
         {/* Pushpin */}
         <div
           data-pin-drag-handle
-          className="absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md"
+          className={cn(
+            "absolute -top-2 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[hsl(0_75%_55%)] ring-2 ring-[hsl(0_60%_35%)] shadow-md",
+            qaMode && "ring-4 ring-primary",
+          )}
         />
         <div
           data-pin-drag-handle
-          className="absolute inset-x-0 top-0 h-8 cursor-grab touch-none active:cursor-grabbing"
+          className={cn(
+            "absolute inset-x-0 top-0 h-8 cursor-grab touch-none active:cursor-grabbing",
+            qaMode && "bg-primary/25 ring-1 ring-primary",
+          )}
           aria-hidden
         />
 

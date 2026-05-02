@@ -127,7 +127,7 @@ export const SessionDetailDialog = ({
         }
       } else {
         // Free event — join directly
-        const { data: inserted } = await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' }).select('id, check_in_token').single();
+        const { data: inserted } = await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' }).select('id').single();
         setParticipation('going');
         toast({ title: "You're in!" });
         onRefresh?.();

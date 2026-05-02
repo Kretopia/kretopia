@@ -69,7 +69,7 @@ export const SessionCard = ({ session, userParticipation, onJoin, onClick }: Ses
         setParticipation(null);
         toast({ title: "Left event" });
       } else {
-        const { data: inserted } = await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' }).select('id, check_in_token').single();
+        const { data: inserted } = await supabase.from('jam_participants').insert({ jam_id: session.id, user_id: user.id, status: 'going' }).select('id').single();
         setParticipation('going');
         toast({ title: "Joined!" });
         if (inserted) {

@@ -34,15 +34,39 @@ export interface OrchRunResponse {
   awaiting_approval: boolean;
 }
 
+const ORCH_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent-orchestrator`;
+
+async function callOrchestrator<T>(body: Record<string, unknown>): Promise<T> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) throw new Error("Please sign in to use Copilot actions.");
+
+  const resp = await fetch(ORCH_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const text = await resp.text();
+  let parsed: unknown = text;
+  try { parsed = JSON.parse(text); } catch { /* keep text */ }
+
+  if (!resp.ok) {
+    const msg = (parsed as { error?: string })?.error || `Orchestrator error (${resp.status})`;
+    throw new Error(msg);
+  }
+  return parsed as T;
+}
+
 export async function sendAgentIntent(
   intent: string,
   context: Record<string, unknown> = {},
 ): Promise<OrchRunResponse> {
-  const { data, error } = await supabase.functions.invoke("agent-orchestrator", {
-    body: { intent, context },
-  });
-  if (error) throw error;
-  return data as OrchRunResponse;
+  return callOrchestrator<OrchRunResponse>({ intent, context });
 }
 
 export async function decideAgentAction(
@@ -51,9 +75,10 @@ export async function decideAgentAction(
   editedArgs?: Record<string, unknown>,
   note?: string,
 ): Promise<{ ok: boolean; result?: unknown; error?: string }> {
-  const { data, error } = await supabase.functions.invoke("agent-orchestrator", {
-    body: { action_id: actionId, decision, edited_args: editedArgs, note },
+  return callOrchestrator<{ ok: boolean; result?: unknown; error?: string }>({
+    action_id: actionId,
+    decision,
+    edited_args: editedArgs,
+    note,
   });
-  if (error) throw error;
-  return data as { ok: boolean; result?: unknown; error?: string };
 }

@@ -18,6 +18,7 @@ export interface CopilotProject {
   title: string;
   status: string | null;
   pinned_stage: string | null;
+  my_role?: string | null;
 }
 
 export interface CopilotEvent {
@@ -121,6 +122,7 @@ export async function loadCopilotContext(
   const [
     profileRes,
     projectsRes,
+    projectCollabsRes,
     invoicesRes,
     eventsRes,
     creditsRes,
@@ -144,13 +146,21 @@ export async function loadCopilotContext(
     withTimeout(
       admin
         .from("projects")
-        .select("id, title, status, pinned_stage")
+        .select("id, title, status, pinned_stage, updated_at")
         .eq("status", "active")
         .or(
           `created_by.eq.${userId},client_user_id.eq.${userId},agent_user_id.eq.${userId}`,
         )
         .order("updated_at", { ascending: false })
-        .limit(3),
+        .limit(20),
+    ),
+    withTimeout(
+      admin
+        .from("project_collaborators")
+        .select("project_id, role, status")
+        .eq("user_id", userId)
+        .eq("status", "accepted")
+        .limit(50),
     ),
     withTimeout(
       admin
@@ -261,7 +271,31 @@ export async function loadCopilotContext(
   ]);
 
   const profile = (profileRes as any)?.data ?? null;
-  const projects = ((projectsRes as any)?.data as CopilotProject[] | null) ?? [];
+  const directProjects = ((projectsRes as any)?.data as Array<CopilotProject & { updated_at?: string }> | null) ?? [];
+  const collabRows = ((projectCollabsRes as any)?.data as Array<{ project_id: string; role: string | null }> | null) ?? [];
+  let projects: CopilotProject[] = directProjects.map((p) => ({ ...p, my_role: "owner" }));
+  const directProjectIds = new Set(projects.map((p) => p.id));
+  const collabProjectIds = collabRows.map((r) => r.project_id).filter((id) => !directProjectIds.has(id));
+  if (collabProjectIds.length) {
+    const collabProjectsRes = await withTimeout(
+      admin
+        .from("projects")
+        .select("id, title, status, pinned_stage, updated_at")
+        .in("id", collabProjectIds)
+        .eq("status", "active")
+        .order("updated_at", { ascending: false })
+        .limit(20),
+    );
+    const collabProjects = ((collabProjectsRes as any)?.data ?? []) as Array<CopilotProject & { updated_at?: string }>;
+    projects = [
+      ...projects,
+      ...collabProjects.map((p) => ({
+        ...p,
+        my_role: collabRows.find((r) => r.project_id === p.id)?.role ?? "member",
+      })),
+    ];
+  }
+  projects = projects.slice(0, 20);
   const invoiceRows = ((invoicesRes as any)?.data as Array<{ total_amount: number | null; currency: string | null; status: string }> | null) ?? [];
   const events = ((eventsRes as any)?.data as CopilotEvent[] | null) ?? [];
   const creditsCount = (creditsRes as any)?.count ?? 0;
@@ -368,7 +402,7 @@ export function renderContextPreamble(
   // ---- Live state (only include sections that have data) ----
   if (ctx.active_projects.length) {
     const list = ctx.active_projects
-      .map((p) => `- "${p.title}"${p.pinned_stage ? ` (stage: ${p.pinned_stage})` : ""} [id: ${p.id}]`)
+      .map((p) => `- "${p.title}"${p.my_role ? ` (${p.my_role})` : ""}${p.pinned_stage ? ` (stage: ${p.pinned_stage})` : ""} [id: ${p.id}]`)
       .join("\n");
     parts.push(`Active projects (${ctx.active_projects.length}):\n${list}`);
   } else {

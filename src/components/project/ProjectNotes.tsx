@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Save, Plus, Trash2, FileText, Sparkles, CheckSquare } from "lucide-react";
+import { Save, Plus, Trash2, FileText, CheckSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -46,6 +46,7 @@ Anything else worth capturing.
 export function ProjectNotes({ projectId }: ProjectNotesProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [isComposing, setIsComposing] = useState(false);
   const isMobileView = useIsMobile();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -88,6 +89,7 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
     setSelectedNote(null);
     setTitle(prefill?.title ?? "");
     setContent(prefill?.content ?? "");
+    setIsComposing(true);
   }, []);
 
   // Intent listener: from NextStepBar ("create-brief") or chat ("note-from-chat")
@@ -124,6 +126,7 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
 
         if (error) throw error;
         setSelectedNote(data as Note);
+        setIsComposing(false);
         toast.success("Note created");
       }
       fetchNotes();
@@ -191,23 +194,15 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
 
   return (
     <div className="flex flex-col md:flex-row gap-4 h-full">
-      {/* Notes List */}
-      {!selectedNote || !isMobileView ? (
+      {/* Notes List — hide on mobile when viewing or composing a note */}
+      {(!(selectedNote || isComposing) || !isMobileView) ? (
         <Card className={cn(
           "p-4 flex flex-col gap-2 shrink-0",
           "w-full md:w-64",
-          selectedNote && "hidden md:flex"
+          (selectedNote || isComposing) && "hidden md:flex"
         )}>
-          <Button onClick={() => handleNew()} className="w-full mb-1">
+          <Button onClick={() => handleNew()} className="w-full mb-2">
             <Plus className="h-4 w-4 mr-2" /> New Note
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigateDeskTab("brief")}
-            className="w-full mb-2 gap-1.5"
-          >
-            <Sparkles className="h-3.5 w-3.5" /> Smart Brief
           </Button>
 
           <div className="flex-1 overflow-y-auto space-y-2">
@@ -218,6 +213,7 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
                   setSelectedNote(note);
                   setTitle(note.title);
                   setContent(note.content || "");
+                  setIsComposing(false);
                 }}
                 className={`w-full p-3 text-left rounded-lg border transition-colors ${
                   selectedNote?.id === note.id
@@ -241,17 +237,9 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
               <div className="text-center py-8 px-2">
                 <FileText className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
                 <p className="text-sm font-medium">No notes yet</p>
-                <p className="text-xs text-muted-foreground mt-1 mb-3">
-                  Capture scope, briefs, and creative direction.
+                <p className="text-xs text-muted-foreground mt-1">
+                  Quick scratch, links, and decisions for the team.
                 </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="gap-1.5"
-                  onClick={() => navigateDeskTab("brief")}
-                >
-                  <Sparkles className="h-3.5 w-3.5" /> Start with Smart Brief
-                </Button>
               </div>
             )}
           </div>
@@ -259,15 +247,16 @@ export function ProjectNotes({ projectId }: ProjectNotesProps) {
       ) : null}
 
       {/* Note Editor */}
-      {(selectedNote || title || !isMobileView) && (
+      {(selectedNote || isComposing || !isMobileView) && (
         <Card className="flex-1 p-4 md:p-6 flex flex-col gap-4 min-h-0">
-          {isMobileView && selectedNote && (
+          {isMobileView && (selectedNote || isComposing) && (
             <Button
               variant="ghost"
               size="sm"
               className="self-start -ml-2 mb-1"
               onClick={() => {
                 setSelectedNote(null);
+                setIsComposing(false);
                 setTitle("");
                 setContent("");
               }}

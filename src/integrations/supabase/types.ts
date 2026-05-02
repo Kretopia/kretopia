@@ -9730,6 +9730,65 @@ export type Database = {
           },
         ]
       }
+      project_pins: {
+        Row: {
+          color: string
+          content: string | null
+          created_at: string
+          created_by: string
+          generated_by_ai: boolean
+          id: string
+          image_url: string | null
+          kind: string
+          pos_x: number
+          pos_y: number
+          project_id: string
+          rotation: number
+          updated_at: string
+          z_index: number
+        }
+        Insert: {
+          color?: string
+          content?: string | null
+          created_at?: string
+          created_by: string
+          generated_by_ai?: boolean
+          id?: string
+          image_url?: string | null
+          kind?: string
+          pos_x?: number
+          pos_y?: number
+          project_id: string
+          rotation?: number
+          updated_at?: string
+          z_index?: number
+        }
+        Update: {
+          color?: string
+          content?: string | null
+          created_at?: string
+          created_by?: string
+          generated_by_ai?: boolean
+          id?: string
+          image_url?: string | null
+          kind?: string
+          pos_x?: number
+          pos_y?: number
+          project_id?: string
+          rotation?: number
+          updated_at?: string
+          z_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_pins_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_revisions: {
         Row: {
           created_at: string
@@ -14211,6 +14270,10 @@ export type Database = {
       calculate_network_tier: {
         Args: { ref_count: number }
         Returns: Database["public"]["Enums"]["network_tier"]
+      }
+      can_access_project: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
       }
       can_join_event_online: {
         Args: { _event_id: string; _user_id: string }

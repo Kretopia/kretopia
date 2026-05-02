@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, X, Download, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
 import { getProjectFileSignedUrl } from "@/lib/projectFiles";
@@ -74,7 +74,8 @@ export const MoodboardViewer = ({
 
   return (
     <Dialog open={index != null} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-5xl w-[96vw] h-[92vh] p-0 gap-0 bg-black/95 border-none overflow-hidden">
+      <DialogContent className="max-w-5xl w-[96vw] h-[92vh] p-0 gap-0 bg-black/95 border-none overflow-hidden flex flex-col [&>button]:hidden">
+        <DialogTitle className="sr-only">{file?.file_name || "Moodboard image"}</DialogTitle>
         {/* Top bar */}
         <div className="absolute top-0 inset-x-0 z-20 flex items-center justify-between px-3 py-2 bg-gradient-to-b from-black/70 to-transparent">
           <p className="text-xs font-medium text-white/90 truncate flex-1 mr-2">

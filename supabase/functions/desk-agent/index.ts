@@ -154,6 +154,72 @@ const TOOLS = [
   {
     type: "function",
     function: {
+      name: "find_user",
+      description:
+        "Resolve a spoken/typed person name (e.g. 'Rene Auguste') to a user_id. Searches the caller's accepted connections first, then public profiles. Returns up to 3 candidates. ALWAYS call this BEFORE add_collaborator / remove_collaborator when given a name.",
+      parameters: {
+        type: "object",
+        properties: {
+          name_query: { type: "string", description: "Person name as the user spoke it." },
+        },
+        required: ["name_query"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_my_projects",
+      description:
+        "Return the caller's active projects (id, title, role). Use to disambiguate 'the X project' or to confirm the active project id when the user names a project that isn't the current one.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_collaborator",
+      description:
+        "Add a user to a project as a collaborator (Auto-Accept — they land in the project immediately). Caller MUST be the project owner. Defaults to the CURRENT project_id unless target_project_id is given.",
+      parameters: {
+        type: "object",
+        properties: {
+          user_id_to_add: { type: "string", description: "Resolved user_id from find_user." },
+          target_project_id: {
+            type: ["string", "null"],
+            description: "Project to add to. Null = current project.",
+          },
+          role: {
+            type: ["string", "null"],
+            enum: ["collaborator", "client", "creative", null],
+            description: "Defaults to 'collaborator'.",
+          },
+        },
+        required: ["user_id_to_add", "target_project_id", "role"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "remove_collaborator",
+      description: "Remove a collaborator from a project. Owner-only. Defaults to current project.",
+      parameters: {
+        type: "object",
+        properties: {
+          user_id_to_remove: { type: "string" },
+          target_project_id: { type: ["string", "null"] },
+        },
+        required: ["user_id_to_remove", "target_project_id"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "ask_clarification",
       description:
         "Use when intent or details are unclear. Ask one short follow-up question. No side effects.",

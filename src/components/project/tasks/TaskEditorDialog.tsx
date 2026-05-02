@@ -55,7 +55,7 @@ export const TaskEditorDialog = ({
     }
     setBusy(true);
     if (isNew) {
-      const { error } = await supabase.from("project_tasks").insert({
+      const { data: inserted, error } = await supabase.from("project_tasks").insert({
         project_id: projectId,
         created_by: currentUserId,
         title: draft.title.trim(),
@@ -64,10 +64,35 @@ export const TaskEditorDialog = ({
         due_date: draft.due_date || null,
         assigned_to: draft.assigned_to || null,
         priority: draft.priority || "normal",
-      });
+      }).select("id").single();
       setBusy(false);
       if (error) return toast({ title: "Couldn't create", description: error.message, variant: "destructive" });
       toast({ title: "Task created" });
+
+      // Background AI enhancement — only fills BLANK fields (respects what the user typed).
+      if (inserted?.id) {
+        const userHadDescription = !!draft.description?.trim();
+        const userHadDueDate = !!draft.due_date;
+        const userHadAssignee = !!draft.assigned_to;
+        enhanceTaskInBackground({
+          taskId: inserted.id,
+          rawTitle: draft.title.trim(),
+          existingDescription: draft.description?.trim() || null,
+          projectId,
+          collaborators: collaborators.map((c) => ({ id: c.id, full_name: c.full_name })),
+          preserveAssignee: userHadAssignee,
+        }).then(async (res) => {
+          if (!res.ok || !res.patched) return;
+          // Strip patches that would overwrite user-supplied values.
+          const safe: Record<string, unknown> = {};
+          if (res.patched.description && !userHadDescription) safe.description = res.patched.description;
+          if (res.patched.due_date && !userHadDueDate) safe.due_date = res.patched.due_date;
+          if (Object.keys(safe).length > 0) {
+            await supabase.from("project_tasks").update(safe).eq("id", inserted.id);
+            onSaved();
+          }
+        });
+      }
     } else {
       const { error } = await supabase.from("project_tasks").update({
         title: draft.title.trim(),

@@ -77,6 +77,7 @@ const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
 const Install = lazy(() => import("./pages/Install"));
 const GuestCall = lazy(() => import("./pages/GuestCall"));
+const ProjectReview = lazy(() => import("./pages/ProjectReview"));
 const FoundingMember = lazy(() => import("./pages/FoundingMember"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
@@ -330,6 +331,7 @@ const AppContent = () => {
 
             {/* Public guest video call join */}
             <Route path="/call/:token" element={<GuestCall />} />
+            <Route path="/review/:token" element={<ProjectReview />} />
             
             {/* Invite Link with Code */}
             <Route path="/join/:code" element={<JoinWithCode />} />

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { FolderLock, ShieldCheck, Lightbulb, ChevronDown } from "lucide-react";
+import { FolderLock, ShieldCheck, Lightbulb, ChevronDown, Link2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { FileBrowser } from "@/components/project/files/FileBrowser";
 import { WorkflowShell } from "@/components/project/studio/WorkflowShell";
 import { SmartBriefBuilder } from "@/components/project/SmartBriefBuilder";
+import { ShareReviewLinkDialog } from "@/components/project/studio/ShareReviewLinkDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +45,7 @@ export function VaultTab({
 }: VaultTabProps) {
   const [pendingApprovals, setPendingApprovals] = useState(0);
   const [briefOpen, setBriefOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Bootstrap standard folders once
   useEffect(() => {
@@ -150,10 +152,23 @@ export function VaultTab({
             {pendingApprovals} awaiting review
           </Badge>
         )}
-        <span className="text-[11px] text-muted-foreground ml-auto hidden sm:inline">
-          Approvals live on each Drop in the Studio feed.
-        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          className="ml-auto h-8 gap-1.5"
+          onClick={() => setShareOpen(true)}
+        >
+          <Link2 className="h-3.5 w-3.5" />
+          Share for review
+        </Button>
       </div>
+
+      <ShareReviewLinkDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        projectId={projectId}
+        projectTitle={projectTitle}
+      />
 
       <FileBrowser
         projectId={projectId}

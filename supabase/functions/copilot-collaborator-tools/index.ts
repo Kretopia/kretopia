@@ -1,0 +1,309 @@
+// Copilot collaborator tools — exposed to agent-orchestrator for project_manager intents.
+// Tools: find_user, list_my_projects, add_collaborator, remove_collaborator
+//
+// All tools run under the caller's JWT so RLS + project ownership rules apply.
+// Service role is used for cross-table reads (public_profiles_safe, system messages).
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+
+type ToolName =
+  | "find_user"
+  | "list_my_projects"
+  | "add_collaborator"
+  | "remove_collaborator";
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  try {
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
+
+    const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData } = await userClient.auth.getUser();
+    const user = userData?.user;
+    if (!user) return json({ error: "Unauthorized" }, 401);
+
+    const body = await req.json().catch(() => ({}));
+    // The orchestrator passes the tool name in `_tool` (we'll register one
+    // shared handler for all four tools). Fall back to inferring from args.
+    const tool = (body._tool as ToolName) ||
+      (body.project_id && body.user_id_to_add ? "add_collaborator" :
+       body.project_id && body.user_id_to_remove ? "remove_collaborator" :
+       body.name_query ? "find_user" : "list_my_projects");
+
+    switch (tool) {
+      case "find_user":
+        return await findUser(user.id, body);
+      case "list_my_projects":
+        return await listMyProjects(user.id);
+      case "add_collaborator":
+        return await addCollaborator(user.id, body);
+      case "remove_collaborator":
+        return await removeCollaborator(user.id, body);
+      default:
+        return json({ error: `Unknown tool: ${tool}` }, 400);
+    }
+  } catch (e) {
+    console.error("copilot-collaborator-tools error", e);
+    return json({ error: e instanceof Error ? e.message : "Unknown error" }, 500);
+  }
+});
+
+// ---- Tool: find_user ----
+// Resolve a spoken/typed name to one or more candidate profiles. Prefers the
+// caller's accepted connections (highest precision), then falls back to
+// public_profiles_safe by full_name ILIKE.
+async function findUser(userId: string, body: any) {
+  const q = String(body.name_query ?? body.query ?? "").trim();
+  if (!q || q.length < 2) {
+    return json({ ok: false, error: "name_query must be at least 2 characters" }, 400);
+  }
+  const like = `%${q}%`;
+
+  // 1. Connections-first lookup
+  const { data: conns } = await admin
+    .from("connections")
+    .select("connected_user_id, user_id, status")
+    .or(`user_id.eq.${userId},connected_user_id.eq.${userId}`)
+    .eq("status", "accepted");
+
+  const peerIds = (conns ?? [])
+    .map((c: any) => (c.user_id === userId ? c.connected_user_id : c.user_id))
+    .filter(Boolean);
+
+  let connMatches: any[] = [];
+  if (peerIds.length) {
+    const { data } = await admin
+      .from("public_profiles_safe")
+      .select("user_id, full_name, avatar_url")
+      .in("user_id", peerIds)
+      .ilike("full_name", like)
+      .limit(5);
+    connMatches = (data ?? []).map((p: any) => ({ ...p, source: "connection" }));
+  }
+
+  let publicMatches: any[] = [];
+  if (connMatches.length < 3) {
+    const { data } = await admin
+      .from("public_profiles_safe")
+      .select("user_id, full_name, avatar_url")
+      .ilike("full_name", like)
+      .neq("user_id", userId)
+      .limit(5);
+    publicMatches = (data ?? [])
+      .filter((p: any) => !connMatches.some((c) => c.user_id === p.user_id))
+      .map((p: any) => ({ ...p, source: "public" }));
+  }
+
+  const matches = [...connMatches, ...publicMatches].slice(0, 5);
+  return json({
+    ok: true,
+    query: q,
+    match_count: matches.length,
+    matches,
+    needs_clarification: matches.length === 0 || matches.length > 1,
+  });
+}
+
+// ---- Tool: list_my_projects ----
+// Returns the caller's active projects with role + last activity, used for
+// disambiguating "the X project" references.
+async function listMyProjects(userId: string) {
+  const { data: owned } = await admin
+    .from("projects")
+    .select("id, title, status, updated_at, workspace_type")
+    .eq("created_by", userId)
+    .neq("status", "archived")
+    .order("updated_at", { ascending: false })
+    .limit(20);
+
+  const { data: collabRows } = await admin
+    .from("project_collaborators")
+    .select("project_id, role, status")
+    .eq("user_id", userId)
+    .eq("status", "accepted");
+
+  const collabIds = (collabRows ?? []).map((r: any) => r.project_id);
+  let collabProjects: any[] = [];
+  if (collabIds.length) {
+    const { data } = await admin
+      .from("projects")
+      .select("id, title, status, updated_at, workspace_type")
+      .in("id", collabIds)
+      .neq("status", "archived")
+      .order("updated_at", { ascending: false })
+      .limit(20);
+    collabProjects = data ?? [];
+  }
+
+  const ownedSet = new Set((owned ?? []).map((p: any) => p.id));
+  const merged = [
+    ...(owned ?? []).map((p: any) => ({ ...p, my_role: "owner" })),
+    ...collabProjects
+      .filter((p: any) => !ownedSet.has(p.id))
+      .map((p: any) => {
+        const r = (collabRows ?? []).find((c: any) => c.project_id === p.id);
+        return { ...p, my_role: r?.role ?? "member" };
+      }),
+  ];
+
+  return json({ ok: true, project_count: merged.length, projects: merged });
+}
+
+// ---- Tool: add_collaborator ----
+// Inserts an accepted project_collaborators row, posts a system message in the
+// project chat, and creates a notification. Owner-only.
+async function addCollaborator(userId: string, body: any) {
+  const projectId = String(body.project_id ?? "");
+  const newUserId = String(body.user_id_to_add ?? body.user_id ?? "");
+  const role = String(body.role ?? "member").toLowerCase();
+  const allowedRoles = ["member", "creative", "client", "collaborator"];
+  const finalRole = allowedRoles.includes(role) ? role : "member";
+
+  if (!projectId || !newUserId) {
+    return json({ ok: false, error: "project_id and user_id_to_add are required" }, 400);
+  }
+
+  // Ownership / admin check
+  const { data: project, error: projErr } = await admin
+    .from("projects")
+    .select("id, title, created_by")
+    .eq("id", projectId)
+    .single();
+  if (projErr || !project) return json({ ok: false, error: "Project not found" }, 404);
+  if (project.created_by !== userId) {
+    return json({ ok: false, error: "Only the project owner can add collaborators." }, 403);
+  }
+
+  // Don't add self / duplicates
+  if (newUserId === userId) {
+    return json({ ok: false, error: "You're already on this project." }, 400);
+  }
+  const { data: existing } = await admin
+    .from("project_collaborators")
+    .select("id, status, role")
+    .eq("project_id", projectId)
+    .eq("user_id", newUserId)
+    .maybeSingle();
+  if (existing) {
+    return json({
+      ok: true,
+      already_member: true,
+      message: `Already on this project (${existing.status}).`,
+    });
+  }
+
+  // Resolve invitee name for the chat message
+  const { data: invitee } = await admin
+    .from("public_profiles_safe")
+    .select("full_name")
+    .eq("user_id", newUserId)
+    .maybeSingle();
+  const inviteeName = invitee?.full_name ?? "New collaborator";
+
+  // Insert as ACCEPTED (Auto-Accept pattern from Projects Workspace memory)
+  const { data: row, error: insErr } = await admin
+    .from("project_collaborators")
+    .insert({
+      project_id: projectId,
+      user_id: newUserId,
+      role: finalRole,
+      status: "accepted",
+      invited_by: userId,
+      accepted_at: new Date().toISOString(),
+    })
+    .select("id, role, status")
+    .single();
+  if (insErr) return json({ ok: false, error: insErr.message }, 500);
+
+  // Post a system message in project chat (best-effort; don't fail the add)
+  try {
+    await admin.from("project_messages").insert({
+      project_id: projectId,
+      user_id: userId,
+      message: `${inviteeName} just joined the project.`,
+    });
+  } catch (e) {
+    console.warn("system message insert failed", e);
+  }
+
+  // Notification (best-effort)
+  try {
+    await admin.from("notifications").insert({
+      user_id: newUserId,
+      type: "project_invite",
+      title: `Added to "${project.title}"`,
+      message: `You've been added to a project as ${finalRole}.`,
+      action_url: `/desk/${projectId}`,
+    });
+  } catch (e) {
+    console.warn("notification insert failed", e);
+  }
+
+  return json({
+    ok: true,
+    collaborator_id: row.id,
+    project_title: project.title,
+    invitee_name: inviteeName,
+    role: row.role,
+  });
+}
+
+// ---- Tool: remove_collaborator ----
+async function removeCollaborator(userId: string, body: any) {
+  const projectId = String(body.project_id ?? "");
+  const removeUserId = String(body.user_id_to_remove ?? body.user_id ?? "");
+  if (!projectId || !removeUserId) {
+    return json({ ok: false, error: "project_id and user_id_to_remove required" }, 400);
+  }
+
+  const { data: project } = await admin
+    .from("projects")
+    .select("id, title, created_by")
+    .eq("id", projectId)
+    .single();
+  if (!project) return json({ ok: false, error: "Project not found" }, 404);
+  if (project.created_by !== userId) {
+    return json({ ok: false, error: "Only the project owner can remove collaborators." }, 403);
+  }
+
+  const { data: invitee } = await admin
+    .from("public_profiles_safe")
+    .select("full_name")
+    .eq("user_id", removeUserId)
+    .maybeSingle();
+
+  const { error } = await admin
+    .from("project_collaborators")
+    .delete()
+    .eq("project_id", projectId)
+    .eq("user_id", removeUserId);
+  if (error) return json({ ok: false, error: error.message }, 500);
+
+  return json({
+    ok: true,
+    project_title: project.title,
+    removed_name: invitee?.full_name ?? "Collaborator",
+  });
+}

@@ -81,6 +81,7 @@ export const TaskEditorDialog = ({
           projectId,
           collaborators: collaborators.map((c) => ({ id: c.id, full_name: c.full_name })),
           preserveAssignee: userHadAssignee,
+          dryRun: true,
         }).then(async (res) => {
           if (!res.ok || !res.patched) return;
           // Strip patches that would overwrite user-supplied values.

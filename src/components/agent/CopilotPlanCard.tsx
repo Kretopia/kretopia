@@ -78,8 +78,11 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
       if (decision === "approved") {
         setPlan((p) => ({ ...p, status: "running" }));
       }
+      const skipIndices = decision === "approved"
+        ? plan.steps.filter((s) => !selected.has(s.index)).map((s) => s.index)
+        : [];
       const { data, error } = await supabase.functions.invoke("copilot-executor", {
-        body: { plan_id: plan.id, decision },
+        body: { plan_id: plan.id, decision, skip_indices: skipIndices },
       });
       if (error) throw error;
       if (decision === "rejected") {

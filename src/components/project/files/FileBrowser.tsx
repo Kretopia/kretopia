@@ -38,6 +38,9 @@ import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFi
 import { FileThumbnail } from "./FileThumbnail";
 import { FilePreviewDialog } from "./FilePreviewDialog";
 import { FileCommentsSheet } from "@/components/project/studio/FileCommentsSheet";
+import { ResumableUploadList, type UploadJob } from "./ResumableUploadList";
+import { useFileSizeLimit } from "@/hooks/useFileSizeLimit";
+import { formatBytes } from "@/lib/fileSizeLimits";
 import { cn } from "@/lib/utils";
 
 interface ProjectFile {
@@ -76,12 +79,14 @@ const formatSize = (bytes: number | null) => {
 export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserProps) => {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sizeLimit = useFileSizeLimit();
   const [view, setView] = useState<"grid" | "list">(() =>
     (localStorage.getItem("td_files_view") as "grid" | "list") || "grid"
   );
   const [folders, setFolders] = useState<FolderRow[]>([]);
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadJobs, setUploadJobs] = useState<UploadJob[]>([]);
   const [search, setSearch] = useState("");
   const [previewFile, setPreviewFile] = useState<ProjectFile | null>(null);
   const [commentFile, setCommentFile] = useState<ProjectFile | null>(null);
@@ -171,52 +176,70 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const list = event.target.files;
     if (!list?.length) return;
-    setUploading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      for (const file of Array.from(list)) {
-        if (file.size > 50 * 1024 * 1024) {
-          toast({ title: "Skipped", description: `${file.name} exceeds 50MB`, variant: "destructive" });
-          continue;
-        }
-        const nameParts = file.name.split(".");
-        const rawExt = nameParts.length > 1 ? nameParts.pop() : "bin";
-        const ext = (rawExt || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) || "bin";
-        const path = `${projectId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        console.log("[file-upload] uploading", { path, size: file.size, type: file.type });
-        const { error: upErr } = await supabase.storage.from("project-files").upload(path, file, {
-          contentType: file.type || "application/octet-stream",
-          upsert: false,
-        });
-        if (upErr) {
-          console.error("[file-upload] storage failed", upErr);
-          throw new Error(`Storage: ${(upErr as any)?.message || JSON.stringify(upErr)}`);
-        }
-        const { error: dbErr } = await supabase.from("project_files").insert({
-          project_id: projectId,
-          user_id: user.id,
-          file_name: file.name,
-          file_url: path,
-          file_size: file.size,
-          file_type: file.type,
-          folder_id: currentFolder,
-        });
-        if (dbErr) {
-          console.error("[file-upload] db insert failed", dbErr);
-          throw new Error(`DB: ${dbErr.message}`);
-        }
-      }
-      toast({ title: "Uploaded", description: `${list.length} file(s) added` });
-      onFileUploaded();
-    } catch (e: any) {
-      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "Not signed in", variant: "destructive" });
+      return;
     }
+
+    const accepted: UploadJob[] = [];
+    for (const file of Array.from(list)) {
+      const check = sizeLimit.check(file.size);
+      if (!check.ok) {
+        toast({ title: "File too large", description: check.reason, variant: "destructive" });
+        continue;
+      }
+      const nameParts = file.name.split(".");
+      const rawExt = nameParts.length > 1 ? nameParts.pop() : "bin";
+      const ext = (rawExt || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) || "bin";
+      const path = `${projectId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const folderAtEnqueue = currentFolder;
+      accepted.push({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        file,
+        bucket: "project-files",
+        path,
+        onComplete: async () => {
+          const { error: dbErr } = await supabase.from("project_files").insert({
+            project_id: projectId,
+            user_id: user.id,
+            file_name: file.name,
+            file_url: path,
+            file_size: file.size,
+            file_type: file.type,
+            folder_id: folderAtEnqueue,
+          });
+          if (dbErr) throw new Error(dbErr.message);
+          onFileUploaded();
+        },
+      });
+    }
+    if (accepted.length > 0) {
+      setUploadJobs((prev) => [...prev, ...accepted]);
+      setUploading(true);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  const handleJobFinished = useCallback((_id: string) => {
+    // Keep finished cards visible briefly so users see "Done"; auto-clear after 4s.
+    setTimeout(() => {
+      setUploadJobs((prev) => {
+        const next = prev.filter((j) => j.id !== _id);
+        if (next.length === 0) setUploading(false);
+        return next;
+      });
+    }, 4000);
+  }, []);
+
+  const handleJobRemoved = useCallback((id: string) => {
+    setUploadJobs((prev) => {
+      const next = prev.filter((j) => j.id !== id);
+      if (next.length === 0) setUploading(false);
+      return next;
+    });
+  }, []);
+
 
   const createFolder = async () => {
     const name = newFolderName.trim();
@@ -373,13 +396,26 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
             <FolderPlus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">New folder</span>
           </Button>
-          <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-            {uploading ? <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" /> : <Upload className="h-4 w-4 sm:mr-2" />}
-            <span className="hidden sm:inline">{uploading ? "Uploading" : "Upload"}</span>
+          <Button size="sm" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Upload</span>
           </Button>
           <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleUpload} />
         </div>
       </div>
+
+      {/* Tier hint + active uploads */}
+      {uploadJobs.length > 0 ? (
+        <ResumableUploadList
+          jobs={uploadJobs}
+          onJobFinished={handleJobFinished}
+          onJobRemoved={handleJobRemoved}
+        />
+      ) : (
+        <p className="text-[11px] text-muted-foreground px-1">
+          Up to <strong className="text-foreground">{formatBytes(sizeLimit.limit)}</strong> per file on {sizeLimit.tierLabel}. Big uploads pause &amp; resume automatically.
+        </p>
+      )}
 
       {filtered.folders.length === 0 && filtered.files.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border rounded-xl">

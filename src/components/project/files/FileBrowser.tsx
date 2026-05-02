@@ -438,7 +438,7 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
               key={file.id}
               draggable
               onDragStart={(e) => onDragStartFile(e, file.id)}
-              onClick={() => setPreviewFile(file)}
+              onClick={() => openFile(file)}
               className="group relative aspect-square rounded-xl border border-border bg-card overflow-hidden hover:ring-2 hover:ring-primary/40 transition-all cursor-pointer"
             >
               <FileThumbnail fileUrl={file.file_url} fileType={file.file_type} className="w-full h-full" />
@@ -510,7 +510,7 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
               key={file.id}
               draggable
               onDragStart={(e) => onDragStartFile(e, file.id)}
-              onClick={() => setPreviewFile(file)}
+              onClick={() => openFile(file)}
               className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40 cursor-pointer"
             >
               <div className="w-10 h-10 rounded overflow-hidden shrink-0">
@@ -546,6 +546,13 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
       )}
 
       <FilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
+
+      <FileCommentsSheet
+        open={!!commentFile}
+        onOpenChange={(v) => !v && setCommentFile(null)}
+        file={commentFile}
+        currentUserId={currentUserId}
+      />
 
       {/* New folder dialog */}
       <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>

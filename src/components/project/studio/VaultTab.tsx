@@ -152,10 +152,23 @@ export function VaultTab({
             {pendingApprovals} awaiting review
           </Badge>
         )}
-        <span className="text-[11px] text-muted-foreground ml-auto hidden sm:inline">
-          Approvals live on each Drop in the Studio feed.
-        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          className="ml-auto h-8 gap-1.5"
+          onClick={() => setShareOpen(true)}
+        >
+          <Link2 className="h-3.5 w-3.5" />
+          Share for review
+        </Button>
       </div>
+
+      <ShareReviewLinkDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        projectId={projectId}
+        projectTitle={projectTitle}
+      />
 
       <FileBrowser
         projectId={projectId}

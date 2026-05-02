@@ -101,6 +101,7 @@ export const ThriveAgentFab = () => {
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [surfaceContext, setSurfaceContext] = useState<Record<string, unknown>>({});
+  const [firstName, setFirstName] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 

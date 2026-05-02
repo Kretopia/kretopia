@@ -421,6 +421,12 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
         </p>
       )}
 
+      <QuotaExceededDialog
+        open={!!quotaBlock}
+        onOpenChange={(o) => { if (!o) setQuotaBlock(null); }}
+        reason={quotaBlock}
+      />
+
       {filtered.folders.length === 0 && filtered.files.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border rounded-xl">
           <Folder className="h-10 w-10 text-muted-foreground mb-3" />

@@ -9,6 +9,7 @@ import { MoneySection } from "./MoneySection";
 import { PeopleSection } from "./PeopleSection";
 import { AddCreditSection } from "./AddCreditSection";
 import { CallHistorySection } from "./CallHistorySection";
+import { PadPreviewSection } from "./PadPreviewSection";
 import { DeliverablesSection } from "./DeliverablesSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -183,6 +184,11 @@ export const StudioRoom = ({
           projectId={project.id}
           currentUserId={currentUserId}
           isOwner={isOwner}
+        />
+
+        <PadPreviewSection
+          projectId={project.id}
+          onOpen={() => onNavigateToTab("notes")}
         />
 
         <WorkSection

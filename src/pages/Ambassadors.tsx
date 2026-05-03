@@ -83,7 +83,7 @@ const Ambassadors = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="ThriveIN Ambassadors — Closed Beta"
-        description="The ThriveIN Ambassador Program is currently invite-only. Join the waitlist to be considered as we open new seats — earn 40% recurring commission, lifetime Pro, and founder-tier perks."
+        description="The ThriveIN Ambassador Program is currently invite-only. Join the waitlist — earn 30% recurring commission, 5% on jobs your referrals win, lifetime Pro, and founder-tier perks."
         url="https://thrivein.io/ambassadors"
       />
 

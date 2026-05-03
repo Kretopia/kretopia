@@ -52,6 +52,7 @@ interface PlatformRole {
   full_name: string | null;
   avatar_url: string | null;
   verification_status: string | null;
+  endorsement_count: number | null;
 }
 
 const INDUSTRY_ICONS: Record<string, any> = {
@@ -87,7 +88,7 @@ const ProductionPage = () => {
       // 1. Fetch platform credits for this project
       const { data: credits } = await supabase
         .from("credits")
-        .select("id, role, user_id, verification_status")
+        .select("id, role, user_id, verification_status, endorsement_count")
         .ilike("project_name", projectName)
         .order("role");
 
@@ -109,6 +110,7 @@ const ProductionPage = () => {
         full_name: profileMap.get(c.user_id)?.full_name || null,
         avatar_url: profileMap.get(c.user_id)?.avatar_url || null,
         verification_status: c.verification_status,
+        endorsement_count: c.endorsement_count,
       }));
       setPlatformRoles(mappedPlatformRoles);
 

@@ -188,6 +188,29 @@ const ProductionPage = () => {
     });
   };
 
+  const buildProductionShare = () => {
+    const sharePath = `/production?name=${encodeURIComponent(projectName)}`;
+    const shareUrl = getShareUrl(sharePath);
+    const shareText = `${projectName} on ThriveIN — the verified credits platform for creatives. See the roll call, search your name, and claim or verify the credit if you worked on it.`;
+    return { shareUrl, shareText };
+  };
+
+  const handleShareProduction = async () => {
+    const { shareUrl, shareText } = buildProductionShare();
+    if (typeof navigator !== "undefined" && (navigator as any).share) {
+      try {
+        await (navigator as any).share({ title: `${projectName} on ThriveIN`, text: shareText, url: shareUrl });
+        return;
+      } catch { /* user dismissed */ }
+    }
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+      toast.success("ThriveIN share message copied");
+    } catch {
+      toast.error("Couldn't copy link");
+    }
+  };
+
   const Icon = production ? (INDUSTRY_ICONS[production.industry] || Database) : Database;
 
   if (loading) {

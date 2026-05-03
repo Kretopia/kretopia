@@ -19,6 +19,7 @@ import {
 import { getShareUrl } from "@/lib/constants";
 import { AuthPrompt, useAuthPrompt } from "@/components/AuthPrompt";
 import { parseMediaUrl } from "@/lib/mediaUtils";
+import { CreditEndorsementDialog } from "@/components/profile/CreditEndorsementDialog";
 
 interface AIRole {
   role: string;
@@ -76,6 +77,7 @@ const ProductionPage = () => {
   const [expandedDepts, setExpandedDepts] = useState<Set<string>>(new Set());
   const [addingRole, setAddingRole] = useState(false);
   const [newRole, setNewRole] = useState("");
+  const [endorseCredit, setEndorseCredit] = useState<{ id: string; project_name: string; role: string; year?: number } | null>(null);
 
   const fetchProduction = useCallback(async () => {
     if (!projectName) return;
@@ -344,19 +346,32 @@ const ProductionPage = () => {
               <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Verified on ThriveIN</h2>
             </div>
             <div className="space-y-1.5">
-              {platformRoles.map(r => (
-                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-success/5 border border-success/15">
-                  <Avatar className="h-9 w-9 ring-2 ring-success/30 cursor-pointer" onClick={() => navigate(`/profile/${r.user_id}`)}>
-                    <AvatarImage src={r.avatar_url || ""} />
-                    <AvatarFallback className="text-xs bg-success/10">{(r.full_name || "?")[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate cursor-pointer hover:underline" onClick={() => navigate(`/profile/${r.user_id}`)}>{r.full_name || "Unknown"}</p>
-                    <p className="text-xs text-muted-foreground">{r.role}</p>
+              {platformRoles.map(r => {
+                const isOwner = user?.id === r.user_id;
+                const isVerified = r.verification_status === "verified";
+                return (
+                  <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-success/5 border border-success/15">
+                    <Avatar className="h-9 w-9 ring-2 ring-success/30 cursor-pointer" onClick={() => navigate(`/profile/${r.user_id}`)}>
+                      <AvatarImage src={r.avatar_url || ""} />
+                      <AvatarFallback className="text-xs bg-success/10">{(r.full_name || "?")[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate cursor-pointer hover:underline" onClick={() => navigate(`/profile/${r.user_id}`)}>{r.full_name || "Unknown"}</p>
+                      <p className="text-xs text-muted-foreground">{r.role}</p>
+                    </div>
+                    {isOwner && !isVerified ? (
+                      <button
+                        onClick={() => setEndorseCredit({ id: r.id, project_name: projectName, role: r.role, year: production?.year ?? undefined })}
+                        className="flex items-center gap-1 text-[10px] font-semibold text-primary shrink-0 px-2 py-1 rounded-md border border-primary/30 hover:bg-primary/10 transition-colors"
+                      >
+                        <UserPlus className="h-3 w-3" /> Request verify
+                      </button>
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                    )}
                   </div>
-                  <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -486,6 +501,14 @@ const ProductionPage = () => {
       </div>
 
       <AuthPrompt open={authOpen} onOpenChange={setAuthOpen} action="claim this credit" />
+      {endorseCredit && user && (
+        <CreditEndorsementDialog
+          open={!!endorseCredit}
+          onOpenChange={(o) => !o && setEndorseCredit(null)}
+          credit={endorseCredit}
+          userId={user.id}
+        />
+      )}
     </>
   );
 };

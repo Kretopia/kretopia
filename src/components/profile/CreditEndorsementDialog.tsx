@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UserPlus, Send, Search, Loader2, ShieldCheck, Mail } from "lucide-react";
+import { getShareUrl } from "@/lib/constants";
 
 interface Credit {
   id: string;
@@ -33,6 +34,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
   const [name, setName] = useState('');
   const [relationship, setRelationship] = useState('');
   const [sending, setSending] = useState(false);
+  const [guestVerifyLink, setGuestVerifyLink] = useState('');
 
   const searchUsers = async (query: string) => {
     setSearchQuery(query);
@@ -59,7 +61,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
   const sendEndorsementRequest = async (endorserId?: string, endorserEmail?: string, endorserName?: string) => {
     setSending(true);
     try {
-      const { error } = await supabase.from('credit_endorsements').insert({
+      const { data, error } = await supabase.from('credit_endorsements').insert({
         credit_id: credit.id,
         requested_by: userId,
         endorser_id: endorserId || null,
@@ -67,7 +69,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
         endorser_name: endorserName || name || null,
         relationship: relationship || null,
         status: 'pending',
-      });
+      }).select('token').single();
 
       if (error) {
         if (error.code === '23505') {
@@ -78,7 +80,20 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
         return;
       }
 
-      toast.success('Endorsement request sent!', {
+      const verifyLink = data?.token ? getShareUrl(`/credit-verify?token=${encodeURIComponent(data.token)}`) : '';
+
+      if (verifyLink && endorserEmail) {
+        setGuestVerifyLink(verifyLink);
+        await navigator.clipboard.writeText(
+          `Can you verify my ${credit.role} credit on "${credit.project_name}" on ThriveIN?\n\n${verifyLink}`
+        ).catch(() => undefined);
+        toast.success('Verification link ready', {
+          description: 'Copy it into WhatsApp, email, or DM to that person.',
+        });
+        return;
+      }
+
+      toast.success('Verification request sent!', {
         description: endorserName || endorserEmail || 'User will be notified',
       });
       onOpenChange(false);
@@ -97,6 +112,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
     setEmail('');
     setName('');
     setRelationship('');
+    setGuestVerifyLink('');
   };
 
   return (

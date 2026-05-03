@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Shield, Star, Trash2, Award, Trophy, UserPlus, ShieldCheck } from "lucide-react";
+import { ExternalLink, Shield, Star, Trash2, Award, Trophy, UserPlus, ShieldCheck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { CreditCoverPlaceholder } from "./CreditCoverPlaceholder";
 

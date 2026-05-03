@@ -398,7 +398,7 @@ const ProductionPage = () => {
                         <p className="text-xs text-muted-foreground">{r.role}</p>
                       </div>
                       {isVerified ? (
-                        <Badge variant="outline" className="gap-1 bg-amber-500/15 text-amber-500 border-amber-500/40 shrink-0">
+                        <Badge variant="outline" className="gap-1 bg-primary/10 text-primary border-primary/30 shrink-0">
                           <ShieldCheck className="h-3 w-3" /> Verified
                         </Badge>
                       ) : isVouched ? (
@@ -485,7 +485,7 @@ const ProductionPage = () => {
                             {claimed ? (
                               <div className="flex items-center gap-1.5 shrink-0">
                                 {claimed.verification_status === "verified" ? (
-                                  <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
+                                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
                                 ) : (claimed.endorsement_count || 0) > 0 || claimed.verification_status === "peer" || claimed.verification_status === "pending" ? (
                                   <ShieldCheck className="h-3.5 w-3.5 text-primary" />
                                 ) : (

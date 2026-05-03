@@ -9,6 +9,7 @@ import { ArrowLeft, ArrowRight, Loader2, Sparkles, X, ExternalLink, Pencil } fro
 import { supabase } from "@/integrations/supabase/client";
 import { CreditThumb } from "./CreditThumb";
 import { cn } from "@/lib/utils";
+import { resolveAvatarFallback, buildBioFallback } from "./profileFallbacks";
 import type { ClaimedCredit, DraftProfile } from "./types";
 
 /** Heuristic: looks like a real person name (2+ capitalized words, no slashes/dashes). */

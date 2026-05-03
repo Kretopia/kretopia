@@ -22,6 +22,7 @@ interface Credit {
   url?: string;
   thumbnail_url?: string;
   verification_status?: "unverified" | "pending" | "verified";
+  endorsement_count?: number;
   is_featured?: boolean;
   credit_category?: string;
   project_type?: string;

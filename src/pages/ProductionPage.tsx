@@ -244,7 +244,7 @@ const ProductionPage = () => {
         <meta property="og:title" content={`${projectName} — ThriveCredits™`} />
         <meta property="og:description" content={`${production.total_roles} roles · ${totalClaimed} claimed · See full production credits and claim yours on ThriveIN`} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={getShareUrl()} />
+        <meta property="og:url" content={getShareUrl(`/production?name=${encodeURIComponent(projectName)}`)} />
         {production.image_url && <meta property="og:image" content={production.image_url} />}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${projectName} — ThriveCredits™`} />
@@ -374,6 +374,7 @@ const ProductionPage = () => {
               {platformRoles.map(r => {
                 const isOwner = user?.id === r.user_id;
                 const isVerified = r.verification_status === "verified";
+                const isVouched = (r.endorsement_count || 0) > 0 || r.verification_status === "peer" || r.verification_status === "pending";
                 return (
                   <div key={r.id} className="rounded-xl bg-success/5 border border-success/15 overflow-hidden">
                     <div className="flex items-center gap-3 p-3">
@@ -389,8 +390,14 @@ const ProductionPage = () => {
                         <Badge variant="outline" className="gap-1 bg-amber-500/15 text-amber-500 border-amber-500/40 shrink-0">
                           <ShieldCheck className="h-3 w-3" /> Verified
                         </Badge>
+                      ) : isVouched ? (
+                        <Badge variant="outline" className="gap-1 bg-primary/10 text-primary border-primary/30 shrink-0">
+                          <ShieldCheck className="h-3 w-3" /> Vouched
+                        </Badge>
                       ) : (
-                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                        <Badge variant="outline" className="gap-1 bg-muted text-muted-foreground border-border shrink-0">
+                          <CheckCircle2 className="h-3 w-3" /> Claimed
+                        </Badge>
                       )}
                     </div>
                     {isOwner && !isVerified && (

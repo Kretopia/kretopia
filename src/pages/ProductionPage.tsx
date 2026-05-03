@@ -370,6 +370,17 @@ const ProductionPage = () => {
               <ShieldCheck className="h-4 w-4 text-success" />
               <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Verified on ThriveIN</h2>
             </div>
+            {platformRoles.some(r => user?.id === r.user_id && r.verification_status !== "verified") && (
+              <div className="mb-3 rounded-xl border border-primary/25 bg-primary/10 p-3">
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground">Ready to verify your credit?</p>
+                    <p className="text-xs text-muted-foreground mt-1">Ask a collaborator, client, guest, producer, or supervisor to confirm your role. Only you can see these verify buttons.</p>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               {platformRoles.map(r => {
                 const isOwner = user?.id === r.user_id;

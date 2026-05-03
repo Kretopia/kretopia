@@ -345,29 +345,37 @@ const ProductionPage = () => {
               <ShieldCheck className="h-4 w-4 text-success" />
               <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Verified on ThriveIN</h2>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {platformRoles.map(r => {
                 const isOwner = user?.id === r.user_id;
                 const isVerified = r.verification_status === "verified";
                 return (
-                  <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-success/5 border border-success/15">
-                    <Avatar className="h-9 w-9 ring-2 ring-success/30 cursor-pointer" onClick={() => navigate(`/profile/${r.user_id}`)}>
-                      <AvatarImage src={r.avatar_url || ""} />
-                      <AvatarFallback className="text-xs bg-success/10">{(r.full_name || "?")[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate cursor-pointer hover:underline" onClick={() => navigate(`/profile/${r.user_id}`)}>{r.full_name || "Unknown"}</p>
-                      <p className="text-xs text-muted-foreground">{r.role}</p>
+                  <div key={r.id} className="rounded-xl bg-success/5 border border-success/15 overflow-hidden">
+                    <div className="flex items-center gap-3 p-3">
+                      <Avatar className="h-9 w-9 ring-2 ring-success/30 cursor-pointer" onClick={() => navigate(`/profile/${r.user_id}`)}>
+                        <AvatarImage src={r.avatar_url || ""} />
+                        <AvatarFallback className="text-xs bg-success/10">{(r.full_name || "?")[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate cursor-pointer hover:underline" onClick={() => navigate(`/profile/${r.user_id}`)}>{r.full_name || "Unknown"}</p>
+                        <p className="text-xs text-muted-foreground">{r.role}</p>
+                      </div>
+                      {isVerified ? (
+                        <Badge variant="outline" className="gap-1 bg-amber-500/15 text-amber-500 border-amber-500/40 shrink-0">
+                          <ShieldCheck className="h-3 w-3" /> Verified
+                        </Badge>
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                      )}
                     </div>
-                    {isOwner && !isVerified ? (
+                    {isOwner && !isVerified && (
                       <button
                         onClick={() => setEndorseCredit({ id: r.id, project_name: projectName, role: r.role, year: production?.year ?? undefined })}
-                        className="flex items-center gap-1 text-[10px] font-semibold text-primary shrink-0 px-2 py-1 rounded-md border border-primary/30 hover:bg-primary/10 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/10 hover:bg-primary/20 border-t border-primary/20 text-xs font-semibold text-primary transition-colors"
                       >
-                        <UserPlus className="h-3 w-3" /> Request verify
+                        <UserPlus className="h-3.5 w-3.5" />
+                        Get this credit verified — ask a collaborator
                       </button>
-                    ) : (
-                      <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                     )}
                   </div>
                 );
@@ -489,13 +497,28 @@ const ProductionPage = () => {
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => {
-                navigator.clipboard.writeText(getShareUrl());
-                toast.success("Link copied!");
+              onClick={async () => {
+                const shareUrl = typeof window !== "undefined" ? window.location.href : getShareUrl();
+                const shareText = `${projectName} on ThriveIN — the verified credits platform for creatives (think IMDb meets LinkedIn). See who worked on this, and if you were on it, search your name to claim your credit.`;
+                if (typeof navigator !== "undefined" && (navigator as any).share) {
+                  try {
+                    await (navigator as any).share({ title: projectName, text: shareText, url: shareUrl });
+                    return;
+                  } catch { /* user dismissed */ }
+                }
+                try {
+                  await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                  toast.success("Link + message copied!");
+                } catch {
+                  toast.error("Couldn't copy link");
+                }
               }}
             >
               <Link2 className="h-3.5 w-3.5" /> Share Production Page
             </Button>
+            <p className="mt-2 text-[10px] text-muted-foreground max-w-sm mx-auto">
+              Sharing this page invites collaborators to claim their credit and verify yours.
+            </p>
           </div>
         </div>
       </div>

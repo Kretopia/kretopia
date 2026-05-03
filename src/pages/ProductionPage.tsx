@@ -370,13 +370,13 @@ const ProductionPage = () => {
               <ShieldCheck className="h-4 w-4 text-success" />
               <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Verified on ThriveIN</h2>
             </div>
-            {platformRoles.some(r => user?.id === r.user_id && r.verification_status !== "verified") && (
+            {platformRoles.some(r => user?.id === r.user_id) && (
               <div className="mb-3 rounded-xl border border-primary/25 bg-primary/10 p-3">
                 <div className="flex items-start gap-3">
                   <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground">Ready to verify your credit?</p>
-                    <p className="text-xs text-muted-foreground mt-1">Ask a collaborator, client, guest, producer, or supervisor to confirm your role. Only you can see these verify buttons.</p>
+                    <p className="text-sm font-semibold text-foreground">Verify or strengthen your credit</p>
+                    <p className="text-xs text-muted-foreground mt-1">Ask a collaborator, client, guest, producer, or supervisor to confirm your role. Only the credit owner sees these buttons.</p>
                   </div>
                 </div>
               </div>
@@ -411,13 +411,13 @@ const ProductionPage = () => {
                         </Badge>
                       )}
                     </div>
-                    {isOwner && !isVerified && (
+                    {isOwner && (
                       <button
                         onClick={() => setEndorseCredit({ id: r.id, project_name: projectName, role: r.role, year: production?.year ?? undefined })}
                         className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/10 hover:bg-primary/20 border-t border-primary/20 text-xs font-semibold text-primary transition-colors"
                       >
                         <UserPlus className="h-3.5 w-3.5" />
-                        Get this credit verified — ask a collaborator
+                        {isVerified ? "Add collaborator/client vouch" : "Get this credit verified — ask someone"}
                       </button>
                     )}
                   </div>

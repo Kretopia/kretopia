@@ -58,16 +58,59 @@ export const AchievementCard = ({
     }
   };
 
+  // 4-tier verification:
+  // - "verified" + endorsements > 0 → Gold (authoritative + peer)
+  // - "verified" → Gold (authoritative API source like IMDb/Spotify)
+  // - endorsements > 0 → Amber (peer-vouched)
+  // - "pending" → Pending (request out)
+  // - default → Self-claimed (subtle)
   const VerificationBadge = () => {
-    if (verificationStatus === "verified") {
-      return (
-        <Badge variant="outline" className="gap-1 bg-primary/10 text-primary border-primary/30">
-          <Shield className="h-3 w-3" />
-          Verified
-        </Badge>
-      );
+    const isVerified = verificationStatus === "verified";
+    const isPending = verificationStatus === "pending" || (verificationStatus as string) === "pending_review";
+    const hasPeers = endorsementCount > 0;
+
+    let label = "Self-claimed";
+    let why = "Added by the creator. Not yet verified by collaborators or an authoritative source.";
+    let Icon: any = Shield;
+    let cls = "bg-muted text-muted-foreground border-border";
+
+    if (isVerified && hasPeers) {
+      label = "Verified";
+      why = `Sourced from an authoritative platform and vouched by ${endorsementCount} collaborator${endorsementCount === 1 ? "" : "s"}.`;
+      Icon = ShieldCheck;
+      cls = "bg-amber-500/15 text-amber-500 border-amber-500/40";
+    } else if (isVerified) {
+      label = "Verified";
+      why = "Sourced from an authoritative platform (e.g. IMDb, Spotify, Behance).";
+      Icon = ShieldCheck;
+      cls = "bg-amber-500/15 text-amber-500 border-amber-500/40";
+    } else if (hasPeers) {
+      label = `Vouched · ${endorsementCount}`;
+      why = `Vouched by ${endorsementCount} collaborator${endorsementCount === 1 ? "" : "s"} who worked on this project.`;
+      Icon = ShieldCheck;
+      cls = "bg-primary/10 text-primary border-primary/30";
+    } else if (isPending) {
+      label = "Pending";
+      why = "Verification request sent. Waiting on collaborators to confirm.";
+      Icon = Clock;
+      cls = "bg-muted text-muted-foreground border-border";
     }
-    return null;
+
+    return (
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className={cn("gap-1 cursor-help", cls)}>
+              <Icon className="h-3 w-3" />
+              {label}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-[240px] text-xs">
+            {why}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
   };
 
   // Compact layout for awards without images

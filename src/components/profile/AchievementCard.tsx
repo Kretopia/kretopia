@@ -294,6 +294,17 @@ export const AchievementCard = ({
               <VerificationBadge />
             </div>
             <div className="flex items-center gap-2">
+              {isOwnProfile && onRequestEndorsement && verificationStatus !== 'verified' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRequestEndorsement}
+                  className="h-8 gap-1 text-xs text-primary hover:text-primary hover:bg-primary/10"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Request verify
+                </Button>
+              )}
               {url && (
                 <Button
                   variant="ghost"

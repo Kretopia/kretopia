@@ -217,7 +217,7 @@ const ProductionPage = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-xs text-muted-foreground animate-pulse">Loading production details with AI...</p>
+        <p className="text-xs text-muted-foreground animate-pulse">Loading production details...</p>
       </div>
     );
   }
@@ -239,15 +239,15 @@ const ProductionPage = () => {
   return (
     <>
       <Helmet>
-        <title>{projectName} — ThriveCredits™ | ThriveIN</title>
+        <title>{projectName} — ThriveCredits | ThriveIN</title>
         <meta name="description" content={production.description || `${projectName} — production credits on ThriveCredits. See the full roll call and claim your credit.`} />
-        <meta property="og:title" content={`${projectName} — ThriveCredits™`} />
+        <meta property="og:title" content={`${projectName} — ThriveCredits`} />
         <meta property="og:description" content={`${production.total_roles} roles · ${totalClaimed} claimed · See full production credits and claim yours on ThriveIN`} />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={getShareUrl(`/production?name=${encodeURIComponent(projectName)}`)} />
         {production.image_url && <meta property="og:image" content={production.image_url} />}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${projectName} — ThriveCredits™`} />
+        <meta name="twitter:title" content={`${projectName} — ThriveCredits`} />
         <meta name="twitter:description" content={`${production.total_roles} roles · ${totalClaimed} claimed on ThriveIN`} />
       </Helmet>
 
@@ -328,7 +328,7 @@ const ProductionPage = () => {
                   </h2>
                 </div>
                 <div className={cn(
-                  "w-full rounded-xl overflow-hidden bg-black/50 border border-border",
+                  "w-full rounded-xl overflow-hidden bg-foreground/10 border border-border",
                   isAudio ? "aspect-[16/7]" : "aspect-video"
                 )}>
                   <iframe
@@ -435,7 +435,7 @@ const ProductionPage = () => {
               <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Full Production Credits</h2>
             </div>
             <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
-              <Sparkles className="h-2 w-2 mr-0.5" /> AI Enhanced
+              <Sparkles className="h-2 w-2 mr-0.5" /> Smart Credits
             </Badge>
           </div>
 

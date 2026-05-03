@@ -77,6 +77,7 @@ const ProductionPage = () => {
   const [expandedDepts, setExpandedDepts] = useState<Set<string>>(new Set());
   const [addingRole, setAddingRole] = useState(false);
   const [newRole, setNewRole] = useState("");
+  const [endorseCredit, setEndorseCredit] = useState<{ id: string; project_name: string; role: string; year?: number } | null>(null);
 
   const fetchProduction = useCallback(async () => {
     if (!projectName) return;

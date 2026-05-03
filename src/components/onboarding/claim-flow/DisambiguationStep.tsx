@@ -39,15 +39,21 @@ export const DisambiguationStep = ({ results, query, onBack, onConfirm, onPasteL
         <div className="space-y-1.5">
           <h2 className="text-xl font-bold">Nothing found for "{query}"</h2>
           <p className="text-sm text-muted-foreground px-4">
-            Paste a portfolio link instead — IMDb, Behance, Spotify, or your personal site.
+            New to the scene? No problem — just sign up and we'll build your profile from scratch. Or paste a portfolio link (IMDb, Behance, Spotify, your site).
           </p>
         </div>
+        {onSkipToSignup && (
+          <Button onClick={onSkipToSignup} className="w-full" size="lg">
+            Just sign me up
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        )}
         <div className="flex gap-2">
           <Button variant="outline" onClick={onBack} className="flex-1">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-          <Button onClick={onPasteLink} className="flex-1">
+          <Button variant="outline" onClick={onPasteLink} className="flex-1">
             <Link2 className="mr-2 h-4 w-4" />
             Paste a link
           </Button>

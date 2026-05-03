@@ -53,15 +53,21 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
         if (cancelled) return;
         const p = data?.profile || {};
         const aiName = looksLikePersonName(p.full_name) ? p.full_name.trim() : "";
-        setProfile({
+        const websiteGuess = p.website || url || undefined;
+        const draft: DraftProfile = {
           full_name: aiName || seedName || "",
           role: p.role || selectedCredits[0]?.role_suggestion || "",
           bio: p.bio || "",
           location: p.location || selectedCredits[0]?.location || "",
           skills: Array.isArray(p.skills) ? p.skills.slice(0, 6) : [],
           avatar_url: p.avatar_url || undefined,
-          website: p.website || url || undefined,
-        });
+          website: websiteGuess,
+        };
+        // Avatar fallback chain (og:image → first credit thumbnail)
+        draft.avatar_url = await resolveAvatarFallback(draft.avatar_url, websiteGuess, selectedCredits);
+        // Bio fallback (templated from role + top credits, no fabrication)
+        if (!draft.bio?.trim()) draft.bio = buildBioFallback(draft, selectedCredits) || "";
+        setProfile(draft);
       } catch (e) {
         console.warn("[ClaimFlow] enrichment soft-failed", e);
         setProfile({ full_name: seedName, role: selectedCredits[0]?.role_suggestion || "" });

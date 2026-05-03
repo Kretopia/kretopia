@@ -114,7 +114,7 @@ async function checkAndProvisionUser(
 
     // 4. Insert credits (verified via web) — one-by-one so we can detect dup conflicts
     if (credits?.length) {
-      for (const c of credits.slice(0, 20)) {
+      for (const c of credits.slice(0, 50)) {
         const role = c.role_suggestion?.slice(0, 100) || profile.role || "Creator";
         const row = {
           user_id: userId,

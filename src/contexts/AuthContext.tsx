@@ -161,7 +161,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userId = session.user.id;
           setTimeout(() => {
             checkSubscription(userId, true).catch(err => console.warn('[AuthContext] checkSubscription error:', err));
-            processPendingClaim(userId).catch(err => console.warn('[AuthContext] processPendingClaim error:', err));
+            processPendingClaim(userId, session.user.email).catch(err => console.warn('[AuthContext] processPendingClaim error:', err));
             import('@/lib/ambassadorAttribution')
               .then(m => m.attachAmbassadorCodeToProfile(userId))
               .catch(err => console.warn('[AuthContext] ambassador attach error:', err));

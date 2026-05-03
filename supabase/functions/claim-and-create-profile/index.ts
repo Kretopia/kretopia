@@ -71,6 +71,7 @@ async function checkAndProvisionUser(
   profile: DraftProfile,
   credits: ClaimedCredit[],
   redirectTo: string,
+  skipMagicLink: boolean,
 ): Promise<{ is_new_user: boolean; conflicts?: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> }> {
   // 1. Check if user already exists
   const { data: existing } = await admin.auth.admin.listUsers();
@@ -81,9 +82,14 @@ async function checkAndProvisionUser(
   const conflicts: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> = [];
 
   if (found) {
-    // Existing user — DO NOT overwrite their profile. Just send magic link to sign in.
+    // Existing user — attach claim to their profile if they don't have one yet, then maybe send magic link.
     userId = found.id;
-    console.log(`[claim] existing user ${userId}, sending magic link only`);
+    console.log(`[claim] existing user ${userId}`);
+
+    // If skipMagicLink (Google flow), upsert profile + credits so the claim isn't lost
+    if (skipMagicLink) {
+      await upsertProfileAndCredits(admin, userId, profile, credits, conflicts);
+    }
   } else {
     // 2. Create new auth user (unconfirmed, magic link will confirm)
     const { data: created, error: createErr } = await admin.auth.admin.createUser({

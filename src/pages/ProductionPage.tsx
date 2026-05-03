@@ -497,13 +497,28 @@ const ProductionPage = () => {
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => {
-                navigator.clipboard.writeText(getShareUrl());
-                toast.success("Link copied!");
+              onClick={async () => {
+                const shareUrl = typeof window !== "undefined" ? window.location.href : getShareUrl();
+                const shareText = `${projectName} on ThriveIN — the verified credits platform for creatives (think IMDb meets LinkedIn). See who worked on this, and if you were on it, search your name to claim your credit.`;
+                if (typeof navigator !== "undefined" && (navigator as any).share) {
+                  try {
+                    await (navigator as any).share({ title: projectName, text: shareText, url: shareUrl });
+                    return;
+                  } catch { /* user dismissed */ }
+                }
+                try {
+                  await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+                  toast.success("Link + message copied!");
+                } catch {
+                  toast.error("Couldn't copy link");
+                }
               }}
             >
               <Link2 className="h-3.5 w-3.5" /> Share Production Page
             </Button>
+            <p className="mt-2 text-[10px] text-muted-foreground max-w-sm mx-auto">
+              Sharing this page invites collaborators to claim their credit and verify yours.
+            </p>
           </div>
         </div>
       </div>

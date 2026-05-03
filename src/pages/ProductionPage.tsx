@@ -19,6 +19,7 @@ import {
 import { getShareUrl } from "@/lib/constants";
 import { AuthPrompt, useAuthPrompt } from "@/components/AuthPrompt";
 import { parseMediaUrl } from "@/lib/mediaUtils";
+import { CreditEndorsementDialog } from "@/components/profile/CreditEndorsementDialog";
 
 interface AIRole {
   role: string;

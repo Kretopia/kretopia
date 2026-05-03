@@ -484,8 +484,22 @@ const ProductionPage = () => {
                             </div>
                             {claimed ? (
                               <div className="flex items-center gap-1.5 shrink-0">
-                                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                                {claimed.verification_status === "verified" ? (
+                                  <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />
+                                ) : (claimed.endorsement_count || 0) > 0 || claimed.verification_status === "peer" || claimed.verification_status === "pending" ? (
+                                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                ) : (
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                )}
                                 <button onClick={() => navigate(`/profile/${claimed.user_id}`)} className="text-[10px] text-primary hover:underline">View</button>
+                                {user?.id === claimed.user_id && claimed.verification_status !== "verified" && (
+                                  <button
+                                    onClick={() => setEndorseCredit({ id: claimed.id, project_name: projectName, role: claimed.role, year: production?.year ?? undefined })}
+                                    className="text-[10px] font-semibold text-primary hover:underline"
+                                  >
+                                    Verify
+                                  </button>
+                                )}
                               </div>
                             ) : (
                               <button

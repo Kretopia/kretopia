@@ -501,6 +501,14 @@ const ProductionPage = () => {
       </div>
 
       <AuthPrompt open={authOpen} onOpenChange={setAuthOpen} action="claim this credit" />
+      {endorseCredit && user && (
+        <CreditEndorsementDialog
+          open={!!endorseCredit}
+          onOpenChange={(o) => !o && setEndorseCredit(null)}
+          credit={endorseCredit}
+          userId={user.id}
+        />
+      )}
     </>
   );
 };

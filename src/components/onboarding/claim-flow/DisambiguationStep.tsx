@@ -16,7 +16,7 @@ interface Props {
 }
 
 /** Step 2: Larger verifiable cards (2 per row) with thumbnail, source URL, and external link. */
-export const DisambiguationStep = ({ results, query, onBack, onConfirm, onPasteLink }: Props) => {
+export const DisambiguationStep = ({ results, query, onBack, onConfirm, onPasteLink, onSkipToSignup }: Props) => {
   const items: ClaimedCredit[] = useMemo(
     () => results.map((r, i) => ({ ...r, _id: `${i}-${r.title}` })),
     [results]

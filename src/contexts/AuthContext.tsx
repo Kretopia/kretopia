@@ -96,8 +96,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Auto-attach pending credit claim after signup/login
-  const processPendingClaim = async (userId: string) => {
+  const processPendingClaim = async (userId: string, userEmail: string | undefined) => {
     try {
+      // Full claim flow (profile + credits) stashed before Google OAuth
+      const fullRaw = sessionStorage.getItem("thrivein_pending_claim_full");
+      if (fullRaw && userEmail) {
+        sessionStorage.removeItem("thrivein_pending_claim_full");
+        try {
+          const { profile, credits, redirectAfter } = JSON.parse(fullRaw);
+          await supabase.functions.invoke("claim-and-create-profile", {
+            body: {
+              email: userEmail,
+              profile,
+              credits,
+              redirect_to: `${window.location.origin}${redirectAfter || "/profile?claimed=true"}`,
+              skip_magic_link: true,
+            },
+          });
+          console.log("[AuthContext] Auto-attached full claim flow for", userEmail);
+        } catch (e) {
+          console.warn("[AuthContext] Failed to attach full claim:", e);
+        }
+      }
+
       const raw = sessionStorage.getItem("thrivein_pending_claim");
       if (!raw) return;
       sessionStorage.removeItem("thrivein_pending_claim");
@@ -140,7 +161,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userId = session.user.id;
           setTimeout(() => {
             checkSubscription(userId, true).catch(err => console.warn('[AuthContext] checkSubscription error:', err));
-            processPendingClaim(userId).catch(err => console.warn('[AuthContext] processPendingClaim error:', err));
+            processPendingClaim(userId, session.user.email).catch(err => console.warn('[AuthContext] processPendingClaim error:', err));
             import('@/lib/ambassadorAttribution')
               .then(m => m.attachAmbassadorCodeToProfile(userId))
               .catch(err => console.warn('[AuthContext] ambassador attach error:', err));

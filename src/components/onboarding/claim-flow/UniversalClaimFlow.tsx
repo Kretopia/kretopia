@@ -75,6 +75,11 @@ export const UniversalClaimFlow = ({
           onBack={() => setStep("search")}
           onConfirm={handleConfirmCredits}
           onPasteLink={() => setStep("search")}
+          onSkipToSignup={() => {
+            setSelected([]);
+            setDraft({ full_name: query });
+            setStep("email");
+          }}
         />
       )}
       {step === "verify" && (

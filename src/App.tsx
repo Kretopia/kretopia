@@ -86,6 +86,7 @@ const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
 const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const ProductionPage = lazy(() => import("./pages/ProductionPage"));
+const CreditVerify = lazy(() => import("./pages/CreditVerify"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
@@ -411,6 +412,7 @@ const AppContent = () => {
             <Route path="/claim-gig/:token" element={<ClaimGig />} />
             <Route path="/claim-event/:token" element={<ClaimEvent />} />
             <Route path="/verify-opportunity" element={<VerifyOpportunity />} />
+            <Route path="/credit-verify" element={<CreditVerify />} />
             
             {/* Search & Notifications */}
             <Route path="/search" element={<Search />} />

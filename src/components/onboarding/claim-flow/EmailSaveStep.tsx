@@ -20,6 +20,31 @@ export const EmailSaveStep = ({ profile, credits, onBack, redirectAfter = "/prof
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogle = async () => {
+    setGoogleLoading(true);
+    try {
+      // Stash the claim so AuthContext can attach it after sign-in
+      try {
+        sessionStorage.setItem(
+          "thrivein_pending_claim_full",
+          JSON.stringify({ profile, credits, redirectAfter }),
+        );
+      } catch {}
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}${redirectAfter}`,
+      });
+      if ("redirected" in result && result.redirected) return;
+      if (result.error) {
+        toast.error(result.error.message || "Google sign-in failed");
+        setGoogleLoading(false);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Google sign-in failed");
+      setGoogleLoading(false);
+    }
+  };
 
   const submit = async () => {
     const e = email.trim().toLowerCase();

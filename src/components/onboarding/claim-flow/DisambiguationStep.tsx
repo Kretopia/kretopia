@@ -12,6 +12,7 @@ interface Props {
   onBack: () => void;
   onConfirm: (selected: ClaimedCredit[]) => void;
   onPasteLink: () => void;
+  onSkipToSignup?: () => void;
 }
 
 /** Step 2: Larger verifiable cards (2 per row) with thumbnail, source URL, and external link. */

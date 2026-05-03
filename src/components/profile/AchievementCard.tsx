@@ -174,12 +174,7 @@ export const AchievementCard = ({
                       {value}
                     </Badge>
                   ))}
-                  {endorsementCount > 0 && (
-                    <Badge variant="outline" className="gap-0.5 text-[10px] px-1.5 py-0 border-primary/30 text-primary">
-                      <ShieldCheck className="h-2.5 w-2.5" />
-                      {endorsementCount} endorsed
-                    </Badge>
-                  )}
+                  {endorsementCount > 0 && verificationStatus !== "verified" ? null : null}
                   {isFeatured && (
                     <Badge variant="default" className="gap-0.5 text-[10px] px-1.5 py-0">
                       <Star className="h-2.5 w-2.5 fill-current" />

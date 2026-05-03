@@ -341,6 +341,10 @@ export default function Admin() {
           <BankTransfersTab />
         </TabsContent>
 
+        <TabsContent value="ambassadors" className="mt-4 sm:mt-6">
+          <AmbassadorsTab />
+        </TabsContent>
+
         <TabsContent value="analytics" className="mt-4 sm:mt-6">
           <BounceRateTab />
         </TabsContent>

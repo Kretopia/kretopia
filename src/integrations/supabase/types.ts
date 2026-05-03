@@ -14431,6 +14431,23 @@ export type Database = {
           path_user_names: string[]
         }[]
       }
+      get_credit_endorsement_by_token: {
+        Args: { _token: string }
+        Returns: {
+          credit_id: string
+          endorser_name: string
+          id: string
+          project_name: string
+          relationship: string
+          requested_at: string
+          requested_by: string
+          requester_avatar_url: string
+          requester_name: string
+          role: string
+          status: string
+          year: number
+        }[]
+      }
       get_endorsement_request_by_token: {
         Args: { token_param: string }
         Returns: {
@@ -14799,6 +14816,16 @@ export type Database = {
       send_opportunity_alerts: {
         Args: { opportunity_id_param: string }
         Returns: undefined
+      }
+      submit_credit_endorsement_by_token: {
+        Args: {
+          _accepted: boolean
+          _endorser_name?: string
+          _relationship?: string
+          _testimonial?: string
+          _token: string
+        }
+        Returns: Json
       }
       thrivefund_auto_finalize_due: { Args: never; Returns: undefined }
       update_my_location: {

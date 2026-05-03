@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { UserPlus, Send, Search, Loader2, ShieldCheck, Mail } from "lucide-react";
+import { getShareUrl } from "@/lib/constants";
 
 interface Credit {
   id: string;
@@ -33,6 +34,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
   const [name, setName] = useState('');
   const [relationship, setRelationship] = useState('');
   const [sending, setSending] = useState(false);
+  const [guestVerifyLink, setGuestVerifyLink] = useState('');
 
   const searchUsers = async (query: string) => {
     setSearchQuery(query);
@@ -59,7 +61,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
   const sendEndorsementRequest = async (endorserId?: string, endorserEmail?: string, endorserName?: string) => {
     setSending(true);
     try {
-      const { error } = await supabase.from('credit_endorsements').insert({
+      const { data, error } = await supabase.from('credit_endorsements').insert({
         credit_id: credit.id,
         requested_by: userId,
         endorser_id: endorserId || null,
@@ -67,7 +69,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
         endorser_name: endorserName || name || null,
         relationship: relationship || null,
         status: 'pending',
-      });
+      }).select('token').single();
 
       if (error) {
         if (error.code === '23505') {
@@ -78,7 +80,20 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
         return;
       }
 
-      toast.success('Endorsement request sent!', {
+      const verifyLink = data?.token ? getShareUrl(`/credit-verify?token=${encodeURIComponent(data.token)}`) : '';
+
+      if (verifyLink && endorserEmail) {
+        setGuestVerifyLink(verifyLink);
+        await navigator.clipboard.writeText(
+          `Can you verify my ${credit.role} credit on "${credit.project_name}" on ThriveIN?\n\n${verifyLink}`
+        ).catch(() => undefined);
+        toast.success('Verification link ready', {
+          description: 'Copy it into WhatsApp, email, or DM to that person.',
+        });
+        return;
+      }
+
+      toast.success('Verification request sent!', {
         description: endorserName || endorserEmail || 'User will be notified',
       });
       onOpenChange(false);
@@ -97,6 +112,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
     setEmail('');
     setName('');
     setRelationship('');
+    setGuestVerifyLink('');
   };
 
   return (
@@ -105,10 +121,10 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            Request Endorsement
+            Request Verification
           </DialogTitle>
           <DialogDescription>
-            Ask a collaborator or client to verify your role on <strong>{credit.project_name}</strong> ({credit.role})
+            Ask a collaborator, client, guest, producer, or supervisor to confirm your role on <strong>{credit.project_name}</strong> ({credit.role}).
           </DialogDescription>
         </DialogHeader>
 
@@ -203,6 +219,7 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
               <SelectContent>
                 <SelectItem value="collaborator">Collaborator / Co-worker</SelectItem>
                 <SelectItem value="client">Client</SelectItem>
+                <SelectItem value="guest">Guest / Attendee</SelectItem>
                 <SelectItem value="supervisor">Supervisor / Director</SelectItem>
                 <SelectItem value="producer">Producer</SelectItem>
                 <SelectItem value="vendor">Vendor / Contractor</SelectItem>
@@ -213,14 +230,33 @@ export function CreditEndorsementDialog({ open, onOpenChange, credit, userId }: 
           </div>
 
           {method === 'email' && (
-            <Button
-              className="w-full"
-              onClick={() => sendEndorsementRequest(undefined, email, name)}
-              disabled={sending || !email}
-            >
-              {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-              Send Endorsement Request
-            </Button>
+            <div className="space-y-3">
+              <Button
+                className="w-full"
+                onClick={() => sendEndorsementRequest(undefined, email, name)}
+                disabled={sending || !email}
+              >
+                {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                Create Verify Link
+              </Button>
+              {guestVerifyLink && (
+                <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 space-y-2">
+                  <p className="text-xs font-semibold text-foreground">Send this private verify link</p>
+                  <p className="break-all text-[11px] text-muted-foreground">{guestVerifyLink}</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`Can you verify my ${credit.role} credit on "${credit.project_name}" on ThriveIN?\n\n${guestVerifyLink}`);
+                      toast.success('Copied verification message');
+                    }}
+                  >
+                    Copy message
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </DialogContent>

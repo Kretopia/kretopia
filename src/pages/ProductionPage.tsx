@@ -52,6 +52,7 @@ interface PlatformRole {
   full_name: string | null;
   avatar_url: string | null;
   verification_status: string | null;
+  endorsement_count: number | null;
 }
 
 const INDUSTRY_ICONS: Record<string, any> = {
@@ -87,7 +88,7 @@ const ProductionPage = () => {
       // 1. Fetch platform credits for this project
       const { data: credits } = await supabase
         .from("credits")
-        .select("id, role, user_id, verification_status")
+        .select("id, role, user_id, verification_status, endorsement_count")
         .ilike("project_name", projectName)
         .order("role");
 
@@ -109,6 +110,7 @@ const ProductionPage = () => {
         full_name: profileMap.get(c.user_id)?.full_name || null,
         avatar_url: profileMap.get(c.user_id)?.avatar_url || null,
         verification_status: c.verification_status,
+        endorsement_count: c.endorsement_count,
       }));
       setPlatformRoles(mappedPlatformRoles);
 
@@ -186,13 +188,36 @@ const ProductionPage = () => {
     });
   };
 
+  const buildProductionShare = () => {
+    const sharePath = `/production?name=${encodeURIComponent(projectName)}`;
+    const shareUrl = getShareUrl(sharePath);
+    const shareText = `${projectName} on ThriveIN — the verified credits platform for creatives. See the roll call, search your name, and claim or verify the credit if you worked on it.`;
+    return { shareUrl, shareText };
+  };
+
+  const handleShareProduction = async () => {
+    const { shareUrl, shareText } = buildProductionShare();
+    if (typeof navigator !== "undefined" && (navigator as any).share) {
+      try {
+        await (navigator as any).share({ title: `${projectName} on ThriveIN`, text: shareText, url: shareUrl });
+        return;
+      } catch { /* user dismissed */ }
+    }
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+      toast.success("ThriveIN share message copied");
+    } catch {
+      toast.error("Couldn't copy link");
+    }
+  };
+
   const Icon = production ? (INDUSTRY_ICONS[production.industry] || Database) : Database;
 
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-xs text-muted-foreground animate-pulse">Loading production details with AI...</p>
+        <p className="text-xs text-muted-foreground animate-pulse">Loading production details...</p>
       </div>
     );
   }
@@ -214,15 +239,15 @@ const ProductionPage = () => {
   return (
     <>
       <Helmet>
-        <title>{projectName} — ThriveCredits™ | ThriveIN</title>
+        <title>{projectName} — ThriveCredits | ThriveIN</title>
         <meta name="description" content={production.description || `${projectName} — production credits on ThriveCredits. See the full roll call and claim your credit.`} />
-        <meta property="og:title" content={`${projectName} — ThriveCredits™`} />
+        <meta property="og:title" content={`${projectName} — ThriveCredits`} />
         <meta property="og:description" content={`${production.total_roles} roles · ${totalClaimed} claimed · See full production credits and claim yours on ThriveIN`} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={getShareUrl()} />
+        <meta property="og:url" content={getShareUrl(`/production?name=${encodeURIComponent(projectName)}`)} />
         {production.image_url && <meta property="og:image" content={production.image_url} />}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${projectName} — ThriveCredits™`} />
+        <meta name="twitter:title" content={`${projectName} — ThriveCredits`} />
         <meta name="twitter:description" content={`${production.total_roles} roles · ${totalClaimed} claimed on ThriveIN`} />
       </Helmet>
 
@@ -303,7 +328,7 @@ const ProductionPage = () => {
                   </h2>
                 </div>
                 <div className={cn(
-                  "w-full rounded-xl overflow-hidden bg-black/50 border border-border",
+                  "w-full rounded-xl overflow-hidden bg-foreground/10 border border-border",
                   isAudio ? "aspect-[16/7]" : "aspect-video"
                 )}>
                   <iframe
@@ -345,10 +370,22 @@ const ProductionPage = () => {
               <ShieldCheck className="h-4 w-4 text-success" />
               <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Verified on ThriveIN</h2>
             </div>
+            {platformRoles.some(r => user?.id === r.user_id) && (
+              <div className="mb-3 rounded-xl border border-primary/25 bg-primary/10 p-3">
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground">Verify or strengthen your credit</p>
+                    <p className="text-xs text-muted-foreground mt-1">Ask a collaborator, client, guest, producer, or supervisor to confirm your role. Only the credit owner sees these buttons.</p>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               {platformRoles.map(r => {
                 const isOwner = user?.id === r.user_id;
                 const isVerified = r.verification_status === "verified";
+                const isVouched = (r.endorsement_count || 0) > 0 || r.verification_status === "peer" || r.verification_status === "pending";
                 return (
                   <div key={r.id} className="rounded-xl bg-success/5 border border-success/15 overflow-hidden">
                     <div className="flex items-center gap-3 p-3">
@@ -361,20 +398,26 @@ const ProductionPage = () => {
                         <p className="text-xs text-muted-foreground">{r.role}</p>
                       </div>
                       {isVerified ? (
-                        <Badge variant="outline" className="gap-1 bg-amber-500/15 text-amber-500 border-amber-500/40 shrink-0">
+                        <Badge variant="outline" className="gap-1 bg-primary/10 text-primary border-primary/30 shrink-0">
                           <ShieldCheck className="h-3 w-3" /> Verified
                         </Badge>
+                      ) : isVouched ? (
+                        <Badge variant="outline" className="gap-1 bg-primary/10 text-primary border-primary/30 shrink-0">
+                          <ShieldCheck className="h-3 w-3" /> Vouched
+                        </Badge>
                       ) : (
-                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                        <Badge variant="outline" className="gap-1 bg-muted text-muted-foreground border-border shrink-0">
+                          <CheckCircle2 className="h-3 w-3" /> Claimed
+                        </Badge>
                       )}
                     </div>
-                    {isOwner && !isVerified && (
+                    {isOwner && (
                       <button
                         onClick={() => setEndorseCredit({ id: r.id, project_name: projectName, role: r.role, year: production?.year ?? undefined })}
                         className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-primary/10 hover:bg-primary/20 border-t border-primary/20 text-xs font-semibold text-primary transition-colors"
                       >
                         <UserPlus className="h-3.5 w-3.5" />
-                        Get this credit verified — ask a collaborator
+                        {isVerified ? "Add collaborator/client vouch" : "Get this credit verified — ask someone"}
                       </button>
                     )}
                   </div>
@@ -392,7 +435,7 @@ const ProductionPage = () => {
               <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Full Production Credits</h2>
             </div>
             <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">
-              <Sparkles className="h-2 w-2 mr-0.5" /> AI Enhanced
+              <Sparkles className="h-2 w-2 mr-0.5" /> Smart Credits
             </Badge>
           </div>
 
@@ -441,8 +484,22 @@ const ProductionPage = () => {
                             </div>
                             {claimed ? (
                               <div className="flex items-center gap-1.5 shrink-0">
-                                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                                {claimed.verification_status === "verified" ? (
+                                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                ) : (claimed.endorsement_count || 0) > 0 || claimed.verification_status === "peer" || claimed.verification_status === "pending" ? (
+                                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                ) : (
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                )}
                                 <button onClick={() => navigate(`/profile/${claimed.user_id}`)} className="text-[10px] text-primary hover:underline">View</button>
+                                {user?.id === claimed.user_id && (
+                                  <button
+                                    onClick={() => setEndorseCredit({ id: claimed.id, project_name: projectName, role: claimed.role, year: production?.year ?? undefined })}
+                                    className="text-[10px] font-semibold text-primary hover:underline"
+                                  >
+                                    Verify
+                                  </button>
+                                )}
                               </div>
                             ) : (
                               <button
@@ -497,27 +554,12 @@ const ProductionPage = () => {
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={async () => {
-                const shareUrl = typeof window !== "undefined" ? window.location.href : getShareUrl();
-                const shareText = `${projectName} on ThriveIN — the verified credits platform for creatives (think IMDb meets LinkedIn). See who worked on this, and if you were on it, search your name to claim your credit.`;
-                if (typeof navigator !== "undefined" && (navigator as any).share) {
-                  try {
-                    await (navigator as any).share({ title: projectName, text: shareText, url: shareUrl });
-                    return;
-                  } catch { /* user dismissed */ }
-                }
-                try {
-                  await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
-                  toast.success("Link + message copied!");
-                } catch {
-                  toast.error("Couldn't copy link");
-                }
-              }}
+              onClick={handleShareProduction}
             >
               <Link2 className="h-3.5 w-3.5" /> Share Production Page
             </Button>
             <p className="mt-2 text-[10px] text-muted-foreground max-w-sm mx-auto">
-              Sharing this page invites collaborators to claim their credit and verify yours.
+              Shares use thrivein.io and invite collaborators to search their name, claim their credit, or verify yours.
             </p>
           </div>
         </div>

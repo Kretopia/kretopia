@@ -321,6 +321,14 @@ export const UnifiedHome = () => {
       setProfileFull(profileFullRes.data);
       setMyCredits(creditsCount.count || 0);
       setMyConnections(connectionsCount.count || 0);
+
+      // First-Win one-shot — fresh accounts that haven't seen it
+      const seen = localStorage.getItem(`first_win_seen_${user.id}`);
+      const created = profileFullRes.data?.created_at ? new Date(profileFullRes.data.created_at).getTime() : 0;
+      const ageHrs = (Date.now() - created) / 3_600_000;
+      if (!seen && ageHrs < 24 && profileFullRes.data?.onboarding_completed) {
+        setTimeout(() => setShowFirstWin(true), 600);
+      }
     };
     fetchAuth();
   }, [user]);

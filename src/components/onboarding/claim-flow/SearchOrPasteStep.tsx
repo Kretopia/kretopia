@@ -34,6 +34,21 @@ export const SearchOrPasteStep = ({ initialQuery = "", onResults }: Props) => {
         return;
       }
       console.info("[ClaimFlow] searching for", q);
+
+      // Reuse cached results within 24h so the same name doesn't return a different person
+      const cacheKey = `claim_search:${q.toLowerCase()}`;
+      try {
+        const raw = sessionStorage.getItem(cacheKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.ts && Date.now() - parsed.ts < 24 * 60 * 60 * 1000 && Array.isArray(parsed.results) && parsed.results.length > 0) {
+            console.info("[ClaimFlow] using cached", parsed.results.length, "results");
+            onResults(parsed.results, q);
+            return;
+          }
+        }
+      } catch {}
+
       const { data, error } = await supabase.functions.invoke("search-credits-web", {
         body: { query: q },
       });
@@ -43,6 +58,9 @@ export const SearchOrPasteStep = ({ initialQuery = "", onResults }: Props) => {
       }
       const results: WebCreditResult[] = data?.results || [];
       console.info("[ClaimFlow] received", results.length, "results");
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), query: q, results }));
+      } catch {}
       if (results.length === 0) {
         toast.info("No matches yet", {
           description: "Try a different spelling, or paste a portfolio link.",

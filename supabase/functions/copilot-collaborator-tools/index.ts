@@ -272,7 +272,7 @@ async function addCollaborator(userId: string, body: any) {
 
 // ---- Tool: remove_collaborator ----
 async function removeCollaborator(userId: string, body: any) {
-  const projectId = String(body.project_id ?? "");
+  const projectId = String(body.project_id ?? body.target_project_id ?? "");
   const removeUserId = String(body.user_id_to_remove ?? body.user_id ?? "");
   if (!projectId || !removeUserId) {
     return json({ ok: false, error: "project_id and user_id_to_remove required" }, 400);

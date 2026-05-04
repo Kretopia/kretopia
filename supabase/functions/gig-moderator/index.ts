@@ -27,6 +27,7 @@ type Gig = {
   status: string;
   type: string;
   barter_posting_deadline: string | null;
+  application_deadline: string | null;
 };
 
 async function aiAnalyzeGig(g: Gig): Promise<{

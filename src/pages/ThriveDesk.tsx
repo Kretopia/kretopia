@@ -178,40 +178,28 @@ const ThriveDesk = () => {
           />
         </header>
 
-        {/* Project Flow Timeline + Next Step + Tab Bar — desktop only */}
-        <div className={cn(isMobile && "hidden")}>
-          <ProjectFlowTimeline
-            flow={flow}
-            onStageClick={(_stageId, tab) => setActiveTab(tab)}
-            onPinStage={handlePinStage}
-          />
-          <NextStepBar nextStep={flow.nextStep} onAction={goToTabWithIntent} />
-          <DeskTabBar
+        {/* Desktop-only flow timeline + next step (only when in Studio) */}
+        {!isMobile && isStudioRoom && (
+          <div>
+            <ProjectFlowTimeline
+              flow={flow}
+              onStageClick={(_stageId, tab) => setActiveTab(tab)}
+              onPinStage={handlePinStage}
+            />
+            <NextStepBar nextStep={flow.nextStep} onAction={goToTabWithIntent} />
+          </div>
+        )}
+
+        {/* Unified tool bar — same on mobile and desktop when drilled into a tool */}
+        {!isStudioRoom && (
+          <StudioToolBar
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            taskCount={tasks.filter(t => t.status !== 'done').length}
-            messageCount={messages.length}
             workspaceType={project?.workspace_type ?? "general"}
             dealType={project?.deal_type ?? "paid"}
+            taskCount={tasks.filter(t => t.status !== 'done').length}
+            messageCount={messages.length}
           />
-        </div>
-
-        {/* Mobile back-to-hub bar — visible when drilled into a section */}
-        {isMobile && !isStudioRoom && (
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-card/60 shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2 text-xs gap-1"
-              onClick={() => setActiveTab("today")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Hub
-            </Button>
-            <span className="text-xs font-semibold capitalize text-muted-foreground truncate">
-              {activeTab.replace(/_/g, " ")}
-            </span>
-          </div>
         )}
 
         {/* Agent Mode Banner — visible when agent_mode is true */}

@@ -23,6 +23,7 @@ import { analytics } from "@/lib/analytics";
 import { trackPlatformPageview, attachPlatformAnalyticsListeners } from "@/lib/platformAnalytics";
 import { NetworkStatus } from "./components/NetworkStatus";
 import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
+import { useActivityPing } from "./hooks/useActivityPing";
 import { GuestBanner } from "./components/GuestBanner";
 import { AuthGate } from "./components/AuthGate";
 import { OnboardingTour } from "./components/OnboardingTour";
@@ -209,6 +210,7 @@ const AppContent = () => {
   const location = useLocation();
   const { user } = useAuth();
   useNativeCapacitor();
+  useActivityPing();
   
   // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
   const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname);

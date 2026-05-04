@@ -84,6 +84,9 @@ export async function streamCopilot({
     return;
   }
 
+  // Bump daily Copilot streak (fire-and-forget)
+  supabase.rpc("bump_streak", { _streak_type: "copilot" }).then(() => {}, () => {});
+
   // Capture the canonical thread id from response headers
   const returnedConvId = resp.headers.get("X-Copilot-Conversation-Id");
   if (returnedConvId && onConversationId) onConversationId(returnedConvId);

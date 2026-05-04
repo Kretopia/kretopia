@@ -426,7 +426,7 @@ export function UnifiedSearchDropdown({
                     setOpen(false);
                     setQuery("");
                     onOpenChange?.(false);
-                    navigate(`/search?q=${encodeURIComponent(knowledgeCard.name)}`);
+                    submitQuery(knowledgeCard.name);
                   }}
                   className="w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors"
                 >
@@ -478,7 +478,7 @@ export function UnifiedSearchDropdown({
                         setOpen(false);
                         setQuery("");
                         onOpenChange?.(false);
-                        navigate(`/search?q=${encodeURIComponent(knowledgeCard.name)}`);
+                        submitQuery(knowledgeCard.name);
                       }}
                       className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg bg-energy text-energy-foreground hover:brightness-110 shadow-glow-lime transition-all shrink-0"
                     >
@@ -597,7 +597,7 @@ export function UnifiedSearchDropdown({
                       setOpen(false);
                       setQuery("");
                       onOpenChange?.(false);
-                      navigate(`/search?q=${encodeURIComponent(alt.name)}`);
+                      submitQuery(alt.name);
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors text-left"
                   >

@@ -128,6 +128,13 @@ const Search = () => {
   const [external, setExternal] = useState<ExternalData | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
+  const goToClaimFlow = (claimData: Record<string, any>) => {
+    const q = claimData.query || searchParams.get("q") || claimData.name || "";
+    sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
+    sessionStorage.setItem('claim_intent', JSON.stringify({ q, source: 'landing', results: [], ts: Date.now() }));
+    navigate(user ? '/profile' : `/auth?tab=signup&claim=1&q=${encodeURIComponent(q)}`);
+  };
+
   const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim() || searchQuery.trim().length < 2) {
       setProfiles([]); setCredits([]); setOpportunities([]); setExternal(null);
@@ -314,8 +321,7 @@ const Search = () => {
                           known_for: kc.known_for || [],
                           platforms: kc.platforms || [],
                         };
-                        sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
-                        navigate(user ? '/profile' : '/auth?redirect=/profile');
+                        goToClaimFlow(claimData);
                       }} className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-1">
                         Claim Profile <ArrowRight className="h-3 w-3" />
                       </button>
@@ -474,8 +480,7 @@ const Search = () => {
                                          name: c.project_name,
                                          credits: [{ project: c.project_name, role: "Unclaimed", year: c.year || new Date().getFullYear() }],
                                        };
-                                       sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
-                                       navigate(user ? '/profile' : '/auth?redirect=/profile');
+                                        goToClaimFlow(claimData);
                                      }}
                                      className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 shrink-0"
                                    >
@@ -494,8 +499,7 @@ const Search = () => {
                                  name: c.project_name,
                                  credits: [{ project: c.project_name, role: "", year: c.year || new Date().getFullYear() }],
                                };
-                               sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
-                               navigate(user ? '/profile' : '/auth?redirect=/profile');
+                                goToClaimFlow(claimData);
                              }}
                              className="w-full mt-2 py-2 rounded-lg border border-dashed border-primary/25 text-[10px] font-semibold text-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-1.5"
                            >
@@ -517,8 +521,7 @@ const Search = () => {
                       name: ec.project,
                       credits: [{ project: ec.project, role: ec.role, year: ec.year }],
                     };
-                    sessionStorage.setItem('pending_claim_credits', JSON.stringify(claimData));
-                    navigate(user ? '/profile' : '/auth?redirect=/profile');
+                    goToClaimFlow(claimData);
                   }} className="w-full text-left rounded-xl border border-dashed border-border bg-card p-3 hover:border-primary/30 transition-all">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge className="text-[8px] bg-primary/10 border-primary/20 text-primary">

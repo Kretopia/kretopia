@@ -1,5 +1,5 @@
 import { AbsoluteFill, useCurrentFrame, interpolate } from "remotion";
-import { COLORS } from "./theme";
+import { COLORS } from "../theme";
 
 /** Full-bleed animated dark gradient backdrop with drifting glow blobs. */
 export const Backdrop = () => {

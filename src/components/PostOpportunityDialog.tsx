@@ -287,6 +287,7 @@ export const PostOpportunityDialog = ({
           usage_exclusive: formData.usage_exclusive,
           barter_gifted_value_usd: formData.barter_gifted_value_usd ? parseFloat(formData.barter_gifted_value_usd) : null,
           barter_posting_deadline: formData.barter_posting_deadline || null,
+          application_deadline: formData.application_deadline || null,
           whitelisting_allowed: formData.whitelisting_allowed,
         } as any)
         .select()

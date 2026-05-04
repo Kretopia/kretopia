@@ -138,6 +138,12 @@ export const CallHistoryPanel = () => {
           roomName={session.roomName}
         />
       )}
+
+      <CallRecapSheet
+        open={!!recapId}
+        onOpenChange={(o) => !o && setRecapId(null)}
+        transcriptId={recapId}
+      />
     </div>
   );
 };

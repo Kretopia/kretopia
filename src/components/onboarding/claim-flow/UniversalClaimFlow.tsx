@@ -22,8 +22,11 @@ export const UniversalClaimFlow = ({
   redirectAfter,
   contextId,
 }: Props) => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlQuery = urlParams.get("q") || "";
+  const isClaimEntry = urlParams.get("claim") === "1";
   const [step, setStep] = useState<FlowStep>("search");
-  const [query, setQuery] = useState(initialQuery || "");
+  const [query, setQuery] = useState(initialQuery || urlQuery || "");
   const [results, setResults] = useState<WebCreditResult[]>([]);
   const [selected, setSelected] = useState<ClaimedCredit[]>([]);
   const [draft, setDraft] = useState<DraftProfile>({});
@@ -34,16 +37,24 @@ export const UniversalClaimFlow = ({
       const raw = sessionStorage.getItem("claim_intent");
       if (!raw) return;
       const parsed = JSON.parse(raw);
-      if (!parsed?.q) return;
+      const intentQuery = parsed?.q || urlQuery;
+      if (!intentQuery) return;
       // Only honor recent intents (10 min)
       if (parsed.ts && Date.now() - parsed.ts > 10 * 60 * 1000) return;
-      setQuery(parsed.q);
-      if (Array.isArray(parsed.results) && parsed.results.length > 0) {
+      setQuery(intentQuery);
+      if (Array.isArray(parsed.results)) {
         setResults(parsed.results);
         setStep("disambiguate");
       }
     } catch {}
-  }, []);
+  }, [urlQuery]);
+
+  useEffect(() => {
+    if (isClaimEntry && urlQuery && results.length === 0) {
+      setQuery(urlQuery);
+      setStep("disambiguate");
+    }
+  }, [isClaimEntry, results.length, urlQuery]);
 
   const handleResults = (r: WebCreditResult[], q: string) => {
     setQuery(q);

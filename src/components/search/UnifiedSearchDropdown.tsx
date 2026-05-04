@@ -295,18 +295,25 @@ export function UnifiedSearchDropdown({
     else navigate(`/search?q=${encodeURIComponent(r.title)}`);
   };
 
+  const submitQuery = useCallback((rawQuery: string) => {
+    const trimmedQuery = rawQuery.trim();
+    if (!trimmedQuery) return;
+
+    setOpen(false);
+    onOpenChange?.(false);
+
+    if (onQuerySubmit) {
+      onQuerySubmit(trimmedQuery);
+      return;
+    }
+
+    setQuery("");
+    navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+  }, [navigate, onOpenChange, onQuerySubmit, setQuery]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      setOpen(false);
-      onOpenChange?.(false);
-      if (onQuerySubmit) {
-        onQuerySubmit(query.trim());
-        return;
-      }
-      setQuery("");
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-    }
+    submitQuery(query);
   };
 
   const handleClear = () => {
@@ -419,7 +426,7 @@ export function UnifiedSearchDropdown({
                     setOpen(false);
                     setQuery("");
                     onOpenChange?.(false);
-                    navigate(`/search?q=${encodeURIComponent(knowledgeCard.name)}`);
+                    submitQuery(knowledgeCard.name);
                   }}
                   className="w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors"
                 >
@@ -471,7 +478,7 @@ export function UnifiedSearchDropdown({
                         setOpen(false);
                         setQuery("");
                         onOpenChange?.(false);
-                        navigate(`/search?q=${encodeURIComponent(knowledgeCard.name)}`);
+                        submitQuery(knowledgeCard.name);
                       }}
                       className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg bg-energy text-energy-foreground hover:brightness-110 shadow-glow-lime transition-all shrink-0"
                     >
@@ -590,7 +597,7 @@ export function UnifiedSearchDropdown({
                       setOpen(false);
                       setQuery("");
                       onOpenChange?.(false);
-                      navigate(`/search?q=${encodeURIComponent(alt.name)}`);
+                      submitQuery(alt.name);
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors text-left"
                   >
@@ -749,7 +756,9 @@ export function UnifiedSearchDropdown({
             {/* Deep search footer */}
             {(results.length > 0 || knowledgeCard) && (
               <button
-                onClick={handleSubmit as any}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => submitQuery(query)}
                 className="w-full px-4 py-2.5 text-sm text-primary font-medium hover:bg-muted/50 transition-colors border-t border-border flex items-center justify-center gap-2"
               >
                 <Sparkles className="h-3.5 w-3.5" />

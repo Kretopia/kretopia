@@ -76,6 +76,38 @@ export const UnifiedHome = () => {
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [stats, setStats] = useState({ creators: 0, credits: 0, gigs: 0, connections: 0 });
 
+  const handleHeroClaimSearch = async (rawQuery: string) => {
+    const q = rawQuery.trim();
+    if (!q) return;
+
+    const cacheKey = `claim_search:${q.toLowerCase()}`;
+    try {
+      let results: any[] = [];
+      const raw = sessionStorage.getItem(cacheKey);
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (cached?.ts && Date.now() - cached.ts < 24 * 60 * 60 * 1000 && Array.isArray(cached.results)) {
+          results = cached.results;
+        }
+      }
+
+      if (results.length === 0) {
+        const { data } = await supabase.functions.invoke("search-credits-web", { body: { query: q } });
+        results = data?.results || [];
+        sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), query: q, results }));
+      }
+
+      sessionStorage.setItem("claim_intent", JSON.stringify({ q, source: "landing", results, ts: Date.now() }));
+    } catch (err) {
+      console.warn("[home-claim-search] prefetch failed", err);
+      try {
+        sessionStorage.setItem("claim_intent", JSON.stringify({ q, source: "landing", results: [], ts: Date.now() }));
+      } catch {}
+    } finally {
+      navigate(`/auth?tab=signup&claim=1&q=${encodeURIComponent(q)}`);
+    }
+  };
+
   // Auth-only data
   const [profile, setProfile] = useState<any>(null);
   const [profileFull, setProfileFull] = useState<any>(null);
@@ -394,6 +426,7 @@ export const UnifiedHome = () => {
                       <UnifiedSearchDropdown
                         variant="hero"
                         placeholder={t("landing.searchPlaceholder")}
+                        onQuerySubmit={handleHeroClaimSearch}
                       />
                     </div>
                   </div>

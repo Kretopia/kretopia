@@ -107,7 +107,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/desk", icon: FolderKanban, label: "Desk" },
         { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-        { path: "/fund", icon: Rocket, label: "Fund" },
+        { path: "/thrivepay", icon: Wallet, label: "Pay" },
       ];
 
   const [searchOpen, setSearchOpen] = useState(false);

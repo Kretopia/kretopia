@@ -25,6 +25,7 @@ export const PreCallLobby = ({
   onJoin,
   onCancel,
   participantsPreview = [],
+  ctaLabel = "Start call",
 }: Props) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);

@@ -49,8 +49,8 @@ Deno.serve(async (req) => {
       supabase.from("projects").select("id", { count: "exact", head: true }),
       supabase.from("profiles").select("location").not("location", "is", null).neq("location", ""),
       supabase.from("profiles").select("role").not("role", "is", null).neq("role", ""),
-      supabase.from("user_session_pings").select("user_id", { count: "exact", head: true }).gte("ping_date", sevenDaysAgo),
-      supabase.from("user_session_pings").select("user_id", { count: "exact", head: true }).gte("ping_date", thirtyDaysAgo),
+      supabase.from("user_session_pings").select("user_id").gte("ping_date", sevenDaysAgo),
+      supabase.from("user_session_pings").select("user_id").gte("ping_date", thirtyDaysAgo),
     ]);
 
     // Aggregate locations (top 6)
@@ -93,6 +93,8 @@ Deno.serve(async (req) => {
         circles: circlesCount.count || 0,
         projects: projectsCount.count || 0,
         countries: countrySet.size,
+        wau: new Set((wauRes.data || []).map((r: any) => r.user_id)).size,
+        mau: new Set((mauRes.data || []).map((r: any) => r.user_id)).size,
       },
       topLocations,
       topRoles,

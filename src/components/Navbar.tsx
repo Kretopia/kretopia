@@ -161,6 +161,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
             {desktopNavItems.map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path || 
                 (path === "/desk" && location.pathname.startsWith("/desk")) ||
+                (path === "/thrivepay" && (location.pathname.startsWith("/thrivepay") || location.pathname.startsWith("/accounting"))) ||
                 (path === "/circle" && location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"));
               return (
                 <Link

@@ -40,7 +40,8 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
 
-  const claimProfileId = searchParams.get("claim");
+  const claimParam = searchParams.get("claim");
+  const claimProfileId = claimParam && claimParam !== "1" ? claimParam : null;
   const eventId = searchParams.get("event");
   const redirectTo = claimProfileId 
     ? `/profile/${claimProfileId}?showClaim=true` 
@@ -416,7 +417,7 @@ const Auth = () => {
               <TabsContent value="signup">
                 {signupMode === "claim" ? (
                   <>
-                    <UniversalClaimFlow source="auth" />
+                    <UniversalClaimFlow source="auth" initialQuery={searchParams.get("q") || undefined} />
                     <div className="my-5 flex items-center gap-2">
                       <div className="flex-1 h-px bg-border" />
                       <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">

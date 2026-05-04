@@ -426,6 +426,7 @@ export const UnifiedHome = () => {
                       <UnifiedSearchDropdown
                         variant="hero"
                         placeholder={t("landing.searchPlaceholder")}
+                        onQuerySubmit={handleHeroClaimSearch}
                       />
                     </div>
                   </div>

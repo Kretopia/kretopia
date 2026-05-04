@@ -190,7 +190,7 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         if (myRole && p.role && p.role.toLowerCase() === myRole) score += 30;
         if (p.location && myLocation && p.location.toLowerCase().includes(myCity || '___')) score += 25;
         // Tie-break: a bit of social proof
-        score += Math.min((p.credits_count || 0) + (p.portfolio_count || 0), 10);
+        score += Math.min(((p as any).credits_count || 0) + ((p as any).portfolio_count || 0), 10);
         // Small jitter so identical scores don't always render same order
         score += Math.random() * 0.5;
         return score;

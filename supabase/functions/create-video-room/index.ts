@@ -81,9 +81,13 @@ serve(async (req) => {
       start_video_off: false,
       start_audio_off: false,
       // WhatsApp-style: anyone with a valid token/guest link drops straight in.
-      // No knocking lobby (we use our own PreCallLobby on the client).
       enable_knocking: false,
       enable_prejoin_ui: false,
+      // Cloud recording — feeds the daily-recording-webhook → transcribe-call
+      // pipeline (Phase 2: Call Intelligence). Audio-only keeps cost low and
+      // is all Gemini needs to transcribe.
+      enable_recording: "cloud",
+      recordings_bucket: undefined,
     };
 
     async function createRoom(name: string) {

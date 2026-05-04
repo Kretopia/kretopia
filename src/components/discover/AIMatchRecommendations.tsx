@@ -35,7 +35,7 @@ export const AIMatchRecommendations = ({
               <div className="p-2 rounded-lg bg-primary/10">
                 <Sparkles className="h-4 w-4 text-primary" />
               </div>
-              <h3 className="font-semibold text-sm">AI Match Insights</h3>
+              <h3 className="font-semibold text-sm">Smart Match Insights</h3>
             </div>
             <AIMatchBadge score={0} showLocked={true} size="sm" />
           </div>
@@ -43,7 +43,7 @@ export const AIMatchRecommendations = ({
             <div className="flex items-start gap-2 text-xs">
               <Lightbulb className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
               <p className="text-muted-foreground">
-                Unlock AI-powered match insights to see why this person is perfect for collaboration
+                Unlock Smart Match insights to see why this person is perfect for collaboration
               </p>
             </div>
           </div>

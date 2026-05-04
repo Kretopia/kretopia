@@ -189,7 +189,7 @@ Format as JSON array:
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
-            AI Match Recommendations
+            Smart Match Recommendations
           </CardTitle>
           <CardDescription>Finding your ideal collaborators...</CardDescription>
         </CardHeader>
@@ -214,7 +214,7 @@ Format as JSON array:
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
-            AI Match Recommendations
+            Smart Match Recommendations
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -249,7 +249,7 @@ Format as JSON array:
           <div>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5" />
-              AI Match Recommendations
+              Smart Match Recommendations
             </CardTitle>
             <CardDescription>
               {visibleMatches.length} potential collaborator{visibleMatches.length !== 1 ? 's' : ''} found

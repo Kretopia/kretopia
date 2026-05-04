@@ -189,7 +189,7 @@ Return ONLY valid JSON array:
           Smart Suggestions
         </CardTitle>
         <CardDescription>
-          AI-powered recommendations to grow your career
+          Personalized recommendations to grow your career
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">

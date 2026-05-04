@@ -5,14 +5,14 @@ export const WhyCreatorsChooseSection = () => {
   const features = [
     { icon: <Award className="h-5 w-5" />, title: "ThriveCredits", text: "Claim your work on any project — AI + peer verification builds a portable reputation that lasts" },
     { icon: <Globe className="h-5 w-5" />, title: "Creator Websites", text: "Launch your own landing page at yourname.thrivein.io — no coding, premium templates included" },
-    { icon: <Brain className="h-5 w-5" />, title: "AI Matching", text: "Swipe through portfolios, get matched by style, skills & location" },
+    { icon: <Brain className="h-5 w-5" />, title: "Smart Match", text: "Swipe through portfolios, get matched by style, skills & location" },
     { icon: <FolderKanban className="h-5 w-5" />, title: "Project Management", text: "Tasks, files, milestones & team chat in one workspace — your creative Slack + Trello" },
     { icon: <DollarSign className="h-5 w-5" />, title: "Invoicing & Payments", text: "Send invoices, set milestone payments, track expenses, P&L reports & get paid securely via escrow" },
     { icon: <FileText className="h-5 w-5" />, title: "EPK to PDF", text: "Generate a professional electronic press kit from your profile and export it as a polished PDF deck" },
     { icon: <Fingerprint className="h-5 w-5" />, title: "Creator Passport", text: "One verified identity across industries — embed it anywhere, carry your reputation with you" },
     { icon: <FileSignature className="h-5 w-5" />, title: "Contracts & Agreements", text: "Create contracts from templates, get e-signatures & protect your work — no lawyer needed" },
     { icon: <MessageSquare className="h-5 w-5" />, title: "Real Gigs & Collabs", text: "Post paid gigs, find collaborators, apply to opportunities — all in one place" },
-    { icon: <Rocket className="h-5 w-5" />, title: "ThriveFund", text: "Crowdfund films, albums, fashion drops & creative projects — AI-moderated, milestone payouts, verified creators only" },
+    { icon: <Rocket className="h-5 w-5" />, title: "ThriveFund", text: "Crowdfund films, albums, fashion drops & creative projects — Verified & Protected, milestone payouts, verified creators only" },
   ];
 
   return (

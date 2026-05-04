@@ -112,7 +112,7 @@ export const ThriveFundShowcase = () => {
         </div>
 
         <p className="mt-4 text-center text-[10px] text-muted-foreground/70 uppercase tracking-[0.2em]">
-          {tt("landing.fundFinePrint", "18+ · ID verified · AI-moderated · Milestone payouts")}
+          {tt("landing.fundFinePrint", "18+ · ID verified · Verified & Protected · Milestone payouts")}
         </p>
       </div>
     </section>

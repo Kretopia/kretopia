@@ -67,7 +67,7 @@ Return ONLY the bio text, nothing else.`
         onBioGenerated(data.content);
         toast({
           title: "Bio generated!",
-          description: "Your AI-powered bio is ready",
+          description: "Your bio is ready",
         });
         setBioPrompt('');
       }

@@ -120,7 +120,7 @@ export function AIMarkupHelper({ lineItems, currency, onApplyMarkup }: AIMarkupH
           </div>
           <div>
             <h4 className="text-sm font-semibold">Markup Calculator</h4>
-            <p className="text-[10px] text-muted-foreground">Auto-calculate or get AI-powered pricing suggestions</p>
+            <p className="text-[10px] text-muted-foreground">Auto-calculate or get smart pricing suggestions</p>
           </div>
         </div>
         <Button

@@ -59,7 +59,7 @@ export const HowItWorksSection = () => {
               </p>
               <div className="mt-4 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-secondary" />
-                <span className="text-sm text-secondary font-medium">AI matching finds your next collab</span>
+                <span className="text-sm text-secondary font-medium">Smart Match finds your next collab</span>
               </div>
             </div>
           </div>

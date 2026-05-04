@@ -546,7 +546,7 @@ export default function Onboarding() {
 
   return (
     <>
-      <SEO title="Welcome to ThriveIN — Set Up Your Profile" description="Set up your creator profile on ThriveIN in seconds with AI-powered discovery." />
+      <SEO title="Welcome to ThriveIN — Set Up Your Profile" description="Set up your creator profile on ThriveIN in seconds with Smart discovery." />
       <div className="min-h-screen bg-background relative overflow-hidden flex items-center justify-center p-4">
         {/* Brand gradient accents */}
         <div className="absolute top-0 left-0 right-0 h-72 bg-gradient-to-b from-primary/8 via-primary/3 to-transparent pointer-events-none" />

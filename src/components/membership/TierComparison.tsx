@@ -26,7 +26,7 @@ const CREATOR_FEATURES: Feature[] = [
   { name: "Contracts", free: "1/month", pro: "Unlimited" },
   { name: "AI Briefs", free: "2/month", pro: "Unlimited" },
   { name: "Commission on Sales", free: "Higher", pro: "Lower" },
-  { name: "AI Match Explanations", free: false, pro: true },
+  { name: "Smart Match Explanations", free: false, pro: true },
   { name: "Undo Swipe", free: false, pro: "3/day" },
   { name: "Profile Verification Badge", free: false, pro: true },
   { name: "Advanced Search Filters", free: false, pro: true },

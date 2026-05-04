@@ -56,7 +56,7 @@ export const InviteDialog = ({ open, onOpenChange }: InviteDialogProps) => {
     try {
       const inviteMessage = `Stop cold DMing strangers for collabs.
 
-ThriveIN matches you with verified creatives who actually fit your style — AI-powered, portfolio-first.
+ThriveIN matches you with verified creatives who actually fit your style — portfolio-first, style-aware.
 
 I'm already on. Join me 👇
 ${personalLink}`;

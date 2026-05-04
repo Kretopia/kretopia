@@ -56,7 +56,7 @@ const TYPE_CONFIG: Record<string, { label: string; chip: string; icon: typeof Br
   barter:         { label: "Barter",        chip: "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/25", icon: ArrowRightLeft },
 };
 
-// Deterministic AI Match score
+// Deterministic Smart Match score
 const getAiMatchScore = (id: string): number => {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {

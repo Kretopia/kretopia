@@ -77,7 +77,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
 
         {/* Content Overlay */}
         <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6">
-          {/* AI Match Analysis Badge - Click to see why */}
+          {/* Why you match Badge - Click to see why */}
           <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
             <Badge 
               variant="secondary" 

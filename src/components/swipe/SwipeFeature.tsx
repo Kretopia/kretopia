@@ -96,11 +96,26 @@ export function SwipeFeature({ onMatch, filters = DEFAULT_SWIPE_FILTERS, onProfi
 
   const handlePass = useCallback(async (profile: SwipeProfile) => {
     console.log('[SwipeFeature] Passed', profile.full_name);
-    
-    setSwipeHistory(prev => [profile, ...prev].slice(0, 5));
+
+    setSwipeHistory(prev => {
+      const next = [profile, ...prev].slice(0, 5);
+      // After 3 swipes, nudge user toward the For You feed (once per session)
+      try {
+        const nudged = sessionStorage.getItem('foryou_nudged');
+        if (!nudged && next.length >= 3) {
+          sessionStorage.setItem('foryou_nudged', '1');
+          toast("Check out your For You feed", {
+            description: "Personalized creators, gigs and events waiting for you.",
+            action: { label: 'Open', onClick: () => navigate('/') },
+            duration: 6000,
+          });
+        }
+      } catch {}
+      return next;
+    });
     removeProfile(profile.user_id);
     await recordSwipe(profile.user_id, 'left');
-  }, [recordSwipe, removeProfile]);
+  }, [recordSwipe, removeProfile, navigate]);
 
   const handleViewProfile = useCallback((profile: SwipeProfile) => {
     setPreviewProfile(profile);

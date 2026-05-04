@@ -246,8 +246,8 @@ const ThriveDesk = () => {
             />
           )}
 
-          {/* Quick Panel Toggle - Desktop only */}
-          {!quickPanelOpen && (
+          {/* Quick Panel Toggle - Desktop only, hidden in Studio */}
+          {!isStudioRoom && !quickPanelOpen && (
             <div className="hidden xl:flex items-start pt-3 pr-2 shrink-0">
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setQuickPanelOpen(true)}>
                 <PanelRightOpen className="h-4 w-4" />
@@ -255,8 +255,8 @@ const ThriveDesk = () => {
             </div>
           )}
 
-          {/* Right Quick Panel - Desktop only */}
-          {quickPanelOpen && (
+          {/* Right Quick Panel - Desktop only, hidden in Studio */}
+          {!isStudioRoom && quickPanelOpen && (
             <div className="hidden xl:block w-80 border-l border-border bg-card/30 overflow-y-auto shrink-0">
               <div className="flex items-center justify-between px-4 pt-3 pb-1">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick Panel</span>

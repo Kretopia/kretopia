@@ -234,6 +234,7 @@ export const VideoCallSheet = ({
             <PreCallLobby
               projectName={projectName}
               joining={joining}
+              ctaLabel={lobbyCta}
               onCancel={() => onOpenChange(false)}
               onJoin={(opts) => {
                 setJoinPrefs(opts);

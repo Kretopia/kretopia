@@ -202,7 +202,6 @@ async function generateInvoice(supabaseAdmin: any, milestone: any, payerUserId: 
       project_id: milestone.project_id,
       milestone_id: milestone.id,
       amount: milestone.amount,
-      total_amount: milestone.amount,
       currency: 'USD',
       status: 'paid',
       paid_at: now.toISOString(),

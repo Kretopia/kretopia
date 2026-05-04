@@ -1,44 +1,40 @@
-import { AbsoluteFill, Sequence } from "remotion";
+import { AbsoluteFill, Sequence, Audio, staticFile } from "remotion";
 import { SceneHook } from "./scenes/SceneHook";
 import { SceneSearch } from "./scenes/SceneSearch";
-import { SceneClaim } from "./scenes/SceneClaim";
 import { SceneProfile } from "./scenes/SceneProfile";
-import { SceneRollCall } from "./scenes/SceneRollCall";
-import { SceneVouch } from "./scenes/SceneVouch";
-import { SceneEPK } from "./scenes/SceneEPK";
-import { SceneMatch } from "./scenes/SceneMatch";
 import { SceneVoice } from "./scenes/SceneVoice";
 import { SceneVideoCall } from "./scenes/SceneVideoCall";
-import { SceneCopilot } from "./scenes/SceneCopilot";
-import { ScenePay } from "./scenes/ScenePay";
 import { SceneInvoice } from "./scenes/SceneInvoice";
-import { SceneGigs } from "./scenes/SceneGigs";
-import { SceneFund } from "./scenes/SceneFund";
+import { SceneRollCall } from "./scenes/SceneRollCall";
+import { SceneCopilot } from "./scenes/SceneCopilot";
 import { SceneClose } from "./scenes/SceneClose";
 import { COLORS } from "./theme";
 
-// 30fps. Full creative journey: discovery → reputation → collaboration → agentic ops → monetization.
+// 30fps. Re-timed to match a ~75s voiceover (founder narration).
+// Beat map:
+//  Hook        0.0s  — "8 tools to run one job… Thrive·IN replaces all of that."
+//  Search      9.5s  — "Search your name…"
+//  Profile    15.5s  — "creative passport — one link…"
+//  Voice      22.5s  — "Drop any brief, or just a voice note…"
+//  VideoCall  32.0s  — "Instead of switching between Notion, WhatsApp & Drive…"
+//  Invoice    37.5s  — "generate an invoice and track payments…"
+//  RollCall   46.5s  — "becomes a verified credit on your profile…"
+//  Copilot    55.5s  — "Our Thrive·IN Copilot runs the workflow…"
+//  Close      63.0s  — "Find the work. Do the work. Get paid. Prove it. One creative OS."
 const SCENES = [
-  { c: <SceneHook />, d: 360 },        // 12s — hook
-  { c: <SceneSearch />, d: 300 },      // 10s — search "Michelene"
-  { c: <SceneClaim />, d: 270 },       // 9s — claim profile
-  { c: <SceneProfile />, d: 330 },     // 11s — Profile / EPK home (portfolio grid + tabs)
-  { c: <SceneRollCall />, d: 300 },    // 10s — Verified credits / IMDb roll call
-  { c: <SceneVouch />, d: 330 },       // 11s — peer vouches / trust badge
-  { c: <SceneEPK />, d: 330 },         // 11s — one-link EPK + share
-  { c: <SceneMatch />, d: 330 },       // 11s — Smart Match swipe
-  { c: <SceneVoice />, d: 360 },       // 12s — voice-to-brief
-  { c: <SceneVideoCall />, d: 330 },   // 11s — Studio video call
-  { c: <SceneCopilot />, d: 390 },     // 13s — Thrive Copilot agentic tools
-  { c: <ScenePay />, d: 420 },         // 14s — scan receipt → expenses
-  { c: <SceneInvoice />, d: 360 },     // 12s — invoice copilot
-  { c: <SceneGigs />, d: 360 },        // 12s — gigs scout & claim
-  { c: <SceneFund />, d: 330 },        // 11s — ThriveFund
-  { c: <SceneClose />, d: 390 },       // 13s — close
+  { c: <SceneHook />, d: 285 },        //  9.5s
+  { c: <SceneSearch />, d: 180 },      //  6.0s
+  { c: <SceneProfile />, d: 210 },     //  7.0s
+  { c: <SceneVoice />, d: 285 },       //  9.5s
+  { c: <SceneVideoCall />, d: 165 },   //  5.5s
+  { c: <SceneInvoice />, d: 270 },     //  9.0s
+  { c: <SceneRollCall />, d: 270 },    //  9.0s
+  { c: <SceneCopilot />, d: 225 },     //  7.5s
+  { c: <SceneClose />, d: 360 },       // 12.0s
 ];
 
 export const SCENE_PLAN = SCENES;
-export const TOTAL_FRAMES = SCENES.reduce((s, x) => s + x.d, 0);
+export const TOTAL_FRAMES = SCENES.reduce((s, x) => s + x.d, 0); // 2250 frames = 75s @30fps
 
 export const MainVideo = () => {
   let from = 0;
@@ -53,6 +49,7 @@ export const MainVideo = () => {
           </Sequence>
         );
       })}
+      <Audio src={staticFile("audio/vo.mp3")} />
     </AbsoluteFill>
   );
 };

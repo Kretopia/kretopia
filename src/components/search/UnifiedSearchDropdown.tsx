@@ -473,10 +473,10 @@ export function UnifiedSearchDropdown({
                         onOpenChange?.(false);
                         navigate(`/search?q=${encodeURIComponent(knowledgeCard.name)}`);
                       }}
-                      className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-opacity shrink-0"
+                      className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg bg-energy text-energy-foreground hover:brightness-110 shadow-glow-lime transition-all shrink-0"
                     >
                       <UserCheck className="h-3 w-3" />
-                      Claim
+                      Claim Profile
                     </button>
                   </div>
                 )}

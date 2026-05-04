@@ -19,6 +19,9 @@ export interface CallHistoryEntry {
   partnerAvatar: string | null;
   /** "incoming" | "outgoing" */
   direction: "incoming" | "outgoing";
+  /** ID of the AI-generated recap, if one exists for this call. */
+  transcriptId: string | null;
+  transcriptStatus: "pending" | "transcribing" | "ready" | "failed" | null;
 }
 
 /**

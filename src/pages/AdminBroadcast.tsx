@@ -11,21 +11,33 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 const AdminBroadcast = () => {
-  const [title, setTitle] = useState("We've Made ThriveIN Even Better!");
-  const [message, setMessage] = useState(`Hey there! 
-We've been working hard on ThriveIN and just shipped some exciting updates:
+  const [title, setTitle] = useState("New on ThriveIN: Voice tasks, video calls & ThrivePay");
+  const [message, setMessage] = useState(`Hey Creator,
 
-AI-powered matching - Find your perfect collaborator faster
-Project Workspaces - Manage projects with your matches  
-Improved matching experience - Better profiles, smoother swiping
+We shipped a lot this week — here's what's new in your Studio:
 
-Your next creative collaboration is waiting. Come back and:
-• Upload your portfolio to get discovered
-• Swipe to find your perfect match
-• Start collaborating on amazing projects
+🎙️ Voice-to-Task — Tap the mic on ThriveDesk and talk. Copilot turns it into tasks with assignees and due dates.
 
-See you inside!
-The ThriveIN Team`);
+🎬 Studio Room (mobile) — One smooth scroll: mood-tinted cover, Next Step, task feed. Done tasks auto-collapse so the list stays clean.
+
+📞 Video Calls — One-tap from any chat or project. Group calls live in your Circles. Missed-call history in Messages.
+
+🤖 Thrive Agent — A proactive operator inside Desk that can draft invoices, start calls, and log credits for you.
+
+💸 ThrivePay — New Pay tab in the bottom nav. Money Streak rewards you for invoicing, logging expenses, and scanning receipts.
+
+📋 Smart Brief & The Vault — Voice or text → deliverables, moodboard, and tasks. The Vault keeps every project file in one place.
+
+🏆 Founding Member Quest Board — Live progress at /founding-member. Only 135 OG seats — see how close you are.
+
+— Build your Circle —
+Great collabs start with the right people around you. Invite trusted creatives — better Circle = better matches, sharper credits, stronger ThriveStatus.
+
+Top inviters this month get featured in Spotlight + early access to the next drop.
+
+See you inside,
+Ethan
+Founder, ThriveIN`);
   const [link, setLink] = useState("/circle");
   const [testEmail, setTestEmail] = useState("");
   const [sendEmail, setSendEmail] = useState(true);

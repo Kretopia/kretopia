@@ -756,7 +756,9 @@ export function UnifiedSearchDropdown({
             {/* Deep search footer */}
             {(results.length > 0 || knowledgeCard) && (
               <button
-                onClick={handleSubmit as any}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => submitQuery(query)}
                 className="w-full px-4 py-2.5 text-sm text-primary font-medium hover:bg-muted/50 transition-colors border-t border-border flex items-center justify-center gap-2"
               >
                 <Sparkles className="h-3.5 w-3.5" />

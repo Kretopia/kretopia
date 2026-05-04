@@ -23,6 +23,7 @@ Deno.serve(async (req) => {
     );
 
     const now = new Date();
+    const today = now.toISOString().slice(0, 10);
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
@@ -39,6 +40,7 @@ Deno.serve(async (req) => {
       rolesRes,
       wauRes,
       mauRes,
+      dauRes,
     ] = await Promise.all([
       supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
       supabase.from("connections").select("id", { count: "exact", head: true }).eq("status", "accepted"),
@@ -51,6 +53,7 @@ Deno.serve(async (req) => {
       supabase.from("profiles").select("role").not("role", "is", null).neq("role", ""),
       supabase.from("user_session_pings").select("user_id").gte("ping_date", sevenDaysAgo),
       supabase.from("user_session_pings").select("user_id").gte("ping_date", thirtyDaysAgo),
+      supabase.from("user_session_pings").select("user_id").eq("ping_date", today),
     ]);
 
     // Aggregate locations (top 6)
@@ -93,6 +96,7 @@ Deno.serve(async (req) => {
         circles: circlesCount.count || 0,
         projects: projectsCount.count || 0,
         countries: countrySet.size,
+        dau: new Set((dauRes.data || []).map((r: any) => r.user_id)).size,
         wau: new Set((wauRes.data || []).map((r: any) => r.user_id)).size,
         mau: new Set((mauRes.data || []).map((r: any) => r.user_id)).size,
       },

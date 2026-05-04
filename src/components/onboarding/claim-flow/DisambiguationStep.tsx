@@ -177,12 +177,12 @@ export const DisambiguationStep = ({ results, query, onBack, onConfirm, onPasteL
         <Button
           onClick={confirm}
           disabled={selected.size === 0}
-          className="flex-1"
+          className="flex-1 bg-energy text-energy-foreground hover:brightness-110 font-bold uppercase tracking-wide shadow-glow-lime"
           size="lg"
         >
           {selected.size === 0
             ? "Select what's yours"
-            : `Continue with ${selected.size} ${selected.size === 1 ? "credit" : "credits"}`}
+            : `Create my profile (${selected.size})`}
           {selected.size > 0 && <ArrowRight className="ml-2 h-4 w-4" />}
         </Button>
       </div>

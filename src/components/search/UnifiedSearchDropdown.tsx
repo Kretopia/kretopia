@@ -553,10 +553,10 @@ export function UnifiedSearchDropdown({
                           onOpenChange?.(false);
                           navigate(`/profile/${highlightedCreator.id}?showClaim=true`);
                         }}
-                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 transition-colors shrink-0"
+                        className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg bg-energy text-energy-foreground hover:brightness-110 shadow-glow-lime transition-all shrink-0"
                       >
                         <UserCheck className="h-3 w-3" />
-                        Claim
+                        Claim Profile
                       </button>
                     </div>
                   )}

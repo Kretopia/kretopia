@@ -5,6 +5,7 @@ import {
   renderContextPreamble,
   getOrCreateCopilotThread,
 } from "../_shared/copilotContext.ts";
+import { embedText, toPgVector } from "../_shared/embed.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

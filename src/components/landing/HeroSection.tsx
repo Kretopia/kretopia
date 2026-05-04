@@ -133,12 +133,50 @@ export const HeroSection = () => {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const q = query.trim();
-    if (!q) return;
-    // Route to unified Claim flow: Search → Disambiguate → Preview → Email
-    navigate(`/claim?source=landing&q=${encodeURIComponent(q)}`);
+    if (!q || submitting) return;
+    setSubmitting(true);
+    setShowSuggestions(false);
+
+    // Pre-fetch claim search results so Auth lands on "Which of these are yours?" directly.
+    // Cache by query (24h) so repeat searches show the SAME results — no more flipping people.
+    try {
+      const cacheKey = `claim_search:${q.toLowerCase()}`;
+      let cached: any = null;
+      try {
+        const raw = sessionStorage.getItem(cacheKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.ts && Date.now() - parsed.ts < 24 * 60 * 60 * 1000) cached = parsed;
+        }
+      } catch {}
+
+      let results: any[] = cached?.results || [];
+      if (!cached) {
+        const { data } = await supabase.functions.invoke("search-credits-web", { body: { query: q } });
+        results = data?.results || [];
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), query: q, results }));
+        } catch {}
+      }
+
+      // Stash for the claim flow on /auth to consume immediately
+      try {
+        sessionStorage.setItem(
+          "claim_intent",
+          JSON.stringify({ q, source: "landing", results, ts: Date.now() }),
+        );
+      } catch {}
+    } catch (err) {
+      console.warn("[hero-search] prefetch failed, falling back to in-auth search", err);
+    } finally {
+      setSubmitting(false);
+      navigate(`/auth?tab=signup&claim=1&q=${encodeURIComponent(q)}`);
+    }
   };
 
   const handleSuggestionClick = (s: Suggestion) => {

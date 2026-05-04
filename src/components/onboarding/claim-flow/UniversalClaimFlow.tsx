@@ -22,7 +22,9 @@ export const UniversalClaimFlow = ({
   redirectAfter,
   contextId,
 }: Props) => {
-  const urlQuery = new URLSearchParams(window.location.search).get("q") || "";
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlQuery = urlParams.get("q") || "";
+  const isClaimEntry = urlParams.get("claim") === "1";
   const [step, setStep] = useState<FlowStep>("search");
   const [query, setQuery] = useState(initialQuery || urlQuery || "");
   const [results, setResults] = useState<WebCreditResult[]>([]);
@@ -40,12 +42,19 @@ export const UniversalClaimFlow = ({
       // Only honor recent intents (10 min)
       if (parsed.ts && Date.now() - parsed.ts > 10 * 60 * 1000) return;
       setQuery(intentQuery);
-      if (Array.isArray(parsed.results) && parsed.results.length > 0) {
+      if (Array.isArray(parsed.results)) {
         setResults(parsed.results);
         setStep("disambiguate");
       }
     } catch {}
-  }, []);
+  }, [urlQuery]);
+
+  useEffect(() => {
+    if (isClaimEntry && urlQuery && results.length === 0) {
+      setQuery(urlQuery);
+      setStep("disambiguate");
+    }
+  }, [isClaimEntry, results.length, urlQuery]);
 
   const handleResults = (r: WebCreditResult[], q: string) => {
     setQuery(q);

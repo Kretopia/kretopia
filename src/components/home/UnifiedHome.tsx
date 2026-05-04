@@ -33,6 +33,8 @@ import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
 import { FoundingMemberCard } from "@/components/founding/FoundingMemberCard";
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
+import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
+import { MagicHomeHero } from "@/components/home/MagicHomeHero";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
@@ -83,6 +85,9 @@ export const UnifiedHome = () => {
   // Live activity pulse
   const [activityMsg, setActivityMsg] = useState("");
   const [activityNames, setActivityNames] = useState<string[]>([]);
+
+  // First-Win celebration sheet (one-shot for fresh accounts)
+  const [showFirstWin, setShowFirstWin] = useState(false);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -317,6 +322,14 @@ export const UnifiedHome = () => {
       setProfileFull(profileFullRes.data);
       setMyCredits(creditsCount.count || 0);
       setMyConnections(connectionsCount.count || 0);
+
+      // First-Win one-shot — fresh accounts that haven't seen it
+      const seen = localStorage.getItem(`first_win_seen_${user.id}`);
+      const created = profileFullRes.data?.created_at ? new Date(profileFullRes.data.created_at).getTime() : 0;
+      const ageHrs = (Date.now() - created) / 3_600_000;
+      if (!seen && ageHrs < 24 && profileFullRes.data?.onboarding_completed) {
+        setTimeout(() => setShowFirstWin(true), 600);
+      }
     };
     fetchAuth();
   }, [user]);
@@ -571,12 +584,6 @@ export const UnifiedHome = () => {
       {/* ═══════════ AUTH HUB ═══════════ */}
       {user && profile && (
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
-          {/* New-user setup checklist — only shows while profile completion < 50% */}
-          {checkProfileCompletion(profileFull || profile, myCredits).percentage < 50 && (
-            <div className="mb-4">
-              <GetStartedChecklist />
-            </div>
-          )}
           {/* Compact greeting + messages shortcut */}
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-muted-foreground">
@@ -586,6 +593,29 @@ export const UnifiedHome = () => {
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </Link>
           </div>
+
+          {/* Magic Home — single hero CTA for fresh accounts (<24h) or low-completion profiles */}
+          {(() => {
+            const created = profileFull?.created_at ? new Date(profileFull.created_at).getTime() : 0;
+            const ageHrs = (Date.now() - created) / 3_600_000;
+            const pct = checkProfileCompletion(profileFull || profile, myCredits).percentage;
+            const isMagic = ageHrs < 72 || pct < 30;
+            return isMagic ? (
+              <MagicHomeHero
+                profile={profileFull || profile}
+                creditsCount={myCredits}
+                connectionsCount={myConnections}
+                className="mb-4"
+              />
+            ) : null;
+          })()}
+
+          {/* New-user setup checklist — only shows while profile completion < 50% */}
+          {checkProfileCompletion(profileFull || profile, myCredits).percentage < 50 && (
+            <div className="mb-4">
+              <GetStartedChecklist />
+            </div>
+          )}
 
           {/* Wave 3: Profile Hub Card */}
           <ProfileHubCard
@@ -930,7 +960,8 @@ export const UnifiedHome = () => {
         )}
 
         {/* ── CTA CARD ── */}
-        {(!user || !isPro) && (
+        {/* ── CTA CARD ── Guests always; auth users only after they've taken an action */}
+        {(!user || (!isPro && (myCredits > 0 || myConnections > 0))) && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -981,6 +1012,7 @@ export const UnifiedHome = () => {
 
         <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />
       </div>
+      {user && <FirstWinSheet open={showFirstWin} onOpenChange={setShowFirstWin} />}
       {/* Sticky mobile CTA removed — dismissible popup banner handles guest CTA */}
     </div>
   );

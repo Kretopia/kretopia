@@ -5,11 +5,13 @@ import { Mic, MicOff, Video, VideoOff, Loader2, X, Users } from "lucide-react";
 interface Props {
   projectName: string;
   joining: boolean;
-  /** Called when user taps "Join". Pass mic/cam preferences. */
+  /** Called when user taps the primary CTA. Pass mic/cam preferences. */
   onJoin: (opts: { mic: boolean; cam: boolean }) => void;
   onCancel: () => void;
   /** Optional preview of who's already in the room. */
   participantsPreview?: { name: string; avatar?: string | null }[];
+  /** Label for the primary CTA. Defaults to "Start call" (host flow). */
+  ctaLabel?: string;
 }
 
 /**

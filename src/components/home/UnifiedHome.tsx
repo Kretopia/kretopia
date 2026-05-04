@@ -942,7 +942,8 @@ export const UnifiedHome = () => {
         )}
 
         {/* ── CTA CARD ── */}
-        {(!user || !isPro) && (
+        {/* ── CTA CARD ── Guests always; auth users only after they've taken an action */}
+        {(!user || (!isPro && (myCredits > 0 || myConnections > 0))) && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -993,6 +994,7 @@ export const UnifiedHome = () => {
 
         <QuickPostModal open={quickPostType !== null} onOpenChange={(open) => !open && setQuickPostType(null)} type={quickPostType || "gig"} />
       </div>
+      {user && <FirstWinSheet open={showFirstWin} onOpenChange={setShowFirstWin} />}
       {/* Sticky mobile CTA removed — dismissible popup banner handles guest CTA */}
     </div>
   );

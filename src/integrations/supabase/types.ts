@@ -682,6 +682,122 @@ export type Database = {
         }
         Relationships: []
       }
+      call_action_items: {
+        Row: {
+          assignee_name: string | null
+          assignee_user_id: string | null
+          created_at: string
+          detail: string | null
+          due_at: string | null
+          id: string
+          kind: string
+          pushed_to_id: string | null
+          pushed_to_kind: string | null
+          status: string
+          title: string
+          transcript_id: string
+          updated_at: string
+        }
+        Insert: {
+          assignee_name?: string | null
+          assignee_user_id?: string | null
+          created_at?: string
+          detail?: string | null
+          due_at?: string | null
+          id?: string
+          kind: string
+          pushed_to_id?: string | null
+          pushed_to_kind?: string | null
+          status?: string
+          title: string
+          transcript_id: string
+          updated_at?: string
+        }
+        Update: {
+          assignee_name?: string | null
+          assignee_user_id?: string | null
+          created_at?: string
+          detail?: string | null
+          due_at?: string | null
+          id?: string
+          kind?: string
+          pushed_to_id?: string | null
+          pushed_to_kind?: string | null
+          status?: string
+          title?: string
+          transcript_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_action_items_transcript_id_fkey"
+            columns: ["transcript_id"]
+            isOneToOne: false
+            referencedRelation: "call_transcripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      call_transcripts: {
+        Row: {
+          call_id: string
+          call_kind: string
+          circle_id: string | null
+          created_at: string
+          created_by: string
+          duration_seconds: number | null
+          error: string | null
+          id: string
+          language: string | null
+          participants: Json
+          project_id: string | null
+          recording_id: string | null
+          recording_url: string | null
+          status: string
+          summary: string | null
+          transcript: string | null
+          updated_at: string
+        }
+        Insert: {
+          call_id: string
+          call_kind: string
+          circle_id?: string | null
+          created_at?: string
+          created_by: string
+          duration_seconds?: number | null
+          error?: string | null
+          id?: string
+          language?: string | null
+          participants?: Json
+          project_id?: string | null
+          recording_id?: string | null
+          recording_url?: string | null
+          status?: string
+          summary?: string | null
+          transcript?: string | null
+          updated_at?: string
+        }
+        Update: {
+          call_id?: string
+          call_kind?: string
+          circle_id?: string | null
+          created_at?: string
+          created_by?: string
+          duration_seconds?: number | null
+          error?: string | null
+          id?: string
+          language?: string | null
+          participants?: Json
+          project_id?: string | null
+          recording_id?: string | null
+          recording_url?: string | null
+          status?: string
+          summary?: string | null
+          transcript?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       campaign_moderation_queue: {
         Row: {
           ai_reason: string | null
@@ -1288,6 +1404,7 @@ export type Database = {
           ended_at: string | null
           id: string
           participants: Json
+          recording_id: string | null
           room_name: string
           room_url: string
           started_at: string
@@ -1300,6 +1417,7 @@ export type Database = {
           ended_at?: string | null
           id?: string
           participants?: Json
+          recording_id?: string | null
           room_name: string
           room_url: string
           started_at?: string
@@ -1312,6 +1430,7 @@ export type Database = {
           ended_at?: string | null
           id?: string
           participants?: Json
+          recording_id?: string | null
           room_name?: string
           room_url?: string
           started_at?: string
@@ -3320,6 +3439,7 @@ export type Database = {
           invited_user_id: string | null
           missed_at: string | null
           participants: Json
+          recording_id: string | null
           room_name: string
           room_url: string
           started_at: string
@@ -3333,6 +3453,7 @@ export type Database = {
           invited_user_id?: string | null
           missed_at?: string | null
           participants?: Json
+          recording_id?: string | null
           room_name: string
           room_url: string
           started_at?: string
@@ -3346,6 +3467,7 @@ export type Database = {
           invited_user_id?: string | null
           missed_at?: string | null
           participants?: Json
+          recording_id?: string | null
           room_name?: string
           room_url?: string
           started_at?: string
@@ -10330,6 +10452,7 @@ export type Database = {
           id: string
           participants: Json
           project_id: string
+          recording_id: string | null
           room_url: string
           started_at: string
           started_by: string
@@ -10341,6 +10464,7 @@ export type Database = {
           id?: string
           participants?: Json
           project_id: string
+          recording_id?: string | null
           room_url: string
           started_at?: string
           started_by: string
@@ -10352,6 +10476,7 @@ export type Database = {
           id?: string
           participants?: Json
           project_id?: string
+          recording_id?: string | null
           room_url?: string
           started_at?: string
           started_by?: string
@@ -14904,6 +15029,13 @@ export type Database = {
           }
       use_partner_code: {
         Args: { p_code: string; p_user_id: string }
+        Returns: boolean
+      }
+      user_can_view_call_transcript: {
+        Args: {
+          _t: Database["public"]["Tables"]["call_transcripts"]["Row"]
+          _user: string
+        }
         Returns: boolean
       }
       user_has_project_access: {

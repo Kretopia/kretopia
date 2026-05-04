@@ -138,6 +138,7 @@ export const PostOpportunityDialog = ({
     // Structured barter
     barter_gifted_value_usd: "",
     barter_posting_deadline: "",
+    application_deadline: "",
     whitelisting_allowed: false,
   });
 

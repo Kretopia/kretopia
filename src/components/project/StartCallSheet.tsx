@@ -78,6 +78,13 @@ export const StartCallSheet = ({
   const [selected, setSelected] = useState<Map<string, StartCallPerson>>(new Map());
   const [generatingLink, setGeneratingLink] = useState(false);
 
+  // Stable key from member ids so a new array reference each render
+  // doesn't re-fire this effect (which was clobbering selection / closing UX).
+  const memberKey = useMemo(
+    () => projectMembers.map((p) => p.user_id).sort().join(","),
+    [projectMembers],
+  );
+
   // Reset on open / preselect project members for project calls
   useEffect(() => {
     if (open) {
@@ -89,7 +96,8 @@ export const StartCallSheet = ({
       setSelected(m);
       setTab(projectId ? "project" : "network");
     }
-  }, [open, projectId, projectMembers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, projectId, memberKey]);
 
   // Load connections
   useEffect(() => {

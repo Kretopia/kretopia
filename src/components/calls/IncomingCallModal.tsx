@@ -103,6 +103,7 @@ export const IncomingCallModal = ({ call, onClose }: Props) => {
         token={joinToken}
         callId={callId}
         userName={user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest"}
+        lobbyCta="Join call"
       />
     );
   }

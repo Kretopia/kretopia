@@ -7014,6 +7014,7 @@ export type Database = {
       }
       opportunities: {
         Row: {
+          application_deadline: string | null
           barter_gifted_value_usd: number | null
           barter_offering: string | null
           barter_posting_deadline: string | null
@@ -7064,6 +7065,7 @@ export type Database = {
           whitelisting_allowed: boolean | null
         }
         Insert: {
+          application_deadline?: string | null
           barter_gifted_value_usd?: number | null
           barter_offering?: string | null
           barter_posting_deadline?: string | null
@@ -7114,6 +7116,7 @@ export type Database = {
           whitelisting_allowed?: boolean | null
         }
         Update: {
+          application_deadline?: string | null
           barter_gifted_value_usd?: number | null
           barter_offering?: string | null
           barter_posting_deadline?: string | null

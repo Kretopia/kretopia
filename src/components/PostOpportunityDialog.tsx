@@ -138,6 +138,7 @@ export const PostOpportunityDialog = ({
     // Structured barter
     barter_gifted_value_usd: "",
     barter_posting_deadline: "",
+    application_deadline: "",
     whitelisting_allowed: false,
   });
 
@@ -286,6 +287,7 @@ export const PostOpportunityDialog = ({
           usage_exclusive: formData.usage_exclusive,
           barter_gifted_value_usd: formData.barter_gifted_value_usd ? parseFloat(formData.barter_gifted_value_usd) : null,
           barter_posting_deadline: formData.barter_posting_deadline || null,
+          application_deadline: formData.application_deadline || null,
           whitelisting_allowed: formData.whitelisting_allowed,
         } as any)
         .select()
@@ -307,7 +309,7 @@ export const PostOpportunityDialog = ({
         barter_offering: "", barter_requesting: "", platform_requirements: [],
         min_followers: "", content_deliverables: [],
         usage_type: "", usage_territory: "", usage_duration: "", usage_exclusive: false,
-        barter_gifted_value_usd: "", barter_posting_deadline: "", whitelisting_allowed: false,
+        barter_gifted_value_usd: "", barter_posting_deadline: "", application_deadline: "", whitelisting_allowed: false,
       });
       setImageFile(null);
       setImagePreview("");
@@ -680,7 +682,18 @@ export const PostOpportunityDialog = ({
                 </div>
               </div>
 
-              {/* Usage Rights — applies to anything involving content (paid or barter) */}
+              <div className="space-y-2">
+                <Label htmlFor="application-deadline" className="flex items-center gap-2">
+                  Application Deadline
+                  <span className="text-[10px] font-normal text-muted-foreground">(optional — auto-closes the gig after this date)</span>
+                </Label>
+                <Input
+                  id="application-deadline"
+                  type="date"
+                  value={formData.application_deadline}
+                  onChange={(e) => setFormData(prev => ({ ...prev, application_deadline: e.target.value }))}
+                />
+              </div>
               <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-amber-300 bg-amber-500/5">
                 <div className="flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-300">
                   <Shield className="h-4 w-4" />

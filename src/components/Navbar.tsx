@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
-  DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2, Rocket,
+  DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
   MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus
 } from "lucide-react";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
@@ -107,7 +107,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/desk", icon: FolderKanban, label: "Desk" },
         { path: "/circle", icon: Sparkles, label: "Match" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-        { path: "/fund", icon: Rocket, label: "Fund" },
+        { path: "/thrivepay", icon: Wallet, label: "Pay" },
       ];
 
   const [searchOpen, setSearchOpen] = useState(false);
@@ -161,6 +161,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
             {desktopNavItems.map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path || 
                 (path === "/desk" && location.pathname.startsWith("/desk")) ||
+                (path === "/thrivepay" && (location.pathname.startsWith("/thrivepay") || location.pathname.startsWith("/accounting"))) ||
                 (path === "/circle" && location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"));
               return (
                 <Link

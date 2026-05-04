@@ -28,6 +28,8 @@ interface VideoCallSheetProps {
   projectId?: string | null;
   directCallId?: string | null;
   roomName?: string | null;
+  /** CTA shown in the pre-call lobby. Defaults to "Start call" (host flow). */
+  lobbyCta?: string;
 }
 
 type Phase = "lobby" | "live";
@@ -44,6 +46,7 @@ export const VideoCallSheet = ({
   projectId,
   directCallId,
   roomName,
+  lobbyCta = "Start call",
 }: VideoCallSheetProps) => {
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -231,6 +234,7 @@ export const VideoCallSheet = ({
             <PreCallLobby
               projectName={projectName}
               joining={joining}
+              ctaLabel={lobbyCta}
               onCancel={() => onOpenChange(false)}
               onJoin={(opts) => {
                 setJoinPrefs(opts);

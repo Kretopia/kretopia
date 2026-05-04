@@ -50,10 +50,10 @@ export const SignInForm = ({
     setEmailError("");
     setMagicLoading(true);
     try {
-      const siteUrl = (import.meta as any).env?.VITE_SITE_URL || "https://thrivein.io";
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${siteUrl}/circle` },
+        // Stay on the active origin (preview / prod) and let DefaultRoute decide where to send them.
+        options: { emailRedirectTo: window.location.origin },
       });
       if (error) {
         toast({ title: "Couldn't send link", description: error.message, variant: "destructive" });

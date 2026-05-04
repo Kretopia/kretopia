@@ -417,7 +417,7 @@ const Slide11 = () => (
               "500+ events produced internationally",
               "Built revenue-generating creative brands",
               "Secured prior grant funding for earlier iteration",
-              "Rebuilt V3 leveraging AI-augmented development",
+              "Rebuilt V3 leveraging Smart-augmented development",
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-4">
                 <div className="w-2 h-2 rounded-full bg-primary mt-3 shrink-0" />

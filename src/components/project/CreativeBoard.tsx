@@ -166,7 +166,7 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
           image_url: data.imageUrl,
         });
         if (insertErr) throw insertErr;
-        toast({ title: "AI image generated!" });
+        toast({ title: "Image generated!" });
         setAiPrompt(""); setAiDialogOpen(false);
       } else {
         toast({ title: "No image returned", description: data?.text || "Try a different prompt", variant: "destructive" });
@@ -311,7 +311,7 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Generate with AI</DialogTitle>
+                <DialogTitle>Generate Image</DialogTitle>
                 <DialogDescription>Describe the visual concept you want to explore</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-2">
@@ -341,7 +341,7 @@ export function CreativeBoard({ projectId, currentUserId }: CreativeBoardProps) 
             { id: "all", label: "All", icon: LayoutGrid },
             { id: "pins", label: "Pins", icon: Image },
             { id: "notes", label: "Notes", icon: StickyNote },
-            { id: "ai", label: "AI", icon: Sparkles },
+            { id: "ai", label: "Generate", icon: Sparkles },
           ].map((s) => {
             const Icon = s.icon;
             return (

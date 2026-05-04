@@ -41,7 +41,7 @@ export const NearbySidebar = ({
       <Button className="flex-1" variant="outline" onClick={onAddLocation}>
         <Camera className="h-4 w-4 mr-1" />Pin a Spot
       </Button>
-      <Button variant="outline" size="icon" onClick={onSeedLocations} title="AI Discover Spots">
+      <Button variant="outline" size="icon" onClick={onSeedLocations} title="Discover Spots">
         <Sparkles className="h-4 w-4" />
       </Button>
     </div>

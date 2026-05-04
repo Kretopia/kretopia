@@ -48,10 +48,10 @@ export const BeforeAfterSection = () => {
             </p>
             <ul className="space-y-2.5">
               {[
-                "AI-verified credits",
+                "Verified credits",
                 "Peer & brand endorsements",
                 "Living, searchable profile",
-                "AI-matched opportunities",
+                "Smart-matched opportunities",
                 "Escrow-protected payments",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-[11px] text-foreground">

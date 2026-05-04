@@ -30,7 +30,7 @@ const FINANCE_FEATURES = [
   },
   {
     icon: Bot,
-    title: "AI Financial Advisor",
+    title: "Money Copilot",
     description: "Personalized insights on spending patterns, cash flow health & tax optimization tips.",
   },
 ];

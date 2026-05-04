@@ -11,7 +11,7 @@ export const AIMatchingShowcase = () => {
         <div className="text-center mb-10 sm:mb-12 md:mb-16">
           <div className="mb-3 sm:mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-primary">
             <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span>AI-Powered Collaboration Network</span>
+            <span>Smart Collaboration Network</span>
           </div>
           <h2 className="mb-4 sm:mb-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight tracking-tight px-2">
             Swipe to Find{" "}

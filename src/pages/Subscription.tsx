@@ -25,7 +25,7 @@ const FOUNDER_FEATURES = [
   "Premium Partner Membership (when launched)",
   "All Creator Pro features included forever",
   "Priority support & early feature access",
-  "All AI tools & analytics unlocked",
+  "All Smart tools & analytics unlocked",
   "Founding member recognition",
 ];
 

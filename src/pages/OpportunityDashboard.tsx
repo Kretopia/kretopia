@@ -653,7 +653,7 @@ Return ONLY valid JSON array:
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="date">By Date</SelectItem>
-                  <SelectItem value="score">By AI Score</SelectItem>
+                  <SelectItem value="score">By Match Score</SelectItem>
                 </SelectContent>
               </Select>
               <Button
@@ -689,8 +689,8 @@ Return ONLY valid JSON array:
           ) : !isPro && applicants.length > 0 ? (
             <FreeTierGate
               feature="aiApplicantRankings"
-              featureLabel="AI Applicant Ranking"
-              description="Upgrade to Pro for unlimited AI applicant ranking, match scores, and shortlisting."
+              featureLabel="Smart Applicant Ranking"
+              description="Upgrade to Pro for unlimited Smart applicant ranking, match scores, and shortlisting."
             >
               <Card className="mb-6 border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
                 <CardContent className="flex items-center gap-4 py-4">

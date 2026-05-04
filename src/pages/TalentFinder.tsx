@@ -65,7 +65,7 @@ export default function TalentFinder() {
 
       setMatches(data?.suggestions || []);
       if (data?.suggestions?.length > 0) {
-        toast({ title: `${data.suggestions.length} matches found`, description: "AI-ranked by relevance to your brief" });
+        toast({ title: `${data.suggestions.length} matches found`, description: "Ranked by relevance to your brief" });
       } else {
         toast({ title: "No matches yet", description: "Try broadening your brief or check back as more creators join." });
       }

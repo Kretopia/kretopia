@@ -857,7 +857,7 @@ export default function Onboarding() {
                       className="text-xs font-medium inline-flex items-center gap-1 text-primary hover:text-primary/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       {generatingBio ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                      {bio ? "Rewrite with AI" : "Suggest with AI"}
+                      {bio ? "Rewrite for me" : "Suggest a bio"}
                     </button>
                   </div>
                   <Textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="A brief professional summary — or tap ✨ above to draft one." className="min-h-[60px] resize-none text-sm" />

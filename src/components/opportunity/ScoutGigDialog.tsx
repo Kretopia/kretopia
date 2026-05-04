@@ -53,7 +53,7 @@ export const ScoutGigDialog = ({ trigger }: ScoutGigDialogProps) => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setResult(data.opportunity);
-      toast({ title: "Gig scouted!", description: "AI extracted and created the listing" });
+      toast({ title: "Gig scouted!", description: "Extracted and created the listing" });
     } catch (err: any) {
       toast({ title: "Extraction failed", description: err.message, variant: "destructive" });
     } finally {
@@ -178,7 +178,7 @@ export const ScoutGigDialog = ({ trigger }: ScoutGigDialogProps) => {
 
             <Button className="w-full gap-2" onClick={handleExtract} disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scan className="h-4 w-4" />}
-              {loading ? "AI is extracting details..." : "Extract & Create Gig"}
+              {loading ? "Extracting details..." : "Extract & Create Gig"}
             </Button>
           </div>
         ) : (

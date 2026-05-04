@@ -92,7 +92,7 @@ const OutreachTab = () => {
 
       if (addEmailTo) setEmailForm((prev) => ({ ...prev, subject: data.subject, body: data.body }));
       else setComposeForm((prev) => ({ ...prev, subject: data.subject, body: data.body, to: target?.email || prev.to }));
-      toast.success("AI draft generated");
+      toast.success("Draft generated");
     } catch (e) {
       console.error(e);
       toast.error("Failed to generate email");
@@ -200,7 +200,7 @@ const OutreachTab = () => {
       if (data.error) { toast.error(data.error); return; }
       bulk.setters.setBulkSubject(data.subject);
       bulk.setters.setBulkBody(data.body);
-      toast.success("AI draft generated");
+      toast.success("Draft generated");
     } catch { toast.error("Failed to generate"); } finally { setGenerating(false); }
   };
 

@@ -120,7 +120,7 @@ export const EditOpportunityDialog = ({
 
       // Reload with enhanced data
       await loadOpportunity();
-      toast({ title: "Enhanced!", description: "AI has polished your gig listing" });
+      toast({ title: "Enhanced!", description: "Polished your gig listing" });
     } catch (error: any) {
       console.error('AI enhance error:', error);
       toast({ title: "Enhancement failed", description: error.message || "Try again shortly", variant: "destructive" });
@@ -144,7 +144,7 @@ export const EditOpportunityDialog = ({
 
       // Reload to show new image
       await loadOpportunity();
-      toast({ title: "Cover generated!", description: "AI created a cover image for your gig" });
+      toast({ title: "Cover generated!", description: "Generated a cover image for your gig" });
     } catch (error: any) {
       console.error('AI image error:', error);
       toast({ title: "Image generation failed", description: error.message || "Try again shortly", variant: "destructive" });

@@ -206,7 +206,7 @@ Return top 3 reasons why this user would benefit from expanding their network in
       if (error) throw error;
 
       toast({
-        title: "AI Analysis Complete",
+        title: "Match analysis complete",
         description: "Found personalized connection recommendations for you"
       });
 
@@ -215,7 +215,7 @@ Return top 3 reasons why this user would benefit from expanding their network in
     } catch (error) {
       console.error('Error with AI analysis:', error);
       toast({
-        title: "AI analysis unavailable",
+        title: "Match analysis unavailable",
         description: "Showing standard recommendations",
         variant: "destructive"
       });

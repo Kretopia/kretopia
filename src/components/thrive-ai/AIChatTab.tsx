@@ -134,14 +134,14 @@ const AIChatTab = () => {
           }
         },
         onError: (err) => {
-          toast({ title: "AI Error", description: err, variant: "destructive" });
+          toast({ title: "Copilot Error", description: err, variant: "destructive" });
           setIsLoading(false);
         },
         signal: controller.signal,
       });
     } catch (e: any) {
       if (e.name !== "AbortError") {
-        toast({ title: "Error", description: "Failed to connect to AI", variant: "destructive" });
+        toast({ title: "Error", description: "Failed to connect to Copilot", variant: "destructive" });
       }
       setIsLoading(false);
     }

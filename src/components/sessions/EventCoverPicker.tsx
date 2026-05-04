@@ -127,7 +127,7 @@ export const EventCoverPicker = ({
       if (msg.includes("429") || msg.includes("rate")) {
         toast({ title: "Too many requests", description: "Please wait a moment and try again.", variant: "destructive" });
       } else if (msg.includes("402")) {
-        toast({ title: "Credits needed", description: "AI credits have been exhausted.", variant: "destructive" });
+        toast({ title: "Credits needed", description: "Generation credits have been exhausted.", variant: "destructive" });
       } else {
         toast({ title: "Generation failed", description: msg, variant: "destructive" });
       }

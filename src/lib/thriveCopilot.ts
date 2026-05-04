@@ -98,7 +98,7 @@ export async function streamCopilot({
     } else if (resp.status === 429) {
       onError("Slow down a sec — too many requests. Try again in a moment.");
     } else if (resp.status === 402) {
-      onError("Out of AI credits this month. Top up in Settings → Workspace → Usage.");
+      onError("Out of Copilot credits this month. Top up in Settings → Workspace → Usage.");
     } else {
       onError(data?.error || `Request failed (${resp.status})`);
     }

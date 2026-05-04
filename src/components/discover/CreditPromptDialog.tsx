@@ -19,7 +19,7 @@ export const CreditPromptDialog = ({ open, onOpenChange }: CreditPromptDialogPro
 
   const proFeatures = [
     "Unlimited daily swipes",
-    "AI match explanations",
+    "Smart Match explanations",
     "Undo swipe feature (3/day)",
     "Profile verification badge",
     "Unlimited work credits & portfolio",

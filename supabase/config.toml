@@ -151,4 +151,6 @@ project_id = "kwmcocsitwssrtzkdojh"
     verify_jwt = false
   [functions.redeem-project-share]
     verify_jwt = false
+  [functions.tts-temp]
+    verify_jwt = false
 

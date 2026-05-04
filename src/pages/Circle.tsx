@@ -62,6 +62,23 @@ export default function Circle() {
     }
   }, [tabParam]);
 
+  // Celebratory welcome handoff after universal claim flow
+  useEffect(() => {
+    if (searchParams.get('welcome') === 'match') {
+      setActiveTab('foryou');
+      import('sonner').then(({ toast }) => {
+        toast.success("We found you a match!", {
+          description: "Tap the first card to say hi.",
+          duration: 5000,
+        });
+      }).catch(() => {});
+      const next = new URLSearchParams(searchParams);
+      next.delete('welcome');
+      navigate(`/circle?${next.toString()}`, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     const checkProfileVisibility = async () => {
       if (!user?.id) return;

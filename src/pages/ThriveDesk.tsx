@@ -5,7 +5,7 @@ import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { WorkspaceSidebar } from "@/components/project/WorkspaceSidebar";
 import { WorkspaceQuickPanel } from "@/components/project/WorkspaceQuickPanel";
-import { DeskTabBar } from "@/components/project/DeskTabBar";
+import { StudioToolBar } from "@/components/project/StudioToolBar";
 import { ConfirmCreditBanner } from "@/components/project/ConfirmCreditBanner";
 import { AgentModeBanner } from "@/components/project/AgentModeBanner";
 import { ProjectInviteAcceptBanner } from "@/components/project/ProjectInviteAcceptBanner";
@@ -178,40 +178,28 @@ const ThriveDesk = () => {
           />
         </header>
 
-        {/* Project Flow Timeline + Next Step + Tab Bar — desktop only */}
-        <div className={cn(isMobile && "hidden")}>
-          <ProjectFlowTimeline
-            flow={flow}
-            onStageClick={(_stageId, tab) => setActiveTab(tab)}
-            onPinStage={handlePinStage}
-          />
-          <NextStepBar nextStep={flow.nextStep} onAction={goToTabWithIntent} />
-          <DeskTabBar
+        {/* Desktop-only flow timeline + next step (only when in Studio) */}
+        {!isMobile && isStudioRoom && (
+          <div>
+            <ProjectFlowTimeline
+              flow={flow}
+              onStageClick={(_stageId, tab) => setActiveTab(tab)}
+              onPinStage={handlePinStage}
+            />
+            <NextStepBar nextStep={flow.nextStep} onAction={goToTabWithIntent} />
+          </div>
+        )}
+
+        {/* Unified tool bar — same on mobile and desktop when drilled into a tool */}
+        {!isStudioRoom && (
+          <StudioToolBar
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            taskCount={tasks.filter(t => t.status !== 'done').length}
-            messageCount={messages.length}
             workspaceType={project?.workspace_type ?? "general"}
             dealType={project?.deal_type ?? "paid"}
+            taskCount={tasks.filter(t => t.status !== 'done').length}
+            messageCount={messages.length}
           />
-        </div>
-
-        {/* Mobile back-to-hub bar — visible when drilled into a section */}
-        {isMobile && !isStudioRoom && (
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-card/60 shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2 text-xs gap-1"
-              onClick={() => setActiveTab("today")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Hub
-            </Button>
-            <span className="text-xs font-semibold capitalize text-muted-foreground truncate">
-              {activeTab.replace(/_/g, " ")}
-            </span>
-          </div>
         )}
 
         {/* Agent Mode Banner — visible when agent_mode is true */}
@@ -258,8 +246,8 @@ const ThriveDesk = () => {
             />
           )}
 
-          {/* Quick Panel Toggle - Desktop only */}
-          {!quickPanelOpen && (
+          {/* Quick Panel Toggle - Desktop only, hidden in Studio */}
+          {!isStudioRoom && !quickPanelOpen && (
             <div className="hidden xl:flex items-start pt-3 pr-2 shrink-0">
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setQuickPanelOpen(true)}>
                 <PanelRightOpen className="h-4 w-4" />
@@ -267,8 +255,8 @@ const ThriveDesk = () => {
             </div>
           )}
 
-          {/* Right Quick Panel - Desktop only */}
-          {quickPanelOpen && (
+          {/* Right Quick Panel - Desktop only, hidden in Studio */}
+          {!isStudioRoom && quickPanelOpen && (
             <div className="hidden xl:block w-80 border-l border-border bg-card/30 overflow-y-auto shrink-0">
               <div className="flex items-center justify-between px-4 pt-3 pb-1">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick Panel</span>

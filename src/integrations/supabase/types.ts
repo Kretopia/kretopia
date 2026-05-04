@@ -12794,6 +12794,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_session_pings: {
+        Row: {
+          first_ping_at: string
+          last_ping_at: string
+          ping_count: number
+          ping_date: string
+          user_id: string
+        }
+        Insert: {
+          first_ping_at?: string
+          last_ping_at?: string
+          ping_count?: number
+          ping_date?: string
+          user_id: string
+        }
+        Update: {
+          first_ping_at?: string
+          last_ping_at?: string
+          ping_count?: number
+          ping_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       verification_requests: {
         Row: {
           ai_decision: string | null
@@ -15012,6 +15036,7 @@ export type Database = {
         Args: { p_referred_id: string; p_referrer_id: string }
         Returns: undefined
       }
+      record_session_ping: { Args: never; Returns: undefined }
       resolve_project_share_link: {
         Args: { _password?: string; _token: string }
         Returns: {

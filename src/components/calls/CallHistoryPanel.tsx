@@ -90,17 +90,34 @@ export const CallHistoryPanel = () => {
                       <span>· {formatDistanceToNow(new Date(c.started_at), { addSuffix: true })}</span>
                     </p>
                   </div>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    aria-label={`Call ${c.partnerName} back`}
-                    disabled={starting || !c.partnerId}
-                    onClick={() => handleCallBack(c.partnerId, c.partnerName)}
-                    className="rounded-full h-9 w-9 text-primary hover:bg-primary/10"
-                  >
-                    <Video className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {c.transcriptId && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 px-2 gap-1 text-xs text-primary hover:bg-primary/10"
+                        onClick={() => setRecapId(c.transcriptId)}
+                        aria-label="Open call recap"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">
+                          {c.transcriptStatus === "ready" ? "Recap" : "Listening…"}
+                        </span>
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      aria-label={`Call ${c.partnerName} back`}
+                      disabled={starting || !c.partnerId}
+                      onClick={() => handleCallBack(c.partnerId, c.partnerName)}
+                      className="rounded-full h-9 w-9 text-primary hover:bg-primary/10"
+                    >
+                      <Video className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </li>
               );
             })}

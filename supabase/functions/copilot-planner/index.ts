@@ -54,6 +54,7 @@ Deno.serve(async (req) => {
       kind: t.agent_kind,
       desc: t.description,
       risk: t.risk_level ?? "safe_auto",
+      handler: t.handler ?? null,
     }));
 
     // Load user + project facts

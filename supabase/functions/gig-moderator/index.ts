@@ -133,13 +133,15 @@ Deno.serve(async (req) => {
     let confidence = 0;
     let detectedDeadline: string | null = null;
 
-    if (g.barter_posting_deadline) {
-      const d = new Date(g.barter_posting_deadline);
+    // Hard deadline set by the poster takes precedence over AI inference.
+    const hardDeadline = g.application_deadline || g.barter_posting_deadline;
+    if (hardDeadline) {
+      const d = new Date(hardDeadline);
       if (!isNaN(d.getTime()) && d < today) {
         action = "closed_expired";
-        reason = `Barter posting deadline (${g.barter_posting_deadline}) has passed.`;
+        reason = `Deadline (${hardDeadline}) has passed.`;
         confidence = 1;
-        detectedDeadline = g.barter_posting_deadline;
+        detectedDeadline = hardDeadline;
       }
     }
 

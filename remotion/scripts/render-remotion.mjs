@@ -34,9 +34,7 @@ await renderMedia({
   codec: "h264",
   outputLocation: out,
   puppeteerInstance: browser,
-  muted: false,
-  enforceAudioTrack: true,
-  audioCodec: "aac",
+  muted: true,
   concurrency: 2,
   onProgress: ({ progress }) => {
     if (Math.floor(progress * 100) % 10 === 0) console.log(`  ${Math.floor(progress * 100)}%`);

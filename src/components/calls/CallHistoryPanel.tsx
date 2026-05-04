@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PhoneIncoming, PhoneOutgoing, PhoneMissed, Phone, Video } from "lucide-react";
+import { PhoneIncoming, PhoneOutgoing, PhoneMissed, Phone, Video, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useCallHistory } from "@/hooks/useCallHistory";
 import { useStartDirectCall } from "@/hooks/useStartDirectCall";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
+import { CallRecapSheet } from "@/components/calls/CallRecapSheet";
 import { useAuth } from "@/hooks/useAuth";
 
 const formatDuration = (s: number | null) => {
@@ -23,6 +25,7 @@ export const CallHistoryPanel = () => {
   const { user } = useAuth();
   const { calls, loading } = useCallHistory();
   const { starting, start, session, open, setOpen, myName } = useStartDirectCall();
+  const [recapId, setRecapId] = useState<string | null>(null);
 
   const handleCallBack = (partnerId: string | null, partnerName: string) => {
     if (!partnerId) return;
@@ -87,17 +90,34 @@ export const CallHistoryPanel = () => {
                       <span>· {formatDistanceToNow(new Date(c.started_at), { addSuffix: true })}</span>
                     </p>
                   </div>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    aria-label={`Call ${c.partnerName} back`}
-                    disabled={starting || !c.partnerId}
-                    onClick={() => handleCallBack(c.partnerId, c.partnerName)}
-                    className="rounded-full h-9 w-9 text-primary hover:bg-primary/10"
-                  >
-                    <Video className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {c.transcriptId && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 px-2 gap-1 text-xs text-primary hover:bg-primary/10"
+                        onClick={() => setRecapId(c.transcriptId)}
+                        aria-label="Open call recap"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">
+                          {c.transcriptStatus === "ready" ? "Recap" : "Listening…"}
+                        </span>
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      aria-label={`Call ${c.partnerName} back`}
+                      disabled={starting || !c.partnerId}
+                      onClick={() => handleCallBack(c.partnerId, c.partnerName)}
+                      className="rounded-full h-9 w-9 text-primary hover:bg-primary/10"
+                    >
+                      <Video className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </li>
               );
             })}
@@ -118,6 +138,12 @@ export const CallHistoryPanel = () => {
           roomName={session.roomName}
         />
       )}
+
+      <CallRecapSheet
+        open={!!recapId}
+        onOpenChange={(o) => !o && setRecapId(null)}
+        transcriptId={recapId}
+      />
     </div>
   );
 };

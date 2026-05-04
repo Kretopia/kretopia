@@ -81,6 +81,7 @@ serve(async (req) => {
       enable_screenshare: true,
       enable_knocking: false,
       enable_prejoin_ui: false,
+      enable_recording: "cloud",
     };
 
     let roomUrl: string | null = null;

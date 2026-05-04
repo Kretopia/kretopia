@@ -254,6 +254,8 @@ const ProfileContent = () => {
 
     await fetchData();
     setIsEditOpen(false);
+    // Bump profile_update streak (fire-and-forget)
+    supabase.rpc('bump_streak', { _streak_type: 'profile_update' }).then(() => {}, () => {});
     setGalleryFiles([]);
     setGalleryPreviews([]);
     

@@ -28,6 +28,8 @@ interface VideoCallSheetProps {
   projectId?: string | null;
   directCallId?: string | null;
   roomName?: string | null;
+  /** CTA shown in the pre-call lobby. Defaults to "Start call" (host flow). */
+  lobbyCta?: string;
 }
 
 type Phase = "lobby" | "live";

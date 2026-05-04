@@ -416,6 +416,17 @@ const ProfileContent = () => {
           }
         />
 
+        {/* Slim Duolingo-style profile strength bar — own profile only */}
+        <div className="mt-3">
+          <ProfileStrengthBar
+            profile={profile}
+            portfolioCount={portfolioItems?.length || 0}
+            creditsCount={credits?.length || 0}
+            awardsCount={awards?.length || 0}
+            pressCount={pressLinks?.length || 0}
+          />
+        </div>
+
         {/* My Website quick-access */}
         {profile?.site_enabled && (
           <button

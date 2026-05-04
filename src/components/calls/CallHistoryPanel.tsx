@@ -25,6 +25,7 @@ export const CallHistoryPanel = () => {
   const { user } = useAuth();
   const { calls, loading } = useCallHistory();
   const { starting, start, session, open, setOpen, myName } = useStartDirectCall();
+  const [recapId, setRecapId] = useState<string | null>(null);
 
   const handleCallBack = (partnerId: string | null, partnerName: string) => {
     if (!partnerId) return;

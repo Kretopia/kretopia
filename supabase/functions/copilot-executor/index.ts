@@ -145,6 +145,11 @@ async function dispatchStep(
     (args as any)._tool = step.tool_name;
   }
 
+  // desk-agent can execute known project tools directly when Copilot already planned the step.
+  if (step.handler === "desk-agent") {
+    (args as any)._tool = step.tool_name;
+  }
+
   if (!step.handler) {
     return { ok: false, error: `No handler registered for ${step.tool_name}` };
   }

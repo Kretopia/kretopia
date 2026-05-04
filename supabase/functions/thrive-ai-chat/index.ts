@@ -387,6 +387,27 @@ Use <plan> ONLY for true multi-step goals. Single-action requests stay on <actio
               .from("ai_conversations")
               .update({ updated_at: new Date().toISOString() })
               .eq("id", conversationId);
+
+            // ---- Thrive Brain: fire-and-forget memory extraction ----
+            // Throttle: only extract once per ~5 turns to keep token cost low.
+            try {
+              const { count } = await admin
+                .from("ai_messages")
+                .select("id", { count: "exact", head: true })
+                .eq("conversation_id", conversationId);
+              if (count && count % 5 === 0 && authHeader) {
+                fetch(`${SUPABASE_URL}/functions/v1/extract-copilot-memory`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: authHeader,
+                  },
+                  body: JSON.stringify({ conversation_id: conversationId }),
+                }).catch((e) => console.warn("extract trigger failed", e));
+              }
+            } catch (e) {
+              console.warn("extract trigger guard failed", e);
+            }
           } catch (e) {
             console.warn("Persist assistant turn failed", e);
           }

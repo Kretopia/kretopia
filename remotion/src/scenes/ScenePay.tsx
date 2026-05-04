@@ -187,7 +187,7 @@ export const ScenePay = () => {
           </div>
         )}
       </AbsoluteFill>
-      <LowerThird kicker="ThrivePay" title="Snap a receipt. Get paid the same day." />
+      <LowerThird kicker="ThrivePay · Expenses" title="Snap a receipt. Run the business side of your craft." />
     </AbsoluteFill>
   );
 };

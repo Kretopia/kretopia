@@ -49,9 +49,13 @@ function resolvePlaceholders(value: unknown, completed: Step[]): unknown {
         if (cur == null) return "";
         cur = cur[k];
       }
-      // Fallback: if first key missing, try inside r.result or r.candidates[0]
+      // Fallback: if first key missing, try inside r.result, r.candidates[0], r.matches[0], r.projects[0]
       if (cur === undefined) {
-        const fallback = r?.result ?? (Array.isArray(r?.candidates) ? r.candidates[0] : null);
+        const fallback =
+          r?.result ??
+          (Array.isArray(r?.candidates) ? r.candidates[0] : null) ??
+          (Array.isArray(r?.matches) ? r.matches[0] : null) ??
+          (Array.isArray(r?.projects) ? r.projects[0] : null);
         if (fallback) {
           let c: any = fallback;
           for (const k of keys) {

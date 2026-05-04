@@ -274,18 +274,29 @@ const generateEmailContent = (type: string, data: any, unsubscribeToken?: string
     case 'general':
       return {
         subject: data.notificationTitle || "Update from ThriveIN",
-        html: emailWrapper(`
-          <div style="padding: 0 28px 28px;">
-            <h1 style="font-size: 24px; font-weight: bold; color: #0a0a0f; margin: 0 0 16px;">${data.notificationTitle || "Platform Update"}</h1>
-            <p style="font-size: 15px; color: #606068; line-height: 1.6; margin: 0 0 20px;">Hey ${data.userName || 'there'},</p>
-            <div style="background: #F5F3FF; padding: 20px; border-radius: 12px; margin: 0 0 24px;">
-              <p style="margin: 0; color: #0a0a0f; white-space: pre-wrap; font-size: 15px;">${data.notificationMessage || "We have an important update for you."}</p>
+        html: `
+          <div style="font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #0B0D14; color: #E5E7EB;">
+            <div style="padding: 32px 28px 8px;">
+              <img src="https://kwmcocsitwssrtzkdojh.supabase.co/storage/v1/object/public/email-assets/logo.png" width="44" height="44" alt="ThriveIN" style="display:block; margin-bottom: 20px;" />
+              <div style="display:inline-block; padding: 4px 10px; background: rgba(217,255,0,0.12); color: #D9FF00; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 999px; margin-bottom: 16px;">What's new</div>
+              <h1 style="font-size: 28px; line-height: 1.2; font-weight: 800; color: #ffffff; margin: 0 0 24px;">${data.notificationTitle || "Platform Update"}</h1>
             </div>
-            ${data.actionUrl ? `<a href="${data.actionUrl}" style="display: inline-block; padding: 14px 28px; background: #4338CA; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">Learn More</a>` : ''}
+            <div style="padding: 0 28px 8px;">
+              <div style="color: #CBD5E1; white-space: pre-wrap; font-size: 15px; line-height: 1.7;">${data.notificationMessage || "We have an important update for you."}</div>
+            </div>
+            ${data.actionUrl ? `
+            <div style="padding: 24px 28px 8px;">
+              <a href="${data.actionUrl}" style="display: inline-block; padding: 14px 28px; background: #D9FF00; color: #0B0D14; text-decoration: none; border-radius: 999px; font-weight: 700; font-size: 15px;">Open ThriveIN →</a>
+            </div>` : ''}
+            <div style="padding: 32px 28px 16px; border-top: 1px solid #1F2937; margin-top: 32px;">
+              <p style="color: #6B7280; font-size: 12px; margin: 0;">Verified Credits · Real Gigs · Get Paid</p>
+              <p style="color: #6B7280; font-size: 12px; margin: 6px 0 0 0;">© ThriveIN</p>
+              <p style="color: #6B7280; font-size: 12px; margin-top: 14px;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #D9FF00;">Unsubscribe</a> or manage your <a href="${baseUrl}/notification-settings" style="color: #D9FF00;">preferences</a>.</p>
+            </div>
           </div>
-        `)
+        `
       };
-    
+
     default:
       return {
         subject: "Notification from ThriveIN",

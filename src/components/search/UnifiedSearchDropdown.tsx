@@ -295,18 +295,25 @@ export function UnifiedSearchDropdown({
     else navigate(`/search?q=${encodeURIComponent(r.title)}`);
   };
 
+  const submitQuery = useCallback((rawQuery: string) => {
+    const trimmedQuery = rawQuery.trim();
+    if (!trimmedQuery) return;
+
+    setOpen(false);
+    onOpenChange?.(false);
+
+    if (onQuerySubmit) {
+      onQuerySubmit(trimmedQuery);
+      return;
+    }
+
+    setQuery("");
+    navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+  }, [navigate, onOpenChange, onQuerySubmit, setQuery]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      setOpen(false);
-      onOpenChange?.(false);
-      if (onQuerySubmit) {
-        onQuerySubmit(query.trim());
-        return;
-      }
-      setQuery("");
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-    }
+    submitQuery(query);
   };
 
   const handleClear = () => {

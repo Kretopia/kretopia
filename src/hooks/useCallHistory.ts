@@ -69,16 +69,30 @@ export function useCallHistory() {
       );
     }
 
+    const callIds = (data || []).map((c) => c.id);
+    const transcriptMap = new Map<string, { id: string; status: any }>();
+    if (callIds.length) {
+      const { data: ts } = await supabase
+        .from("call_transcripts")
+        .select("id, call_id, status")
+        .eq("call_kind", "direct")
+        .in("call_id", callIds);
+      (ts || []).forEach((t) => transcriptMap.set(t.call_id, { id: t.id, status: t.status }));
+    }
+
     const entries: CallHistoryEntry[] = (data || []).map((c) => {
       const isOutgoing = c.started_by === user.id;
       const partnerId = isOutgoing ? c.invited_user_id : c.started_by;
       const p = partnerId ? profileMap.get(partnerId) : null;
+      const tr = transcriptMap.get(c.id);
       return {
         ...c,
         partnerId,
         partnerName: p?.full_name || "Unknown",
         partnerAvatar: p?.avatar_url || null,
         direction: isOutgoing ? "outgoing" : "incoming",
+        transcriptId: tr?.id ?? null,
+        transcriptStatus: tr?.status ?? null,
       };
     });
 

@@ -306,7 +306,9 @@ const Auth = () => {
     const { data: signUpData, error } = await supabase.auth.signUp({
       email, password,
       options: {
-        emailRedirectTo: `${(import.meta.env.VITE_SITE_URL || 'https://thrivein.io')}/circle`,
+        // Land verified users directly in onboarding so the profile setup picks up where they left off.
+        // window.location.origin handles preview, custom-domain, and prod automatically.
+        emailRedirectTo: `${window.location.origin}/onboarding`,
         data: { account_type: accountType, invite_code: inviteCode },
       },
     });

@@ -284,7 +284,16 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { project_id, message, is_pro = false, confirm_token } = body || {};
+    const requestedTool = typeof body?._tool === "string" ? body._tool as ToolName : null;
+    const project_id = body?.project_id ?? body?.target_project_id ?? null;
+    const message = String(
+      body?.message ??
+      (requestedTool === "draft_invoice"
+        ? `Draft a ${String(body?.currency ?? "USD").toUpperCase()} ${Number(body?.amount ?? 0)} invoice for ${body?.notes ?? body?.description ?? "this project"}`
+        : body?.title ?? body?.what ?? body?.description ?? requestedTool ?? "")
+    ).trim();
+    const is_pro = body?.is_pro ?? false;
+    const confirm_token = body?.confirm_token;
     if (!project_id || !message) {
       return new Response(JSON.stringify({ error: "project_id and message required" }), {
         status: 400,
@@ -327,7 +336,7 @@ Deno.serve(async (req) => {
 
     // Gather context — project facts AND unified user identity
     const [projectRes, tasksRes, collabRes, history, copilotCtx] = await Promise.all([
-      admin.from("projects").select("id, title, description, status, deadline, created_by, client_user_id").eq("id", project_id).single(),
+      admin.from("projects").select("id, title, description, status, deadline, created_by, client_user_id, currency").eq("id", project_id).single(),
       admin.from("project_tasks").select("id, title, status, due_date, assigned_to, priority").eq("project_id", project_id).order("created_at", { ascending: false }).limit(40),
       admin.from("project_collaborators").select("user_id, role, profiles:profiles!project_collaborators_user_id_fkey(full_name)").eq("project_id", project_id),
       admin.from("agent_project_context").select("role, content").eq("project_id", project_id).eq("user_id", user.id).order("created_at", { ascending: true }).limit(10),
@@ -401,6 +410,26 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
       content: h.content,
     }));
 
+    let toolCalls: any[] = [];
+    let replyText = "";
+
+    if (requestedTool && [
+      "create_task",
+      "mark_task_done",
+      "send_message_to_collaborator",
+      "get_project_summary",
+      "schedule_reminder",
+      "draft_invoice",
+      "start_video_call",
+      "add_credit",
+    ].includes(requestedTool)) {
+      const directArgs = { ...body };
+      delete (directArgs as any)._tool;
+      delete (directArgs as any).project_id;
+      delete (directArgs as any).target_project_id;
+      delete (directArgs as any).message;
+      toolCalls = [{ function: { name: requestedTool, arguments: JSON.stringify(directArgs) } }];
+    } else {
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -442,8 +471,9 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
 
     const aiJson = await aiResp.json();
     const choice = aiJson.choices?.[0]?.message;
-    const toolCalls = choice?.tool_calls || [];
-    const replyText: string = choice?.content || "";
+    toolCalls = choice?.tool_calls || [];
+    replyText = choice?.content || "";
+    }
 
     // Execute tools
     const actions: Array<{ tool: ToolName; args: any; result: any; ok: boolean }> = [];
@@ -538,11 +568,10 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
               issued_by: user.id,
               issued_to: project?.client_user_id ?? null,
               amount,
-              total_amount: amount,
               currency: (args.currency || project?.currency || "USD").toUpperCase(),
               status: "draft",
               due_date: dueDate,
-              notes: args.notes || null,
+              notes: args.notes || args.description || null,
               document_type: "invoice",
             })
             .select("id, invoice_number, total_amount, currency")

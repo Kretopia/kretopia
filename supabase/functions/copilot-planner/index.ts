@@ -48,13 +48,15 @@ Deno.serve(async (req) => {
     // Load tool catalog from registry — these are the only tools the planner can use
     const { data: tools } = await admin
       .from("orch_tool_registry")
-      .select("tool_name, agent_kind, description, risk_level, handler");
+      .select("tool_name, agent_kind, description, risk_level, handler, args_schema")
+      .eq("enabled", true);
     const catalog = (tools ?? []).map((t: any) => ({
       name: t.tool_name,
       kind: t.agent_kind,
       desc: t.description,
       risk: t.risk_level ?? "safe_auto",
       handler: t.handler ?? null,
+      schema: t.args_schema ?? null,
     }));
 
     // Load user + project facts
@@ -82,17 +84,18 @@ Deno.serve(async (req) => {
 ${preamble}${projectFacts}
 
 AVAILABLE TOOLS (you may ONLY plan with these — never invent tools):
-${catalog.map((t) => `- ${t.name} [${t.kind}, ${t.risk}]: ${t.desc}`).join("\n")}
+${catalog.map((t) => `- ${t.name} [${t.kind}, ${t.risk}]: ${t.desc}\n  args_schema: ${JSON.stringify(t.schema ?? {})}`).join("\n")}
 
 PLANNING RULES:
 1. Each step MUST reference a tool from the catalog above by exact tool_name.
 2. Steps run in order. Later steps can reference earlier step outputs with {{step_N.field}} placeholders (e.g. {{step_1.user_id}} after a find_user step).
 3. If the goal requires a person → first step is find_user.
 4. If the goal mentions a project by name (not "this") → first step is list_my_projects, then resolve.
-5. Keep ARGS minimal but valid for the tool's expected schema.
+5. Keep ARGS minimal but valid for the tool's args_schema. Include project_id when a tool accepts it and a project is known.
 6. Each step needs a short human-readable "label" (max 60 chars, present tense, no emoji) and "rationale" (1 sentence, why this step).
 7. If the goal is single-step or unclear → return an empty steps array and put the explanation in "summary".
 8. Never plan tools at risk_level "destructive" without strong evidence the user wants it.
+9. For draft_invoice, include amount, currency when stated, notes/description, and project_id when available. Do not use a generic "message" arg for draft_invoice.
 
 Return ONLY this JSON shape (no prose, no fences):
 {

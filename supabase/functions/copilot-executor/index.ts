@@ -80,13 +80,51 @@ function resolvePlaceholders(value: unknown, completed: Step[]): unknown {
   return value;
 }
 
+function firstPresent<T = unknown>(...values: T[]): T | undefined {
+  return values.find((v) => v !== undefined && v !== null && String(v).trim() !== "");
+}
+
+function normalizeStepArgs(step: Step, rawArgs: Record<string, unknown>, projectId: string | null): Record<string, unknown> {
+  const args: Record<string, unknown> = { ...rawArgs };
+
+  if (projectId && (step.handler === "desk-agent" || step.handler === "copilot-collaborator-tools")) {
+    args.project_id = firstPresent(args.project_id, args.target_project_id, projectId);
+    args.target_project_id = firstPresent(args.target_project_id, args.project_id);
+  }
+
+  if (step.handler === "desk-agent" && !args.message) {
+    if (step.tool_name === "draft_invoice") {
+      const amount = firstPresent(args.amount, args.total_amount, args.price, args.value);
+      const currency = firstPresent(args.currency, "USD");
+      const notes = firstPresent(args.notes, args.description, args.line_item, step.label);
+      args.amount = Number(amount ?? 0);
+      args.currency = String(currency).toUpperCase();
+      args.notes = notes;
+      args.message = `Draft a ${args.currency} ${args.amount} invoice for ${notes}`;
+    } else {
+      args.message = String(firstPresent(args.message, args.title, args.what, args.notes, args.description, step.label));
+    }
+  }
+
+  if (step.tool_name === "create_task" && !args.title) args.title = String(args.message ?? step.label);
+  if (step.tool_name === "schedule_reminder" && !args.what) args.what = String(args.title ?? args.message ?? step.label);
+  if (step.tool_name === "add_credit" && !args.role) args.role = String(args.title ?? args.description ?? "Contributor");
+
+  if (step.handler === "copilot-collaborator-tools") {
+    if (step.tool_name === "add_collaborator") args.user_id_to_add = firstPresent(args.user_id_to_add, args.user_id);
+    if (step.tool_name === "remove_collaborator") args.user_id_to_remove = firstPresent(args.user_id_to_remove, args.user_id);
+  }
+
+  return args;
+}
+
 async function dispatchStep(
   step: Step,
   completed: Step[],
   authHeader: string,
   projectId: string | null,
 ): Promise<{ ok: boolean; result?: unknown; error?: string }> {
-  const args = resolvePlaceholders(step.args, completed) as Record<string, unknown>;
+  const args = normalizeStepArgs(step, resolvePlaceholders(step.args, completed) as Record<string, unknown>, projectId);
 
   // Inline tools handled here (no edge fn)
   if (step.handler === "inline" || step.tool_name === "ask_clarification") {
@@ -104,6 +142,11 @@ async function dispatchStep(
 
   // Pass tool name marker so multi-tool handlers (copilot-collaborator-tools) route
   if (step.handler === "copilot-collaborator-tools") {
+    (args as any)._tool = step.tool_name;
+  }
+
+  // desk-agent can execute known project tools directly when Copilot already planned the step.
+  if (step.handler === "desk-agent") {
     (args as any)._tool = step.tool_name;
   }
 

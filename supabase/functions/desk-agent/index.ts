@@ -336,7 +336,7 @@ Deno.serve(async (req) => {
 
     // Gather context — project facts AND unified user identity
     const [projectRes, tasksRes, collabRes, history, copilotCtx] = await Promise.all([
-      admin.from("projects").select("id, title, description, status, deadline, created_by, client_user_id").eq("id", project_id).single(),
+      admin.from("projects").select("id, title, description, status, deadline, created_by, client_user_id, currency").eq("id", project_id).single(),
       admin.from("project_tasks").select("id, title, status, due_date, assigned_to, priority").eq("project_id", project_id).order("created_at", { ascending: false }).limit(40),
       admin.from("project_collaborators").select("user_id, role, profiles:profiles!project_collaborators_user_id_fkey(full_name)").eq("project_id", project_id),
       admin.from("agent_project_context").select("role, content").eq("project_id", project_id).eq("user_id", user.id).order("created_at", { ascending: true }).limit(10),
@@ -572,7 +572,7 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
               currency: (args.currency || project?.currency || "USD").toUpperCase(),
               status: "draft",
               due_date: dueDate,
-              notes: args.notes || null,
+              notes: args.notes || args.description || null,
               document_type: "invoice",
             })
             .select("id, invoice_number, total_amount, currency")

@@ -157,7 +157,46 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
           .filter(p => (p.portfolio_count >= 1) || (p.credits_count >= 1) || (p.awards_count >= 1));
       }
 
-      // Shuffle only once — store in sessionStorage key to maintain order across remounts
+      // Smart Match scoring — rank by skill/role/location overlap with current user.
+      // Falls back to random for new users with thin profiles.
+      const { data: meProfile } = await supabase
+        .from('profiles')
+        .select('role, location, professional_skills, passion_skills')
+        .eq('user_id', currentUserId)
+        .maybeSingle();
+
+      const extractSkills = (raw: any): string[] => {
+        if (!raw) return [];
+        const arr = Array.isArray(raw) ? raw : Object.values(raw);
+        return arr
+          .map((s: any) => (typeof s === 'string' ? s : s?.skill || s?.name || ''))
+          .filter(Boolean)
+          .map((s: string) => s.toLowerCase());
+      };
+
+      const mySkills = new Set([
+        ...extractSkills(meProfile?.professional_skills),
+        ...extractSkills(meProfile?.passion_skills),
+      ]);
+      const myRole = (meProfile?.role || '').toLowerCase();
+      const myLocation = (meProfile?.location || '').toLowerCase();
+      const myCity = myLocation.split(',')[0]?.trim();
+
+      const scoreProfile = (p: typeof filtered[number]): number => {
+        let score = 0;
+        const theirSkills = extractSkills(p.professional_skills);
+        const skillOverlap = theirSkills.filter(s => mySkills.has(s)).length;
+        score += Math.min(skillOverlap, 5) * 20; // up to 100
+        if (myRole && p.role && p.role.toLowerCase() === myRole) score += 30;
+        if (p.location && myLocation && p.location.toLowerCase().includes(myCity || '___')) score += 25;
+        // Tie-break: a bit of social proof
+        score += Math.min(((p as any).credits_count || 0) + ((p as any).portfolio_count || 0), 10);
+        // Small jitter so identical scores don't always render same order
+        score += Math.random() * 0.5;
+        return score;
+      };
+
+      const hasSignal = mySkills.size > 0 || !!myRole || !!myLocation;
       const cacheKey = `swipe_order_${currentUserId}`;
       const cachedOrder = sessionStorage.getItem(cacheKey);
       let ordered: typeof filtered;
@@ -166,17 +205,23 @@ export function useSwipeProfiles(currentUserId: string | undefined, filters: Swi
         try {
           const orderIds: string[] = JSON.parse(cachedOrder);
           const idSet = new Set(filtered.map(p => p.user_id));
-          // Keep cached order for profiles still present, append any new ones
           const orderedFromCache = orderIds
             .filter(id => idSet.has(id))
             .map(id => filtered.find(p => p.user_id === id)!);
           const newProfiles = filtered.filter(p => !orderIds.includes(p.user_id));
-          ordered = [...orderedFromCache, ...newProfiles.sort(() => Math.random() - 0.5)];
+          const newOrdered = hasSignal
+            ? newProfiles.sort((a, b) => scoreProfile(b) - scoreProfile(a))
+            : newProfiles.sort(() => Math.random() - 0.5);
+          ordered = [...orderedFromCache, ...newOrdered];
         } catch {
-          ordered = filtered.sort(() => Math.random() - 0.5);
+          ordered = hasSignal
+            ? filtered.sort((a, b) => scoreProfile(b) - scoreProfile(a))
+            : filtered.sort(() => Math.random() - 0.5);
         }
       } else {
-        ordered = filtered.sort(() => Math.random() - 0.5);
+        ordered = hasSignal
+          ? filtered.sort((a, b) => scoreProfile(b) - scoreProfile(a))
+          : filtered.sort(() => Math.random() - 0.5);
       }
 
       // Cache the order

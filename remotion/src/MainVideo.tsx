@@ -2,6 +2,7 @@ import { AbsoluteFill, Sequence } from "remotion";
 import { SceneHook } from "./scenes/SceneHook";
 import { SceneSearch } from "./scenes/SceneSearch";
 import { SceneClaim } from "./scenes/SceneClaim";
+import { SceneProfile } from "./scenes/SceneProfile";
 import { SceneRollCall } from "./scenes/SceneRollCall";
 import { SceneVouch } from "./scenes/SceneVouch";
 import { SceneEPK } from "./scenes/SceneEPK";
@@ -20,8 +21,9 @@ import { COLORS } from "./theme";
 const SCENES = [
   { c: <SceneHook />, d: 360 },        // 12s — hook
   { c: <SceneSearch />, d: 300 },      // 10s — search "Michelene"
-  { c: <SceneClaim />, d: 300 },       // 10s — claim profile
-  { c: <SceneRollCall />, d: 330 },    // 11s — Verified credits / IMDb roll call
+  { c: <SceneClaim />, d: 270 },       // 9s — claim profile
+  { c: <SceneProfile />, d: 330 },     // 11s — Profile / EPK home (portfolio grid + tabs)
+  { c: <SceneRollCall />, d: 300 },    // 10s — Verified credits / IMDb roll call
   { c: <SceneVouch />, d: 330 },       // 11s — peer vouches / trust badge
   { c: <SceneEPK />, d: 330 },         // 11s — one-link EPK + share
   { c: <SceneMatch />, d: 330 },       // 11s — Smart Match swipe

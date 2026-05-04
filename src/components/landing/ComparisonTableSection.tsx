@@ -5,7 +5,7 @@ import { Check, Sparkles, ArrowRight, Film, Briefcase, Users, MessageSquare, Fol
 const TOOLS_REPLACED = [
   { icon: Film, tool: "Verified Creative Credits", replaces: "IMDb / Muso.AI" },
   { icon: Briefcase, tool: "Find Work & Gigs", replaces: "Fiverr / Upwork" },
-  { icon: Users, tool: "AI Creator Matching", replaces: "Vampr / Bumble Bizz" },
+  { icon: Users, tool: "Smart Creator Matching", replaces: "Vampr / Bumble Bizz" },
   { icon: MessageSquare, tool: "Project Workspaces", replaces: "Slack + Trello" },
   { icon: FolderOpen, tool: "File Sharing & Assets", replaces: "Google Drive" },
   { icon: Receipt, tool: "Invoicing & Payments", replaces: "Wave / PayPal" },

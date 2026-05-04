@@ -106,7 +106,7 @@ export const AIWebsiteGenerator = ({ open, onOpenChange, onComplete }: Props) =>
     if (error) {
       toast({ title: "Failed to publish", variant: "destructive" });
     } else {
-      toast({ title: "Your AI-generated site is live! 🎉" });
+      toast({ title: "Your site is live! 🎉" });
       onComplete();
       onOpenChange(false);
       setStep('idle');
@@ -133,9 +133,9 @@ export const AIWebsiteGenerator = ({ open, onOpenChange, onComplete }: Props) =>
             <h2 className="text-lg font-bold">Create My Website</h2>
           </div>
           <p className="text-sm text-muted-foreground">
-            {step === 'idle' && "AI will analyze your profile, credits, and services to generate a professional website."}
+            {step === 'idle' && "We'll analyze your profile, credits, and services to generate a professional website."}
             {step === 'generating' && "Analyzing your profile data and crafting your website..."}
-            {step === 'review' && "Review your AI-generated website content, then publish."}
+            {step === 'review' && "Review your generated website content, then publish."}
           </p>
         </div>
 

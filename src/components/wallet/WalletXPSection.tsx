@@ -137,7 +137,7 @@ export function WalletXPSection() {
   const buyExtraAIBriefs = async () => {
     await deductXP(800);
     addBonusUses("aiBriefs", 5);
-    await recordActivity("extra_briefs_purchased", 800, "Purchased +5 AI Briefs");
+    await recordActivity("extra_briefs_purchased", 800, "Purchased +5 Smart Briefs");
   };
 
   const buyExtraInvoices = async () => {

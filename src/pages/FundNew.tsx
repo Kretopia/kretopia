@@ -79,7 +79,7 @@ const FundNew = () => {
   // ── AI assist ──
   const callAI = async (action: "tagline" | "story" | "tiers" | "image") => {
     if (!title.trim()) {
-      toast.error("Add a title first so the AI has context");
+      toast.error("Add a title first so we have context");
       return;
     }
     setAiBusy(action);
@@ -105,10 +105,10 @@ const FundNew = () => {
       }
       if (action === "image" && data.imageDataUrl) {
         await uploadDataUrl(data.imageDataUrl);
-        toast.success("AI cover image generated");
+        toast.success("Cover image generated");
       }
     } catch (e: any) {
-      toast.error(e?.message || "AI assist failed");
+      toast.error(e?.message || "Generation failed");
     } finally {
       setAiBusy(null);
     }

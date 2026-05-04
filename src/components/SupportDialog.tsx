@@ -96,7 +96,7 @@ export const SupportDialog = ({ open: controlledOpen, onOpenChange }: SupportDia
       setTicketId(data.id);
 
       // Add initial AI greeting
-      const greeting = "Hi! I'm your AI support assistant. I'm here to help with any issues, questions, or feedback you have about the platform. What can I help you with today?";
+      const greeting = "Hi! I'm your support Copilot. I'm here to help with any issues, questions, or feedback about the platform. What can I help you with today?";
       
       await supabase.from('support_messages').insert({
         ticket_id: data.id,

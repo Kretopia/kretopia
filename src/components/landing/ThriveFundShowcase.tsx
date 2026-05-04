@@ -8,8 +8,8 @@ const PILLARS = [
     icon: ShieldCheck,
     titleKey: "landing.fundPillar1Title",
     descKey: "landing.fundPillar1Desc",
-    fallbackTitle: "AI-Screened & Safe",
-    fallbackDesc: "Every campaign is reviewed by AI for scams, prohibited content & feasibility before going live.",
+    fallbackTitle: "Verified & Protected",
+    fallbackDesc: "Every campaign is reviewed for scams, prohibited content & feasibility before going live.",
   },
   {
     icon: BadgeCheck,
@@ -63,7 +63,7 @@ export const ThriveFundShowcase = () => {
           <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
             {tt(
               "landing.fundSubtitle",
-              "Crowdfund films, albums, fashion drops, events & creator projects — built for creatives, protected by AI moderation, milestone-based payouts and verified identities."
+              "Crowdfund films, albums, fashion drops, events & creator projects — built for creatives, protected by verified moderation, milestone-based payouts and verified identities."
             )}
           </p>
         </motion.div>

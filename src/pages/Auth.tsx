@@ -476,7 +476,7 @@ const Auth = () => {
                 <DialogTitle className="flex items-center gap-2">
                   <Lock className="h-5 w-5 text-primary" /> Request Access
                 </DialogTitle>
-                <DialogDescription>No invite code? Apply to join and our AI will verify your profile.</DialogDescription>
+                <DialogDescription>No invite code? Apply to join and we'll verify your profile.</DialogDescription>
               </DialogHeader>
               <WaitlistForm />
             </DialogContent>

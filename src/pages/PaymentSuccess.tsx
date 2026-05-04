@@ -138,7 +138,7 @@ export default function PaymentSuccess() {
                   ) : (
                     <>
                       <li>• Unlimited daily swipes</li>
-                      <li>• AI match recommendations</li>
+                      <li>• Smart Match recommendations</li>
                       <li>• Undo swipe feature</li>
                       <li>• Unlimited portfolio items</li>
                       <li>• Profile verification</li>

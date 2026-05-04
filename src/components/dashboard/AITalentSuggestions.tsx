@@ -66,7 +66,7 @@ export function AITalentSuggestions() {
         setSuggestions(data.suggestions);
         setHasGenerated(true);
         if (data.suggestions.length > 0) {
-          toast({ title: `Found ${data.suggestions.length} top matches`, description: "AI-ranked based on skills, role, and experience" });
+          toast({ title: `Found ${data.suggestions.length} top matches`, description: "Ranked by skills, role, and experience" });
         } else {
           toast({ title: "No matches yet", description: data.message || "More creators are joining every day!" });
         }

@@ -41,7 +41,7 @@ export function UpgradeDialog({
   const defaultBenefits = [
     "Unlimited daily swipes & matches",
     "Website builder with 3 templates",
-    "AI match explanations",
+    "Smart Match explanations",
     "Profile verification badge",
     "Unlimited portfolio items",
     "Advanced search filters",

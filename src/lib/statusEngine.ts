@@ -128,7 +128,7 @@ const TIER_META: Record<StatusTier, TierMeta> = {
     color: "text-primary",
     ringClass: "ring-2 ring-primary",
     gradient: "from-primary/25 to-primary/5",
-    perks: ["AI recommendations", "Priority matching", "Advanced analytics"],
+    perks: ["Smart recommendations", "Priority matching", "Advanced analytics"],
   },
   professional: {
     label: "Industry",

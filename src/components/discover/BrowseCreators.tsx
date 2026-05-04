@@ -168,7 +168,7 @@ export function BrowseCreators() {
       if (error) throw error;
       setResults((data?.results || []) as CreatorRow[]);
     } catch (e: any) {
-      toast({ title: "AI search failed", description: e.message, variant: "destructive" });
+      toast({ title: "Smart search failed", description: e.message, variant: "destructive" });
     } finally { setLoading(false); }
   }, [query, toast]);
 
@@ -300,7 +300,7 @@ export function BrowseCreators() {
             )}
           >
             <Sparkles className="h-3 w-3" />
-            {aiMode ? "AI search on" : "Try AI search"}
+            {aiMode ? "Smart search on" : "Try Smart search"}
           </button>
           <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setShowSaveDialog(true)}>
             <Bookmark className="h-3 w-3 mr-1" /> Save search

@@ -178,7 +178,7 @@ export const MatchedProfilesStep = ({ onComplete }: MatchedProfilesStepProps) =>
       <div className="text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm font-medium text-primary mb-4">
           <Sparkles className="h-4 w-4" />
-          <span>AI-Powered Matches</span>
+          <span>Your Smart Matches</span>
         </div>
         <h2 className="text-3xl font-bold mb-3">
           Meet Your First Connections

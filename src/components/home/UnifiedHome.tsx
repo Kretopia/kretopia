@@ -584,12 +584,6 @@ export const UnifiedHome = () => {
       {/* ═══════════ AUTH HUB ═══════════ */}
       {user && profile && (
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
-          {/* New-user setup checklist — only shows while profile completion < 50% */}
-          {checkProfileCompletion(profileFull || profile, myCredits).percentage < 50 && (
-            <div className="mb-4">
-              <GetStartedChecklist />
-            </div>
-          )}
           {/* Compact greeting + messages shortcut */}
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-muted-foreground">
@@ -599,6 +593,29 @@ export const UnifiedHome = () => {
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </Link>
           </div>
+
+          {/* Magic Home — single hero CTA for fresh accounts (<24h) or low-completion profiles */}
+          {(() => {
+            const created = profileFull?.created_at ? new Date(profileFull.created_at).getTime() : 0;
+            const ageHrs = (Date.now() - created) / 3_600_000;
+            const pct = checkProfileCompletion(profileFull || profile, myCredits).percentage;
+            const isMagic = ageHrs < 72 || pct < 30;
+            return isMagic ? (
+              <MagicHomeHero
+                profile={profileFull || profile}
+                creditsCount={myCredits}
+                connectionsCount={myConnections}
+                className="mb-4"
+              />
+            ) : null;
+          })()}
+
+          {/* New-user setup checklist — only shows while profile completion < 50% */}
+          {checkProfileCompletion(profileFull || profile, myCredits).percentage < 50 && (
+            <div className="mb-4">
+              <GetStartedChecklist />
+            </div>
+          )}
 
           {/* Wave 3: Profile Hub Card */}
           <ProfileHubCard

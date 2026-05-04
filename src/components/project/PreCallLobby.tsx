@@ -171,7 +171,7 @@ export const PreCallLobby = ({
               Starting…
             </>
           ) : (
-            "Join call"
+            ctaLabel
           )}
         </Button>
       </div>

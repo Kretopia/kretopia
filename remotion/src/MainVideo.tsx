@@ -2,28 +2,55 @@ import { AbsoluteFill, Sequence } from "remotion";
 import { SceneHook } from "./scenes/SceneHook";
 import { SceneSearch } from "./scenes/SceneSearch";
 import { SceneClaim } from "./scenes/SceneClaim";
+import { SceneRollCall } from "./scenes/SceneRollCall";
+import { SceneVouch } from "./scenes/SceneVouch";
+import { SceneEPK } from "./scenes/SceneEPK";
 import { SceneMatch } from "./scenes/SceneMatch";
 import { SceneVoice } from "./scenes/SceneVoice";
+import { SceneVideoCall } from "./scenes/SceneVideoCall";
 import { SceneCopilot } from "./scenes/SceneCopilot";
 import { ScenePay } from "./scenes/ScenePay";
+import { SceneInvoice } from "./scenes/SceneInvoice";
+import { SceneGigs } from "./scenes/SceneGigs";
+import { SceneFund } from "./scenes/SceneFund";
 import { SceneClose } from "./scenes/SceneClose";
 import { COLORS } from "./theme";
 
-// Total: 2850 frames @ 30fps = 95s
-// Hook 0-360 (12s) | Search 360-660 (10s) | Claim 660-960 (10s) |
-// Match 960-1290 (11s) | Voice 1290-1650 (12s) | Copilot 1650-2040 (13s) |
-// Pay 2040-2460 (14s) | Close 2460-2850 (13s)
+// 30fps. Full creative journey: discovery → reputation → collaboration → agentic ops → monetization.
+const SCENES = [
+  { c: <SceneHook />, d: 360 },        // 12s — hook
+  { c: <SceneSearch />, d: 300 },      // 10s — search "Michelene"
+  { c: <SceneClaim />, d: 300 },       // 10s — claim profile
+  { c: <SceneRollCall />, d: 330 },    // 11s — Verified credits / IMDb roll call
+  { c: <SceneVouch />, d: 330 },       // 11s — peer vouches / trust badge
+  { c: <SceneEPK />, d: 330 },         // 11s — one-link EPK + share
+  { c: <SceneMatch />, d: 330 },       // 11s — Smart Match swipe
+  { c: <SceneVoice />, d: 360 },       // 12s — voice-to-brief
+  { c: <SceneVideoCall />, d: 330 },   // 11s — Studio video call
+  { c: <SceneCopilot />, d: 390 },     // 13s — Thrive Copilot agentic tools
+  { c: <ScenePay />, d: 420 },         // 14s — scan receipt → expenses
+  { c: <SceneInvoice />, d: 360 },     // 12s — invoice copilot
+  { c: <SceneGigs />, d: 360 },        // 12s — gigs scout & claim
+  { c: <SceneFund />, d: 330 },        // 11s — ThriveFund
+  { c: <SceneClose />, d: 390 },       // 13s — close
+];
+
+export const SCENE_PLAN = SCENES;
+export const TOTAL_FRAMES = SCENES.reduce((s, x) => s + x.d, 0);
+
 export const MainVideo = () => {
+  let from = 0;
   return (
     <AbsoluteFill style={{ background: COLORS.bg }}>
-      <Sequence from={0} durationInFrames={360}><SceneHook /></Sequence>
-      <Sequence from={360} durationInFrames={300}><SceneSearch /></Sequence>
-      <Sequence from={660} durationInFrames={300}><SceneClaim /></Sequence>
-      <Sequence from={960} durationInFrames={330}><SceneMatch /></Sequence>
-      <Sequence from={1290} durationInFrames={360}><SceneVoice /></Sequence>
-      <Sequence from={1650} durationInFrames={390}><SceneCopilot /></Sequence>
-      <Sequence from={2040} durationInFrames={420}><ScenePay /></Sequence>
-      <Sequence from={2460} durationInFrames={390}><SceneClose /></Sequence>
+      {SCENES.map((s, i) => {
+        const start = from;
+        from += s.d;
+        return (
+          <Sequence key={i} from={start} durationInFrames={s.d}>
+            {s.c}
+          </Sequence>
+        );
+      })}
     </AbsoluteFill>
   );
 };

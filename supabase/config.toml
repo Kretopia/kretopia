@@ -1,6 +1,8 @@
 project_id = "kwmcocsitwssrtzkdojh"
 
 [functions]
+  [functions.gen-music-temp]
+    verify_jwt = false
   [functions.ai-finance]
     verify_jwt = false
   [functions.ai-support]

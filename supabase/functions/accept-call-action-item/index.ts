@@ -71,10 +71,10 @@ serve(async (req) => {
           project_id: t.project_id,
           title: item.title,
           description: item.detail ?? null,
-          assignee_id: item.assignee_user_id ?? userId,
+          assigned_to: item.assignee_user_id ?? userId,
           created_by: userId,
-          due_at: due_at ?? null,
-          source: "call_intelligence",
+          due_date: due_at ?? null,
+          status: "todo",
         })
         .select("id")
         .single();
@@ -85,16 +85,16 @@ serve(async (req) => {
         .from("project_notes")
         .insert({
           project_id: t.project_id,
-          author_id: userId,
-          content: `**${item.kind.toUpperCase()} (from call):** ${item.title}${item.detail ? `\n\n${item.detail}` : ""}`,
+          created_by: userId,
+          title: `${item.kind === "decision" ? "Decision" : item.kind === "followup" ? "Follow-up" : "Note"} from call`,
+          content: `${item.title}${item.detail ? `\n\n${item.detail}` : ""}`,
         })
         .select("id")
         .single();
       pushedToId = row?.id ?? null;
       pushedToKind = "project_notes";
     } else if (item.kind === "credit") {
-      // Best-effort: leave the credit creation to the user via the credits flow,
-      // but mark the item accepted so it doesn't reappear.
+      // Best-effort: leave credit creation to the user via the credits flow.
       pushedToKind = "manual_credit";
     }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SearchOrPasteStep } from "./SearchOrPasteStep";
 import { DisambiguationStep } from "./DisambiguationStep";
 import { VerifyMatchesStep } from "./VerifyMatchesStep";
@@ -11,6 +11,10 @@ interface Props extends ClaimContext {}
 /**
  * Universal Claim Flow orchestrator.
  * Steps: search → disambiguate → verify → preview → email.
+ *
+ * If the landing page (or another entry point) has already pre-fetched results,
+ * it stashes them in sessionStorage under "claim_intent" — we hydrate from that
+ * and jump straight to the disambiguation step.
  */
 export const UniversalClaimFlow = ({
   source,
@@ -24,9 +28,33 @@ export const UniversalClaimFlow = ({
   const [selected, setSelected] = useState<ClaimedCredit[]>([]);
   const [draft, setDraft] = useState<DraftProfile>({});
 
+  // Hydrate from claim_intent (set by landing search) so we land on disambiguation
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("claim_intent");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (!parsed?.q) return;
+      // Only honor recent intents (10 min)
+      if (parsed.ts && Date.now() - parsed.ts > 10 * 60 * 1000) return;
+      setQuery(parsed.q);
+      if (Array.isArray(parsed.results) && parsed.results.length > 0) {
+        setResults(parsed.results);
+        setStep("disambiguate");
+      }
+    } catch {}
+  }, []);
+
   const handleResults = (r: WebCreditResult[], q: string) => {
     setQuery(q);
     setResults(r);
+    // Cache so a re-render or back-nav shows the same set
+    try {
+      sessionStorage.setItem(
+        `claim_search:${q.toLowerCase()}`,
+        JSON.stringify({ ts: Date.now(), query: q, results: r }),
+      );
+    } catch {}
     setStep("disambiguate");
   };
 

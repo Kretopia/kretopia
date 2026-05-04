@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PhoneIncoming, PhoneOutgoing, PhoneMissed, Phone, Video } from "lucide-react";
+import { PhoneIncoming, PhoneOutgoing, PhoneMissed, Phone, Video, Sparkles } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useCallHistory } from "@/hooks/useCallHistory";
 import { useStartDirectCall } from "@/hooks/useStartDirectCall";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
+import { CallRecapSheet } from "@/components/calls/CallRecapSheet";
 import { useAuth } from "@/hooks/useAuth";
 
 const formatDuration = (s: number | null) => {

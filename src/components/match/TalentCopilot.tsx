@@ -58,10 +58,10 @@ export const TalentCopilot = () => {
 
   const handleSearch = async (q?: string) => {
     const text = (q ?? brief).trim();
-    if (text.length < 10) {
+    if (text.length < 1) {
       toast({
-        title: "Tell us more",
-        description: "Describe what you need in a sentence or two.",
+        title: "Add a keyword or brief",
+        description: "Even one word like 'model' or 'editor' works.",
         variant: "destructive",
       });
       return;

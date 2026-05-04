@@ -22,6 +22,10 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
     // Run all reads in parallel
     const [
       profilesCount,
@@ -33,6 +37,8 @@ Deno.serve(async (req) => {
       projectsCount,
       locationsRes,
       rolesRes,
+      wauRes,
+      mauRes,
     ] = await Promise.all([
       supabase.from("profiles").select("user_id", { count: "exact", head: true }).eq("onboarding_completed", true),
       supabase.from("connections").select("id", { count: "exact", head: true }).eq("status", "accepted"),
@@ -43,6 +49,8 @@ Deno.serve(async (req) => {
       supabase.from("projects").select("id", { count: "exact", head: true }),
       supabase.from("profiles").select("location").not("location", "is", null).neq("location", ""),
       supabase.from("profiles").select("role").not("role", "is", null).neq("role", ""),
+      supabase.from("user_session_pings").select("user_id", { count: "exact", head: true }).gte("ping_date", sevenDaysAgo),
+      supabase.from("user_session_pings").select("user_id", { count: "exact", head: true }).gte("ping_date", thirtyDaysAgo),
     ]);
 
     // Aggregate locations (top 6)

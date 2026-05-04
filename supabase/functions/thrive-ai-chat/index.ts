@@ -126,6 +126,36 @@ serve(async (req) => {
           const ctx = await loadCopilotContext(admin, user.id);
           contextPreamble = renderContextPreamble(ctx, surface, surface_context);
 
+          // ---- Thrive Brain: retrieve relevant long-term memories ----
+          // Embed the latest user turn, semantic-search copilot_memories,
+          // and inject the top hits into the system prompt as <memory>.
+          try {
+            const latestForMem = [...messages].reverse().find((m) => m.role === "user")?.content;
+            if (latestForMem && latestForMem.length > 3) {
+              const qEmb = await embedText(latestForMem);
+              if (qEmb) {
+                const { data: mems } = await admin.rpc("match_copilot_memories", {
+                  p_user_id: user.id,
+                  p_query_embedding: toPgVector(qEmb) as unknown as number[],
+                  p_match_count: 6,
+                  p_min_similarity: 0.55,
+                });
+                if (Array.isArray(mems) && mems.length) {
+                  const lines = mems
+                    .map((m: any) => `- [${m.kind}] ${m.content}`)
+                    .join("\n");
+                  contextPreamble += `\n\nLONG-TERM MEMORY (things you've learned about this user — use naturally, don't quote verbatim, never say "according to my memory"):\n${lines}\n`;
+                  // Bump usage stats async (don't await)
+                  for (const m of mems as Array<{ id: string }>) {
+                    admin.rpc("touch_copilot_memory", { p_memory_id: m.id }).then(() => {}, () => {});
+                  }
+                }
+              }
+            }
+          } catch (memErr) {
+            console.warn("memory retrieval failed", memErr);
+          }
+
           // Auto-resolve canonical thread when surface is set and no thread provided.
           if (!conversationId && (surface || persist)) {
             try {

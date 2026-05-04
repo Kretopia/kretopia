@@ -33,6 +33,7 @@ import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
 import { FoundingMemberCard } from "@/components/founding/FoundingMemberCard";
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
+import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
@@ -83,6 +84,9 @@ export const UnifiedHome = () => {
   // Live activity pulse
   const [activityMsg, setActivityMsg] = useState("");
   const [activityNames, setActivityNames] = useState<string[]>([]);
+
+  // First-Win celebration sheet (one-shot for fresh accounts)
+  const [showFirstWin, setShowFirstWin] = useState(false);
 
   useEffect(() => {
     const hour = new Date().getHours();

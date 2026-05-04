@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
 
   const { data: gigs, error } = await supa
     .from("opportunities")
-    .select("id,title,description,duration,created_at,status,type,barter_posting_deadline")
+    .select("id,title,description,duration,created_at,status,type,barter_posting_deadline,application_deadline")
     .eq("status", "active")
     .order("created_at", { ascending: true })
     .limit(limit);

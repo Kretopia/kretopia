@@ -646,6 +646,9 @@ export const UnifiedHome = () => {
       {/* ═══════════ CONTENT SECTIONS ═══════════ */}
       <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
 
+          {/* Daily streak chips — Duolingo loop */}
+          <StreakChipsRow className="mb-4" />
+
 
 
         {!user && <WhyCreatorsChooseSection />}

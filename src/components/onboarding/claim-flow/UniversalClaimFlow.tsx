@@ -61,7 +61,7 @@ export const UniversalClaimFlow = ({
       ? `/gig/${contextId}?claimed=true`
       : source === "event" && contextId
       ? `/event/${contextId}?claimed=true`
-      : "/profile?claimed=true");
+      : "/circle?welcome=match");
 
   return (
     <div className="w-full max-w-md mx-auto px-4 py-6">

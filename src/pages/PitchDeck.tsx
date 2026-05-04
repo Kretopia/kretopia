@@ -165,7 +165,7 @@ const Slide5 = () => (
         {[
           { label: "Mobile-first platform", detail: "Android beta launching", status: "live" },
           { label: "Escrow payments", detail: "Stripe Connect", status: "live" },
-          { label: "AI matching & scouting", detail: "Smart creator discovery", status: "live" },
+          { label: "Smart Match & scouting", detail: "Smart creator discovery", status: "live" },
           { label: "Project management", detail: "ThriveDesk workspaces", status: "live" },
           { label: "Opportunity board", detail: "Gigs, jobs & collabs", status: "live" },
           { label: "Accounting tools", detail: "P&L, expenses, invoicing", status: "live" },

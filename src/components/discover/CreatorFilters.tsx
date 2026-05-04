@@ -241,7 +241,7 @@ export const CreatorFilters = ({ filters, onFilterChange, isPremium, userLevel, 
             <div>
               <p className="font-semibold text-sm mb-1">Unlock Advanced Filters</p>
               <p className="text-xs text-muted-foreground">
-                Find your perfect collaborators with AI-powered filtering
+                Find your perfect collaborators with smart filtering
               </p>
             </div>
           </div>

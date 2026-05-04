@@ -123,7 +123,7 @@ export const MatchExplanationDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lightbulb className="h-5 w-5 text-primary" />
-            AI Match Analysis
+            Why you match
           </DialogTitle>
           <DialogDescription>
             Why you and {match.name} would work great together

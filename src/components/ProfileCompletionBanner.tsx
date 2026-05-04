@@ -13,7 +13,7 @@ interface ProfileCompletionBannerProps {
 const pageMessages = {
   discover: {
     title: "Unlock Better Matches!",
-    description: "Complete profiles get 10x more visibility and AI-powered match suggestions.",
+    description: "Complete profiles get 10x more visibility and Smart Match suggestions.",
     stat: "Users with complete profiles receive 5x more gigs",
   },
   opportunities: {

@@ -179,7 +179,7 @@ export function ProfilePreviewSheet({
               </div>
             )}
 
-            {/* AI Match Reasons */}
+            {/* Why you match */}
             {matchReasons.length > 0 && (
               <div className="mb-6 p-4 rounded-xl bg-primary/5 border border-primary/20">
                 <h3 className="font-semibold mb-3 flex items-center gap-2">

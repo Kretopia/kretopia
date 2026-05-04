@@ -2993,6 +2993,42 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_action_date: string | null
+          longest_streak: number
+          streak_type: string
+          total_actions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_action_date?: string | null
+          longest_streak?: number
+          streak_type: string
+          total_actions?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_action_date?: string | null
+          longest_streak?: number
+          streak_type?: string
+          total_actions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       deal_memos: {
         Row: {
           application_id: string
@@ -14438,6 +14474,14 @@ export type Database = {
         Returns: boolean
       }
       backfill_vouch_requests: { Args: never; Returns: Json }
+      bump_streak: {
+        Args: { _streak_type: string }
+        Returns: {
+          current_streak: number
+          last_action_date: string
+          longest_streak: number
+        }[]
+      }
       calculate_distance: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number

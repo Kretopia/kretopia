@@ -35,6 +35,7 @@ import { FoundingMemberCard } from "@/components/founding/FoundingMemberCard";
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { MagicHomeHero } from "@/components/home/MagicHomeHero";
+import { StreakChipsRow } from "@/components/home/StreakChipsRow";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
@@ -644,6 +645,9 @@ export const UnifiedHome = () => {
 
       {/* ═══════════ CONTENT SECTIONS ═══════════ */}
       <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
+
+          {/* Daily streak chips — Duolingo loop */}
+          <StreakChipsRow className="mb-4" />
 
 
 

@@ -97,7 +97,7 @@ Return as JSON:
         {!insights ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Get AI-powered insights on how well you match this opportunity and tips to improve your application.
+              Get Smart insights on how well you match this opportunity and tips to improve your application.
             </p>
             <Button 
               onClick={generateInsights} 

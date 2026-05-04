@@ -98,7 +98,7 @@ export function CompanyHiringDashboard() {
       </div>
 
       {/* AI Talent Suggestions - Pro Feature */}
-      <FreeTierGate feature="aiApplicantRankings" featureLabel="AI Talent Finder" description="Upgrade to Pro to unlock AI-powered talent matching — instantly find the best creators for your projects.">
+      <FreeTierGate feature="aiApplicantRankings" featureLabel="AI Talent Finder" description="Upgrade to Pro to unlock Smart talent matching — instantly find the best creators for your projects.">
         <AITalentSuggestions />
       </FreeTierGate>
 
@@ -138,7 +138,7 @@ export function CompanyHiringDashboard() {
       </Card>
 
       {/* Analytics - Pro Only */}
-      <FreeTierGate feature="aiApplicantRankings" featureLabel="Hiring Analytics" description="Upgrade to Pro for full hiring analytics, applicant tracking, and AI-powered talent insights.">
+      <FreeTierGate feature="aiApplicantRankings" featureLabel="Hiring Analytics" description="Upgrade to Pro for full hiring analytics, applicant tracking, and smart talent insights.">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">

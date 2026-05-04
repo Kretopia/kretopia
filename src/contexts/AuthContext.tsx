@@ -170,6 +170,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 if (redirectPath) window.location.href = redirectPath;
               })
               .catch(err => console.warn('[AuthContext] processPendingPost error:', err));
+            // Bump daily login streak
+            supabase.rpc('bump_streak', { _streak_type: 'login' }).then(() => {}, () => {});
           }, 0);
         }
       }

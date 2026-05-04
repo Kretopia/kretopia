@@ -49,7 +49,7 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Post what you need or browse what's available. From paid gigs to creative trades — 
-            every opportunity is AI-moderated and connected to verified portfolios.
+            every opportunity is Verified & Protected and connected to verified portfolios.
           </p>
         </div>
 
@@ -78,7 +78,7 @@ export const PostOpportunitySection = ({ opportunitiesCount }: PostOpportunitySe
 
         <div className="text-center">
           <p className="text-sm text-muted-foreground mb-4">
-            Every opportunity is AI-moderated and linked to verified portfolios
+            Every opportunity is Verified & Protected and linked to verified portfolios
           </p>
           <Link to="/auth">
             <Button variant="gradient" size="lg" className="gap-2">

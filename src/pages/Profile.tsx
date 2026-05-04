@@ -30,6 +30,7 @@ import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
 import { DiscoveriesInbox } from "@/components/profile/DiscoveriesInbox";
 import { ClaimedProfileGlow } from "@/components/onboarding/claim-flow/ClaimedProfileGlow";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
+import { ProfileStrengthBar } from "@/components/profile/ProfileStrengthBar";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 
@@ -254,6 +255,8 @@ const ProfileContent = () => {
 
     await fetchData();
     setIsEditOpen(false);
+    // Bump profile_update streak (fire-and-forget)
+    supabase.rpc('bump_streak', { _streak_type: 'profile_update' }).then(() => {}, () => {});
     setGalleryFiles([]);
     setGalleryPreviews([]);
     
@@ -412,6 +415,17 @@ const ProfileContent = () => {
             />
           }
         />
+
+        {/* Slim Duolingo-style profile strength bar — own profile only */}
+        <div className="mt-3">
+          <ProfileStrengthBar
+            profile={profile}
+            portfolioCount={portfolioItems?.length || 0}
+            creditsCount={credits?.length || 0}
+            awardsCount={awards?.length || 0}
+            pressCount={pressLinks?.length || 0}
+          />
+        </div>
 
         {/* My Website quick-access */}
         {profile?.site_enabled && (

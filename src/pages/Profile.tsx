@@ -30,6 +30,7 @@ import { ClaimContinueBanner } from "@/components/profile/ClaimContinueBanner";
 import { DiscoveriesInbox } from "@/components/profile/DiscoveriesInbox";
 import { ClaimedProfileGlow } from "@/components/onboarding/claim-flow/ClaimedProfileGlow";
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
+import { ProfileStrengthBar } from "@/components/profile/ProfileStrengthBar";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 

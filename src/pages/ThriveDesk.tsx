@@ -5,7 +5,7 @@ import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { WorkspaceSidebar } from "@/components/project/WorkspaceSidebar";
 import { WorkspaceQuickPanel } from "@/components/project/WorkspaceQuickPanel";
-import { DeskTabBar } from "@/components/project/DeskTabBar";
+import { StudioToolBar } from "@/components/project/StudioToolBar";
 import { ConfirmCreditBanner } from "@/components/project/ConfirmCreditBanner";
 import { AgentModeBanner } from "@/components/project/AgentModeBanner";
 import { ProjectInviteAcceptBanner } from "@/components/project/ProjectInviteAcceptBanner";

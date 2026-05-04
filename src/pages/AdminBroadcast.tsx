@@ -22,7 +22,7 @@ We shipped a lot this week — here's what's new in your Studio:
 
 📞 Video Calls — One-tap from any chat or project. Group calls live in your Circles. Missed-call history in Messages.
 
-🤖 Thrive Agent — A proactive operator inside Desk that can draft invoices, start calls, and log credits for you.
+🤖 Thrive Copilot — A proactive operator inside Desk that can draft invoices, start calls, and log credits for you.
 
 💸 ThrivePay — New Pay tab in the bottom nav. Money Streak rewards you for invoicing, logging expenses, and scanning receipts.
 

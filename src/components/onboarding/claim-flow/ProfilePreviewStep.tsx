@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, X, ExternalLink, Pencil } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, X, ExternalLink, Pencil } from "lucide-react";
+import { StudioComingAliveLoader } from "./StudioComingAliveLoader";
 import { supabase } from "@/integrations/supabase/client";
 import { CreditThumb } from "./CreditThumb";
 import { cn } from "@/lib/utils";
@@ -83,17 +84,7 @@ export const ProfilePreviewStep = ({ query, selectedCredits, onBack, onConfirm }
   const removeCredit = (id: string) => setCredits((prev) => prev.filter((c) => c._id !== id));
 
   if (building) {
-    return (
-      <div className="py-12 space-y-3 text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-        <div className="space-y-1">
-          <p className="font-semibold">Building your profile…</p>
-          <p className="text-xs text-muted-foreground">
-            Verifying credits · Pulling avatar · Extracting bio
-          </p>
-        </div>
-      </div>
-    );
+    return <StudioComingAliveLoader />;
   }
 
   return (

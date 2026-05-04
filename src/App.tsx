@@ -34,6 +34,7 @@ import { ThriveAgentFab } from "./components/desk/ThriveAgentFab";
 
 // Lazy load active page components
 const Auth = lazy(() => import("./pages/Auth"));
+const CopilotMemory = lazy(() => import("./pages/CopilotMemory"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CompanyOnboarding = lazy(() => import("./pages/CompanyOnboarding"));
 const TalentFinder = lazy(() => import("./pages/TalentFinder"));
@@ -275,6 +276,7 @@ const AppContent = () => {
             <Route path="/website-builder" element={<ProtectedRoute><WebsiteBuilder /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/settings/copilot-memory" element={<ProtectedRoute><CopilotMemory /></ProtectedRoute>} />
             <Route path="/my-analytics" element={<Navigate to="/profile" replace />} />
             <Route path="/guide" element={<Navigate to="/" replace />} />
             

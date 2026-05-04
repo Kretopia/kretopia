@@ -1823,6 +1823,48 @@ export type Database = {
         }
         Relationships: []
       }
+      copilot_memories: {
+        Row: {
+          confidence: number
+          content: string
+          created_at: string
+          embedding: string | null
+          id: string
+          kind: string
+          last_used_at: string | null
+          source: string | null
+          updated_at: string
+          use_count: number
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          content: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          kind?: string
+          last_used_at?: string | null
+          source?: string | null
+          updated_at?: string
+          use_count?: number
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          id?: string
+          kind?: string
+          last_used_at?: string | null
+          source?: string | null
+          updated_at?: string
+          use_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       copilot_plans: {
         Row: {
           completed_at: string | null
@@ -14748,6 +14790,21 @@ export type Database = {
         Args: { _call_id: string }
         Returns: undefined
       }
+      match_copilot_memories: {
+        Args: {
+          p_match_count?: number
+          p_min_similarity?: number
+          p_query_embedding: string
+          p_user_id: string
+        }
+        Returns: {
+          confidence: number
+          content: string
+          id: string
+          kind: string
+          similarity: number
+        }[]
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -14831,6 +14888,10 @@ export type Database = {
         Returns: Json
       }
       thrivefund_auto_finalize_due: { Args: never; Returns: undefined }
+      touch_copilot_memory: {
+        Args: { p_memory_id: string }
+        Returns: undefined
+      }
       update_my_location: {
         Args: { lat: number; lon: number }
         Returns: boolean

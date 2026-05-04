@@ -46,6 +46,7 @@ export const VideoCallSheet = ({
   projectId,
   directCallId,
   roomName,
+  lobbyCta = "Start call",
 }: VideoCallSheetProps) => {
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement | null>(null);

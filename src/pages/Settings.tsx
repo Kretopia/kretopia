@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft, CreditCard, Globe } from "lucide-react";
+import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft, CreditCard, Globe, Brain, ChevronRight } from "lucide-react";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
@@ -458,6 +458,29 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <AccountSwitcher currentAccountType={accountType} variant="settings" />
+            </CardContent>
+          </Card>
+
+          {/* Thrive Copilot Memory */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                Copilot Memory
+              </CardTitle>
+              <CardDescription>
+                See and manage what Thrive Copilot has learned about you
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => navigate("/settings/copilot-memory")}
+              >
+                <span>Manage memories</span>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </CardContent>
           </Card>
 

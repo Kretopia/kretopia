@@ -309,7 +309,7 @@ export const PostOpportunityDialog = ({
         barter_offering: "", barter_requesting: "", platform_requirements: [],
         min_followers: "", content_deliverables: [],
         usage_type: "", usage_territory: "", usage_duration: "", usage_exclusive: false,
-        barter_gifted_value_usd: "", barter_posting_deadline: "", whitelisting_allowed: false,
+        barter_gifted_value_usd: "", barter_posting_deadline: "", application_deadline: "", whitelisting_allowed: false,
       });
       setImageFile(null);
       setImagePreview("");

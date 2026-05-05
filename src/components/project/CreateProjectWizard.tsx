@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Loader2, Crown, UserPlus, Check, Users, Mail, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Crown, UserPlus, Check, Users, Mail, X, Mic } from "lucide-react";
 import { useProjectLimit } from "@/hooks/useProjectLimit";
 import { cn } from "@/lib/utils";
 import {
@@ -22,6 +22,7 @@ import {
 } from "@/lib/workspaceConfigs";
 import { recommendWorkspaces } from "@/lib/workspaceRecommendations";
 import { Sparkles } from "lucide-react";
+import { VoiceFirstCreateModal } from "./studio/VoiceFirstCreateModal";
 
 interface CreateProjectWizardProps {
   open: boolean;

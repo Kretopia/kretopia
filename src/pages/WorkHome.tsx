@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
@@ -138,9 +139,7 @@ const BrandWorkHome = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--mode-accent))]" />
-      </div>
+      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
     );
   }
 
@@ -352,9 +351,7 @@ const CreatorWorkHome = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--mode-accent))]" />
-      </div>
+      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
     );
   }
 
@@ -475,9 +472,7 @@ const WorkHome = () => {
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--mode-accent))]" />
-      </div>
+      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
     );
   }
 

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { extractThumbnailForStorage } from "@/lib/thumbnailExtractor";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -140,9 +141,7 @@ const ICDBProjectPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
     );
   }
 

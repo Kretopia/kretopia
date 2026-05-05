@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { z } from "zod";
 import { Loader2, ShieldAlert, ArrowLeft, ExternalLink, CheckCircle2, XCircle, FileText, Download } from "lucide-react";
@@ -179,9 +180,7 @@ const DisputeManage = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      <div className="min-h-[60vh] flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
     );
   }
 

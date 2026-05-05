@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -156,9 +157,7 @@ export default function ClaimProfile() {
 
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
     );
   }
 

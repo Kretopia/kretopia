@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -154,9 +155,7 @@ export default function AdminDisputes() {
 
   if (!isAdmin || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
     );
   }
 

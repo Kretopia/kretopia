@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { UserPlus, Mail, Loader2, Users, Briefcase, Sparkles, Handshake } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { UserPlus, Mail, Loader2, Users, Briefcase, Sparkles, Handshake, Link2, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -269,12 +270,27 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Invite Collaborator</DialogTitle>
+          <DialogTitle>Invite to the Studio</DialogTitle>
           <DialogDescription>
-            Start typing to search your circle or enter an email address
+            Bring in teammates, or share a guest link with a client.
           </DialogDescription>
         </DialogHeader>
-        
+
+        <Tabs defaultValue="people" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="people" className="gap-1.5">
+              <Users className="h-3.5 w-3.5" /> People
+            </TabsTrigger>
+            <TabsTrigger value="guest" className="gap-1.5">
+              <Link2 className="h-3.5 w-3.5" /> Guest link
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="guest" className="pt-3">
+            <GuestLinkPanel projectId={projectId} />
+          </TabsContent>
+
+          <TabsContent value="people" className="pt-3">
         <div className="space-y-4">
           {/* Role picker */}
           <div className="space-y-2">
@@ -442,8 +458,118 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
               </div>
             )}
           </ScrollArea>
-        </div>
+          </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Guest link panel — mints a shareable /guest/:token URL for clients
+// ---------------------------------------------------------------------------
+
+const GuestLinkPanel = ({ projectId }: { projectId: string }) => {
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("guest_studio_tokens")
+          .select("token")
+          .eq("project_id", projectId)
+          .is("revoked_at", null)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (active && data?.token) setToken(data.token);
+      } catch (e) {
+        console.warn("[guest link] load", e);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [projectId]);
+
+  const create = async () => {
+    setCreating(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not signed in");
+      const { data, error } = await supabase
+        .from("guest_studio_tokens")
+        .insert({ project_id: projectId, created_by: user.id })
+        .select("token")
+        .single();
+      if (error) throw error;
+      setToken(data.token);
+      toast({ title: "Guest link ready" });
+    } catch (e: any) {
+      toast({ title: "Couldn't create link", description: e.message, variant: "destructive" });
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const url = token ? `${window.location.origin}/guest/${token}` : "";
+
+  const copy = async () => {
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      toast({ title: "Copy failed", description: "Long-press to copy manually", variant: "destructive" });
+    }
+  };
+
+  if (loading) {
+    return <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg bg-muted/40 p-3 space-y-1">
+        <p className="text-xs font-bold flex items-center gap-1.5">
+          <Sparkles className="h-3.5 w-3.5 text-primary" /> Magic-link access
+        </p>
+        <p className="text-[11px] text-muted-foreground leading-snug">
+          Anyone with this link gets a guest Studio — Brief, Vault & Chat.
+          No password, no signup needed. They'll see a "Claim your profile" button.
+        </p>
+      </div>
+
+      {token ? (
+        <div className="space-y-2">
+          <Label className="text-xs">Share this link</Label>
+          <div className="flex gap-2">
+            <Input readOnly value={url} className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
+            <Button size="sm" onClick={copy} className="shrink-0 gap-1.5">
+              {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              {copied ? "Copied" : "Copy"}
+            </Button>
+          </div>
+          <Button size="sm" variant="ghost" className="text-xs h-7" onClick={create} disabled={creating}>
+            {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : "Generate a new link"}
+          </Button>
+        </div>
+      ) : (
+        <Button onClick={create} disabled={creating} className="w-full gap-2">
+          {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+          Create guest link
+        </Button>
+      )}
+    </div>
   );
 };

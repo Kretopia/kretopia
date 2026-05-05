@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useParams } from "react-router-dom";
-import { Loader2, Menu, X, PanelRightOpen, FolderKanban } from "lucide-react";
+import { Loader2, Menu, X, PanelRightOpen, PanelLeftClose, PanelLeftOpen, FolderKanban } from "lucide-react";
 import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { WorkspaceSidebar } from "@/components/project/WorkspaceSidebar";
@@ -38,6 +38,13 @@ const ThriveDesk = () => {
 
   const [activeTab, setActiveTab] = useState("today");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("thrivedesk:sidebar-open") !== "false";
+  });
+  useEffect(() => {
+    localStorage.setItem("thrivedesk:sidebar-open", String(desktopSidebarOpen));
+  }, [desktopSidebarOpen]);
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);
@@ -126,9 +133,9 @@ const ThriveDesk = () => {
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <FolderKanban className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-lg font-bold mb-1">Workspace not found</h2>
+          <h2 className="text-lg font-bold mb-1">Studio not found</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            This workspace may have been removed or you don't have access.
+            This studio may have been removed or you don't have access.
           </p>
           <Button onClick={() => window.history.back()} variant="outline">
             Go Back
@@ -147,8 +154,10 @@ const ThriveDesk = () => {
 
       {/* Left Sidebar - Project List */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-200 lg:relative lg:translate-x-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-all duration-200 lg:relative",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        "lg:translate-x-0",
+        desktopSidebarOpen ? "lg:w-64" : "lg:w-0 lg:border-r-0 lg:overflow-hidden"
       )}>
         <WorkspaceSidebar
           projects={projects}
@@ -163,6 +172,16 @@ const ThriveDesk = () => {
         <header className="h-14 border-b-2 border-primary/20 bg-gradient-to-r from-card via-card to-primary/5 backdrop-blur-sm flex items-center gap-3 px-4 shrink-0 shadow-sm">
           <Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden lg:inline-flex shrink-0"
+            onClick={() => setDesktopSidebarOpen((v) => !v)}
+            aria-label={desktopSidebarOpen ? "Hide studios" : "Show studios"}
+            title={desktopSidebarOpen ? "Hide studios" : "Show studios"}
+          >
+            {desktopSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeftOpen className="h-5 w-5" />}
           </Button>
           <SimpleProjectHeader
             project={project}

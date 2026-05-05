@@ -73,6 +73,7 @@ async function checkAndProvisionUser(
   credits: ClaimedCredit[],
   redirectTo: string,
   skipMagicLink: boolean,
+  faceMatchScore: number | null,
 ): Promise<{ is_new_user: boolean; conflicts?: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> }> {
   // 1. Check if user already exists
   const { data: existing } = await admin.auth.admin.listUsers();
@@ -89,7 +90,7 @@ async function checkAndProvisionUser(
 
     // If skipMagicLink (Google flow), upsert profile + credits so the claim isn't lost
     if (skipMagicLink) {
-      await upsertProfileAndCredits(admin, userId, profile, credits, conflicts);
+      await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceMatchScore);
     }
   } else {
     // 2. Create new auth user (unconfirmed, magic link will confirm)
@@ -103,7 +104,7 @@ async function checkAndProvisionUser(
     isNewUser = true;
     console.log(`[claim] created new user ${userId}`);
 
-    await upsertProfileAndCredits(admin, userId, profile, credits, conflicts);
+    await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceMatchScore);
   }
 
   // 5. Send magic link unless explicitly skipped (Google flow already authenticated)

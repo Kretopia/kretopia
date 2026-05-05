@@ -43,13 +43,16 @@ export const PeopleSection = ({
   const [projectTitle, setProjectTitle] = useState<string>("");
 
   useEffect(() => {
-    supabase
-      .from("projects")
-      .select("title")
-      .eq("id", projectId)
-      .maybeSingle()
-      .then(({ data }) => setProjectTitle(data?.title ?? ""))
-      .catch(() => {});
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("projects")
+          .select("title")
+          .eq("id", projectId)
+          .maybeSingle();
+        setProjectTitle(data?.title ?? "");
+      } catch {/* ignore */}
+    })();
   }, [projectId]);
 
   useEffect(() => {

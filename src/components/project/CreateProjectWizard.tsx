@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Loader2, Crown, UserPlus, Check, Users, Mail, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Crown, UserPlus, Check, Users, Mail, X, Mic } from "lucide-react";
 import { useProjectLimit } from "@/hooks/useProjectLimit";
 import { cn } from "@/lib/utils";
 import {
@@ -22,6 +22,7 @@ import {
 } from "@/lib/workspaceConfigs";
 import { recommendWorkspaces } from "@/lib/workspaceRecommendations";
 import { Sparkles } from "lucide-react";
+import { VoiceFirstCreateModal } from "./studio/VoiceFirstCreateModal";
 
 interface CreateProjectWizardProps {
   open: boolean;
@@ -47,6 +48,9 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
 
   const [step, setStep] = useState<Step>(1);
   const [creating, setCreating] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [expanding, setExpanding] = useState(false);
+  const [seedTasks, setSeedTasks] = useState<Array<{ title: string; description?: string }>>([]);
 
   // Step 1
   const [workspaceType, setWorkspaceType] = useState<WorkspaceType | null>(null);
@@ -80,6 +84,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
       setInviteSearch("");
       setShowInviteDropdown(false);
       setPendingAgentRole("client");
+      setSeedTasks([]);
     }
   }, [open]);
 
@@ -177,6 +182,35 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
     return false;
   };
 
+  const expandWithAi = async () => {
+    const text = description.trim();
+    if (!text || expanding) return;
+    setExpanding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("extract-brief", {
+        body: { source: "text", text },
+      });
+      if (error) throw error;
+      const result: any = data ?? {};
+      if (result?.project?.summary) setDescription(result.project.summary);
+      if (!title.trim() && result?.project?.title) setTitle(result.project.title.slice(0, 120));
+      if (Array.isArray(result?.deliverables) && result.deliverables.length) {
+        setSeedTasks(
+          result.deliverables.slice(0, 8).map((d: any) => ({
+            title: String(d.title || "").slice(0, 200),
+            description: d.description ?? null,
+          })),
+        );
+      }
+      toast({ title: "Brief expanded", description: "Copilot fleshed it out and queued starter tasks." });
+    } catch (e: any) {
+      console.error(e);
+      toast({ title: "Couldn't expand", description: e.message || "Try again in a sec.", variant: "destructive" });
+    } finally {
+      setExpanding(false);
+    }
+  };
+
   const handleCreate = async () => {
     if (!workspaceType || !dealType || !title.trim()) return;
     try {
@@ -212,6 +246,23 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
         .single();
 
       if (projectError) throw projectError;
+
+      // Seed AI-extracted starter tasks if we expanded the brief
+      if (seedTasks.length > 0) {
+        try {
+          await supabase.from("project_tasks").insert(
+            seedTasks.slice(0, 8).map((t) => ({
+              project_id: project.id,
+              title: t.title.slice(0, 200),
+              description: t.description ?? null,
+              status: "todo" as const,
+              created_by: user.id,
+            })),
+          );
+        } catch (e) {
+          console.warn("seed tasks failed", e);
+        }
+      }
 
       try {
         const { analytics } = await import("@/lib/analytics");
@@ -343,6 +394,24 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
             {/* STEP 1: Workspace type */}
             {step === 1 && (
               <div className="space-y-4 py-2">
+                {/* Voice-first shortcut */}
+                <button
+                  type="button"
+                  onClick={() => { onOpenChange(false); setTimeout(() => setVoiceOpen(true), 80); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-[hsl(var(--energy)/0.5)] bg-[hsl(var(--energy)/0.08)] hover:bg-[hsl(var(--energy)/0.15)] transition-colors text-left"
+                >
+                  <div className="h-10 w-10 rounded-full bg-[hsl(var(--energy))] text-background flex items-center justify-center shrink-0">
+                    <Mic className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold leading-tight">Just talk it out instead</p>
+                    <p className="text-[11px] text-muted-foreground leading-tight">
+                      Tell us what you're making — Copilot picks the workspace + seeds the brief.
+                    </p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                </button>
+
                 {/* Recommended for you — based on profile role */}
                 {recommended.length > 0 && (
                   <div className="space-y-2">
@@ -485,17 +554,49 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="desc" className="text-base font-semibold">
-                    Quick description <span className="text-muted-foreground font-normal text-sm">(optional)</span>
-                  </Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label htmlFor="desc" className="text-base font-semibold">
+                      Quick description <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                    </Label>
+                    {description.trim().length >= 8 && (
+                      <button
+                        type="button"
+                        onClick={expandWithAi}
+                        disabled={expanding}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--energy))] hover:underline disabled:opacity-50"
+                      >
+                        {expanding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        {expanding ? "Thinking…" : "Expand with Copilot"}
+                      </button>
+                    )}
+                  </div>
                   <Textarea
                     id="desc"
                     placeholder="What's the vibe? Who's it for? Anything that helps Project Copilot set things up."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    rows={3}
+                    rows={4}
                     className="resize-none"
                   />
+                  {seedTasks.length > 0 && (
+                    <div className="rounded-lg border border-[hsl(var(--energy)/0.4)] bg-[hsl(var(--energy)/0.06)] p-2.5 space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--energy))]">
+                        Starter tasks · {seedTasks.length} ready to seed
+                      </p>
+                      <ul className="space-y-0.5">
+                        {seedTasks.slice(0, 5).map((t, i) => (
+                          <li key={i} className="text-[11px] text-foreground/80 leading-snug">• {t.title}</li>
+                        ))}
+                      </ul>
+                      <button
+                        type="button"
+                        onClick={() => setSeedTasks([])}
+                        className="text-[10px] text-muted-foreground hover:text-foreground hover:underline"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Agent role picker */}
@@ -642,7 +743,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
                 <Button
                   onClick={handleCreate}
                   disabled={!canAdvance() || creating}
-                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold gap-2"
+                  className="bg-[hsl(var(--energy))] hover:bg-[hsl(var(--energy)/0.9)] text-background font-bold gap-2"
                 >
                   {creating ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating…</> : <>Create workspace</>}
                 </Button>
@@ -651,6 +752,12 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
           </>
         )}
       </DialogContent>
+
+      <VoiceFirstCreateModal
+        open={voiceOpen}
+        onOpenChange={setVoiceOpen}
+        onCreated={onSuccess}
+      />
     </Dialog>
   );
 }

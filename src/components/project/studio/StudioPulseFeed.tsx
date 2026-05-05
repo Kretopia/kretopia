@@ -130,7 +130,7 @@ export const StudioPulseFeed = ({ projectId, currentUserId }: Props) => {
       <input
         ref={fileRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.txt,.md,.csv,.xls,.xlsx,.ppt,.pptx,.zip"
         multiple
         className="hidden"
         onChange={onPick}
@@ -229,22 +229,31 @@ export const StudioPulseFeed = ({ projectId, currentUserId }: Props) => {
 
           {files.length > 0 && (
             <div className="flex gap-2 flex-wrap">
-              {files.map((f, i) => (
-                <div key={i} className="relative h-16 w-16 rounded-lg overflow-hidden ring-1 ring-border">
-                  <img
-                    src={URL.createObjectURL(f)}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeFile(i)}
-                    className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-background/90 ring-1 ring-border flex items-center justify-center"
-                  >
-                    <X className="h-2.5 w-2.5" />
-                  </button>
-                </div>
-              ))}
+              {files.map((f, i) => {
+                const isImg = f.type.startsWith("image/");
+                const isVid = f.type.startsWith("video/");
+                const isAud = f.type.startsWith("audio/");
+                return (
+                  <div key={i} className="relative h-16 w-16 rounded-lg overflow-hidden ring-1 ring-border bg-muted/40 flex items-center justify-center">
+                    {isImg ? (
+                      <img src={URL.createObjectURL(f)} alt="" className="h-full w-full object-cover" />
+                    ) : isVid ? (
+                      <span className="text-[10px] font-bold text-muted-foreground">🎬 VID</span>
+                    ) : isAud ? (
+                      <span className="text-[10px] font-bold text-muted-foreground">🎙️ AUD</span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-muted-foreground text-center px-1 break-all line-clamp-2">{f.name.split(".").pop()?.toUpperCase()}</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeFile(i)}
+                      className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-background/90 ring-1 ring-border flex items-center justify-center"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -258,7 +267,7 @@ export const StudioPulseFeed = ({ projectId, currentUserId }: Props) => {
               disabled={files.length >= 4}
             >
               <ImagePlus className="h-4 w-4" />
-              Add images
+              Add files
             </Button>
             <div className="flex gap-1.5">
               <Button

@@ -138,12 +138,6 @@ export const StudioRoom = ({
         currentUserId={currentUserId}
       />
 
-      <StudioPulseFeed
-        projectId={project.id}
-        currentUserId={currentUserId}
-        collaborators={people}
-      />
-
       {/* Persistent entry point into the room chat */}
       <button
         type="button"
@@ -180,6 +174,13 @@ export const StudioRoom = ({
           onUpdated={onUpdated}
           onAddReference={handleAddReference}
           currentUserId={currentUserId}
+        />
+
+        {/* Drop Zone — Copilot intake (formerly Pulse). Drop anything, it routes. */}
+        <StudioPulseFeed
+          projectId={project.id}
+          currentUserId={currentUserId}
+          collaborators={people}
         />
 
         <DeliverablesSection

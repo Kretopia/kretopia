@@ -101,15 +101,26 @@ const ProjectsList = () => {
             </p>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowWizard(true)}
-          className="gap-1.5 text-xs"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-          <span className="hidden sm:inline">Advanced setup</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setShowVoiceCreate(true)}
+            size="sm"
+            className="gap-1.5 rounded-full"
+          >
+            <Plus className="h-4 w-4" />
+            <span>New project</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowWizard(true)}
+            className="gap-1.5 text-xs"
+            title="Advanced setup"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+            <span className="hidden sm:inline">Advanced</span>
+          </Button>
+        </div>
       </header>
 
       {/* Pending Invitations */}

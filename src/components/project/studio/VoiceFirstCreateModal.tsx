@@ -497,7 +497,7 @@ export const VoiceFirstCreateModal = ({
                 variant="outline"
                 size="sm"
                 onClick={() => createProject("selected")}
-                disabled={creating || !brief.project.title.trim() || selected.size === 0}
+                disabled={creating || !brief.project.title.trim() || selected.size === 0 || paymentsInvolved === null}
                 className="gap-1"
               >
                 Create {selected.size} selected

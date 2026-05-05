@@ -340,6 +340,7 @@ const AppContent = () => {
 
             {/* Public guest video call join */}
             <Route path="/call/:token" element={<GuestCall />} />
+            <Route path="/guest/:token" element={<GuestStudio />} />
             <Route path="/review/:token" element={<ProjectReview />} />
             
             {/* Invite Link with Code */}

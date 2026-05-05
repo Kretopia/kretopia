@@ -5270,6 +5270,56 @@ export type Database = {
           },
         ]
       }
+      guest_studio_tokens: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          guest_email: string | null
+          guest_name: string | null
+          id: string
+          label: string | null
+          last_seen_at: string | null
+          project_id: string
+          revoked_at: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          guest_email?: string | null
+          guest_name?: string | null
+          id?: string
+          label?: string | null
+          last_seen_at?: string | null
+          project_id: string
+          revoked_at?: string | null
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          guest_email?: string | null
+          guest_name?: string | null
+          id?: string
+          label?: string | null
+          last_seen_at?: string | null
+          project_id?: string
+          revoked_at?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_studio_tokens_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       icdb_brand_verifications: {
         Row: {
           brand_email: string
@@ -14706,6 +14756,13 @@ export type Database = {
         }[]
       }
       get_founder_circle_count: { Args: never; Returns: number }
+      get_guest_brief: {
+        Args: { _token: string }
+        Returns: {
+          brief_text: string
+          project_id: string
+        }[]
+      }
       get_mutual_connections: {
         Args: { user1_id: string; user2_id: string }
         Returns: {
@@ -14907,6 +14964,19 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_project_for_guest: {
+        Args: { _token: string }
+        Returns: {
+          client_name: string
+          cover_url: string
+          created_by: string
+          description: string
+          project_id: string
+          status: string
+          title: string
+          workspace_type: string
+        }[]
+      }
       get_review_request_by_token: {
         Args: { token_param: string }
         Returns: {
@@ -15037,6 +15107,10 @@ export type Database = {
         Returns: undefined
       }
       record_session_ping: { Args: never; Returns: undefined }
+      register_guest_session: {
+        Args: { _email?: string; _name?: string; _token: string }
+        Returns: string
+      }
       resolve_project_share_link: {
         Args: { _password?: string; _token: string }
         Returns: {

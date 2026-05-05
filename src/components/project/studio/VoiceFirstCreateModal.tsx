@@ -62,6 +62,7 @@ export const VoiceFirstCreateModal = ({
       setBrief(null);
       setSelected(new Set());
       setCreating(false);
+      setPaymentsInvolved(null);
     }
   }, [open]);
 

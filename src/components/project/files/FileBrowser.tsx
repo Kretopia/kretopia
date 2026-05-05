@@ -32,11 +32,15 @@ import {
   Home,
   Loader2,
   Search,
+  Link2,
+  ExternalLink,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFiles";
 import { FileThumbnail } from "./FileThumbnail";
 import { FilePreviewDialog } from "./FilePreviewDialog";
+import { ImportLinkDialog } from "./ImportLinkDialog";
+import { Badge } from "@/components/ui/badge";
 import { FileCommentsSheet } from "@/components/project/studio/FileCommentsSheet";
 import { ResumableUploadList, type UploadJob } from "./ResumableUploadList";
 import { useFileSizeLimit } from "@/hooks/useFileSizeLimit";
@@ -53,6 +57,9 @@ interface ProjectFile {
   created_at: string;
   user_id: string;
   folder_id?: string | null;
+  is_link?: boolean | null;
+  link_provider?: string | null;
+  link_thumbnail_url?: string | null;
 }
 
 interface FolderRow {
@@ -93,6 +100,7 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
   const [commentFile, setCommentFile] = useState<ProjectFile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [quotaBlock, setQuotaBlock] = useState<QuotaBlockReason | null>(null);
+  const [importLinkOpen, setImportLinkOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -100,9 +108,13 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
     }).catch(() => {});
   }, []);
 
-  // Route file clicks: media + images → comments sheet (timestamps + notes),
-  // everything else → standard preview dialog.
+  // Route file clicks: links → open in new tab; media + images → comments sheet
+  // (timestamps + notes); everything else → standard preview dialog.
   const openFile = useCallback((file: ProjectFile) => {
+    if (file.is_link) {
+      window.open(file.file_url, "_blank", "noopener,noreferrer");
+      return;
+    }
     const t = file.file_type || "";
     if (t.startsWith("video/") || t.startsWith("audio/") || t.startsWith("image/")) {
       setCommentFile(file);
@@ -297,8 +309,10 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
   const deleteFile = async (file: ProjectFile) => {
     if (!confirm(`Delete "${file.file_name}"?`)) return;
     try {
-      const path = extractProjectFilePath(file.file_url);
-      await supabase.storage.from("project-files").remove([path]);
+      if (!file.is_link) {
+        const path = extractProjectFilePath(file.file_url);
+        await supabase.storage.from("project-files").remove([path]);
+      }
       const { error } = await supabase.from("project_files").delete().eq("id", file.id);
       if (error) throw error;
       onFileUploaded();
@@ -400,6 +414,10 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
             <FolderPlus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">New folder</span>
           </Button>
+          <Button variant="outline" size="sm" onClick={() => setImportLinkOpen(true)}>
+            <Link2 className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Import link</span>
+          </Button>
           <Button size="sm" onClick={() => fileInputRef.current?.click()}>
             <Upload className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Upload</span>
@@ -431,10 +449,13 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
         <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border rounded-xl">
           <Folder className="h-10 w-10 text-muted-foreground mb-3" />
           <p className="font-medium">This folder is empty</p>
-          <p className="text-sm text-muted-foreground mb-4">Upload files or create a folder to organize your work.</p>
-          <div className="flex gap-2">
+          <p className="text-sm text-muted-foreground mb-4">Upload files, paste a link, or create a folder to organize your work.</p>
+          <div className="flex flex-wrap justify-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setNewFolderOpen(true)}>
               <FolderPlus className="h-4 w-4 mr-2" /> New folder
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setImportLinkOpen(true)}>
+              <Link2 className="h-4 w-4 mr-2" /> Import link
             </Button>
             <Button size="sm" onClick={() => fileInputRef.current?.click()}>
               <Upload className="h-4 w-4 mr-2" /> Upload
@@ -487,10 +508,24 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
               onClick={() => openFile(file)}
               className="group relative aspect-square rounded-xl border border-border bg-card overflow-hidden hover:ring-2 hover:ring-primary/40 transition-all cursor-pointer"
             >
-              <FileThumbnail fileUrl={file.file_url} fileType={file.file_type} className="w-full h-full" />
+              {file.is_link && file.link_thumbnail_url ? (
+                <img src={file.link_thumbnail_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+              ) : file.is_link ? (
+                <div className="w-full h-full flex items-center justify-center bg-muted/40">
+                  <Link2 className="h-8 w-8 text-muted-foreground" />
+                </div>
+              ) : (
+                <FileThumbnail fileUrl={file.file_url} fileType={file.file_type} className="w-full h-full" />
+              )}
+              {file.is_link && (
+                <Badge variant="secondary" className="absolute top-1 left-1 text-[9px] gap-0.5 px-1.5 py-0 h-5 rounded-full">
+                  <ExternalLink className="h-2.5 w-2.5" />
+                  {file.link_provider || "Link"}
+                </Badge>
+              )}
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2">
                 <p className="text-[11px] font-medium text-white truncate">{file.file_name}</p>
-                <p className="text-[10px] text-white/70">{formatSize(file.file_size)}</p>
+                <p className="text-[10px] text-white/70">{file.is_link ? (file.link_provider || "Link") : formatSize(file.file_size)}</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -502,9 +537,15 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenuItem onClick={() => downloadFile(file)}>
-                    <Download className="h-4 w-4 mr-2" /> Download
-                  </DropdownMenuItem>
+                  {file.is_link ? (
+                    <DropdownMenuItem onClick={() => window.open(file.file_url, "_blank", "noopener,noreferrer")}>
+                      <ExternalLink className="h-4 w-4 mr-2" /> Open link
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={() => downloadFile(file)}>
+                      <Download className="h-4 w-4 mr-2" /> Download
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => startRename("file", file.id, file.file_name)}>
                     <Pencil className="h-4 w-4 mr-2" /> Rename
                   </DropdownMenuItem>
@@ -559,13 +600,31 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
               onClick={() => openFile(file)}
               className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40 cursor-pointer"
             >
-              <div className="w-10 h-10 rounded overflow-hidden shrink-0">
-                <FileThumbnail fileUrl={file.file_url} fileType={file.file_type} className="w-full h-full" />
+              <div className="w-10 h-10 rounded overflow-hidden shrink-0 relative">
+                {file.is_link && file.link_thumbnail_url ? (
+                  <img src={file.link_thumbnail_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                ) : file.is_link ? (
+                  <div className="w-full h-full flex items-center justify-center bg-muted/40">
+                    <Link2 className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                ) : (
+                  <FileThumbnail fileUrl={file.file_url} fileType={file.file_type} className="w-full h-full" />
+                )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{file.file_name}</p>
+                <p className="text-sm font-medium truncate flex items-center gap-1.5">
+                  {file.file_name}
+                  {file.is_link && (
+                    <Badge variant="secondary" className="text-[9px] gap-0.5 px-1.5 py-0 h-4 rounded-full shrink-0">
+                      <ExternalLink className="h-2.5 w-2.5" />
+                      {file.link_provider || "Link"}
+                    </Badge>
+                  )}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  {formatSize(file.file_size)} • {formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}
+                  {file.is_link
+                    ? `${file.link_provider || "Link"} • ${formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}`
+                    : `${formatSize(file.file_size)} • ${formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}`}
                 </p>
               </div>
               <DropdownMenu>
@@ -575,9 +634,15 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenuItem onClick={() => downloadFile(file)}>
-                    <Download className="h-4 w-4 mr-2" /> Download
-                  </DropdownMenuItem>
+                  {file.is_link ? (
+                    <DropdownMenuItem onClick={() => window.open(file.file_url, "_blank", "noopener,noreferrer")}>
+                      <ExternalLink className="h-4 w-4 mr-2" /> Open link
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={() => downloadFile(file)}>
+                      <Download className="h-4 w-4 mr-2" /> Download
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => startRename("file", file.id, file.file_name)}>
                     <Pencil className="h-4 w-4 mr-2" /> Rename
                   </DropdownMenuItem>
@@ -592,6 +657,14 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
       )}
 
       <FilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
+
+      <ImportLinkDialog
+        open={importLinkOpen}
+        onOpenChange={setImportLinkOpen}
+        projectId={projectId}
+        folderId={currentFolder}
+        onImported={onFileUploaded}
+      />
 
       <FileCommentsSheet
         open={!!commentFile}

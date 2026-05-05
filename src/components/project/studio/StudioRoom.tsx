@@ -138,12 +138,6 @@ export const StudioRoom = ({
         currentUserId={currentUserId}
       />
 
-      <StudioPulseFeed
-        projectId={project.id}
-        currentUserId={currentUserId}
-        collaborators={people}
-      />
-
       {/* Persistent entry point into the room chat */}
       <button
         type="button"

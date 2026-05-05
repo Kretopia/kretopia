@@ -14976,6 +14976,10 @@ export type Database = {
           degree: number
         }[]
       }
+      get_or_create_guest_token_for_invite: {
+        Args: { _email: string; _project_id: string }
+        Returns: string
+      }
       get_own_profile_sensitive_data: {
         Args: never
         Returns: {

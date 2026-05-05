@@ -364,6 +364,20 @@ export const CreativeLoader = ({
         {hint && (
           <p className={cn("mt-2 text-muted-foreground", s.text)}>{hint}</p>
         )}
+        {stuck && (
+          <div className="mt-4 flex flex-col items-center gap-1.5">
+            <p className={cn("text-muted-foreground", s.text)}>
+              Still loading… your connection might be slow.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              Reload page
+            </button>
+          </div>
+        )}
       </div>
 
       <style>{`

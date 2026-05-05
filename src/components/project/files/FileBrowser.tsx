@@ -309,8 +309,10 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
   const deleteFile = async (file: ProjectFile) => {
     if (!confirm(`Delete "${file.file_name}"?`)) return;
     try {
-      const path = extractProjectFilePath(file.file_url);
-      await supabase.storage.from("project-files").remove([path]);
+      if (!file.is_link) {
+        const path = extractProjectFilePath(file.file_url);
+        await supabase.storage.from("project-files").remove([path]);
+      }
       const { error } = await supabase.from("project_files").delete().eq("id", file.id);
       if (error) throw error;
       onFileUploaded();

@@ -86,6 +86,7 @@ const ProjectReview = lazy(() => import("./pages/ProjectReview"));
 const FoundingMember = lazy(() => import("./pages/FoundingMember"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
+const JoinGuestStudio = lazy(() => import("./pages/JoinGuestStudio"));
 
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
@@ -354,6 +355,7 @@ const AppContent = () => {
             
             {/* Project Invitation Accept */}
             <Route path="/accept-invite/:projectId" element={<AcceptInvite />} />
+            <Route path="/desk/join/:token" element={<JoinGuestStudio />} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

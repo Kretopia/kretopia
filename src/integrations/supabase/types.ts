@@ -10013,6 +10013,59 @@ export type Database = {
           },
         ]
       }
+      project_guest_links: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          label: string | null
+          max_uses: number | null
+          permissions: Json
+          project_id: string
+          revoked_at: string | null
+          token: string
+          updated_at: string
+          uses: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          max_uses?: number | null
+          permissions?: Json
+          project_id: string
+          revoked_at?: string | null
+          token: string
+          updated_at?: string
+          uses?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          max_uses?: number | null
+          permissions?: Json
+          project_id?: string
+          revoked_at?: string | null
+          token?: string
+          updated_at?: string
+          uses?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_guest_links_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_messages: {
         Row: {
           attachments: Json

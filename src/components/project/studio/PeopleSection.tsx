@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Crown, Hand, Clock } from "lucide-react";
+import { Crown, Hand, Clock, Link2 } from "lucide-react";
 import { InviteCollaboratorDialog } from "@/components/project/InviteCollaboratorDialog";
+import { GuestStudioShareDialog } from "@/components/project/GuestStudioShareDialog";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +39,21 @@ export const PeopleSection = ({
 }: PeopleSectionProps) => {
   const navigate = useNavigate();
   const [pending, setPending] = useState<PendingPerson[]>([]);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [projectTitle, setProjectTitle] = useState<string>("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("projects")
+          .select("title")
+          .eq("id", projectId)
+          .maybeSingle();
+        setProjectTitle(data?.title ?? "");
+      } catch {/* ignore */}
+    })();
+  }, [projectId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,9 +130,26 @@ export const PeopleSection = ({
           </div>
         </div>
         {isOwner && (
-          <InviteCollaboratorDialog projectId={projectId} onInvite={onUpdated} />
+          <div className="flex items-center gap-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 gap-1 text-xs"
+              onClick={() => setShareOpen(true)}
+            >
+              <Link2 className="h-3.5 w-3.5" />
+              Guest link
+            </Button>
+            <InviteCollaboratorDialog projectId={projectId} onInvite={onUpdated} />
+          </div>
         )}
       </header>
+      <GuestStudioShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        projectId={projectId}
+        projectTitle={projectTitle}
+      />
 
       {isOwner && collaborators.length <= 1 && pending.length === 0 && (
         <div className="rounded-xl border-2 border-dashed border-[hsl(var(--energy)/0.4)] bg-[hsl(var(--energy)/0.05)] p-3 flex items-center gap-3">

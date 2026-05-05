@@ -209,15 +209,15 @@ export const StudioPulseFeed = ({
       <div className="flex items-baseline justify-between">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">
-            Pulse
+            Drop Zone
           </p>
           <h2 className="text-lg font-black leading-none tracking-tight">
-            What's happening
+            Drop anything — Copilot files it
           </h2>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            Links, images, voice notes, files, ideas. We'll route to Moodboard, Tasks, Pad or Vault.
+          </p>
         </div>
-        <span className="text-[10px] text-muted-foreground">
-          {posts.length} {posts.length === 1 ? "post" : "posts"}
-        </span>
       </div>
 
       {/* Composer */}
@@ -237,7 +237,7 @@ export const StudioPulseFeed = ({
           className="w-full rounded-xl border border-dashed border-border p-3 text-left text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors flex items-center gap-2"
         >
           <Sparkles className="h-4 w-4 text-primary" />
-          Drop a thought, image, or update — we'll file it for you.
+          Drop a link, file, image, or thought…
         </button>
       ) : (
         <div className="rounded-xl border border-primary/40 p-2.5 space-y-2 bg-card">

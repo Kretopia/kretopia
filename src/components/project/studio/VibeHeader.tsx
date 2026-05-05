@@ -122,7 +122,8 @@ export const VibeHeader = ({
     }
   };
 
-  const hasCover = !!project.cover_url;
+  const [coverFailed, setCoverFailed] = useState(false);
+  const hasCover = !!project.cover_url && !coverFailed;
 
   return (
     <section className="relative">
@@ -142,7 +143,8 @@ export const VibeHeader = ({
         {hasCover && (
           <img
             src={project.cover_url!}
-            alt={`${project.title} cover`}
+            alt=""
+            onError={() => setCoverFailed(true)}
             className="absolute inset-0 w-full h-full object-cover scale-[1.02]"
           />
         )}

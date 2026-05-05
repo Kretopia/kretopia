@@ -38,7 +38,7 @@ export function WorkspaceSidebar({ projects, activeProjectId, onClose }: Workspa
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
               <Sparkles className="h-4 w-4 text-primary" />
             </div>
-            <span className="font-semibold text-sm">Workspaces</span>
+            <span className="font-semibold text-sm">Studios</span>
           </div>
           <Button variant="ghost" size="icon" className="h-7 w-7 lg:hidden" onClick={onClose}>
             <X className="h-4 w-4" />

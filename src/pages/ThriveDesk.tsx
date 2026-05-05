@@ -126,9 +126,9 @@ const ThriveDesk = () => {
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <FolderKanban className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-lg font-bold mb-1">Workspace not found</h2>
+          <h2 className="text-lg font-bold mb-1">Studio not found</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            This workspace may have been removed or you don't have access.
+            This studio may have been removed or you don't have access.
           </p>
           <Button onClick={() => window.history.back()} variant="outline">
             Go Back

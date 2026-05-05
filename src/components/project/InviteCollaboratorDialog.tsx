@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { UserPlus, Mail, Loader2, Users, Briefcase, Sparkles, Handshake } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { UserPlus, Mail, Loader2, Users, Briefcase, Sparkles, Handshake, Link2, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -269,12 +270,27 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Invite Collaborator</DialogTitle>
+          <DialogTitle>Invite to the Studio</DialogTitle>
           <DialogDescription>
-            Start typing to search your circle or enter an email address
+            Bring in teammates, or share a guest link with a client.
           </DialogDescription>
         </DialogHeader>
-        
+
+        <Tabs defaultValue="people" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="people" className="gap-1.5">
+              <Users className="h-3.5 w-3.5" /> People
+            </TabsTrigger>
+            <TabsTrigger value="guest" className="gap-1.5">
+              <Link2 className="h-3.5 w-3.5" /> Guest link
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="guest" className="pt-3">
+            <GuestLinkPanel projectId={projectId} />
+          </TabsContent>
+
+          <TabsContent value="people" className="pt-3">
         <div className="space-y-4">
           {/* Role picker */}
           <div className="space-y-2">

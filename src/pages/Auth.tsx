@@ -22,7 +22,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 
 const Auth = () => {
-  const [activeTab, setActiveTab] = useState<string>("signup");
+  const [activeTab, setActiveTab] = useState<string>("signin");
   const [signupMode, setSignupMode] = useState<"claim" | "classic">("claim");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,7 +55,11 @@ const Auth = () => {
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (tab === "signin") setActiveTab("signin");
-    else setActiveTab("signup");
+    else if (tab === "signup" || searchParams.get("claim") || searchParams.get("invite") || searchParams.get("inviteCode")) {
+      setActiveTab("signup");
+    } else {
+      setActiveTab("signin");
+    }
   }, [searchParams]);
 
   const authLoadTime = useState(() => Date.now())[0];

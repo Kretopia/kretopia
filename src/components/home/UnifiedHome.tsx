@@ -644,6 +644,11 @@ export const UnifiedHome = () => {
             ) : null;
           })()}
 
+          {/* Duplicate-account merge prompt */}
+          <div className="mb-4 empty:hidden">
+            <DuplicateAccountBanner />
+          </div>
+
           {/* New-user setup checklist — only shows while profile completion < 50% */}
           {checkProfileCompletion(profileFull || profile, myCredits).percentage < 50 && (
             <div className="mb-4">

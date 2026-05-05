@@ -9920,6 +9920,9 @@ export type Database = {
           file_url: string
           folder_id: string | null
           id: string
+          is_link: boolean
+          link_provider: string | null
+          link_thumbnail_url: string | null
           project_id: string
           user_id: string
         }
@@ -9931,6 +9934,9 @@ export type Database = {
           file_url: string
           folder_id?: string | null
           id?: string
+          is_link?: boolean
+          link_provider?: string | null
+          link_thumbnail_url?: string | null
           project_id: string
           user_id: string
         }
@@ -9942,6 +9948,9 @@ export type Database = {
           file_url?: string
           folder_id?: string | null
           id?: string
+          is_link?: boolean
+          link_provider?: string | null
+          link_thumbnail_url?: string | null
           project_id?: string
           user_id?: string
         }

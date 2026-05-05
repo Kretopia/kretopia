@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useParams } from "react-router-dom";
 import { Loader2, Menu, X, PanelRightOpen, FolderKanban } from "lucide-react";
 import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";

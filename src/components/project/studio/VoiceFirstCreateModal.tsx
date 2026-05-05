@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Mic, Square, Loader2, X, ArrowRight, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -346,10 +347,11 @@ export const VoiceFirstCreateModal = ({
         )}
 
         {mode === "thinking" && (
-          <>
-            <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-            <p className="text-sm text-muted-foreground">Setting up your room…</p>
-          </>
+          <CreativeLoader
+            size="lg"
+            context={textInput || "studio"}
+            hint="Sorting the right space for what you're making"
+          />
         )}
 
         {mode === "review" && brief && (

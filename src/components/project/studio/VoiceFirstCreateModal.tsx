@@ -505,7 +505,7 @@ export const VoiceFirstCreateModal = ({
             )}
             <Button
               onClick={() => createProject(brief.deliverables?.length ? "all" : "none")}
-              disabled={creating || !brief.project.title.trim()}
+              disabled={creating || !brief.project.title.trim() || paymentsInvolved === null}
               className="gap-1"
               size="sm"
             >

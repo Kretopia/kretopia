@@ -381,11 +381,20 @@ const CreatorWorkHome = () => {
                 {activeProjects.length} Active
               </Badge>
             )}
-            <CopilotLauncher
-              label="Ask Copilot"
-              prompt="What's the most useful thing I can do across my projects today?"
-              className="ml-auto"
-            />
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                onClick={() => setShowCreateProject(true)}
+                size="sm"
+                className="gap-1.5 rounded-full font-semibold"
+              >
+                <Plus className="h-4 w-4" />
+                <span>New project</span>
+              </Button>
+              <CopilotLauncher
+                label="Ask Copilot"
+                prompt="What's the most useful thing I can do across my projects today?"
+              />
+            </div>
           </div>
           <p className="text-sm text-muted-foreground mt-2">
             Built for creatives. Save time — use your voice.

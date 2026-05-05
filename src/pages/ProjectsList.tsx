@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -75,8 +76,8 @@ const ProjectsList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <CreativeLoader size="page" hint="Pulling your rooms together" />
       </div>
     );
   }

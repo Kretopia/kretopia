@@ -119,10 +119,48 @@ export default function GuestStudio() {
         JSON.stringify({ name: name.trim(), email: email.trim() }),
       );
       setNeedsName(false);
+      loadGuestData();
     } catch (e: any) {
       toast({ title: "Couldn't continue", description: e.message, variant: "destructive" });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Load room data once we have a session
+  useEffect(() => {
+    if (!project || needsName) return;
+    loadGuestData();
+  }, [project, needsName, loadGuestData]);
+
+  const handleDrop = async () => {
+    const body = dropText.trim();
+    if (!body) return;
+    setDropping(true);
+    try {
+      const isUrl = /^https?:\/\//i.test(body);
+      const { error } = await supabase.rpc("guest_drop_post", {
+        _token: token,
+        _content: body,
+        _kind: isUrl ? "link" : "note",
+      });
+      if (error) throw error;
+      setDropText("");
+      toast({ title: "Dropped 🎯", description: "The team will see this." });
+      loadGuestData();
+    } catch (e: any) {
+      toast({ title: "Couldn't drop", description: e.message, variant: "destructive" });
+    } finally {
+      setDropping(false);
+    }
+  };
+
+  const openFile = async (path: string, name: string) => {
+    try {
+      const { data } = await supabase.storage.from("project-files").createSignedUrl(path, 3600, { download: name });
+      if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+    } catch (e: any) {
+      toast({ title: "Couldn't open file", description: e.message, variant: "destructive" });
     }
   };
 

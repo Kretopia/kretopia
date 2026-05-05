@@ -246,7 +246,6 @@ export const StudioRoom = ({
       {/* Desktop: 2-column workspace parity */}
       <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
         <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
-          {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
           <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />
           {workColumn}
         </div>

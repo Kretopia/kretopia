@@ -60,6 +60,7 @@ export const EmailSaveStep = ({ profile, credits, onBack, redirectAfter = "/prof
           email: e,
           profile,
           credits,
+          face_match_score: faceMatchScore ?? null,
           redirect_to: `${window.location.origin}${redirectAfter}`,
         },
       });

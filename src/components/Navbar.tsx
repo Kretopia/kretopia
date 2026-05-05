@@ -251,6 +251,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       {/* My stuff */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Manage</p>
+                      <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} />
                       <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} />
                       <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
                       <MenuButton icon={CalendarDays} label="My Events" onClick={() => handleNavigation("/events/backstage")} />

@@ -42,6 +42,7 @@ export const VoiceFirstCreateModal = ({
   const [creating, setCreating] = useState(false);
   const [brief, setBrief] = useState<ExtractedBrief | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [paymentsInvolved, setPaymentsInvolved] = useState<boolean | null>(null);
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);

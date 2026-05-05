@@ -355,6 +355,7 @@ const AppContent = () => {
             
             {/* Project Invitation Accept */}
             <Route path="/accept-invite/:projectId" element={<AcceptInvite />} />
+            <Route path="/desk/join/:token" element={<JoinGuestStudio />} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

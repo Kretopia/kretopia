@@ -629,9 +629,15 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenuItem onClick={() => downloadFile(file)}>
-                    <Download className="h-4 w-4 mr-2" /> Download
-                  </DropdownMenuItem>
+                  {file.is_link ? (
+                    <DropdownMenuItem onClick={() => window.open(file.file_url, "_blank", "noopener,noreferrer")}>
+                      <ExternalLink className="h-4 w-4 mr-2" /> Open link
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={() => downloadFile(file)}>
+                      <Download className="h-4 w-4 mr-2" /> Download
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => startRename("file", file.id, file.file_name)}>
                     <Pencil className="h-4 w-4 mr-2" /> Rename
                   </DropdownMenuItem>

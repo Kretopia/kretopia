@@ -458,6 +458,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
               </div>
             )}
           </ScrollArea>
+          </div>
           </TabsContent>
         </Tabs>
       </DialogContent>

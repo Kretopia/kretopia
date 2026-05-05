@@ -154,8 +154,10 @@ const ThriveDesk = () => {
 
       {/* Left Sidebar - Project List */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-200 lg:relative lg:translate-x-0",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-all duration-200 lg:relative",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        "lg:translate-x-0",
+        desktopSidebarOpen ? "lg:w-64" : "lg:w-0 lg:border-r-0 lg:overflow-hidden"
       )}>
         <WorkspaceSidebar
           projects={projects}
@@ -170,6 +172,16 @@ const ThriveDesk = () => {
         <header className="h-14 border-b-2 border-primary/20 bg-gradient-to-r from-card via-card to-primary/5 backdrop-blur-sm flex items-center gap-3 px-4 shrink-0 shadow-sm">
           <Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden lg:inline-flex shrink-0"
+            onClick={() => setDesktopSidebarOpen((v) => !v)}
+            aria-label={desktopSidebarOpen ? "Hide studios" : "Show studios"}
+            title={desktopSidebarOpen ? "Hide studios" : "Show studios"}
+          >
+            {desktopSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeftOpen className="h-5 w-5" />}
           </Button>
           <SimpleProjectHeader
             project={project}

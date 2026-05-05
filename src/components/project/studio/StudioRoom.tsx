@@ -124,9 +124,13 @@ export const StudioRoom = ({
       toast({ title: picked.length > 1 ? "References added" : "Reference added" });
       onUpdated();
     } catch (err: any) {
+      const msg = String(err?.message || "");
+      const isQuota = /quota exceeded/i.test(msg) || /storage.*full/i.test(msg);
       toast({
-        title: "Couldn't add reference",
-        description: err.message,
+        title: isQuota ? "Storage full" : "Couldn't add reference",
+        description: isQuota
+          ? "Free up space in your Vault or upgrade your plan to add more references."
+          : msg,
         variant: "destructive",
       });
     } finally {

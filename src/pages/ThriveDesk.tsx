@@ -108,11 +108,12 @@ const ThriveDesk = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading workspace...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background px-6">
+        <CreativeLoader
+          size="page"
+          context={project?.workspace_type ?? null}
+          hint="Sorting the right space for what you're making"
+        />
       </div>
     );
   }

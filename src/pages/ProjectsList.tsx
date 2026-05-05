@@ -75,8 +75,8 @@ const ProjectsList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <CreativeLoader size="page" hint="Pulling your rooms together" />
       </div>
     );
   }

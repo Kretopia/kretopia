@@ -13,6 +13,7 @@ import { MessageRequests } from "@/components/messages/MessageRequests";
 import { OnlineDot } from "@/components/messages/OnlinePresence";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { CallHistoryPanel } from "@/components/calls/CallHistoryPanel";
+import { QuickCallButton } from "@/components/calls/QuickCallButton";
 import { useMissedCallBadge } from "@/hooks/useCallHistory";
 import type { Conversation } from "./types";
 

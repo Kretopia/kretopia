@@ -143,7 +143,8 @@ export const VibeHeader = ({
         {hasCover && (
           <img
             src={project.cover_url!}
-            alt={`${project.title} cover`}
+            alt=""
+            onError={() => setCoverFailed(true)}
             className="absolute inset-0 w-full h-full object-cover scale-[1.02]"
           />
         )}

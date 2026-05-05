@@ -130,7 +130,7 @@ export const StudioPulseFeed = ({ projectId, currentUserId }: Props) => {
       <input
         ref={fileRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.txt,.md,.csv,.xls,.xlsx,.ppt,.pptx,.zip"
         multiple
         className="hidden"
         onChange={onPick}

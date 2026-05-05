@@ -93,7 +93,7 @@ serve(async (req) => {
         room_name: roomName,
         room_url: room.url,
         started_by: userId,
-        invited_user_id,
+        invited_user_id: invitedUserId,
         participants: [{ user_id: userId, name: user_name || "Guest" }],
       })
       .select("id")

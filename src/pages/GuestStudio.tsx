@@ -35,7 +35,30 @@ export default function GuestStudio() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [tab, setTab] = useState<"brief" | "vault" | "chat">("brief");
+  const [tab, setTab] = useState<"brief" | "drop" | "vault" | "chat">("brief");
+
+  // Drop / Vault / Roster data
+  const [files, setFiles] = useState<any[]>([]);
+  const [pulse, setPulse] = useState<any[]>([]);
+  const [roster, setRoster] = useState<any[]>([]);
+  const [dropText, setDropText] = useState("");
+  const [dropping, setDropping] = useState(false);
+
+  const loadGuestData = useCallback(async () => {
+    if (!token) return;
+    try {
+      const [{ data: f }, { data: p }, { data: r }] = await Promise.all([
+        supabase.rpc("get_guest_files", { _token: token }),
+        supabase.rpc("get_guest_pulse", { _token: token }),
+        supabase.rpc("get_guest_collaborators", { _token: token }),
+      ]);
+      setFiles(f || []);
+      setPulse(p || []);
+      setRoster(r || []);
+    } catch (e) {
+      console.warn("[guest-studio] data load failed", e);
+    }
+  }, [token]);
 
   // Resolve token → project
   useEffect(() => {

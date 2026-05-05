@@ -57,6 +57,9 @@ interface ProjectFile {
   created_at: string;
   user_id: string;
   folder_id?: string | null;
+  is_link?: boolean | null;
+  link_provider?: string | null;
+  link_thumbnail_url?: string | null;
 }
 
 interface FolderRow {

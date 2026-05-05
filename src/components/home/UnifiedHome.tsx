@@ -33,6 +33,7 @@ import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
 import { FoundingMemberCard } from "@/components/founding/FoundingMemberCard";
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
+import { DuplicateAccountBanner } from "@/components/account/DuplicateAccountBanner";
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { MagicHomeHero } from "@/components/home/MagicHomeHero";
 import { StreakChipsRow } from "@/components/home/StreakChipsRow";
@@ -643,6 +644,11 @@ export const UnifiedHome = () => {
               />
             ) : null;
           })()}
+
+          {/* Duplicate-account merge prompt */}
+          <div className="mb-4 empty:hidden">
+            <DuplicateAccountBanner />
+          </div>
 
           {/* New-user setup checklist — only shows while profile completion < 50% */}
           {checkProfileCompletion(profileFull || profile, myCredits).percentage < 50 && (

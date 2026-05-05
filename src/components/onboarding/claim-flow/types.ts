@@ -40,4 +40,4 @@ export interface DraftProfile {
   website?: string;
 }
 
-export type FlowStep = "search" | "disambiguate" | "verify" | "preview" | "email" | "sending";
+export type FlowStep = "search" | "disambiguate" | "verify" | "preview" | "face" | "email" | "sending";

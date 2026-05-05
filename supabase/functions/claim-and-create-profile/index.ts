@@ -39,12 +39,13 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { email: rawEmail, profile, credits, redirect_to, skip_magic_link } = (await req.json()) as {
+    const { email: rawEmail, profile, credits, redirect_to, skip_magic_link, face_match_score } = (await req.json()) as {
       email: string;
       profile: DraftProfile;
       credits: ClaimedCredit[];
       redirect_to: string;
       skip_magic_link?: boolean;
+      face_match_score?: number | null;
     };
 
     const email = (rawEmail || "").trim().toLowerCase();
@@ -56,7 +57,7 @@ Deno.serve(async (req) => {
     }
 
     const cleanRedirect = redirect_to || `${SUPABASE_URL}/profile?claimed=true`;
-    const result = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect, !!skip_magic_link);
+    const result = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect, !!skip_magic_link, face_match_score ?? null);
 
     return json({ success: true, ...result });
   } catch (err) {
@@ -72,6 +73,7 @@ async function checkAndProvisionUser(
   credits: ClaimedCredit[],
   redirectTo: string,
   skipMagicLink: boolean,
+  faceMatchScore: number | null,
 ): Promise<{ is_new_user: boolean; conflicts?: Array<{ url: string; role: string; title: string; existing_owner_id?: string }> }> {
   // 1. Check if user already exists
   const { data: existing } = await admin.auth.admin.listUsers();
@@ -88,7 +90,7 @@ async function checkAndProvisionUser(
 
     // If skipMagicLink (Google flow), upsert profile + credits so the claim isn't lost
     if (skipMagicLink) {
-      await upsertProfileAndCredits(admin, userId, profile, credits, conflicts);
+      await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceMatchScore);
     }
   } else {
     // 2. Create new auth user (unconfirmed, magic link will confirm)
@@ -102,7 +104,7 @@ async function checkAndProvisionUser(
     isNewUser = true;
     console.log(`[claim] created new user ${userId}`);
 
-    await upsertProfileAndCredits(admin, userId, profile, credits, conflicts);
+    await upsertProfileAndCredits(admin, userId, profile, credits, conflicts, faceMatchScore);
   }
 
   // 5. Send magic link unless explicitly skipped (Google flow already authenticated)
@@ -127,7 +129,9 @@ async function upsertProfileAndCredits(
   profile: DraftProfile,
   credits: ClaimedCredit[],
   conflicts: Array<{ url: string; role: string; title: string; existing_owner_id?: string }>,
+  faceMatchScore: number | null,
 ) {
+  const verified = (faceMatchScore ?? 0) >= 0.7;
   const { error: profileErr } = await admin.from("profiles").upsert(
     {
       user_id: userId,
@@ -139,6 +143,8 @@ async function upsertProfileAndCredits(
       avatar_url: profile.avatar_url || null,
       website: profile.website || null,
       onboarding_completed: false,
+      identity_face_verified: verified,
+      identity_face_verified_at: verified ? new Date().toISOString() : null,
     },
     { onConflict: "user_id" },
   );

@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_merge_requests: {
+        Row: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          error: string | null
+          expires_at: string
+          face_match_score: number | null
+          id: string
+          initiator_user_id: string
+          source_email: string
+          source_otp_hash: string
+          source_user_id: string
+          source_verified_at: string | null
+          status: string
+          target_email: string
+          target_otp_hash: string
+          target_user_id: string
+          target_verified_at: string | null
+        }
+        Insert: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          expires_at?: string
+          face_match_score?: number | null
+          id?: string
+          initiator_user_id: string
+          source_email: string
+          source_otp_hash: string
+          source_user_id: string
+          source_verified_at?: string | null
+          status?: string
+          target_email: string
+          target_otp_hash: string
+          target_user_id: string
+          target_verified_at?: string | null
+        }
+        Update: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          expires_at?: string
+          face_match_score?: number | null
+          id?: string
+          initiator_user_id?: string
+          source_email?: string
+          source_otp_hash?: string
+          source_user_id?: string
+          source_verified_at?: string | null
+          status?: string
+          target_email?: string
+          target_otp_hash?: string
+          target_user_id?: string
+          target_verified_at?: string | null
+        }
+        Relationships: []
+      }
       agent_actions: {
         Row: {
           action_type: string
@@ -8783,6 +8843,8 @@ export type Database = {
           id: string
           id_verified: boolean
           id_verified_at: string | null
+          identity_face_verified: boolean
+          identity_face_verified_at: string | null
           imdb_url: string | null
           imdb_verified: boolean | null
           imported_data: Json | null
@@ -8950,6 +9012,8 @@ export type Database = {
           id?: string
           id_verified?: boolean
           id_verified_at?: string | null
+          identity_face_verified?: boolean
+          identity_face_verified_at?: string | null
           imdb_url?: string | null
           imdb_verified?: boolean | null
           imported_data?: Json | null
@@ -9117,6 +9181,8 @@ export type Database = {
           id?: string
           id_verified?: boolean
           id_verified_at?: string | null
+          identity_face_verified?: boolean
+          identity_face_verified_at?: string | null
           imdb_url?: string | null
           imdb_verified?: boolean | null
           imported_data?: Json | null
@@ -14663,6 +14729,19 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      find_duplicate_account_candidates: {
+        Args: { p_user_id: string }
+        Returns: {
+          avatar_url: string
+          candidate_user_id: string
+          confidence: number
+          full_name: string
+          match_email_local: boolean
+          match_name: boolean
+          match_phone: boolean
+          overlap_count: number
+        }[]
+      }
       find_matching_unclaimed_profiles: {
         Args: { p_full_name: string; p_limit?: number }
         Returns: {
@@ -15114,6 +15193,10 @@ export type Database = {
           similarity: number
         }[]
       }
+      merge_user_data: {
+        Args: { p_source_user_id: string; p_target_user_id: string }
+        Returns: Json
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -15191,6 +15274,8 @@ export type Database = {
         Args: { opportunity_id_param: string }
         Returns: undefined
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       submit_credit_endorsement_by_token: {
         Args: {
           _accepted: boolean

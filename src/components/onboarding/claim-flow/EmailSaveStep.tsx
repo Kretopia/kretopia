@@ -13,10 +13,11 @@ interface Props {
   credits: ClaimedCredit[];
   onBack: () => void;
   redirectAfter?: string;
+  faceMatchScore?: number | null;
 }
 
 /** Step 4: capture email, send magic link, persist everything. */
-export const EmailSaveStep = ({ profile, credits, onBack, redirectAfter = "/profile?claimed=true" }: Props) => {
+export const EmailSaveStep = ({ profile, credits, onBack, redirectAfter = "/profile?claimed=true", faceMatchScore }: Props) => {
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -59,6 +60,7 @@ export const EmailSaveStep = ({ profile, credits, onBack, redirectAfter = "/prof
           email: e,
           profile,
           credits,
+          face_match_score: faceMatchScore ?? null,
           redirect_to: `${window.location.origin}${redirectAfter}`,
         },
       });

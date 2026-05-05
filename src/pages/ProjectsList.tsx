@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, MoreHorizontal, FolderKanban } from "lucide-react";
+import { Loader2, MoreHorizontal, FolderKanban, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";

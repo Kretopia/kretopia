@@ -249,6 +249,7 @@ export const CreativeLoader = ({
   const Hero = scene.hero;
 
   const [stepIdx, setStepIdx] = useState(0);
+  const [stuck, setStuck] = useState(false);
   useEffect(() => {
     if (label) return; // static label mode — don't cycle
     const id = setInterval(() => {
@@ -256,6 +257,13 @@ export const CreativeLoader = ({
     }, 1400);
     return () => clearInterval(id);
   }, [scene.lines.length, label]);
+
+  // Page-level loaders: surface a "still loading…" recovery after 10s
+  useEffect(() => {
+    if (size !== "page") return;
+    const id = setTimeout(() => setStuck(true), 10_000);
+    return () => clearTimeout(id);
+  }, [size]);
 
   const currentLine = label ?? scene.lines[stepIdx];
 

@@ -503,10 +503,24 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
               onClick={() => openFile(file)}
               className="group relative aspect-square rounded-xl border border-border bg-card overflow-hidden hover:ring-2 hover:ring-primary/40 transition-all cursor-pointer"
             >
-              <FileThumbnail fileUrl={file.file_url} fileType={file.file_type} className="w-full h-full" />
+              {file.is_link && file.link_thumbnail_url ? (
+                <img src={file.link_thumbnail_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+              ) : file.is_link ? (
+                <div className="w-full h-full flex items-center justify-center bg-muted/40">
+                  <Link2 className="h-8 w-8 text-muted-foreground" />
+                </div>
+              ) : (
+                <FileThumbnail fileUrl={file.file_url} fileType={file.file_type} className="w-full h-full" />
+              )}
+              {file.is_link && (
+                <Badge variant="secondary" className="absolute top-1 left-1 text-[9px] gap-0.5 px-1.5 py-0 h-5 rounded-full">
+                  <ExternalLink className="h-2.5 w-2.5" />
+                  {file.link_provider || "Link"}
+                </Badge>
+              )}
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2">
                 <p className="text-[11px] font-medium text-white truncate">{file.file_name}</p>
-                <p className="text-[10px] text-white/70">{formatSize(file.file_size)}</p>
+                <p className="text-[10px] text-white/70">{file.is_link ? (file.link_provider || "Link") : formatSize(file.file_size)}</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

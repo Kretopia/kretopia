@@ -1,11 +1,11 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useClient, useClientProjects, useClientContacts } from "@/hooks/useClients";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil, Plus, Mail, Phone, Globe, FolderKanban, Users, FileText } from "lucide-react";
 import { ClientFormDialog } from "@/components/clients/ClientFormDialog";
+import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
 import { SEO } from "@/components/SEO";
-import { format } from "date-fns";
 
 const ClientDetail = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -19,7 +19,7 @@ const ClientDetail = () => {
   if (!client) return <div className="p-4">Client not found.</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-4 pb-32">
+    <div className="max-w-6xl mx-auto p-4 lg:p-6 pb-32">
       <SEO title={`${client.company_name || client.name} · Client`} description="Client hub" />
 
       <button onClick={() => navigate("/clients")} className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
@@ -72,31 +72,10 @@ const ClientDetail = () => {
             <Plus className="h-3.5 w-3.5 mr-1" /> New
           </Button>
         </div>
-        {projects.length === 0 ? (
-          <p className="text-sm text-muted-foreground rounded-lg border border-dashed border-border p-4 text-center">
-            No projects yet for this client.
-          </p>
-        ) : (
-          <div className="space-y-1.5">
-            {projects.map((p: any) => (
-              <Link
-                key={p.id}
-                to={`/desk/${p.id}`}
-                className="block rounded-lg border border-border bg-card hover:bg-accent/40 p-3"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold truncate">{p.title}</p>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground shrink-0">
-                    {p.status || "draft"}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  {p.workspace_type || "general"} · updated {format(new Date(p.updated_at), "MMM d")}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
+        <StudioCardsGrid
+          projects={projects as any}
+          onNewProject={() => navigate(`/desk?client=${client.id}`)}
+        />
       </section>
 
       {/* Contacts */}

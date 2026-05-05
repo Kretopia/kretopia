@@ -3,6 +3,7 @@ import { SearchOrPasteStep } from "./SearchOrPasteStep";
 import { DisambiguationStep } from "./DisambiguationStep";
 import { VerifyMatchesStep } from "./VerifyMatchesStep";
 import { ProfilePreviewStep } from "./ProfilePreviewStep";
+import { OptionalFaceVerifyStep } from "./OptionalFaceVerifyStep";
 import { EmailSaveStep } from "./EmailSaveStep";
 import type { ClaimContext, ClaimedCredit, DraftProfile, FlowStep, WebCreditResult } from "./types";
 
@@ -88,10 +89,12 @@ export const UniversalClaimFlow = ({
     setStep("preview");
   };
 
+  const [faceMatchScore, setFaceMatchScore] = useState<number | null>(null);
+
   const handleConfirmProfile = (p: DraftProfile, credits: ClaimedCredit[]) => {
     setDraft(p);
     setSelected(credits);
-    setStep("email");
+    setStep("face");
   };
 
   const finalRedirect =
@@ -136,12 +139,25 @@ export const UniversalClaimFlow = ({
           onConfirm={handleConfirmProfile}
         />
       )}
+      {step === "face" && (
+        <OptionalFaceVerifyStep
+          profile={draft}
+          credits={selected}
+          onBack={() => setStep("preview")}
+          onSkip={() => setStep("email")}
+          onVerified={(score) => {
+            setFaceMatchScore(score);
+            setStep("email");
+          }}
+        />
+      )}
       {step === "email" && (
         <EmailSaveStep
           profile={draft}
           credits={selected}
-          onBack={() => setStep("preview")}
+          onBack={() => setStep("face")}
           redirectAfter={finalRedirect}
+          faceMatchScore={faceMatchScore}
         />
       )}
     </div>

@@ -1,11 +1,11 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useClient, useClientProjects, useClientContacts } from "@/hooks/useClients";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil, Plus, Mail, Phone, Globe, FolderKanban, Users, FileText } from "lucide-react";
 import { ClientFormDialog } from "@/components/clients/ClientFormDialog";
+import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
 import { SEO } from "@/components/SEO";
-import { format } from "date-fns";
 
 const ClientDetail = () => {
   const { clientId } = useParams<{ clientId: string }>();

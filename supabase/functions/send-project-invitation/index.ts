@@ -8,8 +8,11 @@ const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const APP_URL = "https://www.thrivein.io";
 
 interface InvitationRequest {
   email: string;
@@ -25,104 +28,148 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, projectTitle, projectId, inviterName, inviteeUserId }: InvitationRequest = await req.json();
+    const { email, projectTitle, projectId, inviterName, inviteeUserId }: InvitationRequest =
+      await req.json();
 
     if (!projectTitle || !projectId || !inviterName) {
-      throw new Error("Missing required fields: projectTitle, projectId, and inviterName are required");
+      throw new Error("Missing required fields");
     }
-
     if (!email && !inviteeUserId) {
       throw new Error("Either email or inviteeUserId must be provided");
     }
 
-    // Create invitation link with email token for auto-acceptance
-    const projectUrl = `https://8bc8181d-6585-46a0-82d6-4570d2fbb82c.lovableproject.com/accept-invite/${projectId}?email=${encodeURIComponent(email)}`;
+    const admin = createClient(supabaseUrl, supabaseKey, {
+      auth: { persistSession: false },
+    });
 
-    console.log(`Sending project invitation to ${email} for project ${projectTitle}`);
-    console.log(`Project URL: ${projectUrl}`);
+    // Look up the inviting user (creator) so we can attribute the guest token
+    const { data: project } = await admin
+      .from("projects")
+      .select("created_by")
+      .eq("id", projectId)
+      .maybeSingle();
 
-    // If invitee is an existing user, skip creating a duplicate in-app notification
-    // The caller (StartProjectDialog/StartProjectFromMatchDialog) already creates one
-    // with the correct /desk/{projectId} link
-    if (inviteeUserId) {
-      console.log(`Skipping duplicate in-app notification for user ${inviteeUserId} - caller handles it`);
+    // For email recipients (with or without an existing account), mint a guest token
+    // so the link opens the live project preview without forcing sign-up first.
+    let guestToken: string | null = null;
+    if (email && project?.created_by) {
+      // Reuse an existing live token for this email if any
+      const { data: existing } = await admin
+        .from("guest_studio_tokens")
+        .select("token")
+        .eq("project_id", projectId)
+        .eq("guest_email", email.toLowerCase())
+        .is("revoked_at", null)
+        .maybeSingle();
+
+      if (existing?.token) {
+        guestToken = existing.token;
+      } else {
+        const { data: minted } = await admin
+          .from("guest_studio_tokens")
+          .insert({
+            project_id: projectId,
+            created_by: project.created_by,
+            guest_email: email.toLowerCase(),
+            label: `Invite for ${email}`,
+          })
+          .select("token")
+          .single();
+        guestToken = minted?.token ?? null;
+      }
     }
 
-    // Try to send email, but don't fail if it doesn't work (domain may not be verified)
+    // For existing platform users we still link to /accept-invite (auto-accept on sign-in)
+    // For email guests we link to /guest/:token (no sign-up required)
+    const projectUrl = guestToken
+      ? `${APP_URL}/guest/${encodeURIComponent(guestToken)}`
+      : `${APP_URL}/accept-invite/${projectId}?email=${encodeURIComponent(email || "")}`;
+
+    console.log(`Sending project invitation: token=${!!guestToken}, url=${projectUrl}`);
+
+    if (inviteeUserId) {
+      console.log(`Skipping duplicate in-app notification for user ${inviteeUserId}`);
+    }
+
+    const initial = (inviterName || "T").charAt(0).toUpperCase();
+
     let emailSent = false;
-    let emailError = null;
-    
+    let emailError: string | null = null;
+
     try {
-      console.log('Attempting to send email via Resend...');
       const emailResponse = await resend.emails.send({
         from: "ThriveIN <noreply@thrivein.io>",
         to: [email],
-        subject: `You're invited to collaborate on "${projectTitle}" 🎯`,
+        subject: `${inviterName} invited you to "${projectTitle}" on ThriveIN`,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #8B5CF6;">Project Collaboration Invitation 🎯</h1>
-            <p>Hi there!</p>
-            <p><strong>${inviterName}</strong> has invited you to collaborate on their project:</p>
-            <div style="background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%); padding: 24px; border-radius: 12px; margin: 24px 0; text-align: center;">
-              <h2 style="color: white; margin: 0; font-size: 24px;">${projectTitle}</h2>
-            </div>
-            <p style="margin: 24px 0;">This is an opportunity to work together on an exciting creative project using ThriveDesk - our collaborative project workspace with:</p>
-            <ul style="line-height: 2;">
-              <li>📋 Task management</li>
-              <li>💰 Milestone payments & escrow</li>
-              <li>💬 Real-time messaging</li>
-              <li>📁 File sharing</li>
-              <li>⏱️ Time tracking</li>
-              <li>📊 Progress tracking</li>
-            </ul>
-            <div style="text-align: center; margin: 32px 0;">
-              <a href="${projectUrl}" style="display: inline-block; padding: 16px 32px; background: #8B5CF6; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">View Project & Accept Invitation</a>
-            </div>
-            <p style="color: #666; margin-top: 32px; font-size: 14px;">If you don't have a ThriveIN account yet, you'll be able to create one when you click the button above.</p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 32px 0;" />
-            <p style="color: #999; font-size: 12px;">
-              This invitation was sent by ${inviterName} via ThriveIN. If you weren't expecting this invitation, you can safely ignore this email.
-            </p>
+<!DOCTYPE html>
+<html>
+  <body style="margin:0;padding:0;background:#0F172A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#F8FAFC;">
+    <div style="max-width:560px;margin:0 auto;padding:32px 24px;">
+      <div style="text-align:center;margin-bottom:32px;">
+        <div style="display:inline-block;font-size:22px;font-weight:800;letter-spacing:-0.5px;">
+          <span style="color:#5B6BF5;">Thrive</span><span style="color:#D4FF3F;">IN</span>
+        </div>
+      </div>
+
+      <div style="background:#1E293B;border-radius:16px;padding:32px 24px;border:1px solid #334155;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:#5B6BF5;color:white;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-size:16px;">${initial}</div>
+          <div>
+            <div style="font-size:13px;color:#94A3B8;">${inviterName} invited you to a workspace</div>
           </div>
+        </div>
+
+        <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#F8FAFC;line-height:1.2;">${projectTitle}</h1>
+        <p style="margin:0 0 24px 0;color:#94A3B8;font-size:14px;line-height:1.5;">
+          Open the workspace to see the brief, drop files, and chat with the team — no account needed to take a look.
+        </p>
+
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${projectUrl}" style="display:inline-block;padding:14px 28px;background:#5B6BF5;color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
+            Open the workspace →
+          </a>
+        </div>
+
+        <p style="margin:16px 0 0 0;color:#64748B;font-size:12px;text-align:center;">
+          You can claim a free profile later if you want to keep working together.
+        </p>
+      </div>
+
+      <p style="margin:24px 0 0 0;color:#475569;font-size:11px;text-align:center;line-height:1.5;">
+        This invitation was sent by ${inviterName} via ThriveIN. If you weren't expecting this, you can safely ignore this email.
+      </p>
+    </div>
+  </body>
+</html>
         `,
       });
 
       if (emailResponse.error) {
-        console.warn("Resend API error (non-fatal):", emailResponse.error);
-        emailError = emailResponse.error;
+        console.warn("Resend error (non-fatal):", emailResponse.error);
+        emailError = String(emailResponse.error);
       } else {
-        console.log("Invitation email sent successfully:", emailResponse);
         emailSent = true;
       }
-    } catch (emailErr: any) {
-      console.warn("Email sending failed (non-fatal):", emailErr.message);
-      emailError = emailErr.message;
+    } catch (e: any) {
+      console.warn("Email send failed (non-fatal):", e.message);
+      emailError = e.message;
     }
 
-    // Return success - in-app notification was created, email is optional
-    return new Response(JSON.stringify({ 
-      success: true, 
-      emailSent,
-      emailError: emailError ? String(emailError) : null,
-      message: emailSent ? 'Invitation sent successfully' : 'In-app notification sent (email delivery pending domain verification)'
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
-  } catch (error: any) {
-    console.error("Error in send-project-invitation function:", error);
-    console.error("Error details:", {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    });
-    
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Failed to send invitation',
-        details: error.toString()
+      JSON.stringify({
+        success: true,
+        emailSent,
+        emailError,
+        guestUrl: projectUrl,
       }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
+    );
+  } catch (error: any) {
+    console.error("send-project-invitation error:", error);
+    return new Response(
+      JSON.stringify({ error: error.message || "Failed to send invitation" }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
   }
 };

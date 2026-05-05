@@ -129,7 +129,9 @@ async function upsertProfileAndCredits(
   profile: DraftProfile,
   credits: ClaimedCredit[],
   conflicts: Array<{ url: string; role: string; title: string; existing_owner_id?: string }>,
+  faceMatchScore: number | null,
 ) {
+  const verified = (faceMatchScore ?? 0) >= 0.7;
   const { error: profileErr } = await admin.from("profiles").upsert(
     {
       user_id: userId,
@@ -141,6 +143,8 @@ async function upsertProfileAndCredits(
       avatar_url: profile.avatar_url || null,
       website: profile.website || null,
       onboarding_completed: false,
+      identity_face_verified: verified,
+      identity_face_verified_at: verified ? new Date().toISOString() : null,
     },
     { onConflict: "user_id" },
   );

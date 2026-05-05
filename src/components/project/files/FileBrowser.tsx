@@ -589,13 +589,31 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
               onClick={() => openFile(file)}
               className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/40 cursor-pointer"
             >
-              <div className="w-10 h-10 rounded overflow-hidden shrink-0">
-                <FileThumbnail fileUrl={file.file_url} fileType={file.file_type} className="w-full h-full" />
+              <div className="w-10 h-10 rounded overflow-hidden shrink-0 relative">
+                {file.is_link && file.link_thumbnail_url ? (
+                  <img src={file.link_thumbnail_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                ) : file.is_link ? (
+                  <div className="w-full h-full flex items-center justify-center bg-muted/40">
+                    <Link2 className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                ) : (
+                  <FileThumbnail fileUrl={file.file_url} fileType={file.file_type} className="w-full h-full" />
+                )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{file.file_name}</p>
+                <p className="text-sm font-medium truncate flex items-center gap-1.5">
+                  {file.file_name}
+                  {file.is_link && (
+                    <Badge variant="secondary" className="text-[9px] gap-0.5 px-1.5 py-0 h-4 rounded-full shrink-0">
+                      <ExternalLink className="h-2.5 w-2.5" />
+                      {file.link_provider || "Link"}
+                    </Badge>
+                  )}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  {formatSize(file.file_size)} • {formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}
+                  {file.is_link
+                    ? `${file.link_provider || "Link"} • ${formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}`
+                    : `${formatSize(file.file_size)} • ${formatDistanceToNow(new Date(file.created_at), { addSuffix: true })}`}
                 </p>
               </div>
               <DropdownMenu>

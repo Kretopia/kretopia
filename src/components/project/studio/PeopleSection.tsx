@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Crown, Hand, Clock } from "lucide-react";
+import { Crown, Hand, Clock, Link2 } from "lucide-react";
 import { InviteCollaboratorDialog } from "@/components/project/InviteCollaboratorDialog";
+import { GuestStudioShareDialog } from "@/components/project/GuestStudioShareDialog";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 

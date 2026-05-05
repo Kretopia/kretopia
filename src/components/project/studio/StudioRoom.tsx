@@ -133,7 +133,7 @@ export const StudioRoom = ({
     }
   };
 
-  // Reusable section blocks so mobile (single scroll) and desktop (2-col) share children.
+  // ===== Reusable section blocks (mobile keeps original order) =====
   const RoomChatButton = (
     <button
       type="button"
@@ -153,79 +153,117 @@ export const StudioRoom = ({
     </button>
   );
 
-  // LEFT column on desktop = the heavy "work surface"
-  const workColumn = (
-    <div className="divide-y divide-border/60 lg:rounded-2xl lg:border lg:border-border/60 lg:bg-card/40 lg:overflow-hidden">
-      <BriefSection
-        project={project}
-        files={files}
-        isOwner={isOwner}
-        onUpdated={onUpdated}
-        onAddReference={handleAddReference}
-        currentUserId={currentUserId}
-      />
-      <StudioPulseFeed
-        projectId={project.id}
-        currentUserId={currentUserId}
-        collaborators={people}
-      />
-      <DeliverablesSection
-        projectId={project.id}
-        currentUserId={currentUserId}
-        isOwner={isOwner}
-      />
-      <PadPreviewSection
-        projectId={project.id}
-        onOpen={() => onNavigateToTab("notes")}
-      />
-      <ProductionPrepSection
-        project={project}
-        tasks={tasks}
-        currentUserId={currentUserId}
-        onOpenTool={(tab) => onNavigateToTab(tab)}
-        onUpdated={onUpdated}
-      />
-      <WorkSection
-        tasks={tasks}
-        projectId={project.id}
-        currentUserId={currentUserId}
-        collaborators={people}
-        onUpdated={onUpdated}
-      />
+  const mobileWorkColumn = (
+    <div className="divide-y divide-border/60">
+      <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
+      <StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />
+      <DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />
+      <PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />
+      <ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />
+      <WorkSection tasks={tasks} projectId={project.id} currentUserId={currentUserId} collaborators={people} onUpdated={onUpdated} />
     </div>
   );
 
-  // RIGHT rail on desktop = signal/status/people
-  const sideColumn = (
-    <div className="divide-y divide-border/60 lg:rounded-2xl lg:border lg:border-border/60 lg:bg-card/40 lg:overflow-hidden lg:divide-y-0 lg:[&>*]:border-b lg:[&>*]:border-border/60 lg:[&>*:last-child]:border-b-0">
+  const mobileSideColumn = (
+    <div className="divide-y divide-border/60">
       {moneySignal.visible && (
-        <MoneySection
-          project={project}
-          isOwner={isOwner}
-          onOpenInvoice={() => onNavigateToTab("finance", "create_invoice")}
-        />
+        <MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create_invoice")} />
       )}
-      <PeopleSection
-        collaborators={people}
-        ownerUserId={project.created_by}
-        currentUserId={currentUserId}
-        isOwner={isOwner}
-        projectId={project.id}
-        onUpdated={onUpdated}
-        onlineUserIds={onlineUserIds}
-        onKnock={knock}
-      />
-      <WrapProjectCard
-        project={project}
-        tasks={tasks}
-        collaborators={people}
-        currentUserId={currentUserId}
-        isOwner={isOwner}
-        onUpdated={onUpdated}
-      />
+      <PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />
+      <WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />
       <AddCreditSection project={project} collaborators={people} />
       <CallHistorySection projectId={project.id} />
     </div>
+  );
+
+  // ===== Desktop draggable widgets =====
+  type WidgetId =
+    | "brief" | "pulse" | "deliverables" | "pad" | "prep" | "work"
+    | "money" | "people" | "wrap" | "credit" | "calls";
+
+  const renderWidget = (id: WidgetId): React.ReactNode => {
+    const wrap = (node: React.ReactNode) => (
+      <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">{node}</div>
+    );
+    switch (id) {
+      case "brief": return wrap(<BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />);
+      case "pulse": return wrap(<StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />);
+      case "deliverables": return wrap(<DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />);
+      case "pad": return wrap(<PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />);
+      case "prep": return wrap(<ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />);
+      case "work": return wrap(<WorkSection tasks={tasks} projectId={project.id} currentUserId={currentUserId} collaborators={people} onUpdated={onUpdated} />);
+      case "money": return moneySignal.visible ? wrap(<MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create_invoice")} />) : null;
+      case "people": return wrap(<PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />);
+      case "wrap": return wrap(<WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />);
+      case "credit": return wrap(<AddCreditSection project={project} collaborators={people} />);
+      case "calls": return wrap(<CallHistorySection projectId={project.id} />);
+    }
+  };
+
+  const DEFAULT_LEFT: WidgetId[] = ["brief", "pulse", "deliverables", "pad", "prep", "work"];
+  const DEFAULT_RIGHT: WidgetId[] = ["money", "people", "wrap", "credit", "calls"];
+  const STORAGE_KEY = `thrivedesk:widgets:${project.id}`;
+
+  const [leftOrder, setLeftOrder] = useState<WidgetId[]>(DEFAULT_LEFT);
+  const [rightOrder, setRightOrder] = useState<WidgetId[]>(DEFAULT_RIGHT);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { left?: WidgetId[]; right?: WidgetId[] };
+      const all = [...DEFAULT_LEFT, ...DEFAULT_RIGHT];
+      const sanitize = (arr?: WidgetId[]) => (arr ?? []).filter((id) => all.includes(id));
+      const merge = (saved: WidgetId[], def: WidgetId[]) => {
+        const missing = def.filter((id) => !saved.includes(id) && !sanitize(parsed.left).includes(id) && !sanitize(parsed.right).includes(id));
+        return [...saved, ...missing];
+      };
+      const savedLeft = sanitize(parsed.left);
+      const savedRight = sanitize(parsed.right);
+      setLeftOrder(merge(savedLeft, DEFAULT_LEFT));
+      setRightOrder(merge(savedRight, DEFAULT_RIGHT));
+    } catch {/* noop */}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project.id]);
+
+  const persist = (left: WidgetId[], right: WidgetId[]) => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ left, right })); } catch {/* noop */}
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleDragEnd = (col: "left" | "right") => (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const order = col === "left" ? leftOrder : rightOrder;
+    const setOrder = col === "left" ? setLeftOrder : setRightOrder;
+    const oldIndex = order.indexOf(active.id as WidgetId);
+    const newIndex = order.indexOf(over.id as WidgetId);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(order, oldIndex, newIndex);
+    setOrder(next);
+    persist(col === "left" ? next : leftOrder, col === "right" ? next : rightOrder);
+  };
+
+  const renderColumn = (ids: WidgetId[], col: "left" | "right") => (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd(col)}>
+      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+        <div className="space-y-4">
+          {ids.map((id) => {
+            const node = renderWidget(id);
+            if (!node) return null;
+            return (
+              <SortableSection key={id} id={id}>
+                {node}
+              </SortableSection>
+            );
+          })}
+        </div>
+      </SortableContext>
+    </DndContext>
   );
 
   return (
@@ -254,20 +292,23 @@ export const StudioRoom = ({
         {RoomChatButton}
         {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
         <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />
-        {workColumn}
-        {sideColumn}
+        {mobileWorkColumn}
+        {mobileSideColumn}
         <div className="h-12" />
       </div>
 
-      {/* Desktop: 2-column workspace parity */}
+      {/* Desktop: 2-column draggable widget board */}
       <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
         <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
           <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />
-          {workColumn}
+          <p className="text-[11px] text-muted-foreground/70 px-1">
+            Tip: hover any section and drag the handle to reorder your studio.
+          </p>
+          {renderColumn(leftOrder, "left")}
         </div>
         <aside className="col-span-12 xl:col-span-4 space-y-4 min-w-0">
           {RoomChatButton}
-          {sideColumn}
+          {renderColumn(rightOrder, "right")}
         </aside>
       </div>
     </div>

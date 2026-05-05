@@ -218,6 +218,23 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
 
       if (projectError) throw projectError;
 
+      // Seed AI-extracted starter tasks if we expanded the brief
+      if (seedTasks.length > 0) {
+        try {
+          await supabase.from("project_tasks").insert(
+            seedTasks.slice(0, 8).map((t) => ({
+              project_id: project.id,
+              title: t.title.slice(0, 200),
+              description: t.description ?? null,
+              status: "todo" as const,
+              created_by: user.id,
+            })),
+          );
+        } catch (e) {
+          console.warn("seed tasks failed", e);
+        }
+      }
+
       try {
         const { analytics } = await import("@/lib/analytics");
         analytics.projectCreated(project.id);

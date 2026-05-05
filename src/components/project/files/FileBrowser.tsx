@@ -412,6 +412,10 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
             <FolderPlus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">New folder</span>
           </Button>
+          <Button variant="outline" size="sm" onClick={() => setImportLinkOpen(true)}>
+            <Link2 className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Import link</span>
+          </Button>
           <Button size="sm" onClick={() => fileInputRef.current?.click()}>
             <Upload className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Upload</span>

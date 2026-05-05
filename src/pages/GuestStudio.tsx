@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Sparkles, FileText, Folder, MessageCircle, UserPlus, ShieldCheck } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Loader2, Sparkles, FileText, Folder, MessageCircle, UserPlus, ShieldCheck, Target, Send, Link2, Download, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
 
 const STORAGE_KEY = (token: string) => `guest_studio:${token}`;
 

@@ -48,6 +48,9 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
 
   const [step, setStep] = useState<Step>(1);
   const [creating, setCreating] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [expanding, setExpanding] = useState(false);
+  const [seedTasks, setSeedTasks] = useState<Array<{ title: string; description?: string }>>([]);
 
   // Step 1
   const [workspaceType, setWorkspaceType] = useState<WorkspaceType | null>(null);

@@ -32,11 +32,15 @@ import {
   Home,
   Loader2,
   Search,
+  Link2,
+  ExternalLink,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { extractProjectFilePath, getProjectFileSignedUrl } from "@/lib/projectFiles";
 import { FileThumbnail } from "./FileThumbnail";
 import { FilePreviewDialog } from "./FilePreviewDialog";
+import { ImportLinkDialog } from "./ImportLinkDialog";
+import { Badge } from "@/components/ui/badge";
 import { FileCommentsSheet } from "@/components/project/studio/FileCommentsSheet";
 import { ResumableUploadList, type UploadJob } from "./ResumableUploadList";
 import { useFileSizeLimit } from "@/hooks/useFileSizeLimit";

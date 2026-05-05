@@ -525,17 +525,49 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="desc" className="text-base font-semibold">
-                    Quick description <span className="text-muted-foreground font-normal text-sm">(optional)</span>
-                  </Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label htmlFor="desc" className="text-base font-semibold">
+                      Quick description <span className="text-muted-foreground font-normal text-sm">(optional)</span>
+                    </Label>
+                    {description.trim().length >= 8 && (
+                      <button
+                        type="button"
+                        onClick={expandWithAi}
+                        disabled={expanding}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--energy))] hover:underline disabled:opacity-50"
+                      >
+                        {expanding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                        {expanding ? "Thinking…" : "Expand with Copilot"}
+                      </button>
+                    )}
+                  </div>
                   <Textarea
                     id="desc"
                     placeholder="What's the vibe? Who's it for? Anything that helps Project Copilot set things up."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    rows={3}
+                    rows={4}
                     className="resize-none"
                   />
+                  {seedTasks.length > 0 && (
+                    <div className="rounded-lg border border-[hsl(var(--energy)/0.4)] bg-[hsl(var(--energy)/0.06)] p-2.5 space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[hsl(var(--energy))]">
+                        Starter tasks · {seedTasks.length} ready to seed
+                      </p>
+                      <ul className="space-y-0.5">
+                        {seedTasks.slice(0, 5).map((t, i) => (
+                          <li key={i} className="text-[11px] text-foreground/80 leading-snug">• {t.title}</li>
+                        ))}
+                      </ul>
+                      <button
+                        type="button"
+                        onClick={() => setSeedTasks([])}
+                        className="text-[10px] text-muted-foreground hover:text-foreground hover:underline"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Agent role picker */}

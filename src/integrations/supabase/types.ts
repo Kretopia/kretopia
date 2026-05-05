@@ -12203,9 +12203,11 @@ export type Database = {
       studio_pulse_posts: {
         Row: {
           approval_status: string | null
-          author_id: string
+          author_id: string | null
           content: string | null
           created_at: string
+          guest_email: string | null
+          guest_name: string | null
           id: string
           image_urls: string[]
           kind: string
@@ -12217,9 +12219,11 @@ export type Database = {
         }
         Insert: {
           approval_status?: string | null
-          author_id: string
+          author_id?: string | null
           content?: string | null
           created_at?: string
+          guest_email?: string | null
+          guest_name?: string | null
           id?: string
           image_urls?: string[]
           kind?: string
@@ -12231,9 +12235,11 @@ export type Database = {
         }
         Update: {
           approval_status?: string | null
-          author_id?: string
+          author_id?: string | null
           content?: string | null
           created_at?: string
+          guest_email?: string | null
+          guest_name?: string | null
           id?: string
           image_urls?: string[]
           kind?: string
@@ -14763,6 +14769,38 @@ export type Database = {
           project_id: string
         }[]
       }
+      get_guest_collaborators: {
+        Args: { _token: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          role: string
+          user_id: string
+        }[]
+      }
+      get_guest_files: {
+        Args: { _token: string }
+        Returns: {
+          created_at: string
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id: string
+        }[]
+      }
+      get_guest_pulse: {
+        Args: { _token: string }
+        Returns: {
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          image_urls: string[]
+          is_guest: boolean
+          kind: string
+        }[]
+      }
       get_mutual_connections: {
         Args: { user1_id: string; user2_id: string }
         Returns: {
@@ -14994,6 +15032,10 @@ export type Database = {
       }
       get_tier_storage_limit: { Args: { tier: string }; Returns: number }
       get_user_email: { Args: { _user_id: string }; Returns: string }
+      guest_drop_post: {
+        Args: { _content: string; _kind?: string; _token: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

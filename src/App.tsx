@@ -56,6 +56,8 @@ const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
 const ProjectsList = lazy(() => import("./pages/ProjectsList"));
 const Shortlists = lazy(() => import("./pages/Shortlists"));
+const Clients = lazy(() => import("./pages/Clients"));
+const ClientDetail = lazy(() => import("./pages/ClientDetail"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminWeeklyNote = lazy(() => import("./pages/AdminWeeklyNote"));
@@ -288,6 +290,10 @@ const AppContent = () => {
             <Route path="/desk/projects" element={<Navigate to="/desk" replace />} />
             <Route path="/shortlists" element={<ProtectedRoute><Shortlists /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
+
+            {/* Client Hub — group projects per client */}
+            <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+            <Route path="/clients/:clientId" element={<ProtectedRoute><ClientDetail /></ProtectedRoute>} />
 
             {/* ThriveFund — Crowdfunding */}
             <Route path="/fund" element={<Fund />} />

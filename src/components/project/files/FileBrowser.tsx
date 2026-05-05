@@ -658,6 +658,14 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
 
       <FilePreviewDialog file={previewFile} onClose={() => setPreviewFile(null)} />
 
+      <ImportLinkDialog
+        open={importLinkOpen}
+        onOpenChange={setImportLinkOpen}
+        projectId={projectId}
+        folderId={currentFolder}
+        onImported={onFileUploaded}
+      />
+
       <FileCommentsSheet
         open={!!commentFile}
         onOpenChange={(v) => !v && setCommentFile(null)}

@@ -117,6 +117,101 @@ export const StudioRoom = ({
     }
   };
 
+  // Reusable section blocks so mobile (single scroll) and desktop (2-col) share children.
+  const RoomChatButton = (
+    <button
+      type="button"
+      onClick={() => onNavigateToTab("messages")}
+      className="mx-4 mb-3 mt-1 flex items-center gap-3 rounded-xl border border-border bg-card hover:bg-accent/40 transition-colors p-3 text-left lg:mx-0 lg:w-full"
+    >
+      <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+        <span aria-hidden className="text-base">💬</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold leading-tight">Room chat</p>
+        <p className="text-[11px] text-muted-foreground leading-tight">
+          Talk to everyone here · @mentions, files & voice
+        </p>
+      </div>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Open</span>
+    </button>
+  );
+
+  // LEFT column on desktop = the heavy "work surface"
+  const workColumn = (
+    <div className="divide-y divide-border/60 lg:rounded-2xl lg:border lg:border-border/60 lg:bg-card/40 lg:overflow-hidden">
+      <BriefSection
+        project={project}
+        files={files}
+        isOwner={isOwner}
+        onUpdated={onUpdated}
+        onAddReference={handleAddReference}
+        currentUserId={currentUserId}
+      />
+      <StudioPulseFeed
+        projectId={project.id}
+        currentUserId={currentUserId}
+        collaborators={people}
+      />
+      <DeliverablesSection
+        projectId={project.id}
+        currentUserId={currentUserId}
+        isOwner={isOwner}
+      />
+      <PadPreviewSection
+        projectId={project.id}
+        onOpen={() => onNavigateToTab("notes")}
+      />
+      <ProductionPrepSection
+        project={project}
+        tasks={tasks}
+        currentUserId={currentUserId}
+        onOpenTool={(tab) => onNavigateToTab(tab)}
+        onUpdated={onUpdated}
+      />
+      <WorkSection
+        tasks={tasks}
+        projectId={project.id}
+        currentUserId={currentUserId}
+        collaborators={people}
+        onUpdated={onUpdated}
+      />
+    </div>
+  );
+
+  // RIGHT rail on desktop = signal/status/people
+  const sideColumn = (
+    <div className="divide-y divide-border/60 lg:rounded-2xl lg:border lg:border-border/60 lg:bg-card/40 lg:overflow-hidden lg:divide-y-0 lg:[&>*]:border-b lg:[&>*]:border-border/60 lg:[&>*:last-child]:border-b-0">
+      {moneySignal.visible && (
+        <MoneySection
+          project={project}
+          isOwner={isOwner}
+          onOpenInvoice={() => onNavigateToTab("finance", "create_invoice")}
+        />
+      )}
+      <PeopleSection
+        collaborators={people}
+        ownerUserId={project.created_by}
+        currentUserId={currentUserId}
+        isOwner={isOwner}
+        projectId={project.id}
+        onUpdated={onUpdated}
+        onlineUserIds={onlineUserIds}
+        onKnock={knock}
+      />
+      <WrapProjectCard
+        project={project}
+        tasks={tasks}
+        collaborators={people}
+        currentUserId={currentUserId}
+        isOwner={isOwner}
+        onUpdated={onUpdated}
+      />
+      <AddCreditSection project={project} collaborators={people} />
+      <CallHistorySection projectId={project.id} />
+    </div>
+  );
+
   return (
     <div className="flex-1 overflow-y-auto bg-background">
       <input
@@ -138,113 +233,28 @@ export const StudioRoom = ({
         currentUserId={currentUserId}
       />
 
-      {/* Persistent entry point into the room chat */}
-      <button
-        type="button"
-        onClick={() => onNavigateToTab("messages")}
-        className="mx-4 mb-3 mt-1 w-[calc(100%-2rem)] flex items-center gap-3 rounded-xl border border-border bg-card hover:bg-accent/40 transition-colors p-3 text-left"
-      >
-        <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-          <span aria-hidden className="text-base">💬</span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold leading-tight">Room chat</p>
-          <p className="text-[11px] text-muted-foreground leading-tight">
-            Talk to everyone here · @mentions, files & voice
-          </p>
-        </div>
-        <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Open</span>
-      </button>
-
-      {nextStep && (
-        <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />
-      )}
-
-      <ProactiveCards
-        project={project}
-        tasks={tasks}
-        onAction={onNavigateToTab}
-      />
-
-      <div className="divide-y divide-border/60">
-        <BriefSection
-          project={project}
-          files={files}
-          isOwner={isOwner}
-          onUpdated={onUpdated}
-          onAddReference={handleAddReference}
-          currentUserId={currentUserId}
-        />
-
-        {/* Drop Zone — Copilot intake (formerly Pulse). Drop anything, it routes. */}
-        <StudioPulseFeed
-          projectId={project.id}
-          currentUserId={currentUserId}
-          collaborators={people}
-        />
-
-        <DeliverablesSection
-          projectId={project.id}
-          currentUserId={currentUserId}
-          isOwner={isOwner}
-        />
-
-        <PadPreviewSection
-          projectId={project.id}
-          onOpen={() => onNavigateToTab("notes")}
-        />
-
-        <ProductionPrepSection
-          project={project}
-          tasks={tasks}
-          currentUserId={currentUserId}
-          onOpenTool={(tab) => onNavigateToTab(tab)}
-          onUpdated={onUpdated}
-        />
-
-        <WorkSection
-          tasks={tasks}
-          projectId={project.id}
-          currentUserId={currentUserId}
-          collaborators={people}
-          onUpdated={onUpdated}
-        />
-
-        {moneySignal.visible && (
-          <MoneySection
-            project={project}
-            isOwner={isOwner}
-            onOpenInvoice={() => onNavigateToTab("finance", "create_invoice")}
-          />
-        )}
-
-        <PeopleSection
-          collaborators={people}
-          ownerUserId={project.created_by}
-          currentUserId={currentUserId}
-          isOwner={isOwner}
-          projectId={project.id}
-          onUpdated={onUpdated}
-          onlineUserIds={onlineUserIds}
-          onKnock={knock}
-        />
-
-        <WrapProjectCard
-          project={project}
-          tasks={tasks}
-          collaborators={people}
-          currentUserId={currentUserId}
-          isOwner={isOwner}
-          onUpdated={onUpdated}
-        />
-
-        <AddCreditSection project={project} collaborators={people} />
-
-        <CallHistorySection projectId={project.id} />
+      {/* Mobile: original single-scroll order */}
+      <div className="lg:hidden">
+        {RoomChatButton}
+        {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
+        <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />
+        {workColumn}
+        {sideColumn}
+        <div className="h-12" />
       </div>
 
-      {/* Bottom breathing room above mobile nav */}
-      <div className="h-12" />
+      {/* Desktop: 2-column workspace parity */}
+      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
+        <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
+          {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
+          <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />
+          {workColumn}
+        </div>
+        <aside className="col-span-12 xl:col-span-4 space-y-4 min-w-0">
+          {RoomChatButton}
+          {sideColumn}
+        </aside>
+      </div>
     </div>
   );
 };

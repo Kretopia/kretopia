@@ -84,6 +84,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
       setInviteSearch("");
       setShowInviteDropdown(false);
       setPendingAgentRole("client");
+      setSeedTasks([]);
     }
   }, [open]);
 

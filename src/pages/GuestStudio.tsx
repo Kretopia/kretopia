@@ -38,37 +38,37 @@ export default function GuestStudio() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data, error } = await supabase
-        .rpc("get_project_for_guest", { _token: token })
-        .maybeSingle()
-        .catch((e) => ({ data: null, error: e }));
+      try {
+        const { data, error } = await supabase
+          .rpc("get_project_for_guest", { _token: token })
+          .maybeSingle();
+        if (!active) return;
+        if (error || !data) {
+          setProject(null);
+          setLoading(false);
+          return;
+        }
+        setProject(data as ProjectInfo);
 
-      if (!active) return;
-      if (error || !data) {
-        setProject(null);
-        setLoading(false);
-        return;
-      }
-      setProject(data as ProjectInfo);
-
-      // Check if guest already registered in this browser
-      const cached = localStorage.getItem(STORAGE_KEY(token));
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        setName(parsed.name || "");
-        setEmail(parsed.email || "");
-        // bump last_seen_at silently
-        await supabase
-          .rpc("register_guest_session", {
+        const cached = localStorage.getItem(STORAGE_KEY(token));
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setName(parsed.name || "");
+          setEmail(parsed.email || "");
+          await supabase.rpc("register_guest_session", {
             _token: token,
             _name: parsed.name,
             _email: parsed.email,
-          })
-          .catch(() => null);
-      } else {
-        setNeedsName(true);
+          });
+        } else {
+          setNeedsName(true);
+        }
+      } catch (e) {
+        console.warn("[guest-studio] load failed", e);
+        if (active) setProject(null);
+      } finally {
+        if (active) setLoading(false);
       }
-      setLoading(false);
     })();
     return () => {
       active = false;

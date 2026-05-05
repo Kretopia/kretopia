@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Crown, Hand } from "lucide-react";
+import { Crown, Hand, Clock } from "lucide-react";
 import { InviteCollaboratorDialog } from "@/components/project/InviteCollaboratorDialog";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 interface PeopleSectionProps {
@@ -15,6 +17,14 @@ interface PeopleSectionProps {
   onKnock?: (toUserId: string, toName: string) => void | Promise<void>;
 }
 
+interface PendingPerson {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+  email: string | null;
+  isGuest: boolean;
+}
+
 export const PeopleSection = ({
   collaborators,
   ownerUserId,
@@ -26,6 +36,56 @@ export const PeopleSection = ({
   onKnock,
 }: PeopleSectionProps) => {
   const navigate = useNavigate();
+  const [pending, setPending] = useState<PendingPerson[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("project_collaborators")
+        .select("id, user_id, email")
+        .eq("project_id", projectId)
+        .eq("status", "pending");
+      if (error || !data || cancelled) return;
+
+      const userIds = data.map((d) => d.user_id).filter(Boolean) as string[];
+      let profileMap = new Map<string, { full_name: string; avatar_url: string | null }>();
+      if (userIds.length) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, avatar_url")
+          .in("user_id", userIds);
+        profileMap = new Map(
+          (profiles || []).map((p) => [p.user_id, { full_name: p.full_name || "Member", avatar_url: p.avatar_url }]),
+        );
+      }
+
+      const mapped: PendingPerson[] = data.map((d) => {
+        if (d.user_id) {
+          const p = profileMap.get(d.user_id);
+          return {
+            id: d.id,
+            full_name: p?.full_name || "Pending member",
+            avatar_url: p?.avatar_url || null,
+            email: d.email,
+            isGuest: false,
+          };
+        }
+        return {
+          id: d.id,
+          full_name: d.email?.split("@")[0] || "Guest",
+          avatar_url: null,
+          email: d.email,
+          isGuest: true,
+        };
+      });
+      if (!cancelled) setPending(mapped);
+    })().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId, collaborators.length]);
+
   const onlineCount = collaborators.filter(
     (c) => c.id !== currentUserId && onlineUserIds?.has(c.id),
   ).length;
@@ -57,7 +117,7 @@ export const PeopleSection = ({
         )}
       </header>
 
-      {isOwner && collaborators.length <= 1 && (
+      {isOwner && collaborators.length <= 1 && pending.length === 0 && (
         <div className="rounded-xl border-2 border-dashed border-[hsl(var(--energy)/0.4)] bg-[hsl(var(--energy)/0.05)] p-3 flex items-center gap-3">
           <div className="h-9 w-9 rounded-full bg-[hsl(var(--energy)/0.15)] flex items-center justify-center shrink-0">
             <span aria-hidden className="text-base">👋</span>
@@ -68,7 +128,6 @@ export const PeopleSection = ({
               Pull in your team, client or interns to get this rolling.
             </p>
           </div>
-          <InviteCollaboratorDialog projectId={projectId} onInvite={onUpdated} />
         </div>
       )}
 
@@ -131,6 +190,27 @@ export const PeopleSection = ({
             );
           })}
 
+          {pending.map((p) => (
+            <div key={p.id} className="shrink-0 flex flex-col items-center gap-1.5 w-16 opacity-70">
+              <div className="relative">
+                <Avatar className="h-14 w-14 ring-2 ring-dashed ring-muted-foreground/40 grayscale">
+                  <AvatarImage src={p.avatar_url || undefined} />
+                  <AvatarFallback className="text-sm font-semibold bg-muted">
+                    {p.isGuest ? "✉" : p.full_name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="absolute -bottom-1 -right-1 inline-flex items-center gap-0.5 rounded-full bg-muted ring-2 ring-background px-1 py-0.5">
+                  <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                </span>
+              </div>
+              <p className="text-[11px] font-medium text-center leading-tight line-clamp-1 max-w-full">
+                {p.full_name.split(" ")[0]}
+              </p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                Pending
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

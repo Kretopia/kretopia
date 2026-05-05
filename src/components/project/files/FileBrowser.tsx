@@ -100,6 +100,7 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
   const [commentFile, setCommentFile] = useState<ProjectFile | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const [quotaBlock, setQuotaBlock] = useState<QuotaBlockReason | null>(null);
+  const [importLinkOpen, setImportLinkOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -107,9 +108,13 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
     }).catch(() => {});
   }, []);
 
-  // Route file clicks: media + images → comments sheet (timestamps + notes),
-  // everything else → standard preview dialog.
+  // Route file clicks: links → open in new tab; media + images → comments sheet
+  // (timestamps + notes); everything else → standard preview dialog.
   const openFile = useCallback((file: ProjectFile) => {
+    if (file.is_link) {
+      window.open(file.file_url, "_blank", "noopener,noreferrer");
+      return;
+    }
     const t = file.file_type || "";
     if (t.startsWith("video/") || t.startsWith("audio/") || t.startsWith("image/")) {
       setCommentFile(file);

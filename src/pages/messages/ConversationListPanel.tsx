@@ -55,9 +55,12 @@ export const ConversationListPanel = ({
   return (
     <div className={`${hidden ? "hidden md:flex" : "flex"} w-full md:w-[340px] lg:w-96 flex-col border-r border-border bg-card`}>
       <div className="p-3 sm:p-4 border-b-2 border-primary/20 space-y-2.5 sm:space-y-4">
-        <div className="space-y-1">
-          <p className="brand-eyebrow">Your inbox</p>
-          <h2 className="text-2xl sm:text-3xl font-black tracking-[-0.03em]">Messages</h2>
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1 min-w-0">
+            <p className="brand-eyebrow">Your inbox</p>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-[-0.03em]">Messages</h2>
+          </div>
+          <QuickCallButton label="Start a call" className="rounded-full gap-2 shrink-0 mt-1" />
         </div>
         <PageTip
           id="messages"

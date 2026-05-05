@@ -743,7 +743,7 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
                 <Button
                   onClick={handleCreate}
                   disabled={!canAdvance() || creating}
-                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold gap-2"
+                  className="bg-[hsl(var(--energy))] hover:bg-[hsl(var(--energy)/0.9)] text-background font-bold gap-2"
                 >
                   {creating ? <><Loader2 className="h-4 w-4 animate-spin" /> Creating…</> : <>Create workspace</>}
                 </Button>
@@ -752,6 +752,12 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
           </>
         )}
       </DialogContent>
+
+      <VoiceFirstCreateModal
+        open={voiceOpen}
+        onOpenChange={setVoiceOpen}
+        onCreated={onSuccess}
+      />
     </Dialog>
   );
 }

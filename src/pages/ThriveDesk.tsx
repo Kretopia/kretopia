@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useParams } from "react-router-dom";
-import { Loader2, Menu, X, PanelRightOpen, FolderKanban } from "lucide-react";
+import { Loader2, Menu, X, PanelRightOpen, PanelLeftClose, PanelLeftOpen, FolderKanban } from "lucide-react";
 import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
 import { WorkspaceSidebar } from "@/components/project/WorkspaceSidebar";
@@ -38,6 +38,13 @@ const ThriveDesk = () => {
 
   const [activeTab, setActiveTab] = useState("today");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("thrivedesk:sidebar-open") !== "false";
+  });
+  useEffect(() => {
+    localStorage.setItem("thrivedesk:sidebar-open", String(desktopSidebarOpen));
+  }, [desktopSidebarOpen]);
   const [quickPanelOpen, setQuickPanelOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [voiceCmdOpen, setVoiceCmdOpen] = useState(false);

@@ -182,6 +182,35 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
     return false;
   };
 
+  const expandWithAi = async () => {
+    const text = description.trim();
+    if (!text || expanding) return;
+    setExpanding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("extract-brief", {
+        body: { source: "text", text },
+      });
+      if (error) throw error;
+      const result: any = data ?? {};
+      if (result?.project?.summary) setDescription(result.project.summary);
+      if (!title.trim() && result?.project?.title) setTitle(result.project.title.slice(0, 120));
+      if (Array.isArray(result?.deliverables) && result.deliverables.length) {
+        setSeedTasks(
+          result.deliverables.slice(0, 8).map((d: any) => ({
+            title: String(d.title || "").slice(0, 200),
+            description: d.description ?? null,
+          })),
+        );
+      }
+      toast({ title: "Brief expanded", description: "Copilot fleshed it out and queued starter tasks." });
+    } catch (e: any) {
+      console.error(e);
+      toast({ title: "Couldn't expand", description: e.message || "Try again in a sec.", variant: "destructive" });
+    } finally {
+      setExpanding(false);
+    }
+  };
+
   const handleCreate = async () => {
     if (!workspaceType || !dealType || !title.trim()) return;
     try {

@@ -19,7 +19,7 @@ const ClientDetail = () => {
   if (!client) return <div className="p-4">Client not found.</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-4 pb-32">
+    <div className="max-w-6xl mx-auto p-4 lg:p-6 pb-32">
       <SEO title={`${client.company_name || client.name} · Client`} description="Client hub" />
 
       <button onClick={() => navigate("/clients")} className="flex items-center gap-1 text-sm text-muted-foreground mb-3">

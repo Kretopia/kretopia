@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -116,9 +117,7 @@ const ClaimEvent = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
+      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
     );
   }
 

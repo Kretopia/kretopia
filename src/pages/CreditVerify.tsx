@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -87,9 +88,7 @@ export default function CreditVerify() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 px-6"><CreativeLoader size="page" /></div>
     );
   }
 

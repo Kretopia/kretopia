@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -207,9 +208,7 @@ const ManageOpportunities = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-[hsl(var(--mode-accent))]" />
-      </div>
+      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
     );
   }
 

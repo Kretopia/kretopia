@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { CreativeLoader } from "@/components/ui/creative-loader";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -166,9 +167,7 @@ export default function GuestStudio() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
+      <div className="min-h-screen flex items-center justify-center bg-background px-6"><CreativeLoader size="page" /></div>
     );
   }
 

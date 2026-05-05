@@ -12,6 +12,8 @@ import { StudioTimer } from "./StudioTimer";
 import { format } from "date-fns";
 
 
+import { ProjectClientChip } from "@/components/clients/ProjectClientChip";
+
 interface VibeHeaderProps {
   project: {
     id: string;
@@ -19,6 +21,7 @@ interface VibeHeaderProps {
     cover_url?: string | null;
     mood?: string | null;
     client_name?: string | null;
+    client_id?: string | null;
     deadline?: string | null;
     status?: string | null;
   };
@@ -264,14 +267,20 @@ export const VibeHeader = ({
           <div className="inline-flex items-center gap-1.5 rounded-full bg-card/80 border border-border px-2 py-1 backdrop-blur-sm">
             <MoodPicker value={project.mood ?? null} onChange={handleMood} size="sm" />
           </div>
-          {(clientDisplayName || project.client_name) && (
+          {isOwner ? (
+            <ProjectClientChip
+              projectId={project.id}
+              currentClientId={project.client_id}
+              fallbackName={clientDisplayName ?? project.client_name}
+            />
+          ) : (clientDisplayName || project.client_name) ? (
             <span className="text-sm text-muted-foreground truncate">
               For{" "}
               <span className="text-foreground font-semibold">
                 {clientDisplayName ?? project.client_name}
               </span>
             </span>
-          )}
+          ) : null}
           {due && (
             <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
               <Calendar className="h-3.5 w-3.5" />

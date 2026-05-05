@@ -20,8 +20,23 @@ const AcceptInvite = () => {
 
     const processInvitation = async () => {
       try {
-        // If not authenticated, redirect to auth with this URL as redirect
+        // If not authenticated: try to mint/look-up a guest preview token so the
+        // user can open the workspace immediately without signing up.
         if (!user) {
+          if (email && projectId) {
+            try {
+              const { data: token } = await supabase.rpc(
+                "get_or_create_guest_token_for_invite",
+                { _project_id: projectId, _email: email },
+              );
+              if (token) {
+                navigate(`/guest/${encodeURIComponent(token as string)}`, { replace: true });
+                return;
+              }
+            } catch (e) {
+              console.warn("guest token lookup failed", e);
+            }
+          }
           const qs = email ? `?email=${encodeURIComponent(email)}` : '';
           const currentUrl = `/accept-invite/${projectId}${qs}`;
           navigate(`/auth?redirect=${encodeURIComponent(currentUrl)}`);

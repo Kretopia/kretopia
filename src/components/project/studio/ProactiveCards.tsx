@@ -107,7 +107,7 @@ export const ProactiveCards = ({
         body: "You've delivered work but no invoice exists for this project yet.",
         ctaLabel: "Send invoice",
         ctaTab: "finance",
-        ctaIntent: "create_invoice",
+        ctaIntent: "create-invoice",
       });
     } else if (drafts.length > 0) {
       out.push({

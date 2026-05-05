@@ -140,13 +140,24 @@ export const VoiceTaskCapture = ({
         setPhase("review");
       } catch (e: any) {
         console.error("voice-to-task failed:", e);
+        const msg = String(e?.message || "");
+        const isRateLimit = /429|rate.?limit|daily limit|quota/i.test(msg);
+        const isTranscribe = /transcrib|audio|whisper|gemini/i.test(msg);
         toast({
-          title: "Couldn't read that",
-          description: e?.message || "Try recording again.",
+          title: isRateLimit
+            ? "Slow down a moment"
+            : isTranscribe
+              ? "Couldn't hear that clearly"
+              : "Couldn't read that",
+          description: isRateLimit
+            ? "You've hit today's voice limit. Type the task instead, or try again tomorrow."
+            : isTranscribe
+              ? "Try a quieter spot, or type the task below."
+              : "Try recording again, or type the task instead.",
           variant: "destructive",
         });
-        setPhase("idle");
-        setSeconds(0);
+        // Drop into manual review so the user can still capture the task
+        setPhase("review");
       }
     },
     [collaborators, projectTitle, toast],

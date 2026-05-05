@@ -79,6 +79,7 @@ const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
 const Install = lazy(() => import("./pages/Install"));
 const GuestCall = lazy(() => import("./pages/GuestCall"));
+const GuestStudio = lazy(() => import("./pages/GuestStudio"));
 const ProjectReview = lazy(() => import("./pages/ProjectReview"));
 const FoundingMember = lazy(() => import("./pages/FoundingMember"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));

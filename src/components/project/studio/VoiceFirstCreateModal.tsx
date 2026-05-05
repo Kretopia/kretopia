@@ -187,7 +187,7 @@ export const VoiceFirstCreateModal = ({
           created_by: user.id,
           status: "active",
           workspace_type: "general",
-          deal_type: "paid",
+          deal_type: paymentsInvolved ? "paid" : "personal",
           setup_completed: false,
         })
         .select()

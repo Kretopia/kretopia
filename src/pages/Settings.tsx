@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft, CreditCard, Globe, Brain, ChevronRight } from "lucide-react";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
+import { ManualMergeAccountPanel } from "@/components/account/ManualMergeAccountPanel";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
 import { useAuth } from "@/hooks/useAuth";
@@ -916,6 +917,10 @@ const Settings = () => {
                   </>
                 )}
               </Button>
+
+              <div className="rounded-lg border p-4">
+                <ManualMergeAccountPanel />
+              </div>
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>

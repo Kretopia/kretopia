@@ -42,6 +42,7 @@ export const VoiceFirstCreateModal = ({
   const [creating, setCreating] = useState(false);
   const [brief, setBrief] = useState<ExtractedBrief | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [paymentsInvolved, setPaymentsInvolved] = useState<boolean | null>(null);
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -61,6 +62,7 @@ export const VoiceFirstCreateModal = ({
       setBrief(null);
       setSelected(new Set());
       setCreating(false);
+      setPaymentsInvolved(null);
     }
   }, [open]);
 
@@ -185,7 +187,7 @@ export const VoiceFirstCreateModal = ({
           created_by: user.id,
           status: "active",
           workspace_type: "general",
-          deal_type: "paid",
+          deal_type: paymentsInvolved ? "paid" : "personal",
           setup_completed: false,
         })
         .select()
@@ -433,6 +435,43 @@ export const VoiceFirstCreateModal = ({
                 We couldn't pull starter tasks from that. You can add them inside the room — or tap "Start over" and give a bit more detail.
               </div>
             )}
+
+            {/* Payments involved? gate */}
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Money involved?
+              </p>
+              <p className="text-xs text-muted-foreground">
+                If yes, we'll wire ThrivePay into the room — quotes, invoices, escrow.
+                If no, we keep it clean.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentsInvolved(true)}
+                  className={cn(
+                    "flex-1 px-3 py-2 rounded-md text-sm font-bold border-2 transition-colors",
+                    paymentsInvolved === true
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40"
+                  )}
+                >
+                  Yes — paid work
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentsInvolved(false)}
+                  className={cn(
+                    "flex-1 px-3 py-2 rounded-md text-sm font-bold border-2 transition-colors",
+                    paymentsInvolved === false
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40"
+                  )}
+                >
+                  No — personal/passion
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -458,7 +497,7 @@ export const VoiceFirstCreateModal = ({
                 variant="outline"
                 size="sm"
                 onClick={() => createProject("selected")}
-                disabled={creating || !brief.project.title.trim() || selected.size === 0}
+                disabled={creating || !brief.project.title.trim() || selected.size === 0 || paymentsInvolved === null}
                 className="gap-1"
               >
                 Create {selected.size} selected
@@ -466,7 +505,7 @@ export const VoiceFirstCreateModal = ({
             )}
             <Button
               onClick={() => createProject(brief.deliverables?.length ? "all" : "none")}
-              disabled={creating || !brief.project.title.trim()}
+              disabled={creating || !brief.project.title.trim() || paymentsInvolved === null}
               className="gap-1"
               size="sm"
             >

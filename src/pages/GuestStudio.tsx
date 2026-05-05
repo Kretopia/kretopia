@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Sparkles, FileText, Folder, MessageCircle, UserPlus, ShieldCheck } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Loader2, Sparkles, FileText, Folder, MessageCircle, UserPlus, ShieldCheck, Target, Send, Link2, Download, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
 
 const STORAGE_KEY = (token: string) => `guest_studio:${token}`;
 
@@ -32,7 +35,30 @@ export default function GuestStudio() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [tab, setTab] = useState<"brief" | "vault" | "chat">("brief");
+  const [tab, setTab] = useState<"brief" | "drop" | "vault" | "chat">("brief");
+
+  // Drop / Vault / Roster data
+  const [files, setFiles] = useState<any[]>([]);
+  const [pulse, setPulse] = useState<any[]>([]);
+  const [roster, setRoster] = useState<any[]>([]);
+  const [dropText, setDropText] = useState("");
+  const [dropping, setDropping] = useState(false);
+
+  const loadGuestData = useCallback(async () => {
+    if (!token) return;
+    try {
+      const [{ data: f }, { data: p }, { data: r }] = await Promise.all([
+        supabase.rpc("get_guest_files", { _token: token }),
+        supabase.rpc("get_guest_pulse", { _token: token }),
+        supabase.rpc("get_guest_collaborators", { _token: token }),
+      ]);
+      setFiles(f || []);
+      setPulse(p || []);
+      setRoster(r || []);
+    } catch (e) {
+      console.warn("[guest-studio] data load failed", e);
+    }
+  }, [token]);
 
   // Resolve token → project
   useEffect(() => {
@@ -93,10 +119,48 @@ export default function GuestStudio() {
         JSON.stringify({ name: name.trim(), email: email.trim() }),
       );
       setNeedsName(false);
+      loadGuestData();
     } catch (e: any) {
       toast({ title: "Couldn't continue", description: e.message, variant: "destructive" });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Load room data once we have a session
+  useEffect(() => {
+    if (!project || needsName) return;
+    loadGuestData();
+  }, [project, needsName, loadGuestData]);
+
+  const handleDrop = async () => {
+    const body = dropText.trim();
+    if (!body) return;
+    setDropping(true);
+    try {
+      const isUrl = /^https?:\/\//i.test(body);
+      const { error } = await supabase.rpc("guest_drop_post", {
+        _token: token,
+        _content: body,
+        _kind: isUrl ? "link" : "note",
+      });
+      if (error) throw error;
+      setDropText("");
+      toast({ title: "Dropped 🎯", description: "The team will see this." });
+      loadGuestData();
+    } catch (e: any) {
+      toast({ title: "Couldn't drop", description: e.message, variant: "destructive" });
+    } finally {
+      setDropping(false);
+    }
+  };
+
+  const openFile = async (path: string, name: string) => {
+    try {
+      const { data } = await supabase.storage.from("project-files").createSignedUrl(path, 3600, { download: name });
+      if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+    } catch (e: any) {
+      toast({ title: "Couldn't open file", description: e.message, variant: "destructive" });
     }
   };
 
@@ -178,16 +242,17 @@ export default function GuestStudio() {
       </header>
 
       {/* Tabs */}
-      <div className="sticky top-0 z-10 bg-background border-b border-border flex gap-1 px-2">
+      <div className="sticky top-0 z-10 bg-background border-b border-border flex gap-1 px-2 overflow-x-auto">
         {[
           { id: "brief", label: "Brief", Icon: FileText },
+          { id: "drop", label: "Drop Zone", Icon: Target },
           { id: "vault", label: "Vault", Icon: Folder },
-          { id: "chat", label: "Chat", Icon: MessageCircle },
+          { id: "chat", label: "Team", Icon: MessageCircle },
         ].map(({ id, label, Icon }) => (
           <button
             key={id}
             onClick={() => setTab(id as any)}
-            className={`flex items-center gap-1.5 px-3 py-3 text-xs font-bold border-b-2 transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
               tab === id ? "border-primary text-primary" : "border-transparent text-muted-foreground"
             }`}
           >
@@ -216,15 +281,101 @@ export default function GuestStudio() {
           </Card>
         )}
 
+        {tab === "drop" && (
+          <div className="space-y-4">
+            {/* Cinematic skydive target */}
+            <div className="relative rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 via-background to-accent/5 p-6 overflow-hidden">
+              <div className="relative aspect-[16/10] flex items-center justify-center mb-4">
+                <div className="absolute h-40 w-40 rounded-full border-2 border-primary/20" />
+                <div className="absolute h-28 w-28 rounded-full border-2 border-primary/30" />
+                <div className="absolute h-16 w-16 rounded-full border-2 border-primary/40" />
+                <div className="relative h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+                  <Target className="h-5 w-5" />
+                </div>
+              </div>
+              <p className="text-center text-xs font-bold uppercase tracking-wider text-primary mb-1">
+                Drop Zone 🎯
+              </p>
+              <p className="text-center text-xs text-muted-foreground mb-3">
+                Drop a link, image, or quick note. The team's Copilot routes it.
+              </p>
+              <Textarea
+                value={dropText}
+                onChange={(e) => setDropText(e.target.value)}
+                placeholder="Paste a reference link or thought…"
+                className="min-h-[80px] text-sm bg-background"
+              />
+              <Button
+                onClick={handleDrop}
+                disabled={dropping || !dropText.trim()}
+                className="w-full mt-2 gap-1.5"
+              >
+                {dropping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                Drop 🎯
+              </Button>
+            </div>
+
+            {/* Recent drops */}
+            {pulse.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+                  Recent drops
+                </p>
+                {pulse.slice(0, 8).map((p) => (
+                  <Card key={p.id}>
+                    <CardContent className="p-3 space-y-1">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-semibold">{p.author_name}{p.is_guest && " · Guest"}</span>
+                        <span className="text-muted-foreground">{formatDistanceToNow(new Date(p.created_at), { addSuffix: true })}</span>
+                      </div>
+                      {p.kind === "link" || /^https?:\/\//i.test(p.content || "") ? (
+                        <a href={p.content} target="_blank" rel="noreferrer" className="text-sm text-primary inline-flex items-center gap-1 break-all">
+                          <Link2 className="h-3 w-3 shrink-0" /> {p.content}
+                        </a>
+                      ) : (
+                        <p className="text-sm whitespace-pre-wrap break-words">{p.content}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {tab === "vault" && (
           <Card>
-            <CardContent className="p-4 space-y-2">
-              <h2 className="text-sm font-bold">The Vault</h2>
-              <p className="text-sm text-muted-foreground">
-                Files and approvals will appear here as the team drops them.
-              </p>
-              <p className="text-[11px] text-muted-foreground italic pt-2">
-                Coming next: live file list + one-tap approval.
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-bold">The Vault</h2>
+                <span className="text-[11px] text-muted-foreground">{files.length} {files.length === 1 ? "file" : "files"}</span>
+              </div>
+              {files.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic">
+                  No files yet. The team will share them here.
+                </p>
+              ) : (
+                <ul className="divide-y divide-border">
+                  {files.map((f) => (
+                    <li key={f.id} className="py-2.5 flex items-center gap-3">
+                      <div className="h-9 w-9 rounded bg-muted flex items-center justify-center shrink-0">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{f.file_name}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {formatDistanceToNow(new Date(f.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                      <Button size="sm" variant="ghost" onClick={() => openFile(f.file_url, f.file_name)}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="text-[10px] text-muted-foreground inline-flex items-center gap-1 pt-1">
+                <Lock className="h-3 w-3" /> Read-only · Claim your profile to upload directly
               </p>
             </CardContent>
           </Card>
@@ -232,10 +383,28 @@ export default function GuestStudio() {
 
         {tab === "chat" && (
           <Card>
-            <CardContent className="p-4 space-y-2">
-              <h2 className="text-sm font-bold">Chat</h2>
-              <p className="text-sm text-muted-foreground">
-                Real-time room chat with the team — wired up next.
+            <CardContent className="p-4 space-y-3">
+              <h2 className="text-sm font-bold">Who's in the room</h2>
+              {roster.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic">Just the owner so far.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {roster.map((m) => (
+                    <li key={m.user_id} className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={m.avatar_url || undefined} />
+                        <AvatarFallback>{(m.full_name || "?").slice(0, 1)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{m.full_name}</p>
+                        {m.role && <p className="text-[11px] text-muted-foreground capitalize">{m.role}</p>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="text-[11px] text-muted-foreground italic pt-2">
+                Live chat is unlocked when you claim your profile — keeps things accountable.
               </p>
             </CardContent>
           </Card>

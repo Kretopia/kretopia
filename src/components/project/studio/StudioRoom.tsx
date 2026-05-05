@@ -29,6 +29,7 @@ import { PadPreviewSection } from "./PadPreviewSection";
 import { DeliverablesSection } from "./DeliverablesSection";
 import { ProductionPrepSection } from "./ProductionPrepSection";
 import { SortableSection } from "./SortableSection";
+import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
@@ -248,6 +249,13 @@ export const StudioRoom = ({
     persist(col === "left" ? next : leftOrder, col === "right" ? next : rightOrder);
   };
 
+  const resetLayout = () => {
+    setLeftOrder(DEFAULT_LEFT);
+    setRightOrder(DEFAULT_RIGHT);
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
+    toast({ title: "Studio layout reset" });
+  };
+
   const renderColumn = (ids: WidgetId[], col: "left" | "right") => (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd(col)}>
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
@@ -257,7 +265,9 @@ export const StudioRoom = ({
             if (!node) return null;
             return (
               <SortableSection key={id} id={id}>
-                {node}
+                <WidgetErrorBoundary name={id} onReset={resetLayout}>
+                  {node}
+                </WidgetErrorBoundary>
               </SortableSection>
             );
           })}
@@ -301,9 +311,19 @@ export const StudioRoom = ({
       <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
         <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
           <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />
-          <p className="text-[11px] text-muted-foreground/70 px-1">
-            Tip: hover any section and drag the handle to reorder your studio.
-          </p>
+          <div className="flex items-center justify-between px-1">
+            <p className="text-[11px] text-muted-foreground/70">
+              Tip: hover any section and drag the handle to reorder your studio.
+            </p>
+            <button
+              type="button"
+              onClick={resetLayout}
+              className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              title="Reset to default layout"
+            >
+              Reset layout
+            </button>
+          </div>
           {renderColumn(leftOrder, "left")}
         </div>
         <aside className="col-span-12 xl:col-span-4 space-y-4 min-w-0">

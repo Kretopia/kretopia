@@ -249,6 +249,7 @@ export const CreativeLoader = ({
   const Hero = scene.hero;
 
   const [stepIdx, setStepIdx] = useState(0);
+  const [stuck, setStuck] = useState(false);
   useEffect(() => {
     if (label) return; // static label mode — don't cycle
     const id = setInterval(() => {
@@ -256,6 +257,13 @@ export const CreativeLoader = ({
     }, 1400);
     return () => clearInterval(id);
   }, [scene.lines.length, label]);
+
+  // Page-level loaders: surface a "still loading…" recovery after 10s
+  useEffect(() => {
+    if (size !== "page") return;
+    const id = setTimeout(() => setStuck(true), 10_000);
+    return () => clearTimeout(id);
+  }, [size]);
 
   const currentLine = label ?? scene.lines[stepIdx];
 
@@ -355,6 +363,20 @@ export const CreativeLoader = ({
         )}
         {hint && (
           <p className={cn("mt-2 text-muted-foreground", s.text)}>{hint}</p>
+        )}
+        {stuck && (
+          <div className="mt-4 flex flex-col items-center gap-1.5">
+            <p className={cn("text-muted-foreground", s.text)}>
+              Still loading… your connection might be slow.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              Reload page
+            </button>
+          </div>
         )}
       </div>
 

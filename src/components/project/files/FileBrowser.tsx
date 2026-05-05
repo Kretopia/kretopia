@@ -449,10 +449,13 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
         <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border rounded-xl">
           <Folder className="h-10 w-10 text-muted-foreground mb-3" />
           <p className="font-medium">This folder is empty</p>
-          <p className="text-sm text-muted-foreground mb-4">Upload files or create a folder to organize your work.</p>
-          <div className="flex gap-2">
+          <p className="text-sm text-muted-foreground mb-4">Upload files, paste a link, or create a folder to organize your work.</p>
+          <div className="flex flex-wrap justify-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setNewFolderOpen(true)}>
               <FolderPlus className="h-4 w-4 mr-2" /> New folder
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setImportLinkOpen(true)}>
+              <Link2 className="h-4 w-4 mr-2" /> Import link
             </Button>
             <Button size="sm" onClick={() => fileInputRef.current?.click()}>
               <Upload className="h-4 w-4 mr-2" /> Upload

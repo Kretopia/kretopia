@@ -1506,6 +1506,47 @@ export type Database = {
           },
         ]
       }
+      client_contacts: {
+        Row: {
+          client_id: string
+          created_at: string
+          email: string | null
+          id: string
+          is_primary: boolean | null
+          name: string
+          phone: string | null
+          role: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name: string
+          phone?: string | null
+          role?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name?: string
+          phone?: string | null
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_contacts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_error_logs: {
         Row: {
           component_name: string | null
@@ -1539,6 +1580,63 @@ export type Database = {
           page_url?: string | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      clients: {
+        Row: {
+          archived_at: string | null
+          brand_color: string | null
+          company_name: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          default_currency: string | null
+          default_markup_pct: number | null
+          id: string
+          logo_url: string | null
+          name: string
+          notes: string | null
+          owner_id: string
+          payment_terms: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          brand_color?: string | null
+          company_name?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          default_currency?: string | null
+          default_markup_pct?: number | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          notes?: string | null
+          owner_id: string
+          payment_terms?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          brand_color?: string | null
+          company_name?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          default_currency?: string | null
+          default_markup_pct?: number | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          payment_terms?: string | null
+          updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -10648,6 +10746,7 @@ export type Database = {
           agent_mode: boolean
           agent_user_id: string | null
           budget: string | null
+          client_id: string | null
           client_name: string | null
           client_price: number | null
           client_user_id: string | null
@@ -10680,6 +10779,7 @@ export type Database = {
           agent_mode?: boolean
           agent_user_id?: string | null
           budget?: string | null
+          client_id?: string | null
           client_name?: string | null
           client_price?: number | null
           client_user_id?: string | null
@@ -10712,6 +10812,7 @@ export type Database = {
           agent_mode?: boolean
           agent_user_id?: string | null
           budget?: string | null
+          client_id?: string | null
           client_name?: string | null
           client_price?: number | null
           client_user_id?: string | null
@@ -10741,6 +10842,13 @@ export type Database = {
           workspace_type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "projects_match_id_fkey"
             columns: ["match_id"]

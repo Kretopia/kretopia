@@ -1,23 +1,27 @@
-import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CreativeLoader } from "./creative-loader";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   text?: string;
+  /** Optional context (role / workspace_type) to smart-pick a creative vignette. */
+  context?: string | null;
 }
 
-export const LoadingSpinner = ({ size = "md", className, text }: LoadingSpinnerProps) => {
-  const sizeClasses = {
-    sm: "h-4 w-4",
-    md: "h-8 w-8",
-    lg: "h-12 w-12"
-  };
-
+/**
+ * Replaced the old generic <Loader2/> spinner with a creative vignette
+ * (guitarist plugging in, photographer framing, DJ cueing, etc) — same
+ * API so existing call sites keep working.
+ */
+export const LoadingSpinner = ({ size = "md", className, text, context }: LoadingSpinnerProps) => {
   return (
-    <div className={cn("flex flex-col items-center justify-center py-12", className)}>
-      <Loader2 className={cn("animate-spin text-primary", sizeClasses[size])} />
-      {text && <p className="mt-4 text-sm text-muted-foreground">{text}</p>}
+    <div className={cn("flex items-center justify-center", className)}>
+      <CreativeLoader
+        size={size}
+        label={text}
+        context={context ?? undefined}
+      />
     </div>
   );
 };

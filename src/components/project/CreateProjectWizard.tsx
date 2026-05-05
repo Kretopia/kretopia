@@ -365,6 +365,24 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
             {/* STEP 1: Workspace type */}
             {step === 1 && (
               <div className="space-y-4 py-2">
+                {/* Voice-first shortcut */}
+                <button
+                  type="button"
+                  onClick={() => { onOpenChange(false); setTimeout(() => setVoiceOpen(true), 80); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-[hsl(var(--energy)/0.5)] bg-[hsl(var(--energy)/0.08)] hover:bg-[hsl(var(--energy)/0.15)] transition-colors text-left"
+                >
+                  <div className="h-10 w-10 rounded-full bg-[hsl(var(--energy))] text-background flex items-center justify-center shrink-0">
+                    <Mic className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold leading-tight">Just talk it out instead</p>
+                    <p className="text-[11px] text-muted-foreground leading-tight">
+                      Tell us what you're making — Copilot picks the workspace + seeds the brief.
+                    </p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                </button>
+
                 {/* Recommended for you — based on profile role */}
                 {recommended.length > 0 && (
                   <div className="space-y-2">

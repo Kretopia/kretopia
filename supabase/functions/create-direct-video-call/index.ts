@@ -44,13 +44,13 @@ serve(async (req) => {
     }
     const userId = claims.claims.sub as string;
 
+    // invited_user_id is optional — when omitted we create a "quick call"
+    // room the host joins solo and shares via guest link.
     const { invited_user_id, user_name } = await req.json();
-    if (!invited_user_id || typeof invited_user_id !== "string") {
-      return new Response(JSON.stringify({ error: "invited_user_id required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const invitedUserId =
+      typeof invited_user_id === "string" && invited_user_id.length > 0
+        ? invited_user_id
+        : null;
 
     const roomName = `dm-${crypto.randomUUID().replace(/-/g, "").slice(0, 30)}`;
     const exp = Math.floor(Date.now() / 1000) + 2 * 60 * 60; // 2h

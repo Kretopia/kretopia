@@ -122,7 +122,8 @@ export const VibeHeader = ({
     }
   };
 
-  const hasCover = !!project.cover_url;
+  const [coverFailed, setCoverFailed] = useState(false);
+  const hasCover = !!project.cover_url && !coverFailed;
 
   return (
     <section className="relative">

@@ -182,6 +182,13 @@ export const StudioRoom = ({
           currentUserId={currentUserId}
         />
 
+        {/* Drop Zone — Copilot intake (formerly Pulse). Drop anything, it routes. */}
+        <StudioPulseFeed
+          projectId={project.id}
+          currentUserId={currentUserId}
+          collaborators={people}
+        />
+
         <DeliverablesSection
           projectId={project.id}
           currentUserId={currentUserId}

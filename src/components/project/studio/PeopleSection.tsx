@@ -39,6 +39,18 @@ export const PeopleSection = ({
 }: PeopleSectionProps) => {
   const navigate = useNavigate();
   const [pending, setPending] = useState<PendingPerson[]>([]);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [projectTitle, setProjectTitle] = useState<string>("");
+
+  useEffect(() => {
+    supabase
+      .from("projects")
+      .select("title")
+      .eq("id", projectId)
+      .maybeSingle()
+      .then(({ data }) => setProjectTitle(data?.title ?? ""))
+      .catch(() => {});
+  }, [projectId]);
 
   useEffect(() => {
     let cancelled = false;

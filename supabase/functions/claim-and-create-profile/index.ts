@@ -39,12 +39,13 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { email: rawEmail, profile, credits, redirect_to, skip_magic_link } = (await req.json()) as {
+    const { email: rawEmail, profile, credits, redirect_to, skip_magic_link, face_match_score } = (await req.json()) as {
       email: string;
       profile: DraftProfile;
       credits: ClaimedCredit[];
       redirect_to: string;
       skip_magic_link?: boolean;
+      face_match_score?: number | null;
     };
 
     const email = (rawEmail || "").trim().toLowerCase();
@@ -56,7 +57,7 @@ Deno.serve(async (req) => {
     }
 
     const cleanRedirect = redirect_to || `${SUPABASE_URL}/profile?claimed=true`;
-    const result = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect, !!skip_magic_link);
+    const result = await checkAndProvisionUser(admin, email, profile, credits, cleanRedirect, !!skip_magic_link, face_match_score ?? null);
 
     return json({ success: true, ...result });
   } catch (err) {

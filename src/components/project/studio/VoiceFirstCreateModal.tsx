@@ -259,7 +259,10 @@ export const VoiceFirstCreateModal = ({
       </div>
 
       {/* Body */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <div className={cn(
+        "flex-1 flex flex-col items-center px-6 text-center overflow-y-auto overscroll-contain",
+        mode === "review" ? "justify-start py-6 pb-32" : "justify-center"
+      )}>
         {mode === "prompt" && (
           <>
             <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">

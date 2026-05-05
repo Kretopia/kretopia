@@ -53,7 +53,9 @@ export const SignInForm = ({
       const { error } = await supabase.auth.signInWithOtp({
         email,
         // Stay on the active origin (preview / prod) and let DefaultRoute decide where to send them.
-        options: { emailRedirectTo: window.location.origin },
+        // Critical: this is a sign-in recovery path, not signup. Without this,
+        // a mistyped/new email can create a second account for returning users.
+        options: { emailRedirectTo: window.location.origin, shouldCreateUser: false },
       });
       if (error) {
         toast({ title: "Couldn't send link", description: error.message, variant: "destructive" });

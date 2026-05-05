@@ -217,7 +217,7 @@ export const VoiceCommandSheet = ({ open, onOpenChange }: VoiceCommandSheetProps
               window.dispatchEvent(new CustomEvent("thrivedesk:set-tab", { detail: "finance" }));
               window.dispatchEvent(
                 new CustomEvent("thrivedesk:intent", {
-                  detail: { tab: "finance", intent: "create_invoice" },
+                  detail: { tab: "finance", intent: "create-invoice" },
                 }),
               );
             }, 300);

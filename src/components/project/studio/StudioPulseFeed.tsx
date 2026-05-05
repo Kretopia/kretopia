@@ -1,37 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   ImagePlus,
   Loader2,
   Send,
   Sparkles,
-  Check,
-  ListChecks,
-  Image as ImageIcon,
-  StickyNote,
-  FileText,
-  CheckCircle2,
   X,
-  MessageCircle,
+  Mic,
+  Link2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
-
-interface PulsePost {
-  id: string;
-  project_id: string;
-  author_id: string;
-  content: string | null;
-  image_urls: string[];
-  kind: string;
-  routed_to: string | null;
-  approval_status: string | null;
-  created_at: string;
-  metadata: Record<string, any> | null;
-}
 
 interface Person {
   id: string;
@@ -45,87 +25,19 @@ interface Props {
   collaborators: Person[];
 }
 
-const KIND_META: Record<
-  string,
-  { label: string; icon: any; tone: string }
-> = {
-  pending: { label: "Routing…", icon: Sparkles, tone: "text-muted-foreground" },
-  task: { label: "Added to Tasks", icon: ListChecks, tone: "text-primary" },
-  moodboard: {
-    label: "Added to Moodboard",
-    icon: ImageIcon,
-    tone: "text-fuchsia-500",
-  },
-  note: { label: "Saved as Note", icon: StickyNote, tone: "text-amber-500" },
-  brief: { label: "Added to Brief", icon: FileText, tone: "text-sky-500" },
-  approval: {
-    label: "Approval requested",
-    icon: CheckCircle2,
-    tone: "text-emerald-500",
-  },
-  text: { label: "Posted to feed", icon: Sparkles, tone: "text-muted-foreground" },
-};
-
-const initials = (n: string) =>
-  n.split(" ").map((s) => s[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
-
-export const StudioPulseFeed = ({
-  projectId,
-  currentUserId,
-  collaborators,
-}: Props) => {
+/**
+ * Drop Zone — visual skydive-style target. Drop anything (link, image, voice,
+ * thought) and Copilot scatters it to Moodboard / Tasks / Pad / Vault.
+ * No inline feed — routed items appear in their destination section.
+ */
+export const StudioPulseFeed = ({ projectId, currentUserId }: Props) => {
   const { toast } = useToast();
-  const [posts, setPosts] = useState<PulsePost[]>([]);
   const [draft, setDraft] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [posting, setPosting] = useState(false);
   const [open, setOpen] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
-
-  const peopleById = new Map(collaborators.map((c) => [c.id, c]));
-
-  // Initial load + realtime
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const { data } = await supabase
-        .from("studio_pulse_posts")
-        .select("*")
-        .eq("project_id", projectId)
-        .order("created_at", { ascending: false })
-        .limit(20);
-      if (active && data) setPosts(data as any);
-    })().catch((e) => console.warn("[pulse] load failed:", e?.message));
-
-    const channel = supabase
-      .channel(`pulse:${projectId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "studio_pulse_posts",
-          filter: `project_id=eq.${projectId}`,
-        },
-        (payload: any) => {
-          if (payload.eventType === "INSERT") {
-            setPosts((p) => [payload.new as PulsePost, ...p].slice(0, 20));
-          } else if (payload.eventType === "UPDATE") {
-            setPosts((p) =>
-              p.map((x) => (x.id === payload.new.id ? (payload.new as PulsePost) : x)),
-            );
-          } else if (payload.eventType === "DELETE") {
-            setPosts((p) => p.filter((x) => x.id !== payload.old.id));
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      active = false;
-      supabase.removeChannel(channel);
-    };
-  }, [projectId]);
 
   const pickImages = () => fileRef.current?.click();
 
@@ -138,11 +50,20 @@ export const StudioPulseFeed = ({
   const removeFile = (idx: number) =>
     setFiles((cur) => cur.filter((_, i) => i !== idx));
 
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const dropped = Array.from(e.dataTransfer.files || []).slice(0, 4);
+    if (dropped.length) {
+      setFiles((cur) => [...cur, ...dropped].slice(0, 4));
+      setOpen(true);
+    }
+  };
+
   const submit = async () => {
     if (!draft.trim() && files.length === 0) return;
     setPosting(true);
     try {
-      // Upload images first
       const uploadedUrls: string[] = [];
       for (const f of files) {
         const ext = f.name.split(".").pop() || "jpg";
@@ -169,18 +90,21 @@ export const StudioPulseFeed = ({
         .single();
       if (error) throw error;
 
-      // Reset composer immediately
       setDraft("");
       setFiles([]);
       setOpen(false);
 
-      // Fire-and-forget AI routing
+      toast({
+        title: "Dropped 🎯",
+        description: "Copilot is sorting it into the right section…",
+      });
+
       supabase.functions
         .invoke("route-studio-post", { body: { post_id: inserted.id } })
-        .catch((e) => console.warn("[pulse] route failed:", e?.message));
+        .catch((e) => console.warn("[dropzone] route failed:", e?.message));
     } catch (e: any) {
       toast({
-        title: "Couldn't post",
+        title: "Couldn't drop",
         description: e?.message,
         variant: "destructive",
       });
@@ -189,38 +113,20 @@ export const StudioPulseFeed = ({
     }
   };
 
-  const respondApproval = async (post: PulsePost, status: "approved" | "changes") => {
-    await supabase
-      .from("studio_pulse_posts")
-      .update({ approval_status: status })
-      .eq("id", post.id);
-  };
-
-  // Resolve image URLs to signed when needed
-  const renderImage = (path: string) => {
-    const isFull = /^https?:\/\//.test(path);
-    if (isFull) return path;
-    const { data } = supabase.storage.from("project-files").getPublicUrl(path);
-    return data.publicUrl;
-  };
-
   return (
-    <section className="px-4 pt-4 pb-2 space-y-3 border-b border-border/60">
-      <div className="flex items-baseline justify-between">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">
-            Drop Zone
-          </p>
-          <h2 className="text-lg font-black leading-none tracking-tight">
-            Drop anything — Copilot files it
-          </h2>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            Links, images, voice notes, files, ideas. We'll route to Moodboard, Tasks, Pad or Vault.
-          </p>
-        </div>
-      </div>
+    <section className="px-4 pt-5 pb-5 space-y-3">
+      <header>
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">
+          Drop Zone
+        </p>
+        <h2 className="text-lg font-black leading-none tracking-tight">
+          Land it here — Copilot files it
+        </h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          Links · images · voice notes · thoughts. It scatters to Moodboard, Tasks, Pad or Vault.
+        </p>
+      </header>
 
-      {/* Composer */}
       <input
         ref={fileRef}
         type="file"
@@ -234,19 +140,90 @@ export const StudioPulseFeed = ({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="w-full rounded-xl border border-dashed border-border p-3 text-left text-sm text-muted-foreground hover:border-primary hover:text-foreground transition-colors flex items-center gap-2"
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={onDrop}
+          className={cn(
+            "relative w-full aspect-[16/10] rounded-2xl overflow-hidden",
+            "bg-gradient-to-br from-primary/5 via-background to-[hsl(var(--energy)/0.08)]",
+            "ring-1 ring-border hover:ring-[hsl(var(--energy))] transition-all",
+            "group",
+            dragOver && "ring-2 ring-[hsl(var(--energy))] scale-[1.01]",
+          )}
+          aria-label="Open Drop Zone"
         >
-          <Sparkles className="h-4 w-4 text-primary" />
-          Drop a link, file, image, or thought…
+          {/* Skydive target rings */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative">
+              {/* Ring 4 (outermost) */}
+              <div
+                className={cn(
+                  "absolute inset-0 m-auto rounded-full border-2 border-primary/15",
+                  "h-56 w-56 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2",
+                  "group-hover:border-primary/30 transition-colors",
+                  dragOver && "animate-ping border-[hsl(var(--energy))]/40",
+                )}
+              />
+              {/* Ring 3 */}
+              <div
+                className="absolute inset-0 m-auto rounded-full border-2 border-primary/25 h-44 w-44 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:border-primary/45 transition-colors"
+              />
+              {/* Ring 2 */}
+              <div
+                className="absolute inset-0 m-auto rounded-full border-2 border-[hsl(var(--energy)/0.4)] h-32 w-32 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:border-[hsl(var(--energy)/0.7)] transition-colors"
+              />
+              {/* Ring 1 */}
+              <div
+                className="absolute inset-0 m-auto rounded-full border-2 border-[hsl(var(--energy)/0.6)] h-20 w-20 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 transition-colors"
+              />
+              {/* Bullseye */}
+              <div className="absolute inset-0 m-auto h-10 w-10 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 rounded-full bg-[hsl(var(--energy))] shadow-[0_0_30px_hsl(var(--energy)/0.6)] flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-background" />
+              </div>
+            </div>
+          </div>
+
+          {/* Floating hint icons */}
+          <div className="absolute top-3 left-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <Link2 className="h-3 w-3" /> Link
+          </div>
+          <div className="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <ImagePlus className="h-3 w-3" /> Image
+          </div>
+          <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <Mic className="h-3 w-3" /> Voice
+          </div>
+          <div className="absolute bottom-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            💭 Idea
+          </div>
+
+          {/* Center caption */}
+          <div className="absolute inset-x-0 bottom-10 text-center pointer-events-none">
+            <p className="text-[11px] font-semibold text-foreground/80">
+              {dragOver ? "Drop to land 🎯" : "Tap or drop anything"}
+            </p>
+          </div>
         </button>
       ) : (
-        <div className="rounded-xl border border-primary/40 p-2.5 space-y-2 bg-card">
+        <div className="rounded-2xl border-2 border-[hsl(var(--energy)/0.4)] p-3 space-y-2.5 bg-card shadow-[0_0_30px_hsl(var(--energy)/0.15)]">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-full bg-[hsl(var(--energy))] flex items-center justify-center shrink-0">
+              <Sparkles className="h-3.5 w-3.5 text-background" />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--energy))]">
+              Landing zone armed
+            </p>
+          </div>
+
           <textarea
             autoFocus
-            rows={2}
+            rows={3}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="What's the update? (e.g. 'v2 ready for approval', 'love this color palette', 'edit final cut by Friday')"
+            placeholder="Paste a link, write a thought, drop the brief… Copilot will sort it."
             className="w-full resize-none bg-transparent text-sm border-0 focus-visible:outline-none px-1"
           />
 
@@ -298,7 +275,7 @@ export const StudioPulseFeed = ({
               </Button>
               <Button
                 size="sm"
-                className="h-8 text-xs gap-1.5"
+                className="h-8 text-xs gap-1.5 bg-[hsl(var(--energy))] hover:bg-[hsl(var(--energy)/0.9)] text-background font-bold"
                 onClick={submit}
                 disabled={posting || (!draft.trim() && files.length === 0)}
               >
@@ -307,275 +284,12 @@ export const StudioPulseFeed = ({
                 ) : (
                   <Send className="h-3 w-3" />
                 )}
-                Post
+                Drop 🎯
               </Button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Feed */}
-      {posts.length > 0 && (
-        <div className="space-y-2 pt-1">
-          {posts.slice(0, 5).map((p) => {
-            const author = peopleById.get(p.author_id);
-            const meta = KIND_META[p.kind] ?? KIND_META.text;
-            const Icon = meta.icon;
-            return (
-              <article
-                key={p.id}
-                className="rounded-xl bg-card ring-1 ring-border p-3 space-y-2"
-              >
-                <header className="flex items-center gap-2">
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage src={author?.avatar_url || undefined} />
-                    <AvatarFallback className="text-[10px]">
-                      {initials(author?.full_name ?? "?")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold truncate">
-                      {author?.full_name ?? "Someone"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {formatDistanceToNow(new Date(p.created_at), { addSuffix: true })}
-                    </p>
-                  </div>
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-muted",
-                      meta.tone,
-                    )}
-                  >
-                    <Icon className="h-2.5 w-2.5" />
-                    {meta.label}
-                  </span>
-                </header>
-
-                {p.content && (
-                  <p className="text-sm leading-snug whitespace-pre-wrap">
-                    {p.content}
-                  </p>
-                )}
-
-                {p.image_urls.length > 0 && (
-                  <div
-                    className={cn(
-                      "grid gap-1.5 rounded-lg overflow-hidden",
-                      p.image_urls.length === 1 ? "grid-cols-1" : "grid-cols-2",
-                    )}
-                  >
-                    {p.image_urls.slice(0, 4).map((u, i) => (
-                      <img
-                        key={i}
-                        src={renderImage(u)}
-                        alt=""
-                        className="w-full h-32 object-cover rounded-md"
-                        loading="lazy"
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {p.kind === "approval" && p.approval_status === "pending" && (
-                  <div className="flex gap-1.5 pt-1">
-                    <Button
-                      size="sm"
-                      className="h-8 text-xs gap-1 flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
-                      onClick={() => respondApproval(p, "approved")}
-                    >
-                      <Check className="h-3 w-3" /> Approve
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 text-xs flex-1"
-                      onClick={() => respondApproval(p, "changes")}
-                    >
-                      Request changes
-                    </Button>
-                  </div>
-                )}
-                {p.kind === "approval" && p.approval_status === "approved" && (
-                  <p className="text-[10px] font-semibold text-emerald-500 inline-flex items-center gap-1">
-                    <Check className="h-3 w-3" /> Approved
-                  </p>
-                )}
-                {p.kind === "approval" && p.approval_status === "changes" && (
-                  <p className="text-[10px] font-semibold text-amber-500">
-                    Changes requested
-                  </p>
-                )}
-
-                <PulseComments
-                  postId={p.id}
-                  projectId={projectId}
-                  currentUserId={currentUserId}
-                  peopleById={peopleById}
-                />
-              </article>
-            );
-          })}
-        </div>
-      )}
     </section>
-  );
-};
-
-// ----------------------------------------------------------------------------
-// Inline comments thread per Pulse post
-// ----------------------------------------------------------------------------
-
-interface PulseComment {
-  id: string;
-  post_id: string;
-  author_id: string;
-  content: string;
-  created_at: string;
-}
-
-interface CommentsProps {
-  postId: string;
-  projectId: string;
-  currentUserId: string;
-  peopleById: Map<string, Person>;
-}
-
-const PulseComments = ({ postId, projectId, currentUserId, peopleById }: CommentsProps) => {
-  const { toast } = useToast();
-  const [comments, setComments] = useState<PulseComment[]>([]);
-  const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [sending, setSending] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      const { data } = await supabase
-        .from("studio_pulse_comments")
-        .select("*")
-        .eq("post_id", postId)
-        .order("created_at", { ascending: true });
-      if (active && data) setComments(data as any);
-    })().catch((e) => console.warn("[pulse comments] load:", e?.message));
-
-    const channel = supabase
-      .channel(`pulse-comments:${postId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "studio_pulse_comments",
-          filter: `post_id=eq.${postId}`,
-        },
-        (payload: any) => {
-          if (payload.eventType === "INSERT") {
-            setComments((c) =>
-              c.find((x) => x.id === payload.new.id) ? c : [...c, payload.new as PulseComment],
-            );
-          } else if (payload.eventType === "DELETE") {
-            setComments((c) => c.filter((x) => x.id !== payload.old.id));
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      active = false;
-      supabase.removeChannel(channel);
-    };
-  }, [postId]);
-
-  const send = async () => {
-    const text = draft.trim();
-    if (!text) return;
-    setSending(true);
-    try {
-      const { error } = await supabase.from("studio_pulse_comments").insert({
-        post_id: postId,
-        project_id: projectId,
-        author_id: currentUserId,
-        content: text,
-      });
-      if (error) throw error;
-      setDraft("");
-    } catch (e: any) {
-      toast({
-        title: "Couldn't comment",
-        description: e?.message,
-        variant: "destructive",
-      });
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const count = comments.length;
-
-  return (
-    <div className="pt-2 mt-1 border-t border-border/60 space-y-2">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="text-[11px] font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
-      >
-        <MessageCircle className="h-3 w-3" />
-        {count === 0 ? "Comment" : `${count} ${count === 1 ? "comment" : "comments"}`}
-      </button>
-
-      {open && (
-        <div className="space-y-2">
-          {comments.map((c) => {
-            const a = peopleById.get(c.author_id);
-            return (
-              <div key={c.id} className="flex gap-2">
-                <Avatar className="h-6 w-6 mt-0.5">
-                  <AvatarImage src={a?.avatar_url || undefined} />
-                  <AvatarFallback className="text-[9px]">
-                    {initials(a?.full_name ?? "?")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0 rounded-lg bg-muted/60 px-2.5 py-1.5">
-                  <p className="text-[11px] font-semibold leading-tight">
-                    {a?.full_name ?? "Someone"}
-                  </p>
-                  <p className="text-[12px] leading-snug whitespace-pre-wrap break-words">
-                    {c.content}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-
-          <div className="flex gap-1.5">
-            <input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-              placeholder="Add a comment…"
-              className="flex-1 h-8 text-xs rounded-lg bg-muted/60 px-2.5 border-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-            />
-            <Button
-              size="sm"
-              className="h-8 px-2"
-              onClick={send}
-              disabled={sending || !draft.trim()}
-            >
-              {sending ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Send className="h-3 w-3" />
-              )}
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
   );
 };

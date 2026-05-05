@@ -53,11 +53,24 @@ export const PeopleSection = ({
           </div>
         </div>
         {isOwner && (
-          <div className="-mr-2 scale-90 origin-right">
-            <InviteCollaboratorDialog projectId={projectId} onInvite={onUpdated} />
-          </div>
+          <InviteCollaboratorDialog projectId={projectId} onInvite={onUpdated} />
         )}
       </header>
+
+      {isOwner && collaborators.length <= 1 && (
+        <div className="rounded-xl border-2 border-dashed border-[hsl(var(--energy)/0.4)] bg-[hsl(var(--energy)/0.05)] p-3 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-[hsl(var(--energy)/0.15)] flex items-center justify-center shrink-0">
+            <span aria-hidden className="text-base">👋</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold leading-tight">It's just you in here</p>
+            <p className="text-[11px] text-muted-foreground leading-tight">
+              Pull in your team, client or interns to get this rolling.
+            </p>
+          </div>
+          <InviteCollaboratorDialog projectId={projectId} onInvite={onUpdated} />
+        </div>
+      )}
 
       <div className="-mx-4 px-4 overflow-x-auto">
         <div className="flex gap-3 pb-1">

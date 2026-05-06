@@ -49,11 +49,31 @@ const handler = async (req: Request): Promise<Response> => {
       .eq("id", projectId)
       .maybeSingle();
 
-    // For email recipients (with or without an existing account), mint a guest token
-    // so the link opens the live project preview without forcing sign-up first.
+    // Magic-link first: try to mint a one-tap sign-in link so the invitee lands
+    // INSIDE the real Studio, already authenticated, with no password.
+    // Falls back to the public guest preview if the magic link can't be issued.
+    let magicLink: string | null = null;
+    if (email) {
+      try {
+        const redirectTo = `${APP_URL}/accept-invite/${projectId}?email=${encodeURIComponent(email)}`;
+        const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
+          type: "magiclink",
+          email: email.toLowerCase(),
+          options: { redirectTo },
+        });
+        if (!linkErr && linkData?.properties?.action_link) {
+          magicLink = linkData.properties.action_link;
+        } else if (linkErr) {
+          console.warn("magiclink generate failed (non-fatal):", linkErr.message);
+        }
+      } catch (e: any) {
+        console.warn("magiclink threw (non-fatal):", e?.message);
+      }
+    }
+
+    // Read-only guest preview as a fallback (existing flow)
     let guestToken: string | null = null;
-    if (email && project?.created_by) {
-      // Reuse an existing live token for this email if any
+    if (!magicLink && email && project?.created_by) {
       const { data: existing } = await admin
         .from("guest_studio_tokens")
         .select("token")
@@ -79,13 +99,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // For existing platform users we still link to /accept-invite (auto-accept on sign-in)
-    // For email guests we link to /guest/:token (no sign-up required)
-    const projectUrl = guestToken
+    // Magic link → real Studio (one-tap, authenticated)
+    // Guest token → read-only preview
+    // Existing user with no email → /accept-invite (auto-accept on sign-in)
+    const projectUrl = magicLink
+      ? magicLink
+      : guestToken
       ? `${APP_URL}/guest/${encodeURIComponent(guestToken)}`
       : `${APP_URL}/accept-invite/${projectId}?email=${encodeURIComponent(email || "")}`;
 
-    console.log(`Sending project invitation: token=${!!guestToken}, url=${projectUrl}`);
+    console.log(`Sending project invitation: magic=${!!magicLink}, token=${!!guestToken}, url=${projectUrl.slice(0, 80)}...`);
 
     if (inviteeUserId) {
       console.log(`Skipping duplicate in-app notification for user ${inviteeUserId}`);

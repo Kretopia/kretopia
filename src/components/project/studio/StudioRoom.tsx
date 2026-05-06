@@ -30,6 +30,7 @@ import { DeliverablesSection } from "./DeliverablesSection";
 import { ProductionPrepSection } from "./ProductionPrepSection";
 import { PodcastStudioSection } from "./PodcastStudioSection";
 import { EventStudioSection } from "./EventStudioSection";
+import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
 import { supabase } from "@/integrations/supabase/client";

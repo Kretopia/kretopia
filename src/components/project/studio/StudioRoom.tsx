@@ -309,11 +309,13 @@ export const StudioRoom = ({
         currentUserId={currentUserId}
       />
 
+      {/* Proactive nudges — render once, responsive layout below */}
+      {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
+
       {/* Mobile: original single-scroll order */}
       <div className="lg:hidden">
         {RoomChatButton}
         {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
-        {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
         {project.workspace_type === "podcast" && (
           <PodcastStudioSection project={project} currentUserId={currentUserId} />
         )}

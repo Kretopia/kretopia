@@ -120,8 +120,9 @@ export function EpisodeDetailDialog({ open, onOpenChange, episode, projectId, cu
     }
     setGenClipsBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke<{ clips: Array<any> }>("generate-clips", {
+      const { data, error } = await supabase.functions.invoke<{ clips: Array<any>; sponsors?: Array<{ label: string; why: string }> }>("generate-clips", {
         body: {
+          transcript,
           transcript_excerpt: transcript,
           episode_title: episode.title,
           guest_names: episode.guest_names || [],
@@ -142,7 +143,8 @@ export function EpisodeDetailDialog({ open, onOpenChange, episode, projectId, cu
       const { data: inserted, error: insErr } = await (supabase as any).from("episode_clips").insert(rows).select();
       if (insErr) throw insErr;
       setClips((prev) => [...((inserted || []) as Clip[]), ...prev]);
-      toast({ title: `${rows.length} clips ready` });
+      setSponsorSuggestions(data?.sponsors || []);
+      toast({ title: `${rows.length} clips ready${data?.sponsors?.length ? ` · ${data.sponsors.length} sponsor ideas` : ""}` });
     } catch (e: any) {
       toast({ title: "Couldn't generate clips", description: e?.message, variant: "destructive" });
     } finally { setGenClipsBusy(false); }

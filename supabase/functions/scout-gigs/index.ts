@@ -1,0 +1,333 @@
+// Smart Gig Scout — finds REAL external gigs across web, gig boards, ATS,
+// LinkedIn public job pages, and Instagram casting hashtags.
+// Triggered manually from /gigs ("Scan now") or via daily cron.
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const FIRECRAWL = "https://api.firecrawl.dev/v2/search";
+const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+interface Profile {
+  user_id: string;
+  full_name: string | null;
+  role: string | null;
+  sub_roles: string[] | null;
+  skills: string[] | null;
+  city: string | null;
+  country: string | null;
+  bio: string | null;
+}
+
+interface ScoutPrefs {
+  sources: string[];
+  extra_keywords: string[] | null;
+  exclude_keywords: string[] | null;
+  remote_only: boolean;
+  min_fit_score: number;
+}
+
+// Curated, scrapable, English-speaking creative gig sources
+const WEB_SITES = [
+  "mandy.com", "backstage.com", "productionhub.com", "stage32.com",
+  "soundbetter.com", "workingnotworking.com", "contra.com",
+  "weworkremotely.com", "mediabistro.com", "coroflot.com",
+  "dribbble.com/jobs", "behance.net/joblist", "authenticjobs.com",
+  "remoteok.com", "freelancer.com",
+];
+
+const ATS_SITES = ["greenhouse.io", "lever.co", "ashbyhq.com", "workable.com"];
+
+function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; query: string }[] {
+  const role = p.role || "creative";
+  const subs = (p.sub_roles || []).slice(0, 2);
+  const skills = (p.skills || []).slice(0, 4);
+  const loc = prefs.remote_only ? "remote" : (p.city || p.country || "remote");
+  const extra = (prefs.extra_keywords || []).slice(0, 3).join(" ");
+
+  const baseTerms = [role, ...subs, ...skills.slice(0, 2), extra].filter(Boolean).join(" ").trim();
+  const queries: { source: string; query: string }[] = [];
+
+  if (prefs.sources.includes("web")) {
+    for (const site of WEB_SITES.slice(0, 6)) {
+      queries.push({ source: "web", query: `site:${site} ${baseTerms} ${loc}` });
+    }
+  }
+  if (prefs.sources.includes("ats")) {
+    for (const site of ATS_SITES) {
+      queries.push({ source: "ats", query: `site:${site} ${role} ${skills[0] || ""} ${loc}`.trim() });
+    }
+  }
+  if (prefs.sources.includes("linkedin")) {
+    queries.push({ source: "linkedin", query: `site:linkedin.com/jobs ${role} ${loc}` });
+    queries.push({ source: "linkedin", query: `site:linkedin.com/jobs "${skills[0] || role}" ${loc}` });
+  }
+  if (prefs.sources.includes("instagram")) {
+    // IG public hashtag pages — best for casting / open calls
+    queries.push({
+      source: "instagram",
+      query: `site:instagram.com/explore/tags casting ${role} ${loc}`,
+    });
+    queries.push({
+      source: "instagram",
+      query: `site:instagram.com "open call" ${role} ${loc}`,
+    });
+  }
+  return queries;
+}
+
+async function firecrawlSearch(query: string, key: string) {
+  const r = await fetch(FIRECRAWL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      query,
+      limit: 8,
+      scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
+    }),
+  });
+  if (!r.ok) {
+    console.warn("[scout] firecrawl fail", query, r.status);
+    return [];
+  }
+  const j = await r.json();
+  return (j.data || j.web || []) as Array<{ url: string; title?: string; markdown?: string; description?: string }>;
+}
+
+async function extractAndScore(
+  raw: Array<{ url: string; title?: string; markdown?: string; description?: string; source: string }>,
+  profile: Profile,
+  lovableKey: string,
+) {
+  if (raw.length === 0) return [];
+  const snippets = raw
+    .slice(0, 30)
+    .map((r, i) =>
+      `[${i + 1}] SOURCE:${r.source}\nURL:${r.url}\nTITLE:${r.title || ""}\nCONTENT:${(r.markdown || r.description || "").slice(0, 1200)}`,
+    )
+    .join("\n\n---\n\n");
+
+  const profileBlurb = `Role: ${profile.role || "creative"}
+Sub-roles: ${(profile.sub_roles || []).join(", ")}
+Skills: ${(profile.skills || []).join(", ")}
+Location: ${[profile.city, profile.country].filter(Boolean).join(", ") || "remote"}
+Bio: ${(profile.bio || "").slice(0, 300)}`;
+
+  const r = await fetch(AI_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You extract REAL paid creative gigs from search results. Be strict: skip generic listings pages, skip irrelevant items, skip articles. Only return entries that look like actual job/casting/freelance posts with clear context. Score fit 0-100 against the creator profile (skills overlap, role match, location, seniority).",
+        },
+        {
+          role: "user",
+          content: `CREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract REAL gigs only. For each: title, company (if any), location, remote(boolean), description (1-2 sentences), compensation (if stated), contact_email (if visible), apply_url (default to source URL), skills array, fit_score (0-100), fit_reason (one short sentence), source (web|linkedin|instagram|ats|gigboard).`,
+        },
+      ],
+      tools: [{
+        type: "function",
+        function: {
+          name: "save_gigs",
+          description: "Save extracted real gigs",
+          parameters: {
+            type: "object",
+            properties: {
+              gigs: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    company: { type: "string" },
+                    location: { type: "string" },
+                    remote: { type: "boolean" },
+                    description: { type: "string" },
+                    compensation: { type: "string" },
+                    contact_email: { type: "string" },
+                    apply_url: { type: "string" },
+                    source_url: { type: "string" },
+                    source: { type: "string", enum: ["web","linkedin","instagram","ats","gigboard"] },
+                    source_name: { type: "string" },
+                    skills: { type: "array", items: { type: "string" } },
+                    fit_score: { type: "number" },
+                    fit_reason: { type: "string" },
+                  },
+                  required: ["title","source_url","source","fit_score","fit_reason"],
+                },
+              },
+            },
+            required: ["gigs"],
+          },
+        },
+      }],
+      tool_choice: { type: "function", function: { name: "save_gigs" } },
+    }),
+  });
+  if (!r.ok) {
+    console.error("[scout] AI fail", r.status, await r.text());
+    return [];
+  }
+  const j = await r.json();
+  try {
+    const args = JSON.parse(j.choices[0].message.tool_calls[0].function.arguments);
+    return (args.gigs || []) as any[];
+  } catch (e) {
+    console.error("[scout] parse fail", e);
+    return [];
+  }
+}
+
+function dedupeKey(g: { source_url: string; title: string }) {
+  // Strip query/hash from URL + lowercase title
+  const url = (g.source_url || "").split("?")[0].split("#")[0].toLowerCase();
+  const title = (g.title || "").toLowerCase().replace(/\s+/g, " ").trim().slice(0, 80);
+  return `${url}::${title}`;
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const startedAt = Date.now();
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+  const fcKey = Deno.env.get("FIRECRAWL_API_KEY");
+  const aiKey = Deno.env.get("LOVABLE_API_KEY");
+
+  if (!fcKey || !aiKey) {
+    return new Response(JSON.stringify({ error: "Scout not configured" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  let userId: string | null = null;
+  let trigger = "manual";
+  try {
+    const body = await req.json().catch(() => ({}));
+    trigger = body.trigger || "manual";
+
+    // Resolve user from JWT (manual) or body (cron)
+    if (body.user_id) {
+      userId = body.user_id;
+    } else {
+      const auth = req.headers.get("Authorization") || "";
+      const token = auth.replace("Bearer ", "");
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
+    }
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const [{ data: profile }, { data: prefsRow }] = await Promise.all([
+      supabase.from("profiles")
+        .select("user_id, full_name, role, sub_roles, skills, city, country, bio")
+        .eq("user_id", userId).maybeSingle(),
+      supabase.from("scout_preferences").select("*").eq("user_id", userId).maybeSingle(),
+    ]);
+
+    if (!profile) {
+      return new Response(JSON.stringify({ error: "Profile not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Auto-create prefs if missing
+    let prefs: ScoutPrefs = prefsRow ?? {
+      sources: ["web", "linkedin", "instagram", "ats"],
+      extra_keywords: null, exclude_keywords: null, remote_only: false, min_fit_score: 60,
+    } as ScoutPrefs;
+    if (!prefsRow) {
+      await supabase.from("scout_preferences").insert({ user_id: userId });
+    }
+
+    const queries = buildSearchQueries(profile as Profile, prefs);
+    console.log("[scout] queries", queries.length, "for", userId);
+
+    // Run searches in parallel (cap concurrency by chunking)
+    const allRaw: any[] = [];
+    const CHUNK = 4;
+    for (let i = 0; i < queries.length; i += CHUNK) {
+      const batch = queries.slice(i, i + CHUNK);
+      const results = await Promise.all(batch.map(async (q) => {
+        const items = await firecrawlSearch(q.query, fcKey);
+        return items.map((it) => ({ ...it, source: q.source }));
+      }));
+      results.flat().forEach((r) => allRaw.push(r));
+    }
+    console.log("[scout] raw results", allRaw.length);
+
+    const extracted = await extractAndScore(allRaw, profile as Profile, aiKey);
+    const filtered = extracted.filter((g: any) => {
+      if (!g.title || !g.source_url) return false;
+      if ((g.fit_score ?? 0) < prefs.min_fit_score) return false;
+      const blob = `${g.title} ${g.description || ""}`.toLowerCase();
+      if ((prefs.exclude_keywords || []).some((kw) => kw && blob.includes(kw.toLowerCase()))) return false;
+      return true;
+    });
+
+    let inserted = 0;
+    for (const g of filtered) {
+      const key = dedupeKey(g);
+      const { error } = await supabase.from("scouted_gigs").upsert({
+        target_user_id: userId,
+        source: g.source,
+        source_name: g.source_name || g.source,
+        source_url: g.source_url,
+        title: g.title.slice(0, 200),
+        company: g.company || null,
+        location: g.location || null,
+        remote: !!g.remote,
+        description: g.description || null,
+        compensation: g.compensation || null,
+        contact_email: g.contact_email || null,
+        apply_url: g.apply_url || g.source_url,
+        skills: g.skills || null,
+        fit_score: Math.round(g.fit_score),
+        fit_reason: g.fit_reason || null,
+        dedupe_key: key,
+        raw: g,
+      }, { onConflict: "target_user_id,dedupe_key", ignoreDuplicates: false });
+      if (!error) inserted++;
+      else console.warn("[scout] upsert fail", error.message);
+    }
+
+    await supabase.from("scout_runs").insert({
+      user_id: userId, trigger, sources: prefs.sources,
+      found_count: extracted.length, inserted_count: inserted,
+      duration_ms: Date.now() - startedAt, finished_at: new Date().toISOString(),
+    });
+    await supabase.from("scout_preferences")
+      .update({ last_run_at: new Date().toISOString() })
+      .eq("user_id", userId);
+
+    return new Response(JSON.stringify({
+      ok: true, found: extracted.length, inserted, queries: queries.length,
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  } catch (e) {
+    console.error("[scout] error", e);
+    if (userId) {
+      await supabase.from("scout_runs").insert({
+        user_id: userId, trigger, error: String(e),
+        duration_ms: Date.now() - startedAt, finished_at: new Date().toISOString(),
+      }).then(() => {}, () => {});
+    }
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});

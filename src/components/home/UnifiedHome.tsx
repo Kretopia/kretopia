@@ -631,6 +631,9 @@ export const UnifiedHome = () => {
             </Link>
           </div>
 
+          {/* Persona signal — Scout · Deal · Producer at-a-glance */}
+          <PersonaCardsRow className="mb-3" />
+
           {/* Conversational entry — Tell Thrive what you want to create. THE hero of Home. */}
           <div className="mb-3">
             <ThrivePromptHero />

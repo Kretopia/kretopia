@@ -134,6 +134,7 @@ const Auth = () => {
                 sessionStorage.removeItem('pending_claim_credits');
               } catch (e) { console.error('[Auth] Auto-import credits error:', e); }
             }
+            sessionStorage.removeItem("thrivein_post_auth_redirect");
             navigate(redirectTo);
           }
         };

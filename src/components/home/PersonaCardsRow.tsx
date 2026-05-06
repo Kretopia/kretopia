@@ -40,43 +40,47 @@ export const PersonaCardsRow = ({ className }: Props) => {
     (async () => {
       const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
+      const safe = async <T,>(p: PromiseLike<T>): Promise<T | { data: any[]; count: number }> => {
+        try { return await p; } catch { return { data: [], count: 0 } as any; }
+      };
+
       const [scoutRes, dealRes, clipsRes, orchRes] = await Promise.all([
-        supabase
-          .from("scouted_gigs")
-          .select("id, title", { count: "exact", head: false })
-          .eq("target_user_id", user.id)
-          .gt("expires_at", new Date().toISOString())
-          .order("scouted_at", { ascending: false })
-          .limit(3)
-          .then((r) => r)
-          .catch(() => ({ data: [], count: 0 } as any)),
-        supabase
-          .from("invoices")
-          .select("id, invoice_number, status", { count: "exact", head: false })
-          .eq("issued_by", user.id)
-          .in("status", ["draft", "sent", "overdue"])
-          .order("updated_at", { ascending: false })
-          .limit(3)
-          .then((r) => r)
-          .catch(() => ({ data: [], count: 0 } as any)),
-        supabase
-          .from("episode_clips")
-          .select("id, title, project_id", { count: "exact", head: false })
-          .eq("created_by", user.id)
-          .gte("created_at", since)
-          .order("created_at", { ascending: false })
-          .limit(3)
-          .then((r) => r)
-          .catch(() => ({ data: [], count: 0 } as any)),
-        (supabase as any)
-          .from("orch_actions")
-          .select("id, persona, preview_title")
-          .eq("user_id", user.id)
-          .eq("status", "proposed")
-          .order("proposed_at", { ascending: false })
-          .limit(10)
-          .then((r: any) => r)
-          .catch(() => ({ data: [] } as any)),
+        safe(
+          supabase
+            .from("scouted_gigs")
+            .select("id, title", { count: "exact" })
+            .eq("target_user_id", user.id)
+            .gt("expires_at", new Date().toISOString())
+            .order("scouted_at", { ascending: false })
+            .limit(3),
+        ),
+        safe(
+          supabase
+            .from("invoices")
+            .select("id, invoice_number, status", { count: "exact" })
+            .eq("issued_by", user.id)
+            .in("status", ["draft", "sent", "overdue"])
+            .order("updated_at", { ascending: false })
+            .limit(3),
+        ),
+        safe(
+          supabase
+            .from("episode_clips")
+            .select("id, title, project_id", { count: "exact" })
+            .eq("created_by", user.id)
+            .gte("created_at", since)
+            .order("created_at", { ascending: false })
+            .limit(3),
+        ),
+        safe(
+          (supabase as any)
+            .from("orch_actions")
+            .select("id, persona, preview_title")
+            .eq("user_id", user.id)
+            .eq("status", "proposed")
+            .order("proposed_at", { ascending: false })
+            .limit(10),
+        ),
       ]);
 
       if (cancelled) return;

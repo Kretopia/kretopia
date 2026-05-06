@@ -34,6 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
 import { useProjectMoneySignal } from "@/hooks/useProjectMoneySignal";
+import { useStudioRole } from "@/hooks/useStudioRole";
 import type { NextStep } from "@/hooks/useProjectFlow";
 
 interface StudioRoomProps {

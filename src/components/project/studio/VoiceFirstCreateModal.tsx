@@ -180,6 +180,7 @@ export const VoiceFirstCreateModal = ({
         : result;
       setBrief(finalBrief);
       setSelected(new Set((finalBrief.deliverables ?? []).slice(0, 8).map((_, i) => i)));
+      setWorkspaceType(inferWorkspaceType(`${trimmed} ${finalBrief.project.summary}`));
       setMode("review");
     } catch (err: any) {
       console.error(err);

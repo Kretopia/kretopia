@@ -249,6 +249,7 @@ const AppContent = () => {
       {showBottomNav && <BottomNav />}
       {showBottomNav && <QuickActionFab />}
       <ThriveAgentFab />
+      <DesktopCopilotRail />
       
       {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
       {user && <GlobalIncomingCall />}

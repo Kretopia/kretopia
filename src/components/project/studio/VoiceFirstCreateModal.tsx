@@ -8,6 +8,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceTypes";
+
+/** Lightweight keyword inference so the room shape matches what was said. */
+function inferWorkspaceType(text: string): WorkspaceType {
+  const t = (text || "").toLowerCase();
+  if (/\b(podcast|episode|guest|interview show|mic|recording session)\b/.test(t)) return "podcast";
+  if (/\b(event|festival|launch party|conference|gala|run sheet|venue|doors open|lineup)\b/.test(t)) return "event";
+  if (/\b(album|ep|single|track|mix|master|release|tour|studio session|song)\b/.test(t)) return "music";
+  if (/\b(campaign|brand|sponsor|paid social|launch.*(brand|product))\b/.test(t)) return "campaign";
+  if (/\b(client|retainer|deliverable for|brief from)\b/.test(t)) return "client";
+  if (/\b(shoot|reel|video|content|tiktok|instagram|youtube|carousel|post|edit)\b/.test(t)) return "content";
+  return "general";
+}
 
 interface VoiceFirstCreateModalProps {
   open: boolean;
@@ -44,6 +57,8 @@ export const VoiceFirstCreateModal = ({
   const [brief, setBrief] = useState<ExtractedBrief | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [paymentsInvolved, setPaymentsInvolved] = useState<boolean | null>(null);
+  const [workspaceType, setWorkspaceType] = useState<WorkspaceType>("general");
+  const [rawInput, setRawInput] = useState<string>("");
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
@@ -64,6 +79,8 @@ export const VoiceFirstCreateModal = ({
       setSelected(new Set());
       setCreating(false);
       setPaymentsInvolved(null);
+      setWorkspaceType("general");
+      setRawInput("");
     }
   }, [open]);
 
@@ -133,6 +150,7 @@ export const VoiceFirstCreateModal = ({
       if (!result?.project?.title) throw new Error("Couldn't catch what you said");
       setBrief(result);
       setSelected(new Set((result.deliverables ?? []).slice(0, 8).map((_, i) => i)));
+      setWorkspaceType(inferWorkspaceType(`${result.project.title} ${result.project.summary}`));
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -149,6 +167,7 @@ export const VoiceFirstCreateModal = ({
   const submitText = async () => {
     const trimmed = textInput.trim();
     if (!trimmed) return;
+    setRawInput(trimmed);
     setMode("thinking");
     try {
       const { data, error } = await supabase.functions.invoke("extract-brief", {
@@ -161,6 +180,7 @@ export const VoiceFirstCreateModal = ({
         : result;
       setBrief(finalBrief);
       setSelected(new Set((finalBrief.deliverables ?? []).slice(0, 8).map((_, i) => i)));
+      setWorkspaceType(inferWorkspaceType(`${trimmed} ${finalBrief.project.summary}`));
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -172,6 +192,7 @@ export const VoiceFirstCreateModal = ({
         },
       });
       setSelected(new Set());
+      setWorkspaceType(inferWorkspaceType(trimmed));
       setMode("review");
     }
   };
@@ -187,7 +208,7 @@ export const VoiceFirstCreateModal = ({
           description: brief.project.summary || null,
           created_by: user.id,
           status: "active",
-          workspace_type: "general",
+          workspace_type: workspaceType,
           deal_type: paymentsInvolved ? "paid" : "personal",
           setup_completed: false,
         })
@@ -440,6 +461,39 @@ export const VoiceFirstCreateModal = ({
                 We couldn't pull starter tasks from that. You can add them inside the room — or tap "Start over" and give a bit more detail.
               </div>
             )}
+
+            {/* Workspace type — drives which Studio modules mount */}
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Room type
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {WORKSPACE_CONFIGS[workspaceType].tagline} Tap to change.
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {(Object.keys(WORKSPACE_CONFIGS) as WorkspaceType[]).map((t) => {
+                  const cfg = WORKSPACE_CONFIGS[t];
+                  const Icon = cfg.icon;
+                  const active = workspaceType === t;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setWorkspaceType(t)}
+                      className={cn(
+                        "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border-2 transition-colors",
+                        active
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40"
+                      )}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* Payments involved? gate */}
             <div className="rounded-lg border border-border p-3 space-y-2">

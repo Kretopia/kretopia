@@ -362,8 +362,22 @@ export const ThriveAgentFab = () => {
   // FAB visibility: hide the floating orb on chat surfaces & unauthenticated paths.
   // The Sheet itself remains mounted so the global header sparkle (thrive-copilot:open)
   // can still open the Copilot from anywhere — including /messages and Desk chat.
+  // Track desktop breakpoint — on lg+ the persistent DesktopCopilotRail handles
+  // Copilot, so we hide the FAB to avoid two assistants with diverged state.
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onChange = () => setIsDesktop(mq.matches);
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
+
   const fabHidden =
     !user ||
+    isDesktop ||
     HIDDEN_PATH_PREFIXES.some((p) => location.pathname.startsWith(p)) ||
     (location.pathname.startsWith("/desk/") && deskTab === "messages");
 

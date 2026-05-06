@@ -168,7 +168,7 @@ export const ProactiveCards = ({
     }
 
     return out.slice(0, 2); // never overwhelm — show top 2
-  }, [project, tasks, invoices]);
+  }, [project, tasks, invoices, paymentRequests]);
 
   if (cards.length === 0) return null;
 

@@ -82,6 +82,11 @@ export const StudioRoom = ({
     role: c.role ?? null,
   }));
 
+  // Role-based permissions: clients never see Money or AI cost-bearing tools
+  const perms = useStudioRole(project, currentUserId, people);
+  const showMoney = perms.canSeeMoney && moneySignal.visible;
+  const showAITools = perms.canUseAI;
+
   // Identify current user from the people list for presence metadata
   const me = useMemo(
     () => people.find((p) => p.id === currentUserId) ?? null,

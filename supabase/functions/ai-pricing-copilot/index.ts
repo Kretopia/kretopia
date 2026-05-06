@@ -14,11 +14,41 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const { messages, currency, document_type, existing_items, current_details } = await req.json();
+    const { messages, currency, document_type, existing_items, current_details, project_context } = await req.json();
 
     const docLabel = document_type === "quote" ? "quote" : "invoice";
 
-    const systemPrompt = `You are ThriveQuote AI — an expert pricing co-pilot for creative freelancers and agencies. You help users build professional quotes and invoices through natural conversation.
+    // Build a compact, structured snapshot of the live Studio so the AI can
+    // pre-fill the quote with what the user has already captured.
+    let projectBlock = "";
+    if (project_context && (project_context.project || project_context.notes?.length || project_context.deliverables?.length || project_context.files?.length)) {
+      const p = project_context.project || {};
+      const notes = (project_context.notes || []).slice(0, 10);
+      const delivs = (project_context.deliverables || []).slice(0, 20);
+      const files = (project_context.files || []).slice(0, 20);
+      const client = project_context.client || {};
+
+      projectBlock = `\n\n=== LIVE PROJECT CONTEXT (Studio) ===
+Use this as the source of truth. Pull line items from the deliverables and notes whenever possible — DO NOT ask the user to re-type details that are already here. Reference specific items by name.
+
+Project: ${p.title || "Untitled"}${p.workspace_type ? ` (${p.workspace_type})` : ""}
+${p.description ? `Brief: ${p.description}` : ""}
+${p.budget ? `Budget: ${p.budget}` : ""}
+${p.deadline ? `Deadline: ${p.deadline}` : ""}
+${p.currency ? `Project currency: ${p.currency}` : ""}
+${client.name || p.client_name ? `Client: ${client.name || p.client_name}${client.company ? ` (${client.company})` : ""}` : ""}
+${client.email ? `Client email: ${client.email}` : ""}
+${client.address ? `Client address: ${client.address}` : ""}
+
+${delivs.length ? `Deliverables (${delivs.length}):\n${delivs.map((d: any, i: number) => `  ${i + 1}. ${d.title}${d.kind ? ` [${d.kind}]` : ""}${d.status ? ` — ${d.status}` : ""}${d.description ? ` :: ${String(d.description).slice(0, 200)}` : ""}`).join("\n")}` : ""}
+
+${notes.length ? `Notes from the Pad (${notes.length}):\n${notes.map((n: any, i: number) => `  ${i + 1}. ${n.title}${n.content ? `: ${String(n.content).slice(0, 400)}` : ""}`).join("\n")}` : ""}
+
+${files.length ? `Files in Vault (${files.length}): ${files.map((f: any) => f.file_name).join(", ")}` : ""}
+=== END PROJECT CONTEXT ===`;
+    }
+
+    const systemPrompt = `You are ThriveQuote — an expert pricing co-pilot for creative freelancers and agencies. You help users build professional quotes and invoices through natural conversation.
 
 Your capabilities:
 1. **Cost Analysis**: When a user shares supplier/subcontractor costs, calculate appropriate markups based on industry standards
@@ -32,7 +62,8 @@ Document type: ${docLabel}
 Currency: ${currency || "USD"}
 
 CONVERSATION FLOW:
-- Start by understanding the project/services
+- If LIVE PROJECT CONTEXT is provided below, START by proposing draft line items derived from the deliverables + notes (one line per deliverable when sensible, with a sensible default rate or a clear "TBD — what's your cost?" placeholder). Then ask only for what's missing (rates, supplier costs, client email).
+- If no project context, start by understanding the project/services
 - Help with pricing, markups, and line items
 - When discussing client details or when the user provides them, use the set_document_details tool to capture them
 - Be proactive: after pricing is sorted, ask "Who is this ${docLabel} for?" to collect client info
@@ -51,7 +82,7 @@ RULES:
 
 ${existing_items && existing_items.length > 0 ? `\nCurrent line items on the document:\n${existing_items.map((i: any, idx: number) => `${idx + 1}. "${i.description}" — Qty: ${i.quantity}, Rate: ${currency} ${i.rate}`).join("\n")}` : ""}
 
-${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}`;
+${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}${projectBlock}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

@@ -2,18 +2,73 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useClient, useClientProjects, useClientContacts } from "@/hooks/useClients";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Pencil, Plus, Mail, Phone, Globe, FolderKanban, Users, FileText } from "lucide-react";
+import { ArrowLeft, Pencil, Plus, Mail, Phone, Globe, FolderKanban, Users, FileText, Send, Loader2 } from "lucide-react";
 import { ClientFormDialog } from "@/components/clients/ClientFormDialog";
 import { StudioCardsGrid } from "@/components/project/studio/StudioCardsGrid";
+import { GuestStudioShareDialog } from "@/components/project/GuestStudioShareDialog";
 import { SEO } from "@/components/SEO";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ClientDetail = () => {
   const { clientId } = useParams<{ clientId: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data: client, isLoading } = useClient(clientId);
   const { data: projects = [] } = useClientProjects(clientId);
   const { data: contacts = [] } = useClientContacts(clientId);
   const [editing, setEditing] = useState(false);
+  const [shareProjectId, setShareProjectId] = useState<string | null>(null);
+  const [emailingProjectId, setEmailingProjectId] = useState<string | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  const sendStudioLinkEmail = async (projectId: string, projectTitle: string) => {
+    if (!client?.contact_email) {
+      toast({ title: "No client email on file", description: "Add an email to this client first.", variant: "destructive" });
+      return;
+    }
+    setSendingEmail(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not signed in");
+      const { data: profile } = await supabase
+        .from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
+
+      // Pre-create a pending client collaborator row so when they magic-link in, they auto-accept as client.
+      await supabase.from("project_collaborators").insert({
+        project_id: projectId,
+        email: client.contact_email.toLowerCase(),
+        invited_by: user.id,
+        role: "member",
+        agent_role: "client",
+        status: "pending",
+      }).select().maybeSingle();
+
+      const { error } = await supabase.functions.invoke("send-project-invitation", {
+        body: {
+          email: client.contact_email,
+          projectTitle,
+          projectId,
+          inviterName: profile?.full_name || "Your collaborator",
+        },
+      });
+      if (error) throw error;
+      toast({ title: "Studio link sent", description: `Emailed ${client.contact_email}.` });
+    } catch (e: any) {
+      toast({ title: "Couldn't send", description: e.message, variant: "destructive" });
+    } finally {
+      setSendingEmail(false);
+      setEmailingProjectId(null);
+    }
+  };
+
 
   if (isLoading) return <div className="p-4">Loading…</div>;
   if (!client) return <div className="p-4">Client not found.</div>;

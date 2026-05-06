@@ -83,8 +83,8 @@ export function ThrivePromptHero() {
         case "outreach":
         case "summarize":
         case "chat":
-          // Hand off to Thrive Copilot with the prompt as opening message
-          navigate(`/copilot?prompt=${encodeURIComponent(prompt)}`);
+          // Hand off to Thrive Copilot drawer with prompt prefilled
+          window.dispatchEvent(new CustomEvent("thrive-copilot:open", { detail: { prompt } }));
           break;
         case "profile_epk":
           navigate("/profile/edit?focus=epk");

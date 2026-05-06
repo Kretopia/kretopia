@@ -37,6 +37,7 @@ import { DuplicateAccountBanner } from "@/components/account/DuplicateAccountBan
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { MagicHomeHero } from "@/components/home/MagicHomeHero";
 import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
+import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
 import { StreakChipsRow } from "@/components/home/StreakChipsRow";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
@@ -630,10 +631,18 @@ export const UnifiedHome = () => {
             </Link>
           </div>
 
-          {/* Conversational entry — Tell Thrive what you want to create */}
-          <div className="mb-4">
+          {/* Conversational entry — Tell Thrive what you want to create. THE hero of Home. */}
+          <div className="mb-3">
             <ThrivePromptHero />
           </div>
+          <RecentIntentsDrawer
+            className="mb-4"
+            onPick={(prompt) =>
+              window.dispatchEvent(
+                new CustomEvent("thrive-prompt:fill", { detail: { prompt, submit: true } }),
+              )
+            }
+          />
 
           {/* Magic Home — single hero CTA for fresh accounts (<24h) or low-completion profiles */}
           {(() => {

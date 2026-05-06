@@ -34,6 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
 import { useProjectMoneySignal } from "@/hooks/useProjectMoneySignal";
+import { useStudioRole } from "@/hooks/useStudioRole";
 import type { NextStep } from "@/hooks/useProjectFlow";
 
 interface StudioRoomProps {
@@ -80,6 +81,11 @@ export const StudioRoom = ({
     avatar_url: c.avatar_url ?? c.profiles?.avatar_url ?? null,
     role: c.role ?? null,
   }));
+
+  // Role-based permissions: clients never see Money or AI cost-bearing tools
+  const perms = useStudioRole(project, currentUserId, people);
+  const showMoney = perms.canSeeMoney && moneySignal.visible;
+  const showAITools = perms.canUseAI;
 
   // Identify current user from the people list for presence metadata
   const me = useMemo(
@@ -171,7 +177,7 @@ export const StudioRoom = ({
 
   const mobileSideColumn = (
     <div className="divide-y divide-border/60">
-      {moneySignal.visible && (
+      {showMoney && (
         <MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />
       )}
       <PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />
@@ -197,7 +203,7 @@ export const StudioRoom = ({
       case "pad": return wrap(<PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />);
       case "prep": return wrap(<ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />);
       case "work": return wrap(<WorkSection tasks={tasks} projectId={project.id} currentUserId={currentUserId} collaborators={people} onUpdated={onUpdated} />);
-      case "money": return moneySignal.visible ? wrap(<MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />) : null;
+      case "money": return showMoney ? wrap(<MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />) : null;
       case "people": return wrap(<PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />);
       case "wrap": return wrap(<WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />);
       case "credit": return wrap(<AddCreditSection project={project} collaborators={people} />);
@@ -305,7 +311,7 @@ export const StudioRoom = ({
       <div className="lg:hidden">
         {RoomChatButton}
         {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
-        <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />
+        {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
         {mobileWorkColumn}
         {mobileSideColumn}
         <div className="h-12" />
@@ -314,7 +320,7 @@ export const StudioRoom = ({
       {/* Desktop: 2-column draggable widget board */}
       <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
         <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
-          <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />
+          {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
           <div className="flex items-center justify-between px-1">
             <p className="text-[11px] text-muted-foreground/70">
               Tip: hover any section and drag the handle to reorder your studio.

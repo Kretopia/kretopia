@@ -49,11 +49,37 @@ const handler = async (req: Request): Promise<Response> => {
       .eq("id", projectId)
       .maybeSingle();
 
-    // For email recipients (with or without an existing account), mint a guest token
-    // so the link opens the live project preview without forcing sign-up first.
+    // Magic-link first: try to mint a one-tap sign-in link so the invitee lands
+    // INSIDE the real Studio, already authenticated, with no password.
+    // - Existing users → type: 'magiclink'
+    // - New users     → type: 'invite' (creates a passwordless account)
+    // Falls back to the public guest preview if neither can be issued.
+    let magicLink: string | null = null;
+    if (email) {
+      const redirectTo = `${APP_URL}/accept-invite/${projectId}?email=${encodeURIComponent(email)}`;
+      const tryGenerate = async (type: "magiclink" | "invite") => {
+        const { data, error } = await admin.auth.admin.generateLink({
+          type,
+          email: email.toLowerCase(),
+          options: { redirectTo },
+        } as any);
+        if (error) throw error;
+        return data?.properties?.action_link ?? null;
+      };
+      try {
+        magicLink = await tryGenerate("magiclink");
+      } catch (e: any) {
+        try {
+          magicLink = await tryGenerate("invite");
+        } catch (e2: any) {
+          console.warn("magiclink+invite both failed (non-fatal):", e?.message, e2?.message);
+        }
+      }
+    }
+
+    // Read-only guest preview as a fallback (existing flow)
     let guestToken: string | null = null;
-    if (email && project?.created_by) {
-      // Reuse an existing live token for this email if any
+    if (!magicLink && email && project?.created_by) {
       const { data: existing } = await admin
         .from("guest_studio_tokens")
         .select("token")
@@ -79,13 +105,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // For existing platform users we still link to /accept-invite (auto-accept on sign-in)
-    // For email guests we link to /guest/:token (no sign-up required)
-    const projectUrl = guestToken
+    // Magic link → real Studio (one-tap, authenticated)
+    // Guest token → read-only preview
+    // Existing user with no email → /accept-invite (auto-accept on sign-in)
+    const projectUrl = magicLink
+      ? magicLink
+      : guestToken
       ? `${APP_URL}/guest/${encodeURIComponent(guestToken)}`
       : `${APP_URL}/accept-invite/${projectId}?email=${encodeURIComponent(email || "")}`;
 
-    console.log(`Sending project invitation: token=${!!guestToken}, url=${projectUrl}`);
+    console.log(`Sending project invitation: magic=${!!magicLink}, token=${!!guestToken}, url=${projectUrl.slice(0, 80)}...`);
 
     if (inviteeUserId) {
       console.log(`Skipping duplicate in-app notification for user ${inviteeUserId}`);
@@ -122,7 +151,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#F8FAFC;line-height:1.2;">${projectTitle}</h1>
         <p style="margin:0 0 24px 0;color:#94A3B8;font-size:14px;line-height:1.5;">
-          Open the workspace to see the brief, drop files, and chat with the team — no account needed to take a look.
+          Open the workspace to see the brief, drop files, leave notes, and chat with the team. One tap signs you in — no password required.
         </p>
 
         <div style="text-align:center;margin:24px 0;">
@@ -132,7 +161,7 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
 
         <p style="margin:16px 0 0 0;color:#64748B;font-size:12px;text-align:center;">
-          You can claim a free profile later if you want to keep working together.
+          ${magicLink ? "This link signs you in for 24 hours." : "You can claim a free profile later if you want to keep working together."}
         </p>
       </div>
 

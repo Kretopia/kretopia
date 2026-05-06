@@ -34,17 +34,25 @@ export const ProactiveCards = ({
   className,
 }: ProactiveCardsProps) => {
   const [invoices, setInvoices] = useState<any[]>([]);
+  const [paymentRequests, setPaymentRequests] = useState<any[]>([]);
 
   useEffect(() => {
     if (!project?.id) return;
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await supabase
-          .from("invoices")
-          .select("id, status")
-          .eq("project_id", project.id);
-        if (!cancelled) setInvoices(data || []);
+        const [invRes, pmtRes] = await Promise.all([
+          supabase.from("invoices").select("id, status").eq("project_id", project.id),
+          supabase
+            .from("milestones")
+            .select("id, title, amount, status, requested_by")
+            .eq("project_id", project.id)
+            .eq("status", "requested"),
+        ]);
+        if (!cancelled) {
+          setInvoices(invRes.data || []);
+          setPaymentRequests(pmtRes.data || []);
+        }
       } catch {
         // silent — proactive cards are non-critical
       }

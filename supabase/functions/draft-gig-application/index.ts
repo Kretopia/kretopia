@@ -33,7 +33,7 @@ serve(async (req) => {
         .select("title, company, description, compensation, location, skills, fit_reason")
         .eq("id", scouted_gig_id).eq("target_user_id", user.id).maybeSingle(),
       supabase.from("profiles")
-        .select("full_name, role, sub_roles, skills, bio, city, country, username")
+        .select("full_name, role, sub_roles, professional_skills, passion_skills, bio, location, username")
         .eq("user_id", user.id).maybeSingle(),
     ]);
     if (!gig || !profile) {

@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Check, X, Sparkles, Loader2 } from "lucide-react";
+import { Check, X, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { decideAgentAction, type OrchAction } from "@/lib/agentOrchestrator";
+import { personaFor } from "@/lib/agentPersonas";
+import { cn } from "@/lib/utils";
 
 interface Props {
   action: OrchAction;
@@ -47,19 +49,26 @@ export const AgentApprovalCard = ({ action, onResolved, compact }: Props) => {
     }
   };
 
+  const persona = personaFor(action.persona);
+  const PersonaIcon = persona.icon;
+
   return (
     <Card className={`p-3 border-primary/30 bg-primary/5 ${compact ? "" : "p-4"}`}>
       <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15">
-          <Sparkles className="h-4 w-4 text-primary" />
+        <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", persona.chipBg)}>
+          <PersonaIcon className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <p className="text-sm font-semibold truncate">
+          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+            <span className={cn("text-[10px] font-bold uppercase tracking-wider", persona.accent)}>
+              {persona.label}
+            </span>
+            <span className="text-muted-foreground text-[10px]">·</span>
+            <p className="text-sm font-semibold truncate flex-1 min-w-0">
               {action.preview_title ?? action.tool_name}
             </p>
             <Badge variant="outline" className="text-[10px] py-0 h-4 shrink-0">
-              Needs approval
+              Approve
             </Badge>
           </div>
           {action.preview_body && (

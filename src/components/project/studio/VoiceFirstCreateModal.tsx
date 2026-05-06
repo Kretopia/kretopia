@@ -462,6 +462,39 @@ export const VoiceFirstCreateModal = ({
               </div>
             )}
 
+            {/* Workspace type — drives which Studio modules mount */}
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Room type
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {WORKSPACE_CONFIGS[workspaceType].tagline} Tap to change.
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {(Object.keys(WORKSPACE_CONFIGS) as WorkspaceType[]).map((t) => {
+                  const cfg = WORKSPACE_CONFIGS[t];
+                  const Icon = cfg.icon;
+                  const active = workspaceType === t;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setWorkspaceType(t)}
+                      className={cn(
+                        "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold border-2 transition-colors",
+                        active
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40"
+                      )}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Payments involved? gate */}
             <div className="rounded-lg border border-border p-3 space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">

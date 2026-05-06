@@ -67,12 +67,51 @@ export function PricingCoPilot({
   const [isLoading, setIsLoading] = useState(false);
   const [detailsSummary, setDetailsSummary] = useState<DocumentDetails | null>(null);
   const [showSummary, setShowSummary] = useState(false);
+  const [projectContext, setProjectContext] = useState<any | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Pull live Studio context (brief, notes, deliverables, file names) so the AI
+  // can pre-fill the quote with what the user has already captured in the project.
+  useEffect(() => {
+    if (!projectId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [projRes, notesRes, delivRes, filesRes, clientRes] = await Promise.all([
+          supabase.from("projects").select("title, description, budget, deadline, currency, client_name, workspace_type, mood").eq("id", projectId).maybeSingle(),
+          supabase.from("project_notes").select("title, content, updated_at").eq("project_id", projectId).order("updated_at", { ascending: false }).limit(15),
+          supabase.from("project_deliverables").select("title, description, status, kind").eq("project_id", projectId).order("sort_order", { ascending: true }).limit(30),
+          supabase.from("project_files").select("file_name, file_type").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
+          supabase.from("projects").select("client_id").eq("id", projectId).maybeSingle(),
+        ]);
+        if (cancelled) return;
+        let client = null as any;
+        if (clientRes.data?.client_id) {
+          const { data: c } = await supabase
+            .from("clients")
+            .select("name, email, address, company")
+            .eq("id", clientRes.data.client_id)
+            .maybeSingle();
+          client = c;
+        }
+        setProjectContext({
+          project: projRes.data || null,
+          notes: notesRes.data || [],
+          deliverables: delivRes.data || [],
+          files: filesRes.data || [],
+          client,
+        });
+      } catch (e) {
+        console.warn("PricingCoPilot: failed to load project context", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [projectId]);
 
   const getCurrencySymbol = (c: string) => {
     const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", JPY: "¥", INR: "₹", NGN: "₦", TTD: "TT$", CAD: "C$", AUD: "A$", AED: "د.إ", IDR: "Rp" };

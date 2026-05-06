@@ -27,15 +27,18 @@ export const DuplicateAccountBanner = () => {
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarImage src={top.avatar_url ?? undefined} />
           <AvatarFallback>
-            {(top.full_name || "?").slice(0, 1)}
+            {(top.full_name?.trim()?.[0] || "?").toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate">Is this you too?</p>
+          <p className="text-sm font-semibold truncate">Looks like you, twice</p>
           <p className="text-xs text-muted-foreground truncate">
-            {top.full_name} · {top.masked_email}
+            {(top.full_name || "").split(/\s+/)[0] || "This account"} · {top.masked_email}
           </p>
-          <div className="flex gap-2 mt-2">
+          <p className="text-[11px] text-muted-foreground/80 mt-1 leading-snug">
+            We'll send a code to both inboxes before combining anything.
+          </p>
+          <div className="flex flex-wrap gap-2 mt-2">
             <Button
               size="sm"
               onClick={() => {
@@ -45,7 +48,7 @@ export const DuplicateAccountBanner = () => {
               className="h-8"
             >
               <UserCog className="h-3.5 w-3.5 mr-1" />
-              Yes, merge accounts
+              Yes, that's me
             </Button>
             <Button
               size="sm"

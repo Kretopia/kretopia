@@ -85,10 +85,14 @@ export const StudioRoom = ({
     role: c.role ?? null,
   }));
 
-  // Role-based permissions: clients never see Money or AI cost-bearing tools
+  // Role-based permissions
   const perms = useStudioRole(project, currentUserId, people);
-  const showMoney = perms.canSeeMoney && moneySignal.visible;
+  const isClient = perms.role === "client";
+  const isCollaborator = perms.role === "collaborator" || perms.role === "creative";
+  // Owner sees money normally; client sees a read-only "amount due / pay" view; collaborators don't see money.
+  const showMoney = (perms.canSeeMoney && moneySignal.visible) || isClient;
   const showAITools = perms.canUseAI;
+  const showPrep = perms.isOwner; // Run-of-show / call sheets stay internal until shared
 
   // Identify current user from the people list for presence metadata
   const me = useMemo(

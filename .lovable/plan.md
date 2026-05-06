@@ -1,96 +1,109 @@
-# ThriveIN → Creative OS: Systematic Build Plan
+# Launch Hardening Plan — ThriveIN
 
-We already shipped the Tier 3 vertical slice (ThrivePromptHero, Podcast Studio, thrive_memory, agent rebrand). This plan **completes the flows**, **adds the missing adaptive Studio types**, and **deepens the agentic layer** so every surface feels like one OS driven by Thrive.
-
-The work is grouped into 6 phases. Each phase is shippable on its own.
-
----
-
-## Phase 1 — Make the Conversational Entry Truly Universal
-Goal: One prompt bar everywhere, with voice, suggestions, and history.
-
-1. **Global voice on ThrivePromptHero** — wire MediaRecorder → existing `voice-to-task` pattern (reuse Gemini transcription) → drop transcript into prompt.
-2. **Smart suggestion chips** — rotating context-aware prompts ("Plan my next podcast episode", "Find a videographer in Trinidad", "Draft sponsor outreach") generated from user's recent activity.
-3. **Recent intents drawer** — show last 5 routed prompts so users can re-run.
-4. **Prompt bar in top header** (desktop) + as a FAB (mobile) on every page, not just Home — universal entry.
-5. **Loading skeleton + error toast** — currently silent on failure.
-
-## Phase 2 — Finish the Podcast Studio (real depth, not a stub)
-Goal: A creator can run a full episode lifecycle inside ThriveIN.
-
-1. **Episode detail dialog** — guests, scheduled date, status (draft/recording/editing/published), AI questions, show notes, audio/video file upload (uses unified storage quota).
-2. **Auto-transcript** — Gemini-based `transcribe-episode` edge fn (chunked audio → text + speaker labels).
-3. **Clip generator** — pick a transcript range → AI titles + 3 caption variants for IG/TikTok/X.
-4. **Sponsor pipeline** — sponsor table linked to episodes, status (pitched/negotiating/booked/paid), sync into ThrivePay invoice draft.
-5. **Guest outreach loop** — "Invite Guest" → magic-link Studio guest (already built) + auto-drafted outreach email via existing outreach engine.
-6. **Public episode page** at `/podcast/:projectId/:episodeId` with OG image (reuse event-og-image plugin pattern).
-
-## Phase 3 — Adaptive Studio Engine (one Studio, many shapes)
-Goal: `workspace_type` actually drives the entire room.
-
-1. **Workspace registry** — `src/lib/workspaceTypes.ts` mapping each type → modules (sections), default tasks, default deliverables, copilot persona, default vault folders.
-2. **Built-in types**: `podcast` (done), `event`, `content`, `campaign`, `music`, `client`, `general`.
-3. **Event Studio** — run sheet timeline, vendor list (pulled from thrive_memory), guest list synced w/ existing creative_jams, sponsor pipeline, `gen-event-runsheet` edge fn.
-4. **Content Studio** — shot list, script, calendar, multi-platform export queue, Approval Board reuses Vault approval pattern.
-5. **Campaign Studio** — brand brief, asset checklist, deliverable matrix per platform, paid-vs-organic plan.
-6. **Music Studio** — tracklist, collaborator splits (% per role), release checklist (mastering/distribution/PR), pre-release sponsor offers.
-7. **Type chooser on creation** — `VoiceFirstCreateModal` already extracts brief; add a chip row so user can confirm/override the inferred type.
-
-## Phase 4 — Thrive as Real Agent (tools + autonomy + memory)
-Goal: Thrive doesn't just chat — it *does*.
-
-1. **Expand tool catalog in `agent-orchestrator`** — add: `create_podcast_episode`, `draft_outreach_sequence`, `generate_clip`, `book_vendor_from_memory`, `propose_event_runsheet`, `summarize_project_status`, `find_collaborators` (reuses match algorithm), `post_gig` (reuses gigs flow).
-2. **Memory writes** — when a user says "Carla is my favorite videographer", agent calls `remember(kind:'vendor', subject:'Carla', meta:{role:'videographer', rating:5})` automatically. Add `remember` + `forget` + `recall` tools.
-3. **Proactive nudges** — daily cron `desk-daily-nudge` already exists; expand it to scan thrive_memory + project status and propose ProactiveCards ("Episode 12 is unscheduled — want me to email Carla?").
-4. **Cross-surface awareness** — system prompt already includes top 20 memory rows; also inject: open projects, this week's invoices, pending matches, upcoming events. Build a `getThriveSnapshot(user_id)` helper used by all agent fns.
-5. **Approval-required vs auto-execute** — already in place; tune risk levels for new tools (outreach=approval, transcript=auto, sponsor invoice=approval).
-
-## Phase 5 — Opportunity Intelligence
-Goal: Thrive surfaces *the right opportunity at the right time*.
-
-1. **Daily match digest** — cron picks top 3 gigs + top 3 collaborators per active workspace_type and writes a ProactiveCard.
-2. **Sponsor radar** — for podcast/event/music workspaces, scan thrive_memory + connections for likely sponsors and propose outreach sequences.
-3. **EPK auto-update** — when a credit is added or project completes, agent proposes EPK refresh ("Add Episode 14 with @guest to your EPK?").
-
-## Phase 6 — Polish, Telemetry, Guardrails
-1. **Telemetry**: log every routed intent (`thrive_intent_logs` table) → improves routing model + powers admin insights.
-2. **Daily caps** already exist for Copilot; add per-tier caps for tool executions (Spark 5/day, Pro 50, Creator+ 250, Founder unlimited).
-3. **Empty/onboarding states** for each Studio type — first-run cards explain modules.
-4. **Memory management UI** at `/settings/memory` — list, edit, delete what Thrive remembers about you.
-5. **Mobile polish** — single-scroll layouts for each new Studio type, safe-area insets, no backdrop-blur.
+## Recap: what we touched in recent sessions
+Home (UnifiedHome, ThrivePromptHero, RecentIntentsDrawer, PersonaCardsRow), Desk (DesktopCopilotRail, StudioRoom, DeliverablesBoard), Profile (DuplicateAccountBanner, EpisodeDetailDialog), and edge fn `generate-clips`. Everything else on your list has NOT been touched in this thread — so we treat the whole app as "needs audit," not "needs rebuild."
 
 ---
 
-## Technical Sketch
-```text
-ThrivePromptHero (Home + Header + FAB)
-        │  voice or text
-        ▼
-route-thrive-intent ──► creates workspace OR routes to surface
-        │
-        ▼
-   Studio Room (workspace_type aware)
-   ├─ PodcastStudioSection      [Phase 2]
-   ├─ EventStudioSection        [Phase 3]
-   ├─ ContentStudioSection      [Phase 3]
-   ├─ CampaignStudioSection     [Phase 3]
-   ├─ MusicStudioSection        [Phase 3]
-   └─ Vault / Pad / Chat / Money (shared)
-        │
-        ▼
-   Thrive Agent  (orchestrator + tool catalog)
-   ├─ thrive_memory (long-term)
-   ├─ snapshot(user) (short-term)
-   └─ ProactiveCards + Approvals
-```
+## My CTO/CPO recommendation: hybrid, not pure page-by-page
 
-New tables: `podcast_episodes` (done), `thrive_memory` (done), `episode_sponsors`, `episode_clips`, `event_runsheet_items`, `workspace_modules` (optional registry override), `thrive_intent_logs`.
+Pure page-by-page sounds clean but it will:
+- Re-do the same copy/branding work 22 times
+- Miss systemic bugs (auth, agent access, notifications) that show up everywhere
+- Leave you without a measurable "done" definition per page
 
-New edge fns: `transcribe-episode`, `generate-clips`, `gen-event-runsheet`, `gen-content-shotlist`, `gen-music-release-plan`, `thrive-snapshot`, expanded `agent-orchestrator` tools.
+**Better sequence: 3 horizontal sweeps → then vertical page-by-page polish → then a release gate.**
+
+Horizontal sweeps fix things ONCE across the app. Vertical passes then become fast (minutes per page, not hours), and you'll know exactly what "done" means.
 
 ---
 
-## Execution Order This Round
-We'll execute **Phase 1 → Phase 2 → start Phase 3 (Event Studio first)** in this build session. Phases 4–6 follow next session. Each phase ends with a deploy + a quick smoke test. I'll batch DB migrations together at each phase boundary to minimize approval friction.
+## Phase 0 — Setup (before any code)
+1. Pin a **Page Readiness Checklist** in memory (the rubric below).
+2. Create a **Launch Readiness board** as a tracked task list — one task per page, each with the same 12-point rubric.
+3. Snapshot current state: run a build, capture console errors per route, log broken links. This is our baseline.
 
-Ready to start with Phase 1?
+**Rubric (per page):** Branding · Copy · UI · UX/mobile · Agent access · Automation · Flows · Notifications · Links · Shares · Non-user access · Upgrade/gating · Backend/API health.
+
+---
+
+## Phase 1 — Horizontal sweeps (do these FIRST, ~1 sprint each)
+
+### Sweep A — Brand & Copy System
+- Audit every `text-*`, `bg-*` for hardcoded colors → semantic tokens
+- Apply AI Naming Convention everywhere (Smart Match, Project Copilot, Thrive — no "AI" in user copy, no ™, no ✨)
+- Centralize empty-states, error toasts, CTA verbs in one copy file
+- Fix any "Last Name" usages — switch to first-name + initial per your earlier feedback
+
+### Sweep B — Agent & Automation Layer
+- Single source of truth for Copilot access (`useStudioRole`, `hasProAccess`, `useFeatureGate`) — audit every surface that calls `streamCopilot` / `sendAgentIntent`
+- Audit `orch_actions` → ProactiveCard rendering on Home/Desk/Pay/Match
+- Confirm daily caps (`consume_copilot_message`) surface clean errors
+- Confirm DesktopCopilotRail + ThriveAgentFab don't double-mount
+
+### Sweep C — Auth, Routing, Shares, Non-user Access
+- Guest masking rules (first name + initial, blurred map)
+- Public share routes: `/p/:username`, `/g/:slug`, `/e/:slug`, `/c/:slug` — OG images, soft-gating, deep-link return
+- Notification → action_url deep-link audit (PostgreSQL triggers)
+- Mobile safe-area + bottom nav clearance audit
+
+After Sweeps A-C, ~70% of your per-page issues will already be fixed.
+
+---
+
+## Phase 2 — Vertical page-by-page polish
+
+Order by **revenue + investor demo impact**, not alphabetical:
+
+1. **Landing** — hero, social proof, claim funnel
+2. **Onboarding** — AI flow, founder auto-match, intent persistence
+3. **Home** — PersonaCards, ThrivePrompt, MoneyBrief, streaks
+4. **Profile / EPK** — hero, credits, work-with-me, share
+5. **Desk / Studio** — Studio Room, Vault, Pad, Brief, Voice-to-task
+6. **Match** — Swipe, Browse, Network, ThriveCredits
+7. **Gigs** — Marketplace, Scout, Apply, Lifecycle
+8. **Pay / ThrivePay** — Hub, invoices, expenses, MoneyBrief
+9. **Fund** — Campaigns, trust panel
+10. **Events / Sessions** — IRL, RSVP, chat, roster
+11. **Discover** — Map, nearby, modular hub
+12. **Messages** — Chats, calls tab, typing
+13. **Thrive (Copilot full chat)** — history, tools, personas
+14. **Thrive Credits / ICDB** — production pages, vouching, widget
+15. **Spotlight** — Magazine, Podcast
+16. **Manage** — Clients, Campaigns, Events admin
+17. **Creative Circles / Circle Hub** — 7-tab hub
+18. **Subscription** — pricing, founder circle, gating
+19. **Creator ↔ Brand switch / Company Mode**
+20. **Manager Mode**
+21. **Settings**
+22. **Send Feedback · Search · Notifications** (cross-cutting tail)
+
+**Per page (target: 30–60 min each after sweeps):**
+- Walk it on 360px + 1440px in the preview
+- Tick the 12-point rubric
+- File any leftover deltas as small atomic tasks
+- Mark page "Launch-Ready"
+
+---
+
+## Phase 3 — Release Gate
+- Full-app smoke: signed-out, signed-in (Spark), Pro, Founder, Company
+- Lighthouse + console-error budget = 0 errors per route
+- Edge fn logs clean for 24h
+- Investor demo script rehearsed end-to-end
+
+---
+
+## Why this order
+- Sweeps eliminate **systemic** bugs (the kind investors notice instantly)
+- Vertical polish then becomes about **storytelling** per page, not bug hunting
+- You stop re-touching the same files — every commit moves the launch line forward
+
+---
+
+## What I need from you to start
+1. **Approve this hybrid sequence** (sweeps first, then page order above), OR pick pure page-by-page if you'd rather see visible progress per page from day 1.
+2. Confirm the **page priority order** (I led with Landing → Onboarding → Home; tell me if investor demo starts elsewhere).
+3. Confirm scope of Sweep A copy changes — are we open to rewriting CTAs/empty-states wholesale, or staying conservative?
+
+Once you greenlight, I'll switch to build mode, create the Launch Readiness task list in memory, and start Sweep A.

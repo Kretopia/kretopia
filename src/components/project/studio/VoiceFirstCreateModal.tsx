@@ -57,6 +57,8 @@ export const VoiceFirstCreateModal = ({
   const [brief, setBrief] = useState<ExtractedBrief | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [paymentsInvolved, setPaymentsInvolved] = useState<boolean | null>(null);
+  const [workspaceType, setWorkspaceType] = useState<WorkspaceType>("general");
+  const [rawInput, setRawInput] = useState<string>("");
 
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);

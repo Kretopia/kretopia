@@ -147,6 +147,7 @@ export function PricingCoPilot({
             document_type: documentType,
             existing_items: lineItems.filter(i => i.description),
             current_details: detailsSummary,
+            project_context: projectContext,
           }),
         }
       );

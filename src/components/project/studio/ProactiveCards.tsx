@@ -70,6 +70,27 @@ export const ProactiveCards = ({
       (t) => t.due_date && new Date(t.due_date) < new Date(),
     );
 
+    // 0. Collaborator payment request waiting for owner approval (highest priority)
+    if (paymentRequests.length > 0) {
+      const first = paymentRequests[0];
+      out.push({
+        id: "pay-request",
+        tone: "money",
+        icon: HandCoins,
+        title:
+          paymentRequests.length === 1
+            ? `Payment request: ${first.title || "Untitled"}`
+            : `${paymentRequests.length} payment requests waiting`,
+        body:
+          paymentRequests.length === 1
+            ? `A collaborator submitted a request${first.amount ? ` for ${first.amount}` : ""}. Approve & invoice.`
+            : "Collaborators submitted payment requests. Review and approve.",
+        ctaLabel: "Review request",
+        ctaTab: "finance",
+        ctaIntent: "review-payment-requests",
+      });
+    }
+
     // 1. Overdue tasks
     if (overdue.length > 0) {
       out.push({

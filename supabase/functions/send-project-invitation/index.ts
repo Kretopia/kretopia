@@ -145,7 +145,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#F8FAFC;line-height:1.2;">${projectTitle}</h1>
         <p style="margin:0 0 24px 0;color:#94A3B8;font-size:14px;line-height:1.5;">
-          Open the workspace to see the brief, drop files, and chat with the team — no account needed to take a look.
+          Open the workspace to see the brief, drop files, leave notes, and chat with the team. One tap signs you in — no password required.
         </p>
 
         <div style="text-align:center;margin:24px 0;">
@@ -155,7 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
 
         <p style="margin:16px 0 0 0;color:#64748B;font-size:12px;text-align:center;">
-          You can claim a free profile later if you want to keep working together.
+          ${magicLink ? "This link signs you in for 24 hours." : "You can claim a free profile later if you want to keep working together."}
         </p>
       </div>
 

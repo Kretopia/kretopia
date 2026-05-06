@@ -144,7 +144,7 @@ export function AITalentSuggestions() {
               <Sparkles className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-bold text-lg">AI Talent Finder</h3>
+              <h3 className="font-bold text-lg">Smart Talent Finder</h3>
               <p className="text-sm text-muted-foreground">
                 Instantly discover the best creators for your projects
               </p>

@@ -69,7 +69,7 @@ export function AIMarkupHelper({ lineItems, currency, onApplyMarkup }: AIMarkupH
       setAiSuggestion(data);
     } catch (err) {
       console.error("AI markup error:", err);
-      toast.error("Could not get AI suggestion. Try again.");
+      toast.error("Couldn't draft a suggestion. Try again.");
     } finally {
       setLoading(false);
     }

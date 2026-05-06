@@ -18,7 +18,7 @@ const features: Feature[] = [
   { name: "Custom Domain", free: false, creator_pro: true },
   { name: "Site Analytics", free: false, creator_pro: true },
   { name: "Active Projects", free: "1", creator_pro: "Unlimited" },
-  { name: "AI Briefs & Templates", free: "2/month", creator_pro: "Unlimited" },
+  { name: "Smart Briefs & Templates", free: "2/month", creator_pro: "Unlimited" },
   { name: "Undo Swipe", free: false, creator_pro: "3/day" },
   { name: "Profile Verification Badge", free: false, creator_pro: true },
   { name: "Advanced Search Filters", free: false, creator_pro: true },

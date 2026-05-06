@@ -19,8 +19,7 @@ interface Profile {
   role: string | null;
   sub_roles: string[] | null;
   skills: string[] | null;
-  city: string | null;
-  country: string | null;
+  location: string | null;
   bio: string | null;
 }
 

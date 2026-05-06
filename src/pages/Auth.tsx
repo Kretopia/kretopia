@@ -20,6 +20,7 @@ import { PasswordResetForm } from "@/components/auth/PasswordResetForm";
 import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/BrandLogo";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
+import { FunnelStepper } from "@/components/onboarding/FunnelStepper";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<string>("signin");
@@ -400,6 +401,12 @@ const Auth = () => {
               {isPasswordReset ? "Enter your new password below" : "Where creators find work — and get paid"}
             </p>
           </div>
+
+          {!isPasswordReset && (
+            <div className="mb-6">
+              <FunnelStepper current="signup" />
+            </div>
+          )}
 
           {isPasswordReset ? (
             <PasswordResetForm loading={loading} onSubmit={handlePasswordReset} />

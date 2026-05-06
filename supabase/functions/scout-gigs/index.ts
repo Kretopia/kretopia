@@ -234,7 +234,7 @@ serve(async (req) => {
 
     const [{ data: profile }, { data: prefsRow }] = await Promise.all([
       supabase.from("profiles")
-        .select("user_id, full_name, role, sub_roles, skills, city, country, bio")
+        .select("user_id, full_name, role, sub_roles, professional_skills, passion_skills, location, bio")
         .eq("user_id", userId).maybeSingle(),
       supabase.from("scout_preferences").select("*").eq("user_id", userId).maybeSingle(),
     ]);

@@ -51,23 +51,29 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Magic-link first: try to mint a one-tap sign-in link so the invitee lands
     // INSIDE the real Studio, already authenticated, with no password.
-    // Falls back to the public guest preview if the magic link can't be issued.
+    // - Existing users → type: 'magiclink'
+    // - New users     → type: 'invite' (creates a passwordless account)
+    // Falls back to the public guest preview if neither can be issued.
     let magicLink: string | null = null;
     if (email) {
-      try {
-        const redirectTo = `${APP_URL}/accept-invite/${projectId}?email=${encodeURIComponent(email)}`;
-        const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
-          type: "magiclink",
+      const redirectTo = `${APP_URL}/accept-invite/${projectId}?email=${encodeURIComponent(email)}`;
+      const tryGenerate = async (type: "magiclink" | "invite") => {
+        const { data, error } = await admin.auth.admin.generateLink({
+          type,
           email: email.toLowerCase(),
           options: { redirectTo },
-        });
-        if (!linkErr && linkData?.properties?.action_link) {
-          magicLink = linkData.properties.action_link;
-        } else if (linkErr) {
-          console.warn("magiclink generate failed (non-fatal):", linkErr.message);
-        }
+        } as any);
+        if (error) throw error;
+        return data?.properties?.action_link ?? null;
+      };
+      try {
+        magicLink = await tryGenerate("magiclink");
       } catch (e: any) {
-        console.warn("magiclink threw (non-fatal):", e?.message);
+        try {
+          magicLink = await tryGenerate("invite");
+        } catch (e2: any) {
+          console.warn("magiclink+invite both failed (non-fatal):", e?.message, e2?.message);
+        }
       }
     }
 

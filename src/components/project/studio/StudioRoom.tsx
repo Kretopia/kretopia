@@ -177,7 +177,7 @@ export const StudioRoom = ({
 
   const mobileSideColumn = (
     <div className="divide-y divide-border/60">
-      {moneySignal.visible && (
+      {showMoney && (
         <MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />
       )}
       <PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />

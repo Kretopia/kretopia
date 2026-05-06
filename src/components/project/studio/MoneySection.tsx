@@ -13,6 +13,8 @@ interface MoneySectionProps {
     deal_type?: string | null;
   };
   isOwner: boolean;
+  /** Read-only client view: shows invoice + pay status, hides owner CTAs and cost basis */
+  clientView?: boolean;
   onOpenInvoice: () => void;
 }
 

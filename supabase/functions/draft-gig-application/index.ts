@@ -33,7 +33,7 @@ serve(async (req) => {
         .select("title, company, description, compensation, location, skills, fit_reason")
         .eq("id", scouted_gig_id).eq("target_user_id", user.id).maybeSingle(),
       supabase.from("profiles")
-        .select("full_name, role, sub_roles, skills, bio, city, country, username")
+        .select("full_name, role, sub_roles, professional_skills, passion_skills, bio, location, username")
         .eq("user_id", user.id).maybeSingle(),
     ]);
     if (!gig || !profile) {
@@ -58,8 +58,8 @@ LOCATION: ${gig.location || "n/a"}
 WHY THEY MATCH: ${gig.fit_reason || ""}
 
 CREATOR: ${profile.full_name}, ${profile.role}${profile.sub_roles?.length ? ` (${profile.sub_roles.join(", ")})` : ""}
-SKILLS: ${(profile.skills || []).join(", ")}
-BASED IN: ${[profile.city, profile.country].filter(Boolean).join(", ")}
+SKILLS: ${[...(profile.professional_skills || []), ...(profile.passion_skills || [])].join(", ")}
+BASED IN: ${profile.location || ""}
 BIO: ${profile.bio || ""}
 EPK: ${epkUrl}
 

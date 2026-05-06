@@ -19,8 +19,7 @@ interface Profile {
   role: string | null;
   sub_roles: string[] | null;
   skills: string[] | null;
-  city: string | null;
-  country: string | null;
+  location: string | null;
   bio: string | null;
 }
 
@@ -47,7 +46,7 @@ function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; qu
   const role = p.role || "creative";
   const subs = (p.sub_roles || []).slice(0, 2);
   const skills = (p.skills || []).slice(0, 4);
-  const loc = prefs.remote_only ? "remote" : (p.city || p.country || "remote");
+  const loc = prefs.remote_only ? "remote" : (p.location || "remote");
   const extra = (prefs.extra_keywords || []).slice(0, 3).join(" ");
 
   const baseTerms = [role, ...subs, ...skills.slice(0, 2), extra].filter(Boolean).join(" ").trim();
@@ -96,7 +95,11 @@ async function firecrawlSearch(query: string, key: string) {
     return [];
   }
   const j = await r.json();
-  return (j.data || j.web || []) as Array<{ url: string; title?: string; markdown?: string; description?: string }>;
+  const arr = Array.isArray(j.data) ? j.data
+    : Array.isArray(j.data?.web) ? j.data.web
+    : Array.isArray(j.web) ? j.web
+    : [];
+  return arr as Array<{ url: string; title?: string; markdown?: string; description?: string }>;
 }
 
 async function extractAndScore(
@@ -115,7 +118,7 @@ async function extractAndScore(
   const profileBlurb = `Role: ${profile.role || "creative"}
 Sub-roles: ${(profile.sub_roles || []).join(", ")}
 Skills: ${(profile.skills || []).join(", ")}
-Location: ${[profile.city, profile.country].filter(Boolean).join(", ") || "remote"}
+Location: ${profile.location || "remote"}
 Bio: ${(profile.bio || "").slice(0, 300)}`;
 
   const r = await fetch(AI_URL, {
@@ -235,7 +238,7 @@ serve(async (req) => {
 
     const [{ data: profile }, { data: prefsRow }] = await Promise.all([
       supabase.from("profiles")
-        .select("user_id, full_name, role, sub_roles, skills, city, country, bio")
+        .select("user_id, full_name, role, sub_roles, professional_skills, passion_skills, location, bio")
         .eq("user_id", userId).maybeSingle(),
       supabase.from("scout_preferences").select("*").eq("user_id", userId).maybeSingle(),
     ]);
@@ -245,6 +248,18 @@ serve(async (req) => {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const mergedProfile: Profile = {
+      user_id: (profile as any).user_id,
+      full_name: (profile as any).full_name,
+      role: (profile as any).role,
+      sub_roles: (profile as any).sub_roles,
+      skills: [
+        ...((profile as any).professional_skills || []),
+        ...((profile as any).passion_skills || []),
+      ],
+      location: (profile as any).location,
+      bio: (profile as any).bio,
+    };
 
     // Auto-create prefs if missing
     let prefs: ScoutPrefs = prefsRow ?? {
@@ -255,7 +270,7 @@ serve(async (req) => {
       await supabase.from("scout_preferences").insert({ user_id: userId });
     }
 
-    const queries = buildSearchQueries(profile as Profile, prefs);
+    const queries = buildSearchQueries(mergedProfile, prefs);
     console.log("[scout] queries", queries.length, "for", userId);
 
     // Run searches in parallel (cap concurrency by chunking)
@@ -271,7 +286,7 @@ serve(async (req) => {
     }
     console.log("[scout] raw results", allRaw.length);
 
-    const extracted = await extractAndScore(allRaw, profile as Profile, aiKey);
+    const extracted = await extractAndScore(allRaw, mergedProfile, aiKey);
     const filtered = extracted.filter((g: any) => {
       if (!g.title || !g.source_url) return false;
       if ((g.fit_score ?? 0) < prefs.min_fit_score) return false;

@@ -36,6 +36,7 @@ import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist
 import { DuplicateAccountBanner } from "@/components/account/DuplicateAccountBanner";
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { MagicHomeHero } from "@/components/home/MagicHomeHero";
+import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { StreakChipsRow } from "@/components/home/StreakChipsRow";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
@@ -627,6 +628,11 @@ export const UnifiedHome = () => {
             <Link to="/messages" className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors">
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </Link>
+          </div>
+
+          {/* Conversational entry — Tell Thrive what you want to create */}
+          <div className="mb-4">
+            <ThrivePromptHero />
           </div>
 
           {/* Magic Home — single hero CTA for fresh accounts (<24h) or low-completion profiles */}

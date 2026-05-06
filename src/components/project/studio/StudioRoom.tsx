@@ -28,6 +28,7 @@ import { CallHistorySection } from "./CallHistorySection";
 import { PadPreviewSection } from "./PadPreviewSection";
 import { DeliverablesSection } from "./DeliverablesSection";
 import { ProductionPrepSection } from "./ProductionPrepSection";
+import { PodcastStudioSection } from "./PodcastStudioSection";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
 import { supabase } from "@/integrations/supabase/client";
@@ -312,6 +313,9 @@ export const StudioRoom = ({
         {RoomChatButton}
         {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
         {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
+        {project.workspace_type === "podcast" && (
+          <PodcastStudioSection project={project} currentUserId={currentUserId} />
+        )}
         {mobileWorkColumn}
         {mobileSideColumn}
         <div className="h-12" />
@@ -321,6 +325,11 @@ export const StudioRoom = ({
       <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
         <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
           {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
+          {project.workspace_type === "podcast" && (
+            <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+              <PodcastStudioSection project={project} currentUserId={currentUserId} />
+            </div>
+          )}
           <div className="flex items-center justify-between px-1">
             <p className="text-[11px] text-muted-foreground/70">
               Tip: hover any section and drag the handle to reorder your studio.

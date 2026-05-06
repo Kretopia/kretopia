@@ -12812,6 +12812,48 @@ export type Database = {
         }
         Relationships: []
       }
+      thrive_memory: {
+        Row: {
+          body: string | null
+          context: Json | null
+          created_at: string
+          id: string
+          importance: number
+          kind: string
+          label: string
+          last_used_at: string | null
+          mem_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          context?: Json | null
+          created_at?: string
+          id?: string
+          importance?: number
+          kind: string
+          label: string
+          last_used_at?: string | null
+          mem_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          context?: Json | null
+          created_at?: string
+          id?: string
+          importance?: number
+          kind?: string
+          label?: string
+          last_used_at?: string | null
+          mem_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       time_entries: {
         Row: {
           created_at: string | null

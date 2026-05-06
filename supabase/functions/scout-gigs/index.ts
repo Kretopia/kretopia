@@ -266,7 +266,7 @@ serve(async (req) => {
       await supabase.from("scout_preferences").insert({ user_id: userId });
     }
 
-    const queries = buildSearchQueries(profile as Profile, prefs);
+    const queries = buildSearchQueries(mergedProfile, prefs);
     console.log("[scout] queries", queries.length, "for", userId);
 
     // Run searches in parallel (cap concurrency by chunking)
@@ -282,7 +282,7 @@ serve(async (req) => {
     }
     console.log("[scout] raw results", allRaw.length);
 
-    const extracted = await extractAndScore(allRaw, profile as Profile, aiKey);
+    const extracted = await extractAndScore(allRaw, mergedProfile, aiKey);
     const filtered = extracted.filter((g: any) => {
       if (!g.title || !g.source_url) return false;
       if ((g.fit_score ?? 0) < prefs.min_fit_score) return false;

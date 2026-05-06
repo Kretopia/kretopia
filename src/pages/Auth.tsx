@@ -367,6 +367,15 @@ const Auth = () => {
 
       if (connectUserId) localStorage.setItem('pendingConnect', connectUserId);
 
+      // If email confirmation is required, Supabase returns a user with no session.
+      // Don't navigate to /onboarding (it would bounce back to /auth) — show a "check your email" screen instead.
+      if (!signUpData?.session) {
+        setPendingVerificationEmail(email);
+        toast({ title: "Check your email", description: "We sent you a verification link to finish signing up." });
+        setLoading(false);
+        return;
+      }
+
       toast({ title: "Welcome to ThriveIN!", description: "Let's set up your profile." });
       navigate(accountType === "company" ? "/company-onboarding" : "/onboarding");
     }

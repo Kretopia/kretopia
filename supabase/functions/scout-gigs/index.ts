@@ -244,6 +244,18 @@ serve(async (req) => {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const mergedProfile: Profile = {
+      user_id: (profile as any).user_id,
+      full_name: (profile as any).full_name,
+      role: (profile as any).role,
+      sub_roles: (profile as any).sub_roles,
+      skills: [
+        ...((profile as any).professional_skills || []),
+        ...((profile as any).passion_skills || []),
+      ],
+      location: (profile as any).location,
+      bio: (profile as any).bio,
+    };
 
     // Auto-create prefs if missing
     let prefs: ScoutPrefs = prefsRow ?? {

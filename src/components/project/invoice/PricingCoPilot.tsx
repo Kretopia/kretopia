@@ -306,12 +306,28 @@ export function PricingCoPilot({
 
   const docLabel = documentType === "quote" ? "quote" : "invoice";
 
-  const quickPrompts = [
-    { label: "💬 Help me price this", prompt: `I need help creating a ${docLabel}. Let me tell you about the project and my costs...` },
-    { label: "📊 Calculate markups", prompt: `I have my supplier/subcontractor costs. Help me calculate competitive markups for my client ${docLabel} in ${currency}.` },
-    { label: "✍️ Enhance descriptions", prompt: "Can you improve my current line item descriptions to sound more professional?" },
-    { label: `📝 Full ${docLabel} from scratch`, prompt: `I want to create a complete ${docLabel} from scratch. I'll describe the project and client — help me with everything from line items to terms.` },
-  ];
+  const ctxCount =
+    (projectContext?.deliverables?.length || 0) +
+    (projectContext?.notes?.length || 0) +
+    (projectContext?.files?.length || 0);
+  const hasCtx = ctxCount > 0;
+
+  const quickPrompts = hasCtx
+    ? [
+        {
+          label: `✨ Draft ${docLabel} from this Studio`,
+          prompt: `Use the LIVE PROJECT CONTEXT in your system prompt. Draft a ${docLabel} now — propose a line item per deliverable + key notes, suggest sensible rates in ${currency}, mark anything you need from me as "TBD" so I can fill it in. Then call generate_line_items.`,
+        },
+        { label: "📊 Calculate markups", prompt: `Here are my supplier/subcontractor costs for this project. Help me calculate competitive markups in ${currency}.` },
+        { label: "✍️ Enhance descriptions", prompt: "Improve my current line item descriptions using the project notes for context." },
+        { label: "👤 Pull client details", prompt: "Pull the client name/email/address from the project and confirm them with me." },
+      ]
+    : [
+        { label: "💬 Help me price this", prompt: `I need help creating a ${docLabel}. Let me tell you about the project and my costs...` },
+        { label: "📊 Calculate markups", prompt: `I have my supplier/subcontractor costs. Help me calculate competitive markups for my client ${docLabel} in ${currency}.` },
+        { label: "✍️ Enhance descriptions", prompt: "Can you improve my current line item descriptions to sound more professional?" },
+        { label: `📝 Full ${docLabel} from scratch`, prompt: `I want to create a complete ${docLabel} from scratch. I'll describe the project and client — help me with everything from line items to terms.` },
+      ];
 
   if (!isOpen) {
     return (

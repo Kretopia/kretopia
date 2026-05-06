@@ -38,6 +38,7 @@ import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { MagicHomeHero } from "@/components/home/MagicHomeHero";
 import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
+import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";
 import { StreakChipsRow } from "@/components/home/StreakChipsRow";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
@@ -630,6 +631,9 @@ export const UnifiedHome = () => {
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </Link>
           </div>
+
+          {/* Persona signal — Scout · Deal · Producer at-a-glance */}
+          <PersonaCardsRow className="mb-3" />
 
           {/* Conversational entry — Tell Thrive what you want to create. THE hero of Home. */}
           <div className="mb-3">

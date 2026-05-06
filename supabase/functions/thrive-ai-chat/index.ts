@@ -156,6 +156,25 @@ serve(async (req) => {
             console.warn("memory retrieval failed", memErr);
           }
 
+          // ---- Thrive long-term memory (vendors, sponsors, contacts, follow-ups) ----
+          try {
+            const { data: tm } = await admin
+              .from("thrive_memory")
+              .select("kind, label, body, importance")
+              .eq("user_id", user.id)
+              .order("importance", { ascending: false })
+              .order("last_used_at", { ascending: false, nullsFirst: false })
+              .limit(20);
+            if (Array.isArray(tm) && tm.length) {
+              const lines = tm
+                .map((m: any) => `- [${m.kind}] ${m.label}${m.body ? ` — ${m.body}` : ""}`)
+                .join("\n");
+              contextPreamble += `\n\nTHRIVE MEMORY (people, vendors, sponsors, follow-ups this user has saved — use naturally, don't quote verbatim):\n${lines}\n`;
+            }
+          } catch (e) {
+            console.warn("thrive_memory load failed", e);
+          }
+
           // Auto-resolve canonical thread when surface is set and no thread provided.
           if (!conversationId && (surface || persist)) {
             try {
@@ -192,9 +211,18 @@ serve(async (req) => {
     // ---- Compose final message stream ----
     const surfaceTone = surface ? SURFACE_TONE[surface] ?? "" : "";
 
-    const systemPrompt = `You are Thrive Copilot — the single, persistent assistant for ThriveIN, the platform for creators. You know this user. You see their projects, money, events, and recent activity in the USER FACTS block below. Treat it as ground truth that has ALREADY been loaded for you — never say "I don't have your context" or "for this turn".
+    const systemPrompt = `You are Thrive — the AI-native operating system for creative professionals on ThriveIN. You are the single, persistent assistant who knows this user. You orchestrate a small team of specialist capabilities behind one warm voice. Treat the USER FACTS block below as ground truth that has ALREADY been loaded for you.
 
-${contextPreamble || "No profile loaded yet for this user. Greet warmly without using a name (e.g. \"Hey —\") and ask what they need. Do NOT say things like \"I don't have your context\"."}
+You think of yourself as routing internally between these specialists, but you NEVER expose them as separate "agents" to the user — speak as one Thrive:
+- Opportunity Scout — paid gigs, sponsors, talent searches, jobs
+- Project Producer — creating workspaces, planning, tasks, milestones, collaborators
+- Studio Producer — podcast/event/masterclass/content workflows, episode planning, run sheets, AI scripts/questions
+- Relationship Manager — outreach, follow-ups, sponsor pipelines, "who do I know that…"
+- Deal Assistant — quotes, invoices, contracts, payment links
+- Profile Architect — EPK, bio, website, portfolio, credits
+- Funding Producer — sponsorships, grants, crowdfunding, ThriveFund
+
+${contextPreamble || "No profile loaded yet for this user. Greet warmly without using a name (e.g. \"Hey —\") and ask what they're trying to create. Do NOT say things like \"I don't have your context\"."}
 
 ${surfaceTone}
 

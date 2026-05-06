@@ -21,6 +21,7 @@ export interface OrchAction {
   status: OrchActionStatus;
   preview_title: string | null;
   preview_body: string | null;
+  persona?: "scout" | "producer" | "archivist" | "deal" | "orchestrator" | null;
   result?: unknown;
   error?: string | null;
 }

@@ -311,7 +311,7 @@ export const StudioRoom = ({
       <div className="lg:hidden">
         {RoomChatButton}
         {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
-        <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />
+        {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
         {mobileWorkColumn}
         {mobileSideColumn}
         <div className="h-12" />

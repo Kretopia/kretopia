@@ -1,5 +1,6 @@
 import { SEO } from "@/components/SEO";
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
+import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { Briefcase, Sparkles } from "lucide-react";
 
 const Opportunities = () => {
@@ -36,8 +37,12 @@ const Opportunities = () => {
         </div>
       </div>
 
-      <div className="container mx-auto max-w-5xl px-4 py-6">
-        <OpportunitiesFeed />
+      <div className="container mx-auto max-w-5xl px-4 py-6 space-y-8">
+        <ScoutedGigsSection />
+        <div className="border-t border-border/50 pt-6">
+          <h2 className="text-lg font-bold mb-3">Marketplace</h2>
+          <OpportunitiesFeed />
+        </div>
       </div>
     </div>
   );

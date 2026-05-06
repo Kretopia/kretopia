@@ -79,6 +79,8 @@ export const VoiceFirstCreateModal = ({
       setSelected(new Set());
       setCreating(false);
       setPaymentsInvolved(null);
+      setWorkspaceType("general");
+      setRawInput("");
     }
   }, [open]);
 

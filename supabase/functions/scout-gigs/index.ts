@@ -90,6 +90,15 @@ function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; qu
       source: "instagram",
       query: `site:instagram.com "open call" ${role} ${loc}`,
     });
+    queries.push({
+      source: "instagram",
+      query: `site:instagram.com/explore/tags ${role}gig ${loc}`,
+    });
+  }
+  if (prefs.sources.includes("facebook")) {
+    for (const q of FB_QUERIES) {
+      queries.push({ source: "web", query: `site:${q} ${role} ${loc}` });
+    }
   }
   return queries;
 }
@@ -101,6 +110,8 @@ async function firecrawlSearch(query: string, key: string) {
     body: JSON.stringify({
       query,
       limit: 8,
+      // RECENCY: only results from the past month
+      tbs: "qdr:m",
       scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
     }),
   });

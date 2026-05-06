@@ -192,6 +192,7 @@ export const VoiceFirstCreateModal = ({
         },
       });
       setSelected(new Set());
+      setWorkspaceType(inferWorkspaceType(trimmed));
       setMode("review");
     }
   };

@@ -43,11 +43,16 @@ const Auth = () => {
   const claimParam = searchParams.get("claim");
   const claimProfileId = claimParam && claimParam !== "1" ? claimParam : null;
   const eventId = searchParams.get("event");
+  // Honor a sessionStorage post-auth redirect set by soft-gates (AuthPrompt, etc.)
+  // Falls back to ?redirect= query param, then /circle.
+  const stashedRedirect = typeof window !== "undefined"
+    ? sessionStorage.getItem("thrivein_post_auth_redirect")
+    : null;
   const redirectTo = claimProfileId 
     ? `/profile/${claimProfileId}?showClaim=true` 
     : eventId 
       ? `/event/${eventId}` 
-      : (searchParams.get("redirect") || "/circle");
+      : (searchParams.get("redirect") || stashedRedirect || "/circle");
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 

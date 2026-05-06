@@ -402,6 +402,12 @@ const Auth = () => {
             </p>
           </div>
 
+          {!isPasswordReset && (
+            <div className="mb-6">
+              <FunnelStepper current="signup" />
+            </div>
+          )}
+
           {isPasswordReset ? (
             <PasswordResetForm loading={loading} onSubmit={handlePasswordReset} />
           ) : (

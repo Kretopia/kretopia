@@ -46,7 +46,7 @@ function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; qu
   const role = p.role || "creative";
   const subs = (p.sub_roles || []).slice(0, 2);
   const skills = (p.skills || []).slice(0, 4);
-  const loc = prefs.remote_only ? "remote" : (p.city || p.country || "remote");
+  const loc = prefs.remote_only ? "remote" : (p.location || "remote");
   const extra = (prefs.extra_keywords || []).slice(0, 3).join(" ");
 
   const baseTerms = [role, ...subs, ...skills.slice(0, 2), extra].filter(Boolean).join(" ").trim();

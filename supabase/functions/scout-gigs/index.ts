@@ -37,10 +37,24 @@ const WEB_SITES = [
   "soundbetter.com", "workingnotworking.com", "contra.com",
   "weworkremotely.com", "mediabistro.com", "coroflot.com",
   "dribbble.com/jobs", "behance.net/joblist", "authenticjobs.com",
-  "remoteok.com", "freelancer.com",
+  "remoteok.com", "freelancer.com", "upwork.com", "peopleperhour.com",
+  "twine.net", "thedots.co", "krop.com", "talenthouse.com",
+  "wellfound.com", "ycombinator.com/jobs", "remote.co", "justremote.co",
+  "weworkremotely.com/categories/remote-design-jobs",
+  "creativepool.com", "if-you-could.co.uk", "designjobsboard.com",
+  "freelancermap.com", "wellfound.com/jobs",
 ];
 
-const ATS_SITES = ["greenhouse.io", "lever.co", "ashbyhq.com", "workable.com"];
+const ATS_SITES = [
+  "greenhouse.io", "lever.co", "ashbyhq.com", "workable.com",
+  "jobs.smartrecruiters.com", "myworkdayjobs.com", "bamboohr.com/jobs",
+  "recruitee.com", "teamtailor.com", "jobvite.com",
+];
+
+const FB_QUERIES = [
+  "facebook.com/groups creative gigs",
+  "facebook.com/groups freelance",
+];
 
 function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; query: string }[] {
   const role = p.role || "creative";
@@ -76,6 +90,15 @@ function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; qu
       source: "instagram",
       query: `site:instagram.com "open call" ${role} ${loc}`,
     });
+    queries.push({
+      source: "instagram",
+      query: `site:instagram.com/explore/tags ${role}gig ${loc}`,
+    });
+  }
+  if (prefs.sources.includes("facebook")) {
+    for (const q of FB_QUERIES) {
+      queries.push({ source: "web", query: `site:${q} ${role} ${loc}` });
+    }
   }
   return queries;
 }
@@ -87,6 +110,8 @@ async function firecrawlSearch(query: string, key: string) {
     body: JSON.stringify({
       query,
       limit: 8,
+      // RECENCY: only results from the past month
+      tbs: "qdr:m",
       scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
     }),
   });
@@ -130,11 +155,11 @@ Bio: ${(profile.bio || "").slice(0, 300)}`;
         {
           role: "system",
           content:
-            "You extract REAL paid creative gigs from search results. Be strict: skip generic listings pages, skip irrelevant items, skip articles. Only return entries that look like actual job/casting/freelance posts with clear context. Score fit 0-100 against the creator profile (skills overlap, role match, location, seniority).",
+            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) Skip ANY post older than 30 days — if the snippet mentions '1 year ago', '6 months ago', 'no longer accepting', 'expired', 'closed', or a date older than 30 days, REJECT IT. (2) Skip generic listing pages, articles, blog posts. (3) Only return entries that are clearly active job/casting/freelance posts. (4) Score fit 0-100 against the creator profile.",
         },
         {
           role: "user",
-          content: `CREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract REAL gigs only. For each: title, company (if any), location, remote(boolean), description (1-2 sentences), compensation (if stated), contact_email (if visible), apply_url (default to source URL), skills array, fit_score (0-100), fit_reason (one short sentence), source (web|linkedin|instagram|ats|gigboard).`,
+          content: `TODAY: ${new Date().toISOString().slice(0,10)}\n\nCREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract ONLY active gigs posted in the last 30 days. For each: title, company, location, remote, description (1-2 sentences), compensation, contact_email, apply_url, posted_age (e.g. "2 days ago", "3 weeks ago" — REQUIRED, infer from snippet), skills, fit_score, fit_reason, source.`,
         },
       ],
       tools: [{
@@ -164,8 +189,9 @@ Bio: ${(profile.bio || "").slice(0, 300)}`;
                     skills: { type: "array", items: { type: "string" } },
                     fit_score: { type: "number" },
                     fit_reason: { type: "string" },
+                    posted_age: { type: "string", description: "e.g. '2 days ago', '3 weeks ago'" },
                   },
-                  required: ["title","source_url","source","fit_score","fit_reason"],
+                  required: ["title","source_url","source","fit_score","fit_reason","posted_age"],
                 },
               },
             },
@@ -287,13 +313,28 @@ serve(async (req) => {
     console.log("[scout] raw results", allRaw.length);
 
     const extracted = await extractAndScore(allRaw, mergedProfile, aiKey);
+    // Reject anything older than 30 days based on AI-extracted posted_age
+    const isStale = (age: string) => {
+      if (!age) return true;
+      const a = age.toLowerCase();
+      if (/year|yr/.test(a)) return true;
+      if (/month/.test(a)) {
+        const n = parseInt(a, 10) || 1;
+        return n > 1;
+      }
+      if (/no longer|expired|closed|filled/.test(a)) return true;
+      return false;
+    };
     const filtered = extracted.filter((g: any) => {
       if (!g.title || !g.source_url) return false;
       if ((g.fit_score ?? 0) < prefs.min_fit_score) return false;
-      const blob = `${g.title} ${g.description || ""}`.toLowerCase();
+      if (isStale(g.posted_age || "")) return false;
+      const blob = `${g.title} ${g.description || ""} ${g.posted_age || ""}`.toLowerCase();
+      if (/no longer accepting|expired|position closed|1 year ago|2 years ago/.test(blob)) return false;
       if ((prefs.exclude_keywords || []).some((kw) => kw && blob.includes(kw.toLowerCase()))) return false;
       return true;
     });
+    console.log("[scout] after recency filter", filtered.length, "of", extracted.length);
 
     let inserted = 0;
     for (const g of filtered) {

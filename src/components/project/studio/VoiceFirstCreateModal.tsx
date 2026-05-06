@@ -167,6 +167,7 @@ export const VoiceFirstCreateModal = ({
   const submitText = async () => {
     const trimmed = textInput.trim();
     if (!trimmed) return;
+    setRawInput(trimmed);
     setMode("thinking");
     try {
       const { data, error } = await supabase.functions.invoke("extract-brief", {

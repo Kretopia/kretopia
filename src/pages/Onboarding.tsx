@@ -844,7 +844,7 @@ export default function Onboarding() {
                           if (error) throw error;
                           if (data?.bio) {
                             setBio(data.bio);
-                            toast({ title: "Bio drafted ✨", description: "Tweak anything you like." });
+                            toast({ title: "Bio drafted", description: "Tweak anything you like." });
                           } else {
                             throw new Error("No bio returned");
                           }
@@ -860,7 +860,7 @@ export default function Onboarding() {
                       {bio ? "Rewrite for me" : "Suggest a bio"}
                     </button>
                   </div>
-                  <Textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="A brief professional summary — or tap ✨ above to draft one." className="min-h-[60px] resize-none text-sm" />
+                  <Textarea value={bio} onChange={e => setBio(e.target.value)} placeholder="A brief professional summary — or tap above to draft one." className="min-h-[60px] resize-none text-sm" />
                 </div>
 
                 {/* Skills */}

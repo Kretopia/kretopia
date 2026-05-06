@@ -150,7 +150,7 @@ export default function ProjectReview() {
       return;
     }
     toast.success(
-      decision === "approved" ? "Approval sent ✨" : "Revision requested"
+      decision === "approved" ? "Approval sent" : "Revision requested"
     );
     setApprovalOpen(false);
     setNote("");

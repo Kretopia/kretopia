@@ -152,7 +152,7 @@ const ICDBProjectPage = () => {
   return (
     <>
       <Helmet>
-        <title>{project.title} — ThriveCredits™ | ThriveIN</title>
+        <title>{project.title} — ThriveCredits | ThriveIN</title>
         <meta name="description" content={project.description || `${project.title} — a ${formatType(project.type)} project on ThriveCredits.`} />
       </Helmet>
 

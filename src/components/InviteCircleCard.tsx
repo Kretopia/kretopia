@@ -14,7 +14,7 @@ interface InviteCircleCardProps {
 }
 
 /**
- * Status-aware invite prompt that surfaces the Creative Circle™ tier system
+ * Status-aware invite prompt that surfaces the Creative Circle tier system
  * contextually on Home, Profile, and Match. Drives the viral loop by tying
  * each invite to a tangible reward (free Pro, fee discounts, commission).
  */

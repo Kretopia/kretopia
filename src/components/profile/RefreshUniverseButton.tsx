@@ -126,7 +126,7 @@ export const RefreshUniverseButton = ({ lastScanAt }: Props) => {
           : knownCount > 0
             ? `We checked ${candidates} result${candidates === 1 ? "" : "s"} from the web${platformLabel ? ` plus ${platformLabel}` : ""} — ${knownCount} already on your profile, the rest weren't a clean match.`
             : `We checked ${candidates} result${candidates === 1 ? "" : "s"}${platformLabel ? ` plus ${platformLabel}` : ""}. Nothing new this time.`;
-        toast.success("You're all caught up ✨", { description: desc });
+        toast.success("You're all caught up", { description: desc });
       }
     } catch (e: any) {
       toast.error(e?.message || "Scan failed");

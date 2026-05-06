@@ -33,7 +33,7 @@ const BrandVerify = () => {
 
   return (
     <>
-      <Helmet><title>Brand Verification | ThriveCredits™</title></Helmet>
+      <Helmet><title>Brand Verification | ThriveCredits</title></Helmet>
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-primary/5">
         <Card className="max-w-md w-full">
           <CardContent className="text-center py-10 space-y-4">

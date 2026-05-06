@@ -29,7 +29,7 @@ export const ClaimedProfileGlow = () => {
     <div className="fixed top-[max(env(safe-area-inset-top),1rem)] left-1/2 -translate-x-1/2 z-[60] animate-in fade-in slide-in-from-top-4 duration-500">
       <div className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 backdrop-blur-md px-4 py-2 shadow-lg shadow-primary/20">
         <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-        <p className="text-sm font-semibold">Welcome — your profile is live ✨</p>
+        <p className="text-sm font-semibold">Welcome — your profile is live</p>
       </div>
     </div>
   );

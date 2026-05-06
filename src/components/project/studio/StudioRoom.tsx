@@ -320,7 +320,7 @@ export const StudioRoom = ({
       {/* Desktop: 2-column draggable widget board */}
       <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
         <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
-          <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />
+          {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
           <div className="flex items-center justify-between px-1">
             <p className="text-[11px] text-muted-foreground/70">
               Tip: hover any section and drag the handle to reorder your studio.

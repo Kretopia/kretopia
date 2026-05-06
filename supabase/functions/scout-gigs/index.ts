@@ -95,7 +95,11 @@ async function firecrawlSearch(query: string, key: string) {
     return [];
   }
   const j = await r.json();
-  return (j.data || j.web || []) as Array<{ url: string; title?: string; markdown?: string; description?: string }>;
+  const arr = Array.isArray(j.data) ? j.data
+    : Array.isArray(j.data?.web) ? j.data.web
+    : Array.isArray(j.web) ? j.web
+    : [];
+  return arr as Array<{ url: string; title?: string; markdown?: string; description?: string }>;
 }
 
 async function extractAndScore(

@@ -7793,6 +7793,7 @@ export type Database = {
           error: string | null
           executed_at: string | null
           id: string
+          persona: Database["public"]["Enums"]["agent_persona"]
           preview_body: string | null
           preview_title: string | null
           proposed_at: string
@@ -7810,6 +7811,7 @@ export type Database = {
           error?: string | null
           executed_at?: string | null
           id?: string
+          persona?: Database["public"]["Enums"]["agent_persona"]
           preview_body?: string | null
           preview_title?: string | null
           proposed_at?: string
@@ -7827,6 +7829,7 @@ export type Database = {
           error?: string | null
           executed_at?: string | null
           id?: string
+          persona?: Database["public"]["Enums"]["agent_persona"]
           preview_body?: string | null
           preview_title?: string | null
           proposed_at?: string
@@ -15822,6 +15825,10 @@ export type Database = {
         Args: { _actor_name: string; _event: string; _opportunity_id: string }
         Returns: undefined
       }
+      persona_for_agent_kind: {
+        Args: { _kind: string }
+        Returns: Database["public"]["Enums"]["agent_persona"]
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -15938,6 +15945,12 @@ export type Database = {
     }
     Enums: {
       account_type: "individual" | "company"
+      agent_persona:
+        | "scout"
+        | "producer"
+        | "archivist"
+        | "deal"
+        | "orchestrator"
       app_role: "admin" | "moderator" | "user" | "writer"
       location_precision: "exact" | "approximate" | "area_only"
       network_tier:
@@ -16113,6 +16126,7 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["individual", "company"],
+      agent_persona: ["scout", "producer", "archivist", "deal", "orchestrator"],
       app_role: ["admin", "moderator", "user", "writer"],
       location_precision: ["exact", "approximate", "area_only"],
       network_tier: [

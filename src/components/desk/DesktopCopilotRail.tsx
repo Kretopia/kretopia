@@ -108,20 +108,28 @@ export function DesktopCopilotRail() {
     }
   }, [messages, streaming]);
 
-  // Reserve horizontal space on desktop so the rail doesn't cover the page.
-  // Mobile (<lg) ignores this — rail is hidden there.
+  // Reserve horizontal space ONLY on desktop (lg+ = 1024px+) so mobile/tablet
+  // never gets right-padding for a rail that isn't rendered there.
   useEffect(() => {
     const root = document.documentElement;
-    if (!visible || collapsed) {
-      root.style.setProperty("--copilot-rail-w", "0px");
-    } else {
-      // Match the aside widths below.
-      root.style.setProperty(
-        "--copilot-rail-w",
-        window.matchMedia("(min-width: 1280px)").matches ? "380px" : "340px",
-      );
-    }
+    const apply = () => {
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      if (!visible || collapsed || !isDesktop) {
+        root.style.setProperty("--copilot-rail-w", "0px");
+      } else {
+        root.style.setProperty(
+          "--copilot-rail-w",
+          window.matchMedia("(min-width: 1280px)").matches ? "380px" : "340px",
+        );
+      }
+    };
+    apply();
+    const mq = window.matchMedia("(min-width: 1024px)");
+    mq.addEventListener?.("change", apply);
+    window.addEventListener("resize", apply);
     return () => {
+      mq.removeEventListener?.("change", apply);
+      window.removeEventListener("resize", apply);
       root.style.setProperty("--copilot-rail-w", "0px");
     };
   }, [visible, collapsed]);

@@ -37,10 +37,24 @@ const WEB_SITES = [
   "soundbetter.com", "workingnotworking.com", "contra.com",
   "weworkremotely.com", "mediabistro.com", "coroflot.com",
   "dribbble.com/jobs", "behance.net/joblist", "authenticjobs.com",
-  "remoteok.com", "freelancer.com",
+  "remoteok.com", "freelancer.com", "upwork.com", "peopleperhour.com",
+  "twine.net", "thedots.co", "krop.com", "talenthouse.com",
+  "wellfound.com", "ycombinator.com/jobs", "remote.co", "justremote.co",
+  "weworkremotely.com/categories/remote-design-jobs",
+  "creativepool.com", "if-you-could.co.uk", "designjobsboard.com",
+  "freelancermap.com", "wellfound.com/jobs",
 ];
 
-const ATS_SITES = ["greenhouse.io", "lever.co", "ashbyhq.com", "workable.com"];
+const ATS_SITES = [
+  "greenhouse.io", "lever.co", "ashbyhq.com", "workable.com",
+  "jobs.smartrecruiters.com", "myworkdayjobs.com", "bamboohr.com/jobs",
+  "recruitee.com", "teamtailor.com", "jobvite.com",
+];
+
+const FB_QUERIES = [
+  "facebook.com/groups creative gigs",
+  "facebook.com/groups freelance",
+];
 
 function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; query: string }[] {
   const role = p.role || "creative";

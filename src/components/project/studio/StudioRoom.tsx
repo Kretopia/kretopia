@@ -202,7 +202,7 @@ export const StudioRoom = ({
   // ===== Desktop draggable widgets =====
   type WidgetId =
     | "brief" | "pulse" | "deliverables" | "pad" | "prep" | "work"
-    | "money" | "people" | "wrap" | "credit" | "calls";
+    | "money" | "request_pay" | "people" | "wrap" | "credit" | "calls";
 
   const renderWidget = (id: WidgetId): React.ReactNode => {
     const wrap = (node: React.ReactNode) => (
@@ -213,9 +213,10 @@ export const StudioRoom = ({
       case "pulse": return wrap(<StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />);
       case "deliverables": return wrap(<DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />);
       case "pad": return wrap(<PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />);
-      case "prep": return wrap(<ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />);
+      case "prep": return showPrep ? wrap(<ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />) : null;
       case "work": return wrap(<WorkSection tasks={tasks} projectId={project.id} currentUserId={currentUserId} collaborators={people} onUpdated={onUpdated} />);
-      case "money": return showMoney ? wrap(<MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />) : null;
+      case "money": return showMoney ? wrap(<MoneySection project={project} isOwner={isOwner} clientView={isClient} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />) : null;
+      case "request_pay": return isCollaborator ? wrap(<RequestPaymentCard project={project} currentUserId={currentUserId} />) : null;
       case "people": return wrap(<PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />);
       case "wrap": return wrap(<WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />);
       case "credit": return wrap(<AddCreditSection project={project} collaborators={people} />);
@@ -224,7 +225,7 @@ export const StudioRoom = ({
   };
 
   const DEFAULT_LEFT: WidgetId[] = ["brief", "pulse", "deliverables", "pad", "prep", "work"];
-  const DEFAULT_RIGHT: WidgetId[] = ["money", "people", "wrap", "credit", "calls"];
+  const DEFAULT_RIGHT: WidgetId[] = ["money", "request_pay", "people", "wrap", "credit", "calls"];
   const STORAGE_KEY = `thrivedesk:widgets:${project.id}`;
 
   const [leftOrder, setLeftOrder] = useState<WidgetId[]>(DEFAULT_LEFT);

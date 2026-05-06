@@ -741,7 +741,7 @@ export default function Onboarding() {
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Step 2 of 3 · Confirm your credits</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Confirm your credits</p>
                     <h2 className="text-lg font-bold">Make it yours</h2>
                     <p className="text-xs text-muted-foreground">Confirm what's yours — edit anything, then launch your profile.</p>
                   </div>

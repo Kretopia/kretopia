@@ -256,7 +256,11 @@ const AppContent = () => {
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />
       {showGuestBanner && <GuestBanner />}
-      <main id="main-content" className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
+      <main
+        id="main-content"
+        className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}
+        style={{ paddingRight: "var(--copilot-rail-w, 0px)" }}
+      >
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Active MVP Routes */}

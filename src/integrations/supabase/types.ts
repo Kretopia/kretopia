@@ -4166,6 +4166,123 @@ export type Database = {
         }
         Relationships: []
       }
+      episode_clips: {
+        Row: {
+          captions: Json | null
+          created_at: string
+          created_by: string
+          end_seconds: number | null
+          episode_id: string
+          hashtags: string[] | null
+          id: string
+          project_id: string
+          start_seconds: number | null
+          title: string
+          transcript_excerpt: string | null
+        }
+        Insert: {
+          captions?: Json | null
+          created_at?: string
+          created_by: string
+          end_seconds?: number | null
+          episode_id: string
+          hashtags?: string[] | null
+          id?: string
+          project_id: string
+          start_seconds?: number | null
+          title: string
+          transcript_excerpt?: string | null
+        }
+        Update: {
+          captions?: Json | null
+          created_at?: string
+          created_by?: string
+          end_seconds?: number | null
+          episode_id?: string
+          hashtags?: string[] | null
+          id?: string
+          project_id?: string
+          start_seconds?: number | null
+          title?: string
+          transcript_excerpt?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episode_clips_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "podcast_episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episode_clips_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      episode_sponsors: {
+        Row: {
+          amount: number | null
+          contact_email: string | null
+          created_at: string
+          created_by: string
+          currency: string | null
+          episode_id: string
+          id: string
+          notes: string | null
+          project_id: string
+          sponsor_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          contact_email?: string | null
+          created_at?: string
+          created_by: string
+          currency?: string | null
+          episode_id: string
+          id?: string
+          notes?: string | null
+          project_id: string
+          sponsor_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          contact_email?: string | null
+          created_at?: string
+          created_by?: string
+          currency?: string | null
+          episode_id?: string
+          id?: string
+          notes?: string | null
+          project_id?: string
+          sponsor_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episode_sponsors_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "podcast_episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episode_sponsors_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_analytics_events: {
         Row: {
           created_at: string
@@ -4773,6 +4890,59 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_runsheet_items: {
+        Row: {
+          created_at: string
+          created_by: string
+          end_time: string | null
+          id: string
+          notes: string | null
+          owner_name: string | null
+          position: number
+          project_id: string
+          start_time: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          owner_name?: string | null
+          position?: number
+          project_id: string
+          start_time?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          owner_name?: string | null
+          position?: number
+          project_id?: string
+          start_time?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_runsheet_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -8533,7 +8703,9 @@ export type Database = {
           is_published: boolean | null
           published_at: string | null
           season_number: number | null
+          show_notes: string | null
           title: string
+          transcript: string | null
         }
         Insert: {
           audio_url?: string | null
@@ -8549,7 +8721,9 @@ export type Database = {
           is_published?: boolean | null
           published_at?: string | null
           season_number?: number | null
+          show_notes?: string | null
           title: string
+          transcript?: string | null
         }
         Update: {
           audio_url?: string | null
@@ -8565,7 +8739,9 @@ export type Database = {
           is_published?: boolean | null
           published_at?: string | null
           season_number?: number | null
+          show_notes?: string | null
           title?: string
+          transcript?: string | null
         }
         Relationships: []
       }
@@ -12809,6 +12985,36 @@ export type Database = {
           name?: string
           owner_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      thrive_intent_logs: {
+        Row: {
+          created_at: string
+          id: string
+          intent: string
+          prompt: string
+          routed_to: string | null
+          user_id: string
+          workspace_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intent: string
+          prompt: string
+          routed_to?: string | null
+          user_id: string
+          workspace_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intent?: string
+          prompt?: string
+          routed_to?: string | null
+          user_id?: string
+          workspace_type?: string | null
         }
         Relationships: []
       }

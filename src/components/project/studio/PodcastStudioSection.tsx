@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
+import { EpisodeDetailDialog } from "./EpisodeDetailDialog";
 
 interface Episode {
   id: string;
@@ -45,6 +46,7 @@ export function PodcastStudioSection({ project, currentUserId }: Props) {
   const [openCompose, setOpenCompose] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [genBusy, setGenBusy] = useState<string | null>(null);
+  const [detailEp, setDetailEp] = useState<Episode | null>(null);
 
   // compose form
   const [title, setTitle] = useState("");
@@ -167,7 +169,7 @@ export function PodcastStudioSection({ project, currentUserId }: Props) {
             const expanded = expandedId === ep.id;
             return (
               <li key={ep.id} className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
-                <div className="flex items-start gap-3 p-3">
+                <div className="flex items-start gap-3 p-3 cursor-pointer hover:bg-accent/30" onClick={() => setDetailEp(ep)}>
                   <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary text-[11px] font-black flex items-center justify-center shrink-0">
                     EP{ep.episode_number ?? "—"}
                   </div>
@@ -188,7 +190,7 @@ export function PodcastStudioSection({ project, currentUserId }: Props) {
                         </span>
                       )}
                     </div>
-                    <div className="mt-2.5 flex items-center gap-2 flex-wrap">
+                    <div className="mt-2.5 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                       <button
                         type="button"
                         onClick={() => generateQuestions(ep)}
@@ -265,6 +267,15 @@ export function PodcastStudioSection({ project, currentUserId }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <EpisodeDetailDialog
+        open={!!detailEp}
+        onOpenChange={(v) => !v && setDetailEp(null)}
+        episode={detailEp}
+        projectId={project.id}
+        currentUserId={currentUserId}
+        onUpdated={load}
+      />
     </section>
   );
 }

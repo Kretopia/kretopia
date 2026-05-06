@@ -52,6 +52,15 @@ export function ThrivePromptHero() {
       });
       if (error || !data) throw error || new Error("No response");
 
+      // Telemetry: log every routed intent (fire-and-forget)
+      void (supabase as any).from("thrive_intent_logs").insert({
+        user_id: user.id,
+        prompt,
+        intent: data.intent,
+        workspace_type: data.workspace_type || null,
+        routed_to: data.intent === "create_workspace" ? "desk" : data.intent,
+      });
+
       switch (data.intent) {
         case "create_workspace": {
           // Create the project then drop into Studio

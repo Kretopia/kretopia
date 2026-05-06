@@ -1,89 +1,96 @@
-# Thrive Copilot — Capability Audit & Fix Plan
+# ThriveIN → Creative OS: Systematic Build Plan
 
-## What you saw in the screenshot
+We already shipped the Tier 3 vertical slice (ThrivePromptHero, Podcast Studio, thrive_memory, agent rebrand). This plan **completes the flows**, **adds the missing adaptive Studio types**, and **deepens the agentic layer** so every surface feels like one OS driven by Thrive.
 
-You asked Copilot to "add Rene Auguste to the ThriveIN content project studio."
-It replied confidently ("I'm on it… adding Rene Auguste now") — **but it never actually did it.** That action is not wired to any tool. The reply was a hallucination.
+The work is grouped into 6 phases. Each phase is shippable on its own.
 
-This is the exact thing your `ai-data-integrity-and-hallucination-prevention` rule is meant to prevent, and it's slipping through on the project-management surface.
+---
 
-## What Copilot can actually do today (audited)
+## Phase 1 — Make the Conversational Entry Truly Universal
+Goal: One prompt bar everywhere, with voice, suggestions, and history.
 
-Two execution layers are wired in:
+1. **Global voice on ThrivePromptHero** — wire MediaRecorder → existing `voice-to-task` pattern (reuse Gemini transcription) → drop transcript into prompt.
+2. **Smart suggestion chips** — rotating context-aware prompts ("Plan my next podcast episode", "Find a videographer in Trinidad", "Draft sponsor outreach") generated from user's recent activity.
+3. **Recent intents drawer** — show last 5 routed prompts so users can re-run.
+4. **Prompt bar in top header** (desktop) + as a FAB (mobile) on every page, not just Home — universal entry.
+5. **Loading skeleton + error toast** — currently silent on failure.
 
-**A. `desk-agent` (used inside ThriveDesk chat) — 9 tools**
-- create_task, mark_task_done, send_message_to_collaborator, get_project_summary, schedule_reminder, draft_invoice, start_video_call, add_credit, ask_clarification
+## Phase 2 — Finish the Podcast Studio (real depth, not a stub)
+Goal: A creator can run a full episode lifecycle inside ThriveIN.
 
-**B. `agent-orchestrator` registry — 27 tools across 10 agent kinds**
-profile, talent, gig, project_manager, client_followup, payment, credit, opportunity, event, site_epk, money_admin (search creators, draft outreach, send DM, create gig, score applicants, create_project, spin_up_project, generate_milestones, send_payment_link, draft_invoice, draft_credit, publish_credit, create_event, refresh_epk, weekly_money_summary, etc.)
+1. **Episode detail dialog** — guests, scheduled date, status (draft/recording/editing/published), AI questions, show notes, audio/video file upload (uses unified storage quota).
+2. **Auto-transcript** — Gemini-based `transcribe-episode` edge fn (chunked audio → text + speaker labels).
+3. **Clip generator** — pick a transcript range → AI titles + 3 caption variants for IG/TikTok/X.
+4. **Sponsor pipeline** — sponsor table linked to episodes, status (pitched/negotiating/booked/paid), sync into ThrivePay invoice draft.
+5. **Guest outreach loop** — "Invite Guest" → magic-link Studio guest (already built) + auto-drafted outreach email via existing outreach engine.
+6. **Public episode page** at `/podcast/:projectId/:episodeId` with OG image (reuse event-og-image plugin pattern).
 
-**Memory & identity**
-- Persistent thread per user (`ai_conversations` title `__copilot__`) with full history hydrated server-side ✓
-- First name personalization in greeting ✓
-- Surface inference from URL ✓
+## Phase 3 — Adaptive Studio Engine (one Studio, many shapes)
+Goal: `workspace_type` actually drives the entire room.
 
-## What's MISSING (and why the screenshot failed)
+1. **Workspace registry** — `src/lib/workspaceTypes.ts` mapping each type → modules (sections), default tasks, default deliverables, copilot persona, default vault folders.
+2. **Built-in types**: `podcast` (done), `event`, `content`, `campaign`, `music`, `client`, `general`.
+3. **Event Studio** — run sheet timeline, vendor list (pulled from thrive_memory), guest list synced w/ existing creative_jams, sponsor pipeline, `gen-event-runsheet` edge fn.
+4. **Content Studio** — shot list, script, calendar, multi-platform export queue, Approval Board reuses Vault approval pattern.
+5. **Campaign Studio** — brand brief, asset checklist, deliverable matrix per platform, paid-vs-organic plan.
+6. **Music Studio** — tracklist, collaborator splits (% per role), release checklist (mastering/distribution/PR), pre-release sponsor offers.
+7. **Type chooser on creation** — `VoiceFirstCreateModal` already extracts brief; add a chip row so user can confirm/override the inferred type.
 
-1. **No `add_collaborator` / `invite_to_project` tool.** The model freely promises to add people but has no way to do it.
-2. **No `remove_collaborator` / `change_role` tool.**
-3. **No `list_my_projects` lookup tool**, so when you say "the ThriveIN content project" the agent can't disambiguate by name.
-4. **No `find_user` tool** to resolve a name like "Rene Auguste" to a `user_id` (must check connections + searchable users).
-5. **`desk-agent` system prompt does not enforce "never claim to do something you don't have a tool for."** It needs the same hallucination guard the rest of the platform uses.
-6. **No surfaced confirmation in chat after a tool runs** — the screenshot reply ("I'm on it…") is a future-tense promise, not a past-tense receipt. Replies must be receipts.
+## Phase 4 — Thrive as Real Agent (tools + autonomy + memory)
+Goal: Thrive doesn't just chat — it *does*.
 
-## Plan
+1. **Expand tool catalog in `agent-orchestrator`** — add: `create_podcast_episode`, `draft_outreach_sequence`, `generate_clip`, `book_vendor_from_memory`, `propose_event_runsheet`, `summarize_project_status`, `find_collaborators` (reuses match algorithm), `post_gig` (reuses gigs flow).
+2. **Memory writes** — when a user says "Carla is my favorite videographer", agent calls `remember(kind:'vendor', subject:'Carla', meta:{role:'videographer', rating:5})` automatically. Add `remember` + `forget` + `recall` tools.
+3. **Proactive nudges** — daily cron `desk-daily-nudge` already exists; expand it to scan thrive_memory + project status and propose ProactiveCards ("Episode 12 is unscheduled — want me to email Carla?").
+4. **Cross-surface awareness** — system prompt already includes top 20 memory rows; also inject: open projects, this week's invoices, pending matches, upcoming events. Build a `getThriveSnapshot(user_id)` helper used by all agent fns.
+5. **Approval-required vs auto-execute** — already in place; tune risk levels for new tools (outreach=approval, transcript=auto, sponsor invoice=approval).
 
-### 1. Add the missing project-collaboration tools (`desk-agent`)
-Add four new tools to `supabase/functions/desk-agent/index.ts`:
+## Phase 5 — Opportunity Intelligence
+Goal: Thrive surfaces *the right opportunity at the right time*.
 
-- **`find_user`** — resolves a spoken name to a profile. Searches the user's connections first (highest precision), then `public_profiles_safe` by `full_name ILIKE`. Returns top 3 matches with `user_id`, `full_name`, `username`, `avatar_url`. If 0 matches → ask_clarification. If 2+ ambiguous → ask_clarification with the candidates.
-- **`add_collaborator`** — inserts into `project_members` (role default `collaborator`). Auto-Accept pattern (per Projects Workspace memory) so the invitee lands in the project immediately. Posts a system message into the project chat. Sends a notification.
-- **`remove_collaborator`** — deletes from `project_members` (owner-only check via RLS + explicit guard).
-- **`list_my_projects`** — returns the caller's active projects (id, title, role, last activity). Used internally to disambiguate "the ThriveIN project" → exact `project_id`.
+1. **Daily match digest** — cron picks top 3 gigs + top 3 collaborators per active workspace_type and writes a ProactiveCard.
+2. **Sponsor radar** — for podcast/event/music workspaces, scan thrive_memory + connections for likely sponsors and propose outreach sequences.
+3. **EPK auto-update** — when a credit is added or project completes, agent proposes EPK refresh ("Add Episode 14 with @guest to your EPK?").
 
-All four are `safe_auto` for `add_collaborator` to the **owner** of the project; `requires_approval` if the caller is not the owner.
+## Phase 6 — Polish, Telemetry, Guardrails
+1. **Telemetry**: log every routed intent (`thrive_intent_logs` table) → improves routing model + powers admin insights.
+2. **Daily caps** already exist for Copilot; add per-tier caps for tool executions (Spark 5/day, Pro 50, Creator+ 250, Founder unlimited).
+3. **Empty/onboarding states** for each Studio type — first-run cards explain modules.
+4. **Memory management UI** at `/settings/memory` — list, edit, delete what Thrive remembers about you.
+5. **Mobile polish** — single-scroll layouts for each new Studio type, safe-area insets, no backdrop-blur.
 
-### 2. Harden the `desk-agent` system prompt (anti-hallucination)
-Add explicit rules:
-- "You may ONLY claim to have done something after the corresponding tool returns ok=true. If no tool exists for the request, say so plainly and offer the closest available action."
-- "Never use future tense ('I'll add…', 'I'm on it…'). Reply with the receipt: 'Added Rene Auguste to ThriveINTNT — they'll see it in their Desk.'"
-- "If the target project, person, or amount is ambiguous, call `ask_clarification` instead of guessing."
+---
 
-### 3. Register the new tools in `orch_tool_registry`
-Migration to add the four new rows under `agent_kind='project_manager'` so the orchestrator (used outside Desk) can also call them. `add_collaborator` = `requires_approval` at orchestrator level (one-tap approval card), `find_user` and `list_my_projects` = `safe_auto`.
+## Technical Sketch
+```text
+ThrivePromptHero (Home + Header + FAB)
+        │  voice or text
+        ▼
+route-thrive-intent ──► creates workspace OR routes to surface
+        │
+        ▼
+   Studio Room (workspace_type aware)
+   ├─ PodcastStudioSection      [Phase 2]
+   ├─ EventStudioSection        [Phase 3]
+   ├─ ContentStudioSection      [Phase 3]
+   ├─ CampaignStudioSection     [Phase 3]
+   ├─ MusicStudioSection        [Phase 3]
+   └─ Vault / Pad / Chat / Money (shared)
+        │
+        ▼
+   Thrive Agent  (orchestrator + tool catalog)
+   ├─ thrive_memory (long-term)
+   ├─ snapshot(user) (short-term)
+   └─ ProactiveCards + Approvals
+```
 
-### 4. Wire surface context so identity is always present
-- Pass `current_user: { id, full_name, first_name, username }` into every `desk-agent` and `agent-orchestrator` call (currently first_name is only passed to `thrive-ai-chat`).
-- Pass `active_project: { id, title }` automatically when the user is on `/desk/:id`. This kills "which project?" round-trips.
+New tables: `podcast_episodes` (done), `thrive_memory` (done), `episode_sponsors`, `episode_clips`, `event_runsheet_items`, `workspace_modules` (optional registry override), `thrive_intent_logs`.
 
-### 5. Receipt-style confirmations
-Update the post-tool reply switch in `desk-agent` to include the new tools and use past-tense receipts:
-- `add_collaborator` → "Added {full_name} to {project_title}. Posted a welcome note in the project chat."
-- `remove_collaborator` → "Removed {full_name} from {project_title}."
+New edge fns: `transcribe-episode`, `generate-clips`, `gen-event-runsheet`, `gen-content-shotlist`, `gen-music-release-plan`, `thrive-snapshot`, expanded `agent-orchestrator` tools.
 
-### 6. Capability discovery card (one-time)
-Add a small "What I can do" chip row in the Copilot drawer (collapsed by default) listing the live tool catalog grouped by surface. This makes the gap visible to you and prevents future "did it work?" confusion. Driven by a static manifest mirroring the registry — not a live DB query.
+---
 
-## Out of scope (call out, don't build now)
-- Changing project roles (owner/admin/collaborator) — needs UX decisions on permission boundaries.
-- Bulk add (multiple collaborators in one turn) — easy follow-up once the single-add tool ships.
-- Cross-workspace invites — depends on the workspace-collab roadmap.
+## Execution Order This Round
+We'll execute **Phase 1 → Phase 2 → start Phase 3 (Event Studio first)** in this build session. Phases 4–6 follow next session. Each phase ends with a deploy + a quick smoke test. I'll batch DB migrations together at each phase boundary to minimize approval friction.
 
-## Files touched
-
-**New / migration**
-- `supabase/migrations/<ts>_copilot_collaborator_tools.sql` — 4 new rows in `orch_tool_registry`.
-
-**Edited**
-- `supabase/functions/desk-agent/index.ts` — add 4 tool definitions + handlers + receipts + hardened system prompt.
-- `supabase/functions/agent-orchestrator/index.ts` — route the 4 new tools to `desk-agent` handler.
-- `src/components/desk/ThriveAgentFab.tsx` — pass `current_user` + `active_project` in surfaceContext; add capability chip row.
-- `src/lib/thriveCopilot.ts` — extend `surfaceContext` typing.
-
-## Acceptance test (manual)
-1. In Copilot say: "Add Rene Auguste to the ThriveIN content project."
-   → Expect: confirmation receipt, Rene appears in `project_members`, system message in project chat, notification fired.
-2. Say: "Add John" (ambiguous).
-   → Expect: clarification card listing matching Johns from your connections.
-3. Say: "Send Rene the brief" (no such tool).
-   → Expect: honest "I can't send files yet — want me to post a chat message linking the brief instead?" — no false promise.
+Ready to start with Phase 1?

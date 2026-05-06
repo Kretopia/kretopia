@@ -309,11 +309,13 @@ export const StudioRoom = ({
         currentUserId={currentUserId}
       />
 
+      {/* Proactive nudges — render once, responsive layout below */}
+      {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
+
       {/* Mobile: original single-scroll order */}
       <div className="lg:hidden">
         {RoomChatButton}
         {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
-        {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
         {project.workspace_type === "podcast" && (
           <PodcastStudioSection project={project} currentUserId={currentUserId} />
         )}
@@ -328,7 +330,7 @@ export const StudioRoom = ({
       {/* Desktop: 2-column draggable widget board */}
       <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
         <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
-          {showAITools && <ProactiveCards project={project} tasks={tasks} onAction={onNavigateToTab} />}
+          {/* (ProactiveCards lifted above the responsive split — see top of return) */}
           {project.workspace_type === "podcast" && (
             <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
               <PodcastStudioSection project={project} currentUserId={currentUserId} />

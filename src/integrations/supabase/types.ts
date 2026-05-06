@@ -11743,6 +11743,200 @@ export type Database = {
         }
         Relationships: []
       }
+      scout_preferences: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          exclude_keywords: string[] | null
+          extra_keywords: string[] | null
+          last_run_at: string | null
+          min_fit_score: number | null
+          remote_only: boolean | null
+          sources: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          exclude_keywords?: string[] | null
+          extra_keywords?: string[] | null
+          last_run_at?: string | null
+          min_fit_score?: number | null
+          remote_only?: boolean | null
+          sources?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          exclude_keywords?: string[] | null
+          extra_keywords?: string[] | null
+          last_run_at?: string | null
+          min_fit_score?: number | null
+          remote_only?: boolean | null
+          sources?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      scout_runs: {
+        Row: {
+          duration_ms: number | null
+          error: string | null
+          finished_at: string | null
+          found_count: number | null
+          id: string
+          inserted_count: number | null
+          sources: string[] | null
+          started_at: string
+          trigger: string
+          user_id: string | null
+        }
+        Insert: {
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          found_count?: number | null
+          id?: string
+          inserted_count?: number | null
+          sources?: string[] | null
+          started_at?: string
+          trigger: string
+          user_id?: string | null
+        }
+        Update: {
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          found_count?: number | null
+          id?: string
+          inserted_count?: number | null
+          sources?: string[] | null
+          started_at?: string
+          trigger?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      scouted_gig_actions: {
+        Row: {
+          action: string
+          cover_letter: string | null
+          created_at: string
+          id: string
+          outcome: string | null
+          scouted_gig_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          cover_letter?: string | null
+          created_at?: string
+          id?: string
+          outcome?: string | null
+          scouted_gig_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          cover_letter?: string | null
+          created_at?: string
+          id?: string
+          outcome?: string | null
+          scouted_gig_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scouted_gig_actions_scouted_gig_id_fkey"
+            columns: ["scouted_gig_id"]
+            isOneToOne: false
+            referencedRelation: "scouted_gigs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scouted_gigs: {
+        Row: {
+          apply_url: string | null
+          company: string | null
+          compensation: string | null
+          contact_email: string | null
+          deadline: string | null
+          dedupe_key: string
+          description: string | null
+          expires_at: string
+          fit_reason: string | null
+          fit_score: number
+          id: string
+          location: string | null
+          posted_at: string | null
+          raw: Json | null
+          remote: boolean | null
+          scouted_at: string
+          skills: string[] | null
+          source: string
+          source_name: string | null
+          source_url: string
+          tags: string[] | null
+          target_user_id: string
+          title: string
+        }
+        Insert: {
+          apply_url?: string | null
+          company?: string | null
+          compensation?: string | null
+          contact_email?: string | null
+          deadline?: string | null
+          dedupe_key: string
+          description?: string | null
+          expires_at?: string
+          fit_reason?: string | null
+          fit_score?: number
+          id?: string
+          location?: string | null
+          posted_at?: string | null
+          raw?: Json | null
+          remote?: boolean | null
+          scouted_at?: string
+          skills?: string[] | null
+          source: string
+          source_name?: string | null
+          source_url: string
+          tags?: string[] | null
+          target_user_id: string
+          title: string
+        }
+        Update: {
+          apply_url?: string | null
+          company?: string | null
+          compensation?: string | null
+          contact_email?: string | null
+          deadline?: string | null
+          dedupe_key?: string
+          description?: string | null
+          expires_at?: string
+          fit_reason?: string | null
+          fit_score?: number
+          id?: string
+          location?: string | null
+          posted_at?: string | null
+          raw?: Json | null
+          remote?: boolean | null
+          scouted_at?: string
+          skills?: string[] | null
+          source?: string
+          source_name?: string | null
+          source_url?: string
+          tags?: string[] | null
+          target_user_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       sequence_emails: {
         Row: {
           body: string

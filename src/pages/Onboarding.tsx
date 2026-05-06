@@ -557,6 +557,26 @@ export default function Onboarding() {
 
         <Card className="w-full max-w-lg relative z-10 border-primary/10 shadow-xl shadow-primary/5 overflow-hidden">
 
+          {/* Unified funnel header — stepper + live XP counter */}
+          {phase !== "verify" && (() => {
+            const stepperPhase: StepKey = phase === "discover" ? "discover" : "review";
+            const xp =
+              (avatarUrl ? 10 : 0) +
+              (bio && bio.length >= 20 ? 10 : 0) +
+              (skills.length >= 3 ? 10 : 0) +
+              (selectedCredits.size >= 1 ? 15 : 0) +
+              (role ? 5 : 0) +
+              (location ? 5 : 0);
+            return (
+              <div className="px-6 pt-6 pb-3 flex items-start justify-between gap-3 border-b border-border/40 bg-gradient-to-b from-primary/[0.03] to-transparent">
+                <div className="flex-1 min-w-0">
+                  <FunnelStepper current={stepperPhase} />
+                </div>
+                <OnboardingXPCounter xp={xp} className="mt-0.5 shrink-0" />
+              </div>
+            );
+          })()}
+
           {/* ═══════════════════════════════════════════ */}
           {/* PHASE 1: DISCOVER                          */}
           {/* ═══════════════════════════════════════════ */}

@@ -29,6 +29,7 @@ import { PadPreviewSection } from "./PadPreviewSection";
 import { DeliverablesSection } from "./DeliverablesSection";
 import { ProductionPrepSection } from "./ProductionPrepSection";
 import { PodcastStudioSection } from "./PodcastStudioSection";
+import { EventStudioSection } from "./EventStudioSection";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
 import { supabase } from "@/integrations/supabase/client";
@@ -316,6 +317,9 @@ export const StudioRoom = ({
         {project.workspace_type === "podcast" && (
           <PodcastStudioSection project={project} currentUserId={currentUserId} />
         )}
+        {project.workspace_type === "event" && (
+          <EventStudioSection project={project} currentUserId={currentUserId} />
+        )}
         {mobileWorkColumn}
         {mobileSideColumn}
         <div className="h-12" />
@@ -328,6 +332,11 @@ export const StudioRoom = ({
           {project.workspace_type === "podcast" && (
             <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
               <PodcastStudioSection project={project} currentUserId={currentUserId} />
+            </div>
+          )}
+          {project.workspace_type === "event" && (
+            <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+              <EventStudioSection project={project} currentUserId={currentUserId} />
             </div>
           )}
           <div className="flex items-center justify-between px-1">

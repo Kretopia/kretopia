@@ -41,6 +41,19 @@ export function ThrivePromptHero() {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
+  // Listen for external prompt fill (Recent Intents, suggestion chips elsewhere)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ prompt?: string; submit?: boolean }>).detail;
+      if (!detail?.prompt) return;
+      setText(detail.prompt);
+      if (detail.submit) void submit(detail.prompt);
+    };
+    window.addEventListener("thrive-prompt:fill", handler);
+    return () => window.removeEventListener("thrive-prompt:fill", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function submit(raw: string) {
     const prompt = raw.trim();
     if (!prompt || busy) return;

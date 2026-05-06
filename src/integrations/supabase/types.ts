@@ -15428,10 +15428,12 @@ export type Database = {
           share_link_id: string
         }[]
       }
-      resolve_storage_owner: {
-        Args: { _name: string; _owner: string }
-        Returns: string
-      }
+      resolve_storage_owner:
+        | { Args: { _name: string; _owner: string }; Returns: string }
+        | {
+            Args: { _bucket?: string; _name: string; _owner: string }
+            Returns: string
+          }
       rsvp_to_event: {
         Args: {
           p_event_id: string

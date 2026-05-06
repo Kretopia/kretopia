@@ -108,6 +108,24 @@ export function DesktopCopilotRail() {
     }
   }, [messages, streaming]);
 
+  // Reserve horizontal space on desktop so the rail doesn't cover the page.
+  // Mobile (<lg) ignores this — rail is hidden there.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!visible || collapsed) {
+      root.style.setProperty("--copilot-rail-w", "0px");
+    } else {
+      // Match the aside widths below.
+      root.style.setProperty(
+        "--copilot-rail-w",
+        window.matchMedia("(min-width: 1280px)").matches ? "380px" : "340px",
+      );
+    }
+    return () => {
+      root.style.setProperty("--copilot-rail-w", "0px");
+    };
+  }, [visible, collapsed]);
+
   const persistCollapsed = (v: boolean) => {
     setCollapsed(v);
     try { localStorage.setItem(STORAGE_KEY, v ? "1" : "0"); } catch {}

@@ -584,10 +584,6 @@ export default function Onboarding() {
             <div className="p-6 sm:p-8 space-y-6 animate-fade-in">
               {/* Header */}
               <div className="text-center space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                  <Sparkles className="h-3 w-3" />
-                  Step 1 of 3 · Find your work
-                </div>
                 <h1 className="text-2xl font-bold tracking-tight">We're building your creative identity</h1>
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto">
                   Drop your name (and a portfolio link if you have one) — we'll search the web for your work.

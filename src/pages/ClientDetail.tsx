@@ -124,14 +124,59 @@ const ClientDetail = () => {
             <FolderKanban className="h-3.5 w-3.5" /> Projects ({projects.length})
           </h2>
           <Button size="sm" variant="ghost" onClick={() => navigate(`/desk?client=${client.id}`)}>
-            <Plus className="h-3.5 w-3.5 mr-1" /> New
+            <Plus className="h-3.5 w-3.5 mr-1" /> New Studio
           </Button>
         </div>
-        <StudioCardsGrid
-          projects={projects as any}
-          onNewProject={() => navigate(`/desk?client=${client.id}`)}
-        />
+
+        {projects.length > 0 ? (
+          <div className="space-y-2">
+            {(projects as any[]).map((p) => (
+              <div key={p.id} className="rounded-lg border border-border bg-card p-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/desk/${p.id}`)}
+                  className="flex-1 min-w-0 text-left"
+                >
+                  <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
+                  <p className="text-[11px] text-muted-foreground capitalize">{p.status || "active"}</p>
+                </button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5"
+                  onClick={() => { setEmailingProjectId(p.id); sendStudioLinkEmail(p.id, p.title || "Project"); }}
+                  disabled={sendingEmail || !client.contact_email}
+                  title={!client.contact_email ? "Add a client email first" : "Email client a one-tap Studio link"}
+                >
+                  {sendingEmail && emailingProjectId === p.id ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Send className="h-3.5 w-3.5" />
+                  )}
+                  Email link
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShareProjectId(p.id)}>
+                  Share
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <StudioCardsGrid
+            projects={projects as any}
+            onNewProject={() => navigate(`/desk?client=${client.id}`)}
+          />
+        )}
       </section>
+
+      {shareProjectId && (
+        <GuestStudioShareDialog
+          open={!!shareProjectId}
+          onOpenChange={(o) => !o && setShareProjectId(null)}
+          projectId={shareProjectId}
+          projectTitle={(projects as any[]).find((p) => p.id === shareProjectId)?.title}
+        />
+      )}
 
       {/* Contacts */}
       <section className="mb-6">

@@ -9,13 +9,7 @@ import { GuestStudioShareDialog } from "@/components/project/GuestStudioShareDia
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 
 const ClientDetail = () => {
   const { clientId } = useParams<{ clientId: string }>();

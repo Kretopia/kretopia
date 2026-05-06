@@ -155,11 +155,11 @@ Bio: ${(profile.bio || "").slice(0, 300)}`;
         {
           role: "system",
           content:
-            "You extract REAL paid creative gigs from search results. Be strict: skip generic listings pages, skip irrelevant items, skip articles. Only return entries that look like actual job/casting/freelance posts with clear context. Score fit 0-100 against the creator profile (skills overlap, role match, location, seniority).",
+            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) Skip ANY post older than 30 days — if the snippet mentions '1 year ago', '6 months ago', 'no longer accepting', 'expired', 'closed', or a date older than 30 days, REJECT IT. (2) Skip generic listing pages, articles, blog posts. (3) Only return entries that are clearly active job/casting/freelance posts. (4) Score fit 0-100 against the creator profile.",
         },
         {
           role: "user",
-          content: `CREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract REAL gigs only. For each: title, company (if any), location, remote(boolean), description (1-2 sentences), compensation (if stated), contact_email (if visible), apply_url (default to source URL), skills array, fit_score (0-100), fit_reason (one short sentence), source (web|linkedin|instagram|ats|gigboard).`,
+          content: `TODAY: ${new Date().toISOString().slice(0,10)}\n\nCREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract ONLY active gigs posted in the last 30 days. For each: title, company, location, remote, description (1-2 sentences), compensation, contact_email, apply_url, posted_age (e.g. "2 days ago", "3 weeks ago" — REQUIRED, infer from snippet), skills, fit_score, fit_reason, source.`,
         },
       ],
       tools: [{

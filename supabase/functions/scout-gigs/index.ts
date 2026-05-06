@@ -114,7 +114,7 @@ async function extractAndScore(
   const profileBlurb = `Role: ${profile.role || "creative"}
 Sub-roles: ${(profile.sub_roles || []).join(", ")}
 Skills: ${(profile.skills || []).join(", ")}
-Location: ${[profile.city, profile.country].filter(Boolean).join(", ") || "remote"}
+Location: ${profile.location || "remote"}
 Bio: ${(profile.bio || "").slice(0, 300)}`;
 
   const r = await fetch(AI_URL, {

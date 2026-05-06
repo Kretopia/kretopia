@@ -146,7 +146,7 @@ export const MagicComposeDialog = ({ open, onOpenChange, onComposed, initialTitl
 
           {/* Images */}
           <div>
-            <Label className="text-xs">Images — drop everything in. AI picks the cover and places the rest.</Label>
+            <Label className="text-xs">Images — drop everything in. Smart layout picks the cover and places the rest.</Label>
             <div className="mt-1.5 grid grid-cols-3 sm:grid-cols-4 gap-2">
               {images.map(url => (
                 <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-border group">

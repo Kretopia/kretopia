@@ -1,5 +1,5 @@
 /**
- * Creative Circle™ — 6° Network Referral Engine
+ * Creative Circle — 6° Network Referral Engine
  * 
  * A prestige-based referral system inspired by "six degrees of separation"
  * where inviting creatives builds your professional network tier,

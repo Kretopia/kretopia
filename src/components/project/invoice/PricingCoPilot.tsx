@@ -315,7 +315,7 @@ export function PricingCoPilot({
   const quickPrompts = hasCtx
     ? [
         {
-          label: `✨ Draft ${docLabel} from this Studio`,
+          label: `Draft ${docLabel} from this Studio`,
           prompt: `Use the LIVE PROJECT CONTEXT in your system prompt. Draft a ${docLabel} now — propose a line item per deliverable + key notes, suggest sensible rates in ${currency}, mark anything you need from me as "TBD" so I can fill it in. Then call generate_line_items.`,
         },
         { label: "📊 Calculate markups", prompt: `Here are my supplier/subcontractor costs for this project. Help me calculate competitive markups in ${currency}.` },

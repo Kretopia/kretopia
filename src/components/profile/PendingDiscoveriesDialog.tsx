@@ -261,7 +261,7 @@ export const PendingDiscoveriesDialog = ({ open, onOpenChange, onChanged, onResc
             </div>
           ) : items.length === 0 ? (
             <div className="py-10 text-center space-y-3">
-              <p className="text-sm text-muted-foreground">No pending finds. You're all caught up ✨</p>
+              <p className="text-sm text-muted-foreground">No pending finds. You're all caught up</p>
               {onRescan && (
                 <Button onClick={onRescan} disabled={scanning} size="sm" variant="outline" className="gap-2">
                   {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}

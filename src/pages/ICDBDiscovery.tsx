@@ -74,7 +74,7 @@ const ICDBDiscovery = () => {
   return (
     <>
       <Helmet>
-        <title>Discover Creators — ThriveCredits™ | ThriveIN</title>
+        <title>Discover Creators — ThriveCredits | ThriveIN</title>
         <meta name="description" content="Find verified creative professionals matched by style consistency, verified work history, and smart compatibility scoring." />
       </Helmet>
 

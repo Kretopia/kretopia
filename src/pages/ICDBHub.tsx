@@ -49,7 +49,7 @@ const ICDBHub = () => {
   return (
     <>
       <Helmet>
-        <title>ThriveCredits™ — Your Verified Creative History | ThriveIN</title>
+        <title>ThriveCredits — Your Verified Creative History | ThriveIN</title>
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">
@@ -60,7 +60,7 @@ const ICDBHub = () => {
                 <Database className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight">ThriveCredits™</h1>
+                <h1 className="text-xl font-bold tracking-tight">ThriveCredits</h1>
                 <p className="text-[11px] text-muted-foreground">Your verified creative history — portable, permanent, professional</p>
               </div>
             </div>

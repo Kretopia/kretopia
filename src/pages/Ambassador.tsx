@@ -25,7 +25,7 @@ interface Application {
 }
 
 const TIERS = [
-  { signups: 5, label: "Spark Ambassador", icon: "✨", reward: "100 ThriveCoins + Spark badge" },
+  { signups: 5, label: "Spark Ambassador", icon: "", reward: "100 ThriveCoins + Spark badge" },
   { signups: 25, label: "Connector", icon: "🔗", reward: "1 month Pro free + Connector badge" },
   { signups: 100, label: "Catalyst", icon: "⚡", reward: "3 months Pro + 5% revshare from referred users" },
   { signups: 500, label: "Mogul", icon: "👑", reward: "Lifetime Pro + 5% revshare + featured profile" },

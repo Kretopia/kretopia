@@ -872,7 +872,7 @@ const ApplicantCard = ({
               <div className="mb-2 p-2 bg-muted/50 rounded-md">
                 <div className="flex items-center gap-2 mb-1">
                   <Sparkles className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">AI Match: {applicant.ai_match_score}%</span>
+                  <span className="text-sm font-medium">Smart Match: {applicant.ai_match_score}%</span>
                 </div>
                 {applicant.match_reasons && (
                   <ul className="text-xs text-muted-foreground space-y-1">

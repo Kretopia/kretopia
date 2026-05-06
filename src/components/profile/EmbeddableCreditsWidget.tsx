@@ -30,7 +30,7 @@ export function EmbeddableCreditsWidget({ userId, displayName, thriveId, creditC
   const baseUrl = APP_URL;
   const profileUrl = `${baseUrl}/epk/${userId}`;
 
-  const embedHtml = `<!-- ThriveCredits™ Widget -->
+  const embedHtml = `<!-- ThriveCredits Widget -->
 <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px;max-width:360px;font-family:system-ui,-apple-system,sans-serif;background:#fafafa">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
     <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center">

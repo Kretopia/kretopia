@@ -35,6 +35,7 @@ const Auth = () => {
   const [showWaitlistForm, setShowWaitlistForm] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -366,6 +367,15 @@ const Auth = () => {
 
       if (connectUserId) localStorage.setItem('pendingConnect', connectUserId);
 
+      // If email confirmation is required, Supabase returns a user with no session.
+      // Don't navigate to /onboarding (it would bounce back to /auth) — show a "check your email" screen instead.
+      if (!signUpData?.session) {
+        setPendingVerificationEmail(email);
+        toast({ title: "Check your email", description: "We sent you a verification link to finish signing up." });
+        setLoading(false);
+        return;
+      }
+
       toast({ title: "Welcome to ThriveIN!", description: "Let's set up your profile." });
       navigate(accountType === "company" ? "/company-onboarding" : "/onboarding");
     }
@@ -410,6 +420,42 @@ const Auth = () => {
 
           {isPasswordReset ? (
             <PasswordResetForm loading={loading} onSubmit={handlePasswordReset} />
+          ) : pendingVerificationEmail ? (
+            <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Lock className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-lg">Confirm your email to continue</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  We sent a verification link to <span className="font-medium text-foreground">{pendingVerificationEmail}</span>.
+                  Click it to finish signing up and start onboarding.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await supabase.auth.resend({ type: "signup", email: pendingVerificationEmail });
+                    toast({ title: "Verification email resent" });
+                  } catch (err: any) {
+                    toast({ title: "Could not resend", description: err?.message || "Try again in a moment.", variant: "destructive" });
+                  }
+                }}
+                className="text-sm text-primary font-semibold hover:underline"
+              >
+                Resend verification email
+              </button>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => { setPendingVerificationEmail(null); setActiveTab("signin"); }}
+                  className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                >
+                  Use a different email
+                </button>
+              </div>
+            </div>
           ) : (
             <Tabs value={activeTab} onValueChange={async (tab) => {
               setActiveTab(tab);

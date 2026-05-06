@@ -32,6 +32,7 @@ import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import UnifiedHome from "./components/home/UnifiedHome";
 import { GlobalIncomingCall } from "./components/calls/GlobalIncomingCall";
 import { ThriveAgentFab } from "./components/desk/ThriveAgentFab";
+import { DesktopCopilotRail } from "./components/desk/DesktopCopilotRail";
 
 // Lazy load active page components
 const Auth = lazy(() => import("./pages/Auth"));
@@ -248,13 +249,18 @@ const AppContent = () => {
       {showBottomNav && <BottomNav />}
       {showBottomNav && <QuickActionFab />}
       <ThriveAgentFab />
+      <DesktopCopilotRail />
       
       {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
       {user && <GlobalIncomingCall />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />
       {showGuestBanner && <GuestBanner />}
-      <main id="main-content" className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}>
+      <main
+        id="main-content"
+        className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}
+        style={{ paddingRight: "var(--copilot-rail-w, 0px)" }}
+      >
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Active MVP Routes */}

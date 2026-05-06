@@ -54,6 +54,7 @@ export function EpisodeDetailDialog({ open, onOpenChange, episode, projectId, cu
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [clips, setClips] = useState<Clip[]>([]);
   const [genClipsBusy, setGenClipsBusy] = useState(false);
+  const [sponsorSuggestions, setSponsorSuggestions] = useState<{ label: string; why: string }[]>([]);
 
   const [sponsorName, setSponsorName] = useState("");
   const [sponsorAmount, setSponsorAmount] = useState("");
@@ -119,8 +120,9 @@ export function EpisodeDetailDialog({ open, onOpenChange, episode, projectId, cu
     }
     setGenClipsBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke<{ clips: Array<any> }>("generate-clips", {
+      const { data, error } = await supabase.functions.invoke<{ clips: Array<any>; sponsors?: Array<{ label: string; why: string }> }>("generate-clips", {
         body: {
+          transcript,
           transcript_excerpt: transcript,
           episode_title: episode.title,
           guest_names: episode.guest_names || [],
@@ -141,7 +143,8 @@ export function EpisodeDetailDialog({ open, onOpenChange, episode, projectId, cu
       const { data: inserted, error: insErr } = await (supabase as any).from("episode_clips").insert(rows).select();
       if (insErr) throw insErr;
       setClips((prev) => [...((inserted || []) as Clip[]), ...prev]);
-      toast({ title: `${rows.length} clips ready` });
+      setSponsorSuggestions(data?.sponsors || []);
+      toast({ title: `${rows.length} clips ready${data?.sponsors?.length ? ` · ${data.sponsors.length} sponsor ideas` : ""}` });
     } catch (e: any) {
       toast({ title: "Couldn't generate clips", description: e?.message, variant: "destructive" });
     } finally { setGenClipsBusy(false); }
@@ -220,6 +223,29 @@ export function EpisodeDetailDialog({ open, onOpenChange, episode, projectId, cu
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-bold inline-flex items-center gap-1.5"><DollarSign className="h-3.5 w-3.5" /> Sponsors</h4>
           </div>
+          {sponsorSuggestions.length > 0 && (
+            <div className="mb-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-1.5">Producer · Sponsor ideas</p>
+              <ul className="space-y-1.5">
+                {sponsorSuggestions.map((s, i) => (
+                  <li key={i} className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{s.label}</p>
+                      <p className="text-[11px] text-muted-foreground leading-snug">{s.why}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 shrink-0"
+                      onClick={() => { setSponsorName(s.label); }}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />Add
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="flex gap-2 mb-3">
             <Input placeholder="Sponsor name" value={sponsorName} onChange={(e) => setSponsorName(e.target.value)} className="flex-1" />
             <Input placeholder="Amount" type="number" value={sponsorAmount} onChange={(e) => setSponsorAmount(e.target.value)} className="w-24" />

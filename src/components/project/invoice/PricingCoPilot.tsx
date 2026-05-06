@@ -444,7 +444,25 @@ export function PricingCoPilot({
               </div>
               <div className="bg-background rounded-lg rounded-tl-none p-3 text-[13px] text-muted-foreground max-w-[90%] leading-relaxed">
                 <p className="font-semibold text-foreground mb-1.5">Hey! I'm your {docLabel} co-pilot 👋</p>
-                <p className="mb-2">Tell me about your project — costs, services, client info — and I'll help you build everything step by step.</p>
+                {hasCtx ? (
+                  <>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      <Badge variant="secondary" className="text-[10px] gap-1"><Check className="h-2.5 w-2.5" /> Studio loaded</Badge>
+                      {projectContext?.deliverables?.length > 0 && (
+                        <Badge variant="outline" className="text-[10px]">{projectContext.deliverables.length} deliverables</Badge>
+                      )}
+                      {projectContext?.notes?.length > 0 && (
+                        <Badge variant="outline" className="text-[10px]">{projectContext.notes.length} notes</Badge>
+                      )}
+                      {projectContext?.files?.length > 0 && (
+                        <Badge variant="outline" className="text-[10px]">{projectContext.files.length} files</Badge>
+                      )}
+                    </div>
+                    <p className="mb-2">I've pulled the brief, deliverables and notes from this project. Want me to draft the {docLabel} now?</p>
+                  </>
+                ) : (
+                  <p className="mb-2">Tell me about your project — costs, services, client info — and I'll help you build everything step by step.</p>
+                )}
                 <p className="text-[11px] text-muted-foreground/70">I can calculate markups, write professional descriptions, suggest terms, and fill in all the details for you.</p>
               </div>
             </div>

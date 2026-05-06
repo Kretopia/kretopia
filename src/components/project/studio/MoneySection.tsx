@@ -121,10 +121,12 @@ export const MoneySection = ({ project, isOwner, clientView = false, onOpenInvoi
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-              Project value
+              {clientView ? "Amount due" : "Project value"}
             </p>
             <p className="text-3xl font-black leading-none tracking-tight mt-1">
-              {fmt(value, project.currency)}
+              {clientView
+                ? fmt(invoice?.total_amount ?? value, project.currency)
+                : fmt(value, project.currency)}
             </p>
           </div>
         </div>

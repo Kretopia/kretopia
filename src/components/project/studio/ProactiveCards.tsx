@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Receipt, FileText, PartyPopper, ArrowRight } from "lucide-react";
+import { AlertTriangle, Receipt, FileText, PartyPopper, ArrowRight, HandCoins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,17 +34,25 @@ export const ProactiveCards = ({
   className,
 }: ProactiveCardsProps) => {
   const [invoices, setInvoices] = useState<any[]>([]);
+  const [paymentRequests, setPaymentRequests] = useState<any[]>([]);
 
   useEffect(() => {
     if (!project?.id) return;
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await supabase
-          .from("invoices")
-          .select("id, status")
-          .eq("project_id", project.id);
-        if (!cancelled) setInvoices(data || []);
+        const [invRes, pmtRes] = await Promise.all([
+          supabase.from("invoices").select("id, status").eq("project_id", project.id),
+          supabase
+            .from("milestones")
+            .select("id, title, amount, status, requested_by")
+            .eq("project_id", project.id)
+            .eq("status", "requested"),
+        ]);
+        if (!cancelled) {
+          setInvoices(invRes.data || []);
+          setPaymentRequests(pmtRes.data || []);
+        }
       } catch {
         // silent — proactive cards are non-critical
       }
@@ -61,6 +69,27 @@ export const ProactiveCards = ({
     const overdue = open.filter(
       (t) => t.due_date && new Date(t.due_date) < new Date(),
     );
+
+    // 0. Collaborator payment request waiting for owner approval (highest priority)
+    if (paymentRequests.length > 0) {
+      const first = paymentRequests[0];
+      out.push({
+        id: "pay-request",
+        tone: "money",
+        icon: HandCoins,
+        title:
+          paymentRequests.length === 1
+            ? `Payment request: ${first.title || "Untitled"}`
+            : `${paymentRequests.length} payment requests waiting`,
+        body:
+          paymentRequests.length === 1
+            ? `A collaborator submitted a request${first.amount ? ` for ${first.amount}` : ""}. Approve & invoice.`
+            : "Collaborators submitted payment requests. Review and approve.",
+        ctaLabel: "Review request",
+        ctaTab: "finance",
+        ctaIntent: "review-payment-requests",
+      });
+    }
 
     // 1. Overdue tasks
     if (overdue.length > 0) {
@@ -139,7 +168,7 @@ export const ProactiveCards = ({
     }
 
     return out.slice(0, 2); // never overwhelm — show top 2
-  }, [project, tasks, invoices]);
+  }, [project, tasks, invoices, paymentRequests]);
 
   if (cards.length === 0) return null;
 

@@ -177,7 +177,9 @@ export const StudioRoom = ({
       <StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />
       <DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />
       <PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />
-      <ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />
+      {showPrep && (
+        <ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />
+      )}
       <WorkSection tasks={tasks} projectId={project.id} currentUserId={currentUserId} collaborators={people} onUpdated={onUpdated} />
     </div>
   );
@@ -185,7 +187,10 @@ export const StudioRoom = ({
   const mobileSideColumn = (
     <div className="divide-y divide-border/60">
       {showMoney && (
-        <MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />
+        <MoneySection project={project} isOwner={isOwner} clientView={isClient} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />
+      )}
+      {isCollaborator && (
+        <RequestPaymentCard project={project} currentUserId={currentUserId} />
       )}
       <PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />
       <WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />

@@ -7154,6 +7154,7 @@ export type Database = {
           paid_to: string | null
           payment_intent_id: string | null
           project_id: string
+          requested_by: string | null
           status: string
           title: string
           updated_at: string | null
@@ -7170,6 +7171,7 @@ export type Database = {
           paid_to?: string | null
           payment_intent_id?: string | null
           project_id: string
+          requested_by?: string | null
           status?: string
           title: string
           updated_at?: string | null
@@ -7186,6 +7188,7 @@ export type Database = {
           paid_to?: string | null
           payment_intent_id?: string | null
           project_id?: string
+          requested_by?: string | null
           status?: string
           title?: string
           updated_at?: string | null
@@ -7281,6 +7284,48 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "milestones_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "feed_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_discovery"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_safe"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "milestones_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["user_id"]
           },
         ]
       }

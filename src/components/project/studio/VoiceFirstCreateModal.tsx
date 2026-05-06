@@ -208,7 +208,7 @@ export const VoiceFirstCreateModal = ({
           description: brief.project.summary || null,
           created_by: user.id,
           status: "active",
-          workspace_type: "general",
+          workspace_type: workspaceType,
           deal_type: paymentsInvolved ? "paid" : "personal",
           setup_completed: false,
         })

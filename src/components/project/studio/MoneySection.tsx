@@ -37,7 +37,7 @@ const fmt = (n: number | null | undefined, ccy: string | null | undefined) => {
   }
 };
 
-export const MoneySection = ({ project, isOwner, onOpenInvoice }: MoneySectionProps) => {
+export const MoneySection = ({ project, isOwner, clientView = false, onOpenInvoice }: MoneySectionProps) => {
   const [loading, setLoading] = useState(true);
   const [invoice, setInvoice] = useState<InvoiceLite | null>(null);
   const [marking, setMarking] = useState(false);

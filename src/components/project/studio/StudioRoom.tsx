@@ -203,7 +203,7 @@ export const StudioRoom = ({
       case "pad": return wrap(<PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />);
       case "prep": return wrap(<ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />);
       case "work": return wrap(<WorkSection tasks={tasks} projectId={project.id} currentUserId={currentUserId} collaborators={people} onUpdated={onUpdated} />);
-      case "money": return moneySignal.visible ? wrap(<MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />) : null;
+      case "money": return showMoney ? wrap(<MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />) : null;
       case "people": return wrap(<PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />);
       case "wrap": return wrap(<WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />);
       case "credit": return wrap(<AddCreditSection project={project} collaborators={people} />);

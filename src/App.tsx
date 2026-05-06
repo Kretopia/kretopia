@@ -32,6 +32,7 @@ import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import UnifiedHome from "./components/home/UnifiedHome";
 import { GlobalIncomingCall } from "./components/calls/GlobalIncomingCall";
 import { ThriveAgentFab } from "./components/desk/ThriveAgentFab";
+import { DesktopCopilotRail } from "./components/desk/DesktopCopilotRail";
 
 // Lazy load active page components
 const Auth = lazy(() => import("./pages/Auth"));

@@ -1,109 +1,70 @@
-# Launch Hardening Plan — ThriveIN
+## Goal
 
-## Recap: what we touched in recent sessions
-Home (UnifiedHome, ThrivePromptHero, RecentIntentsDrawer, PersonaCardsRow), Desk (DesktopCopilotRail, StudioRoom, DeliverablesBoard), Profile (DuplicateAccountBanner, EpisodeDetailDialog), and edge fn `generate-clips`. Everything else on your list has NOT been touched in this thread — so we treat the whole app as "needs audit," not "needs rebuild."
+One reliable, demo-ready flow:
 
----
+1. Owner creates a Studio (any workspace type), opts the AI Agent in.
+2. Owner invites a **Client** (from Clients section) and a **Collaborator/Supplier** (from People / Match / direct email) — each gets the right link + email.
+3. Client lands in a Studio that is **client-shaped**: upload anything → AI auto-files into Vault folders, chat, video calls, moodboard, brief, pad, approvals, milestones, quotes/invoices.
+4. Collaborator lands in a Studio that is **collaborator-shaped**: full collab surface (chat, vault, moodboard, brief, pad, tasks, approvals, video) **minus money** — but with a "Submit payment request to agent" action.
+5. Agent (owner) sees everything + can choose what is visible to Client vs. Collaborator (run-of-show, prep, etc. stay internal until shared).
 
-## My CTO/CPO recommendation: hybrid, not pure page-by-page
+## What exists today (audit)
 
-Pure page-by-page sounds clean but it will:
-- Re-do the same copy/branding work 22 times
-- Miss systemic bugs (auth, agent access, notifications) that show up everywhere
-- Leave you without a measurable "done" definition per page
+- `useStudioRole` already returns `owner | creative | collaborator | client | guest` and gates `canSeeMoney`, `canUseAI`, `canManage`, `canContribute`. ✅
+- `InviteToProjectDialog` lets you add a known ThriveIN user as `client | creative | collaborator` via `project_collaborators.agent_role`. ✅
+- `GuestStudioShareDialog` + `JoinGuestStudio` + `redeem-project-guest-link` edge fn → magic-link guest seat with `comment/upload/call` perms. ✅
+- `send-project-invitation` edge fn for in-app + email invite. ✅
+- StudioRoom, VaultTab, BriefHub/BriefSection, PadPreviewSection, ProductionPrepSection, MoneySection, DeliverablesSection, ProactiveCards (agent), video-call infra all wired. ✅
+- `route-studio-post` edge fn AI-routes quick posts to Vault/Brief/Notes/Tasks/Approvals. ✅ (this is the AI auto-sort backbone)
+- Clients section (`Clients.tsx`, `ClientDetail.tsx`, `ProjectClientChip`) exists but the "send Studio link from Client record" path is not wired end-to-end.
 
-**Better sequence: 3 horizontal sweeps → then vertical page-by-page polish → then a release gate.**
+## Gaps to close (this sweep)
 
-Horizontal sweeps fix things ONCE across the app. Vertical passes then become fast (minutes per page, not hours), and you'll know exactly what "done" means.
+### A. Single invite entry point, role-aware
+1. From **Client detail**: "Open Studio" → if no project linked yet, prompt "Create new Studio" (uses VoiceFirstCreateModal preselected with this client) OR "Attach to existing"; "Send Studio link to client" → opens `GuestStudioShareDialog` pre-filled with `role=client` and a one-click "Email client" using their saved email via `send-project-invitation`.
+2. From **People / Match profile / chat header**: "Add to project" → existing `InviteToProjectDialog` (role chooser already there). Verify email path for non-users (see B).
+3. From **Studio header (agent only)**: a single "Invite" sheet with two tabs — *Client* and *Collaborator/Supplier* — that wraps the two existing dialogs, so the agent isn't hunting.
 
----
+### B. Email-or-username invites for non-users
+- `InviteToProjectDialog` currently only supports a `recipientUserId`. Add an "Invite by email" mode that:
+  - Inserts `project_collaborators` row with `email` (no user_id) + `agent_role`.
+  - Calls `send-project-invitation` with `inviteeEmail` so they get a magic-link → on accept they bind to the project_collaborators row.
+- Confirm `send-project-invitation` already handles `inviteeEmail`; if not, extend it.
 
-## Phase 0 — Setup (before any code)
-1. Pin a **Page Readiness Checklist** in memory (the rubric below).
-2. Create a **Launch Readiness board** as a tracked task list — one task per page, each with the same 12-point rubric.
-3. Snapshot current state: run a build, capture console errors per route, log broken links. This is our baseline.
+### C. AI auto-file uploads in Vault (client/collab uploads)
+- Today `route-studio-post` routes Studio Pulse posts. Extend the same idea to **Vault uploads** from Client/Collaborator:
+  - On file upload via `VaultTab` (when uploader is not owner OR file lands in "Inbox"), call a new `route-vault-file` edge fn (or reuse `route-studio-post` pattern) that picks a folder from the project's existing Vault folders (Brief / Moodboard / WIP / Final / Receipts / etc.) using filename + mime + project context via Lovable AI gateway (`google/gemini-2.5-flash`).
+  - Default to "Inbox" folder if confidence is low; pin a `pending_review` flag visible to owner.
 
-**Rubric (per page):** Branding · Copy · UI · UX/mobile · Agent access · Automation · Flows · Notifications · Links · Shares · Non-user access · Upgrade/gating · Backend/API health.
+### D. Role-gated Studio surface (verify + tighten)
+- Audit StudioRoom sections against `useStudioRole`:
+  - Client: hide Money, Run-of-Show/Production Prep (unless `share_with_client=true`), AI/Copilot tools that cost owner. Show Brief, Vault, Moodboard, Pad, Chat, Calls, Approvals, Milestones, Quotes/Invoices (read + pay).
+  - Collaborator: same as Client minus Money widgets, **plus** a "Request payment from agent" button that opens a small form → inserts a `payment_requests` row + notifies owner.
+  - Owner/Agent: full + a per-section "Share with client" toggle (already partial in `ShareReviewLinkDialog`; extend to Brief/Run-of-Show/Prep).
 
----
+### E. Collaborator payment request (new, small)
+- New table `project_payment_requests` (or reuse `milestones` with `requested_by` + status `requested`). Prefer extending milestones: add `requested_by uuid`, status `requested`. Collaborator submits → owner gets an inbox card on Studio Home (ProactiveCards) → one-tap "Approve & invoice" reuses existing milestone/invoice path.
 
-## Phase 1 — Horizontal sweeps (do these FIRST, ~1 sprint each)
+### F. Agent milestones / quotes / invoices in client view
+- Confirm `MoneySection` renders a **client-safe read-only** subview when `role==='client'`: shows milestones + quotes + invoice "Pay" button only; hides cost basis, internal notes, ProactiveCards money cards. (`useStudioRole.canSeeMoney=false` currently hides the whole section — we need a third state: `viewClientMoney=true` for clients only.)
 
-### Sweep A — Brand & Copy System
-- Audit every `text-*`, `bg-*` for hardcoded colors → semantic tokens
-- Apply AI Naming Convention everywhere (Smart Match, Project Copilot, Thrive — no "AI" in user copy, no ™, no ✨)
-- Centralize empty-states, error toasts, CTA verbs in one copy file
-- Fix any "Last Name" usages — switch to first-name + initial per your earlier feedback
+## Execution order (this turn = phase 1)
 
-### Sweep B — Agent & Automation Layer
-- Single source of truth for Copilot access (`useStudioRole`, `hasProAccess`, `useFeatureGate`) — audit every surface that calls `streamCopilot` / `sendAgentIntent`
-- Audit `orch_actions` → ProactiveCard rendering on Home/Desk/Pay/Match
-- Confirm daily caps (`consume_copilot_message`) surface clean errors
-- Confirm DesktopCopilotRail + ThriveAgentFab don't double-mount
+I will execute in this order, smallest blast radius first:
 
-### Sweep C — Auth, Routing, Shares, Non-user Access
-- Guest masking rules (first name + initial, blurred map)
-- Public share routes: `/p/:username`, `/g/:slug`, `/e/:slug`, `/c/:slug` — OG images, soft-gating, deep-link return
-- Notification → action_url deep-link audit (PostgreSQL triggers)
-- Mobile safe-area + bottom nav clearance audit
+1. **D + F** — verify/tighten role gating in StudioRoom + add a `clientMoneyView` mode in MoneySection so clients see milestones/invoices. (Pure UI/gating.)
+2. **A.3** — single "Invite" sheet in Studio header (Client tab / Collaborator tab) wrapping the two existing dialogs.
+3. **A.1** — wire Client-detail "Open Studio" + "Send Studio link" actions.
+4. **B** — extend `InviteToProjectDialog` with email-mode + verify `send-project-invitation` handles email.
+5. **C** — `route-vault-file` edge fn + hook into `VaultTab` uploads (auto-file to folder, fall back to Inbox).
+6. **E** — collaborator "Request payment" → milestone with `status='requested'` + owner inbox card.
 
-After Sweeps A-C, ~70% of your per-page issues will already be fixed.
+Phases 2 (cross-Studio polish, run-of-show share toggles) will follow once you greenlight phase 1.
 
----
+## Technical notes
 
-## Phase 2 — Vertical page-by-page polish
-
-Order by **revenue + investor demo impact**, not alphabetical:
-
-1. **Landing** — hero, social proof, claim funnel
-2. **Onboarding** — AI flow, founder auto-match, intent persistence
-3. **Home** — PersonaCards, ThrivePrompt, MoneyBrief, streaks
-4. **Profile / EPK** — hero, credits, work-with-me, share
-5. **Desk / Studio** — Studio Room, Vault, Pad, Brief, Voice-to-task
-6. **Match** — Swipe, Browse, Network, ThriveCredits
-7. **Gigs** — Marketplace, Scout, Apply, Lifecycle
-8. **Pay / ThrivePay** — Hub, invoices, expenses, MoneyBrief
-9. **Fund** — Campaigns, trust panel
-10. **Events / Sessions** — IRL, RSVP, chat, roster
-11. **Discover** — Map, nearby, modular hub
-12. **Messages** — Chats, calls tab, typing
-13. **Thrive (Copilot full chat)** — history, tools, personas
-14. **Thrive Credits / ICDB** — production pages, vouching, widget
-15. **Spotlight** — Magazine, Podcast
-16. **Manage** — Clients, Campaigns, Events admin
-17. **Creative Circles / Circle Hub** — 7-tab hub
-18. **Subscription** — pricing, founder circle, gating
-19. **Creator ↔ Brand switch / Company Mode**
-20. **Manager Mode**
-21. **Settings**
-22. **Send Feedback · Search · Notifications** (cross-cutting tail)
-
-**Per page (target: 30–60 min each after sweeps):**
-- Walk it on 360px + 1440px in the preview
-- Tick the 12-point rubric
-- File any leftover deltas as small atomic tasks
-- Mark page "Launch-Ready"
-
----
-
-## Phase 3 — Release Gate
-- Full-app smoke: signed-out, signed-in (Spark), Pro, Founder, Company
-- Lighthouse + console-error budget = 0 errors per route
-- Edge fn logs clean for 24h
-- Investor demo script rehearsed end-to-end
-
----
-
-## Why this order
-- Sweeps eliminate **systemic** bugs (the kind investors notice instantly)
-- Vertical polish then becomes about **storytelling** per page, not bug hunting
-- You stop re-touching the same files — every commit moves the launch line forward
-
----
-
-## What I need from you to start
-1. **Approve this hybrid sequence** (sweeps first, then page order above), OR pick pure page-by-page if you'd rather see visible progress per page from day 1.
-2. Confirm the **page priority order** (I led with Landing → Onboarding → Home; tell me if investor demo starts elsewhere).
-3. Confirm scope of Sweep A copy changes — are we open to rewriting CTAs/empty-states wholesale, or staying conservative?
-
-Once you greenlight, I'll switch to build mode, create the Launch Readiness task list in memory, and start Sweep A.
+- Reuse `useStudioRole` everywhere — no new role enum.
+- Reuse `route-studio-post` pattern for `route-vault-file` (same Lovable AI gateway, `google/gemini-2.5-flash`, JSON output).
+- DB changes only for E (milestones column add + RLS update). Everything else is wiring + UI.
+- All emails go through existing `send-project-invitation` (Lovable Emails). No new email functions.
+- Magic-link guest path stays as-is; we just expose it from Clients section.

@@ -150,6 +150,7 @@ export const VoiceFirstCreateModal = ({
       if (!result?.project?.title) throw new Error("Couldn't catch what you said");
       setBrief(result);
       setSelected(new Set((result.deliverables ?? []).slice(0, 8).map((_, i) => i)));
+      setWorkspaceType(inferWorkspaceType(`${result.project.title} ${result.project.summary}`));
       setMode("review");
     } catch (err: any) {
       console.error(err);

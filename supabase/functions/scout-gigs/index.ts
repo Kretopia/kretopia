@@ -313,13 +313,28 @@ serve(async (req) => {
     console.log("[scout] raw results", allRaw.length);
 
     const extracted = await extractAndScore(allRaw, mergedProfile, aiKey);
+    // Reject anything older than 30 days based on AI-extracted posted_age
+    const isStale = (age: string) => {
+      if (!age) return true;
+      const a = age.toLowerCase();
+      if (/year|yr/.test(a)) return true;
+      if (/month/.test(a)) {
+        const n = parseInt(a, 10) || 1;
+        return n > 1;
+      }
+      if (/no longer|expired|closed|filled/.test(a)) return true;
+      return false;
+    };
     const filtered = extracted.filter((g: any) => {
       if (!g.title || !g.source_url) return false;
       if ((g.fit_score ?? 0) < prefs.min_fit_score) return false;
-      const blob = `${g.title} ${g.description || ""}`.toLowerCase();
+      if (isStale(g.posted_age || "")) return false;
+      const blob = `${g.title} ${g.description || ""} ${g.posted_age || ""}`.toLowerCase();
+      if (/no longer accepting|expired|position closed|1 year ago|2 years ago/.test(blob)) return false;
       if ((prefs.exclude_keywords || []).some((kw) => kw && blob.includes(kw.toLowerCase()))) return false;
       return true;
     });
+    console.log("[scout] after recency filter", filtered.length, "of", extracted.length);
 
     let inserted = 0;
     for (const g of filtered) {

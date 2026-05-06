@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ interface DocumentDetails {
 }
 
 interface PricingCoPilotProps {
+  projectId?: string;
   lineItems: LineItem[];
   currency: string;
   documentType: "invoice" | "quote";
@@ -48,6 +50,7 @@ interface PricingCoPilotProps {
 }
 
 export function PricingCoPilot({
+  projectId,
   lineItems,
   currency,
   documentType,
@@ -64,12 +67,51 @@ export function PricingCoPilot({
   const [isLoading, setIsLoading] = useState(false);
   const [detailsSummary, setDetailsSummary] = useState<DocumentDetails | null>(null);
   const [showSummary, setShowSummary] = useState(false);
+  const [projectContext, setProjectContext] = useState<any | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Pull live Studio context (brief, notes, deliverables, file names) so the AI
+  // can pre-fill the quote with what the user has already captured in the project.
+  useEffect(() => {
+    if (!projectId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [projRes, notesRes, delivRes, filesRes, clientRes] = await Promise.all([
+          supabase.from("projects").select("title, description, budget, deadline, currency, client_name, workspace_type, mood").eq("id", projectId).maybeSingle(),
+          supabase.from("project_notes").select("title, content, updated_at").eq("project_id", projectId).order("updated_at", { ascending: false }).limit(15),
+          supabase.from("project_deliverables").select("title, description, status, kind").eq("project_id", projectId).order("sort_order", { ascending: true }).limit(30),
+          supabase.from("project_files").select("file_name, file_type").eq("project_id", projectId).order("created_at", { ascending: false }).limit(30),
+          supabase.from("projects").select("client_id").eq("id", projectId).maybeSingle(),
+        ]);
+        if (cancelled) return;
+        let client = null as any;
+        if (clientRes.data?.client_id) {
+          const { data: c } = await supabase
+            .from("clients")
+            .select("name, email, address, company")
+            .eq("id", clientRes.data.client_id)
+            .maybeSingle();
+          client = c;
+        }
+        setProjectContext({
+          project: projRes.data || null,
+          notes: notesRes.data || [],
+          deliverables: delivRes.data || [],
+          files: filesRes.data || [],
+          client,
+        });
+      } catch (e) {
+        console.warn("PricingCoPilot: failed to load project context", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [projectId]);
 
   const getCurrencySymbol = (c: string) => {
     const symbols: Record<string, string> = { USD: "$", EUR: "€", GBP: "£", JPY: "¥", INR: "₹", NGN: "₦", TTD: "TT$", CAD: "C$", AUD: "A$", AED: "د.إ", IDR: "Rp" };
@@ -105,6 +147,7 @@ export function PricingCoPilot({
             document_type: documentType,
             existing_items: lineItems.filter(i => i.description),
             current_details: detailsSummary,
+            project_context: projectContext,
           }),
         }
       );
@@ -263,12 +306,28 @@ export function PricingCoPilot({
 
   const docLabel = documentType === "quote" ? "quote" : "invoice";
 
-  const quickPrompts = [
-    { label: "💬 Help me price this", prompt: `I need help creating a ${docLabel}. Let me tell you about the project and my costs...` },
-    { label: "📊 Calculate markups", prompt: `I have my supplier/subcontractor costs. Help me calculate competitive markups for my client ${docLabel} in ${currency}.` },
-    { label: "✍️ Enhance descriptions", prompt: "Can you improve my current line item descriptions to sound more professional?" },
-    { label: `📝 Full ${docLabel} from scratch`, prompt: `I want to create a complete ${docLabel} from scratch. I'll describe the project and client — help me with everything from line items to terms.` },
-  ];
+  const ctxCount =
+    (projectContext?.deliverables?.length || 0) +
+    (projectContext?.notes?.length || 0) +
+    (projectContext?.files?.length || 0);
+  const hasCtx = ctxCount > 0;
+
+  const quickPrompts = hasCtx
+    ? [
+        {
+          label: `✨ Draft ${docLabel} from this Studio`,
+          prompt: `Use the LIVE PROJECT CONTEXT in your system prompt. Draft a ${docLabel} now — propose a line item per deliverable + key notes, suggest sensible rates in ${currency}, mark anything you need from me as "TBD" so I can fill it in. Then call generate_line_items.`,
+        },
+        { label: "📊 Calculate markups", prompt: `Here are my supplier/subcontractor costs for this project. Help me calculate competitive markups in ${currency}.` },
+        { label: "✍️ Enhance descriptions", prompt: "Improve my current line item descriptions using the project notes for context." },
+        { label: "👤 Pull client details", prompt: "Pull the client name/email/address from the project and confirm them with me." },
+      ]
+    : [
+        { label: "💬 Help me price this", prompt: `I need help creating a ${docLabel}. Let me tell you about the project and my costs...` },
+        { label: "📊 Calculate markups", prompt: `I have my supplier/subcontractor costs. Help me calculate competitive markups for my client ${docLabel} in ${currency}.` },
+        { label: "✍️ Enhance descriptions", prompt: "Can you improve my current line item descriptions to sound more professional?" },
+        { label: `📝 Full ${docLabel} from scratch`, prompt: `I want to create a complete ${docLabel} from scratch. I'll describe the project and client — help me with everything from line items to terms.` },
+      ];
 
   if (!isOpen) {
     return (
@@ -385,7 +444,25 @@ export function PricingCoPilot({
               </div>
               <div className="bg-background rounded-lg rounded-tl-none p-3 text-[13px] text-muted-foreground max-w-[90%] leading-relaxed">
                 <p className="font-semibold text-foreground mb-1.5">Hey! I'm your {docLabel} co-pilot 👋</p>
-                <p className="mb-2">Tell me about your project — costs, services, client info — and I'll help you build everything step by step.</p>
+                {hasCtx ? (
+                  <>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      <Badge variant="secondary" className="text-[10px] gap-1"><Check className="h-2.5 w-2.5" /> Studio loaded</Badge>
+                      {projectContext?.deliverables?.length > 0 && (
+                        <Badge variant="outline" className="text-[10px]">{projectContext.deliverables.length} deliverables</Badge>
+                      )}
+                      {projectContext?.notes?.length > 0 && (
+                        <Badge variant="outline" className="text-[10px]">{projectContext.notes.length} notes</Badge>
+                      )}
+                      {projectContext?.files?.length > 0 && (
+                        <Badge variant="outline" className="text-[10px]">{projectContext.files.length} files</Badge>
+                      )}
+                    </div>
+                    <p className="mb-2">I've pulled the brief, deliverables and notes from this project. Want me to draft the {docLabel} now?</p>
+                  </>
+                ) : (
+                  <p className="mb-2">Tell me about your project — costs, services, client info — and I'll help you build everything step by step.</p>
+                )}
                 <p className="text-[11px] text-muted-foreground/70">I can calculate markups, write professional descriptions, suggest terms, and fill in all the details for you.</p>
               </div>
             </div>

@@ -37,6 +37,7 @@ interface DocumentDetails {
 }
 
 interface PricingCoPilotProps {
+  projectId?: string;
   lineItems: LineItem[];
   currency: string;
   documentType: "invoice" | "quote";
@@ -49,6 +50,7 @@ interface PricingCoPilotProps {
 }
 
 export function PricingCoPilot({
+  projectId,
   lineItems,
   currency,
   documentType,

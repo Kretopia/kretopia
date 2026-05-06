@@ -216,16 +216,28 @@ export const FileBrowser = ({ projectId, files, onFileUploaded }: FileBrowserPro
         bucket: "project-files",
         path,
         onComplete: async () => {
-          const { error: dbErr } = await supabase.from("project_files").insert({
-            project_id: projectId,
-            user_id: user.id,
-            file_name: file.name,
-            file_url: path,
-            file_size: file.size,
-            file_type: file.type,
-            folder_id: folderAtEnqueue,
-          });
+          const { data: inserted, error: dbErr } = await supabase
+            .from("project_files")
+            .insert({
+              project_id: projectId,
+              user_id: user.id,
+              file_name: file.name,
+              file_url: path,
+              file_size: file.size,
+              file_type: file.type,
+              folder_id: folderAtEnqueue,
+            })
+            .select("id")
+            .single();
           if (dbErr) throw new Error(dbErr.message);
+          // If the user dropped the file at the Vault root (no folder), let AI sort it.
+          if (!folderAtEnqueue && inserted?.id) {
+            supabase.functions
+              .invoke("route-vault-file", {
+                body: { project_id: projectId, file_id: inserted.id },
+              })
+              .catch((e) => console.warn("route-vault-file failed (non-fatal)", e));
+          }
           onFileUploaded();
         },
       });

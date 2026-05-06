@@ -30,6 +30,7 @@ import { DeliverablesSection } from "./DeliverablesSection";
 import { ProductionPrepSection } from "./ProductionPrepSection";
 import { PodcastStudioSection } from "./PodcastStudioSection";
 import { EventStudioSection } from "./EventStudioSection";
+import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,10 +85,14 @@ export const StudioRoom = ({
     role: c.role ?? null,
   }));
 
-  // Role-based permissions: clients never see Money or AI cost-bearing tools
+  // Role-based permissions
   const perms = useStudioRole(project, currentUserId, people);
-  const showMoney = perms.canSeeMoney && moneySignal.visible;
+  const isClient = perms.role === "client";
+  const isCollaborator = perms.role === "collaborator" || perms.role === "creative";
+  // Owner sees money normally; client sees a read-only "amount due / pay" view; collaborators don't see money.
+  const showMoney = (perms.canSeeMoney && moneySignal.visible) || isClient;
   const showAITools = perms.canUseAI;
+  const showPrep = perms.isOwner; // Run-of-show / call sheets stay internal until shared
 
   // Identify current user from the people list for presence metadata
   const me = useMemo(
@@ -172,7 +177,9 @@ export const StudioRoom = ({
       <StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />
       <DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />
       <PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />
-      <ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />
+      {showPrep && (
+        <ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />
+      )}
       <WorkSection tasks={tasks} projectId={project.id} currentUserId={currentUserId} collaborators={people} onUpdated={onUpdated} />
     </div>
   );
@@ -180,7 +187,10 @@ export const StudioRoom = ({
   const mobileSideColumn = (
     <div className="divide-y divide-border/60">
       {showMoney && (
-        <MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />
+        <MoneySection project={project} isOwner={isOwner} clientView={isClient} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />
+      )}
+      {isCollaborator && (
+        <RequestPaymentCard project={project} currentUserId={currentUserId} />
       )}
       <PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />
       <WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />
@@ -192,7 +202,7 @@ export const StudioRoom = ({
   // ===== Desktop draggable widgets =====
   type WidgetId =
     | "brief" | "pulse" | "deliverables" | "pad" | "prep" | "work"
-    | "money" | "people" | "wrap" | "credit" | "calls";
+    | "money" | "request_pay" | "people" | "wrap" | "credit" | "calls";
 
   const renderWidget = (id: WidgetId): React.ReactNode => {
     const wrap = (node: React.ReactNode) => (
@@ -203,9 +213,10 @@ export const StudioRoom = ({
       case "pulse": return wrap(<StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />);
       case "deliverables": return wrap(<DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />);
       case "pad": return wrap(<PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />);
-      case "prep": return wrap(<ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />);
+      case "prep": return showPrep ? wrap(<ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />) : null;
       case "work": return wrap(<WorkSection tasks={tasks} projectId={project.id} currentUserId={currentUserId} collaborators={people} onUpdated={onUpdated} />);
-      case "money": return showMoney ? wrap(<MoneySection project={project} isOwner={isOwner} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />) : null;
+      case "money": return showMoney ? wrap(<MoneySection project={project} isOwner={isOwner} clientView={isClient} onOpenInvoice={() => onNavigateToTab("finance", "create-invoice")} />) : null;
+      case "request_pay": return isCollaborator ? wrap(<RequestPaymentCard project={project} currentUserId={currentUserId} />) : null;
       case "people": return wrap(<PeopleSection collaborators={people} ownerUserId={project.created_by} currentUserId={currentUserId} isOwner={isOwner} projectId={project.id} onUpdated={onUpdated} onlineUserIds={onlineUserIds} onKnock={knock} />);
       case "wrap": return wrap(<WrapProjectCard project={project} tasks={tasks} collaborators={people} currentUserId={currentUserId} isOwner={isOwner} onUpdated={onUpdated} />);
       case "credit": return wrap(<AddCreditSection project={project} collaborators={people} />);
@@ -214,7 +225,7 @@ export const StudioRoom = ({
   };
 
   const DEFAULT_LEFT: WidgetId[] = ["brief", "pulse", "deliverables", "pad", "prep", "work"];
-  const DEFAULT_RIGHT: WidgetId[] = ["money", "people", "wrap", "credit", "calls"];
+  const DEFAULT_RIGHT: WidgetId[] = ["money", "request_pay", "people", "wrap", "credit", "calls"];
   const STORAGE_KEY = `thrivedesk:widgets:${project.id}`;
 
   const [leftOrder, setLeftOrder] = useState<WidgetId[]>(DEFAULT_LEFT);

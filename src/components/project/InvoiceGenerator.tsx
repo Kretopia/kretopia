@@ -1025,6 +1025,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
 
                 {/* AI Pricing Co-Pilot — chat-first experience */}
                 <PricingCoPilot
+                  projectId={projectId}
                   lineItems={lineItems}
                   currency={currency}
                   documentType={documentType}

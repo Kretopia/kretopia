@@ -1,9 +1,10 @@
 // Producer's Clip Generator + Sponsor Match
-// Input: { transcript: string, episode_title?: string, project_id?: string, max_clips?: number }
-// Output: { clips: [{ start_seconds, end_seconds, hook, caption, hashtags[] }], sponsors: [{ label, why }] }
-//
-// Uses Lovable AI Gateway (google/gemini-2.5-flash) — no key needed.
-// Pulls vendor/sponsor memory from thrive_memory if user is authed.
+// Backwards-compatible with existing EpisodeDetailDialog caller.
+// Input: { transcript | transcript_excerpt: string, episode_title?: string, guest_names?: string[], max_clips?: number }
+// Output: {
+//   clips: [{ title, excerpt, hook, caption, captions: { instagram, tiktok, twitter }, hashtags[], start_seconds, end_seconds }],
+//   sponsors: [{ label, why }]
+// }
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
@@ -14,17 +15,32 @@ const corsHeaders = {
 
 const SYSTEM = `You are "Producer", ThriveIN's clip-generation specialist for creators.
 Given a podcast/video transcript, propose 3-5 short, scroll-stopping clips for social.
-Each clip must:
-- 25-75 seconds long, anchored to a clear hook (quote, surprise, payoff)
-- Use start/end timestamps in SECONDS estimated from transcript line position
-- Include a punchy 1-line caption (no clickbait, no emojis), and 3-6 hashtags
 
-If sponsors/vendors are provided in the user's memory, suggest which one each clip best fits, with a 1-sentence reason.
+Each clip MUST include:
+- title: 4-8 word internal label
+- excerpt: 1-3 sentences pulled (or lightly paraphrased) from the transcript that form the clip
+- hook: the 1-line scroll-stopper (no clickbait, no emojis)
+- start_seconds, end_seconds: rough timestamps estimated by transcript position (clip 25-75s long)
+- captions: object with platform-specific captions:
+    - "instagram": 1-2 sentences + line break + 5 hashtags
+    - "tiktok": 1 short punchy line + 3 hashtags
+    - "twitter": <=240 chars
+- hashtags: array of 4-7 hashtags WITHOUT the # symbol
 
-Output STRICT JSON:
+If sponsors/vendors are provided in user memory, suggest 1-3 best fits in "sponsors" with a 1-sentence "why".
+
+Output STRICT JSON ONLY:
 {
-  "clips": [{"start_seconds": number, "end_seconds": number, "hook": string, "caption": string, "hashtags": string[]}],
-  "sponsors": [{"label": string, "why": string}]
+  "clips": [{
+    "title": string,
+    "excerpt": string,
+    "hook": string,
+    "start_seconds": number,
+    "end_seconds": number,
+    "captions": { "instagram": string, "tiktok": string, "twitter": string },
+    "hashtags": string[]
+  }],
+  "sponsors": [{ "label": string, "why": string }]
 }
 No prose, no markdown, JSON only.`;
 
@@ -32,8 +48,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
     const body = await req.json().catch(() => ({}));
-    const transcript: string = (body?.transcript || "").toString();
+    const transcript: string = (body?.transcript ?? body?.transcript_excerpt ?? "").toString();
     const episodeTitle: string = (body?.episode_title || "").toString();
+    const guestNames: string[] = Array.isArray(body?.guest_names) ? body.guest_names : [];
     const maxClips: number = Math.min(Math.max(Number(body?.max_clips) || 4, 2), 6);
 
     if (!transcript || transcript.trim().length < 80) {
@@ -73,7 +90,7 @@ Deno.serve(async (req) => {
     const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_KEY) return json({ error: "AI gateway not configured" }, 500);
 
-    const userPrompt = `Episode: ${episodeTitle || "(untitled)"}
+    const userPrompt = `Episode: ${episodeTitle || "(untitled)"}${guestNames.length ? `\nGuests: ${guestNames.join(", ")}` : ""}
 Generate up to ${maxClips} clips.${memorySummary}
 
 TRANSCRIPT:
@@ -112,7 +129,17 @@ ${transcript.slice(0, 18000)}`;
       if (m) parsed = JSON.parse(m[0]);
     }
 
-    const clips = Array.isArray(parsed?.clips) ? parsed.clips.slice(0, maxClips) : [];
+    // Normalize: ensure each clip has the back-compat fields
+    const rawClips = Array.isArray(parsed?.clips) ? parsed.clips.slice(0, maxClips) : [];
+    const clips = rawClips.map((c: any) => ({
+      title: c.title || c.hook || "Clip",
+      excerpt: c.excerpt || c.transcript_excerpt || "",
+      hook: c.hook || c.title || "",
+      start_seconds: typeof c.start_seconds === "number" ? c.start_seconds : null,
+      end_seconds: typeof c.end_seconds === "number" ? c.end_seconds : null,
+      captions: c.captions && typeof c.captions === "object" ? c.captions : { instagram: c.caption || "", tiktok: c.caption || "", twitter: c.caption || "" },
+      hashtags: Array.isArray(c.hashtags) ? c.hashtags.map((h: string) => h.replace(/^#/, "")) : [],
+    }));
     const sponsors = Array.isArray(parsed?.sponsors) ? parsed.sponsors.slice(0, 6) : [];
 
     return json({ clips, sponsors });

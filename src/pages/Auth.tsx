@@ -35,6 +35,7 @@ const Auth = () => {
   const [showWaitlistForm, setShowWaitlistForm] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { toast } = useToast();

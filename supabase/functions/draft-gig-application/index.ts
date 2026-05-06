@@ -58,8 +58,8 @@ LOCATION: ${gig.location || "n/a"}
 WHY THEY MATCH: ${gig.fit_reason || ""}
 
 CREATOR: ${profile.full_name}, ${profile.role}${profile.sub_roles?.length ? ` (${profile.sub_roles.join(", ")})` : ""}
-SKILLS: ${(profile.skills || []).join(", ")}
-BASED IN: ${[profile.city, profile.country].filter(Boolean).join(", ")}
+SKILLS: ${[...(profile.professional_skills || []), ...(profile.passion_skills || [])].join(", ")}
+BASED IN: ${profile.location || ""}
 BIO: ${profile.bio || ""}
 EPK: ${epkUrl}
 

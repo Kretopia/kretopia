@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Receipt, FileText, PartyPopper, ArrowRight } from "lucide-react";
+import { AlertTriangle, Receipt, FileText, PartyPopper, ArrowRight, HandCoins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";

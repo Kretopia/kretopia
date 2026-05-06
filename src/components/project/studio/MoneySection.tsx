@@ -177,7 +177,7 @@ export const MoneySection = ({ project, isOwner, clientView = false, onOpenInvoi
         </div>
 
         {/* Primary CTA */}
-        {isOwner && (
+        {isOwner && !clientView && (
           <div className="relative">
             {isPaid ? (
               <div className="w-full rounded-lg bg-[hsl(var(--energy)/0.18)] ring-1 ring-[hsl(var(--energy)/0.4)] py-2.5 flex items-center justify-center gap-2 text-[hsl(var(--energy))] font-bold text-sm">
@@ -201,6 +201,25 @@ export const MoneySection = ({ project, isOwner, clientView = false, onOpenInvoi
               <Button onClick={onOpenInvoice} className="w-full gap-2">
                 <FileText className="h-4 w-4" /> Send Invoice
               </Button>
+            )}
+          </div>
+        )}
+
+        {/* Client view CTA: pay or view invoice */}
+        {clientView && (
+          <div className="relative">
+            {isPaid ? (
+              <div className="w-full rounded-lg bg-[hsl(var(--energy)/0.18)] ring-1 ring-[hsl(var(--energy)/0.4)] py-2.5 flex items-center justify-center gap-2 text-[hsl(var(--energy))] font-bold text-sm">
+                <CheckCircle2 className="h-4 w-4" /> Paid — thank you
+              </div>
+            ) : invoice ? (
+              <Button onClick={onOpenInvoice} className="w-full gap-2">
+                <FileText className="h-4 w-4" /> View &amp; pay invoice
+              </Button>
+            ) : (
+              <p className="text-[11px] text-muted-foreground text-center">
+                No invoice yet — your collaborator will send one when ready.
+              </p>
             )}
           </div>
         )}

@@ -54,6 +54,7 @@ export function EpisodeDetailDialog({ open, onOpenChange, episode, projectId, cu
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [clips, setClips] = useState<Clip[]>([]);
   const [genClipsBusy, setGenClipsBusy] = useState(false);
+  const [sponsorSuggestions, setSponsorSuggestions] = useState<{ label: string; why: string }[]>([]);
 
   const [sponsorName, setSponsorName] = useState("");
   const [sponsorAmount, setSponsorAmount] = useState("");

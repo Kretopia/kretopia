@@ -20,6 +20,7 @@ import {
 import { MilestoneBoard } from "@/components/project/MilestoneBoard";
 import { InvoiceGenerator } from "@/components/project/InvoiceGenerator";
 import { MarkPaidBankTransferDialog } from "@/components/project/finance/MarkPaidBankTransferDialog";
+import { PaymentRequestsReview } from "@/components/project/finance/PaymentRequestsReview";
 import { Landmark } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";

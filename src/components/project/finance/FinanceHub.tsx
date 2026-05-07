@@ -327,6 +327,17 @@ export function FinanceHub({
         </Card>
       )}
 
+      {/* ============= COLLABORATOR PAYMENT REQUESTS (owner only) ============= */}
+      {userRole === "creator" && (
+        <PaymentRequestsReview
+          projectId={projectId}
+          currentUserId={currentUserId}
+          isOwner={project?.created_by === currentUserId}
+          collaborators={collaborators}
+          onApproved={() => { fetchInvoices(); onUpdate?.(); }}
+        />
+      )}
+
       {/* ============= MILESTONES SECTION ============= */}
       <div ref={milestonesRef}>
         <SectionHeader

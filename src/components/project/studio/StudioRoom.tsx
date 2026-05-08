@@ -341,6 +341,9 @@ export const StudioRoom = ({
             <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
             <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
             <EventSponsorsKanban project={project} currentUserId={currentUserId} />
+            {project.created_by === currentUserId && (
+              <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+            )}
           </>
         )}
         {mobileWorkColumn}

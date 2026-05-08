@@ -172,13 +172,15 @@ export default function Circle() {
     <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
       <SEO title="Match - Find Your Creative Collaborators" description="Tap to connect with creators who fit your craft" />
       
-      <div className="container mx-auto px-3 sm:px-4 pt-2">
-        <PageTip
-          id="circle"
-          title="Welcome to Match!"
-          message="Tap a creator to see their profile, then send a connect request. When they accept, you can start a conversation."
-        />
-      </div>
+      {profilesCount > 0 && (
+        <div className="container mx-auto px-3 sm:px-4 pt-2">
+          <PageTip
+            id="circle"
+            title="Welcome to Match!"
+            message="Tap a creator to see their profile, then send a connect request. When they accept, you can start a conversation."
+          />
+        </div>
+      )}
       
       {/* Header — cinematic brand */}
       <div className="sticky top-0 z-10 border-b border-border/50 bg-background/80 backdrop-blur-xl">

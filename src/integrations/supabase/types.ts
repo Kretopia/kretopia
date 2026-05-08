@@ -4713,6 +4713,45 @@ export type Database = {
           },
         ]
       }
+      epk_refresh_suggestions: {
+        Row: {
+          applied_at: string | null
+          created_at: string
+          current_value: string | null
+          id: string
+          kind: string
+          reason: string | null
+          status: string
+          suggested_value: string | null
+          trigger_event: string | null
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          created_at?: string
+          current_value?: string | null
+          id?: string
+          kind: string
+          reason?: string | null
+          status?: string
+          suggested_value?: string | null
+          trigger_event?: string | null
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          created_at?: string
+          current_value?: string | null
+          id?: string
+          kind?: string
+          reason?: string | null
+          status?: string
+          suggested_value?: string | null
+          trigger_event?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       event_analytics_events: {
         Row: {
           created_at: string
@@ -8945,6 +8984,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      opportunity_intel_digests: {
+        Row: {
+          created_at: string
+          dismissed_at: string | null
+          generated_at: string
+          id: string
+          kind: string
+          payload: Json
+          seen_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dismissed_at?: string | null
+          generated_at?: string
+          id?: string
+          kind: string
+          payload?: Json
+          seen_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dismissed_at?: string | null
+          generated_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          seen_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       opportunity_views: {
         Row: {
@@ -13973,6 +14045,60 @@ export type Database = {
           title?: string
           updated_at?: string
           welcome_message?: string | null
+        }
+        Relationships: []
+      }
+      sponsor_leads: {
+        Row: {
+          brand_logo_url: string | null
+          brand_name: string
+          brand_url: string | null
+          contact_info: Json | null
+          created_at: string
+          fit_score: number
+          id: string
+          niche: string | null
+          pitch_draft: string | null
+          reason: string | null
+          source: string | null
+          source_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand_logo_url?: string | null
+          brand_name: string
+          brand_url?: string | null
+          contact_info?: Json | null
+          created_at?: string
+          fit_score?: number
+          id?: string
+          niche?: string | null
+          pitch_draft?: string | null
+          reason?: string | null
+          source?: string | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand_logo_url?: string | null
+          brand_name?: string
+          brand_url?: string | null
+          contact_info?: Json | null
+          created_at?: string
+          fit_score?: number
+          id?: string
+          niche?: string | null
+          pitch_draft?: string | null
+          reason?: string | null
+          source?: string | null
+          source_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

@@ -170,9 +170,7 @@ const BrandWorkHome = () => {
   }, [user]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
-    );
+    return <WorkHomeSkeleton variant="hiring" />;
   }
 
   const activeOpps = opportunities.filter(o => o.status === "active" || o.status === "open");

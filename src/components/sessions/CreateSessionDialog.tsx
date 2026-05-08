@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, MapPin, Clock, Users, Loader2, Ticket, X, ScanLine } from "lucide-react";
+import { CalendarIcon, MapPin, Clock, Users, Loader2, Ticket, X, ScanLine, Sparkles, Zap } from "lucide-react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +18,12 @@ import { Switch } from "@/components/ui/switch";
 import { EventCoverPicker } from "./EventCoverPicker";
 import { ScanFlyerDialog, type ScannedEventDetails } from "./ScanFlyerDialog";
 import { EventModeFormatPicker, type EventFormatValue } from "./EventModeFormatPicker";
+import { EventArchetypePicker } from "./EventArchetypePicker";
+import type { EventArchetypeId } from "@/lib/eventArchetypes";
+import { findArchetype } from "@/lib/eventArchetypes";
+import { createEventStudio } from "@/lib/createEventStudio";
+import { useNavigate } from "react-router-dom";
+
 
 interface CreateSessionDialogProps {
   open: boolean;
@@ -50,6 +56,7 @@ export const CreateSessionDialog = ({
 }: CreateSessionDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState("14:00");
@@ -57,6 +64,8 @@ export const CreateSessionDialog = ({
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [userCircles, setUserCircles] = useState<{ id: string; title: string; icon_emoji: string }[]>([]);
   const [scanOpen, setScanOpen] = useState(false);
+  const [createMode, setCreateMode] = useState<"quick" | "workspace">("quick");
+  const [archetype, setArchetype] = useState<EventArchetypeId | null>(null);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -177,11 +186,15 @@ export const CreateSessionDialog = ({
       const startTime = new Date(date);
       startTime.setHours(hours, minutes, 0, 0);
 
-      const { error } = await supabase.from('creative_jams').insert({
+      const isWorkspace = createMode === "workspace" && !!archetype;
+      const arch = archetype ? findArchetype(archetype) : null;
+      const finalCategory = isWorkspace && arch ? arch.category : formData.category;
+
+      const { data: inserted, error } = await supabase.from('creative_jams').insert({
         created_by: user.id,
         title: formData.title,
         description: formData.description,
-        category: formData.category,
+        category: finalCategory,
         venue_name: formData.venue_name,
         venue_address: formData.venue_address,
         latitude: formData.latitude,
@@ -193,18 +206,49 @@ export const CreateSessionDialog = ({
         is_ticketed: formData.is_ticketed,
         ticket_price: formData.is_ticketed ? formData.ticket_price : 0,
         ticket_currency: formData.ticket_currency,
-        event_type: formData.event_type,
+        event_type: isWorkspace ? 'event' : formData.event_type,
         cover_image_url: coverUrl,
         external_ticket_url: formData.external_ticket_url || null,
         circle_id: formData.circle_id || null,
+        tags: isWorkspace && arch ? arch.defaultTags : [],
         event_mode: formatValue.event_mode,
         online_format: formatValue.online_format,
         online_max_attendees: formatValue.online_max_attendees,
         watch_party_video_url: formatValue.watch_party_video_url || null,
         recording_enabled: formatValue.recording_enabled,
-      } as any);
+      } as any).select('id').single();
 
       if (error) throw error;
+
+      // If full Production Workspace was selected, create the linked Studio.
+      if (isWorkspace && inserted?.id && archetype) {
+        try {
+          const projectId = await createEventStudio({
+            eventId: inserted.id as string,
+            userId: user.id,
+            title: formData.title,
+            description: formData.description,
+            startTime: startTime.toISOString(),
+            archetypeId: archetype,
+            coverUrl: coverUrl,
+          });
+          toast({
+            title: "Production workspace ready",
+            description: "Opening your event Studio…",
+          });
+          onOpenChange(false);
+          onCreated?.();
+          navigate(`/desk/${projectId}`);
+          return;
+        } catch (studioErr: any) {
+          console.error("createEventStudio failed", studioErr);
+          toast({
+            title: "Event created, workspace failed",
+            description: studioErr?.message ?? "Open the event and try again.",
+            variant: "destructive",
+          });
+        }
+      }
 
       toast({
         title: "Event created!",
@@ -213,7 +257,7 @@ export const CreateSessionDialog = ({
 
       onOpenChange(false);
       onCreated?.();
-      
+
       // Reset form
       setFormData({
         title: '',
@@ -277,13 +321,48 @@ export const CreateSessionDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Event Type Toggle */}
-          <div className="flex gap-2">
-            <Button type="button" variant={formData.event_type === 'session' ? 'default' : 'outline'} size="sm" className="flex-1"
-              onClick={() => setFormData(prev => ({ ...prev, event_type: 'session' }))}>Jam Session</Button>
-            <Button type="button" variant={formData.event_type === 'event' ? 'default' : 'outline'} size="sm" className="flex-1"
-              onClick={() => setFormData(prev => ({ ...prev, event_type: 'event' }))}>Event / Meetup</Button>
+          {/* Quick vs Production Workspace fork */}
+          <div className="rounded-xl border border-border/60 bg-card/40 p-1 grid grid-cols-2 gap-1">
+            <button
+              type="button"
+              onClick={() => setCreateMode("quick")}
+              className={`rounded-lg px-3 py-2 text-left transition-colors ${
+                createMode === "quick" ? "bg-primary text-primary-foreground" : "hover:bg-muted/60"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 text-[11px] font-bold">
+                <Zap className="h-3 w-3" /> Quick Event
+              </div>
+              <p className="text-[10px] opacity-80 mt-0.5 leading-tight">Just publish & share.</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCreateMode("workspace")}
+              className={`rounded-lg px-3 py-2 text-left transition-colors ${
+                createMode === "workspace"
+                  ? "bg-[hsl(var(--energy))] text-[hsl(var(--background))]"
+                  : "hover:bg-muted/60"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 text-[11px] font-bold">
+                <Sparkles className="h-3 w-3" /> Production Workspace
+              </div>
+              <p className="text-[10px] opacity-80 mt-0.5 leading-tight">Full Studio + run sheet.</p>
+            </button>
           </div>
+
+          {createMode === "workspace" && (
+            <EventArchetypePicker value={archetype} onChange={setArchetype} />
+          )}
+
+          {createMode === "quick" && (
+            <div className="flex gap-2">
+              <Button type="button" variant={formData.event_type === 'session' ? 'default' : 'outline'} size="sm" className="flex-1"
+                onClick={() => setFormData(prev => ({ ...prev, event_type: 'session' }))}>Jam Session</Button>
+              <Button type="button" variant={formData.event_type === 'event' ? 'default' : 'outline'} size="sm" className="flex-1"
+                onClick={() => setFormData(prev => ({ ...prev, event_type: 'event' }))}>Event / Meetup</Button>
+            </div>
+          )}
 
           {/* Scan Flyer shortcut */}
           <button
@@ -452,9 +531,16 @@ export const CreateSessionDialog = ({
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">Cancel</Button>
-            <Button type="submit" disabled={loading || !date || !formData.title} className="flex-1" variant="gradient">
+            <Button
+              type="submit"
+              disabled={loading || !date || !formData.title || (createMode === "workspace" && !archetype)}
+              className="flex-1"
+              variant="gradient"
+            >
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Create {formData.event_type === 'event' ? 'Event' : 'Session'}
+              {createMode === "workspace"
+                ? "Open Production Workspace"
+                : `Create ${formData.event_type === "event" ? "Event" : "Session"}`}
             </Button>
           </div>
         </form>

@@ -30,6 +30,7 @@ import { DeliverablesSection } from "./DeliverablesSection";
 import { ProductionPrepSection } from "./ProductionPrepSection";
 import { PodcastStudioSection } from "./PodcastStudioSection";
 import { EventStudioSection } from "./EventStudioSection";
+import { EventHeroCard } from "./EventHeroCard";
 import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
@@ -330,8 +331,11 @@ export const StudioRoom = ({
         {project.workspace_type === "podcast" && (
           <PodcastStudioSection project={project} currentUserId={currentUserId} />
         )}
-        {project.workspace_type === "event" && (
-          <EventStudioSection project={project} currentUserId={currentUserId} />
+        {["event","event_production"].includes(project.workspace_type) && (
+          <>
+            <EventHeroCard project={project} />
+            <EventStudioSection project={project} currentUserId={currentUserId} />
+          </>
         )}
         {mobileWorkColumn}
         {mobileSideColumn}
@@ -347,10 +351,13 @@ export const StudioRoom = ({
               <PodcastStudioSection project={project} currentUserId={currentUserId} />
             </div>
           )}
-          {project.workspace_type === "event" && (
-            <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
-              <EventStudioSection project={project} currentUserId={currentUserId} />
-            </div>
+          {["event","event_production"].includes(project.workspace_type) && (
+            <>
+              <EventHeroCard project={project} />
+              <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+                <EventStudioSection project={project} currentUserId={currentUserId} />
+              </div>
+            </>
           )}
           <div className="flex items-center justify-between px-1">
             <p className="text-[11px] text-muted-foreground/70">

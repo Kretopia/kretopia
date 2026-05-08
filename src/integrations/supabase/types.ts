@@ -2289,6 +2289,7 @@ export type Database = {
           original_source_text: string | null
           parent_event_id: string | null
           photo_wall_enabled: boolean
+          project_id: string | null
           recording_enabled: boolean
           refund_policy: string | null
           scouted_by: string | null
@@ -2344,6 +2345,7 @@ export type Database = {
           original_source_text?: string | null
           parent_event_id?: string | null
           photo_wall_enabled?: boolean
+          project_id?: string | null
           recording_enabled?: boolean
           refund_policy?: string | null
           scouted_by?: string | null
@@ -2399,6 +2401,7 @@ export type Database = {
           original_source_text?: string | null
           parent_event_id?: string | null
           photo_wall_enabled?: boolean
+          project_id?: string | null
           recording_enabled?: boolean
           refund_policy?: string | null
           scouted_by?: string | null
@@ -2484,6 +2487,13 @@ export type Database = {
             columns: ["parent_event_id"]
             isOneToOne: false
             referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creative_jams_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -11045,6 +11055,7 @@ export type Database = {
           deadline: string | null
           deal_type: string
           description: string | null
+          event_id: string | null
           id: string
           margin_type: string | null
           margin_value: number | null
@@ -11078,6 +11089,7 @@ export type Database = {
           deadline?: string | null
           deal_type?: string
           description?: string | null
+          event_id?: string | null
           id?: string
           margin_type?: string | null
           margin_value?: number | null
@@ -11111,6 +11123,7 @@ export type Database = {
           deadline?: string | null
           deal_type?: string
           description?: string | null
+          event_id?: string | null
           id?: string
           margin_type?: string | null
           margin_value?: number | null
@@ -11133,6 +11146,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
             referencedColumns: ["id"]
           },
           {

@@ -30,6 +30,7 @@ import { DeliverablesSection } from "./DeliverablesSection";
 import { ProductionPrepSection } from "./ProductionPrepSection";
 import { PodcastStudioSection } from "./PodcastStudioSection";
 import { ContentStudioSection } from "./ContentStudioSection";
+import { CampaignStudioSection } from "./CampaignStudioSection";
 import { EventStudioSection } from "./EventStudioSection";
 import { EventHeroCard } from "./EventHeroCard";
 import { EventCrmSection } from "./EventCrmSection";
@@ -343,6 +344,9 @@ export const StudioRoom = ({
         {["content","content_creation"].includes(project.workspace_type) && (
           <ContentStudioSection project={project} currentUserId={currentUserId} />
         )}
+        {["campaign","brand_campaign"].includes(project.workspace_type) && (
+          <CampaignStudioSection project={project} currentUserId={currentUserId} />
+        )}
         {["event","event_production"].includes(project.workspace_type) && (
           <>
             <EventHeroCard project={project} />
@@ -379,6 +383,11 @@ export const StudioRoom = ({
           {["content","content_creation"].includes(project.workspace_type) && (
             <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
               <ContentStudioSection project={project} currentUserId={currentUserId} />
+            </div>
+          )}
+          {["campaign","brand_campaign"].includes(project.workspace_type) && (
+            <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+              <CampaignStudioSection project={project} currentUserId={currentUserId} />
             </div>
           )}
           {["event","event_production"].includes(project.workspace_type) && (

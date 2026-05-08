@@ -140,13 +140,12 @@ async function dispatchStep(
     args.target_project_id = projectId;
   }
 
-  // Pass tool name marker so multi-tool handlers (copilot-collaborator-tools) route
-  if (step.handler === "copilot-collaborator-tools") {
-    (args as any)._tool = step.tool_name;
-  }
-
-  // desk-agent can execute known project tools directly when Copilot already planned the step.
-  if (step.handler === "desk-agent") {
+  // Pass tool name marker so multi-tool handlers route internally
+  if (
+    step.handler === "copilot-collaborator-tools" ||
+    step.handler === "desk-agent" ||
+    step.handler === "thrive-memory-tool"
+  ) {
     (args as any)._tool = step.tool_name;
   }
 

@@ -18,6 +18,13 @@ import { Switch } from "@/components/ui/switch";
 import { EventCoverPicker } from "./EventCoverPicker";
 import { ScanFlyerDialog, type ScannedEventDetails } from "./ScanFlyerDialog";
 import { EventModeFormatPicker, type EventFormatValue } from "./EventModeFormatPicker";
+import { EventArchetypePicker } from "./EventArchetypePicker";
+import type { EventArchetypeId } from "@/lib/eventArchetypes";
+import { findArchetype } from "@/lib/eventArchetypes";
+import { createEventStudio } from "@/lib/createEventStudio";
+import { useNavigate } from "react-router-dom";
+import { Sparkles, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CreateSessionDialogProps {
   open: boolean;

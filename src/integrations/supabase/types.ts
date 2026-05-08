@@ -4904,6 +4904,98 @@ export type Database = {
           },
         ]
       }
+      event_rsvp_answers: {
+        Row: {
+          answer: Json
+          created_at: string
+          event_id: string
+          guest_email: string | null
+          id: string
+          question_id: string
+          user_id: string | null
+        }
+        Insert: {
+          answer: Json
+          created_at?: string
+          event_id: string
+          guest_email?: string | null
+          id?: string
+          question_id: string
+          user_id?: string | null
+        }
+        Update: {
+          answer?: Json
+          created_at?: string
+          event_id?: string
+          guest_email?: string | null
+          id?: string
+          question_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvp_answers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_rsvp_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "event_rsvp_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_rsvp_questions: {
+        Row: {
+          created_at: string
+          created_by: string
+          event_id: string
+          id: string
+          options: Json
+          position: number
+          question: string
+          question_type: string
+          required: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          event_id: string
+          id?: string
+          options?: Json
+          position?: number
+          question: string
+          question_type?: string
+          required?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          event_id?: string
+          id?: string
+          options?: Json
+          position?: number
+          question?: string
+          question_type?: string
+          required?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvp_questions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_runsheet_items: {
         Row: {
           created_at: string

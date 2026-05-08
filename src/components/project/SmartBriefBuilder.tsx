@@ -109,7 +109,7 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
         }));
 
       // include project owner
-      const { data: project } = await supabase
+      const { data: project } = await (supabase as any)
         .from("projects")
         .select("created_by, profiles:created_by(display_name)")
         .eq("id", projectId)

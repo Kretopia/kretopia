@@ -4913,6 +4913,63 @@ export type Database = {
           },
         ]
       }
+      event_recap_drafts: {
+        Row: {
+          created_at: string
+          event_id: string
+          generated_at: string
+          highlight_suggestions: Json | null
+          id: string
+          project_id: string | null
+          recap_caption: string | null
+          sponsor_recap_md: string | null
+          status: string
+          thank_you_drafts: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          generated_at?: string
+          highlight_suggestions?: Json | null
+          id?: string
+          project_id?: string | null
+          recap_caption?: string | null
+          sponsor_recap_md?: string | null
+          status?: string
+          thank_you_drafts?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          generated_at?: string
+          highlight_suggestions?: Json | null
+          id?: string
+          project_id?: string | null
+          recap_caption?: string | null
+          sponsor_recap_md?: string | null
+          status?: string
+          thank_you_drafts?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_recap_drafts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_recap_drafts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_reminders_sent: {
         Row: {
           channel: string

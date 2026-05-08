@@ -75,7 +75,7 @@ export const AssigneePicker = ({
         .eq("status", "accepted");
 
       // Owner
-      const { data: project } = await supabase
+      const { data: project } = await (supabase as any)
         .from("projects")
         .select("created_by, profiles:created_by(display_name, avatar_url)")
         .eq("id", projectId)

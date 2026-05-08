@@ -348,9 +348,7 @@ const EmptyState = ({ onHost }: { onHost: () => void }) => (
     <Calendar className="h-12 w-12 mx-auto text-energy/40 mb-3" />
     <h3 className="font-black text-lg mb-1 tracking-tight">No events yet</h3>
     <p className="text-sm text-muted-foreground mb-4">Be the first to host one in your city.</p>
-    <Button onClick={onHost} variant="gradient" className="rounded-full">
-      <Plus className="h-4 w-4 mr-1.5" /> Host an Event
-    </Button>
+    <p className="text-xs text-muted-foreground/80">Use the <span className="font-semibold text-foreground">Host Event</span> button above to publish the first one.</p>
   </Card>
 );
 

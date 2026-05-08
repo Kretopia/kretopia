@@ -56,6 +56,7 @@ export const CreateSessionDialog = ({
 }: CreateSessionDialogProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState("14:00");
@@ -63,6 +64,8 @@ export const CreateSessionDialog = ({
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [userCircles, setUserCircles] = useState<{ id: string; title: string; icon_emoji: string }[]>([]);
   const [scanOpen, setScanOpen] = useState(false);
+  const [createMode, setCreateMode] = useState<"quick" | "workspace">("quick");
+  const [archetype, setArchetype] = useState<EventArchetypeId | null>(null);
   
   const [formData, setFormData] = useState({
     title: '',

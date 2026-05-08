@@ -125,7 +125,7 @@ const EventCrewMode = () => {
 
   return (
     <div className="min-h-screen bg-background pb-32">
-      <SEO title="Crew Mode · Run of Show" description="Live event run-of-show for crew" noindex />
+      <SEO title="Crew Mode · Run of Show" description="Live event run-of-show for crew" />
 
       <header className="sticky top-0 z-40 bg-background border-b border-border/60">
         <div className="px-4 py-3 flex items-center gap-3">

@@ -1,0 +1,231 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { SEO } from "@/components/SEO";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Sparkles, Radar, Briefcase, Users, FileText, Loader2, Check, X, Copy, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+
+const Intel = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [digest, setDigest] = useState<any>(null);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [epk, setEpk] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    refresh();
+  }, [user]);
+
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      const [d, l, e] = await Promise.all([
+        supabase.from("opportunity_intel_digests").select("*").eq("user_id", user!.id).eq("kind", "daily_match").order("generated_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("sponsor_leads").select("*").eq("user_id", user!.id).neq("status", "dismissed").order("fit_score", { ascending: false }).limit(50),
+        supabase.from("epk_refresh_suggestions").select("*").eq("user_id", user!.id).eq("status", "pending").order("created_at", { ascending: false }).limit(20),
+      ]);
+      setDigest(d.data);
+      setLeads(l.data || []);
+      setEpk(e.data || []);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  };
+
+  const generateMatches = async () => {
+    setBusy("matches");
+    try {
+      await supabase.functions.invoke("daily-match-digest", { body: { user_id: user!.id } });
+      await refresh();
+      toast.success("Brief refreshed");
+    } catch (e: any) { toast.error(e.message); }
+    finally { setBusy(null); }
+  };
+
+  const generateSponsors = async () => {
+    setBusy("sponsors");
+    try {
+      const { error } = await supabase.functions.invoke("sponsor-radar", { body: { count: 6 } });
+      if (error) throw error;
+      await refresh();
+      toast.success("Sponsor leads ready");
+    } catch (e: any) { toast.error(e.message); }
+    finally { setBusy(null); }
+  };
+
+  const generateEpk = async () => {
+    setBusy("epk");
+    try {
+      const { error } = await supabase.functions.invoke("auto-epk-updater", { body: {} });
+      if (error) throw error;
+      await refresh();
+      toast.success("EPK suggestions ready");
+    } catch (e: any) { toast.error(e.message); }
+    finally { setBusy(null); }
+  };
+
+  const updateLead = async (id: string, status: string) => {
+    await supabase.from("sponsor_leads").update({ status }).eq("id", id);
+    setLeads((prev) => prev.filter((l) => l.id !== id || status === "saved" || status === "contacted"));
+    if (status === "saved" || status === "contacted") refresh();
+  };
+
+  const applyEpk = async (s: any) => {
+    const field = s.kind === "bio" ? "bio" : s.kind === "headline" ? "headline" : null;
+    if (field) {
+      await supabase.from("profiles").update({ [field]: s.suggested_value }).eq("user_id", user!.id);
+    }
+    await supabase.from("epk_refresh_suggestions").update({ status: "applied", applied_at: new Date().toISOString() }).eq("id", s.id);
+    setEpk((prev) => prev.filter((p) => p.id !== s.id));
+    toast.success("Applied to your profile");
+  };
+
+  const dismissEpk = async (id: string) => {
+    await supabase.from("epk_refresh_suggestions").update({ status: "dismissed" }).eq("id", id);
+    setEpk((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  if (!user) return null;
+
+  return (
+    <div className="min-h-screen bg-background pb-24">
+      <SEO title="Your Intel Brief — ThriveIN" description="Daily matches, sponsor radar, and EPK refresh suggestions." />
+      <div className="border-b border-border/50 pt-[env(safe-area-inset-top)]">
+        <div className="container max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="h-8 w-8"><ArrowLeft className="h-4 w-4" /></Button>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <Radar className="h-5 w-5 text-primary" />
+              <h1 className="text-xl font-black tracking-tight">Intel Brief</h1>
+            </div>
+            <p className="text-xs text-muted-foreground">Matches, sponsors & EPK signals — refreshed daily.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="container max-w-3xl mx-auto px-4 py-4">
+        <Tabs defaultValue="matches">
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="matches"><Users className="h-3.5 w-3.5 mr-1" /> Matches</TabsTrigger>
+            <TabsTrigger value="sponsors"><Sparkles className="h-3.5 w-3.5 mr-1" /> Sponsors</TabsTrigger>
+            <TabsTrigger value="epk"><FileText className="h-3.5 w-3.5 mr-1" /> EPK</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="matches" className="mt-4 space-y-3">
+            <Button size="sm" onClick={generateMatches} disabled={busy === "matches"} className="w-full">
+              {busy === "matches" ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+              Refresh today's brief
+            </Button>
+            {loading && <p className="text-sm text-muted-foreground text-center py-8">Loading…</p>}
+            {!loading && !digest && <p className="text-sm text-muted-foreground text-center py-8">No brief yet. Tap refresh.</p>}
+            {digest && (
+              <>
+                {digest.payload?.summary && <p className="text-sm font-semibold">{digest.payload.summary}</p>}
+                {(digest.payload?.gigs || []).map((g: any) => (
+                  <Card key={g.id} className="p-3 cursor-pointer" onClick={() => navigate(`/gigs/${g.id}`)}>
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <p className="text-sm font-bold line-clamp-1">{g.title}</p>
+                      {g.fit != null && <Badge>{g.fit}%</Badge>}
+                    </div>
+                    {g.why && <p className="text-xs text-muted-foreground">{g.why}</p>}
+                  </Card>
+                ))}
+                {(digest.payload?.matches || []).map((m: any) => (
+                  <Card key={m.user_id} className="p-3 flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/u/${m.user_id}`)}>
+                    <div className="h-10 w-10 rounded-full bg-muted overflow-hidden shrink-0">
+                      {m.avatar_url ? <img src={m.avatar_url} className="h-full w-full object-cover" /> : <div className="h-full w-full bg-gradient-to-br from-primary/20 to-energy/20" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold line-clamp-1">{m.display_name}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{m.primary_role}</p>
+                    </div>
+                    <Badge variant="outline">{m.score}%</Badge>
+                  </Card>
+                ))}
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="sponsors" className="mt-4 space-y-3">
+            <Button size="sm" onClick={generateSponsors} disabled={busy === "sponsors"} className="w-full">
+              {busy === "sponsors" ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Radar className="h-4 w-4 mr-2" />}
+              Scan for sponsor leads
+            </Button>
+            {loading && <p className="text-sm text-muted-foreground text-center py-8">Loading…</p>}
+            {!loading && leads.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No leads yet. Tap scan.</p>}
+            {leads.map((l) => (
+              <Card key={l.id} className="p-3 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold">{l.brand_name}</p>
+                    {l.niche && <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{l.niche}</p>}
+                  </div>
+                  <Badge variant={l.fit_score >= 75 ? "default" : "outline"}>{l.fit_score}%</Badge>
+                </div>
+                {l.reason && <p className="text-xs text-muted-foreground">{l.reason}</p>}
+                {l.pitch_draft && (
+                  <div className="rounded-lg bg-muted/40 p-2 border border-border/50">
+                    <p className="text-xs whitespace-pre-wrap">{l.pitch_draft}</p>
+                  </div>
+                )}
+                {l.contact_info?.hint && <p className="text-[10px] text-muted-foreground">📧 {l.contact_info.hint}</p>}
+                <div className="flex gap-1.5 pt-1">
+                  <Button size="sm" variant="outline" className="h-7 text-xs flex-1" onClick={() => { navigator.clipboard.writeText(l.pitch_draft || ""); toast.success("Pitch copied"); }}>
+                    <Copy className="h-3 w-3 mr-1" /> Copy pitch
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => updateLead(l.id, "saved")}>Save</Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => updateLead(l.id, "contacted")}>Sent</Button>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => updateLead(l.id, "dismissed")}><X className="h-3 w-3" /></Button>
+                </div>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="epk" className="mt-4 space-y-3">
+            <Button size="sm" onClick={generateEpk} disabled={busy === "epk"} className="w-full">
+              {busy === "epk" ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
+              Generate EPK suggestions
+            </Button>
+            {loading && <p className="text-sm text-muted-foreground text-center py-8">Loading…</p>}
+            {!loading && epk.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No suggestions. Add credits to trigger ideas.</p>}
+            {epk.map((s) => (
+              <Card key={s.id} className="p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-[10px] uppercase">{s.kind}</Badge>
+                  {s.reason && <p className="text-[10px] text-muted-foreground line-clamp-1">{s.reason}</p>}
+                </div>
+                {s.current_value && (
+                  <div className="text-[11px]">
+                    <p className="text-muted-foreground">Current:</p>
+                    <p className="line-clamp-2">{s.current_value}</p>
+                  </div>
+                )}
+                <div className="rounded-lg bg-primary/5 border border-primary/20 p-2">
+                  <p className="text-[10px] uppercase tracking-wider text-primary mb-1">Suggested</p>
+                  <p className="text-xs whitespace-pre-wrap">{s.suggested_value}</p>
+                </div>
+                <div className="flex gap-1.5">
+                  <Button size="sm" className="h-7 text-xs flex-1" onClick={() => applyEpk(s)}>
+                    <Check className="h-3 w-3 mr-1" /> Apply
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => dismissEpk(s.id)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default Intel;

@@ -321,13 +321,48 @@ export const CreateSessionDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Event Type Toggle */}
-          <div className="flex gap-2">
-            <Button type="button" variant={formData.event_type === 'session' ? 'default' : 'outline'} size="sm" className="flex-1"
-              onClick={() => setFormData(prev => ({ ...prev, event_type: 'session' }))}>Jam Session</Button>
-            <Button type="button" variant={formData.event_type === 'event' ? 'default' : 'outline'} size="sm" className="flex-1"
-              onClick={() => setFormData(prev => ({ ...prev, event_type: 'event' }))}>Event / Meetup</Button>
+          {/* Quick vs Production Workspace fork */}
+          <div className="rounded-xl border border-border/60 bg-card/40 p-1 grid grid-cols-2 gap-1">
+            <button
+              type="button"
+              onClick={() => setCreateMode("quick")}
+              className={`rounded-lg px-3 py-2 text-left transition-colors ${
+                createMode === "quick" ? "bg-primary text-primary-foreground" : "hover:bg-muted/60"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 text-[11px] font-bold">
+                <Zap className="h-3 w-3" /> Quick Event
+              </div>
+              <p className="text-[10px] opacity-80 mt-0.5 leading-tight">Just publish & share.</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCreateMode("workspace")}
+              className={`rounded-lg px-3 py-2 text-left transition-colors ${
+                createMode === "workspace"
+                  ? "bg-[hsl(var(--energy))] text-[hsl(var(--background))]"
+                  : "hover:bg-muted/60"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 text-[11px] font-bold">
+                <Sparkles className="h-3 w-3" /> Production Workspace
+              </div>
+              <p className="text-[10px] opacity-80 mt-0.5 leading-tight">Full Studio + run sheet.</p>
+            </button>
           </div>
+
+          {createMode === "workspace" && (
+            <EventArchetypePicker value={archetype} onChange={setArchetype} />
+          )}
+
+          {createMode === "quick" && (
+            <div className="flex gap-2">
+              <Button type="button" variant={formData.event_type === 'session' ? 'default' : 'outline'} size="sm" className="flex-1"
+                onClick={() => setFormData(prev => ({ ...prev, event_type: 'session' }))}>Jam Session</Button>
+              <Button type="button" variant={formData.event_type === 'event' ? 'default' : 'outline'} size="sm" className="flex-1"
+                onClick={() => setFormData(prev => ({ ...prev, event_type: 'event' }))}>Event / Meetup</Button>
+            </div>
+          )}
 
           {/* Scan Flyer shortcut */}
           <button

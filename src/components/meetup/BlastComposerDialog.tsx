@@ -143,17 +143,26 @@ export const BlastComposerDialog = ({ open, onOpenChange, eventId, eventTitle, o
             </Select>
           </div>
 
-          <div>
-            <Label className="text-xs uppercase tracking-wider">Audience</Label>
-            <Select value={segment} onValueChange={setSegment}>
-              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {SEGMENTS.map(s => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {userIds && userIds.length > 0 ? (
+            <div className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2">
+              <Label className="text-xs uppercase tracking-wider">Audience</Label>
+              <p className="text-sm font-medium mt-0.5">
+                {segmentLabel || "Custom segment"} · {userIds.length} {userIds.length === 1 ? "guest" : "guests"}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <Label className="text-xs uppercase tracking-wider">Audience</Label>
+              <Select value={segment} onValueChange={setSegment}>
+                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {SEGMENTS.map(s => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div>
             <Label className="text-xs uppercase tracking-wider">Subject</Label>

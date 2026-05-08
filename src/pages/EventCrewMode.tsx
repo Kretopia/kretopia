@@ -139,7 +139,16 @@ const EventCrewMode = () => {
             </p>
             <h1 className="text-base font-black truncate">{project?.title ?? "Run of Show"}</h1>
           </div>
-          <div className="text-right">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setPresenter((p) => !p)}
+              title={presenter ? "Exit presenter view" : "Presenter view"}
+            >
+              {presenter ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
             <p className="text-xs font-mono text-muted-foreground">
               {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>

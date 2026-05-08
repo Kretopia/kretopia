@@ -351,6 +351,7 @@ export const StudioRoom = ({
                 <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
                 <EventSeatingPlanner project={project} currentUserId={currentUserId} />
                 <EventOutreachSegmentBuilder project={project} currentUserId={currentUserId} />
+                <EventPostRecapSection project={project} currentUserId={currentUserId} />
               </>
             )}
           </>

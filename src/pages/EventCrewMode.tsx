@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle2, AlertTriangle, Clock, Radio, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertTriangle, Clock, Radio, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
 
@@ -38,6 +38,7 @@ const EventCrewMode = () => {
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
+  const [presenter, setPresenter] = useState(false);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30_000);
@@ -138,7 +139,16 @@ const EventCrewMode = () => {
             </p>
             <h1 className="text-base font-black truncate">{project?.title ?? "Run of Show"}</h1>
           </div>
-          <div className="text-right">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setPresenter((p) => !p)}
+              title={presenter ? "Exit presenter view" : "Presenter view"}
+            >
+              {presenter ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
             <p className="text-xs font-mono text-muted-foreground">
               {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </p>
@@ -176,6 +186,46 @@ const EventCrewMode = () => {
             </Link>
           )}
         </div>
+      ) : presenter ? (
+        (() => {
+          const cur = currentIdx >= 0 ? items[currentIdx] : null;
+          const nxt = items[currentIdx + 1] ?? items.find((it) => {
+            const s = toMinutes(it.start_time);
+            return s != null && s > nowMin;
+          });
+          return (
+            <div className="px-6 py-10 space-y-8 text-center">
+              {cur ? (
+                <div className="space-y-3">
+                  <p className="text-xs font-black uppercase tracking-[0.3em] text-[hsl(var(--energy))]">Now</p>
+                  <p className="text-4xl font-black leading-tight">{cur.title}</p>
+                  <p className="text-base font-mono text-muted-foreground">
+                    {cur.start_time}{cur.end_time ? `–${cur.end_time}` : ""}
+                  </p>
+                  {cur.owner_name && (
+                    <p className="text-sm text-muted-foreground">{cur.owner_name}</p>
+                  )}
+                  <Button
+                    size="lg"
+                    className="mt-4"
+                    onClick={() => cycleStatus(cur)}
+                  >
+                    {cur.status === "planned" ? "Mark done" : cur.status === "done" ? "Flag risk" : "Reset"}
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No cue running right now.</p>
+              )}
+              {nxt && (
+                <div className="pt-6 border-t border-border/40 space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Up next</p>
+                  <p className="text-xl font-bold">{nxt.title}</p>
+                  <p className="text-sm font-mono text-muted-foreground">{nxt.start_time}</p>
+                </div>
+              )}
+            </div>
+          );
+        })()
       ) : (
         <ol className="px-3 py-3 space-y-2">
           {items.map((it, i) => {

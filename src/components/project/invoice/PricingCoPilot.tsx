@@ -168,18 +168,20 @@ export function PricingCoPilot({
   };
   const sym = getCurrencySymbol(currency);
 
-  const sendMessage = async (userInput: string, scanImage?: string) => {
+  const sendMessage = async (userInput: string, scanImageOverride?: string) => {
+    const scanImage = scanImageOverride ?? pendingScan?.dataUrl;
     if ((!userInput.trim() && !scanImage) || isLoading) return;
 
     const userMsg: ChatMessage = {
       role: "user",
       content: scanImage
-        ? `${userInput.trim() || "📎 Scanning brief…"}`
+        ? `${userInput.trim() || "📎 Here's the brief — please read it and propose line items."}${pendingScan ? `\n\n_(attached: ${pendingScan.name})_` : ""}`
         : userInput.trim(),
     };
     const allMessages = [...messages, userMsg];
     setMessages(allMessages);
     setInput("");
+    setPendingScan(null);
     setIsLoading(true);
 
     let assistantContent = "";

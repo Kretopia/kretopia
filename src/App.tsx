@@ -107,6 +107,7 @@ const MeetupManage = lazy(() => import("./pages/MeetupManage"));
 
 const Scene = lazy(() => import("./pages/Scene"));
 const EventBackstage = lazy(() => import("./pages/EventBackstage"));
+const EventCrewMode = lazy(() => import("./pages/EventCrewMode"));
 const Podcast = lazy(() => import("./pages/Podcast"));
 const Magazine = lazy(() => import("./pages/Magazine"));
 const Spotlight = lazy(() => import("./pages/Spotlight"));

@@ -29,6 +29,7 @@ import { PadPreviewSection } from "./PadPreviewSection";
 import { DeliverablesSection } from "./DeliverablesSection";
 import { ProductionPrepSection } from "./ProductionPrepSection";
 import { PodcastStudioSection } from "./PodcastStudioSection";
+import { ContentStudioSection } from "./ContentStudioSection";
 import { EventStudioSection } from "./EventStudioSection";
 import { EventHeroCard } from "./EventHeroCard";
 import { EventCrmSection } from "./EventCrmSection";

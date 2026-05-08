@@ -4601,6 +4601,50 @@ export type Database = {
           },
         ]
       }
+      event_guest_matches: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          reasons: Json
+          score: number
+          shared_interests: Json
+          updated_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          reasons?: Json
+          score?: number
+          shared_interests?: Json
+          updated_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          reasons?: Json
+          score?: number
+          shared_interests?: Json
+          updated_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_guest_matches_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "creative_jams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_host_stats: {
         Row: {
           avg_attendance_pct: number
@@ -16099,6 +16143,10 @@ export type Database = {
       increment_template_usage: {
         Args: { template_id: string }
         Returns: undefined
+      }
+      is_event_project_member: {
+        Args: { _event_id: string; _user_id: string }
+        Returns: boolean
       }
       is_profile_owner: { Args: { _profile_user_id: string }; Returns: boolean }
       is_project_member: {

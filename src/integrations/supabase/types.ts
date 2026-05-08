@@ -2061,6 +2061,230 @@ export type Database = {
         }
         Relationships: []
       }
+      content_approvals: {
+        Row: {
+          asset_url: string | null
+          created_at: string
+          created_by: string
+          decided_at: string | null
+          feedback: string | null
+          id: string
+          item_id: string | null
+          item_type: string
+          project_id: string
+          reviewer_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          asset_url?: string | null
+          created_at?: string
+          created_by: string
+          decided_at?: string | null
+          feedback?: string | null
+          id?: string
+          item_id?: string | null
+          item_type?: string
+          project_id: string
+          reviewer_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          asset_url?: string | null
+          created_at?: string
+          created_by?: string
+          decided_at?: string | null
+          feedback?: string | null
+          id?: string
+          item_id?: string | null
+          item_type?: string
+          project_id?: string
+          reviewer_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_approvals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_calendar_items: {
+        Row: {
+          asset_url: string | null
+          caption: string | null
+          created_at: string
+          created_by: string
+          hashtags: string[] | null
+          id: string
+          notes: string | null
+          platform: string | null
+          project_id: string
+          scheduled_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          asset_url?: string | null
+          caption?: string | null
+          created_at?: string
+          created_by: string
+          hashtags?: string[] | null
+          id?: string
+          notes?: string | null
+          platform?: string | null
+          project_id: string
+          scheduled_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          asset_url?: string | null
+          caption?: string | null
+          created_at?: string
+          created_by?: string
+          hashtags?: string[] | null
+          id?: string
+          notes?: string | null
+          platform?: string | null
+          project_id?: string
+          scheduled_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_calendar_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_scripts: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string
+          id: string
+          is_current: boolean
+          project_id: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_current?: boolean
+          project_id: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_current?: boolean
+          project_id?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_scripts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_shots: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string
+          duration_seconds: number | null
+          id: string
+          location: string | null
+          notes: string | null
+          order_index: number
+          project_id: string
+          props: string[] | null
+          scene_no: number | null
+          shot_no: number | null
+          shot_type: string | null
+          status: string
+          talent: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description: string
+          duration_seconds?: number | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          order_index?: number
+          project_id: string
+          props?: string[] | null
+          scene_no?: number | null
+          shot_no?: number | null
+          shot_type?: string | null
+          status?: string
+          talent?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string
+          duration_seconds?: number | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          order_index?: number
+          project_id?: string
+          props?: string[] | null
+          scene_no?: number | null
+          shot_no?: number | null
+          shot_type?: string | null
+          status?: string
+          talent?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_shots_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_templates: {
         Row: {
           contract_type: string

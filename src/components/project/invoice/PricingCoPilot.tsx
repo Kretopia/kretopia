@@ -70,6 +70,54 @@ export function PricingCoPilot({
   const [projectContext, setProjectContext] = useState<any | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isScanning, setIsScanning] = useState(false);
+
+  /** Compress an image file to ~1024px wide JPEG data URL so the gateway accepts it. */
+  const fileToCompressedDataUrl = (file: File, maxDim = 1280, quality = 0.82): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("Canvas unsupported"));
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => reject(new Error("Bad image"));
+        img.src = String(reader.result);
+      };
+      reader.onerror = () => reject(new Error("Read failed"));
+      reader.readAsDataURL(file);
+    });
+
+  const handleScanFile = async (file: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please pick a brief or flyer image (PNG/JPG).");
+      return;
+    }
+    setIsScanning(true);
+    try {
+      const dataUrl = await fileToCompressedDataUrl(file);
+      await sendMessage(
+        `I'm sharing a brief/flyer for this ${documentType}. Read it carefully — extract the project, deliverables, dates, client name, currency, and any pricing hints. Then propose line items and call generate_line_items. Use any matches you spot against my Studio + Thrive Memory.`,
+        dataUrl,
+      );
+    } catch (e: any) {
+      toast.error(e?.message || "Couldn't read that image");
+    } finally {
+      setIsScanning(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -336,6 +336,8 @@ export const StudioRoom = ({
           <>
             <EventHeroCard project={project} />
             <EventStudioSection project={project} currentUserId={currentUserId} />
+            <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
+            <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
           </>
         )}
         {mobileWorkColumn}

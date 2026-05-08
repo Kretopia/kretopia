@@ -44,6 +44,8 @@ serve(async (req) => {
       ctaText,
       ctaUrl,
       testOnly = false,
+      userIds: explicitUserIds,
+      segmentLabel,
     } = body ?? {};
 
     if (!eventId || !subject || !bodyHtml) {

@@ -343,7 +343,7 @@ const SkeletonGrid = () => (
   </div>
 );
 
-const EmptyState = ({ onHost }: { onHost: () => void }) => (
+const EmptyState = (_: { onHost?: () => void }) => (
   <Card className="p-8 text-center border-dashed bg-card/40">
     <Calendar className="h-12 w-12 mx-auto text-energy/40 mb-3" />
     <h3 className="font-black text-lg mb-1 tracking-tight">No events yet</h3>

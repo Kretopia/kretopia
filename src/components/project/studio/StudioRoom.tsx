@@ -376,6 +376,11 @@ export const StudioRoom = ({
               <PodcastStudioSection project={project} currentUserId={currentUserId} />
             </div>
           )}
+          {["content","content_creation"].includes(project.workspace_type) && (
+            <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+              <ContentStudioSection project={project} currentUserId={currentUserId} />
+            </div>
+          )}
           {["event","event_production"].includes(project.workspace_type) && (
             <>
               <EventHeroCard project={project} />

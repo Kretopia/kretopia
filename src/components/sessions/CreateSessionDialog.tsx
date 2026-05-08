@@ -186,11 +186,15 @@ export const CreateSessionDialog = ({
       const startTime = new Date(date);
       startTime.setHours(hours, minutes, 0, 0);
 
-      const { error } = await supabase.from('creative_jams').insert({
+      const isWorkspace = createMode === "workspace" && !!archetype;
+      const arch = archetype ? findArchetype(archetype) : null;
+      const finalCategory = isWorkspace && arch ? arch.category : formData.category;
+
+      const { data: inserted, error } = await supabase.from('creative_jams').insert({
         created_by: user.id,
         title: formData.title,
         description: formData.description,
-        category: formData.category,
+        category: finalCategory,
         venue_name: formData.venue_name,
         venue_address: formData.venue_address,
         latitude: formData.latitude,
@@ -202,18 +206,49 @@ export const CreateSessionDialog = ({
         is_ticketed: formData.is_ticketed,
         ticket_price: formData.is_ticketed ? formData.ticket_price : 0,
         ticket_currency: formData.ticket_currency,
-        event_type: formData.event_type,
+        event_type: isWorkspace ? 'event' : formData.event_type,
         cover_image_url: coverUrl,
         external_ticket_url: formData.external_ticket_url || null,
         circle_id: formData.circle_id || null,
+        tags: isWorkspace && arch ? arch.defaultTags : [],
         event_mode: formatValue.event_mode,
         online_format: formatValue.online_format,
         online_max_attendees: formatValue.online_max_attendees,
         watch_party_video_url: formatValue.watch_party_video_url || null,
         recording_enabled: formatValue.recording_enabled,
-      } as any);
+      } as any).select('id').single();
 
       if (error) throw error;
+
+      // If full Production Workspace was selected, create the linked Studio.
+      if (isWorkspace && inserted?.id && archetype) {
+        try {
+          const projectId = await createEventStudio({
+            eventId: inserted.id as string,
+            userId: user.id,
+            title: formData.title,
+            description: formData.description,
+            startTime: startTime.toISOString(),
+            archetypeId: archetype,
+            coverUrl: coverUrl,
+          });
+          toast({
+            title: "Production workspace ready",
+            description: "Opening your event Studio…",
+          });
+          onOpenChange(false);
+          onCreated?.();
+          navigate(`/desk/${projectId}`);
+          return;
+        } catch (studioErr: any) {
+          console.error("createEventStudio failed", studioErr);
+          toast({
+            title: "Event created, workspace failed",
+            description: studioErr?.message ?? "Open the event and try again.",
+            variant: "destructive",
+          });
+        }
+      }
 
       toast({
         title: "Event created!",
@@ -222,7 +257,7 @@ export const CreateSessionDialog = ({
 
       onOpenChange(false);
       onCreated?.();
-      
+
       // Reset form
       setFormData({
         title: '',

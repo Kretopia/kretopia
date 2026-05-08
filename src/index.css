@@ -568,3 +568,10 @@ body.creator-site-active [data-bottom-nav] {
 
 /* In dark mode, the .dark-surface marker is a no-op — everything is already dark.
    It exists purely as a light-mode opt-out signal. */
+
+/* Hide global FABs (e.g. SnapReceiptFAB) when a modal/sheet/drawer is open so
+   they don't bleed over a dialog and look like in-context actions. */
+body[data-scroll-locked] .snap-receipt-fab,
+body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
+  display: none !important;
+}

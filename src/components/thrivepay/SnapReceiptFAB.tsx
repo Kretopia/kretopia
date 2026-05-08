@@ -437,7 +437,8 @@ export function SnapReceiptFAB({ projectId }: SnapReceiptFABProps) {
         disabled={scanning}
         aria-label="Scan a receipt"
         onClick={() => setPickerOpen((open) => !open)}
-        className="fixed right-4 z-[60] h-14 rounded-full px-4 gap-2 shadow-lg shadow-primary/30 bg-primary hover:bg-primary/90"
+        data-snap-receipt-fab
+        className="snap-receipt-fab fixed right-4 z-[60] h-14 rounded-full px-4 gap-2 shadow-lg shadow-primary/30 bg-primary hover:bg-primary/90"
         style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 5.5rem)" }}
       >
         {scanning ? (

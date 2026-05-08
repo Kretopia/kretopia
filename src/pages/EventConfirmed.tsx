@@ -113,6 +113,12 @@ const EventConfirmed = () => {
           </CardContent>
         </Card>
 
+        {user && eventId && (
+          <div className="mb-6">
+            <MyEventMatches eventId={eventId} currentUserId={user.id} />
+          </div>
+        )}
+
         {/* Actions */}
         <div className="space-y-3">
           <Button onClick={handleShare} variant="gradient" className="w-full py-6">

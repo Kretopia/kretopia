@@ -131,6 +131,39 @@ const TOOLS = [
   {
     type: "function",
     function: {
+      name: "draft_quote",
+      description:
+        "Create a DRAFT quote (estimate) for this project with line items and a valid-until date. NEVER auto-sent — the user reviews and sends from Money. Use when user says 'quote', 'estimate', 'proposal'.",
+      parameters: {
+        type: "object",
+        properties: {
+          line_items: {
+            type: "array",
+            description: "List of line items.",
+            items: {
+              type: "object",
+              properties: {
+                description: { type: "string" },
+                quantity: { type: "number" },
+                rate: { type: "number" },
+              },
+              required: ["description", "quantity", "rate"],
+              additionalProperties: false,
+            },
+          },
+          currency: { type: ["string", "null"], description: "ISO code, defaults to project currency or USD." },
+          valid_in_days: { type: ["number", "null"], description: "Days the quote is valid for, defaults to 30." },
+          notes: { type: ["string", "null"] },
+          tax_rate: { type: ["number", "null"], description: "Tax %, e.g. 10 for 10%." },
+        },
+        required: ["line_items", "currency", "valid_in_days", "notes", "tax_rate"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "start_video_call",
       description: "Spin up a Daily video room for this project and post the join link in chat. Use for 'jump on a call', 'start meeting'.",
       parameters: { type: "object", properties: {}, additionalProperties: false },

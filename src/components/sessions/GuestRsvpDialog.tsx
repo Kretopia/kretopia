@@ -125,6 +125,13 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
         },
       }).catch(() => {});
 
+      // Auto-refresh AI guest matches (registered users only; throttled server-side)
+      if (user) {
+        supabase.functions.invoke("match-event-guests", {
+          body: { event_id: eventId, mode: "auto" },
+        }).catch(() => {});
+      }
+
       onOpenChange(false);
       onRsvpComplete?.();
       navigate(`/event/${eventId}/confirmed?name=${encodeURIComponent(parsed.data.guest_name)}&email=${encodeURIComponent(parsed.data.guest_email)}`);

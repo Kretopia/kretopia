@@ -8251,6 +8251,264 @@ export type Database = {
         }
         Relationships: []
       }
+      music_release_checklist: {
+        Row: {
+          created_at: string
+          created_by: string
+          done: boolean
+          due_date: string | null
+          id: string
+          order_index: number
+          project_id: string
+          release_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          done?: boolean
+          due_date?: string | null
+          id?: string
+          order_index?: number
+          project_id: string
+          release_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          done?: boolean
+          due_date?: string | null
+          id?: string
+          order_index?: number
+          project_id?: string
+          release_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_release_checklist_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_release_checklist_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "music_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_releases: {
+        Row: {
+          artist: string | null
+          cover_url: string | null
+          created_at: string
+          created_by: string
+          distributor: string | null
+          id: string
+          isrc: string | null
+          notes: string | null
+          project_id: string
+          release_date: string | null
+          release_type: string
+          status: string
+          title: string
+          upc: string | null
+          updated_at: string
+        }
+        Insert: {
+          artist?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by: string
+          distributor?: string | null
+          id?: string
+          isrc?: string | null
+          notes?: string | null
+          project_id: string
+          release_date?: string | null
+          release_type?: string
+          status?: string
+          title: string
+          upc?: string | null
+          updated_at?: string
+        }
+        Update: {
+          artist?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string
+          distributor?: string | null
+          id?: string
+          isrc?: string | null
+          notes?: string | null
+          project_id?: string
+          release_date?: string | null
+          release_type?: string
+          status?: string
+          title?: string
+          upc?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_releases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_splits: {
+        Row: {
+          collaborator_user_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          notes: string | null
+          payout_email: string | null
+          percentage: number
+          project_id: string
+          release_id: string | null
+          role: string | null
+          status: string
+          track_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          collaborator_user_id?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          notes?: string | null
+          payout_email?: string | null
+          percentage?: number
+          project_id: string
+          release_id?: string | null
+          role?: string | null
+          status?: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          collaborator_user_id?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          payout_email?: string | null
+          percentage?: number
+          project_id?: string
+          release_id?: string | null
+          role?: string | null
+          status?: string
+          track_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_splits_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_splits_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "music_releases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_splits_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "music_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_tracks: {
+        Row: {
+          created_at: string
+          created_by: string
+          duration_seconds: number | null
+          id: string
+          isrc: string | null
+          lyrics: string | null
+          master_url: string | null
+          notes: string | null
+          order_index: number
+          project_id: string
+          release_id: string | null
+          status: string
+          title: string
+          track_no: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          duration_seconds?: number | null
+          id?: string
+          isrc?: string | null
+          lyrics?: string | null
+          master_url?: string | null
+          notes?: string | null
+          order_index?: number
+          project_id: string
+          release_id?: string | null
+          status?: string
+          title: string
+          track_no?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          duration_seconds?: number | null
+          id?: string
+          isrc?: string | null
+          lyrics?: string | null
+          master_url?: string | null
+          notes?: string | null
+          order_index?: number
+          project_id?: string
+          release_id?: string | null
+          status?: string
+          title?: string
+          track_no?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_tracks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_tracks_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "music_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           email: string

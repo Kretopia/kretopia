@@ -8,6 +8,8 @@ import { CheckCircle2, Calendar, MapPin, Clock, ArrowRight, Share2, Loader2 } fr
 import { format } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { APP_URL } from "@/lib/constants";
+import { useAuth } from "@/hooks/useAuth";
+import { MyEventMatches } from "@/components/sessions/MyEventMatches";
 
 const EventConfirmed = () => {
   const { eventId } = useParams<{ eventId: string }>();

@@ -32,6 +32,7 @@ import { PodcastStudioSection } from "./PodcastStudioSection";
 import { EventStudioSection } from "./EventStudioSection";
 import { EventHeroCard } from "./EventHeroCard";
 import { EventCrmSection } from "./EventCrmSection";
+import { EventSponsorsKanban } from "./EventSponsorsKanban";
 import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
@@ -338,6 +339,7 @@ export const StudioRoom = ({
             <EventStudioSection project={project} currentUserId={currentUserId} />
             <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
             <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
+            <EventSponsorsKanban project={project} currentUserId={currentUserId} />
           </>
         )}
         {mobileWorkColumn}
@@ -365,6 +367,9 @@ export const StudioRoom = ({
               </div>
               <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
                 <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
+              </div>
+              <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+                <EventSponsorsKanban project={project} currentUserId={currentUserId} />
               </div>
             </>
           )}

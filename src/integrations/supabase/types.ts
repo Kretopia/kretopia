@@ -4995,6 +4995,71 @@ export type Database = {
           },
         ]
       }
+      event_sponsors: {
+        Row: {
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string
+          deliverables: string | null
+          id: string
+          name: string
+          notes: string | null
+          package_currency: string | null
+          package_value: number | null
+          position: number
+          project_id: string
+          status: string
+          tier: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by: string
+          deliverables?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          package_currency?: string | null
+          package_value?: number | null
+          position?: number
+          project_id: string
+          status?: string
+          tier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string
+          deliverables?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          package_currency?: string | null
+          package_value?: number | null
+          position?: number
+          project_id?: string
+          status?: string
+          tier?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_sponsors_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_suppliers: {
         Row: {
           category: string

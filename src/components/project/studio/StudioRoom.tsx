@@ -339,6 +339,7 @@ export const StudioRoom = ({
             <EventStudioSection project={project} currentUserId={currentUserId} />
             <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
             <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
+            <EventSponsorsKanban project={project} currentUserId={currentUserId} />
           </>
         )}
         {mobileWorkColumn}

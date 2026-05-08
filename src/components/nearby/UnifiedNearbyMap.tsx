@@ -480,13 +480,25 @@ export const UnifiedNearbyMap = ({
   }, [selectedItem]);
 
   return (
-    <div className="relative h-full w-full min-h-[300px] overflow-hidden bg-muted/20">
-      <div ref={mapContainerRef} className="h-full w-full" />
+    <div className="relative h-full w-full min-h-[300px] overflow-hidden bg-muted/30">
+      {/* Subtle grid skeleton so the map area never looks blank-black before tiles load */}
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-40 pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(hsl(var(--border)/0.5) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border)/0.5) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+      <div ref={mapContainerRef} className="relative h-full w-full" />
 
       {(loading || !userLocation) && (
-        <div className="absolute inset-0 z-[500] flex flex-col items-center justify-center gap-2 bg-background/75">
+        <div className="absolute inset-0 z-[500] flex flex-col items-center justify-center gap-2 bg-background/75 backdrop-blur-[1px]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          {!loading && <p className="text-xs text-muted-foreground">Loading map…</p>}
+          <p className="text-xs text-muted-foreground font-medium">
+            {!userLocation ? "Finding your area…" : "Loading map…"}
+          </p>
         </div>
       )}
     </div>

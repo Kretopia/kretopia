@@ -18,6 +18,7 @@ type ToolName =
   | "get_project_summary"
   | "schedule_reminder"
   | "draft_invoice"
+  | "draft_quote"
   | "start_video_call"
   | "add_credit"
   | "find_user"
@@ -123,6 +124,39 @@ const TOOLS = [
           due_in_days: { type: ["number", "null"], description: "Days until due, defaults to 14." },
         },
         required: ["amount", "currency", "notes", "due_in_days"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "draft_quote",
+      description:
+        "Create a DRAFT quote (estimate) for this project with line items and a valid-until date. NEVER auto-sent — the user reviews and sends from Money. Use when user says 'quote', 'estimate', 'proposal'.",
+      parameters: {
+        type: "object",
+        properties: {
+          line_items: {
+            type: "array",
+            description: "List of line items.",
+            items: {
+              type: "object",
+              properties: {
+                description: { type: "string" },
+                quantity: { type: "number" },
+                rate: { type: "number" },
+              },
+              required: ["description", "quantity", "rate"],
+              additionalProperties: false,
+            },
+          },
+          currency: { type: ["string", "null"], description: "ISO code, defaults to project currency or USD." },
+          valid_in_days: { type: ["number", "null"], description: "Days the quote is valid for, defaults to 30." },
+          notes: { type: ["string", "null"] },
+          tax_rate: { type: ["number", "null"], description: "Tax %, e.g. 10 for 10%." },
+        },
+        required: ["line_items", "currency", "valid_in_days", "notes", "tax_rate"],
         additionalProperties: false,
       },
     },
@@ -290,7 +324,9 @@ Deno.serve(async (req) => {
       body?.message ??
       (requestedTool === "draft_invoice"
         ? `Draft a ${String(body?.currency ?? "USD").toUpperCase()} ${Number(body?.amount ?? 0)} invoice for ${body?.notes ?? body?.description ?? "this project"}`
-        : body?.title ?? body?.what ?? body?.description ?? requestedTool ?? "")
+        : requestedTool === "draft_quote"
+          ? `Draft a quote with ${(Array.isArray(body?.line_items) ? body.line_items.length : 0)} line items`
+          : body?.title ?? body?.what ?? body?.description ?? requestedTool ?? "")
     ).trim();
     const is_pro = body?.is_pro ?? false;
     const confirm_token = body?.confirm_token;
@@ -395,7 +431,7 @@ DECISION RULES:
 9. Treat USER FACTS as the only ground truth — never invent projects, invoices, or activity not listed.
 
 ABSOLUTE NO-LYING RULE:
-- The tools listed above are the ONLY things you can do here in Desk: create_task, mark_task_done, send_message_to_collaborator, get_project_summary, schedule_reminder, draft_invoice, start_video_call, add_credit, find_user, list_my_projects, add_collaborator, remove_collaborator, propose_multistep_plan, ask_clarification.
+- The tools listed above are the ONLY things you can do here in Desk: create_task, mark_task_done, send_message_to_collaborator, get_project_summary, schedule_reminder, draft_invoice, draft_quote, start_video_call, add_credit, find_user, list_my_projects, add_collaborator, remove_collaborator, propose_multistep_plan, ask_clarification.
 - MULTI-STEP REQUESTS: If the goal needs 3+ chained actions (e.g. "wrap up this project", "kick off the new shoot with Sarah and Tom", "follow up on every overdue invoice", "close out Q1") → call propose_multistep_plan with the user's goal verbatim. Do NOT try to do it inline. The Planner builds a numbered plan card the user approves with one tap.
 - COLLABORATION REQUESTS: When the user says "add <name> to <project>" or "invite <name>", you MUST chain tools: (1) call list_my_projects if they named a project that isn't the current one, (2) call find_user with the person's name, (3) call add_collaborator with the resolved user_id and target_project_id. NEVER skip find_user. NEVER invent user_ids.
 - If find_user returns 0 candidates → ask_clarification ("I couldn't find anyone called X — got their @username or email?"). If 2+ candidates → ask_clarification listing the matches.
@@ -420,6 +456,7 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
       "get_project_summary",
       "schedule_reminder",
       "draft_invoice",
+      "draft_quote",
       "start_video_call",
       "add_credit",
     ].includes(requestedTool)) {
@@ -578,7 +615,47 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
             .single();
           if (error) throw error;
           actions.push({ tool: name, args, result: data, ok: true });
-        } else if (name === "start_video_call") {
+        } else if (name === "draft_quote") {
+          const validDays = Number(args.valid_in_days ?? 30);
+          const validUntil = new Date(Date.now() + validDays * 86400000).toISOString();
+          const items = Array.isArray(args.line_items) ? args.line_items : [];
+          const lineItems = items.map((it: any) => {
+            const qty = Number(it.quantity || 1);
+            const rate = Number(it.rate || 0);
+            return {
+              description: String(it.description || "Item"),
+              quantity: qty,
+              rate,
+              amount: qty * rate,
+            };
+          });
+          const subtotal = lineItems.reduce((s, i) => s + i.amount, 0);
+          const taxRate = Number(args.tax_rate ?? 0);
+          const taxAmount = +(subtotal * (taxRate / 100)).toFixed(2);
+          const total = +(subtotal + taxAmount).toFixed(2);
+          const quoteNum = `QUO-${Date.now().toString().slice(-8)}`;
+          const { data, error } = await admin
+            .from("invoices")
+            .insert({
+              invoice_number: quoteNum,
+              project_id,
+              issued_by: user.id,
+              issued_to: project?.client_user_id ?? null,
+              amount: subtotal,
+              tax_rate: taxRate || null,
+              tax_amount: taxAmount || null,
+              total_amount: total,
+              currency: (args.currency || project?.currency || "USD").toUpperCase(),
+              status: "draft",
+              valid_until: validUntil,
+              notes: args.notes || null,
+              line_items: lineItems,
+              document_type: "quote",
+            })
+            .select("id, invoice_number, total_amount, currency")
+            .single();
+          if (error) throw error;
+          actions.push({ tool: name, args, result: data, ok: true });
           // Reuse existing create-video-room edge fn (handles Daily.co + chat post)
           const { data, error } = await admin.functions.invoke("create-video-room", {
             body: { project_id, user_name: user.email?.split("@")[0] || "Member" },
@@ -655,6 +732,8 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
         finalReply = `${a.result.open_tasks} open tasks, ${a.result.overdue} overdue.`;
       else if (a.tool === "draft_invoice" && a.ok)
         finalReply = `Draft invoice ${a.result.invoice_number} for ${a.result.currency} ${a.result.total_amount} created. Review & send from Money tab.`;
+      else if (a.tool === "draft_quote" && a.ok)
+        finalReply = `Draft quote ${a.result.invoice_number} for ${a.result.currency} ${a.result.total_amount} created. Review & send from Money tab.`;
       else if (a.tool === "start_video_call" && a.ok)
         finalReply = "Video room is live and link posted in chat.";
       else if (a.tool === "add_credit" && a.ok)

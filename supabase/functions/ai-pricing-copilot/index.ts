@@ -1,9 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -14,7 +18,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const { messages, currency, document_type, existing_items, current_details, project_context } = await req.json();
+    const { messages, currency, document_type, existing_items, current_details, project_context, scan_image } = await req.json();
 
     const docLabel = document_type === "quote" ? "quote" : "invoice";
 
@@ -46,6 +50,38 @@ ${notes.length ? `Notes from the Pad (${notes.length}):\n${notes.map((n: any, i:
 
 ${files.length ? `Files in Vault (${files.length}): ${files.map((f: any) => f.file_name).join(", ")}` : ""}
 === END PROJECT CONTEXT ===`;
+    }
+
+    // Pull THRIVE MEMORY (saved rates, vendors, repeat clients, preferences) so
+    // the co-pilot remembers what the user has told it across sessions.
+    let memoryBlock = "";
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (authHeader.startsWith("Bearer ")) {
+      try {
+        const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: { user } } = await userClient.auth.getUser();
+        if (user) {
+          const { data: memRows } = await userClient
+            .from("thrive_memory")
+            .select("kind, label, body, importance")
+            .eq("user_id", user.id)
+            .in("kind", ["rate", "vendor", "client", "preference", "contact", "fact"])
+            .order("importance", { ascending: false })
+            .order("last_used_at", { ascending: false, nullsFirst: false })
+            .limit(25);
+          if (memRows && memRows.length) {
+            memoryBlock = `\n\n=== THRIVE MEMORY (things this user has told you to remember) ===
+Use these as defaults — saved rates, repeat clients, vendor costs, preferences. Reference them by name when relevant ("your usual rate is…", "for ${"${client}"} you normally…"). Don't repeat back the whole block; weave them in.
+
+${memRows.map((m: any) => `- [${m.kind}] ${m.label}${m.body ? `: ${String(m.body).slice(0, 240)}` : ""}`).join("\n")}
+=== END THRIVE MEMORY ===`;
+          }
+        }
+      } catch (e) {
+        console.warn("ai-pricing-copilot: memory fetch failed", e);
+      }
     }
 
     const systemPrompt = `You are ThriveQuote — an expert pricing co-pilot for creative freelancers and agencies. You help users build professional quotes and invoices through natural conversation.
@@ -82,7 +118,34 @@ RULES:
 
 ${existing_items && existing_items.length > 0 ? `\nCurrent line items on the document:\n${existing_items.map((i: any, idx: number) => `${idx + 1}. "${i.description}" — Qty: ${i.quantity}, Rate: ${currency} ${i.rate}`).join("\n")}` : ""}
 
-${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}${projectBlock}`;
+${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}${projectBlock}${memoryBlock}`;
+
+    // If the client included a scanned brief/flyer image, attach it as multimodal
+    // content on the LAST user message so Gemini can read it.
+    let aiMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages,
+    ];
+    if (scan_image && typeof scan_image === "string" && scan_image.startsWith("data:image/")) {
+      const lastUserIdx = (() => {
+        for (let i = aiMessages.length - 1; i >= 0; i--) {
+          if (aiMessages[i].role === "user") return i;
+        }
+        return -1;
+      })();
+      const baseText = lastUserIdx >= 0 && typeof aiMessages[lastUserIdx].content === "string"
+        ? aiMessages[lastUserIdx].content
+        : `Here's a brief/flyer for this ${docLabel}. Extract the project details, deliverables, dates, client name, and any pricing hints. Then propose line items and call generate_line_items.`;
+      const multimodalUser = {
+        role: "user",
+        content: [
+          { type: "text", text: baseText },
+          { type: "image_url", image_url: { url: scan_image } },
+        ],
+      };
+      if (lastUserIdx >= 0) aiMessages[lastUserIdx] = multimodalUser;
+      else aiMessages.push(multimodalUser);
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -92,10 +155,7 @@ ${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_det
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
+        messages: aiMessages,
         tools: [
           {
             type: "function",

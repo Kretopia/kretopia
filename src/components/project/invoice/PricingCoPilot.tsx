@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Sparkles, Send, Check, RefreshCw, ArrowRight, X, Wand2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { Sparkles, Send, Check, RefreshCw, ArrowRight, X, Wand2, ChevronDown, ChevronUp, Pencil, ScanLine, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -70,6 +70,54 @@ export function PricingCoPilot({
   const [projectContext, setProjectContext] = useState<any | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isScanning, setIsScanning] = useState(false);
+
+  /** Compress an image file to ~1024px wide JPEG data URL so the gateway accepts it. */
+  const fileToCompressedDataUrl = (file: File, maxDim = 1280, quality = 0.82): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("Canvas unsupported"));
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => reject(new Error("Bad image"));
+        img.src = String(reader.result);
+      };
+      reader.onerror = () => reject(new Error("Read failed"));
+      reader.readAsDataURL(file);
+    });
+
+  const handleScanFile = async (file: File | null) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please pick a brief or flyer image (PNG/JPG).");
+      return;
+    }
+    setIsScanning(true);
+    try {
+      const dataUrl = await fileToCompressedDataUrl(file);
+      await sendMessage(
+        `I'm sharing a brief/flyer for this ${documentType}. Read it carefully — extract the project, deliverables, dates, client name, currency, and any pricing hints. Then propose line items and call generate_line_items. Use any matches you spot against my Studio + Thrive Memory.`,
+        dataUrl,
+      );
+    } catch (e: any) {
+      toast.error(e?.message || "Couldn't read that image");
+    } finally {
+      setIsScanning(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -119,10 +167,15 @@ export function PricingCoPilot({
   };
   const sym = getCurrencySymbol(currency);
 
-  const sendMessage = async (userInput: string) => {
-    if (!userInput.trim() || isLoading) return;
+  const sendMessage = async (userInput: string, scanImage?: string) => {
+    if ((!userInput.trim() && !scanImage) || isLoading) return;
 
-    const userMsg: ChatMessage = { role: "user", content: userInput.trim() };
+    const userMsg: ChatMessage = {
+      role: "user",
+      content: scanImage
+        ? `${userInput.trim() || "📎 Scanning brief…"}`
+        : userInput.trim(),
+    };
     const allMessages = [...messages, userMsg];
     setMessages(allMessages);
     setInput("");
@@ -133,13 +186,15 @@ export function PricingCoPilot({
     let currentToolIdx = -1;
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-pricing-copilot`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
             messages: allMessages.map(m => ({ role: m.role, content: m.content })),
@@ -148,6 +203,7 @@ export function PricingCoPilot({
             existing_items: lineItems.filter(i => i.description),
             current_details: detailsSummary,
             project_context: projectContext,
+            scan_image: scanImage,
           }),
         }
       );
@@ -691,6 +747,25 @@ export function PricingCoPilot({
       {/* Input */}
       <div className="p-3 border-t bg-background">
         <div className="flex gap-2 items-end">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => handleScanFile(e.target.files?.[0] ?? null)}
+          />
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            className="h-10 w-10 shrink-0 rounded-xl"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading || isScanning}
+            title="Scan a brief or flyer"
+          >
+            {isScanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
+          </Button>
           <textarea
             ref={inputRef}
             value={input}
@@ -701,7 +776,7 @@ export function PricingCoPilot({
                 sendMessage(input);
               }
             }}
-            placeholder="Describe your project costs, services, or ask for pricing help..."
+            placeholder="Describe costs, ask for pricing, or scan a brief…"
             className="flex-1 resize-none text-[13px] bg-muted/50 rounded-xl p-3 min-h-[44px] max-h-[100px] outline-none focus:ring-2 focus:ring-primary/30 transition-shadow placeholder:text-muted-foreground/50"
             rows={1}
           />
@@ -715,7 +790,7 @@ export function PricingCoPilot({
           </Button>
         </div>
         <p className="text-[9px] text-muted-foreground/50 mt-1.5 text-center">
-          AI suggestions are estimates — always verify pricing for your market
+          Scan a brief, ask for rates — Thrive remembers your usual prices & clients.
         </p>
       </div>
     </Card>

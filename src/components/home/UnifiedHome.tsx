@@ -708,6 +708,8 @@ export const UnifiedHome = () => {
           {/* Daily streak chips — Duolingo loop */}
           <StreakChipsRow className="mb-4" />
 
+          {user && <OpportunityIntelCard className="mb-4" />}
+
 
 
         {!user && <WhyCreatorsChooseSection />}

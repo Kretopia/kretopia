@@ -5093,6 +5093,83 @@ export type Database = {
           },
         ]
       }
+      event_seating_assignments: {
+        Row: {
+          created_at: string
+          event_id: string
+          guest_email: string | null
+          guest_name: string | null
+          id: string
+          layout_id: string
+          seat_index: number | null
+          table_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          guest_email?: string | null
+          guest_name?: string | null
+          id?: string
+          layout_id: string
+          seat_index?: number | null
+          table_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          guest_email?: string | null
+          guest_name?: string | null
+          id?: string
+          layout_id?: string
+          seat_index?: number | null
+          table_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_seating_assignments_layout_id_fkey"
+            columns: ["layout_id"]
+            isOneToOne: false
+            referencedRelation: "event_seating_layouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_seating_layouts: {
+        Row: {
+          created_at: string
+          created_by: string
+          event_id: string
+          id: string
+          name: string
+          notes: string | null
+          tables: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          event_id: string
+          id?: string
+          name?: string
+          notes?: string | null
+          tables?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          event_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          tables?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_share_clicks: {
         Row: {
           channel: string
@@ -16143,6 +16220,10 @@ export type Database = {
       increment_template_usage: {
         Args: { template_id: string }
         Returns: undefined
+      }
+      is_event_host: {
+        Args: { _event_id: string; _user_id: string }
+        Returns: boolean
       }
       is_event_project_member: {
         Args: { _event_id: string; _user_id: string }

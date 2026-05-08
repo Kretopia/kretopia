@@ -33,6 +33,7 @@ import { EventStudioSection } from "./EventStudioSection";
 import { EventHeroCard } from "./EventHeroCard";
 import { EventCrmSection } from "./EventCrmSection";
 import { EventSponsorsKanban } from "./EventSponsorsKanban";
+import { EventRsvpQuestionsBuilder } from "./EventRsvpQuestionsBuilder";
 import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
@@ -340,6 +341,9 @@ export const StudioRoom = ({
             <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
             <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
             <EventSponsorsKanban project={project} currentUserId={currentUserId} />
+            {project.created_by === currentUserId && (
+              <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+            )}
           </>
         )}
         {mobileWorkColumn}
@@ -371,6 +375,9 @@ export const StudioRoom = ({
               <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
                 <EventSponsorsKanban project={project} currentUserId={currentUserId} />
               </div>
+              {project.created_by === currentUserId && (
+                <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+              )}
             </>
           )}
           <div className="flex items-center justify-between px-1">

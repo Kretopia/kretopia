@@ -24,7 +24,6 @@ import { findArchetype } from "@/lib/eventArchetypes";
 import { createEventStudio } from "@/lib/createEventStudio";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, Zap } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface CreateSessionDialogProps {
   open: boolean;

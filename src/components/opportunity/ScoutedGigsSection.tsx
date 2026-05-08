@@ -205,7 +205,7 @@ export function ScoutedGigsSection() {
 
                 <div className="flex items-center gap-1.5 mt-2">
                   <Button size="sm" className="h-7 text-xs flex-1" onClick={() => openApply(g)}>
-                    <Send className="h-3 w-3 mr-1" />Apply with AI
+                    <Send className="h-3 w-3 mr-1" />Smart Apply
                   </Button>
                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => save(g.id)}>
                     <Bookmark className="h-3.5 w-3.5" />

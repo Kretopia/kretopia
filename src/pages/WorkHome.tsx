@@ -499,9 +499,7 @@ const WorkHome = () => {
   }, [user]);
 
   if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
-    );
+    return <WorkHomeSkeleton variant="shell" />;
   }
 
   if (accountType === "company") return <BrandWorkHome />;

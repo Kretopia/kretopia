@@ -33,6 +33,7 @@ import { EventStudioSection } from "./EventStudioSection";
 import { EventHeroCard } from "./EventHeroCard";
 import { EventCrmSection } from "./EventCrmSection";
 import { EventSponsorsKanban } from "./EventSponsorsKanban";
+import { EventRsvpQuestionsBuilder } from "./EventRsvpQuestionsBuilder";
 import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";

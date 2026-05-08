@@ -85,18 +85,23 @@ serve(async (req) => {
     if (testOnly) {
       recipients = [{ email: user.email!, user_id: user.id, name: null }];
     } else {
-      // Pull RSVPs from jam_participants joined with profiles
-      const { data: parts } = await admin
-        .from("jam_participants")
-        .select("user_id, status")
-        .eq("jam_id", eventId);
+      let userIds: string[] = [];
+      if (Array.isArray(explicitUserIds) && explicitUserIds.length > 0) {
+        userIds = explicitUserIds.filter((x: any) => typeof x === "string");
+      } else {
+        // Pull RSVPs from jam_participants joined with profiles
+        const { data: parts } = await admin
+          .from("jam_participants")
+          .select("user_id, status")
+          .eq("jam_id", eventId);
 
-      const userIds = (parts ?? [])
-        .filter((p: any) => {
-          if (segment === "all" || segment === "rsvp") return true;
-          return p.status === segment;
-        })
-        .map((p: any) => p.user_id);
+        userIds = (parts ?? [])
+          .filter((p: any) => {
+            if (segment === "all" || segment === "rsvp") return true;
+            return p.status === segment;
+          })
+          .map((p: any) => p.user_id);
+      }
 
       if (userIds.length === 0 && segment !== "paid") {
         return new Response(

@@ -155,10 +155,7 @@ ${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_det
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
+        messages: aiMessages,
         tools: [
           {
             type: "function",

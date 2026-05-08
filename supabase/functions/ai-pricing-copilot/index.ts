@@ -169,7 +169,9 @@ ${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_det
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        // Vision/extraction needs a stronger model when the user scans a brief —
+        // 2.5-pro is far less prone to hallucinating units/rates than flash.
+        model: hasScan ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview",
         messages: aiMessages,
         tools: [
           {

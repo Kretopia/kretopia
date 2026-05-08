@@ -118,7 +118,34 @@ RULES:
 
 ${existing_items && existing_items.length > 0 ? `\nCurrent line items on the document:\n${existing_items.map((i: any, idx: number) => `${idx + 1}. "${i.description}" — Qty: ${i.quantity}, Rate: ${currency} ${i.rate}`).join("\n")}` : ""}
 
-${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}${projectBlock}`;
+${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}${projectBlock}${memoryBlock}`;
+
+    // If the client included a scanned brief/flyer image, attach it as multimodal
+    // content on the LAST user message so Gemini can read it.
+    let aiMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages,
+    ];
+    if (scan_image && typeof scan_image === "string" && scan_image.startsWith("data:image/")) {
+      const lastUserIdx = (() => {
+        for (let i = aiMessages.length - 1; i >= 0; i--) {
+          if (aiMessages[i].role === "user") return i;
+        }
+        return -1;
+      })();
+      const baseText = lastUserIdx >= 0 && typeof aiMessages[lastUserIdx].content === "string"
+        ? aiMessages[lastUserIdx].content
+        : `Here's a brief/flyer for this ${docLabel}. Extract the project details, deliverables, dates, client name, and any pricing hints. Then propose line items and call generate_line_items.`;
+      const multimodalUser = {
+        role: "user",
+        content: [
+          { type: "text", text: baseText },
+          { type: "image_url", image_url: { url: scan_image } },
+        ],
+      };
+      if (lastUserIdx >= 0) aiMessages[lastUserIdx] = multimodalUser;
+      else aiMessages.push(multimodalUser);
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

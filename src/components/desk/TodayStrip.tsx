@@ -183,7 +183,7 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
             onClick={onClick}
             className={cn(
               "shrink-0 snap-start flex flex-col items-start justify-between",
-              "min-w-[120px] sm:min-w-[140px] h-[78px] sm:h-[88px]",
+              "min-w-[136px] sm:min-w-[148px] h-[78px] sm:h-[88px]",
               "rounded-xl border px-3 py-2 text-left",
               "transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]",
               toneClass(tone)
@@ -196,7 +196,7 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
             <div className="w-full">
               <p
                 className={cn(
-                  "text-[10px] font-bold uppercase tracking-wider",
+                  "text-[10px] font-bold uppercase tracking-wider whitespace-nowrap truncate",
                   tone === "primary" ? "text-primary-foreground/80" : "text-muted-foreground"
                 )}
               >

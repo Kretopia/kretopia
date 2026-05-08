@@ -76,8 +76,32 @@ const ProjectsList = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <CreativeLoader size="page" hint="Pulling your rooms together" />
+      <div className="container max-w-6xl mx-auto py-6 px-4 space-y-6 pb-32 md:pb-12">
+        {/* Header skeleton */}
+        <div className="space-y-2">
+          <div className="h-3 w-24 rounded bg-muted animate-pulse" />
+          <div className="h-7 w-48 rounded bg-muted animate-pulse" />
+          <div className="h-4 w-36 rounded bg-muted animate-pulse" />
+        </div>
+        {/* Stat chips skeleton */}
+        <div className="flex gap-2 overflow-hidden">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[78px] min-w-[136px] rounded-xl bg-muted animate-pulse"
+            />
+          ))}
+        </div>
+        {/* Cards skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-44 rounded-2xl bg-muted animate-pulse"
+              style={{ animationDelay: `${i * 80}ms` }}
+            />
+          ))}
+        </div>
       </div>
     );
   }

@@ -331,7 +331,7 @@ export const StudioRoom = ({
         {project.workspace_type === "podcast" && (
           <PodcastStudioSection project={project} currentUserId={currentUserId} />
         )}
-        {project.workspace_type === "event" && (
+        {["event","event_production"].includes(project.workspace_type) && (
           <>
             <EventHeroCard project={project} />
             <EventStudioSection project={project} currentUserId={currentUserId} />
@@ -351,7 +351,7 @@ export const StudioRoom = ({
               <PodcastStudioSection project={project} currentUserId={currentUserId} />
             </div>
           )}
-          {project.workspace_type === "event" && (
+          {["event","event_production"].includes(project.workspace_type) && (
             <>
               <EventHeroCard project={project} />
               <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">

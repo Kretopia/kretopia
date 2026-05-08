@@ -37,6 +37,7 @@ import { EventRsvpQuestionsBuilder } from "./EventRsvpQuestionsBuilder";
 import { EventGuestMatchesSection } from "./EventGuestMatchesSection";
 import { EventSeatingPlanner } from "./EventSeatingPlanner";
 import { EventOutreachSegmentBuilder } from "./EventOutreachSegmentBuilder";
+import { EventPostRecapSection } from "./EventPostRecapSection";
 import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";

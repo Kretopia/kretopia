@@ -13,6 +13,7 @@ import { MyEventMatches } from "@/components/sessions/MyEventMatches";
 
 const EventConfirmed = () => {
   const { eventId } = useParams<{ eventId: string }>();
+  const { user } = useAuth();
   const [params] = useSearchParams();
   const guestName = params.get("name");
   const guestEmail = params.get("email");

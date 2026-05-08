@@ -332,6 +332,56 @@ export const ProactiveCards = ({
 
   return (
     <section className={cn("px-4 pt-3 pb-1 space-y-2.5", className)}>
+      {/* Thrive proactive proposals (AI) */}
+      {aiProposals.map((p) => {
+        const Icon = kindIcon[p.kind] ?? Sparkles;
+        return (
+          <div
+            key={p.id}
+            className="relative overflow-hidden rounded-xl border border-primary/40 bg-gradient-to-br from-primary/12 via-primary/4 to-transparent p-3.5 flex items-start gap-3"
+          >
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-primary text-primary-foreground shadow-[var(--shadow-glow)]">
+              <Icon className="h-4 w-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-bold uppercase tracking-[0.22em] mb-0.5 text-primary flex items-center gap-1">
+                <Sparkles className="h-2.5 w-2.5" /> Thrive Suggests
+              </p>
+              <p className="text-sm font-bold leading-tight text-foreground">
+                {p.title}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                {p.body}
+              </p>
+              <div className="flex items-center gap-1 mt-2 -ml-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={busyId === p.id}
+                  className="h-7 px-2 text-xs gap-1 text-foreground hover:bg-background/60 rounded-full font-semibold"
+                  onClick={() => handleAccept(p)}
+                >
+                  <Check className="h-3 w-3" />
+                  {kindCta[p.kind] ?? "Take action"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={busyId === p.id}
+                  className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:bg-background/40 rounded-full"
+                  onClick={() => handleDismiss(p)}
+                  aria-label="Dismiss suggestion"
+                >
+                  <X className="h-3 w-3" />
+                  Not now
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Heuristic cards */}
       {cards.map((c) => {
         const Icon = c.icon;
         return (

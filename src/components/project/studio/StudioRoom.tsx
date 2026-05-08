@@ -375,6 +375,9 @@ export const StudioRoom = ({
               <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
                 <EventSponsorsKanban project={project} currentUserId={currentUserId} />
               </div>
+              {project.created_by === currentUserId && (
+                <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+              )}
             </>
           )}
           <div className="flex items-center justify-between px-1">

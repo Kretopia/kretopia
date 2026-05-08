@@ -40,6 +40,7 @@ import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
 import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";
 import { StreakChipsRow } from "@/components/home/StreakChipsRow";
+import { OpportunityIntelCard } from "@/components/home/OpportunityIntelCard";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";

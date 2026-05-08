@@ -148,7 +148,7 @@ serve(async (req) => {
         template,
         subject,
         body_html: bodyHtml,
-        segment,
+        segment: segmentLabel || segment,
         status: "sending",
         recipient_count: recipients.length,
       })

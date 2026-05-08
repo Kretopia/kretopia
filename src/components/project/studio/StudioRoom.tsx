@@ -34,6 +34,7 @@ import { EventHeroCard } from "./EventHeroCard";
 import { EventCrmSection } from "./EventCrmSection";
 import { EventSponsorsKanban } from "./EventSponsorsKanban";
 import { EventRsvpQuestionsBuilder } from "./EventRsvpQuestionsBuilder";
+import { EventGuestMatchesSection } from "./EventGuestMatchesSection";
 import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
@@ -342,7 +343,10 @@ export const StudioRoom = ({
             <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
             <EventSponsorsKanban project={project} currentUserId={currentUserId} />
             {project.created_by === currentUserId && (
-              <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+              <>
+                <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+                <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
+              </>
             )}
           </>
         )}
@@ -376,7 +380,10 @@ export const StudioRoom = ({
                 <EventSponsorsKanban project={project} currentUserId={currentUserId} />
               </div>
               {project.created_by === currentUserId && (
-                <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+                <>
+                  <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+                  <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
+                </>
               )}
             </>
           )}

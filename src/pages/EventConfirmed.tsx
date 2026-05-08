@@ -8,9 +8,12 @@ import { CheckCircle2, Calendar, MapPin, Clock, ArrowRight, Share2, Loader2 } fr
 import { format } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { APP_URL } from "@/lib/constants";
+import { useAuth } from "@/hooks/useAuth";
+import { MyEventMatches } from "@/components/sessions/MyEventMatches";
 
 const EventConfirmed = () => {
   const { eventId } = useParams<{ eventId: string }>();
+  const { user } = useAuth();
   const [params] = useSearchParams();
   const guestName = params.get("name");
   const guestEmail = params.get("email");
@@ -109,6 +112,12 @@ const EventConfirmed = () => {
             </div>
           </CardContent>
         </Card>
+
+        {user && eventId && (
+          <div className="mb-6">
+            <MyEventMatches eventId={eventId} currentUserId={user.id} />
+          </div>
+        )}
 
         {/* Actions */}
         <div className="space-y-3">

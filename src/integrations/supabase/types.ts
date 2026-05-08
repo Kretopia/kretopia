@@ -225,6 +225,65 @@ export type Database = {
           },
         ]
       }
+      agent_proposals: {
+        Row: {
+          accepted_at: string | null
+          action_intent: Json
+          body: string
+          created_at: string
+          dismissed_reason: string | null
+          expires_at: string | null
+          id: string
+          kind: Database["public"]["Enums"]["agent_proposal_kind"]
+          owner_user_id: string
+          project_id: string
+          source_signal: Json | null
+          status: Database["public"]["Enums"]["agent_proposal_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          action_intent?: Json
+          body: string
+          created_at?: string
+          dismissed_reason?: string | null
+          expires_at?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["agent_proposal_kind"]
+          owner_user_id: string
+          project_id: string
+          source_signal?: Json | null
+          status?: Database["public"]["Enums"]["agent_proposal_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          action_intent?: Json
+          body?: string
+          created_at?: string
+          dismissed_reason?: string | null
+          expires_at?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["agent_proposal_kind"]
+          owner_user_id?: string
+          project_id?: string
+          source_signal?: Json | null
+          status?: Database["public"]["Enums"]["agent_proposal_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_proposals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_settings: {
         Row: {
           auto_approve_low_risk: boolean
@@ -17287,6 +17346,14 @@ export type Database = {
         | "archivist"
         | "deal"
         | "orchestrator"
+      agent_proposal_kind:
+        | "draft_invoice"
+        | "schedule_followup"
+        | "next_milestone"
+        | "wrap_project"
+        | "collab_nudge"
+        | "other"
+      agent_proposal_status: "pending" | "accepted" | "dismissed" | "expired"
       app_role: "admin" | "moderator" | "user" | "writer"
       location_precision: "exact" | "approximate" | "area_only"
       network_tier:
@@ -17464,6 +17531,15 @@ export const Constants = {
     Enums: {
       account_type: ["individual", "company"],
       agent_persona: ["scout", "producer", "archivist", "deal", "orchestrator"],
+      agent_proposal_kind: [
+        "draft_invoice",
+        "schedule_followup",
+        "next_milestone",
+        "wrap_project",
+        "collab_nudge",
+        "other",
+      ],
+      agent_proposal_status: ["pending", "accepted", "dismissed", "expired"],
       app_role: ["admin", "moderator", "user", "writer"],
       location_precision: ["exact", "approximate", "area_only"],
       network_tier: [

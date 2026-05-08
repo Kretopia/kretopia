@@ -235,16 +235,12 @@ export const MagazineWall = () => {
               onClick={() => setSelectedArticle(featured)}
             >
               <div className="aspect-[16/9] relative">
-                {featured.cover_image_url ? (
-                  <img
-                    src={featured.cover_image_url}
-                    alt={featured.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    style={coverImageStyle(featured.cover_position_x, featured.cover_position_y, featured.cover_zoom)}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20" />
-                )}
+                <SmartCover
+                  src={featured.cover_image_url}
+                  alt={featured.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  style={coverImageStyle(featured.cover_position_x, featured.cover_position_y, featured.cover_zoom)}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className="absolute top-3 left-3 flex gap-2">
                   <Badge className="bg-primary/90 text-primary-foreground text-[10px]">

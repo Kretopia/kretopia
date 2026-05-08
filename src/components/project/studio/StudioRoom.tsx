@@ -342,6 +342,7 @@ export const StudioRoom = ({
         {["event","event_production"].includes(project.workspace_type) && (
           <>
             <EventHeroCard project={project} />
+            <EventProducerDashboard project={project} currentUserId={currentUserId} />
             <EventStudioSection project={project} currentUserId={currentUserId} />
             <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
             <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />

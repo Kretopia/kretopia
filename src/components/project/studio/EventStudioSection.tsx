@@ -142,6 +142,15 @@ export function EventStudioSection({ project, currentUserId }: Props) {
           </div>
         </div>
         <div className="flex gap-1.5">
+          <a
+            href={`/desk/${project.id}/crew`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 rounded-md border border-[hsl(var(--energy)/0.4)] bg-[hsl(var(--energy)/0.1)] px-2 py-1 text-[11px] font-bold text-[hsl(var(--energy))] hover:bg-[hsl(var(--energy)/0.18)]"
+            title="Open live crew view"
+          >
+            <Clock className="h-3 w-3" /> Crew
+          </a>
           <Button size="sm" variant="outline" onClick={generate} disabled={genBusy}>
             {genBusy ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1" />}
             Draft

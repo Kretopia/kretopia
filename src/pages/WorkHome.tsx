@@ -380,9 +380,7 @@ const CreatorWorkHome = () => {
   }, [user?.id]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-6"><CreativeLoader size="page" /></div>
-    );
+    return <WorkHomeSkeleton variant="studio" />;
   }
 
   const activeProjects = projects.filter(p => p.status === "active");

@@ -15,6 +15,7 @@ import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
+import { CreditThumb } from "@/components/onboarding/claim-flow/CreditThumb";
 import { ProfileHubCard } from "@/components/home/ProfileHubCard";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";

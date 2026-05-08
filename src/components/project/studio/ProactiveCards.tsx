@@ -63,25 +63,36 @@ export const ProactiveCards = ({
   onAction,
   className,
 }: ProactiveCardsProps) => {
+  const { toast } = useToast();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [paymentRequests, setPaymentRequests] = useState<any[]>([]);
+  const [aiProposals, setAiProposals] = useState<AgentProposal[]>([]);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!project?.id) return;
     let cancelled = false;
     (async () => {
       try {
-        const [invRes, pmtRes] = await Promise.all([
+        const [invRes, pmtRes, propRes] = await Promise.all([
           supabase.from("invoices").select("id, status").eq("project_id", project.id),
           supabase
             .from("milestones")
             .select("id, title, amount, status, requested_by")
             .eq("project_id", project.id)
             .eq("status", "requested"),
+          supabase
+            .from("agent_proposals")
+            .select("id, kind, title, body, action_intent, status")
+            .eq("project_id", project.id)
+            .eq("status", "pending")
+            .order("created_at", { ascending: false })
+            .limit(2),
         ]);
         if (!cancelled) {
           setInvoices(invRes.data || []);
           setPaymentRequests(pmtRes.data || []);
+          setAiProposals((propRes.data as AgentProposal[]) || []);
         }
       } catch {
         // silent — proactive cards are non-critical
@@ -91,6 +102,81 @@ export const ProactiveCards = ({
       cancelled = true;
     };
   }, [project?.id]);
+
+  // Realtime: pick up new AI proposals as the watcher inserts them
+  useEffect(() => {
+    if (!project?.id) return;
+    const ch = supabase
+      .channel(`proposals:${project.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "agent_proposals",
+          filter: `project_id=eq.${project.id}`,
+        },
+        (payload) => {
+          const row = payload.new as AgentProposal;
+          if (row.status === "pending") {
+            setAiProposals((prev) =>
+              [row, ...prev.filter((p) => p.id !== row.id)].slice(0, 2),
+            );
+          }
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [project?.id]);
+
+  const handleAccept = useCallback(
+    async (p: AgentProposal) => {
+      setBusyId(p.id);
+      try {
+        const kindMap: Record<string, { tab: string; intent?: string }> = {
+          draft_invoice: { tab: "finance", intent: "create-invoice" },
+          schedule_followup: { tab: "tasks", intent: "create-task" },
+          next_milestone: { tab: "tasks", intent: "create-task" },
+          wrap_project: { tab: "wrap" },
+          collab_nudge: { tab: "messages" },
+          other: { tab: "brief" },
+        };
+        const target = kindMap[p.kind] ?? { tab: "brief" };
+        await supabase
+          .from("agent_proposals")
+          .update({ status: "accepted", accepted_at: new Date().toISOString() })
+          .eq("id", p.id);
+        setAiProposals((prev) => prev.filter((x) => x.id !== p.id));
+        onAction(target.tab, target.intent);
+      } catch (e: any) {
+        toast({
+          title: "Couldn't accept",
+          description: e?.message ?? "Try again",
+          variant: "destructive",
+        });
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [onAction, toast],
+  );
+
+  const handleDismiss = useCallback(async (p: AgentProposal) => {
+    setBusyId(p.id);
+    try {
+      await supabase
+        .from("agent_proposals")
+        .update({ status: "dismissed" })
+        .eq("id", p.id);
+      setAiProposals((prev) => prev.filter((x) => x.id !== p.id));
+    } catch {
+      /* silent */
+    } finally {
+      setBusyId(null);
+    }
+  }, []);
 
   const cards = useMemo<NudgeCard[]>(() => {
     const out: NudgeCard[] = [];

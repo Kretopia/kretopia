@@ -108,10 +108,10 @@ export function PricingCoPilot({
     setIsScanning(true);
     try {
       const dataUrl = await fileToCompressedDataUrl(file);
-      await sendMessage(
-        `I'm sharing a brief/flyer for this ${documentType}. Read it carefully — extract the project, deliverables, dates, client name, currency, and any pricing hints. Then propose line items and call generate_line_items. Use any matches you spot against my Studio + Thrive Memory.`,
-        dataUrl,
-      );
+      setPendingScan({ dataUrl, name: file.name || "brief.jpg" });
+      toast.success("Brief attached. Add a note and hit send when ready.");
+      // focus the textarea so user can type extra context
+      setTimeout(() => inputRef.current?.focus(), 50);
     } catch (e: any) {
       toast.error(e?.message || "Couldn't read that image");
     } finally {

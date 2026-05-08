@@ -52,6 +52,38 @@ ${files.length ? `Files in Vault (${files.length}): ${files.map((f: any) => f.fi
 === END PROJECT CONTEXT ===`;
     }
 
+    // Pull THRIVE MEMORY (saved rates, vendors, repeat clients, preferences) so
+    // the co-pilot remembers what the user has told it across sessions.
+    let memoryBlock = "";
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (authHeader.startsWith("Bearer ")) {
+      try {
+        const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: { user } } = await userClient.auth.getUser();
+        if (user) {
+          const { data: memRows } = await userClient
+            .from("thrive_memory")
+            .select("kind, label, body, importance")
+            .eq("user_id", user.id)
+            .in("kind", ["rate", "vendor", "client", "preference", "contact", "fact"])
+            .order("importance", { ascending: false })
+            .order("last_used_at", { ascending: false, nullsFirst: false })
+            .limit(25);
+          if (memRows && memRows.length) {
+            memoryBlock = `\n\n=== THRIVE MEMORY (things this user has told you to remember) ===
+Use these as defaults — saved rates, repeat clients, vendor costs, preferences. Reference them by name when relevant ("your usual rate is…", "for ${"${client}"} you normally…"). Don't repeat back the whole block; weave them in.
+
+${memRows.map((m: any) => `- [${m.kind}] ${m.label}${m.body ? `: ${String(m.body).slice(0, 240)}` : ""}`).join("\n")}
+=== END THRIVE MEMORY ===`;
+          }
+        }
+      } catch (e) {
+        console.warn("ai-pricing-copilot: memory fetch failed", e);
+      }
+    }
+
     const systemPrompt = `You are ThriveQuote — an expert pricing co-pilot for creative freelancers and agencies. You help users build professional quotes and invoices through natural conversation.
 
 Your capabilities:

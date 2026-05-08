@@ -31,6 +31,7 @@ import { ProductionPrepSection } from "./ProductionPrepSection";
 import { PodcastStudioSection } from "./PodcastStudioSection";
 import { EventStudioSection } from "./EventStudioSection";
 import { EventHeroCard } from "./EventHeroCard";
+import { EventCrmSection } from "./EventCrmSection";
 import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
@@ -335,6 +336,8 @@ export const StudioRoom = ({
           <>
             <EventHeroCard project={project} />
             <EventStudioSection project={project} currentUserId={currentUserId} />
+            <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
+            <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
           </>
         )}
         {mobileWorkColumn}
@@ -356,6 +359,12 @@ export const StudioRoom = ({
               <EventHeroCard project={project} />
               <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
                 <EventStudioSection project={project} currentUserId={currentUserId} />
+              </div>
+              <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+                <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
+              </div>
+              <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+                <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
               </div>
             </>
           )}

@@ -4995,6 +4995,130 @@ export type Database = {
           },
         ]
       }
+      event_suppliers: {
+        Row: {
+          category: string
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string
+          fee_amount: number | null
+          fee_currency: string | null
+          id: string
+          linked_user_id: string | null
+          name: string
+          notes: string | null
+          project_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by: string
+          fee_amount?: number | null
+          fee_currency?: string | null
+          id?: string
+          linked_user_id?: string | null
+          name: string
+          notes?: string | null
+          project_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string
+          fee_amount?: number | null
+          fee_currency?: string | null
+          id?: string
+          linked_user_id?: string | null
+          name?: string
+          notes?: string | null
+          project_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_suppliers_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_talent: {
+        Row: {
+          call_time: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string
+          fee_amount: number | null
+          fee_currency: string | null
+          id: string
+          linked_user_id: string | null
+          name: string
+          notes: string | null
+          project_id: string
+          role: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          call_time?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by: string
+          fee_amount?: number | null
+          fee_currency?: string | null
+          id?: string
+          linked_user_id?: string | null
+          name: string
+          notes?: string | null
+          project_id: string
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          call_time?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string
+          fee_amount?: number | null
+          fee_currency?: string | null
+          id?: string
+          linked_user_id?: string | null
+          name?: string
+          notes?: string | null
+          project_id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_talent_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_ticket_tiers: {
         Row: {
           created_at: string

@@ -749,6 +749,31 @@ export function PricingCoPilot({
 
       {/* Input */}
       <div className="p-3 border-t bg-background">
+        {pendingScan && (
+          <div className="mb-2 flex items-center gap-2 rounded-xl border bg-muted/40 p-2">
+            <img
+              src={pendingScan.dataUrl}
+              alt="Attached brief"
+              className="h-12 w-12 rounded-lg object-cover border"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="text-[12px] font-medium truncate">{pendingScan.name}</div>
+              <div className="text-[10px] text-muted-foreground">
+                Add a note (optional), then send to let Thrive read it.
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 shrink-0"
+              onClick={() => setPendingScan(null)}
+              title="Remove attachment"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
         <div className="flex gap-2 items-end">
           <input
             ref={fileInputRef}
@@ -779,7 +804,7 @@ export function PricingCoPilot({
                 sendMessage(input);
               }
             }}
-            placeholder="Describe costs, ask for pricing, or scan a brief…"
+            placeholder={pendingScan ? "Add context for the brief… (optional)" : "Describe costs, ask for pricing, or scan a brief…"}
             className="flex-1 resize-none text-[13px] bg-muted/50 rounded-xl p-3 min-h-[44px] max-h-[100px] outline-none focus:ring-2 focus:ring-primary/30 transition-shadow placeholder:text-muted-foreground/50"
             rows={1}
           />
@@ -787,7 +812,7 @@ export function PricingCoPilot({
             size="icon"
             className="h-10 w-10 shrink-0 rounded-xl"
             onClick={() => sendMessage(input)}
-            disabled={!input.trim() || isLoading}
+            disabled={(!input.trim() && !pendingScan) || isLoading}
           >
             <Send className="h-4 w-4" />
           </Button>

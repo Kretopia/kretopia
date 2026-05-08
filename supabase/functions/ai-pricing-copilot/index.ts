@@ -84,7 +84,22 @@ ${memRows.map((m: any) => `- [${m.kind}] ${m.label}${m.body ? `: ${String(m.body
       }
     }
 
-    const systemPrompt = `You are ThriveQuote — an expert pricing co-pilot for creative freelancers and agencies. You help users build professional quotes and invoices through natural conversation.
+    const hasScan = !!(scan_image && typeof scan_image === "string" && scan_image.startsWith("data:image/"));
+
+    const scanRules = hasScan ? `
+
+=== IMAGE / BRIEF SCAN MODE — STRICT EXTRACTIVE RULES ===
+A brief, flyer, screenshot or quote image is attached. You MUST:
+1. **First, transcribe what you literally see.** Before proposing anything, write a short "📋 What I read from your brief" section listing each line item / service / deliverable EXACTLY as it appears in the image, including the original numbers, units (hours, days, units, sqm, words, pieces, etc.), and currency symbols VERBATIM. Do not translate, do not normalize, do not invent.
+2. **Never invent units, quantities, rates or currencies that are not visible.** If the image says "2 days @ TT$1,500" → quantity=2, unit="days", rate=1500, currency=TTD. If a unit is unclear, write "unit: ?" and ASK the user before guessing. Common confusions to avoid: hours vs days, per-unit vs total, gross vs net, USD vs TTD vs local currency.
+3. **Preserve the source currency** the brief uses. Only convert if the user explicitly asks. If the brief currency differs from the document currency (${currency}), flag it and ask which to use.
+4. **Math check.** For every line, verify quantity × rate ≈ stated total (if a total is shown). If it doesn't match, flag the discrepancy in plain language — don't silently "fix" it.
+5. **Confidence flags.** For anything you're <80% sure of, prefix with "⚠️ Please confirm:". Better to ask one question than push a wrong number.
+6. **Then, and only then,** propose line items. Wait for the user's confirmation before calling generate_line_items — unless they've already said "just generate it".
+=== END SCAN RULES ===
+` : "";
+
+    const systemPrompt = `You are ThriveQuote — an expert pricing co-pilot for creative freelancers and agencies. You help users build professional quotes and invoices through natural conversation.${scanRules}
 
 Your capabilities:
 1. **Cost Analysis**: When a user shares supplier/subcontractor costs, calculate appropriate markups based on industry standards

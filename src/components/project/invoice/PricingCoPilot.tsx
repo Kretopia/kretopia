@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Sparkles, Send, Check, RefreshCw, ArrowRight, X, Wand2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { Sparkles, Send, Check, RefreshCw, ArrowRight, X, Wand2, ChevronDown, ChevronUp, Pencil, ScanLine, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";

@@ -230,10 +230,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   {isCompany ? (
                     /* ====== COMPANY MENU ====== */
                     <>
-                      <MenuButton icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-                      <MenuButton icon={Search} label="Find Talent" onClick={() => handleNavigation("/talent-finder")} />
+                      <MenuButton icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
+                      <MenuButton icon={Search} label="Find Talent" onClick={() => handleNavigation("/talent-finder")} path="/talent-finder" />
                       {isManagerMode && (
-                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
+                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
                     </>
                   ) : (
@@ -241,22 +241,22 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <>
                       {/* Explore — secondary surfaces (primary tabs live in bottom nav) */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Explore</p>
-                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} />
-                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} />
-                      <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} />
-                      <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} />
-                      <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} />
+                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} path="/fund" />
+                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
+                      <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} path="/nearby" />
+                      <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} path="/spotlight" />
+                      <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} path="/credits" />
 
                       <Separator className="my-3" />
 
                       {/* My stuff */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Manage</p>
-                      <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} />
-                      <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} />
-                      <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} />
-                      <MenuButton icon={CalendarDays} label="My Events" onClick={() => handleNavigation("/events/backstage")} />
+                      <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} path="/clients" />
+                      <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} path="/fund/manage" />
+                      <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} path="/manage-opportunities" />
+                      <MenuButton icon={CalendarDays} label="My Events" onClick={() => handleNavigation("/events/backstage")} path="/events/backstage" />
                       {isManagerMode && (
-                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} />
+                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
                     </>
                   )}

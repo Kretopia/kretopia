@@ -69,9 +69,13 @@ interface Props {
   eventId: string;
   eventTitle: string;
   onSent?: () => void;
+  /** Optional override: send to these specific user IDs instead of a named segment. */
+  userIds?: string[];
+  /** Human-readable label for the override segment (stored on the blast record). */
+  segmentLabel?: string;
 }
 
-export const BlastComposerDialog = ({ open, onOpenChange, eventId, eventTitle, onSent }: Props) => {
+export const BlastComposerDialog = ({ open, onOpenChange, eventId, eventTitle, onSent, userIds, segmentLabel }: Props) => {
   const [template, setTemplate] = useState("custom");
   const [segment, setSegment] = useState("all");
   const [subject, setSubject] = useState("");

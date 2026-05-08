@@ -431,9 +431,22 @@ const Navbar = memo(({ user }: NavbarProps) => {
 });
 
 /* Reusable menu button */
-function MenuButton({ icon: Icon, label, onClick, badge }: { icon: any; label: string; onClick: () => void; badge?: string }) {
+function MenuButton({ icon: Icon, label, onClick, badge, path }: { icon: any; label: string; onClick: () => void; badge?: string; path?: string }) {
+  const location = useLocation();
+  const isActive = !!path && (
+    path === location.pathname ||
+    (path !== "/" && location.pathname.startsWith(path + "/"))
+  );
   return (
-    <Button variant="ghost" className="justify-start gap-3 h-12 w-full" onClick={onClick}>
+    <Button
+      variant="ghost"
+      className={cn(
+        "justify-start gap-3 h-12 w-full",
+        isActive && "bg-energy/10 text-energy hover:bg-energy/15"
+      )}
+      onClick={onClick}
+      aria-current={isActive ? "page" : undefined}
+    >
       <Icon className="h-5 w-5" />
       <span className="flex-1 text-left">{label}</span>
       {badge && (

@@ -72,6 +72,7 @@ export function PricingCoPilot({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [pendingScan, setPendingScan] = useState<{ dataUrl: string; name: string } | null>(null);
 
   /** Compress an image file to ~1024px wide JPEG data URL so the gateway accepts it. */
   const fileToCompressedDataUrl = (file: File, maxDim = 1280, quality = 0.82): Promise<string> =>

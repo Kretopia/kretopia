@@ -385,6 +385,7 @@ export const StudioRoom = ({
                 <>
                   <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
                   <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
+                  <EventSeatingPlanner project={project} currentUserId={currentUserId} />
                 </>
               )}
             </>

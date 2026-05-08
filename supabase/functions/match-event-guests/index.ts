@@ -28,7 +28,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { event_id } = await req.json();
+    const { event_id, mode } = await req.json();
+    const isAuto = mode === "auto";
     if (!event_id) {
       return new Response(JSON.stringify({ error: "event_id required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },

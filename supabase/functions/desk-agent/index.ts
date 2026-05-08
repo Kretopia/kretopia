@@ -454,6 +454,7 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
       "get_project_summary",
       "schedule_reminder",
       "draft_invoice",
+      "draft_quote",
       "start_video_call",
       "add_credit",
     ].includes(requestedTool)) {

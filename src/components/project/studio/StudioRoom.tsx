@@ -380,7 +380,10 @@ export const StudioRoom = ({
                 <EventSponsorsKanban project={project} currentUserId={currentUserId} />
               </div>
               {project.created_by === currentUserId && (
-                <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+                <>
+                  <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+                  <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
+                </>
               )}
             </>
           )}

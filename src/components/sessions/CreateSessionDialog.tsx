@@ -23,7 +23,7 @@ import type { EventArchetypeId } from "@/lib/eventArchetypes";
 import { findArchetype } from "@/lib/eventArchetypes";
 import { createEventStudio } from "@/lib/createEventStudio";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Zap } from "lucide-react";
+
 
 interface CreateSessionDialogProps {
   open: boolean;

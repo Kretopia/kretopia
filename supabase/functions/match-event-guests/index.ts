@@ -75,7 +75,32 @@ serve(async (req) => {
         .select("id").eq("project_id", project.id).eq("user_id", user.id).maybeSingle();
       isHost = !!collab;
     }
-    if (!isHost) {
+
+    if (isAuto) {
+      // Auto-refresh path: any RSVP'd guest can trigger; rate-limit to once per 60s per event.
+      const { data: lastRow } = await admin
+        .from("event_guest_matches")
+        .select("created_at")
+        .eq("event_id", event_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (lastRow?.created_at) {
+        const ageMs = Date.now() - new Date(lastRow.created_at).getTime();
+        if (ageMs < 60_000) {
+          return new Response(JSON.stringify({ ok: true, skipped: "throttled" }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+      }
+      // Confirm caller actually RSVP'd
+      const { data: part } = await admin
+        .from("jam_participants")
+        .select("user_id").eq("jam_id", event_id).eq("user_id", user.id).maybeSingle();
+      if (!isHost && !part) {
+        return new Response(JSON.stringify({ error: "Not authorized" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    } else if (!isHost) {
       return new Response(JSON.stringify({ error: "Not authorized" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

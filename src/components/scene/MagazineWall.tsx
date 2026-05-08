@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { MagazineArticleViewer } from "./MagazineArticleViewer";
 import { MagazineEditor } from "./MagazineEditor";
 import { coverImageStyle } from "./CoverImageEditor";
+import { SmartCover } from "@/components/ui/smart-cover";
 
 interface Article {
   id: string;

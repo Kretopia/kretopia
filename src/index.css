@@ -575,3 +575,10 @@ body[data-scroll-locked] .snap-receipt-fab,
 body:has(> [data-state="open"][role="dialog"]) .snap-receipt-fab {
   display: none !important;
 }
+
+/* Leaflet map: prevent black flash before tiles load. The container itself
+   paints its own background before tile <img>s arrive — give it a subtle
+   themed surface so the skeleton grid behind it shows through naturally. */
+.leaflet-container {
+  background: hsl(var(--muted) / 0.4) !important;
+}

@@ -120,6 +120,8 @@ const QuickActionFab = () => {
   if (ROUTES_WITH_OWN_FAB.some((p) => location.pathname.startsWith(p))) return null;
   if (!user) return null;
   if (dismissed) return null;
+  // Don't stack the FAB on top of an open dialog/sheet (e.g. hamburger menu)
+  if (overlayOpen && !open) return null;
 
   const close = () => setOpen(false);
   const go = (path: string) => {

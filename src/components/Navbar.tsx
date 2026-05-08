@@ -266,8 +266,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                   {/* Creative Circle CTA */}
                   <Button
                     variant="ghost"
-                    className="justify-start gap-3 h-12 w-full bg-gradient-to-r from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 border border-primary/10"
+                    className={cn(
+                      "justify-start gap-3 h-12 w-full border border-border/40 hover:bg-accent/30",
+                      location.pathname === "/creative-circle" && "bg-energy/10 text-energy border-energy/30"
+                    )}
                     onClick={() => handleNavigation("/creative-circle")}
+                    aria-current={location.pathname === "/creative-circle" ? "page" : undefined}
                   >
                     <UserPlus className="h-5 w-5 text-primary" />
                     <div className="flex flex-col items-start">

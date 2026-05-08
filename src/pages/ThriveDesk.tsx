@@ -116,12 +116,33 @@ const ThriveDesk = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-6">
-        <CreativeLoader
-          size="page"
-          context={project?.workspace_type ?? null}
-          hint="Sorting the right space for what you're making"
-        />
+      <div className="min-h-screen bg-background pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pb-0">
+        {/* Header skeleton */}
+        <div className="px-4 pt-4 pb-3 border-b border-border/40 space-y-2">
+          <div className="h-3 w-24 rounded bg-muted animate-pulse" />
+          <div className="h-7 w-3/4 rounded bg-muted animate-pulse" />
+          <div className="h-4 w-1/2 rounded bg-muted/70 animate-pulse" />
+        </div>
+        {/* Tab strip skeleton */}
+        <div className="px-4 py-3 flex gap-2 overflow-hidden border-b border-border/30">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="h-8 w-20 rounded-full bg-muted animate-pulse shrink-0"
+              style={{ animationDelay: `${i * 60}ms` }}
+            />
+          ))}
+        </div>
+        {/* Body skeleton */}
+        <div className="px-4 py-4 space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-28 rounded-2xl bg-muted animate-pulse"
+              style={{ animationDelay: `${i * 90}ms` }}
+            />
+          ))}
+        </div>
       </div>
     );
   }

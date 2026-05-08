@@ -31,6 +31,30 @@ const QuickActionFab = () => {
 
   const [open, setOpen] = useState(false);
   const [isCompany, setIsCompany] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
+
+  // Hide FAB when any Radix dialog/sheet is open (it locks body scroll).
+  // Prevents the FAB from sitting on top of menu sheets and modal close buttons.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const check = () => {
+      const locked =
+        document.body.hasAttribute("data-scroll-locked") ||
+        !!document.querySelector(
+          '[role="dialog"][data-state="open"], [data-radix-dialog-content][data-state="open"]'
+        );
+      setOverlayOpen(locked);
+    };
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-scroll-locked", "style"],
+      childList: true,
+      subtree: true,
+    });
+    return () => obs.disconnect();
+  }, []);
   const [dismissed, setDismissed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("quickFab.dismissed") === "1";
@@ -96,6 +120,8 @@ const QuickActionFab = () => {
   if (ROUTES_WITH_OWN_FAB.some((p) => location.pathname.startsWith(p))) return null;
   if (!user) return null;
   if (dismissed) return null;
+  // Don't stack the FAB on top of an open dialog/sheet (e.g. hamburger menu)
+  if (overlayOpen && !open) return null;
 
   const close = () => setOpen(false);
   const go = (path: string) => {

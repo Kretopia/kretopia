@@ -375,6 +375,7 @@ export const StudioRoom = ({
           {["event","event_production"].includes(project.workspace_type) && (
             <>
               <EventHeroCard project={project} />
+              <EventProducerDashboard project={project} currentUserId={currentUserId} />
               <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
                 <EventStudioSection project={project} currentUserId={currentUserId} />
               </div>

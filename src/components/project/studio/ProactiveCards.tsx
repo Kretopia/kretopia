@@ -1,8 +1,38 @@
-import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Receipt, FileText, PartyPopper, ArrowRight, HandCoins } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  Receipt,
+  FileText,
+  PartyPopper,
+  ArrowRight,
+  HandCoins,
+  Sparkles,
+  Clock,
+  Flag,
+  X,
+  Check,
+  MessageCircle,
+  PackageCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface AgentProposal {
+  id: string;
+  kind:
+    | "draft_invoice"
+    | "schedule_followup"
+    | "next_milestone"
+    | "wrap_project"
+    | "collab_nudge"
+    | "other";
+  title: string;
+  body: string;
+  action_intent: Record<string, any>;
+  status: string;
+}
 
 interface ProactiveCardsProps {
   project: any;

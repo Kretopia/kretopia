@@ -72,6 +72,7 @@ export function PricingCoPilot({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [pendingScan, setPendingScan] = useState<{ dataUrl: string; name: string } | null>(null);
 
   /** Compress an image file to ~1024px wide JPEG data URL so the gateway accepts it. */
   const fileToCompressedDataUrl = (file: File, maxDim = 1280, quality = 0.82): Promise<string> =>
@@ -107,10 +108,10 @@ export function PricingCoPilot({
     setIsScanning(true);
     try {
       const dataUrl = await fileToCompressedDataUrl(file);
-      await sendMessage(
-        `I'm sharing a brief/flyer for this ${documentType}. Read it carefully — extract the project, deliverables, dates, client name, currency, and any pricing hints. Then propose line items and call generate_line_items. Use any matches you spot against my Studio + Thrive Memory.`,
-        dataUrl,
-      );
+      setPendingScan({ dataUrl, name: file.name || "brief.jpg" });
+      toast.success("Brief attached. Add a note and hit send when ready.");
+      // focus the textarea so user can type extra context
+      setTimeout(() => inputRef.current?.focus(), 50);
     } catch (e: any) {
       toast.error(e?.message || "Couldn't read that image");
     } finally {
@@ -167,18 +168,20 @@ export function PricingCoPilot({
   };
   const sym = getCurrencySymbol(currency);
 
-  const sendMessage = async (userInput: string, scanImage?: string) => {
+  const sendMessage = async (userInput: string, scanImageOverride?: string) => {
+    const scanImage = scanImageOverride ?? pendingScan?.dataUrl;
     if ((!userInput.trim() && !scanImage) || isLoading) return;
 
     const userMsg: ChatMessage = {
       role: "user",
       content: scanImage
-        ? `${userInput.trim() || "📎 Scanning brief…"}`
+        ? `${userInput.trim() || "📎 Here's the brief — please read it and propose line items."}${pendingScan ? `\n\n_(attached: ${pendingScan.name})_` : ""}`
         : userInput.trim(),
     };
     const allMessages = [...messages, userMsg];
     setMessages(allMessages);
     setInput("");
+    setPendingScan(null);
     setIsLoading(true);
 
     let assistantContent = "";
@@ -746,6 +749,31 @@ export function PricingCoPilot({
 
       {/* Input */}
       <div className="p-3 border-t bg-background">
+        {pendingScan && (
+          <div className="mb-2 flex items-center gap-2 rounded-xl border bg-muted/40 p-2">
+            <img
+              src={pendingScan.dataUrl}
+              alt="Attached brief"
+              className="h-12 w-12 rounded-lg object-cover border"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="text-[12px] font-medium truncate">{pendingScan.name}</div>
+              <div className="text-[10px] text-muted-foreground">
+                Add a note (optional), then send to let Thrive read it.
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 shrink-0"
+              onClick={() => setPendingScan(null)}
+              title="Remove attachment"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
         <div className="flex gap-2 items-end">
           <input
             ref={fileInputRef}
@@ -776,7 +804,7 @@ export function PricingCoPilot({
                 sendMessage(input);
               }
             }}
-            placeholder="Describe costs, ask for pricing, or scan a brief…"
+            placeholder={pendingScan ? "Add context for the brief… (optional)" : "Describe costs, ask for pricing, or scan a brief…"}
             className="flex-1 resize-none text-[13px] bg-muted/50 rounded-xl p-3 min-h-[44px] max-h-[100px] outline-none focus:ring-2 focus:ring-primary/30 transition-shadow placeholder:text-muted-foreground/50"
             rows={1}
           />
@@ -784,7 +812,7 @@ export function PricingCoPilot({
             size="icon"
             className="h-10 w-10 shrink-0 rounded-xl"
             onClick={() => sendMessage(input)}
-            disabled={!input.trim() || isLoading}
+            disabled={(!input.trim() && !pendingScan) || isLoading}
           >
             <Send className="h-4 w-4" />
           </Button>

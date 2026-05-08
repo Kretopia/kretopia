@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle2, AlertTriangle, Clock, Radio, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertTriangle, Clock, Radio, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
 

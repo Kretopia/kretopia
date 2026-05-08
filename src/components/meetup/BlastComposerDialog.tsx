@@ -101,7 +101,7 @@ export const BlastComposerDialog = ({ open, onOpenChange, eventId, eventTitle, o
     if (testOnly) setTesting(true); else setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke("send-event-blast", {
-        body: { eventId, subject, bodyHtml, template, segment, ctaText, testOnly },
+        body: { eventId, subject, bodyHtml, template, segment, ctaText, testOnly, userIds, segmentLabel },
       });
       if (error) throw error;
       const d = data as any;

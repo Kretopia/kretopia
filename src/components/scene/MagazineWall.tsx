@@ -292,18 +292,12 @@ export const MagazineWall = () => {
                 onClick={() => setSelectedArticle(article)}
               >
                 <div className="aspect-[4/3] relative">
-                  {article.cover_image_url ? (
-                    <img
-                      src={article.cover_image_url}
-                      alt={article.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      style={coverImageStyle(article.cover_position_x, article.cover_position_y, article.cover_zoom)}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                      <Sparkles className="h-8 w-8 text-primary/30" />
-                    </div>
-                  )}
+                  <SmartCover
+                    src={article.cover_image_url}
+                    alt={article.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    style={coverImageStyle(article.cover_position_x, article.cover_position_y, article.cover_zoom)}
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   {isEditorOrAdmin && (
                     <button

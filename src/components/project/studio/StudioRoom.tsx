@@ -332,7 +332,10 @@ export const StudioRoom = ({
           <PodcastStudioSection project={project} currentUserId={currentUserId} />
         )}
         {project.workspace_type === "event" && (
-          <EventStudioSection project={project} currentUserId={currentUserId} />
+          <>
+            <EventHeroCard project={project} />
+            <EventStudioSection project={project} currentUserId={currentUserId} />
+          </>
         )}
         {mobileWorkColumn}
         {mobileSideColumn}

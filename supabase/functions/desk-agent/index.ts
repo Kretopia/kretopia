@@ -18,6 +18,7 @@ type ToolName =
   | "get_project_summary"
   | "schedule_reminder"
   | "draft_invoice"
+  | "draft_quote"
   | "start_video_call"
   | "add_credit"
   | "find_user"

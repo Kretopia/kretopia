@@ -17192,6 +17192,7 @@ export type Database = {
         | "site_epk"
         | "money_admin"
         | "community"
+        | "memory"
       orch_approval_decision: "approved" | "rejected" | "edited"
       orch_risk_level: "safe_auto" | "requires_approval" | "locked"
       orch_run_status:
@@ -17370,6 +17371,7 @@ export const Constants = {
         "site_epk",
         "money_admin",
         "community",
+        "memory",
       ],
       orch_approval_decision: ["approved", "rejected", "edited"],
       orch_risk_level: ["safe_auto", "requires_approval", "locked"],

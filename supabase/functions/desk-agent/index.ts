@@ -324,7 +324,9 @@ Deno.serve(async (req) => {
       body?.message ??
       (requestedTool === "draft_invoice"
         ? `Draft a ${String(body?.currency ?? "USD").toUpperCase()} ${Number(body?.amount ?? 0)} invoice for ${body?.notes ?? body?.description ?? "this project"}`
-        : body?.title ?? body?.what ?? body?.description ?? requestedTool ?? "")
+        : requestedTool === "draft_quote"
+          ? `Draft a quote with ${(Array.isArray(body?.line_items) ? body.line_items.length : 0)} line items`
+          : body?.title ?? body?.what ?? body?.description ?? requestedTool ?? "")
     ).trim();
     const is_pro = body?.is_pro ?? false;
     const confirm_token = body?.confirm_token;

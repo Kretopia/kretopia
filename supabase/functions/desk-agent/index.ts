@@ -613,7 +613,47 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
             .single();
           if (error) throw error;
           actions.push({ tool: name, args, result: data, ok: true });
-        } else if (name === "start_video_call") {
+        } else if (name === "draft_quote") {
+          const validDays = Number(args.valid_in_days ?? 30);
+          const validUntil = new Date(Date.now() + validDays * 86400000).toISOString();
+          const items = Array.isArray(args.line_items) ? args.line_items : [];
+          const lineItems = items.map((it: any) => {
+            const qty = Number(it.quantity || 1);
+            const rate = Number(it.rate || 0);
+            return {
+              description: String(it.description || "Item"),
+              quantity: qty,
+              rate,
+              amount: qty * rate,
+            };
+          });
+          const subtotal = lineItems.reduce((s, i) => s + i.amount, 0);
+          const taxRate = Number(args.tax_rate ?? 0);
+          const taxAmount = +(subtotal * (taxRate / 100)).toFixed(2);
+          const total = +(subtotal + taxAmount).toFixed(2);
+          const quoteNum = `QUO-${Date.now().toString().slice(-8)}`;
+          const { data, error } = await admin
+            .from("invoices")
+            .insert({
+              invoice_number: quoteNum,
+              project_id,
+              issued_by: user.id,
+              issued_to: project?.client_user_id ?? null,
+              amount: subtotal,
+              tax_rate: taxRate || null,
+              tax_amount: taxAmount || null,
+              total_amount: total,
+              currency: (args.currency || project?.currency || "USD").toUpperCase(),
+              status: "draft",
+              valid_until: validUntil,
+              notes: args.notes || null,
+              line_items: lineItems,
+              document_type: "quote",
+            })
+            .select("id, invoice_number, total_amount, currency")
+            .single();
+          if (error) throw error;
+          actions.push({ tool: name, args, result: data, ok: true });
           // Reuse existing create-video-room edge fn (handles Daily.co + chat post)
           const { data, error } = await admin.functions.invoke("create-video-room", {
             body: { project_id, user_name: user.email?.split("@")[0] || "Member" },

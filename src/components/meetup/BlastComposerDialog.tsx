@@ -69,9 +69,13 @@ interface Props {
   eventId: string;
   eventTitle: string;
   onSent?: () => void;
+  /** Optional override: send to these specific user IDs instead of a named segment. */
+  userIds?: string[];
+  /** Human-readable label for the override segment (stored on the blast record). */
+  segmentLabel?: string;
 }
 
-export const BlastComposerDialog = ({ open, onOpenChange, eventId, eventTitle, onSent }: Props) => {
+export const BlastComposerDialog = ({ open, onOpenChange, eventId, eventTitle, onSent, userIds, segmentLabel }: Props) => {
   const [template, setTemplate] = useState("custom");
   const [segment, setSegment] = useState("all");
   const [subject, setSubject] = useState("");
@@ -97,7 +101,7 @@ export const BlastComposerDialog = ({ open, onOpenChange, eventId, eventTitle, o
     if (testOnly) setTesting(true); else setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke("send-event-blast", {
-        body: { eventId, subject, bodyHtml, template, segment, ctaText, testOnly },
+        body: { eventId, subject, bodyHtml, template, segment, ctaText, testOnly, userIds, segmentLabel },
       });
       if (error) throw error;
       const d = data as any;
@@ -139,17 +143,26 @@ export const BlastComposerDialog = ({ open, onOpenChange, eventId, eventTitle, o
             </Select>
           </div>
 
-          <div>
-            <Label className="text-xs uppercase tracking-wider">Audience</Label>
-            <Select value={segment} onValueChange={setSegment}>
-              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {SEGMENTS.map(s => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {userIds && userIds.length > 0 ? (
+            <div className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2">
+              <Label className="text-xs uppercase tracking-wider">Audience</Label>
+              <p className="text-sm font-medium mt-0.5">
+                {segmentLabel || "Custom segment"} · {userIds.length} {userIds.length === 1 ? "guest" : "guests"}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <Label className="text-xs uppercase tracking-wider">Audience</Label>
+              <Select value={segment} onValueChange={setSegment}>
+                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {SEGMENTS.map(s => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div>
             <Label className="text-xs uppercase tracking-wider">Subject</Label>

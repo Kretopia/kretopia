@@ -36,6 +36,7 @@ import { EventSponsorsKanban } from "./EventSponsorsKanban";
 import { EventRsvpQuestionsBuilder } from "./EventRsvpQuestionsBuilder";
 import { EventGuestMatchesSection } from "./EventGuestMatchesSection";
 import { EventSeatingPlanner } from "./EventSeatingPlanner";
+import { EventOutreachSegmentBuilder } from "./EventOutreachSegmentBuilder";
 import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
@@ -348,6 +349,7 @@ export const StudioRoom = ({
                 <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
                 <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
                 <EventSeatingPlanner project={project} currentUserId={currentUserId} />
+                <EventOutreachSegmentBuilder project={project} currentUserId={currentUserId} />
               </>
             )}
           </>
@@ -386,6 +388,7 @@ export const StudioRoom = ({
                   <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
                   <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
                   <EventSeatingPlanner project={project} currentUserId={currentUserId} />
+                  <EventOutreachSegmentBuilder project={project} currentUserId={currentUserId} />
                 </>
               )}
             </>

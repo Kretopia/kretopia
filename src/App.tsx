@@ -441,6 +441,7 @@ const AppContent = () => {
             <Route path="/search" element={<Search />} />
             <Route path="/production" element={<ProductionPage />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+            <Route path="/intel" element={<ProtectedRoute><Intel /></ProtectedRoute>} />
             
             {/* Legacy redirects — consolidated */}
             <Route path="/dashboard" element={<Navigate to="/desk" replace />} />

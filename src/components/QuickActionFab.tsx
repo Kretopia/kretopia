@@ -91,6 +91,9 @@ const QuickActionFab = () => {
 
   // Hide on auth and other full-screen routes
   if (location.pathname === "/auth") return null;
+  // Routes that mount their own route-specific FAB — avoid stacking two FABs
+  const ROUTES_WITH_OWN_FAB = ["/thrivepay", "/accounting"];
+  if (ROUTES_WITH_OWN_FAB.some((p) => location.pathname.startsWith(p))) return null;
   if (!user) return null;
   if (dismissed) return null;
 

@@ -15,6 +15,7 @@ import { ProfileCompletionCard } from "@/components/ProfileCompletionCard";
 import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
+import { CreditThumb } from "@/components/onboarding/claim-flow/CreditThumb";
 import { ProfileHubCard } from "@/components/home/ProfileHubCard";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
@@ -980,16 +981,16 @@ export const UnifiedHome = () => {
                   className="shrink-0 w-[140px] sm:w-[180px] group text-left snap-start"
                 >
                   <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
-                    {(c.thumbnail_url || c.primary_media_url) ? (
-                      <div className="aspect-[3/4] overflow-hidden">
-                        <img src={c.thumbnail_url || c.primary_media_url} alt={c.project_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
-                      </div>
-                    ) : (
-                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 flex items-center justify-center">
-                        <Play className="h-8 w-8 text-primary/20" />
-                      </div>
-                    )}
+                    <div className="aspect-[3/4] overflow-hidden">
+                      <CreditThumb
+                        src={c.thumbnail_url || c.primary_media_url}
+                        title={c.project_name}
+                        platform={c.platform || c.category}
+                        className="w-full h-full group-hover:scale-105 transition-transform duration-700"
+                        iconClassName="h-10 w-10"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent pointer-events-none" />
+                    </div>
                     <div className="absolute bottom-0 left-0 right-0 p-3">
                       <div className="flex items-center gap-1 mb-1">
                         <Verified className="h-3 w-3 text-primary" />

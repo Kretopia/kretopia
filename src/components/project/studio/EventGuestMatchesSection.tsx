@@ -63,6 +63,18 @@ export const EventGuestMatchesSection = ({ project, currentUserId }: Props) => {
 
   useEffect(() => { load().catch(() => setLoading(false)); }, [eventId]);
 
+  // Realtime: refresh when matches change (e.g. auto-refresh after a guest RSVP)
+  useEffect(() => {
+    if (!eventId) return;
+    const ch = supabase
+      .channel(`event-matches:${eventId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "event_guest_matches", filter: `event_id=eq.${eventId}` }, () => {
+        load().catch(() => {});
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [eventId]);
+
   const generate = async () => {
     if (!eventId) return;
     setGenerating(true);

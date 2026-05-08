@@ -858,6 +858,202 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_approvals: {
+        Row: {
+          asset_id: string | null
+          asset_url: string | null
+          created_at: string
+          created_by: string
+          decided_at: string | null
+          feedback: string | null
+          id: string
+          project_id: string
+          reviewer_id: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          asset_id?: string | null
+          asset_url?: string | null
+          created_at?: string
+          created_by: string
+          decided_at?: string | null
+          feedback?: string | null
+          id?: string
+          project_id: string
+          reviewer_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          asset_id?: string | null
+          asset_url?: string | null
+          created_at?: string
+          created_by?: string
+          decided_at?: string | null
+          feedback?: string | null
+          id?: string
+          project_id?: string
+          reviewer_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_approvals_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_approvals_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_assets: {
+        Row: {
+          asset_url: string | null
+          channel: string
+          created_at: string
+          created_by: string
+          deliverable: string
+          due_date: string | null
+          format: string | null
+          id: string
+          notes: string | null
+          order_index: number
+          owner_id: string | null
+          platform: string | null
+          project_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          asset_url?: string | null
+          channel?: string
+          created_at?: string
+          created_by: string
+          deliverable: string
+          due_date?: string | null
+          format?: string | null
+          id?: string
+          notes?: string | null
+          order_index?: number
+          owner_id?: string | null
+          platform?: string | null
+          project_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          asset_url?: string | null
+          channel?: string
+          created_at?: string
+          created_by?: string
+          deliverable?: string
+          due_date?: string | null
+          format?: string | null
+          id?: string
+          notes?: string | null
+          order_index?: number
+          owner_id?: string | null
+          platform?: string | null
+          project_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_assets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_briefs: {
+        Row: {
+          audience: string | null
+          brand_name: string | null
+          budget: number | null
+          created_at: string
+          created_by: string
+          currency: string | null
+          end_date: string | null
+          guidelines: string | null
+          id: string
+          is_current: boolean
+          key_messages: string[]
+          kpis: string[]
+          objective: string | null
+          project_id: string
+          start_date: string | null
+          tone: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          audience?: string | null
+          brand_name?: string | null
+          budget?: number | null
+          created_at?: string
+          created_by: string
+          currency?: string | null
+          end_date?: string | null
+          guidelines?: string | null
+          id?: string
+          is_current?: boolean
+          key_messages?: string[]
+          kpis?: string[]
+          objective?: string | null
+          project_id: string
+          start_date?: string | null
+          tone?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          audience?: string | null
+          brand_name?: string | null
+          budget?: number | null
+          created_at?: string
+          created_by?: string
+          currency?: string | null
+          end_date?: string | null
+          guidelines?: string | null
+          id?: string
+          is_current?: boolean
+          key_messages?: string[]
+          kpis?: string[]
+          objective?: string | null
+          project_id?: string
+          start_date?: string | null
+          tone?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_briefs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_moderation_queue: {
         Row: {
           ai_reason: string | null

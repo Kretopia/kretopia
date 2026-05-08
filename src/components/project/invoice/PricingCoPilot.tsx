@@ -119,10 +119,15 @@ export function PricingCoPilot({
   };
   const sym = getCurrencySymbol(currency);
 
-  const sendMessage = async (userInput: string) => {
-    if (!userInput.trim() || isLoading) return;
+  const sendMessage = async (userInput: string, scanImage?: string) => {
+    if ((!userInput.trim() && !scanImage) || isLoading) return;
 
-    const userMsg: ChatMessage = { role: "user", content: userInput.trim() };
+    const userMsg: ChatMessage = {
+      role: "user",
+      content: scanImage
+        ? `${userInput.trim() || "📎 Scanning brief…"}`
+        : userInput.trim(),
+    };
     const allMessages = [...messages, userMsg];
     setMessages(allMessages);
     setInput("");
@@ -133,13 +138,15 @@ export function PricingCoPilot({
     let currentToolIdx = -1;
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-pricing-copilot`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
           body: JSON.stringify({
             messages: allMessages.map(m => ({ role: m.role, content: m.content })),
@@ -148,6 +155,7 @@ export function PricingCoPilot({
             existing_items: lineItems.filter(i => i.description),
             current_details: detailsSummary,
             project_context: projectContext,
+            scan_image: scanImage,
           }),
         }
       );

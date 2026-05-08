@@ -50,6 +50,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
 import { useProjectMoneySignal } from "@/hooks/useProjectMoneySignal";
 import { useStudioRole } from "@/hooks/useStudioRole";
+import { useDeskAgentWatch } from "@/hooks/useDeskAgentWatch";
 import type { NextStep } from "@/hooks/useProjectFlow";
 
 interface StudioRoomProps {
@@ -88,6 +89,9 @@ export const StudioRoom = ({
   const moneySignal = useProjectMoneySignal(project);
 
   const isOwner = project?.created_by === currentUserId;
+
+  // Phase 7: Thrive watches chat + state and proposes proactive next moves (owner only)
+  useDeskAgentWatch(isOwner ? project?.id : null);
 
   // Normalize collaborator shape (id is profile id; full_name from join in useProjectData)
   const people = collaborators.map((c: any) => ({

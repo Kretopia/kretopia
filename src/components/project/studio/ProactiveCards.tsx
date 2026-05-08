@@ -1,8 +1,38 @@
-import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Receipt, FileText, PartyPopper, ArrowRight, HandCoins } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  Receipt,
+  FileText,
+  PartyPopper,
+  ArrowRight,
+  HandCoins,
+  Sparkles,
+  Clock,
+  Flag,
+  X,
+  Check,
+  MessageCircle,
+  PackageCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface AgentProposal {
+  id: string;
+  kind:
+    | "draft_invoice"
+    | "schedule_followup"
+    | "next_milestone"
+    | "wrap_project"
+    | "collab_nudge"
+    | "other";
+  title: string;
+  body: string;
+  action_intent: Record<string, any>;
+  status: string;
+}
 
 interface ProactiveCardsProps {
   project: any;
@@ -33,25 +63,36 @@ export const ProactiveCards = ({
   onAction,
   className,
 }: ProactiveCardsProps) => {
+  const { toast } = useToast();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [paymentRequests, setPaymentRequests] = useState<any[]>([]);
+  const [aiProposals, setAiProposals] = useState<AgentProposal[]>([]);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!project?.id) return;
     let cancelled = false;
     (async () => {
       try {
-        const [invRes, pmtRes] = await Promise.all([
+        const [invRes, pmtRes, propRes] = await Promise.all([
           supabase.from("invoices").select("id, status").eq("project_id", project.id),
           supabase
             .from("milestones")
             .select("id, title, amount, status, requested_by")
             .eq("project_id", project.id)
             .eq("status", "requested"),
+          supabase
+            .from("agent_proposals")
+            .select("id, kind, title, body, action_intent, status")
+            .eq("project_id", project.id)
+            .eq("status", "pending")
+            .order("created_at", { ascending: false })
+            .limit(2),
         ]);
         if (!cancelled) {
           setInvoices(invRes.data || []);
           setPaymentRequests(pmtRes.data || []);
+          setAiProposals((propRes.data as AgentProposal[]) || []);
         }
       } catch {
         // silent — proactive cards are non-critical
@@ -61,6 +102,81 @@ export const ProactiveCards = ({
       cancelled = true;
     };
   }, [project?.id]);
+
+  // Realtime: pick up new AI proposals as the watcher inserts them
+  useEffect(() => {
+    if (!project?.id) return;
+    const ch = supabase
+      .channel(`proposals:${project.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "agent_proposals",
+          filter: `project_id=eq.${project.id}`,
+        },
+        (payload) => {
+          const row = payload.new as AgentProposal;
+          if (row.status === "pending") {
+            setAiProposals((prev) =>
+              [row, ...prev.filter((p) => p.id !== row.id)].slice(0, 2),
+            );
+          }
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [project?.id]);
+
+  const handleAccept = useCallback(
+    async (p: AgentProposal) => {
+      setBusyId(p.id);
+      try {
+        const kindMap: Record<string, { tab: string; intent?: string }> = {
+          draft_invoice: { tab: "finance", intent: "create-invoice" },
+          schedule_followup: { tab: "tasks", intent: "create-task" },
+          next_milestone: { tab: "tasks", intent: "create-task" },
+          wrap_project: { tab: "wrap" },
+          collab_nudge: { tab: "messages" },
+          other: { tab: "brief" },
+        };
+        const target = kindMap[p.kind] ?? { tab: "brief" };
+        await supabase
+          .from("agent_proposals")
+          .update({ status: "accepted", accepted_at: new Date().toISOString() })
+          .eq("id", p.id);
+        setAiProposals((prev) => prev.filter((x) => x.id !== p.id));
+        onAction(target.tab, target.intent);
+      } catch (e: any) {
+        toast({
+          title: "Couldn't accept",
+          description: e?.message ?? "Try again",
+          variant: "destructive",
+        });
+      } finally {
+        setBusyId(null);
+      }
+    },
+    [onAction, toast],
+  );
+
+  const handleDismiss = useCallback(async (p: AgentProposal) => {
+    setBusyId(p.id);
+    try {
+      await supabase
+        .from("agent_proposals")
+        .update({ status: "dismissed" })
+        .eq("id", p.id);
+      setAiProposals((prev) => prev.filter((x) => x.id !== p.id));
+    } catch {
+      /* silent */
+    } finally {
+      setBusyId(null);
+    }
+  }, []);
 
   const cards = useMemo<NudgeCard[]>(() => {
     const out: NudgeCard[] = [];
@@ -170,7 +286,24 @@ export const ProactiveCards = ({
     return out.slice(0, 2); // never overwhelm — show top 2
   }, [project, tasks, invoices, paymentRequests]);
 
-  if (cards.length === 0) return null;
+  const kindIcon: Record<string, React.ComponentType<{ className?: string }>> = {
+    draft_invoice: Receipt,
+    schedule_followup: Clock,
+    next_milestone: Flag,
+    wrap_project: PackageCheck,
+    collab_nudge: MessageCircle,
+    other: Sparkles,
+  };
+  const kindCta: Record<string, string> = {
+    draft_invoice: "Draft invoice",
+    schedule_followup: "Schedule it",
+    next_milestone: "Add next step",
+    wrap_project: "Wrap project",
+    collab_nudge: "Open chat",
+    other: "Take action",
+  };
+
+  if (cards.length === 0 && aiProposals.length === 0) return null;
 
   const toneClasses: Record<NudgeCard["tone"], string> = {
     warn: "border-destructive/40 bg-gradient-to-br from-destructive/10 to-transparent",
@@ -199,6 +332,56 @@ export const ProactiveCards = ({
 
   return (
     <section className={cn("px-4 pt-3 pb-1 space-y-2.5", className)}>
+      {/* Thrive proactive proposals (AI) */}
+      {aiProposals.map((p) => {
+        const Icon = kindIcon[p.kind] ?? Sparkles;
+        return (
+          <div
+            key={p.id}
+            className="relative overflow-hidden rounded-xl border border-primary/40 bg-gradient-to-br from-primary/12 via-primary/4 to-transparent p-3.5 flex items-start gap-3"
+          >
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 bg-primary text-primary-foreground shadow-[var(--shadow-glow)]">
+              <Icon className="h-4 w-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-bold uppercase tracking-[0.22em] mb-0.5 text-primary flex items-center gap-1">
+                <Sparkles className="h-2.5 w-2.5" /> Thrive Suggests
+              </p>
+              <p className="text-sm font-bold leading-tight text-foreground">
+                {p.title}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                {p.body}
+              </p>
+              <div className="flex items-center gap-1 mt-2 -ml-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={busyId === p.id}
+                  className="h-7 px-2 text-xs gap-1 text-foreground hover:bg-background/60 rounded-full font-semibold"
+                  onClick={() => handleAccept(p)}
+                >
+                  <Check className="h-3 w-3" />
+                  {kindCta[p.kind] ?? "Take action"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={busyId === p.id}
+                  className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:bg-background/40 rounded-full"
+                  onClick={() => handleDismiss(p)}
+                  aria-label="Dismiss suggestion"
+                >
+                  <X className="h-3 w-3" />
+                  Not now
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Heuristic cards */}
       {cards.map((c) => {
         const Icon = c.icon;
         return (

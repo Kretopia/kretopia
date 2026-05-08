@@ -186,6 +186,46 @@ const EventCrewMode = () => {
             </Link>
           )}
         </div>
+      ) : presenter ? (
+        (() => {
+          const cur = currentIdx >= 0 ? items[currentIdx] : null;
+          const nxt = items[currentIdx + 1] ?? items.find((it) => {
+            const s = toMinutes(it.start_time);
+            return s != null && s > nowMin;
+          });
+          return (
+            <div className="px-6 py-10 space-y-8 text-center">
+              {cur ? (
+                <div className="space-y-3">
+                  <p className="text-xs font-black uppercase tracking-[0.3em] text-[hsl(var(--energy))]">Now</p>
+                  <p className="text-4xl font-black leading-tight">{cur.title}</p>
+                  <p className="text-base font-mono text-muted-foreground">
+                    {cur.start_time}{cur.end_time ? `–${cur.end_time}` : ""}
+                  </p>
+                  {cur.owner_name && (
+                    <p className="text-sm text-muted-foreground">{cur.owner_name}</p>
+                  )}
+                  <Button
+                    size="lg"
+                    className="mt-4"
+                    onClick={() => cycleStatus(cur)}
+                  >
+                    {cur.status === "planned" ? "Mark done" : cur.status === "done" ? "Flag risk" : "Reset"}
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No cue running right now.</p>
+              )}
+              {nxt && (
+                <div className="pt-6 border-t border-border/40 space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Up next</p>
+                  <p className="text-xl font-bold">{nxt.title}</p>
+                  <p className="text-sm font-mono text-muted-foreground">{nxt.start_time}</p>
+                </div>
+              )}
+            </div>
+          );
+        })()
       ) : (
         <ol className="px-3 py-3 space-y-2">
           {items.map((it, i) => {

@@ -286,7 +286,24 @@ export const ProactiveCards = ({
     return out.slice(0, 2); // never overwhelm — show top 2
   }, [project, tasks, invoices, paymentRequests]);
 
-  if (cards.length === 0) return null;
+  const kindIcon: Record<string, React.ComponentType<{ className?: string }>> = {
+    draft_invoice: Receipt,
+    schedule_followup: Clock,
+    next_milestone: Flag,
+    wrap_project: PackageCheck,
+    collab_nudge: MessageCircle,
+    other: Sparkles,
+  };
+  const kindCta: Record<string, string> = {
+    draft_invoice: "Draft invoice",
+    schedule_followup: "Schedule it",
+    next_milestone: "Add next step",
+    wrap_project: "Wrap project",
+    collab_nudge: "Open chat",
+    other: "Take action",
+  };
+
+  if (cards.length === 0 && aiProposals.length === 0) return null;
 
   const toneClasses: Record<NudgeCard["tone"], string> = {
     warn: "border-destructive/40 bg-gradient-to-br from-destructive/10 to-transparent",

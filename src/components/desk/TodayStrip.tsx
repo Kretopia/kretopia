@@ -196,7 +196,7 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
             <div className="w-full">
               <p
                 className={cn(
-                  "text-[10px] font-bold uppercase tracking-wider",
+                  "text-[10px] font-bold uppercase tracking-wider whitespace-nowrap truncate",
                   tone === "primary" ? "text-primary-foreground/80" : "text-muted-foreground"
                 )}
               >

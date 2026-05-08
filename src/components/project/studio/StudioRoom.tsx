@@ -352,9 +352,12 @@ export const StudioRoom = ({
             </div>
           )}
           {project.workspace_type === "event" && (
-            <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
-              <EventStudioSection project={project} currentUserId={currentUserId} />
-            </div>
+            <>
+              <EventHeroCard project={project} />
+              <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+                <EventStudioSection project={project} currentUserId={currentUserId} />
+              </div>
+            </>
           )}
           <div className="flex items-center justify-between px-1">
             <p className="text-[11px] text-muted-foreground/70">

@@ -747,6 +747,25 @@ export function PricingCoPilot({
       {/* Input */}
       <div className="p-3 border-t bg-background">
         <div className="flex gap-2 items-end">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => handleScanFile(e.target.files?.[0] ?? null)}
+          />
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            className="h-10 w-10 shrink-0 rounded-xl"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading || isScanning}
+            title="Scan a brief or flyer"
+          >
+            {isScanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
+          </Button>
           <textarea
             ref={inputRef}
             value={input}
@@ -757,7 +776,7 @@ export function PricingCoPilot({
                 sendMessage(input);
               }
             }}
-            placeholder="Describe your project costs, services, or ask for pricing help..."
+            placeholder="Describe costs, ask for pricing, or scan a brief…"
             className="flex-1 resize-none text-[13px] bg-muted/50 rounded-xl p-3 min-h-[44px] max-h-[100px] outline-none focus:ring-2 focus:ring-primary/30 transition-shadow placeholder:text-muted-foreground/50"
             rows={1}
           />
@@ -771,7 +790,7 @@ export function PricingCoPilot({
           </Button>
         </div>
         <p className="text-[9px] text-muted-foreground/50 mt-1.5 text-center">
-          AI suggestions are estimates — always verify pricing for your market
+          Scan a brief, ask for rates — Thrive remembers your usual prices & clients.
         </p>
       </div>
     </Card>

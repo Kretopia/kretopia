@@ -50,6 +50,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
 import { useProjectMoneySignal } from "@/hooks/useProjectMoneySignal";
 import { useStudioRole } from "@/hooks/useStudioRole";
+import { useDeskAgentWatch } from "@/hooks/useDeskAgentWatch";
 import type { NextStep } from "@/hooks/useProjectFlow";
 
 interface StudioRoomProps {

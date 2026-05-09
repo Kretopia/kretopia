@@ -1,73 +1,76 @@
-# Agentic Platform — Next 3 Phases
+# Make Thrive Voice fully working — and able to trigger every automation
 
-Phase 1.1 (Inbox Triage Agent) is shipped. We have ~70% of the pieces for the rest of the loop already in the codebase — most of the work is **wiring + supervision UX**, not net-new infrastructure.
+## What's wrong today
 
-This plan ships the missing connective tissue so a creator wakes up and Thrive has *already done work* — drafted replies, drafted pitches, sent chase emails, kept the EPK fresh — with a single "Approvals" tray as the human-in-the-loop.
+1. **Last error (`429 not_authenticated`)** — fixed in `src/lib/thriveVoice.ts` by adding the `apikey` header. Edge logs are empty since the fix, so it has not been re-exercised end-to-end.
+2. **Voice can talk, but it can't *do* anything.** `supabase/functions/thrive-voice-turn/index.ts` does STT → a plain Gemini reply → TTS. It never touches the tool-calling agent (`thrive-ai-chat`), so saying *"Find me a filmmaker in Trinidad"* or *"Draft a quote for Acme — $1,200"* just gets a spoken acknowledgement. No Talent Copilot opens, no quote drafted, no memory recalled, no proactive card injected. That breaks the promise we made when we built the Thrive Bar.
 
----
+## Goal
 
-## Phase 1.2 — Auto-Outreach Agent (close the inbound→outbound loop)
+One voice turn = one full agent turn. Every tool that text chat can call (`draft_invoice`, `draft_quote`, `start_video_call`, `find_talent`, `remember_memory`, `add_credit`, etc.) is reachable by speech, with the spoken reply matching what the agent actually did.
 
-**Already built:** `sponsor-radar`, `send-outreach-email`, `process-outreach-queue`, `OutreachTab`, `EventOutreachSegmentBuilder`, Gmail connection.
+## Plan
 
-**Missing:** the *agent* that decides who to pitch, drafts the email, and parks it for one-tap approval.
+### 1. Confirm the auth fix shipped
 
-1. **Migration** — new table `outreach_drafts` (lead_id, user_id, subject, body, status: draft/approved/sent/dismissed, source: sponsor_radar/manual/scout, scheduled_for). Register orch tools `draft_outreach_email` (safe_auto) and `send_outreach_email` (requires_approval).
-2. **Edge fn `draft-outreach-email`** — Gemini 2.5 Pro, pulls: sponsor_lead context + creator EPK + thrive_memory (past wins, rate card) → personalized 4-line pitch with subject. Tool-calling for structured output.
-3. **Cron `auto-outreach-watch`** every 6h — for Pro+ users with Gmail connected: scan top 3 fresh `sponsor_leads` (score>0.7) → draft pitch → insert `outreach_drafts` (status=draft) → push notification ("Thrive drafted 3 pitches").
-4. **UI** — Sponsor Radar card on `/intel` gets "Draft pitch" button. New `/intel` Outbox tab shows pending drafts with Approve / Edit / Dismiss. Approve → `send-outreach-email`.
+- Re-deploy `thrive-voice-turn` (idempotent), then `curl` it from the preview session to confirm a 200 with `{ ok, transcript, reply }`.
+- Tail edge logs for one real recording from the UI to make sure no `missing_auth` / `429` slips through.
+- Sanity-check the `consume_voice_seconds` RPC returns sane numbers for the current user's tier.
 
-## Phase 2 — Money Loop (autonomous AR)
+### 2. Split the voice turn into STT + Agent + TTS
 
-**Already built:** invoices table, ThrivePay, `record_money_action`, `draft_invoice` orch tool, MoneyBrief.
+Refactor so the brain is the existing agent, not a parallel Gemini call.
 
-**Missing:** the agent that *chases* and *creates* without prompting.
+```text
+client mic ──► thrive-voice-turn (STT only) ──► {transcript}
+                                                  │
+client ──► thrive-ai-chat (transcript, surface)  ─┴► {reply, tool_calls, proactive_cards}
+                                                  │
+client ──► thrive-voice-tts (reply text)         ─┴► {audio_base64}
+client plays audio + renders tool cards / navigation just like text chat
+```
 
-1. **Migration** — add `invoices.last_chase_sent_at`, `chase_count`. Register orch tools `send_chase_email` (requires_approval) and `draft_milestone_invoice` (safe_auto).
-2. **Edge fn `money-agent-watch`** — daily cron 09:00 UTC:
-   - Find overdue invoices (>3 days) → draft polite chase email → insert `agent_proposals` (kind='chase_invoice').
-   - Find projects where deliverable just moved to `approved` and no invoice exists → draft milestone invoice → insert proposal.
-   - Roll up weekly: "Last week: $X collected, $Y outstanding, 3 receipts uncategorized."
-3. **UI** — proposals appear in StudioRoom ProactiveCards + new "Approvals" tray on Home (consolidates inbox + outreach + money).
+Why split:
+- `thrive-ai-chat` already owns the tool registry, daily caps, memory, and proactive-card pipeline. Reusing it means voice automatically inherits **every** current and future automation.
+- Keeping STT and TTS as small dedicated functions lets us cache, retry, and rate-limit each independently, and makes browser-TTS fallback trivial.
 
-## Phase 3 — Multi-Step Planner (single-prompt orchestration)
+Concrete changes:
+- **`thrive-voice-turn`**: trim to STT-only. Still validates JWT, still calls `consume_voice_seconds`, still returns `transcript` + usage. No more brain / TTS / persistence here.
+- **New `thrive-voice-tts`**: tiny function that takes `{ text, voice_id? }`, calls ElevenLabs, returns `{ audio_base64, tts_fallback }`. Same auth + CORS pattern.
+- **`src/lib/thriveVoice.ts`**:
+  - `stopAndSend()` → returns `{ transcript, usage }` only.
+  - New `synthesizeReply(text)` → calls `thrive-voice-tts`, falls back to `speakBrowser()`.
+- **`ThriveAgentFab.tsx`** `handleStopVoice`:
+  1. `stopAndSend` → transcript.
+  2. Push `🎙️ transcript` into the chat as the user message.
+  3. Call the same `sendMessage()` path text chat already uses (so tool calls, proactive cards, navigation, surface context all run).
+  4. Once the assistant reply lands, call `synthesizeReply(reply)` and play it (respect `voiceMuted`).
+  5. If a tool call also produces a deep-link or workspace open (e.g. Talent Copilot results, Quote draft), the existing client handlers fire — voice just becomes another input modality.
 
-This is the *agentic* unlock — user says one thing, Thrive plans + executes 3-7 steps.
+### 3. Wire the surface-aware automations the user called out
 
-1. **Migration** — `agent_plans` (user_id, goal, plan jsonb (DAG of tool calls), status: planning/executing/awaiting_approval/done/failed, current_step, results jsonb).
-2. **Edge fn `agent-planner`** — Gemini 2.5 Pro with the full `orch_tool_registry` as tool spec. Input: natural language goal ("Land 3 paid gigs this month" or "Close out the Adidas project"). Output: DAG of tool calls with dependencies + risk classification per step.
-3. **Edge fn `agent-executor`** — runs safe_auto steps automatically, pauses on requires_approval / locked, resumes on user accept. Streams progress via Realtime broadcast.
-4. **UI** — `ThrivePromptHero` on Home gets a "Plan & execute" mode toggle. New `/plan/:id` page shows the DAG live with per-step status and approval buttons inline.
+These already exist as tools/handlers; we just need to make sure the agent's system prompt nudges them when the input is voice:
+- *"Find me a filmmaker in Trinidad"* → `find_talent` tool → opens Match results / Talent Copilot drawer.
+- *"Draft a quote for Acme, $1,200, due Friday"* → `draft_quote` tool (already registered via `desk-agent`).
+- *"Remember my day rate is $1,500"* → `remember_memory`.
+- *"Start a call with Sarah"* → `start_video_call`.
 
----
+Add a short voice-mode hint to the system prompt when the request came from voice ("speak the result in 1–2 sentences, then let the UI handle the action").
 
-## Unified Approvals Tray (cuts across all 3 phases)
+### 4. QA pass across surfaces
 
-New `<ApprovalsHub />` on Home — single feed of pending items across:
-- Inbox triage drafts (Phase 1.1)
-- Outreach drafts (Phase 1.2)
-- Money proposals (Phase 2)
-- Planner steps (Phase 3)
+For each surface (Home, Desk, Pay, Match, Gigs, Profile):
+- Hold mic → speak a representative command → check
+  - transcript appears in chat,
+  - agent runs the right tool,
+  - spoken reply plays (ElevenLabs or browser TTS),
+  - daily-cap counters increment,
+  - no duplicate fabs / no console errors.
 
-One mental model for the user: *"Thrive did things. Approve the ones you like."*
+### Technical notes
 
----
-
-## Technical Notes
-
-- All new edge fns reuse existing patterns: `verify_jwt = false` + service-role client, CRON_SECRET auth on cron paths.
-- All new tools registered in `orch_tool_registry` so the chat agent can also invoke them on demand.
-- Risk gating consistent: drafting = `safe_auto`, sending external messages = `requires_approval`, financial movement = `locked` (manual only).
-- Realtime broadcast on `agent_proposals` already wired — new kinds inherit the ProactiveCards UX for free.
-- Daily caps already enforced on copilot via `consume_copilot_message`; planner gets its own counter (`consume_planner_run`) — Pro 5/day, Creator+ 25/day, Founder 100/day.
-
----
-
-## Order of execution
-
-1. **Phase 1.2** (Outreach) — biggest visible "Thrive did this for me" moment, ~1 day of work.
-2. **Approvals Hub** UI shell — so subsequent phases plug into one tray.
-3. **Phase 2** (Money Loop) — highest LTV impact (creators actually get paid).
-4. **Phase 3** (Planner) — the moonshot that completes "agentic OS" positioning.
-
-Approve to start with **Phase 1.2 + Approvals Hub shell**, or want to reshuffle the order?
+- Keep `consume_voice_seconds` in `thrive-voice-turn` (STT side) so the cap is enforced *before* we burn agent credits.
+- `thrive-ai-chat` already persists into the canonical Copilot thread, so we drop the duplicate insert in `thrive-voice-turn`.
+- ElevenLabs failures continue to set `tts_fallback: true` so the client uses `SpeechSynthesis`.
+- No DB migrations required.
+- Files touched: `supabase/functions/thrive-voice-turn/index.ts`, `supabase/functions/thrive-voice-tts/index.ts` (new), `src/lib/thriveVoice.ts`, `src/components/desk/ThriveAgentFab.tsx`. Possibly a small system-prompt tweak in `supabase/functions/thrive-ai-chat/index.ts` for `from_voice: true`.

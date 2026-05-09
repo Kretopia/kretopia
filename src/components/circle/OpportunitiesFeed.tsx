@@ -19,6 +19,9 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useNavigate } from "react-router-dom";
 import { DiscoveryGate, DiscoveryUpsell } from "@/components/DiscoveryGate";
+import { EmptyState } from "@/components/ui/empty-state";
+import { useAccountTone } from "@/hooks/useAccountTone";
+import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 
 interface Opportunity {
   id: string;
@@ -66,6 +69,8 @@ const SKILLS_OPTIONS = [
 export const OpportunitiesFeed = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { pick: pickTone } = useAccountTone();
+  const { pick: pickVoice } = useTrinidadVoice();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [creators, setCreators] = useState<Record<string, GigCreatorProfile>>({});
   const [loading, setLoading] = useState(true);
@@ -359,30 +364,34 @@ export const OpportunitiesFeed = () => {
         const hasFilters = activeFilter !== "all" || !!searchQuery || selectedSkill !== "all" || locationFilter !== "all" || compensationFilter !== "all";
         const clearAll = () => { setActiveFilter("all"); setSearchQuery(""); setSelectedSkill("all"); setLocationFilter("all"); setCompensationFilter("all"); };
         return (
-          <div className="text-center py-14 px-6">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-              <Briefcase className="h-8 w-8 text-primary" />
-            </div>
-            <h4 className="text-lg font-bold mb-2">
-              {hasFilters ? "Nothing here yet" : "No gigs here yet"}
-            </h4>
-            <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">
-              {hasFilters
-                ? "Nothing here yet — but opportunities are posted daily. Try widening your filters or check back tomorrow."
-                : "Be the first to post an opportunity — paid gig, barter, or collab."}
-            </p>
-            <div className="flex justify-center">
-              {hasFilters ? (
-                <Button onClick={clearAll} className="gap-2">
-                  Clear filters
-                </Button>
-              ) : (
-                <Button onClick={() => setPostDialogOpen(true)} className="gap-2">
-                  <Plus className="h-4 w-4" /> Post a Gig
-                </Button>
-              )}
-            </div>
-          </div>
+          <EmptyState
+            icon={hasFilters ? Search : Briefcase}
+            eyebrow={hasFilters
+              ? pickTone(pickVoice("No matches", "Nuttin' matchin'"), "No matches")
+              : pickTone(pickVoice("Quiet feed", "Ting quiet"), "Empty marketplace")}
+            title={hasFilters
+              ? pickTone(pickVoice("Nothing here yet", "Nuttin' here yet"), "No gigs match these filters")
+              : pickTone(pickVoice("No gigs here yet", "No gigs droppin' yet"), "No active briefs yet")}
+            description={hasFilters
+              ? pickTone(
+                  pickVoice(
+                    "New gigs are posted daily — try widening your filters or check back tomorrow.",
+                    "Fresh gigs droppin' daily — loosen the filters or check back tomorrow.",
+                  ),
+                  "Try a wider radius or clear filters to see all open briefs.",
+                )
+              : pickTone(
+                  pickVoice(
+                    "Be the first to post — paid gig, barter, or collab.",
+                    "Be the first to post — paid wuk, barter, or collab.",
+                  ),
+                  "Post your first brief to start receiving applications.",
+                )}
+            accent="lime"
+            action={hasFilters
+              ? { label: pickVoice("Clear filters", "Clear de filters"), icon: X, onClick: clearAll }
+              : { label: pickTone(pickVoice("Post a Gig", "Post a wuk"), "Post a brief"), icon: Plus, onClick: () => setPostDialogOpen(true) }}
+          />
         );
       })()}
 

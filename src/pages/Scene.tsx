@@ -19,10 +19,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { PageTransition } from "@/components/PageTransition";
 import { LiveActivityTicker } from "@/components/scene/LiveActivityTicker";
 import { useTranslation } from "react-i18next";
+import { useAccountTone } from "@/hooks/useAccountTone";
+import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 
 const Scene = () => {
   const location = useLocation();
   const { t } = useTranslation();
+  const { pick: pickTone } = useAccountTone();
+  const { pick: pickVoice } = useTrinidadVoice();
   const isEventsRoute = location.pathname === "/events";
   const searchParams = new URLSearchParams(location.search);
   const tabParam = searchParams.get("tab");
@@ -91,8 +95,18 @@ const Scene = () => {
                 <Users className="h-4.5 w-4.5 text-energy" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">{t("scene.findMatch")}</p>
-                <p className="text-[11px] text-muted-foreground">{t("scene.findMatchDesc")}</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {pickTone(
+                    pickVoice(t("scene.findMatch"), "Link up with creatives"),
+                    "Find talent for your brief",
+                  )}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  {pickTone(
+                    pickVoice(t("scene.findMatchDesc"), "See who movin' near you"),
+                    "Browse vetted creatives by skill, location, and rate",
+                  )}
+                </p>
               </div>
               <ArrowRight className="h-4 w-4 text-energy opacity-60 group-hover:opacity-100 transition-opacity shrink-0" />
             </Link>

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, ArrowUp, Loader2, Sparkles } from "lucide-react";
+import { Mic, ArrowUp, Loader2, Sparkles, ListChecks } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,6 +38,7 @@ export function ThrivePromptHero() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [planMode, setPlanMode] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -58,6 +59,22 @@ export function ThrivePromptHero() {
     const prompt = raw.trim();
     if (!prompt || busy) return;
     if (!user) { navigate(`/auth?next=/?prompt=${encodeURIComponent(prompt)}`); return; }
+
+    // Plan mode: skip intent routing — hand the goal straight to the planner via the Copilot drawer.
+    if (planMode) {
+      window.dispatchEvent(
+        new CustomEvent("thrive-copilot:open", { detail: { prompt, mode: "plan" } }),
+      );
+      void (supabase as any).from("thrive_intent_logs").insert({
+        user_id: user.id,
+        prompt,
+        intent: "plan",
+        routed_to: "copilot_planner",
+      });
+      setText("");
+      return;
+    }
+
     setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke<RouteResponse>("route-thrive-intent", {
@@ -216,7 +233,23 @@ export function ThrivePromptHero() {
           </button>
         </form>
 
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setPlanMode((v) => !v)}
+            aria-pressed={planMode}
+            title="Plan & execute mode — Thrive drafts an ordered plan you approve before anything runs."
+            className={cn(
+              "inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors",
+              planMode
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : "bg-foreground/5 hover:bg-foreground/10 text-foreground/75 border-transparent",
+            )}
+          >
+            <ListChecks className="h-3 w-3" />
+            {planMode ? "Plan mode: on" : "Plan mode"}
+          </button>
+          <span className="h-4 w-px bg-border/70 mx-0.5" aria-hidden />
           {SUGGESTIONS.map((s) => (
             <button
               key={s}
@@ -229,6 +262,12 @@ export function ThrivePromptHero() {
             </button>
           ))}
         </div>
+
+        {planMode && (
+          <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+            <span className="font-semibold text-foreground/80">Plan & execute:</span> Thrive will break your goal into ordered steps and wait for your approval before running them.
+          </p>
+        )}
 
         <AnimatePresence>
           {busy && (

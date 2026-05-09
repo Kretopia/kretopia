@@ -29,6 +29,11 @@ interface ScoutPrefs {
   exclude_keywords: string[] | null;
   remote_only: boolean;
   min_fit_score: number;
+  job_types: string[] | null;
+  employment_types: string[] | null;
+  locations: string[] | null;
+  travel_ok: boolean;
+  instructions: string | null;
 }
 
 // Curated, scrapable, English-speaking creative gig sources

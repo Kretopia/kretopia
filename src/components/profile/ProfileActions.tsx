@@ -1,6 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Share2, Edit, Download, IdCard, UserPlus } from "lucide-react";
+import { Share2, Edit, Download, IdCard, UserPlus, MoreHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { useAccountTone } from "@/hooks/useAccountTone";
 
 interface ProfileActionsProps {
   onShare: () => void;
@@ -10,38 +14,71 @@ interface ProfileActionsProps {
   isOwner: boolean;
 }
 
+/**
+ * Consolidated profile action row.
+ *
+ * Owner sees a single primary action (Edit) + Share, with everything else in
+ * an overflow menu so the row never overflows. Labels adapt to the user's
+ * account tone — creatives see warm "Edit profile" / "Download EPK", while
+ * brand/company accounts see "Edit brand page" / "Download brand one-pager".
+ */
 export const ProfileActions = ({ onShare, onEdit, onDownload, onCreatorCard, isOwner }: ProfileActionsProps) => {
   const navigate = useNavigate();
+  const { isBusiness, copy } = useAccountTone();
+
+  const editLabel = isBusiness ? "Edit brand page" : "Edit profile";
+  const inviteLabel = isBusiness ? "Invite teammates" : "Invite to your circle";
+  const inviteRoute = isBusiness ? "/team" : "/creative-circle";
+
+  if (!isOwner) {
+    return (
+      <div className="flex gap-2 flex-wrap">
+        <Button onClick={onShare} variant="outline" size="sm">
+          <Share2 className="h-4 w-4 mr-2" />
+          Share
+        </Button>
+        <Button onClick={onDownload} variant="outline" size="sm">
+          <Download className="h-4 w-4 mr-2" />
+          {copy.download}
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex gap-2 flex-wrap">
-      {isOwner && (
-        <Button onClick={onEdit} variant="outline" size="sm">
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Profile
-        </Button>
-      )}
+    <div className="flex gap-2 flex-wrap items-center">
+      <Button onClick={onEdit} size="sm">
+        <Edit className="h-4 w-4 mr-2" />
+        {editLabel}
+      </Button>
       <Button onClick={onShare} variant="outline" size="sm">
         <Share2 className="h-4 w-4 mr-2" />
         Share
       </Button>
-      {isOwner && (
-        <Button
-          onClick={() => navigate("/creative-circle")}
-          variant="outline"
-          size="sm"
-          className="border-primary/20 text-primary hover:bg-primary/5"
-        >
-          <UserPlus className="h-4 w-4 mr-2" />
-          Invite
-        </Button>
-      )}
-      {isOwner && onCreatorCard && (
-        <Button onClick={onCreatorCard} variant="outline" size="sm">
-          <IdCard className="h-4 w-4 mr-2" />
-          Creator Card
-        </Button>
-      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" aria-label="More profile actions">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuItem onClick={onDownload}>
+            <Download className="h-4 w-4 mr-2" />
+            {copy.download}
+          </DropdownMenuItem>
+          {!isBusiness && onCreatorCard && (
+            <DropdownMenuItem onClick={onCreatorCard}>
+              <IdCard className="h-4 w-4 mr-2" />
+              Creator Card
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => navigate(inviteRoute)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            {inviteLabel}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };

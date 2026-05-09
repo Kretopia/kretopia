@@ -150,6 +150,9 @@ export async function stopAndSend(opts: {
     if (data?.error === "no_speech_detected") {
       return { ok: false, code: "no_speech", message: "Didn't catch that — try speaking clearly into the mic." };
     }
+    if (data?.error === "voice_provider_unavailable") {
+      return { ok: false, code: "voice_provider_unavailable", message: data.detail || "Thrive Voice is temporarily unavailable." };
+    }
     return {
       ok: false,
       code: data?.error || "unknown",

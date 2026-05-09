@@ -8,6 +8,7 @@ import { QuickPostModal } from "@/components/QuickPostModal";
 import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlaceholder";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import heroCreators from "@/assets/hero-creators.jpg";
+import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 
 interface Suggestion {
   type: "creator" | "credit" | "gig";

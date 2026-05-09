@@ -61,6 +61,7 @@ export const HeroSection = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
+  const { pick: pickVoice, enabled: ttVoice } = useTrinidadVoice();
 
   // Fetch all dashboard data
   useEffect(() => {

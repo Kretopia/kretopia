@@ -468,7 +468,8 @@ export const ThriveAgentFab = () => {
       {!fabHidden && (
         <button
           onClick={() => setOpen(true)}
-          aria-label="Open Thrive Copilot"
+          aria-label="Open Thrive"
+          title="Thrive — your assistant"
           className={cn(
             "fixed right-4 z-40 h-14 w-14 rounded-full shadow-xl",
             "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground",
@@ -489,7 +490,7 @@ export const ThriveAgentFab = () => {
             <div className="flex items-center justify-between gap-3">
               <SheetTitle className="flex items-center gap-2 text-base">
                 <Sparkles className="h-4 w-4 text-primary" />
-                Thrive Copilot
+                Thrive
               </SheetTitle>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
@@ -528,7 +529,7 @@ export const ThriveAgentFab = () => {
             {messages.length === 0 && historyLoaded && !sending && (
               <div className="space-y-3">
                 <div className="text-sm text-muted-foreground">
-                  {firstName ? `Hey ${firstName} — ` : "Hey — "}I'm your Thrive Copilot.
+                  {firstName ? `Hey ${firstName} — ` : "Hey — "}I'm Thrive.
                   I know your profile, projects, money and events, and I follow you
                   across the platform. What's up?
                 </div>

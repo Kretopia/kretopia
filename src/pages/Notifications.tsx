@@ -32,19 +32,19 @@ const Notifications = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <SEO title="Notifications - ThriveIN" description="View all your notifications" />
+      <SEO title="Inbox - ThriveIN" description="Notifications and approvals in one place" />
       <div className="container mx-auto max-w-2xl px-4 py-6 space-y-6">
         <div className="flex items-center justify-between border-b-2 border-primary/20 pb-4">
           <div className="space-y-1">
             <p className="brand-eyebrow">Your inbox</p>
             <h1 className="text-3xl font-black tracking-[-0.03em] flex items-center gap-3">
               <Bell className="h-7 w-7 text-primary" />
-              Notifications
+              Inbox
               {unreadCount > 0 && (
                 <Badge variant="destructive" className="text-xs">{unreadCount} unread</Badge>
               )}
             </h1>
-            <p className="text-sm text-muted-foreground">Stay up to date with your activity</p>
+            <p className="text-sm text-muted-foreground">Notifications and Thrive approvals — all in one place.</p>
           </div>
           {unreadCount > 0 && (
             <Button variant="outline" size="sm" onClick={markAllAsRead} className="gap-1.5">

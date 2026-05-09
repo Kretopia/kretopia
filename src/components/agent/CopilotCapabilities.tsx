@@ -101,10 +101,10 @@ export const CopilotCapabilities = ({ open, onOpenChange, onPick }: Props) => {
         <SheetHeader className="px-5 pt-5 pb-3 border-b border-border shrink-0 text-left">
           <SheetTitle className="flex items-center gap-2 text-base">
             <Sparkles className="h-4 w-4 text-primary" />
-            What can Copilot do?
+            What can Thrive do?
           </SheetTitle>
           <SheetDescription className="text-xs">
-            Tap any chip to run it now. Copilot already knows your projects, money, profile and events.
+            Tap any chip to run it now. Thrive already knows your projects, money, profile and events.
           </SheetDescription>
         </SheetHeader>
 

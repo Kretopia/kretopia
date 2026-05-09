@@ -69,6 +69,8 @@ const SKILLS_OPTIONS = [
 export const OpportunitiesFeed = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { pick: pickTone } = useAccountTone();
+  const { pick: pickVoice } = useTrinidadVoice();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [creators, setCreators] = useState<Record<string, GigCreatorProfile>>({});
   const [loading, setLoading] = useState(true);

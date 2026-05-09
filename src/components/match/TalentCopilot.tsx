@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
 import type { OrchAction } from "@/lib/agentOrchestrator";
+import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
 
 interface TalentMatch {
   user_id: string;
@@ -24,11 +25,20 @@ interface TalentMatch {
   headline?: string;
 }
 
-const SAMPLE_BRIEFS = [
+const TT_BRIEFS = [
   "Need a videographer in Trinidad for a 1-day brand shoot, budget under $500 USD.",
   "Looking for a soca vocalist for a hook on a track, fast turnaround, paid + credit.",
   "Photographer in Port of Spain for an EPK headshot session next weekend.",
 ];
+
+const INTL_BRIEFS = [
+  "Need a videographer for a 1-day brand shoot, budget under $500 USD.",
+  "Looking for a vocalist for a hook on a track, fast turnaround, paid + credit.",
+  "Photographer for an EPK headshot session next weekend.",
+];
+
+const TT_PLACEHOLDER = "e.g. Videographer in Trinidad for a 1-day brand shoot, budget under $500";
+const INTL_PLACEHOLDER = "e.g. Videographer for a 1-day brand shoot, budget under $500";
 
 /**
  * Talent Copilot — inline on Match → Find tab.
@@ -46,6 +56,10 @@ export const TalentCopilot = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [drafting, setDrafting] = useState(false);
   const [proposedActions, setProposedActions] = useState<OrchAction[]>([]);
+  const { geo } = useCurrentGeoCountry();
+  const isTT = geo?.country === "Trinidad and Tobago" || geo?.country === "Trinidad" || geo?.city === "Port of Spain";
+  const SAMPLE_BRIEFS = isTT ? TT_BRIEFS : INTL_BRIEFS;
+  const placeholder = isTT ? TT_PLACEHOLDER : INTL_PLACEHOLDER;
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => {
@@ -162,7 +176,7 @@ export const TalentCopilot = () => {
         <Textarea
           value={brief}
           onChange={(e) => setBrief(e.target.value)}
-          placeholder="e.g. Videographer in Trinidad for a 1-day brand shoot, budget under $500"
+          placeholder={placeholder}
           rows={3}
           className="resize-none mb-3 bg-background"
         />

@@ -499,7 +499,7 @@ export const ThriveAgentFab = () => {
     setVoiceBusy(true);
     try {
       const result = await stopAndSend({ surface, surfaceContext });
-      if (!result.ok) {
+      if (result.ok === false) {
         if (result.code === "voice_daily_limit") {
           // Push the transcript so user sees what was heard, then upgrade toast
           if (result.transcript) {

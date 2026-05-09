@@ -371,7 +371,13 @@ serve(async (req) => {
       if (!g.title || !g.source_url) return false;
       if ((g.fit_score ?? 0) < prefs.min_fit_score) return false;
       if (isStale(g.posted_age || "")) return false;
-      const blob = `${g.title} ${g.description || ""} ${g.posted_age || ""}`.toLowerCase();
+      // URL must be a deep-link to a specific posting (not a search/category page)
+      const apply = g.apply_url || g.source_url;
+      if (isGenericListingUrl(apply) && isGenericListingUrl(g.source_url)) return false;
+      // Require a real description so cards aren't empty shells
+      const desc = (g.description || "").trim();
+      if (desc.length < 40 && !g.compensation && !g.company) return false;
+      const blob = `${g.title} ${desc} ${g.posted_age || ""}`.toLowerCase();
       if (/no longer accepting|expired|position closed|1 year ago|2 years ago|months ago/.test(blob)) return false;
       if ((prefs.exclude_keywords || []).some((kw) => kw && blob.includes(kw.toLowerCase()))) return false;
       if (g.source === "linkedin") {

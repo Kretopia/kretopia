@@ -11,6 +11,8 @@ export interface VoiceTurnResult {
   transcript: string;
   reply: string;
   audioUrl: string | null;
+  /** When true, the server couldn't synthesize audio — caller should use browser TTS. */
+  ttsFallback?: boolean;
   usage?: { used: number; cap: number; tier: string };
 }
 
@@ -175,8 +177,31 @@ export async function stopAndSend(opts: {
     transcript: data.transcript,
     reply: data.reply,
     audioUrl,
+    ttsFallback: !!data.tts_fallback,
     usage: data.usage,
   };
+}
+
+/** Speak via browser SpeechSynthesis — fallback when ElevenLabs is unavailable. */
+function speakBrowser(text: string) {
+  try {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.02;
+    u.pitch = 1.0;
+    u.volume = 1.0;
+    // Pick a warm English voice if available.
+    const voices = window.speechSynthesis.getVoices();
+    const preferred =
+      voices.find((v) => /en[-_]US/i.test(v.lang) && /female|samantha|google.*us/i.test(v.name)) ||
+      voices.find((v) => /en[-_](US|GB)/i.test(v.lang)) ||
+      voices[0];
+    if (preferred) u.voice = preferred;
+    window.speechSynthesis.speak(u);
+  } catch (e) {
+    console.warn("browser TTS failed", e);
+  }
 }
 
 export function playAudio(url: string): HTMLAudioElement {
@@ -187,9 +212,24 @@ export function playAudio(url: string): HTMLAudioElement {
   return audio;
 }
 
+/** Speak the reply — uses ElevenLabs audio if present, else browser TTS. */
+export function playReply(result: VoiceTurnResult) {
+  stopPlayback();
+  if (result.audioUrl) {
+    playAudio(result.audioUrl);
+  } else {
+    speakBrowser(result.reply);
+  }
+}
+
 export function stopPlayback() {
   try {
     currentAudio?.pause();
     currentAudio = null;
+  } catch { /* ignore */ }
+  try {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
   } catch { /* ignore */ }
 }

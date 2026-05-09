@@ -7,6 +7,7 @@ import {
   stopAndSend,
   cancelRecording,
   playAudio,
+  playReply,
   stopPlayback,
 } from "@/lib/thriveVoice";
 import ReactMarkdown from "react-markdown";
@@ -530,13 +531,23 @@ export const ThriveAgentFab = () => {
         { role: "user", content: `🎙️ ${result.transcript}` },
         { role: "assistant", content: result.reply },
       ]);
-      // Play TTS unless muted
-      if (result.audioUrl && !voiceMuted) {
-        const a = playAudio(result.audioUrl);
-        audioElRef.current = a;
-        setSpeaking(true);
-        a.onended = () => setSpeaking(false);
-        a.onerror = () => setSpeaking(false);
+      // Play TTS unless muted — uses ElevenLabs audio if present, else browser SpeechSynthesis.
+      if (!voiceMuted) {
+        if (result.audioUrl) {
+          const a = playAudio(result.audioUrl);
+          audioElRef.current = a;
+          setSpeaking(true);
+          a.onended = () => setSpeaking(false);
+          a.onerror = () => setSpeaking(false);
+        } else {
+          // Browser TTS fallback
+          playReply(result);
+          setSpeaking(true);
+          // SpeechSynthesis doesn't expose a clean "ended" hook here, so estimate
+          // based on word count (~3 words/sec).
+          const ms = Math.max(1500, (result.reply.split(/\s+/).length / 3) * 1000);
+          window.setTimeout(() => setSpeaking(false), ms);
+        }
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Voice turn failed");

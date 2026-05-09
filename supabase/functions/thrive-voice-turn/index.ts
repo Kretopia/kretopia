@@ -1,5 +1,6 @@
 // Thrive Voice — push-to-talk turn handler.
-// Pipeline: ElevenLabs STT -> Lovable AI brain -> ElevenLabs TTS.
+// Pipeline: Gemini multimodal STT (Lovable AI) -> Gemini brain -> ElevenLabs TTS
+// (with graceful fallback to browser SpeechSynthesis when ElevenLabs is unavailable).
 // Persists the user transcript + assistant reply into the canonical Copilot
 // thread so voice and text history stay merged across surfaces.
 //
@@ -18,13 +19,13 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY")!;
+const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY") || "";
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 
 // Default voice — warm, professional. (Sarah)
 const DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL";
 const TTS_MODEL = "eleven_turbo_v2_5";
-const STT_MODEL = "scribe_v2";
+const STT_MODEL = "google/gemini-2.5-flash"; // multimodal audio in
 const BRAIN_MODEL = "google/gemini-2.5-flash";
 
 interface ReqBody {
@@ -80,45 +81,55 @@ Deno.serve(async (req) => {
 
     const mime = body.mime_type || "audio/webm";
 
-    // --- 1) STT via ElevenLabs ---
-    const sttForm = new FormData();
-    sttForm.append("file", new Blob([audioBytes], { type: mime }), "voice.webm");
-    sttForm.append("model_id", STT_MODEL);
-    sttForm.append("language_code", "eng");
-
-    const sttResp = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+    // --- 1) STT via Gemini multimodal (Lovable AI Gateway) ---
+    // Gemini accepts inline base64 audio. We ask it to transcribe verbatim.
+    const audioB64In = body.audio_base64.replace(/^data:[^;]+;base64,/, "");
+    const sttResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: { "xi-api-key": ELEVENLABS_API_KEY },
-      body: sttForm,
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: STT_MODEL,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a strict speech-to-text engine. Output ONLY the verbatim transcript of the audio. No commentary. If the audio is silent or unintelligible, output exactly: <empty>",
+          },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Transcribe this audio verbatim." },
+              {
+                type: "input_audio",
+                input_audio: { data: audioB64In, format: mime.includes("wav") ? "wav" : "webm" },
+              },
+            ],
+          },
+        ],
+        temperature: 0,
+        max_tokens: 500,
+      }),
     });
+
     if (!sttResp.ok) {
       const err = await sttResp.text();
       console.error("STT failed", sttResp.status, err);
-      const isAbuse = /detected_unusual_activity|Free Tier/i.test(err);
-      return jsonResponse(
-        {
-          error: isAbuse ? "voice_provider_unavailable" : "stt_failed",
-          detail: isAbuse
-            ? "Thrive Voice is temporarily unavailable. Our voice provider needs an upgrade — we're on it."
-            : err,
-        },
-        200, // 200 so the client toast shows the friendly message instead of a generic 502
-      );
+      if (sttResp.status === 429) return jsonResponse({ error: "rate_limited" }, 429);
+      if (sttResp.status === 402) return jsonResponse({ error: "ai_credits_exhausted" }, 402);
+      return jsonResponse({ error: "stt_failed", detail: err }, 200);
     }
     const sttJson = await sttResp.json();
-    const transcript: string = (sttJson?.text || "").trim();
+    const rawTranscript: string = (sttJson?.choices?.[0]?.message?.content || "").trim();
+    const transcript = rawTranscript.replace(/^<empty>$/i, "").trim();
     if (!transcript) {
       return jsonResponse({ error: "no_speech_detected" }, 400);
     }
 
     // Estimate seconds from audio bytes (rough: webm/opus ~ 16kbps avg)
-    let seconds = 0;
-    if (Array.isArray(sttJson?.words) && sttJson.words.length) {
-      const last = sttJson.words[sttJson.words.length - 1];
-      seconds = Math.max(1, Math.ceil(Number(last?.end || 0)));
-    } else {
-      seconds = Math.max(1, Math.ceil(audioBytes.length / 2000));
-    }
+    const seconds = Math.max(1, Math.ceil(audioBytes.length / 2000));
 
     // --- 2) Tier gate ---
     const { data: gate, error: gateErr } = await admin.rpc("consume_voice_seconds", {
@@ -223,43 +234,55 @@ Surface: ${surface}. ${profile?.location_city ? `User is in ${profile.location_c
       (brainJson?.choices?.[0]?.message?.content || "").trim() ||
       "Sorry — I didn't catch a clear answer for that. Try again?";
 
-    // --- 4) TTS via ElevenLabs ---
+    // --- 4) TTS via ElevenLabs (graceful fallback to browser SpeechSynthesis) ---
     const voiceId = body.voice_id || DEFAULT_VOICE_ID;
-    const ttsResp = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
-      {
-        method: "POST",
-        headers: {
-          "xi-api-key": ELEVENLABS_API_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: reply,
-          model_id: TTS_MODEL,
-          voice_settings: {
-            stability: 0.45,
-            similarity_boost: 0.75,
-            style: 0.35,
-            use_speaker_boost: true,
-            speed: 1.0,
+    let audioB64: string | null = null;
+    let ttsFallback = false;
+    let ttsErrorMsg: string | null = null;
+
+    if (!ELEVENLABS_API_KEY) {
+      ttsFallback = true;
+      ttsErrorMsg = "elevenlabs_not_configured";
+    } else {
+      try {
+        const ttsResp = await fetch(
+          `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
+          {
+            method: "POST",
+            headers: {
+              "xi-api-key": ELEVENLABS_API_KEY,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              text: reply,
+              model_id: TTS_MODEL,
+              voice_settings: {
+                stability: 0.45,
+                similarity_boost: 0.75,
+                style: 0.35,
+                use_speaker_boost: true,
+                speed: 1.0,
+              },
+            }),
           },
-        }),
-      },
-    );
-    if (!ttsResp.ok) {
-      const err = await ttsResp.text();
-      console.error("TTS failed", ttsResp.status, err);
-      return jsonResponse({
-        ok: true,
-        transcript,
-        reply,
-        audio_base64: null,
-        tts_error: err,
-        usage: gate,
-      });
+        );
+        if (!ttsResp.ok) {
+          const err = await ttsResp.text();
+          console.error("TTS failed", ttsResp.status, err);
+          ttsFallback = true;
+          ttsErrorMsg = /detected_unusual_activity|Free Tier/i.test(err)
+            ? "voice_provider_free_tier_blocked"
+            : `tts_${ttsResp.status}`;
+        } else {
+          const audioBuf = new Uint8Array(await ttsResp.arrayBuffer());
+          audioB64 = b64encode(audioBuf);
+        }
+      } catch (e) {
+        console.error("TTS exception", e);
+        ttsFallback = true;
+        ttsErrorMsg = "tts_network_error";
+      }
     }
-    const audioBuf = new Uint8Array(await ttsResp.arrayBuffer());
-    const audioB64 = b64encode(audioBuf);
 
     // --- 5) Persist turns (fire-and-forget) ---
     if (convId) {
@@ -282,7 +305,9 @@ Surface: ${surface}. ${profile?.location_city ? `User is in ${profile.location_c
       transcript,
       reply,
       audio_base64: audioB64,
-      audio_mime: "audio/mpeg",
+      audio_mime: audioB64 ? "audio/mpeg" : null,
+      tts_fallback: ttsFallback,
+      tts_error: ttsErrorMsg,
       conversation_id: convId,
       usage: gate,
     });

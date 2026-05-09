@@ -513,16 +513,16 @@ export const UnifiedHome = () => {
                     </div>
                   </div>
 
-                  {/* Chat overlay */}
-                  <div className="absolute bottom-4 left-3 right-3 sm:left-5 sm:right-auto sm:max-w-[240px] animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                  {/* Chat overlay — Thrive doing the work */}
+                  <div className="absolute bottom-4 left-3 right-3 sm:left-5 sm:right-auto sm:max-w-[260px] animate-fade-in" style={{ animationDelay: '0.2s' }}>
                     <div className="rounded-2xl rounded-bl-sm border border-primary/40 bg-card/95 backdrop-blur-md p-3 shadow-xl">
                       <div className="flex items-center gap-2 mb-1.5">
                         <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
                           <MessageSquare className="h-3 w-3 text-primary" />
                         </div>
-                        <p className="text-[10px] font-bold text-foreground">Maya · Photographer</p>
+                        <p className="text-[10px] font-bold text-foreground">Thrive · drafted just now</p>
                       </div>
-                      <p className="text-xs text-foreground/90 leading-snug">"Your sound is exactly what this series needs. Coffee tomorrow?"</p>
+                      <p className="text-xs text-foreground/90 leading-snug">"Maya is a 94% match. I drafted the intro and a $1,200 quote — open to send?"</p>
                     </div>
                   </div>
                 </div>

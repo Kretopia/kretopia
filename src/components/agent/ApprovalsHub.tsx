@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Check, X, Mail, Sparkles, ChevronRight } from "lucide-react";
+import { Loader2, Check, X, Mail, Inbox, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { AgentApprovalCard } from "./AgentApprovalCard";
 import { usePendingAgentActions } from "@/hooks/usePendingAgentActions";
+import { draftTrigger, riskPill } from "@/lib/agentRiskUI";
+import { cn } from "@/lib/utils";
 
 interface OutreachDraft {
   id: string;
@@ -18,6 +20,7 @@ interface OutreachDraft {
   recipient_name: string | null;
   brand_name: string | null;
   status: string;
+  meta: Record<string, unknown> | null;
 }
 
 /**

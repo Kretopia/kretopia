@@ -1,9 +1,10 @@
 import { SEO } from "@/components/SEO";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useAccountTone } from "@/hooks/useAccountTone";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Check, CheckCheck, Trash2, ExternalLink, MessageCircle, Loader2 } from "lucide-react";
+import { Bell, Check, CheckCheck, Trash2, ExternalLink, MessageCircle, Loader2, Sparkles, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 

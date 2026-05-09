@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Sparkles, Send, Loader2, Trash2, HelpCircle } from "lucide-react";
+import { Sparkles, Send, Loader2, Trash2, HelpCircle, Mic, Square, Volume2, VolumeX, Crown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  startRecording,
+  stopAndSend,
+  cancelRecording,
+  playAudio,
+  stopPlayback,
+} from "@/lib/thriveVoice";
 import ReactMarkdown from "react-markdown";
 import {
   Sheet,

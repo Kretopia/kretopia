@@ -478,7 +478,7 @@ export const UnifiedHome = () => {
                       </motion.span>
                     </AnimatePresence>
                   </span>{" "}
-                  build verified credits, connect with collaborators, and get paid.
+                  claim verified credits, match with collaborators, run the project, and get paid — all in one app.
                 </p>
               </div>
 

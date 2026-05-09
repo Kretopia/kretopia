@@ -13476,10 +13476,13 @@ export type Database = {
           deadline: string | null
           dedupe_key: string
           description: string | null
+          details_fetched_at: string | null
           expires_at: string
           fit_reason: string | null
           fit_score: number
+          full_description: string | null
           id: string
+          image_url: string | null
           location: string | null
           posted_at: string | null
           raw: Json | null
@@ -13501,10 +13504,13 @@ export type Database = {
           deadline?: string | null
           dedupe_key: string
           description?: string | null
+          details_fetched_at?: string | null
           expires_at?: string
           fit_reason?: string | null
           fit_score?: number
+          full_description?: string | null
           id?: string
+          image_url?: string | null
           location?: string | null
           posted_at?: string | null
           raw?: Json | null
@@ -13526,10 +13532,13 @@ export type Database = {
           deadline?: string | null
           dedupe_key?: string
           description?: string | null
+          details_fetched_at?: string | null
           expires_at?: string
           fit_reason?: string | null
           fit_score?: number
+          full_description?: string | null
           id?: string
+          image_url?: string | null
           location?: string | null
           posted_at?: string | null
           raw?: Json | null

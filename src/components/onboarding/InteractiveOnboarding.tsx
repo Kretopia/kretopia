@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { 
-  X, ArrowRight, ArrowLeft, Sparkles, User, 
-  Users, Briefcase, MessageCircle, CheckCircle2
+import {
+  X, ArrowRight, ArrowLeft, Sparkles, User,
+  Users, Briefcase, MessageCircle, CheckCircle2, Palette, Building2,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";

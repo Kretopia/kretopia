@@ -347,6 +347,7 @@ serve(async (req) => {
     let prefs: ScoutPrefs = prefsRow ?? {
       sources: ["web", "linkedin", "instagram", "ats"],
       extra_keywords: null, exclude_keywords: null, remote_only: false, min_fit_score: 60,
+      job_types: null, employment_types: null, locations: null, travel_ok: false, instructions: null,
     } as ScoutPrefs;
     if (!prefsRow) {
       await supabase.from("scout_preferences").insert({ user_id: userId });

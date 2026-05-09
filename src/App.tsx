@@ -78,6 +78,7 @@ const Claim = lazy(() => import("./pages/Claim"));
 const Search = lazy(() => import("./pages/Search"));
 const NearbyCreators = lazy(() => import("./pages/NearbyCreators"));
 const NotificationsPage = lazy(() => import("./pages/Notifications"));
+const InboxPage = lazy(() => import("./pages/Inbox"));
 const Intel = lazy(() => import("./pages/Intel"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 
@@ -443,6 +444,7 @@ const AppContent = () => {
             <Route path="/search" element={<Search />} />
             <Route path="/production" element={<ProductionPage />} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+            <Route path="/inbox" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
             <Route path="/intel" element={<ProtectedRoute><Intel /></ProtectedRoute>} />
             
             {/* Legacy redirects — consolidated */}

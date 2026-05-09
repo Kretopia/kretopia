@@ -17,6 +17,7 @@ import {
 import { VibeHeader } from "./VibeHeader";
 import { StudioPulseFeed } from "./StudioPulseFeed";
 import { NextStepCard } from "./NextStepCard";
+import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import { ProactiveCards } from "./ProactiveCards";
 import { BriefSection } from "./BriefSection";
 import { WorkSection } from "./WorkSection";
@@ -342,6 +343,15 @@ export const StudioRoom = ({
       {/* Mobile: original single-scroll order */}
       <div className="lg:hidden">
         {RoomChatButton}
+        {tasks.length === 0 && (
+          <FirstTimeHint
+            storageKey={`desk.studio-intro:${project.id}`}
+            title="This is your Studio"
+            description="Add the first task, paste a brief, or @mention a collaborator. Thrive will help you turn it into a plan."
+            tone="energy"
+            className="mb-3"
+          />
+        )}
         {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
         {project.workspace_type === "podcast" && (
           <PodcastStudioSection project={project} currentUserId={currentUserId} />

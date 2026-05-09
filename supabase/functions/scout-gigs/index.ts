@@ -409,7 +409,7 @@ serve(async (req) => {
         description: g.description || null,
         compensation: g.compensation || null,
         contact_email: g.contact_email || null,
-        apply_url: g.apply_url || g.source_url,
+        apply_url: !isGenericListingUrl(g.apply_url || "") ? g.apply_url : (!isGenericListingUrl(g.source_url) ? g.source_url : (g.apply_url || g.source_url)),
         skills: g.skills || null,
         fit_score: Math.round(g.fit_score),
         fit_reason: g.fit_reason || null,

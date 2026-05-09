@@ -61,18 +61,18 @@ export function DesktopCopilotRail() {
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
   });
+  const [fullscreen, setFullscreen] = useState<boolean>(() => {
+    try { return localStorage.getItem(FULLSCREEN_KEY) === "1"; } catch { return false; }
+  });
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Visibility logic
-  const enabledByPrefix = RAIL_ENABLED_PREFIXES.some(
-    (p) => p === "/" ? pathname === "/" || pathname === "/index" : pathname.startsWith(p),
-  );
+  // Visibility: show on every authed route except a small disabled list.
   const disabledByPrefix = RAIL_DISABLED_PREFIXES.some((p) => pathname.startsWith(p));
-  const visible = !!user && enabledByPrefix && !disabledByPrefix;
+  const visible = !!user && !disabledByPrefix;
 
   // Load history once on mount when visible
   useEffect(() => {

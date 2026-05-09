@@ -124,7 +124,18 @@ async function firecrawlSearch(query: string, key: string) {
     : Array.isArray(j.data?.web) ? j.data.web
     : Array.isArray(j.web) ? j.web
     : [];
-  return arr as Array<{ url: string; title?: string; markdown?: string; description?: string }>;
+  return arr.map((it: any) => {
+    const meta = it.metadata || {};
+    const md = it.markdown || "";
+    const mdImg = md.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+\.(?:jpg|jpeg|png|webp|gif))/i);
+    return {
+      url: it.url,
+      title: it.title,
+      markdown: md,
+      description: it.description,
+      image_url: meta.ogImage || meta["og:image"] || meta.image || meta.twitterImage || (mdImg ? mdImg[1] : null),
+    };
+  }) as Array<{ url: string; title?: string; markdown?: string; description?: string; image_url?: string | null }>;
 }
 
 async function extractAndScore(

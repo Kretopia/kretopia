@@ -11,6 +11,8 @@ export interface VoiceTurnResult {
   transcript: string;
   reply: string;
   audioUrl: string | null;
+  /** When true, the server couldn't synthesize audio — caller should use browser TTS. */
+  ttsFallback?: boolean;
   usage?: { used: number; cap: number; tier: string };
 }
 

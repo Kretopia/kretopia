@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { 
-  X, ArrowRight, ArrowLeft, Sparkles, User, 
-  Users, Briefcase, MessageCircle, CheckCircle2
+import {
+  X, ArrowRight, ArrowLeft, Sparkles, User,
+  Users, Briefcase, MessageCircle, CheckCircle2, Palette, Building2,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,15 @@ interface OnboardingStep {
 }
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
+  {
+    id: "audience",
+    title: "Who's using ThriveIN?",
+    description: "We'll tune the language and what shows up first. You can switch anytime in Settings.",
+    icon: <Sparkles className="h-6 w-6" />,
+    route: "/circle",
+    position: "center",
+    action: "Continue",
+  },
   {
     id: "welcome",
     title: "Welcome to ThriveIN",
@@ -91,8 +100,26 @@ export function InteractiveOnboarding() {
   const [isVisible, setIsVisible] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
+  const [audience, setAudience] = useState<"creative" | "business" | null>(null);
+  const [savingAudience, setSavingAudience] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const chooseAudience = async (choice: "creative" | "business") => {
+    setAudience(choice);
+    if (!userId) return;
+    setSavingAudience(true);
+    try {
+      await supabase
+        .from("profiles")
+        .update({ account_type: choice === "business" ? "company" : "individual" })
+        .eq("user_id", userId);
+    } catch (err) {
+      console.error("[Tour] Failed to save audience choice:", err);
+    } finally {
+      setSavingAudience(false);
+    }
+  };
 
   useEffect(() => {
     checkOnboardingStatus();
@@ -306,6 +333,46 @@ export function InteractiveOnboarding() {
               <p className="text-muted-foreground text-sm leading-relaxed">
                 {step.description}
               </p>
+              {step.id === "audience" && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => chooseAudience("creative")}
+                    disabled={savingAudience}
+                    aria-pressed={audience === "creative"}
+                    className={cn(
+                      "rounded-xl border p-3 text-left transition-all",
+                      audience === "creative"
+                        ? "border-primary bg-primary/10 shadow-sm"
+                        : "border-border hover:border-primary/50 hover:bg-foreground/[0.03]",
+                    )}
+                  >
+                    <Palette className="h-5 w-5 text-primary mb-1.5" />
+                    <p className="text-sm font-bold">Creative</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                      I make work — film, music, design, photo, content.
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => chooseAudience("business")}
+                    disabled={savingAudience}
+                    aria-pressed={audience === "business"}
+                    className={cn(
+                      "rounded-xl border p-3 text-left transition-all",
+                      audience === "business"
+                        ? "border-primary bg-primary/10 shadow-sm"
+                        : "border-border hover:border-primary/50 hover:bg-foreground/[0.03]",
+                    )}
+                  >
+                    <Building2 className="h-5 w-5 text-primary mb-1.5" />
+                    <p className="text-sm font-bold">Business / Brand</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                      I hire creators, run a brand, agency, or production.
+                    </p>
+                  </button>
+                </div>
+              )}
               {step.tip && (
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
                   <Sparkles className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
@@ -333,7 +400,12 @@ export function InteractiveOnboarding() {
                     Skip
                   </Button>
                 )}
-                <Button onClick={handleNext} className="gap-2" size="sm">
+                <Button
+                  onClick={handleNext}
+                  className="gap-2"
+                  size="sm"
+                  disabled={step.id === "audience" && !audience}
+                >
                   {step.action}
                   {!isLastStep && <ArrowRight className="h-4 w-4" />}
                 </Button>

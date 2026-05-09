@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { decideAgentAction, type OrchAction } from "@/lib/agentOrchestrator";
 import { personaFor } from "@/lib/agentPersonas";
+import { riskPill, toolFriendly } from "@/lib/agentRiskUI";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -51,6 +52,8 @@ export const AgentApprovalCard = ({ action, onResolved, compact }: Props) => {
 
   const persona = personaFor(action.persona);
   const PersonaIcon = persona.icon;
+  const risk = riskPill(action.risk_level);
+  const friendly = toolFriendly(action.tool_name);
 
   return (
     <Card className={`p-3 border-primary/30 bg-primary/5 ${compact ? "" : "p-4"}`}>
@@ -65,15 +68,28 @@ export const AgentApprovalCard = ({ action, onResolved, compact }: Props) => {
             </span>
             <span className="text-muted-foreground text-[10px]">·</span>
             <p className="text-sm font-semibold truncate flex-1 min-w-0">
-              {action.preview_title ?? action.tool_name}
+              {action.preview_title ?? friendly.what}
             </p>
-            <Badge variant="outline" className="text-[10px] py-0 h-4 shrink-0">
-              Approve
+            <Badge
+              variant="outline"
+              className={cn("text-[10px] py-0 h-4 shrink-0 border", risk.className)}
+              title={risk.description}
+            >
+              {risk.label}
             </Badge>
           </div>
-          {action.preview_body && (
+          {action.preview_body ? (
             <p className="text-xs text-muted-foreground line-clamp-3">
               {action.preview_body}
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground line-clamp-2">
+              {friendly.what}
+            </p>
+          )}
+          {friendly.why && (
+            <p className="text-[11px] text-muted-foreground/80 mt-1">
+              <span className="font-semibold text-foreground/70">Why: </span>{friendly.why}
             </p>
           )}
           <div className="flex gap-2 mt-2.5">

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Check, X, Mail, Sparkles, ChevronRight } from "lucide-react";
+import { Loader2, Check, X, Mail, Inbox, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { AgentApprovalCard } from "./AgentApprovalCard";
 import { usePendingAgentActions } from "@/hooks/usePendingAgentActions";
+import { draftTrigger, riskPill } from "@/lib/agentRiskUI";
+import { cn } from "@/lib/utils";
 
 interface OutreachDraft {
   id: string;
@@ -18,6 +20,7 @@ interface OutreachDraft {
   recipient_name: string | null;
   brand_name: string | null;
   status: string;
+  meta: Record<string, unknown> | null;
 }
 
 /**
@@ -40,7 +43,7 @@ export const ApprovalsHub = ({ limit = 4 }: { limit?: number }) => {
     if (!user) return;
     const { data } = await (supabase as any)
       .from("outreach_drafts")
-      .select("id, source, subject, body, recipient_name, brand_name, status")
+      .select("id, source, subject, body, recipient_name, brand_name, status, meta")
       .eq("user_id", user.id)
       .eq("status", "draft")
       .order("created_at", { ascending: false })
@@ -96,33 +99,43 @@ export const ApprovalsHub = ({ limit = 4 }: { limit?: number }) => {
 
   return (
     <Card className="p-3 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-      <div className="flex items-center justify-between mb-2.5 px-1">
-        <div className="flex items-center gap-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-primary" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
-            Thrive did things
-          </h3>
-          <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
-            {total}
-          </Badge>
+      <div className="flex items-start justify-between mb-2.5 px-1 gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <Inbox className="h-3.5 w-3.5 text-primary" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
+              Waiting on you
+            </h3>
+            <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+              {total}
+            </Badge>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+            Drafts ready to go. You approve before anything sends.
+          </p>
         </div>
         {total > limit && (
-          <Link to="/intel?tab=outbox" className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5">
+          <Link to="/intel?tab=outbox" className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 shrink-0 mt-0.5">
             See all <ChevronRight className="h-3 w-3" />
           </Link>
         )}
       </div>
 
       <div className="space-y-2">
-        {items.map((item) =>
-          item.kind === "action" ? (
-            <AgentApprovalCard
-              key={item.id}
-              action={item.action}
-              onResolved={() => remove(item.id)}
-              compact
-            />
-          ) : (
+        {items.map((item) => {
+          if (item.kind === "action") {
+            return (
+              <AgentApprovalCard
+                key={item.id}
+                action={item.action}
+                onResolved={() => remove(item.id)}
+                compact
+              />
+            );
+          }
+          const trigger = draftTrigger(item.draft.source, item.draft.meta);
+          const risk = riskPill("requires_approval");
+          return (
             <Card key={item.id} className="p-3 border-primary/20 bg-background">
               <div className="flex items-start gap-2.5">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
@@ -130,17 +143,30 @@ export const ApprovalsHub = ({ limit = 4 }: { limit?: number }) => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                      {item.draft.source === "chase_invoice" ? "Invoice Chase" : "Outreach Pitch"}
-                    </span>
-                    <span className="text-muted-foreground text-[10px]">·</span>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] h-4 px-1.5 border-primary/30 bg-primary/5 text-primary font-semibold"
+                    >
+                      {trigger.label}
+                    </Badge>
+                    <span className="text-muted-foreground text-[10px]">→</span>
                     <p className="text-sm font-semibold truncate flex-1 min-w-0">
                       {item.draft.recipient_name || item.draft.brand_name || "Recipient"}
                     </p>
+                    <Badge
+                      variant="outline"
+                      className={cn("text-[10px] py-0 h-4 shrink-0 border", risk.className)}
+                      title={risk.description}
+                    >
+                      {risk.label}
+                    </Badge>
                   </div>
                   <p className="text-xs font-medium truncate">{item.draft.subject}</p>
                   <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
                     {item.draft.body}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/80 mt-1">
+                    <span className="font-semibold text-foreground/70">Why: </span>{trigger.reason}
                   </p>
                   <div className="flex gap-2 mt-2.5">
                     <Button
@@ -172,9 +198,10 @@ export const ApprovalsHub = ({ limit = 4 }: { limit?: number }) => {
                 </div>
               </div>
             </Card>
-          ),
-        )}
+          );
+        })}
       </div>
     </Card>
   );
 };
+

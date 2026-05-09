@@ -22,8 +22,9 @@ Deno.serve(async (req) => {
       });
     }
     const { data, error } = await client.rpc("rsvp_to_event", {
-      _event_id: eventId,
-      _status: body?.status ?? "going",
+      p_event_id: eventId,
+      p_referred_by: body?.referred_by ?? null,
+      p_referral_channel: body?.referral_channel ?? "agent",
     });
     if (error) throw error;
     return new Response(JSON.stringify({ ok: true, result: data }), {

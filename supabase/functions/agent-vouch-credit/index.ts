@@ -23,6 +23,7 @@ Deno.serve(async (req) => {
     }
     const { data, error } = await client.rpc("vouch_on_credit", {
       _credit_id: creditId,
+      _action: body?.action ?? "vouch",
       _note: body?.note ?? null,
     });
     if (error) throw error;

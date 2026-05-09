@@ -56,7 +56,6 @@ import { WrapMyWeekSheet } from "@/components/desk/WrapMyWeekSheet";
 import { MyPendingInvitations } from "@/components/project/MyPendingInvitations";
 import { PageTransition } from "@/components/PageTransition";
 import { PageHeader } from "@/components/ui/page-header";
-import { CopilotLauncher } from "@/components/agent/CopilotLauncher";
 
 interface WidgetProps {
   title: string;
@@ -415,10 +414,6 @@ const CreatorWorkHome = () => {
                 <Plus className="h-4 w-4" />
                 <span>New project</span>
               </Button>
-              <CopilotLauncher
-                label="Ask Copilot"
-                prompt="What's the most useful thing I can do across my projects today?"
-              />
             </div>
           </div>
           <p className="text-sm text-muted-foreground mt-2">

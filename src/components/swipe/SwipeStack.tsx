@@ -203,9 +203,9 @@ export function SwipeStack({
   return (
     <div className="flex flex-col items-center w-full px-4 sm:px-0">
       <FirstTimeHint
-        storageKey="match.swipe"
-        title="Swipe right to connect, left to pass"
-        description="Prefer buttons? Tap the heart, X, or eye below the card."
+        storageKey="match.tap-v2"
+        title="Tap to connect or pass"
+        description="Use the heart, X, or eye below the card. You can also drag the card if you prefer."
         icon={Hand}
         className="w-full max-w-[340px] sm:max-w-sm mb-3"
       />

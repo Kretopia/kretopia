@@ -15,6 +15,7 @@ import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 import { CallHistoryPanel } from "@/components/calls/CallHistoryPanel";
 import { QuickCallButton } from "@/components/calls/QuickCallButton";
 import { useMissedCallBadge } from "@/hooks/useCallHistory";
+import { useAccountTone } from "@/hooks/useAccountTone";
 import type { Conversation } from "./types";
 
 type MessagesTab = 'inbox' | 'groups' | 'calls' | 'requests';

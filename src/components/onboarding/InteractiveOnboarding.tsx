@@ -333,6 +333,46 @@ export function InteractiveOnboarding() {
               <p className="text-muted-foreground text-sm leading-relaxed">
                 {step.description}
               </p>
+              {step.id === "audience" && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => chooseAudience("creative")}
+                    disabled={savingAudience}
+                    aria-pressed={audience === "creative"}
+                    className={cn(
+                      "rounded-xl border p-3 text-left transition-all",
+                      audience === "creative"
+                        ? "border-primary bg-primary/10 shadow-sm"
+                        : "border-border hover:border-primary/50 hover:bg-foreground/[0.03]",
+                    )}
+                  >
+                    <Palette className="h-5 w-5 text-primary mb-1.5" />
+                    <p className="text-sm font-bold">Creative</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                      I make work — film, music, design, photo, content.
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => chooseAudience("business")}
+                    disabled={savingAudience}
+                    aria-pressed={audience === "business"}
+                    className={cn(
+                      "rounded-xl border p-3 text-left transition-all",
+                      audience === "business"
+                        ? "border-primary bg-primary/10 shadow-sm"
+                        : "border-border hover:border-primary/50 hover:bg-foreground/[0.03]",
+                    )}
+                  >
+                    <Building2 className="h-5 w-5 text-primary mb-1.5" />
+                    <p className="text-sm font-bold">Business / Brand</p>
+                    <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                      I hire creators, run a brand, agency, or production.
+                    </p>
+                  </button>
+                </div>
+              )}
               {step.tip && (
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
                   <Sparkles className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
@@ -360,7 +400,12 @@ export function InteractiveOnboarding() {
                     Skip
                   </Button>
                 )}
-                <Button onClick={handleNext} className="gap-2" size="sm">
+                <Button
+                  onClick={handleNext}
+                  className="gap-2"
+                  size="sm"
+                  disabled={step.id === "audience" && !audience}
+                >
                   {step.action}
                   {!isLastStep && <ArrowRight className="h-4 w-4" />}
                 </Button>

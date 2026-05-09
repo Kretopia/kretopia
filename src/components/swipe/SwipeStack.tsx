@@ -184,23 +184,7 @@ export function SwipeStack({
   }
 
   if (!currentProfile) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[500px] text-center px-4">
-        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-          <Heart className="h-10 w-10 text-muted-foreground" />
-        </div>
-        <h3 className="text-xl font-semibold mb-2">All Caught Up!</h3>
-        <p className="text-muted-foreground mb-4">
-          You've seen all available creators for now. Check back later!
-        </p>
-        {canUndo && onUndo && (
-          <Button variant="outline" onClick={onUndo} className="gap-2">
-            <RotateCcw className="h-4 w-4" />
-            Undo Last Swipe
-          </Button>
-        )}
-      </div>
-    );
+    return <EmptyDeck canUndo={canUndo} onUndo={onUndo} />;
   }
 
   return (

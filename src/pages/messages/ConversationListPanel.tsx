@@ -51,6 +51,7 @@ export const ConversationListPanel = ({
 }: Props) => {
   const { count: missedCount } = useMissedCallBadge();
   const { pick, isBusiness } = useAccountTone();
+  const { pick: pickVoice } = useTrinidadVoice();
   const getPartner = (conv: Conversation) =>
     conv.sender_id === currentUserId
       ? { id: conv.receiver_id, name: conv.receiver_name, avatar: conv.receiver_avatar }

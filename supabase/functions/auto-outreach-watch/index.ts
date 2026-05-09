@@ -99,10 +99,12 @@ serve(async (req) => {
         // Notification (best effort)
         await admin.from("notifications").insert({
           user_id: user.user_id,
-          kind: "outreach_drafts_ready",
+          type: "outreach_drafts_ready",
+          category: "agent",
           title: `Thrive drafted ${drafted} sponsor pitch${drafted === 1 ? "" : "es"}`,
-          body: "Review and approve to send.",
+          message: "Review and approve to send.",
           action_url: "/intel?tab=outbox",
+          action_text: "Review",
         }).catch((e: any) => console.error("notif insert err", e));
       }
     }

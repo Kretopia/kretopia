@@ -47,6 +47,7 @@ import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
+import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
 import { LiveGigsStrip } from "@/components/landing/LiveGigsStrip";
 import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
 import GigCard from "@/components/opportunity/GigCard";
@@ -687,9 +688,9 @@ export const UnifiedHome = () => {
             className="mb-4"
           />
 
-          {/* Pending Copilot approvals (Level-2 agent actions) */}
+          {/* Unified Approvals — Copilot actions + auto-drafted outreach/chases */}
           <div className="mb-4">
-            <AgentApprovalsTray limit={3} />
+            <ApprovalsHub limit={4} />
           </div>
 
           <WeeklyIntentCard className="mb-4" />

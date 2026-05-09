@@ -22,7 +22,6 @@ import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { PageTransition } from "@/components/PageTransition";
 import { SwipeCardSkeleton, ConnectionListSkeleton } from "@/components/skeletons/CircleSkeletons";
-import { CopilotLauncher } from "@/components/agent/CopilotLauncher";
 
 
 export default function Circle() {

@@ -59,6 +59,22 @@ export function ThrivePromptHero() {
     const prompt = raw.trim();
     if (!prompt || busy) return;
     if (!user) { navigate(`/auth?next=/?prompt=${encodeURIComponent(prompt)}`); return; }
+
+    // Plan mode: skip intent routing — hand the goal straight to the planner via the Copilot drawer.
+    if (planMode) {
+      window.dispatchEvent(
+        new CustomEvent("thrive-copilot:open", { detail: { prompt, mode: "plan" } }),
+      );
+      void (supabase as any).from("thrive_intent_logs").insert({
+        user_id: user.id,
+        prompt,
+        intent: "plan",
+        routed_to: "copilot_planner",
+      });
+      setText("");
+      return;
+    }
+
     setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke<RouteResponse>("route-thrive-intent", {

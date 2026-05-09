@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FirstTimeHint } from '@/components/ui/first-time-hint';
 import { useAccountTone } from '@/hooks/useAccountTone';
+import { useTrinidadVoice } from '@/hooks/useTrinidadVoice';
 import { X, Heart, RotateCcw, Eye, MessageCircle, Hand, Search, UserPlus, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

@@ -369,7 +369,7 @@ serve(async (req) => {
     }
     console.log("[scout] raw results", allRaw.length);
 
-    const extracted = await extractAndScore(allRaw, mergedProfile, aiKey);
+    const extracted = await extractAndScore(allRaw, mergedProfile, prefs, aiKey);
     // Reject anything older than 30 days based on AI-extracted posted_age
     const isStale = (age: string) => {
       if (!age) return true;

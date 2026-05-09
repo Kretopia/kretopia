@@ -77,7 +77,7 @@ function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; qu
     }
   }
   if (prefs.sources.includes("linkedin")) {
-    queries.push({ source: "linkedin", query: `site:linkedin.com/jobs ${role} ${loc}` });
+    // ONE LinkedIn query only — was dominating results
     queries.push({ source: "linkedin", query: `site:linkedin.com/jobs "${skills[0] || role}" ${loc}` });
   }
   if (prefs.sources.includes("instagram")) {
@@ -109,9 +109,9 @@ async function firecrawlSearch(query: string, key: string) {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       query,
-      limit: 8,
-      // RECENCY: only results from the past month
-      tbs: "qdr:m",
+      limit: 6,
+      // RECENCY: only results from the past WEEK (was past month)
+      tbs: "qdr:w",
       scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
     }),
   });
@@ -155,11 +155,11 @@ Bio: ${(profile.bio || "").slice(0, 300)}`;
         {
           role: "system",
           content:
-            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) Skip ANY post older than 30 days — if the snippet mentions '1 year ago', '6 months ago', 'no longer accepting', 'expired', 'closed', or a date older than 30 days, REJECT IT. (2) Skip generic listing pages, articles, blog posts. (3) Only return entries that are clearly active job/casting/freelance posts. (4) Score fit 0-100 against the creator profile.",
+            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) REJECT anything older than 14 days — if snippet says '3 weeks ago', '1 month ago', '6 months ago', 'no longer accepting', 'expired', 'closed', 'filled', REJECT. (2) Skip generic listing pages, articles, blog posts, 'top 10' roundups. (3) Only return entries that are clearly active job/casting/freelance posts. (4) BALANCE SOURCES — do not return more than 3 LinkedIn results total; prioritize gig boards, ATS, Instagram open calls, and indie creative platforms. (5) Score fit 0-100 against the creator profile.",
         },
         {
           role: "user",
-          content: `TODAY: ${new Date().toISOString().slice(0,10)}\n\nCREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract ONLY active gigs posted in the last 30 days. For each: title, company, location, remote, description (1-2 sentences), compensation, contact_email, apply_url, posted_age (e.g. "2 days ago", "3 weeks ago" — REQUIRED, infer from snippet), skills, fit_score, fit_reason, source.`,
+          content: `TODAY: ${new Date().toISOString().slice(0,10)}\n\nCREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract ONLY active gigs posted in the LAST 14 DAYS. Cap LinkedIn at 3 max. For each: title, company, location, remote, description (1-2 sentences), compensation, contact_email, apply_url, posted_age (e.g. "2 days ago", "1 week ago" — REQUIRED, infer from snippet), skills, fit_score, fit_reason, source.`,
         },
       ],
       tools: [{
@@ -317,24 +317,29 @@ serve(async (req) => {
     const isStale = (age: string) => {
       if (!age) return true;
       const a = age.toLowerCase();
-      if (/year|yr/.test(a)) return true;
-      if (/month/.test(a)) {
-        const n = parseInt(a, 10) || 1;
-        return n > 1;
-      }
+      if (/year|yr|month/.test(a)) return true;
       if (/no longer|expired|closed|filled/.test(a)) return true;
+      // weeks: only allow "1 week" or "this week"
+      const wk = a.match(/(\d+)\s*week/);
+      if (wk && parseInt(wk[1], 10) > 2) return true;
       return false;
     };
+    // Cap LinkedIn to 3 max in the final output
+    const linkedinCap = { count: 0, max: 3 };
     const filtered = extracted.filter((g: any) => {
       if (!g.title || !g.source_url) return false;
       if ((g.fit_score ?? 0) < prefs.min_fit_score) return false;
       if (isStale(g.posted_age || "")) return false;
       const blob = `${g.title} ${g.description || ""} ${g.posted_age || ""}`.toLowerCase();
-      if (/no longer accepting|expired|position closed|1 year ago|2 years ago/.test(blob)) return false;
+      if (/no longer accepting|expired|position closed|1 year ago|2 years ago|months ago/.test(blob)) return false;
       if ((prefs.exclude_keywords || []).some((kw) => kw && blob.includes(kw.toLowerCase()))) return false;
+      if (g.source === "linkedin") {
+        if (linkedinCap.count >= linkedinCap.max) return false;
+        linkedinCap.count++;
+      }
       return true;
     });
-    console.log("[scout] after recency filter", filtered.length, "of", extracted.length);
+    console.log("[scout] after recency+source filter", filtered.length, "of", extracted.length);
 
     let inserted = 0;
     for (const g of filtered) {

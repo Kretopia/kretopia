@@ -54,7 +54,8 @@ const BottomNav = memo(() => {
             <Link
               key={item.path + item.label}
               to={item.path}
-              aria-label={`Navigate to ${item.label}`}
+              title={item.hint}
+              aria-label={`${item.label} — ${item.hint}`}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "relative flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-xl transition-all duration-200 flex-1 min-h-[48px]",

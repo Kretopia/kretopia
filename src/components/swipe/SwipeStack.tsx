@@ -1,9 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SwipeCard } from './SwipeCard';
 import { SwipeProfile } from '@/hooks/useSwipeProfiles';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { FirstTimeHint } from '@/components/ui/first-time-hint';
-import { X, Heart, RotateCcw, Eye, MessageCircle, Hand } from 'lucide-react';
+import { useAccountTone } from '@/hooks/useAccountTone';
+import { X, Heart, RotateCcw, Eye, MessageCircle, Hand, Search, UserPlus, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SwipeStackProps {
@@ -181,23 +184,7 @@ export function SwipeStack({
   }
 
   if (!currentProfile) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[500px] text-center px-4">
-        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-          <Heart className="h-10 w-10 text-muted-foreground" />
-        </div>
-        <h3 className="text-xl font-semibold mb-2">All Caught Up!</h3>
-        <p className="text-muted-foreground mb-4">
-          You've seen all available creators for now. Check back later!
-        </p>
-        {canUndo && onUndo && (
-          <Button variant="outline" onClick={onUndo} className="gap-2">
-            <RotateCcw className="h-4 w-4" />
-            Undo Last Swipe
-          </Button>
-        )}
-      </div>
-    );
+    return <EmptyDeck canUndo={canUndo} onUndo={onUndo} />;
   }
 
   return (
@@ -328,6 +315,42 @@ export function SwipeStack({
       <p className="text-xs sm:text-sm text-muted-foreground mt-2">
         {profiles.length} creators available
       </p>
+    </div>
+  );
+}
+
+function EmptyDeck({ canUndo, onUndo }: { canUndo?: boolean; onUndo?: () => void }) {
+  const navigate = useNavigate();
+  const { isBusiness, pick } = useAccountTone();
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[460px] w-full px-2">
+      <EmptyState
+        icon={Sparkles}
+        eyebrow={pick("You're up to date", "Roster reviewed")}
+        title={pick("That's everyone for now", "No new talent right now")}
+        description={pick(
+          "New creatives drop in daily. Browse the network or invite a collaborator to keep momentum.",
+          "Cast a wider net — search by skill or invite specific talent to apply.",
+        )}
+        accent="lime"
+        action={{
+          label: pick("Browse network", "Find talent"),
+          icon: isBusiness ? Search : Eye,
+          onClick: () => navigate(isBusiness ? "/talent-finder" : "/circle"),
+        }}
+        secondaryAction={{
+          label: pick("Invite a collaborator", "Invite to apply"),
+          icon: UserPlus,
+          onClick: () => navigate("/invite"),
+        }}
+      />
+      {canUndo && onUndo && (
+        <Button variant="ghost" size="sm" onClick={onUndo} className="gap-2 mt-1 text-muted-foreground">
+          <RotateCcw className="h-4 w-4" />
+          Undo last
+        </Button>
+      )}
     </div>
   );
 }

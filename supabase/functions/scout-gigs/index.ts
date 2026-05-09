@@ -155,11 +155,11 @@ Bio: ${(profile.bio || "").slice(0, 300)}`;
         {
           role: "system",
           content:
-            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) Skip ANY post older than 30 days — if the snippet mentions '1 year ago', '6 months ago', 'no longer accepting', 'expired', 'closed', or a date older than 30 days, REJECT IT. (2) Skip generic listing pages, articles, blog posts. (3) Only return entries that are clearly active job/casting/freelance posts. (4) Score fit 0-100 against the creator profile.",
+            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) REJECT anything older than 14 days — if snippet says '3 weeks ago', '1 month ago', '6 months ago', 'no longer accepting', 'expired', 'closed', 'filled', REJECT. (2) Skip generic listing pages, articles, blog posts, 'top 10' roundups. (3) Only return entries that are clearly active job/casting/freelance posts. (4) BALANCE SOURCES — do not return more than 3 LinkedIn results total; prioritize gig boards, ATS, Instagram open calls, and indie creative platforms. (5) Score fit 0-100 against the creator profile.",
         },
         {
           role: "user",
-          content: `TODAY: ${new Date().toISOString().slice(0,10)}\n\nCREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract ONLY active gigs posted in the last 30 days. For each: title, company, location, remote, description (1-2 sentences), compensation, contact_email, apply_url, posted_age (e.g. "2 days ago", "3 weeks ago" — REQUIRED, infer from snippet), skills, fit_score, fit_reason, source.`,
+          content: `TODAY: ${new Date().toISOString().slice(0,10)}\n\nCREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract ONLY active gigs posted in the LAST 14 DAYS. Cap LinkedIn at 3 max. For each: title, company, location, remote, description (1-2 sentences), compensation, contact_email, apply_url, posted_age (e.g. "2 days ago", "1 week ago" — REQUIRED, infer from snippet), skills, fit_score, fit_reason, source.`,
         },
       ],
       tools: [{

@@ -158,3 +158,11 @@ project_id = "kwmcocsitwssrtzkdojh"
     verify_jwt = false
   [functions.transcribe-call]
     verify_jwt = false
+  [functions.guest-wallet-session]
+    verify_jwt = false
+  [functions.guest-wallet-me]
+    verify_jwt = false
+  [functions.guest-wallet-topup]
+    verify_jwt = false
+  [functions.guest-wallet-webhook]
+    verify_jwt = false

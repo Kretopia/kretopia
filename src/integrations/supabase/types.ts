@@ -6635,6 +6635,144 @@ export type Database = {
           },
         ]
       }
+      guest_wallet_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          last_used_at: string
+          token: string
+          wallet_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          last_used_at?: string
+          token?: string
+          wallet_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          last_used_at?: string
+          token?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_wallet_sessions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "guest_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guest_wallet_topups: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          wallet_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          wallet_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_wallet_topups_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "guest_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guest_wallet_transactions: {
+        Row: {
+          created_at: string
+          delta_cents: number
+          id: string
+          kind: string
+          note: string | null
+          ref_id: string | null
+          wallet_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta_cents: number
+          id?: string
+          kind: string
+          note?: string | null
+          ref_id?: string | null
+          wallet_id: string
+        }
+        Update: {
+          created_at?: string
+          delta_cents?: number
+          id?: string
+          kind?: string
+          note?: string | null
+          ref_id?: string | null
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_wallet_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "guest_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guest_wallets: {
+        Row: {
+          balance_cents: number
+          created_at: string
+          currency: string
+          email: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          balance_cents?: number
+          created_at?: string
+          currency?: string
+          email: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          balance_cents?: number
+          created_at?: string
+          currency?: string
+          email?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       icdb_brand_verifications: {
         Row: {
           brand_email: string

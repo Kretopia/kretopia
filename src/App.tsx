@@ -84,6 +84,7 @@ const ThrivePay = lazy(() => import("./pages/ThrivePay"));
 const Install = lazy(() => import("./pages/Install"));
 const GuestCall = lazy(() => import("./pages/GuestCall"));
 const GuestStudio = lazy(() => import("./pages/GuestStudio"));
+const GuestPay = lazy(() => import("./pages/GuestPay"));
 const ProjectReview = lazy(() => import("./pages/ProjectReview"));
 const FoundingMember = lazy(() => import("./pages/FoundingMember"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
@@ -313,6 +314,7 @@ const AppContent = () => {
             {/* Subscription & Payment Routes */}
             <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
             <Route path="/thrivepay" element={<ProtectedRoute><ThrivePay /></ProtectedRoute>} />
+            <Route path="/guest-pay" element={<GuestPay />} />
             <Route path="/wallet" element={<Navigate to="/thrivepay" replace />} />
             <Route path="/purchases" element={<Navigate to="/thrivepay" replace />} />
             <Route path="/accounting" element={<Navigate to="/thrivepay?tab=earnings" replace />} />

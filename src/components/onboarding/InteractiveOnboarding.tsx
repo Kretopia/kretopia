@@ -100,8 +100,26 @@ export function InteractiveOnboarding() {
   const [isVisible, setIsVisible] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
+  const [audience, setAudience] = useState<"creative" | "business" | null>(null);
+  const [savingAudience, setSavingAudience] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const chooseAudience = async (choice: "creative" | "business") => {
+    setAudience(choice);
+    if (!userId) return;
+    setSavingAudience(true);
+    try {
+      await supabase
+        .from("profiles")
+        .update({ account_type: choice === "business" ? "company" : "individual" })
+        .eq("user_id", userId);
+    } catch (err) {
+      console.error("[Tour] Failed to save audience choice:", err);
+    } finally {
+      setSavingAudience(false);
+    }
+  };
 
   useEffect(() => {
     checkOnboardingStatus();

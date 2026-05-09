@@ -161,9 +161,18 @@ export const ThriveAgentFab = () => {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail as
-        | { prompt?: string; mode?: "plan" | "chat" }
+        | { prompt?: string; mode?: "plan" | "chat" | "voice" }
         | undefined;
       setOpen(true);
+
+      // Voice mode: open the drawer and auto-start recording.
+      if (detail?.mode === "voice") {
+        setTimeout(() => {
+          handleStartVoice();
+        }, 250);
+        return;
+      }
+
       if (!detail?.prompt) return;
 
       if (detail.mode === "plan") {

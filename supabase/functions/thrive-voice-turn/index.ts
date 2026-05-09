@@ -1,5 +1,6 @@
 // Thrive Voice — push-to-talk turn handler.
-// Pipeline: ElevenLabs STT -> Lovable AI brain -> ElevenLabs TTS.
+// Pipeline: Gemini multimodal STT (Lovable AI) -> Gemini brain -> ElevenLabs TTS
+// (with graceful fallback to browser SpeechSynthesis when ElevenLabs is unavailable).
 // Persists the user transcript + assistant reply into the canonical Copilot
 // thread so voice and text history stay merged across surfaces.
 //

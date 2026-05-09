@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
 import type { OrchAction } from "@/lib/agentOrchestrator";
+import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
 
 interface TalentMatch {
   user_id: string;

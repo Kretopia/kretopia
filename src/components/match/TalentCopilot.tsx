@@ -25,11 +25,20 @@ interface TalentMatch {
   headline?: string;
 }
 
-const SAMPLE_BRIEFS = [
+const TT_BRIEFS = [
   "Need a videographer in Trinidad for a 1-day brand shoot, budget under $500 USD.",
   "Looking for a soca vocalist for a hook on a track, fast turnaround, paid + credit.",
   "Photographer in Port of Spain for an EPK headshot session next weekend.",
 ];
+
+const INTL_BRIEFS = [
+  "Need a videographer for a 1-day brand shoot, budget under $500 USD.",
+  "Looking for a vocalist for a hook on a track, fast turnaround, paid + credit.",
+  "Photographer for an EPK headshot session next weekend.",
+];
+
+const TT_PLACEHOLDER = "e.g. Videographer in Trinidad for a 1-day brand shoot, budget under $500";
+const INTL_PLACEHOLDER = "e.g. Videographer for a 1-day brand shoot, budget under $500";
 
 /**
  * Talent Copilot — inline on Match → Find tab.

@@ -19,10 +19,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { PageTransition } from "@/components/PageTransition";
 import { LiveActivityTicker } from "@/components/scene/LiveActivityTicker";
 import { useTranslation } from "react-i18next";
+import { useAccountTone } from "@/hooks/useAccountTone";
+import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 
 const Scene = () => {
   const location = useLocation();
   const { t } = useTranslation();
+  const { pick: pickTone, isBusiness } = useAccountTone();
+  const { pick: pickVoice } = useTrinidadVoice();
   const isEventsRoute = location.pathname === "/events";
   const searchParams = new URLSearchParams(location.search);
   const tabParam = searchParams.get("tab");

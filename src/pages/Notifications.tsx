@@ -1,6 +1,7 @@
 import { SEO } from "@/components/SEO";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAccountTone } from "@/hooks/useAccountTone";
+import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -24,6 +25,7 @@ const getCategoryIcon = (category: string) => {
 const Notifications = () => {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const { pick, isBusiness } = useAccountTone();
+  const { pick: pickVoice } = useTrinidadVoice();
   const navigate = useNavigate();
 
   const handleClick = (notification: any) => {
@@ -74,10 +76,13 @@ const Notifications = () => {
               <Bell className="h-10 w-10 text-energy" />
             </div>
             <p className="brand-eyebrow mb-2">All clear</p>
-            <h3 className="text-xl font-black tracking-[-0.02em] mb-2">You're all caught up</h3>
+            <h3 className="text-xl font-black tracking-[-0.02em] mb-2">{pick(pickVoice("You're all caught up", "Yuh all caught up"), "You're all caught up")}</h3>
             <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-5">
               {pick(
-                "When matches, messages, or new gigs land — they'll show up right here.",
+                pickVoice(
+                  "When matches, messages, or new gigs land — they'll show up right here.",
+                  "When matches, messages or new gigs drop, dey go show up right here.",
+                ),
                 "When applicants apply, talent replies, or invoices move — you'll see it here.",
               )}
             </p>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FirstTimeHint } from '@/components/ui/first-time-hint';
 import { useAccountTone } from '@/hooks/useAccountTone';
+import { useTrinidadVoice } from '@/hooks/useTrinidadVoice';
 import { X, Heart, RotateCcw, Eye, MessageCircle, Hand, Search, UserPlus, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -322,25 +323,32 @@ export function SwipeStack({
 function EmptyDeck({ canUndo, onUndo }: { canUndo?: boolean; onUndo?: () => void }) {
   const navigate = useNavigate();
   const { isBusiness, pick } = useAccountTone();
+  const { pick: pickVoice } = useTrinidadVoice();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[460px] w-full px-2">
       <EmptyState
         icon={Sparkles}
-        eyebrow={pick("You're up to date", "Roster reviewed")}
-        title={pick("That's everyone for now", "No new talent right now")}
+        eyebrow={pick(pickVoice("You're up to date", "Yuh all caught up"), "Roster reviewed")}
+        title={pick(
+          pickVoice("That's everyone for now", "Dat's everybody for now"),
+          "No new talent right now",
+        )}
         description={pick(
-          "New creatives drop in daily. Browse the network or invite a collaborator to keep momentum.",
-          "Cast a wider net — search by skill or invite specific talent to apply.",
+          pickVoice(
+            "New creatives drop in daily. Browse the network or invite a collaborator to keep momentum.",
+            "New creatives linkin' up daily. Browse the network or pull in a collab to keep the ting moving.",
+          ),
+          "Cast a wider net \u2014 search by skill or invite specific talent to apply.",
         )}
         accent="lime"
         action={{
-          label: pick("Browse network", "Find talent"),
+          label: pick(pickVoice("Browse network", "Link up"), "Find talent"),
           icon: isBusiness ? Search : Eye,
           onClick: () => navigate(isBusiness ? "/talent-finder" : "/circle"),
         }}
         secondaryAction={{
-          label: pick("Invite a collaborator", "Invite to apply"),
+          label: pick(pickVoice("Invite a collaborator", "Pull in a collab"), "Invite to apply"),
           icon: UserPlus,
           onClick: () => navigate("/invite"),
         }}

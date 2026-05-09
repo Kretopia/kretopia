@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Plus, Mic, Sparkles, X } from "lucide-react";
+import { Plus, Mic, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DeskActionFabProps {
   onVoice: () => void;
-  onCopilot: () => void;
+  /** @deprecated Copilot opens via the docked ThriveBar — kept for compatibility. */
+  onCopilot?: () => void;
 }
 
 /**
@@ -59,11 +60,6 @@ export const DeskActionFab = ({ onVoice, onCopilot }: DeskActionFabProps) => {
           )}
           aria-hidden={!open}
         >
-          <ActionPill
-            label="Project Copilot"
-            icon={<Sparkles className="h-5 w-5" />}
-            onClick={handle(onCopilot)}
-          />
           <ActionPill
             label="Voice note"
             icon={<Mic className="h-5 w-5" />}

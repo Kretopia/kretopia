@@ -161,9 +161,18 @@ export const ThriveAgentFab = () => {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail as
-        | { prompt?: string; mode?: "plan" | "chat" }
+        | { prompt?: string; mode?: "plan" | "chat" | "voice" }
         | undefined;
       setOpen(true);
+
+      // Voice mode: open the drawer and auto-start recording.
+      if (detail?.mode === "voice") {
+        setTimeout(() => {
+          handleStartVoice();
+        }, 250);
+        return;
+      }
+
       if (!detail?.prompt) return;
 
       if (detail.mode === "plan") {
@@ -609,24 +618,9 @@ export const ThriveAgentFab = () => {
 
   return (
     <>
-      {!fabHidden && (
-        <button
-          onClick={() => setOpen(true)}
-          aria-label="Open Thrive chat"
-          title="Thrive — your assistant"
-          className={cn(
-            "fixed right-4 z-40 h-12 pl-3 pr-4 rounded-full shadow-xl",
-            "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground",
-            "flex items-center gap-2 active:scale-95 transition-transform",
-            "bottom-[calc(env(safe-area-inset-bottom)+5rem)]",
-          )}
-        >
-          <span className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center">
-            <Sparkles className="h-4 w-4" />
-          </span>
-          <span className="text-sm font-bold tracking-wide">Chat</span>
-        </button>
-      )}
+      {/* Floating "Chat" pill removed — entry point is now the docked ThriveBar
+          (mobile) and DesktopCopilotRail (desktop). The Sheet stays mounted
+          so any surface can open it via `thrive-copilot:open`. */}
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent

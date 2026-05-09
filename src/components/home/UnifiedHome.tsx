@@ -401,19 +401,19 @@ export const UnifiedHome = () => {
               <div className="relative z-10 text-center lg:text-left order-1 lg:order-1">
                 <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
                   <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                  The Creative OS
+                  From Profile to Paid
                 </p>
 
                 {/* PRIMARY HEADLINE */}
                 <h1 className="text-[2.25rem] sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.035em] text-foreground leading-[0.95] mb-4">
-                  Search Your Name.<br />
-                  Claim Your Credits.<br />
-                  <span className="text-energy-glow">Get Paid.</span>
+                  Claim your work.<br />
+                  Get matched.<br />
+                  <span className="text-energy-glow">Get paid.</span>
                 </h1>
 
                 {/* Secondary headline */}
                 <p className="text-sm sm:text-base text-muted-foreground/90 font-semibold mb-5">
-                  Find Your People. Build Real.
+                  One home for your credits, your collaborators, your gigs and your money — with Thrive doing the busy work.
                 </p>
 
                 {/* SEARCH BAR — first interactive element above the fold */}
@@ -478,7 +478,7 @@ export const UnifiedHome = () => {
                       </motion.span>
                     </AnimatePresence>
                   </span>{" "}
-                  build verified credits, connect with collaborators, and get paid.
+                  claim verified credits, match with collaborators, run the project, and get paid — all in one app.
                 </p>
               </div>
 
@@ -513,16 +513,16 @@ export const UnifiedHome = () => {
                     </div>
                   </div>
 
-                  {/* Chat overlay */}
-                  <div className="absolute bottom-4 left-3 right-3 sm:left-5 sm:right-auto sm:max-w-[240px] animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                  {/* Chat overlay — Thrive doing the work */}
+                  <div className="absolute bottom-4 left-3 right-3 sm:left-5 sm:right-auto sm:max-w-[260px] animate-fade-in" style={{ animationDelay: '0.2s' }}>
                     <div className="rounded-2xl rounded-bl-sm border border-primary/40 bg-card/95 backdrop-blur-md p-3 shadow-xl">
                       <div className="flex items-center gap-2 mb-1.5">
                         <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
                           <MessageSquare className="h-3 w-3 text-primary" />
                         </div>
-                        <p className="text-[10px] font-bold text-foreground">Maya · Photographer</p>
+                        <p className="text-[10px] font-bold text-foreground">Thrive · drafted just now</p>
                       </div>
-                      <p className="text-xs text-foreground/90 leading-snug">"Your sound is exactly what this series needs. Coffee tomorrow?"</p>
+                      <p className="text-xs text-foreground/90 leading-snug">"Maya is a 94% match. I drafted the intro and a $1,200 quote — open to send?"</p>
                     </div>
                   </div>
                 </div>

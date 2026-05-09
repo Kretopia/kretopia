@@ -508,54 +508,42 @@ export const ThriveAgentFab = () => {
     setRecording(false);
     setVoiceBusy(true);
     try {
-      const result = await stopAndSend({ surface, surfaceContext });
+      const result = await stopAndSend();
       if (result.ok === false) {
         if (result.code === "voice_daily_limit") {
-          // Push the transcript so user sees what was heard, then upgrade toast
           if (result.transcript) {
-            setMessages((prev) => [...prev, { role: "user", content: result.transcript! }]);
+            setMessages((prev) => [...prev, { role: "user", content: `🎙️ ${result.transcript}` }]);
           }
           toast.error(
             result.tier === "free"
               ? "You've hit today's free voice limit (2 min/day). Upgrade for more."
               : "You've hit today's voice limit. Upgrade for more.",
             {
-              action: {
-                label: "Upgrade",
-                onClick: () => navigate("/subscription"),
-              },
+              action: { label: "Upgrade", onClick: () => navigate("/subscription") },
               duration: 8000,
             },
           );
-        } else if (result.code === "no_speech") {
-          toast.error(result.message);
         } else {
           toast.error(result.message);
         }
         return;
       }
-      // Append both turns locally (server already persisted them)
-      setMessages((prev) => [
-        ...prev,
-        { role: "user", content: `🎙️ ${result.transcript}` },
-        { role: "assistant", content: result.reply },
-      ]);
-      // Play TTS unless muted — uses ElevenLabs audio if present, else browser SpeechSynthesis.
-      if (!voiceMuted) {
-        if (result.audioUrl) {
-          const a = playAudio(result.audioUrl);
-          audioElRef.current = a;
-          setSpeaking(true);
-          a.onended = () => setSpeaking(false);
-          a.onerror = () => setSpeaking(false);
-        } else {
-          // Browser TTS fallback
-          playReply(result);
-          setSpeaking(true);
-          // SpeechSynthesis doesn't expose a clean "ended" hook here, so estimate
-          // based on word count (~3 words/sec).
-          const ms = Math.max(1500, (result.reply.split(/\s+/).length / 3) * 1000);
+
+      // Route the transcript through the SAME chat agent path so every tool
+      // (find_talent, draft_quote, draft_invoice, start_video_call, memory…)
+      // and every <action>/<plan> tag fires exactly like a typed message.
+      const reply = await send(result.transcript);
+
+      // Speak the assistant reply unless muted.
+      if (reply && !voiceMuted) {
+        setSpeaking(true);
+        try {
+          await synthesizeReply(reply);
+          // SpeechSynthesis has no clean "ended" hook in fallback path; estimate.
+          const ms = Math.max(1500, (reply.split(/\s+/).length / 3) * 1000);
           window.setTimeout(() => setSpeaking(false), ms);
+        } catch {
+          setSpeaking(false);
         }
       }
     } catch (e) {
@@ -564,7 +552,7 @@ export const ThriveAgentFab = () => {
       setVoiceBusy(false);
       setRecordSec(0);
     }
-  }, [surface, surfaceContext, voiceMuted, navigate]);
+  }, [voiceMuted, navigate, send]);
 
   // Cleanup on unmount
   useEffect(() => {

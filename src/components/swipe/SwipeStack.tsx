@@ -1,9 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SwipeCard } from './SwipeCard';
 import { SwipeProfile } from '@/hooks/useSwipeProfiles';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { FirstTimeHint } from '@/components/ui/first-time-hint';
-import { X, Heart, RotateCcw, Eye, MessageCircle, Hand } from 'lucide-react';
+import { useAccountTone } from '@/hooks/useAccountTone';
+import { X, Heart, RotateCcw, Eye, MessageCircle, Hand, Search, UserPlus, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SwipeStackProps {

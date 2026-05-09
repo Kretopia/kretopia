@@ -109,9 +109,9 @@ async function firecrawlSearch(query: string, key: string) {
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       query,
-      limit: 8,
-      // RECENCY: only results from the past month
-      tbs: "qdr:m",
+      limit: 6,
+      // RECENCY: only results from the past WEEK (was past month)
+      tbs: "qdr:w",
       scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
     }),
   });

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { decideAgentAction, type OrchAction } from "@/lib/agentOrchestrator";
 import { personaFor } from "@/lib/agentPersonas";
+import { riskPill, toolFriendly } from "@/lib/agentRiskUI";
 import { cn } from "@/lib/utils";
 
 interface Props {

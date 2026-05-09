@@ -22,29 +22,12 @@ import {
  * Mobile keeps using ThriveAgentFab (sheet) — this component renders nothing on mobile.
  */
 
-const RAIL_ENABLED_PREFIXES = [
-  "/", // home
-  "/index",
-  "/desk",
-  "/thrivepay",
-  "/pay",
-  "/accounting",
-  "/circle",
-  "/match",
-  "/opportunities",
-  "/gigs",
-  "/profile",
-  "/credits",
-  "/icdb",
-  "/event",
-  "/sessions",
-];
-
+// Thrive rail is shown on every authed route by default. Only a small set of
+// truly full-screen / pre-auth surfaces opt out.
 const RAIL_DISABLED_PREFIXES = [
   "/auth",
   "/onboarding",
   "/landing",
-  "/messages",
   "/call",
   "/guest-call",
   "/check-in",
@@ -53,10 +36,12 @@ const RAIL_DISABLED_PREFIXES = [
   "/epk/",
   "/u/",
   "/site/",
+  "/website-builder",
   "/admin",
 ];
 
 const STORAGE_KEY = "thrive-rail-collapsed";
+const FULLSCREEN_KEY = "thrive-rail-fullscreen";
 
 const QUICK_PROMPTS: Record<string, string[]> = {
   home: ["What's on for today?", "Draft an outreach DM", "Find paid gigs this week"],

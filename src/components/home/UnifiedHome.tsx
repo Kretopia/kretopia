@@ -401,19 +401,19 @@ export const UnifiedHome = () => {
               <div className="relative z-10 text-center lg:text-left order-1 lg:order-1">
                 <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
                   <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                  The Creative OS
+                  From Profile to Paid
                 </p>
 
                 {/* PRIMARY HEADLINE */}
                 <h1 className="text-[2.25rem] sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.035em] text-foreground leading-[0.95] mb-4">
-                  Search Your Name.<br />
-                  Claim Your Credits.<br />
-                  <span className="text-energy-glow">Get Paid.</span>
+                  Claim your work.<br />
+                  Get matched.<br />
+                  <span className="text-energy-glow">Get paid.</span>
                 </h1>
 
                 {/* Secondary headline */}
                 <p className="text-sm sm:text-base text-muted-foreground/90 font-semibold mb-5">
-                  Find Your People. Build Real.
+                  One home for your credits, your collaborators, your gigs and your money — with Thrive doing the busy work.
                 </p>
 
                 {/* SEARCH BAR — first interactive element above the fold */}

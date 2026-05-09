@@ -79,6 +79,7 @@ export function ScoutedGigsSection() {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [openGig, setOpenGig] = useState<ScoutedGig | null>(null);
+  const [prefsOpen, setPrefsOpen] = useState(false);
   const [enriching, setEnriching] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
   const [drafting, setDrafting] = useState(false);

@@ -234,43 +234,55 @@ Surface: ${surface}. ${profile?.location_city ? `User is in ${profile.location_c
       (brainJson?.choices?.[0]?.message?.content || "").trim() ||
       "Sorry — I didn't catch a clear answer for that. Try again?";
 
-    // --- 4) TTS via ElevenLabs ---
+    // --- 4) TTS via ElevenLabs (graceful fallback to browser SpeechSynthesis) ---
     const voiceId = body.voice_id || DEFAULT_VOICE_ID;
-    const ttsResp = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
-      {
-        method: "POST",
-        headers: {
-          "xi-api-key": ELEVENLABS_API_KEY,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: reply,
-          model_id: TTS_MODEL,
-          voice_settings: {
-            stability: 0.45,
-            similarity_boost: 0.75,
-            style: 0.35,
-            use_speaker_boost: true,
-            speed: 1.0,
+    let audioB64: string | null = null;
+    let ttsFallback = false;
+    let ttsErrorMsg: string | null = null;
+
+    if (!ELEVENLABS_API_KEY) {
+      ttsFallback = true;
+      ttsErrorMsg = "elevenlabs_not_configured";
+    } else {
+      try {
+        const ttsResp = await fetch(
+          `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
+          {
+            method: "POST",
+            headers: {
+              "xi-api-key": ELEVENLABS_API_KEY,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              text: reply,
+              model_id: TTS_MODEL,
+              voice_settings: {
+                stability: 0.45,
+                similarity_boost: 0.75,
+                style: 0.35,
+                use_speaker_boost: true,
+                speed: 1.0,
+              },
+            }),
           },
-        }),
-      },
-    );
-    if (!ttsResp.ok) {
-      const err = await ttsResp.text();
-      console.error("TTS failed", ttsResp.status, err);
-      return jsonResponse({
-        ok: true,
-        transcript,
-        reply,
-        audio_base64: null,
-        tts_error: err,
-        usage: gate,
-      });
+        );
+        if (!ttsResp.ok) {
+          const err = await ttsResp.text();
+          console.error("TTS failed", ttsResp.status, err);
+          ttsFallback = true;
+          ttsErrorMsg = /detected_unusual_activity|Free Tier/i.test(err)
+            ? "voice_provider_free_tier_blocked"
+            : `tts_${ttsResp.status}`;
+        } else {
+          const audioBuf = new Uint8Array(await ttsResp.arrayBuffer());
+          audioB64 = b64encode(audioBuf);
+        }
+      } catch (e) {
+        console.error("TTS exception", e);
+        ttsFallback = true;
+        ttsErrorMsg = "tts_network_error";
+      }
     }
-    const audioBuf = new Uint8Array(await ttsResp.arrayBuffer());
-    const audioB64 = b64encode(audioBuf);
 
     // --- 5) Persist turns (fire-and-forget) ---
     if (convId) {

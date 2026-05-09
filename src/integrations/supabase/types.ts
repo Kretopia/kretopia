@@ -15343,6 +15343,36 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_usage_daily: {
+        Row: {
+          created_at: string
+          day: string
+          id: string
+          seconds_used: number
+          turns_used: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day?: string
+          id?: string
+          seconds_used?: number
+          turns_used?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          id?: string
+          seconds_used?: number
+          turns_used?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       waitlist: {
         Row: {
           ai_decision: string | null
@@ -16939,6 +16969,7 @@ export type Database = {
           used: number
         }[]
       }
+      consume_voice_seconds: { Args: { _seconds: number }; Returns: Json }
       create_bidirectional_connection: {
         Args: {
           connection_status?: string

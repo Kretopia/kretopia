@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Sparkles, Send, Loader2, Trash2, HelpCircle } from "lucide-react";
+import { Sparkles, Send, Loader2, Trash2, HelpCircle, Mic, Square, Volume2, VolumeX, Crown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  startRecording,
+  stopAndSend,
+  cancelRecording,
+  playAudio,
+  stopPlayback,
+} from "@/lib/thriveVoice";
 import ReactMarkdown from "react-markdown";
 import {
   Sheet,
@@ -94,6 +102,7 @@ const QUICK_PROMPTS_BY_SURFACE: Partial<Record<CopilotSurface, string[]>> = {
 
 export const ThriveAgentFab = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -111,6 +120,17 @@ export const ThriveAgentFab = () => {
   const abortRef = useRef<AbortController | null>(null);
   const [deskTab, setDeskTab] = useState<string>("today");
   const [capsOpen, setCapsOpen] = useState(false);
+  // Voice state
+  const [recording, setRecording] = useState(false);
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [voiceMuted, setVoiceMuted] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("thriveVoice:muted") === "1";
+  });
+  const recordTimerRef = useRef<number | null>(null);
+  const [recordSec, setRecordSec] = useState(0);
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
 
   const surface: CopilotSurface = inferSurface(location.pathname);
 
@@ -435,6 +455,119 @@ export const ThriveAgentFab = () => {
     }
   }, [user]);
 
+  // ===== Thrive Voice (push-to-talk) =====
+  const handleStartVoice = useCallback(async () => {
+    if (recording || voiceBusy) return;
+    try {
+      stopPlayback();
+      setSpeaking(false);
+      await startRecording();
+      setRecording(true);
+      setRecordSec(0);
+      recordTimerRef.current = window.setInterval(() => {
+        setRecordSec((s) => {
+          const next = s + 1;
+          if (next >= 60) {
+            // Hard cap a single utterance at 60s
+            handleStopVoice();
+          }
+          return next;
+        });
+      }, 1000);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't access microphone");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recording, voiceBusy]);
+
+  const handleCancelVoice = useCallback(() => {
+    cancelRecording();
+    if (recordTimerRef.current) {
+      clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+    setRecording(false);
+    setRecordSec(0);
+  }, []);
+
+  const handleStopVoice = useCallback(async () => {
+    if (recordTimerRef.current) {
+      clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+    setRecording(false);
+    setVoiceBusy(true);
+    try {
+      const result = await stopAndSend({ surface, surfaceContext });
+      if (result.ok === false) {
+        if (result.code === "voice_daily_limit") {
+          // Push the transcript so user sees what was heard, then upgrade toast
+          if (result.transcript) {
+            setMessages((prev) => [...prev, { role: "user", content: result.transcript! }]);
+          }
+          toast.error(
+            result.tier === "free"
+              ? "You've hit today's free voice limit (2 min/day). Upgrade for more."
+              : "You've hit today's voice limit. Upgrade for more.",
+            {
+              action: {
+                label: "Upgrade",
+                onClick: () => navigate("/subscription"),
+              },
+              duration: 8000,
+            },
+          );
+        } else if (result.code === "no_speech") {
+          toast.error(result.message);
+        } else {
+          toast.error(result.message);
+        }
+        return;
+      }
+      // Append both turns locally (server already persisted them)
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: `🎙️ ${result.transcript}` },
+        { role: "assistant", content: result.reply },
+      ]);
+      // Play TTS unless muted
+      if (result.audioUrl && !voiceMuted) {
+        const a = playAudio(result.audioUrl);
+        audioElRef.current = a;
+        setSpeaking(true);
+        a.onended = () => setSpeaking(false);
+        a.onerror = () => setSpeaking(false);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Voice turn failed");
+    } finally {
+      setVoiceBusy(false);
+      setRecordSec(0);
+    }
+  }, [surface, surfaceContext, voiceMuted, navigate]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (recordTimerRef.current) clearInterval(recordTimerRef.current);
+      cancelRecording();
+      stopPlayback();
+    };
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    setVoiceMuted((m) => {
+      const next = !m;
+      try { localStorage.setItem("thriveVoice:muted", next ? "1" : "0"); } catch { /* ignore */ }
+      if (next) {
+        stopPlayback();
+        setSpeaking(false);
+      }
+      return next;
+    });
+  }, []);
+
+
   // FAB visibility: hide the floating orb on chat surfaces & unauthenticated paths.
   // The Sheet itself remains mounted so the global header sparkle (thrive-copilot:open)
   // can still open the Copilot from anywhere — including /messages and Desk chat.
@@ -623,37 +756,114 @@ export const ThriveAgentFab = () => {
                 Thinking…
               </div>
             )}
+            {voiceBusy && (
+              <div className="mr-auto bg-primary/10 border border-primary/30 rounded-2xl px-3.5 py-2.5 text-sm text-foreground inline-flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                Hearing you out…
+              </div>
+            )}
+            {speaking && !voiceMuted && (
+              <div className="mr-auto bg-accent/60 rounded-2xl px-3.5 py-2.5 text-xs text-muted-foreground inline-flex items-center gap-2">
+                <Volume2 className="h-3.5 w-3.5 text-primary animate-pulse" />
+                Thrive is speaking…
+                <button
+                  className="ml-1 underline text-primary"
+                  onClick={() => { stopPlayback(); setSpeaking(false); }}
+                >
+                  stop
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Composer */}
           <div className="border-t border-border bg-background p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shrink-0">
-            <div className="flex items-end gap-2">
-              <Textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    send();
-                  }
-                }}
-                placeholder={`Ask anything from ${surfaceLabel}…`}
-                rows={2}
-                className="resize-none text-sm flex-1 min-h-[44px]"
-              />
-              <Button
-                onClick={() => send()}
-                disabled={!text.trim() || sending}
-                size="icon"
-                className="h-11 w-11 shrink-0"
-              >
-                {sending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            {recording ? (
+              <div className="flex items-center gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 px-3 py-2.5">
+                <span className="relative flex h-3 w-3 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-destructive"></span>
+                </span>
+                <div className="flex-1 text-sm">
+                  <div className="font-medium text-foreground">Listening…</div>
+                  <div className="text-[11px] text-muted-foreground tabular-nums">
+                    {Math.floor(recordSec / 60)}:{(recordSec % 60).toString().padStart(2, "0")} · max 60s
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 px-3 text-muted-foreground"
+                  onClick={handleCancelVoice}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-9 px-3 gap-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={handleStopVoice}
+                >
+                  <Square className="h-3.5 w-3.5 fill-current" /> Send
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-end gap-2">
+                <Textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      send();
+                    }
+                  }}
+                  placeholder={`Ask or tap mic to talk…`}
+                  rows={2}
+                  className="resize-none text-sm flex-1 min-h-[44px]"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-11 w-11 shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={toggleMute}
+                  aria-label={voiceMuted ? "Unmute Thrive's voice" : "Mute Thrive's voice"}
+                  title={voiceMuted ? "Voice replies muted" : "Voice replies on"}
+                >
+                  {voiceMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4 text-primary" />}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-11 w-11 shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+                  onClick={handleStartVoice}
+                  disabled={voiceBusy || sending}
+                  aria-label="Talk to Thrive"
+                  title="Tap to talk · 60s max"
+                >
+                  {voiceBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
+                </Button>
+                <Button
+                  onClick={() => send()}
+                  disabled={!text.trim() || sending}
+                  size="icon"
+                  className="h-11 w-11 shrink-0"
+                >
+                  {sending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            )}
+            {!recording && messages.length === 0 && historyLoaded && (
+              <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+                <Crown className="h-2.5 w-2.5" />
+                <span>Free: 2 min/day voice · Creator: 15 min · Creator+: 60 min</span>
+              </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>

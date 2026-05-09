@@ -218,11 +218,23 @@ export function ScoutedGigsSection() {
           </h2>
           <p className="text-xs text-muted-foreground">Real gigs from the open web — matched to your profile</p>
         </div>
-        <Button size="sm" variant="outline" onClick={scanNow} disabled={scanning}>
-          {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-          <span className="ml-1.5 text-xs">Scan now</span>
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button size="sm" variant="ghost" onClick={() => setPrefsOpen(true)} title="Tune scout preferences">
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            <span className="ml-1.5 text-xs hidden sm:inline">Tune</span>
+          </Button>
+          <Button size="sm" variant="outline" onClick={scanNow} disabled={scanning}>
+            {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            <span className="ml-1.5 text-xs">Scan now</span>
+          </Button>
+        </div>
       </div>
+
+      <ScoutPreferencesDialog
+        open={prefsOpen}
+        onOpenChange={setPrefsOpen}
+        onSaved={() => { /* user can hit Scan now to re-run */ }}
+      />
 
       <FirstTimeHint
         storageKey="gigs.scouted-explainer"

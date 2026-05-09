@@ -19,13 +19,13 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY")!;
+const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY") || "";
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 
 // Default voice — warm, professional. (Sarah)
 const DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL";
 const TTS_MODEL = "eleven_turbo_v2_5";
-const STT_MODEL = "scribe_v2";
+const STT_MODEL = "google/gemini-2.5-flash"; // multimodal audio in
 const BRAIN_MODEL = "google/gemini-2.5-flash";
 
 interface ReqBody {

@@ -313,9 +313,9 @@ export const ThriveAgentFab = () => {
   }, [messages, sending]);
 
   const send = useCallback(
-    async (msgText?: string) => {
+    async (msgText?: string): Promise<string> => {
       const content = (msgText ?? text).trim();
-      if (!content || sending) return;
+      if (!content || sending) return "";
       const userMsg: CopilotMessage = { role: "user", content };
       const next = [...messages, userMsg];
       setMessages(next);

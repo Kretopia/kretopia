@@ -264,7 +264,7 @@ const AppContent = () => {
       {showGuestBanner && <GuestBanner />}
       <main
         id="main-content"
-        className={shouldAddBottomPadding ? "pb-20 lg:pb-0" : ""}
+        className={shouldAddBottomPadding ? "pb-36 lg:pb-0" : ""}
         style={{ paddingRight: "var(--copilot-rail-w, 0px)" }}
       >
         <Suspense fallback={<LoadingFallback />}>

@@ -68,22 +68,23 @@ export function useAccountTone() {
     if (cached) setTone(cached);
 
     let cancelled = false;
-    supabase
-      .from("profiles")
-      .select("account_type")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("account_type")
+          .eq("user_id", user.id)
+          .maybeSingle();
         if (cancelled) return;
         const next: AccountTone = data?.account_type === "company" ? "business" : "creative";
         setTone(next);
         writeCached(user.id, next);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (!cancelled) setLoading(false);
+      } catch (err) {
         console.warn("[useAccountTone] failed", err);
-      });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
 
     return () => { cancelled = true; };
   }, [user?.id]);

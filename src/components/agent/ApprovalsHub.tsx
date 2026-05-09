@@ -43,7 +43,7 @@ export const ApprovalsHub = ({ limit = 4 }: { limit?: number }) => {
     if (!user) return;
     const { data } = await (supabase as any)
       .from("outreach_drafts")
-      .select("id, source, subject, body, recipient_name, brand_name, status")
+      .select("id, source, subject, body, recipient_name, brand_name, status, meta")
       .eq("user_id", user.id)
       .eq("status", "draft")
       .order("created_at", { ascending: false })

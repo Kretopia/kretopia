@@ -318,3 +318,39 @@ export function SwipeStack({
     </div>
   );
 }
+
+function EmptyDeck({ canUndo, onUndo }: { canUndo?: boolean; onUndo?: () => void }) {
+  const navigate = useNavigate();
+  const { isBusiness, pick } = useAccountTone();
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[460px] w-full px-2">
+      <EmptyState
+        icon={Sparkles}
+        eyebrow={pick("You're up to date", "Roster reviewed")}
+        title={pick("That's everyone for now", "No new talent right now")}
+        description={pick(
+          "New creatives drop in daily. Browse the network or invite a collaborator to keep momentum.",
+          "Cast a wider net — search by skill or invite specific talent to apply.",
+        )}
+        accent="lime"
+        action={{
+          label: pick("Browse network", "Find talent"),
+          icon: isBusiness ? Search : Eye,
+          onClick: () => navigate(isBusiness ? "/talent-finder" : "/circle"),
+        }}
+        secondaryAction={{
+          label: pick("Invite a collaborator", "Invite to apply"),
+          icon: UserPlus,
+          onClick: () => navigate("/invite"),
+        }}
+      />
+      {canUndo && onUndo && (
+        <Button variant="ghost" size="sm" onClick={onUndo} className="gap-2 mt-1 text-muted-foreground">
+          <RotateCcw className="h-4 w-4" />
+          Undo last
+        </Button>
+      )}
+    </div>
+  );
+}

@@ -17629,6 +17629,7 @@ export type Database = {
         | "wrap_project"
         | "collab_nudge"
         | "other"
+        | "chase_invoice"
       agent_proposal_status: "pending" | "accepted" | "dismissed" | "expired"
       app_role: "admin" | "moderator" | "user" | "writer"
       inbox_triage_kind:
@@ -17828,6 +17829,7 @@ export const Constants = {
         "wrap_project",
         "collab_nudge",
         "other",
+        "chase_invoice",
       ],
       agent_proposal_status: ["pending", "accepted", "dismissed", "expired"],
       app_role: ["admin", "moderator", "user", "writer"],

@@ -7,6 +7,7 @@ import {
   stopAndSend,
   cancelRecording,
   playAudio,
+  playReply,
   stopPlayback,
 } from "@/lib/thriveVoice";
 import ReactMarkdown from "react-markdown";

@@ -166,11 +166,11 @@ Bio: ${(profile.bio || "").slice(0, 300)}`;
         {
           role: "system",
           content:
-            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) REJECT anything older than 14 days — if snippet says '3 weeks ago', '1 month ago', '6 months ago', 'no longer accepting', 'expired', 'closed', 'filled', REJECT. (2) Skip generic listing pages, articles, blog posts, 'top 10' roundups. (3) Only return entries that are clearly active job/casting/freelance posts. (4) BALANCE SOURCES — do not return more than 3 LinkedIn results total; prioritize gig boards, ATS, Instagram open calls, and indie creative platforms. (5) Score fit 0-100 against the creator profile.",
+            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) REJECT anything older than 14 days — if snippet says '3 weeks ago', '1 month ago', '6 months ago', 'no longer accepting', 'expired', 'closed', 'filled', REJECT. (2) REJECT generic listing/search/category pages, articles, blog posts, 'top 10' roundups. The URL MUST be a deep-link to ONE specific job/casting/gig posting (e.g. .../jobs/12345, .../p/AbC123, .../job-title-slug-id). REJECT URLs that end in /jobs, /jobs/, /careers, /search, /browse, /explore, /tags, /listings, /opportunities, or are just a domain homepage. (3) REJECT entries where you cannot extract a real role title AND at least one concrete detail (description, compensation, or company). Do NOT invent details. (4) BALANCE SOURCES — do not return more than 3 LinkedIn results total; prioritize gig boards, ATS, Instagram open calls, and indie creative platforms. (5) Score fit 0-100 against the creator profile.",
         },
         {
           role: "user",
-          content: `TODAY: ${new Date().toISOString().slice(0,10)}\n\nCREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract ONLY active gigs posted in the LAST 14 DAYS. Cap LinkedIn at 3 max. For each: title, company, location, remote, description (1-2 sentences), compensation, contact_email, apply_url, posted_age (e.g. "2 days ago", "1 week ago" — REQUIRED, infer from snippet), skills, fit_score, fit_reason, source.`,
+          content: `TODAY: ${new Date().toISOString().slice(0,10)}\n\nCREATOR PROFILE:\n${profileBlurb}\n\nSEARCH RESULTS:\n${snippets}\n\nExtract ONLY active gigs posted in the LAST 14 DAYS that link to a SPECIFIC posting page (not a category/search). Cap LinkedIn at 3 max. For each: title, company, location, remote, description (2-4 sentences with REAL details from the snippet — never blank, never "see post"), compensation, contact_email, apply_url (MUST be the deep-link to the specific posting), posted_age (REQUIRED), skills, fit_score, fit_reason, source.`,
         },
       ],
       tools: [{
@@ -232,6 +232,36 @@ function dedupeKey(g: { source_url: string; title: string }) {
   const url = (g.source_url || "").split("?")[0].split("#")[0].toLowerCase();
   const title = (g.title || "").toLowerCase().replace(/\s+/g, " ").trim().slice(0, 80);
   return `${url}::${title}`;
+}
+
+// True if URL looks like a generic listing/search/category page rather than a
+// deep-link to ONE specific gig posting.
+function isGenericListingUrl(u: string): boolean {
+  if (!u) return true;
+  try {
+    const url = new URL(u);
+    const path = url.pathname.replace(/\/+$/, "").toLowerCase();
+    if (!path) return true;
+    const segs = path.split("/").filter(Boolean);
+    const last = segs[segs.length - 1] || "";
+    const generic = new Set([
+      "jobs","job","careers","career","search","browse","explore","listings",
+      "opportunities","gigs","work","hiring","tags","tag","category","categories",
+      "feed","home","casting","castings","openings","positions","postings","apply",
+    ]);
+    if (generic.has(last)) return true;
+    // Bare category page like /jobs/design with no specific posting id/slug
+    if (segs.length < 2 && last.length < 8) return true;
+    // Search-like URLs with only a query
+    if (url.search && /[?&](q|query|keyword|search)=/.test(url.search) && segs.length <= 2) return true;
+    // LinkedIn jobs needs /view/<id> to be a specific posting
+    if (/linkedin\.com$/.test(url.hostname) || /linkedin\.com$/.test(url.hostname.replace(/^www\./, ""))) {
+      if (!/\/jobs\/view\//.test(path)) return true;
+    }
+    return false;
+  } catch {
+    return true;
+  }
 }
 
 serve(async (req) => {
@@ -341,7 +371,13 @@ serve(async (req) => {
       if (!g.title || !g.source_url) return false;
       if ((g.fit_score ?? 0) < prefs.min_fit_score) return false;
       if (isStale(g.posted_age || "")) return false;
-      const blob = `${g.title} ${g.description || ""} ${g.posted_age || ""}`.toLowerCase();
+      // URL must be a deep-link to a specific posting (not a search/category page)
+      const apply = g.apply_url || g.source_url;
+      if (isGenericListingUrl(apply) && isGenericListingUrl(g.source_url)) return false;
+      // Require a real description so cards aren't empty shells
+      const desc = (g.description || "").trim();
+      if (desc.length < 40 && !g.compensation && !g.company) return false;
+      const blob = `${g.title} ${desc} ${g.posted_age || ""}`.toLowerCase();
       if (/no longer accepting|expired|position closed|1 year ago|2 years ago|months ago/.test(blob)) return false;
       if ((prefs.exclude_keywords || []).some((kw) => kw && blob.includes(kw.toLowerCase()))) return false;
       if (g.source === "linkedin") {
@@ -373,7 +409,7 @@ serve(async (req) => {
         description: g.description || null,
         compensation: g.compensation || null,
         contact_email: g.contact_email || null,
-        apply_url: g.apply_url || g.source_url,
+        apply_url: !isGenericListingUrl(g.apply_url || "") ? g.apply_url : (!isGenericListingUrl(g.source_url) ? g.source_url : (g.apply_url || g.source_url)),
         skills: g.skills || null,
         fit_score: Math.round(g.fit_score),
         fit_reason: g.fit_reason || null,

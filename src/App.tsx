@@ -254,6 +254,7 @@ const AppContent = () => {
       {showBottomNav && <QuickActionFab />}
       <ThriveAgentFab />
       <DesktopCopilotRail />
+      {showBottomNav && <ThriveBar />}
       
       {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
       {user && <GlobalIncomingCall />}

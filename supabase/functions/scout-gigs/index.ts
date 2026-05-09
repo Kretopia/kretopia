@@ -77,7 +77,7 @@ function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; qu
     }
   }
   if (prefs.sources.includes("linkedin")) {
-    queries.push({ source: "linkedin", query: `site:linkedin.com/jobs ${role} ${loc}` });
+    // ONE LinkedIn query only — was dominating results
     queries.push({ source: "linkedin", query: `site:linkedin.com/jobs "${skills[0] || role}" ${loc}` });
   }
   if (prefs.sources.includes("instagram")) {

@@ -25,7 +25,7 @@ import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 const Scene = () => {
   const location = useLocation();
   const { t } = useTranslation();
-  const { pick: pickTone, isBusiness } = useAccountTone();
+  const { pick: pickTone } = useAccountTone();
   const { pick: pickVoice } = useTrinidadVoice();
   const isEventsRoute = location.pathname === "/events";
   const searchParams = new URLSearchParams(location.search);

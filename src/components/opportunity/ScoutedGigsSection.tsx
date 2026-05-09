@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import {
   Globe, Linkedin, Instagram, Sparkles, MapPin, ExternalLink,
   Loader2, RefreshCw, Mail, Bookmark, X, Send,
@@ -157,6 +158,13 @@ export function ScoutedGigsSection() {
           <span className="ml-1.5 text-xs">Scan now</span>
         </Button>
       </div>
+
+      <FirstTimeHint
+        storageKey="gigs.scouted-explainer"
+        title="How scouting works"
+        description="Every morning Thrive scans gig boards, LinkedIn, Instagram and ATS pages, then ranks them by fit. Tap one to draft an application."
+        tone="energy"
+      />
 
       {gigs.length === 0 ? (
         <Card className="p-6 text-center text-sm text-muted-foreground border-dashed">

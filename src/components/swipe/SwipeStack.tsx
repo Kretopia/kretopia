@@ -2,7 +2,8 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { SwipeCard } from './SwipeCard';
 import { SwipeProfile } from '@/hooks/useSwipeProfiles';
 import { Button } from '@/components/ui/button';
-import { X, Heart, RotateCcw, Eye, MessageCircle } from 'lucide-react';
+import { FirstTimeHint } from '@/components/ui/first-time-hint';
+import { X, Heart, RotateCcw, Eye, MessageCircle, Hand } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SwipeStackProps {
@@ -201,6 +202,13 @@ export function SwipeStack({
 
   return (
     <div className="flex flex-col items-center w-full px-4 sm:px-0">
+      <FirstTimeHint
+        storageKey="match.swipe"
+        title="Swipe right to connect, left to pass"
+        description="Prefer buttons? Tap the heart, X, or eye below the card."
+        icon={Hand}
+        className="w-full max-w-[340px] sm:max-w-sm mb-3"
+      />
       {/* Card Stack */}
       <div 
         className="relative w-full max-w-[340px] sm:max-w-sm h-[420px] sm:h-[480px] md:h-[520px]"

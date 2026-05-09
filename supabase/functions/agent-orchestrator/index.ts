@@ -58,6 +58,7 @@ async function classifyIntent(
     "site_epk",
     "money_admin",
     "profile",
+    "memory",
   ];
 
   const resp = await fetch(

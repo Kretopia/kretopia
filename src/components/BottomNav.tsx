@@ -25,25 +25,11 @@ const COMPANY_ITEMS = [
 
 const BottomNav = memo(() => {
   const location = useLocation();
-  const { user } = useAuth();
-  const [isCompany, setIsCompany] = useState(false);
-
-  useEffect(() => {
-    if (!user) return;
-    Promise.resolve(
-      supabase
-        .from("profiles")
-        .select("account_type")
-        .eq("user_id", user.id)
-        .maybeSingle()
-    ).then(({ data }) => {
-      setIsCompany(data?.account_type === "company");
-    }).catch(err => console.warn('[BottomNav] Error loading profile:', err));
-  }, [user?.id]);
+  const { isBusiness } = useAccountTone();
 
   if (location.pathname === "/auth") return null;
 
-  const items = isCompany ? COMPANY_ITEMS : NAV_ITEMS;
+  const items = isBusiness ? COMPANY_ITEMS : NAV_ITEMS;
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";

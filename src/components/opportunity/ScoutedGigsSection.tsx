@@ -10,8 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import {
   Globe, Linkedin, Instagram, Sparkles, MapPin, ExternalLink,
-  Loader2, RefreshCw, Mail, Bookmark, X, Send, ShieldCheck, Briefcase,
+  Loader2, RefreshCw, Mail, Bookmark, X, Send, ShieldCheck, Briefcase, SlidersHorizontal,
 } from "lucide-react";
+import { ScoutPreferencesDialog } from "./ScoutPreferencesDialog";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 
@@ -78,6 +79,7 @@ export function ScoutedGigsSection() {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [openGig, setOpenGig] = useState<ScoutedGig | null>(null);
+  const [prefsOpen, setPrefsOpen] = useState(false);
   const [enriching, setEnriching] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
   const [drafting, setDrafting] = useState(false);
@@ -216,11 +218,23 @@ export function ScoutedGigsSection() {
           </h2>
           <p className="text-xs text-muted-foreground">Real gigs from the open web — matched to your profile</p>
         </div>
-        <Button size="sm" variant="outline" onClick={scanNow} disabled={scanning}>
-          {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-          <span className="ml-1.5 text-xs">Scan now</span>
-        </Button>
+        <div className="flex items-center gap-1.5">
+          <Button size="sm" variant="ghost" onClick={() => setPrefsOpen(true)} title="Tune scout preferences">
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            <span className="ml-1.5 text-xs hidden sm:inline">Tune</span>
+          </Button>
+          <Button size="sm" variant="outline" onClick={scanNow} disabled={scanning}>
+            {scanning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            <span className="ml-1.5 text-xs">Scan now</span>
+          </Button>
+        </div>
       </div>
+
+      <ScoutPreferencesDialog
+        open={prefsOpen}
+        onOpenChange={setPrefsOpen}
+        onSaved={() => { /* user can hit Scan now to re-run */ }}
+      />
 
       <FirstTimeHint
         storageKey="gigs.scouted-explainer"

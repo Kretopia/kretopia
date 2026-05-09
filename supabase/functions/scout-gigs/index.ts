@@ -29,6 +29,11 @@ interface ScoutPrefs {
   exclude_keywords: string[] | null;
   remote_only: boolean;
   min_fit_score: number;
+  job_types: string[] | null;
+  employment_types: string[] | null;
+  locations: string[] | null;
+  travel_ok: boolean;
+  instructions: string | null;
 }
 
 // Curated, scrapable, English-speaking creative gig sources
@@ -60,44 +65,42 @@ function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; qu
   const role = p.role || "creative";
   const subs = (p.sub_roles || []).slice(0, 2);
   const skills = (p.skills || []).slice(0, 4);
-  const loc = prefs.remote_only ? "remote" : (p.location || "remote");
+  const jobTypes = (prefs.job_types || []).slice(0, 3);
+  const empTypes = (prefs.employment_types || []).slice(0, 2);
+  // Locations: user-tuned list wins, else profile location, else "remote"
+  const userLocs = (prefs.locations || []).filter(Boolean);
+  const locList = prefs.remote_only ? ["remote"] : (userLocs.length ? userLocs : [p.location || "remote"]);
   const extra = (prefs.extra_keywords || []).slice(0, 3).join(" ");
+  const empSuffix = empTypes.length ? ` ${empTypes.join(" OR ")}` : "";
 
-  const baseTerms = [role, ...subs, ...skills.slice(0, 2), extra].filter(Boolean).join(" ").trim();
+  const baseRole = [jobTypes[0] || role, ...subs, ...skills.slice(0, 2), extra].filter(Boolean).join(" ").trim();
   const queries: { source: string; query: string }[] = [];
 
-  if (prefs.sources.includes("web")) {
-    for (const site of WEB_SITES.slice(0, 6)) {
-      queries.push({ source: "web", query: `site:${site} ${baseTerms} ${loc}` });
+  // Fan out across each preferred location (cap to 3 to keep request count sane)
+  for (const loc of locList.slice(0, 3)) {
+    const baseTerms = `${baseRole}${empSuffix} ${loc}`.trim();
+
+    if (prefs.sources.includes("web")) {
+      for (const site of WEB_SITES.slice(0, 6)) {
+        queries.push({ source: "web", query: `site:${site} ${baseTerms}` });
+      }
     }
-  }
-  if (prefs.sources.includes("ats")) {
-    for (const site of ATS_SITES) {
-      queries.push({ source: "ats", query: `site:${site} ${role} ${skills[0] || ""} ${loc}`.trim() });
+    if (prefs.sources.includes("ats")) {
+      for (const site of ATS_SITES) {
+        queries.push({ source: "ats", query: `site:${site} ${jobTypes[0] || role} ${skills[0] || ""} ${loc}`.trim() });
+      }
     }
-  }
-  if (prefs.sources.includes("linkedin")) {
-    // ONE LinkedIn query only — was dominating results
-    queries.push({ source: "linkedin", query: `site:linkedin.com/jobs "${skills[0] || role}" ${loc}` });
-  }
-  if (prefs.sources.includes("instagram")) {
-    // IG public hashtag pages — best for casting / open calls
-    queries.push({
-      source: "instagram",
-      query: `site:instagram.com/explore/tags casting ${role} ${loc}`,
-    });
-    queries.push({
-      source: "instagram",
-      query: `site:instagram.com "open call" ${role} ${loc}`,
-    });
-    queries.push({
-      source: "instagram",
-      query: `site:instagram.com/explore/tags ${role}gig ${loc}`,
-    });
-  }
-  if (prefs.sources.includes("facebook")) {
-    for (const q of FB_QUERIES) {
-      queries.push({ source: "web", query: `site:${q} ${role} ${loc}` });
+    if (prefs.sources.includes("linkedin")) {
+      queries.push({ source: "linkedin", query: `site:linkedin.com/jobs "${jobTypes[0] || skills[0] || role}" ${loc}` });
+    }
+    if (prefs.sources.includes("instagram")) {
+      queries.push({ source: "instagram", query: `site:instagram.com/explore/tags casting ${jobTypes[0] || role} ${loc}` });
+      queries.push({ source: "instagram", query: `site:instagram.com "open call" ${jobTypes[0] || role} ${loc}` });
+    }
+    if (prefs.sources.includes("facebook")) {
+      for (const q of FB_QUERIES) {
+        queries.push({ source: "web", query: `site:${q} ${jobTypes[0] || role} ${loc}` });
+      }
     }
   }
   return queries;
@@ -141,6 +144,7 @@ async function firecrawlSearch(query: string, key: string) {
 async function extractAndScore(
   raw: Array<{ url: string; title?: string; markdown?: string; description?: string; source: string }>,
   profile: Profile,
+  prefs: ScoutPrefs,
   lovableKey: string,
 ) {
   if (raw.length === 0) return [];
@@ -151,11 +155,22 @@ async function extractAndScore(
     )
     .join("\n\n---\n\n");
 
+  const prefBlurb = [
+    prefs.job_types?.length ? `Wants roles: ${prefs.job_types.join(", ")}` : "",
+    prefs.employment_types?.length ? `Employment: ${prefs.employment_types.join(", ")}` : "",
+    prefs.locations?.length ? `Preferred locations: ${prefs.locations.join(", ")}` : "",
+    prefs.remote_only ? "Remote only: YES" : "",
+    prefs.travel_ok ? "Open to travel: YES" : "Open to travel: NO",
+    prefs.exclude_keywords?.length ? `Exclude: ${prefs.exclude_keywords.join(", ")}` : "",
+    prefs.instructions ? `User notes: ${prefs.instructions.slice(0, 600)}` : "",
+  ].filter(Boolean).join("\n");
+
   const profileBlurb = `Role: ${profile.role || "creative"}
 Sub-roles: ${(profile.sub_roles || []).join(", ")}
 Skills: ${(profile.skills || []).join(", ")}
 Location: ${profile.location || "remote"}
-Bio: ${(profile.bio || "").slice(0, 300)}`;
+Bio: ${(profile.bio || "").slice(0, 300)}
+${prefBlurb ? `\nUSER SCOUT PREFERENCES:\n${prefBlurb}` : ""}`;
 
   const r = await fetch(AI_URL, {
     method: "POST",
@@ -166,7 +181,7 @@ Bio: ${(profile.bio || "").slice(0, 300)}`;
         {
           role: "system",
           content:
-            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) REJECT anything older than 14 days — if snippet says '3 weeks ago', '1 month ago', '6 months ago', 'no longer accepting', 'expired', 'closed', 'filled', REJECT. (2) REJECT generic listing/search/category pages, articles, blog posts, 'top 10' roundups. The URL MUST be a deep-link to ONE specific job/casting/gig posting (e.g. .../jobs/12345, .../p/AbC123, .../job-title-slug-id). REJECT URLs that end in /jobs, /jobs/, /careers, /search, /browse, /explore, /tags, /listings, /opportunities, or are just a domain homepage. (3) REJECT entries where you cannot extract a real role title AND at least one concrete detail (description, compensation, or company). Do NOT invent details. (4) BALANCE SOURCES — do not return more than 3 LinkedIn results total; prioritize gig boards, ATS, Instagram open calls, and indie creative platforms. (5) Score fit 0-100 against the creator profile.",
+            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) REJECT anything older than 14 days — if snippet says '3 weeks ago', '1 month ago', '6 months ago', 'no longer accepting', 'expired', 'closed', 'filled', REJECT. (2) REJECT generic listing/search/category pages, articles, blog posts, 'top 10' roundups. The URL MUST be a deep-link to ONE specific job/casting/gig posting (e.g. .../jobs/12345, .../p/AbC123, .../job-title-slug-id). REJECT URLs that end in /jobs, /jobs/, /careers, /search, /browse, /explore, /tags, /listings, /opportunities, or are just a domain homepage. (3) REJECT entries where you cannot extract a real role title AND at least one concrete detail (description, compensation, or company). Do NOT invent details. (4) BALANCE SOURCES — do not return more than 3 LinkedIn results total; prioritize gig boards, ATS, Instagram open calls, and indie creative platforms. (5) HONOR USER SCOUT PREFERENCES strictly — if user lists preferred job_types/employment_types, only return matching roles; if user lists preferred locations, only return gigs in those cities OR remote (unless travel_ok=YES); if remote_only=YES, only return remote gigs; respect 'Exclude' keywords and 'User notes' as hard filters. (6) Score fit 0-100 against the creator profile + preferences (boost when role/location/employment match).",
         },
         {
           role: "user",
@@ -332,6 +347,7 @@ serve(async (req) => {
     let prefs: ScoutPrefs = prefsRow ?? {
       sources: ["web", "linkedin", "instagram", "ats"],
       extra_keywords: null, exclude_keywords: null, remote_only: false, min_fit_score: 60,
+      job_types: null, employment_types: null, locations: null, travel_ok: false, instructions: null,
     } as ScoutPrefs;
     if (!prefsRow) {
       await supabase.from("scout_preferences").insert({ user_id: userId });
@@ -353,7 +369,7 @@ serve(async (req) => {
     }
     console.log("[scout] raw results", allRaw.length);
 
-    const extracted = await extractAndScore(allRaw, mergedProfile, aiKey);
+    const extracted = await extractAndScore(allRaw, mergedProfile, prefs, aiKey);
     // Reject anything older than 30 days based on AI-extracted posted_age
     const isStale = (age: string) => {
       if (!age) return true;

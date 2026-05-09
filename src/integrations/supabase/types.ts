@@ -13354,37 +13354,52 @@ export type Database = {
       scout_preferences: {
         Row: {
           created_at: string
+          employment_types: string[] | null
           enabled: boolean
           exclude_keywords: string[] | null
           extra_keywords: string[] | null
+          instructions: string | null
+          job_types: string[] | null
           last_run_at: string | null
+          locations: string[] | null
           min_fit_score: number | null
           remote_only: boolean | null
           sources: string[]
+          travel_ok: boolean
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          employment_types?: string[] | null
           enabled?: boolean
           exclude_keywords?: string[] | null
           extra_keywords?: string[] | null
+          instructions?: string | null
+          job_types?: string[] | null
           last_run_at?: string | null
+          locations?: string[] | null
           min_fit_score?: number | null
           remote_only?: boolean | null
           sources?: string[]
+          travel_ok?: boolean
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          employment_types?: string[] | null
           enabled?: boolean
           exclude_keywords?: string[] | null
           extra_keywords?: string[] | null
+          instructions?: string | null
+          job_types?: string[] | null
           last_run_at?: string | null
+          locations?: string[] | null
           min_fit_score?: number | null
           remote_only?: boolean | null
           sources?: string[]
+          travel_ok?: boolean
           updated_at?: string
           user_id?: string
         }

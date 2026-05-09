@@ -198,8 +198,8 @@ export function DesktopCopilotRail() {
   return (
     <aside
       className={cn(
-        "hidden lg:flex fixed right-0 top-14 bottom-0 z-30 w-[340px] xl:w-[380px]",
-        "flex-col border-l border-border bg-background/95",
+        "hidden lg:flex fixed right-0 top-14 bottom-0 z-30 flex-col border-l border-border bg-background/95",
+        fullscreen ? "left-0 w-auto" : "w-[340px] xl:w-[380px]",
       )}
       aria-label="Thrive Copilot"
     >
@@ -216,15 +216,27 @@ export function DesktopCopilotRail() {
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => persistCollapsed(true)}
-          aria-label="Collapse"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => persistFullscreen(!fullscreen)}
+            aria-label={fullscreen ? "Exit full screen" : "Full screen Thrive"}
+            title={fullscreen ? "Exit full screen" : "Full screen"}
+          >
+            {fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => persistCollapsed(true)}
+            aria-label="Collapse"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Messages */}

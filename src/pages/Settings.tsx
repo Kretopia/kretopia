@@ -518,11 +518,12 @@ const Settings = () => {
                 Choose your preferred display language
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">Display language</p>
                 <LanguageSwitcher variant="full" />
               </div>
+              <CaribbeanVoiceToggle />
             </CardContent>
           </Card>
 

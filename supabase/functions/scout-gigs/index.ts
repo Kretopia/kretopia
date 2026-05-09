@@ -65,44 +65,42 @@ function buildSearchQueries(p: Profile, prefs: ScoutPrefs): { source: string; qu
   const role = p.role || "creative";
   const subs = (p.sub_roles || []).slice(0, 2);
   const skills = (p.skills || []).slice(0, 4);
-  const loc = prefs.remote_only ? "remote" : (p.location || "remote");
+  const jobTypes = (prefs.job_types || []).slice(0, 3);
+  const empTypes = (prefs.employment_types || []).slice(0, 2);
+  // Locations: user-tuned list wins, else profile location, else "remote"
+  const userLocs = (prefs.locations || []).filter(Boolean);
+  const locList = prefs.remote_only ? ["remote"] : (userLocs.length ? userLocs : [p.location || "remote"]);
   const extra = (prefs.extra_keywords || []).slice(0, 3).join(" ");
+  const empSuffix = empTypes.length ? ` ${empTypes.join(" OR ")}` : "";
 
-  const baseTerms = [role, ...subs, ...skills.slice(0, 2), extra].filter(Boolean).join(" ").trim();
+  const baseRole = [jobTypes[0] || role, ...subs, ...skills.slice(0, 2), extra].filter(Boolean).join(" ").trim();
   const queries: { source: string; query: string }[] = [];
 
-  if (prefs.sources.includes("web")) {
-    for (const site of WEB_SITES.slice(0, 6)) {
-      queries.push({ source: "web", query: `site:${site} ${baseTerms} ${loc}` });
+  // Fan out across each preferred location (cap to 3 to keep request count sane)
+  for (const loc of locList.slice(0, 3)) {
+    const baseTerms = `${baseRole}${empSuffix} ${loc}`.trim();
+
+    if (prefs.sources.includes("web")) {
+      for (const site of WEB_SITES.slice(0, 6)) {
+        queries.push({ source: "web", query: `site:${site} ${baseTerms}` });
+      }
     }
-  }
-  if (prefs.sources.includes("ats")) {
-    for (const site of ATS_SITES) {
-      queries.push({ source: "ats", query: `site:${site} ${role} ${skills[0] || ""} ${loc}`.trim() });
+    if (prefs.sources.includes("ats")) {
+      for (const site of ATS_SITES) {
+        queries.push({ source: "ats", query: `site:${site} ${jobTypes[0] || role} ${skills[0] || ""} ${loc}`.trim() });
+      }
     }
-  }
-  if (prefs.sources.includes("linkedin")) {
-    // ONE LinkedIn query only — was dominating results
-    queries.push({ source: "linkedin", query: `site:linkedin.com/jobs "${skills[0] || role}" ${loc}` });
-  }
-  if (prefs.sources.includes("instagram")) {
-    // IG public hashtag pages — best for casting / open calls
-    queries.push({
-      source: "instagram",
-      query: `site:instagram.com/explore/tags casting ${role} ${loc}`,
-    });
-    queries.push({
-      source: "instagram",
-      query: `site:instagram.com "open call" ${role} ${loc}`,
-    });
-    queries.push({
-      source: "instagram",
-      query: `site:instagram.com/explore/tags ${role}gig ${loc}`,
-    });
-  }
-  if (prefs.sources.includes("facebook")) {
-    for (const q of FB_QUERIES) {
-      queries.push({ source: "web", query: `site:${q} ${role} ${loc}` });
+    if (prefs.sources.includes("linkedin")) {
+      queries.push({ source: "linkedin", query: `site:linkedin.com/jobs "${jobTypes[0] || skills[0] || role}" ${loc}` });
+    }
+    if (prefs.sources.includes("instagram")) {
+      queries.push({ source: "instagram", query: `site:instagram.com/explore/tags casting ${jobTypes[0] || role} ${loc}` });
+      queries.push({ source: "instagram", query: `site:instagram.com "open call" ${jobTypes[0] || role} ${loc}` });
+    }
+    if (prefs.sources.includes("facebook")) {
+      for (const q of FB_QUERIES) {
+        queries.push({ source: "web", query: `site:${q} ${jobTypes[0] || role} ${loc}` });
+      }
     }
   }
   return queries;

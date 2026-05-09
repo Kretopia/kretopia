@@ -687,9 +687,9 @@ export const UnifiedHome = () => {
             className="mb-4"
           />
 
-          {/* Pending Copilot approvals (Level-2 agent actions) */}
+          {/* Unified Approvals — Copilot actions + auto-drafted outreach/chases */}
           <div className="mb-4">
-            <AgentApprovalsTray limit={3} />
+            <ApprovalsHub limit={4} />
           </div>
 
           <WeeklyIntentCard className="mb-4" />

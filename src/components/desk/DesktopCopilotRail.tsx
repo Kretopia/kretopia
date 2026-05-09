@@ -101,6 +101,9 @@ export function DesktopCopilotRail() {
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       if (!visible || collapsed || !isDesktop) {
         root.style.setProperty("--copilot-rail-w", "0px");
+      } else if (fullscreen) {
+        // Fullscreen takeover — main content hides behind the rail.
+        root.style.setProperty("--copilot-rail-w", `${window.innerWidth}px`);
       } else {
         root.style.setProperty(
           "--copilot-rail-w",
@@ -117,11 +120,15 @@ export function DesktopCopilotRail() {
       window.removeEventListener("resize", apply);
       root.style.setProperty("--copilot-rail-w", "0px");
     };
-  }, [visible, collapsed]);
+  }, [visible, collapsed, fullscreen]);
 
   const persistCollapsed = (v: boolean) => {
     setCollapsed(v);
     try { localStorage.setItem(STORAGE_KEY, v ? "1" : "0"); } catch {}
+  };
+  const persistFullscreen = (v: boolean) => {
+    setFullscreen(v);
+    try { localStorage.setItem(FULLSCREEN_KEY, v ? "1" : "0"); } catch {}
   };
 
   const send = async (text?: string) => {

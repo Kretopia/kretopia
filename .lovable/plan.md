@@ -1,113 +1,81 @@
-# ThriveDesk Studio → Event Production Workspace
+# Guest Wallet Top-Ups (Phase 1)
 
-You're describing a **multi-week build**, not a single turn. Below is a phased plan that ships value early and lets us QA each layer before stacking the next. I'll only start coding once you green-light **Phase 1** (or pick a different starting point).
+Lets a guest (no ThriveIN account) open a link, identify themselves with email, top up a balance via Stripe Checkout (Apple Pay / Google Pay / card), and have that balance persisted to a guest wallet record they can return to from the same device.
 
-## What we already have (audit)
+## User Flow
 
-Solid foundation already shipped — no need to rebuild:
+1. Guest visits `/guest-pay` (or scans a venue QR like `/guest-pay?venue=abc`).
+2. Enters email → server issues a `guest_session_token` (UUID, 90-day expiry) stored in an httpOnly-style cookie + localStorage fallback.
+3. Wallet screen shows current balance + "Add Funds" CTA with preset amounts ($10/$25/$50/$100, custom).
+4. Tap "Add Funds" → calls `guest-wallet-topup` edge fn → returns Stripe Checkout URL → redirect.
+5. Stripe Checkout shows Apple Pay / Google Pay sheet automatically on supported devices, plus card.
+6. On payment success, Stripe webhook (`guest-wallet-webhook`) credits the wallet balance and marks the topup `succeeded`.
+7. Guest is redirected back to `/guest-pay?topup=success` and sees the new balance (polled or refreshed on mount).
 
-- **Events core**: `EventPage`, `EventBackstage`, `EditEventDialog`, `CreateSessionDialog`, `EventModeFormatPicker`, `EventCoverPicker`
-- **Guest layer**: `GuestRsvpDialog`, `GuestPassDialog` (boarding-pass QR), `EventCheckInDialog`, `EventGuestRoster`, `EventPhotoWall`, `BringAFriendCard`
-- **Comms**: `EventInlineChat`, `EventGroupChatCard`, `EventComments`, `send-event-invite`, `send-event-blast`, `send-event-reminders` (cron), `event-reminders`
-- **Production**: `gen-event-runsheet` edge fn (Gemini run sheet generator) — UI not wired into Studio yet
-- **Tickets**: `checkout-event-tickets`, `purchase-event-ticket`, `verify-event-ticket`, `validate-event-promo`
-- **Sharing**: `event-og-image`, `EventShareKit`, `ScanFlyerDialog`, `ScoutEventDialog`, `extract-event-details`
-- **Studio shell**: `StudioRoom`, `WorkflowShell`, `StudioToolBar`, deal/workspace types, `useDeskIntent` for cross-tab CTAs
-- **Agent infra**: `agent-orchestrator` with persona routing — easy to add a `producer` persona
+Out of scope for Phase 1: actually paying merchants, refunds, multi-currency conversion, Twilio OTP (email-only for v1).
 
-So we're **upgrading**, not starting fresh. The big gaps are: **event-as-Studio-project**, **AI producer flows**, **supplier/talent/sponsor CRMs scoped to an event**, **seating planner**, **smart matching for guests**.
+## Database (single migration)
 
----
+```text
+guest_wallets
+  id uuid pk, email text unique not null,
+  balance_cents int not null default 0,
+  currency text not null default 'USD',
+  created_at, updated_at
 
-## Phased plan
+guest_wallet_sessions
+  token uuid pk, wallet_id uuid fk, expires_at timestamptz,
+  created_at, last_used_at
 
-### Phase 1 — Events become Studios (foundation) ⭐ start here
-Make every event a real ThriveDesk Studio so it inherits Tasks, Vault, Chat, Calls, Money, Brief, Copilot for free.
+guest_wallet_topups
+  id uuid pk, wallet_id uuid fk,
+  amount_cents int, currency text,
+  stripe_session_id text unique,
+  status text check in ('pending','succeeded','failed','cancelled'),
+  created_at, updated_at
 
-- Add `workspace_type='event'` projects (already exists in workspace configs) — wire `creative_jams.project_id` link
-- "Create Event" flow gets a fork: **Quick Event** (current dialog) vs **Full Workspace** (creates Studio + event + opens Studio Room)
-- New `EventStudioRoom` variant of `StudioRoom` with event-specific hero (countdown, RSVP count, days-to-go)
-- Event tab in Studio bottom nav for owners (deep links to `/events/:id`)
+guest_wallet_transactions  (audit log; only credits in Phase 1)
+  id uuid pk, wallet_id uuid fk,
+  delta_cents int, kind text ('topup'|'spend'|'refund'|'adjustment'),
+  ref_id uuid, note text, created_at
+```
 
-**Deliverable**: Producer creates event → lands in Studio with full workspace tooling already wired.
+RLS: tables are not exposed to the anon key for direct writes — all access goes through edge functions with the service-role key. Add a permissive `SELECT` policy gated on `false` plus the service role bypass.
 
-### Phase 2 — Conversational setup + Producer Agent persona
-- New "Event Producer" persona in `agentPersonas` + orchestrator routing
-- `setup-event-workspace` edge fn (Gemini): asks event type → seeds workspace_type, suggested deliverables, default tasks, recommended modules (run-of-show, sponsors, talent), pre-built brief
-- 12 event archetypes (networking dinner → wedding → festival) drive different default modules
-- Reuses existing `extract-brief` patterns
+## Edge Functions
 
-**Deliverable**: "What kind of event?" wizard in Studio that generates a tailored workspace.
+- `guest-wallet-session` (POST `{email}`) — upsert wallet, mint session token, return `{token, walletId, balance, currency}`. Throttle by IP.
+- `guest-wallet-me` (GET, header `x-guest-token`) — validate token, return wallet snapshot + recent topups.
+- `guest-wallet-topup` (POST, header `x-guest-token`, body `{amount, currency}`) — validate ($1–$1000), create `guest_wallet_topups` row, create Stripe Checkout session in `payment` mode with `payment_method_types: ['card']` (Apple/Google Pay are auto-enabled on the wallet card method). Set `metadata.topup_id`. Return `{url}`.
+- `guest-wallet-webhook` (POST, public, no JWT) — verifies `stripe-signature`, on `checkout.session.completed` looks up topup by `metadata.topup_id`, increments `guest_wallets.balance_cents`, sets topup `succeeded`, writes a `guest_wallet_transactions` row. Idempotent (no-op if topup already `succeeded`).
 
-### Phase 3 — Run of Show in Studio
-- New tab `runsheet` in Studio (gated to `workspace_type='event'`)
-- `event_runsheet_items` table (start/end, title, owner, notes, cue type)
-- Wire existing `gen-event-runsheet` fn into UI; AI "Suggest run sheet from brief"
-- Views: Production · Crew · Presenter · Mobile quick-view
-- Export to PDF (jsPDF, matches EPK pattern) + shareable mobile link via existing share-pages plugin
+All functions use `verify_jwt = false` and validate input with Zod. Webhook needs raw body for signature verification.
 
-### Phase 4 — Supplier + Talent Hubs (event-scoped CRMs)
-- `event_suppliers` + `event_talent` tables (category, status, contact, contract_url, payment_status, notes, files via project-files bucket)
-- New tabs `suppliers` and `talent` in event Studios
-- Each row = quick-message, assign-task, request-payment (reuses Phase 1 collaborator payment-request flow), add-credit-after-event
-- AI: "Find photographers in {city}" via Smart Gig Scout infra; "Compare quotes"
+## Frontend
 
-### Phase 5 — Sponsor Pipeline (lightweight CRM)
-- `event_sponsors` table (stage, value, deliverables jsonb, contract, invoice_id)
-- Kanban view: Prospect → Pitched → Negotiating → Confirmed → Delivered
-- AI actions: draft sponsor deck, draft outreach email, generate recap report
+- `src/pages/GuestPay.tsx` — single page with three states:
+  1. **Email entry** — minimal card, email input, "Continue".
+  2. **Wallet view** — large balance, presets, "Add Funds" button, recent top-ups list, "Sign out of guest wallet" link.
+  3. **Success toast** when `?topup=success` is in URL → calls `guest-wallet-me` to refresh.
+- `src/lib/guestWallet.ts` — small client: `getToken()`, `setToken()`, `clearToken()` (localStorage), `api(path, init)` wrapper that adds `x-guest-token` header.
+- Route added in `src/App.tsx` at `/guest-pay` (public, no auth gate).
 
-### Phase 6 — Guest Experience + Custom RSVP
-- Upgrade `GuestRsvpDialog` with **custom question builder** (`event_rsvp_questions` table — question, type, required)
-- Question types: short text, multi-select, dietary, allergies, social links, "who do you want to meet"
-- VIP tables, waitlist, approval-mode RSVPs (`jam_participants.status` already supports this — extend states)
-- Branded event pages (already exist via `EventPage`) get RSVP-question rendering
+Uses semantic color tokens only. Reuses existing `Button`, `Input`, `Card`, `useToast`. Solid background (no backdrop-blur).
 
-### Phase 7 — AI Networking & Matching
-- Pre-event: `event-match-guests` edge fn — runs over RSVP'd `jam_participants` + their profiles, returns top-N pairs per guest with reasoning
-- Surface in `GuestPassDialog` as "People to meet at this event"
-- Post-event: AI follow-up suggestions surface as ProactiveCards in producer's Studio
+## Stripe Configuration Notes (technical)
 
-### Phase 8 — Visual Seating Planner
-- New tab `seating` in event Studios
-- Drag-drop tables (HTML5 DnD or `@dnd-kit/core` — already in deps)
-- `event_seating_layouts` + `event_seating_assignments` tables
-- AI button: "Optimize seating" calls `optimize-event-seating` edge fn — uses guest match scores from Phase 7
-- Print-friendly export
+- Apple Pay requires the Stripe-hosted Checkout to serve a domain-verification file. Stripe Checkout (vs Payment Element) handles this automatically — no `.well-known` hosting needed on our side.
+- Google Pay shows automatically in Checkout when card is enabled.
+- Webhook signing secret must be added as `STRIPE_WEBHOOK_SECRET` (we'll prompt the user once the function is deployed and they have the URL to register in Stripe Dashboard).
 
-### Phase 9 — Outreach & Comms upgrades
-- Reuse existing `send-event-blast` + `send-event-reminders`
-- Add segments (RSVP'd, VIP, no-show-prone, sponsors)
-- AI compose with persona presets (VIP reminder, thank-you, follow-up)
-- WhatsApp deep-link sends (no API, just pre-filled `wa.me` like existing patterns)
+## Implementation Order
 
-### Phase 10 — Content & Media + Post-event Automation
-- Vault gets event-specific folders (Photos, Reels, Recap, Sponsor Recap)
-- AI "Generate recap captions" / "Sponsor recap report" / "Highlight clip suggestions" via Gemini
-- Auto-prompt for Event Credits (already exists via `AddCreditSection`) — extend to auto-tag suppliers, talent, sponsors
-- Post-event automation: cron `event-post-event-digest` runs 24h after event end → drafts thank-yous + recap tasks
+1. Migration: 4 tables + RLS lockdown.
+2. Edge fns: `guest-wallet-session`, `guest-wallet-me`, `guest-wallet-topup`, `guest-wallet-webhook`.
+3. `src/lib/guestWallet.ts` client helper.
+4. `src/pages/GuestPay.tsx` + route registration.
+5. Prompt user to add `STRIPE_WEBHOOK_SECRET` and register the webhook URL in Stripe Dashboard for event `checkout.session.completed`.
 
-### Phase 11 — Mobile polish
-- Crew mode: real-time run-of-show with check-off
-- Producer mobile: countdown, current cue, who's late, push notifications via existing infra
-- Already follows safe-area-inset rules per project memory
+## Open Question
 
----
-
-## Strategic notes
-
-- **No new top-level page.** Events stay at `/events`, but full-workspace events open inside `/desk/:id` with `workspace_type='event'`. Keeps one mental model.
-- **Reuses everything**: payments → ThrivePay, files → Vault, chat → Studio chat, calls → Daily.co infra, credits → ICDB, agent → orchestrator.
-- **Design**: cinematic Studio aesthetic already established (energy lime accents, gradient covers, `WorkflowShell`) — extend, don't reinvent.
-- **No backdrop-blur on sticky/scrollable headers** (per memory rules).
-- **Semantic tokens only** — no hardcoded Tailwind colors.
-
-## Recommended starting cut
-
-Phases **1 + 2 + 3** delivered together = a real, demoable "event in a Studio with AI run-of-show" you can use for your own next event. ~6–8 files + 2 edge fns + 1 migration. Roughly the size of the Studio Room build we shipped previously.
-
-## Questions before I start
-
-1. Confirm **Phase 1+2+3** as the first cut?
-2. For event creation entry point: keep `Events` page list and add a "Create Event Workspace" CTA there, or also surface from `ProjectsList` "+" menu?
-3. Should existing live events be back-fillable into Studios (one-click "Open as Workspace"), or new-events-only for v1?
+Should we require email verification (magic link) before allowing top-ups, or trust the entered email for v1? Recommended: **trust for v1** (lower friction; the wallet is bound to the device via session token, not the email's inbox). We can add OTP verification later if abuse appears.

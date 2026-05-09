@@ -10,8 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import {
   Globe, Linkedin, Instagram, Sparkles, MapPin, ExternalLink,
-  Loader2, RefreshCw, Mail, Bookmark, X, Send, ShieldCheck, Briefcase,
+  Loader2, RefreshCw, Mail, Bookmark, X, Send, ShieldCheck, Briefcase, SlidersHorizontal,
 } from "lucide-react";
+import { ScoutPreferencesDialog } from "./ScoutPreferencesDialog";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 

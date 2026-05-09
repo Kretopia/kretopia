@@ -612,16 +612,19 @@ export const ThriveAgentFab = () => {
       {!fabHidden && (
         <button
           onClick={() => setOpen(true)}
-          aria-label="Open Thrive"
+          aria-label="Open Thrive chat"
           title="Thrive — your assistant"
           className={cn(
-            "fixed right-4 z-40 h-14 w-14 rounded-full shadow-xl",
+            "fixed right-4 z-40 h-12 pl-3 pr-4 rounded-full shadow-xl",
             "bg-gradient-to-br from-primary to-primary/70 text-primary-foreground",
-            "flex items-center justify-center active:scale-95 transition-transform",
+            "flex items-center gap-2 active:scale-95 transition-transform",
             "bottom-[calc(env(safe-area-inset-bottom)+5rem)]",
           )}
         >
-          <Sparkles className="h-6 w-6" />
+          <span className="h-8 w-8 rounded-full bg-primary-foreground/15 flex items-center justify-center">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <span className="text-sm font-bold tracking-wide">Chat</span>
         </button>
       )}
 

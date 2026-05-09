@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, Loader2, ChevronRight, Sparkles, X } from "lucide-react";
+import { Send, Loader2, ChevronRight, Sparkles, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,29 +22,12 @@ import {
  * Mobile keeps using ThriveAgentFab (sheet) — this component renders nothing on mobile.
  */
 
-const RAIL_ENABLED_PREFIXES = [
-  "/", // home
-  "/index",
-  "/desk",
-  "/thrivepay",
-  "/pay",
-  "/accounting",
-  "/circle",
-  "/match",
-  "/opportunities",
-  "/gigs",
-  "/profile",
-  "/credits",
-  "/icdb",
-  "/event",
-  "/sessions",
-];
-
+// Thrive rail is shown on every authed route by default. Only a small set of
+// truly full-screen / pre-auth surfaces opt out.
 const RAIL_DISABLED_PREFIXES = [
   "/auth",
   "/onboarding",
   "/landing",
-  "/messages",
   "/call",
   "/guest-call",
   "/check-in",
@@ -53,10 +36,12 @@ const RAIL_DISABLED_PREFIXES = [
   "/epk/",
   "/u/",
   "/site/",
+  "/website-builder",
   "/admin",
 ];
 
 const STORAGE_KEY = "thrive-rail-collapsed";
+const FULLSCREEN_KEY = "thrive-rail-fullscreen";
 
 const QUICK_PROMPTS: Record<string, string[]> = {
   home: ["What's on for today?", "Draft an outreach DM", "Find paid gigs this week"],
@@ -76,18 +61,18 @@ export function DesktopCopilotRail() {
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     try { return localStorage.getItem(STORAGE_KEY) === "1"; } catch { return false; }
   });
+  const [fullscreen, setFullscreen] = useState<boolean>(() => {
+    try { return localStorage.getItem(FULLSCREEN_KEY) === "1"; } catch { return false; }
+  });
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Visibility logic
-  const enabledByPrefix = RAIL_ENABLED_PREFIXES.some(
-    (p) => p === "/" ? pathname === "/" || pathname === "/index" : pathname.startsWith(p),
-  );
+  // Visibility: show on every authed route except a small disabled list.
   const disabledByPrefix = RAIL_DISABLED_PREFIXES.some((p) => pathname.startsWith(p));
-  const visible = !!user && enabledByPrefix && !disabledByPrefix;
+  const visible = !!user && !disabledByPrefix;
 
   // Load history once on mount when visible
   useEffect(() => {
@@ -116,6 +101,9 @@ export function DesktopCopilotRail() {
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       if (!visible || collapsed || !isDesktop) {
         root.style.setProperty("--copilot-rail-w", "0px");
+      } else if (fullscreen) {
+        // Fullscreen takeover — main content hides behind the rail.
+        root.style.setProperty("--copilot-rail-w", `${window.innerWidth}px`);
       } else {
         root.style.setProperty(
           "--copilot-rail-w",
@@ -132,11 +120,15 @@ export function DesktopCopilotRail() {
       window.removeEventListener("resize", apply);
       root.style.setProperty("--copilot-rail-w", "0px");
     };
-  }, [visible, collapsed]);
+  }, [visible, collapsed, fullscreen]);
 
   const persistCollapsed = (v: boolean) => {
     setCollapsed(v);
     try { localStorage.setItem(STORAGE_KEY, v ? "1" : "0"); } catch {}
+  };
+  const persistFullscreen = (v: boolean) => {
+    setFullscreen(v);
+    try { localStorage.setItem(FULLSCREEN_KEY, v ? "1" : "0"); } catch {}
   };
 
   const send = async (text?: string) => {
@@ -206,8 +198,8 @@ export function DesktopCopilotRail() {
   return (
     <aside
       className={cn(
-        "hidden lg:flex fixed right-0 top-14 bottom-0 z-30 w-[340px] xl:w-[380px]",
-        "flex-col border-l border-border bg-background/95",
+        "hidden lg:flex fixed right-0 top-14 bottom-0 z-30 flex-col border-l border-border bg-background/95",
+        fullscreen ? "left-0 w-auto" : "w-[340px] xl:w-[380px]",
       )}
       aria-label="Thrive Copilot"
     >
@@ -224,15 +216,27 @@ export function DesktopCopilotRail() {
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7"
-          onClick={() => persistCollapsed(true)}
-          aria-label="Collapse"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => persistFullscreen(!fullscreen)}
+            aria-label={fullscreen ? "Exit full screen" : "Full screen Thrive"}
+            title={fullscreen ? "Exit full screen" : "Full screen"}
+          >
+            {fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => persistCollapsed(true)}
+            aria-label="Collapse"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Messages */}

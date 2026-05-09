@@ -23,6 +23,7 @@ const getCategoryIcon = (category: string) => {
 
 const Notifications = () => {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { pick, isBusiness } = useAccountTone();
   const navigate = useNavigate();
 
   const handleClick = (notification: any) => {

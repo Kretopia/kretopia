@@ -756,37 +756,114 @@ export const ThriveAgentFab = () => {
                 Thinking…
               </div>
             )}
+            {voiceBusy && (
+              <div className="mr-auto bg-primary/10 border border-primary/30 rounded-2xl px-3.5 py-2.5 text-sm text-foreground inline-flex items-center gap-2">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                Hearing you out…
+              </div>
+            )}
+            {speaking && !voiceMuted && (
+              <div className="mr-auto bg-accent/60 rounded-2xl px-3.5 py-2.5 text-xs text-muted-foreground inline-flex items-center gap-2">
+                <Volume2 className="h-3.5 w-3.5 text-primary animate-pulse" />
+                Thrive is speaking…
+                <button
+                  className="ml-1 underline text-primary"
+                  onClick={() => { stopPlayback(); setSpeaking(false); }}
+                >
+                  stop
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Composer */}
           <div className="border-t border-border bg-background p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shrink-0">
-            <div className="flex items-end gap-2">
-              <Textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    send();
-                  }
-                }}
-                placeholder={`Ask anything from ${surfaceLabel}…`}
-                rows={2}
-                className="resize-none text-sm flex-1 min-h-[44px]"
-              />
-              <Button
-                onClick={() => send()}
-                disabled={!text.trim() || sending}
-                size="icon"
-                className="h-11 w-11 shrink-0"
-              >
-                {sending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            {recording ? (
+              <div className="flex items-center gap-2 rounded-2xl border border-destructive/40 bg-destructive/10 px-3 py-2.5">
+                <span className="relative flex h-3 w-3 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-destructive"></span>
+                </span>
+                <div className="flex-1 text-sm">
+                  <div className="font-medium text-foreground">Listening…</div>
+                  <div className="text-[11px] text-muted-foreground tabular-nums">
+                    {Math.floor(recordSec / 60)}:{(recordSec % 60).toString().padStart(2, "0")} · max 60s
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 px-3 text-muted-foreground"
+                  onClick={handleCancelVoice}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-9 px-3 gap-1.5 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={handleStopVoice}
+                >
+                  <Square className="h-3.5 w-3.5 fill-current" /> Send
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-end gap-2">
+                <Textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      send();
+                    }
+                  }}
+                  placeholder={`Ask or tap mic to talk…`}
+                  rows={2}
+                  className="resize-none text-sm flex-1 min-h-[44px]"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-11 w-11 shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={toggleMute}
+                  aria-label={voiceMuted ? "Unmute Thrive's voice" : "Mute Thrive's voice"}
+                  title={voiceMuted ? "Voice replies muted" : "Voice replies on"}
+                >
+                  {voiceMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4 text-primary" />}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-11 w-11 shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+                  onClick={handleStartVoice}
+                  disabled={voiceBusy || sending}
+                  aria-label="Talk to Thrive"
+                  title="Tap to talk · 60s max"
+                >
+                  {voiceBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
+                </Button>
+                <Button
+                  onClick={() => send()}
+                  disabled={!text.trim() || sending}
+                  size="icon"
+                  className="h-11 w-11 shrink-0"
+                >
+                  {sending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            )}
+            {!recording && messages.length === 0 && historyLoaded && (
+              <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+                <Crown className="h-2.5 w-2.5" />
+                <span>Free: 2 min/day voice · Creator: 15 min · Creator+: 60 min</span>
+              </div>
+            )}
           </div>
         </SheetContent>
       </Sheet>

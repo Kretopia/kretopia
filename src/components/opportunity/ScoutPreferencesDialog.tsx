@@ -120,13 +120,16 @@ export function ScoutPreferencesDialog({ open, onOpenChange, onSaved }: Props) {
 
   useEffect(() => {
     if (!open || !user) return;
-    setLoading(true);
-    supabase
-      .from("scout_preferences")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const { data } = await supabase
+          .from("scout_preferences")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (cancelled) return;
         if (data) {
           setPrefs({
             enabled: data.enabled ?? true,
@@ -142,9 +145,13 @@ export function ScoutPreferencesDialog({ open, onOpenChange, onSaved }: Props) {
             instructions: data.instructions ?? "",
           });
         }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      } catch {
+        // ignore — keep defaults
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [open, user]);
 
   const toggleSource = (id: string) => {

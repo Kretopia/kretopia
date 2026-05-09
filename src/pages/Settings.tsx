@@ -19,6 +19,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { CreatorSiteSettings } from "@/components/settings/CreatorSiteSettings";
 import { BlockedUsersCard } from "@/components/settings/BlockedUsersCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 
 interface NotificationPreferences {
   email_matches: boolean;

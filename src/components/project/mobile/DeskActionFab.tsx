@@ -61,11 +61,6 @@ export const DeskActionFab = ({ onVoice, onCopilot }: DeskActionFabProps) => {
           aria-hidden={!open}
         >
           <ActionPill
-            label="Project Copilot"
-            icon={<Sparkles className="h-5 w-5" />}
-            onClick={handle(onCopilot)}
-          />
-          <ActionPill
             label="Voice note"
             icon={<Mic className="h-5 w-5" />}
             onClick={handle(onVoice)}

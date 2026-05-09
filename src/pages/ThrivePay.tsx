@@ -293,10 +293,6 @@ export default function ThrivePay() {
               </h1>
               {getStatusBadge()}
               <MoneyStreakChip />
-              <CopilotLauncher
-                label="Ask Copilot"
-                prompt="How much am I owed right now, and what should I send today?"
-              />
             </div>
             <p className="text-sm text-muted-foreground">Invoices, expenses, earnings & payouts — one place.</p>
           </div>

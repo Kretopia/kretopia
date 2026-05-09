@@ -201,11 +201,6 @@ export default function Circle() {
             </div>
             {activeTab === 'foryou' && (
               <div className="flex items-center gap-2">
-                <CopilotLauncher
-                  variant="icon"
-                  label="Find collaborators with Copilot"
-                  prompt="Find me a collaborator who matches what I'm working on right now."
-                />
                 <SwipeFilters filters={filters} onFiltersChange={handleFiltersChange} isPro={isPro} profilesCount={profilesCount} />
               </div>
             )}

@@ -1,81 +1,187 @@
-# Guest Wallet Top-Ups (Phase 1)
 
-Lets a guest (no ThriveIN account) open a link, identify themselves with email, top up a balance via Stripe Checkout (Apple Pay / Google Pay / card), and have that balance persisted to a guest wallet record they can return to from the same device.
+# ThriveIN → Thrive: The Agentic Creative OS
 
-## User Flow
+## The strategic re-frame
 
-1. Guest visits `/guest-pay` (or scans a venue QR like `/guest-pay?venue=abc`).
-2. Enters email → server issues a `guest_session_token` (UUID, 90-day expiry) stored in an httpOnly-style cookie + localStorage fallback.
-3. Wallet screen shows current balance + "Add Funds" CTA with preset amounts ($10/$25/$50/$100, custom).
-4. Tap "Add Funds" → calls `guest-wallet-topup` edge fn → returns Stripe Checkout URL → redirect.
-5. Stripe Checkout shows Apple Pay / Google Pay sheet automatically on supported devices, plus card.
-6. On payment success, Stripe webhook (`guest-wallet-webhook`) credits the wallet balance and marks the topup `succeeded`.
-7. Guest is redirected back to `/guest-pay?topup=success` and sees the new balance (polled or refreshed on mount).
+**The problem:** "Creators getting jobs and barters" is now table stakes — Instagram Creator Marketplace, LinkedIn, Upwork, Fiverr, Behance all do discovery + matching. If our wedge is *finding work*, we lose to platforms with 2B+ users and an existing graph.
 
-Out of scope for Phase 1: actually paying merchants, refunds, multi-currency conversion, Twilio OTP (email-only for v1).
+**The new wedge:** Nobody is building the **operating layer** for a creative business. Instagram matches you with a brand — then you're back to WhatsApp, Notes, Google Docs, Stripe, a lawyer, a spreadsheet, and chasing payment. The creator is still the agency, accountant, lawyer, project manager, and producer.
 
-## Database (single migration)
+**Thrive becomes the agent that *runs* the creative business.** Discovery is a feature, not the product. Your competitive moat is **work that gets done** — invoices sent, clients chased, scopes drafted, briefs structured, deliverables shipped, money received, credits logged, EPK updated. All by Thrive, with the creator approving.
+
+> Positioning shift: "Find creative work" → **"Your creative business, on autopilot."**
+> Instagram finds you the gig. **Thrive delivers it, bills it, banks it, and books the next one.**
+
+This also flips the Instagram threat into an opportunity: we ingest IG Creator Marketplace gigs (and LinkedIn, Upwork, etc.) via the existing Smart Gig Scout — we become the *workspace* for gigs sourced anywhere.
+
+---
+
+## What we already have (foundations are strong)
+
+- **Thrive Agent + orchestrator** with `orch_tool_registry` (9 tools, risk-gated: safe_auto / requires_approval / locked)
+- **Persistent memory** (`thrive_memory` — vendors, rates, clients, contacts) injected into every turn
+- **Desk Agent Autonomy** (15-min watcher → `agent_proposals` → ProactiveCards)
+- **Smart Gig Scout** + Opportunity Intel (daily crons, real gigs from web/LinkedIn/IG/ATS)
+- **Studio slices** that auto-generate work (shotlist, campaign matrix, release checklist, podcast Qs, brief)
+- **Pricing Co-Pilot** with vision (scan brief → quote)
+- **Approval surface** (`AgentApprovalsTray`) on Home/Desk/Pay
+- **Cross-surface chat** (`thrive-ai-chat`) with surface-aware context
+- **Studio room** with VibeHeader, presence, typing, mentions, voice-to-task
+
+We don't need to rebuild — we need to **connect the loops, raise autonomy, and rebrand the experience around "Thrive is doing it."**
+
+---
+
+## Phase 1 — The Inbox & Outbound Loop (week 1–2)
+*The single biggest "Thrive did this for me" moment.*
+
+**1.1 Inbox Triage Agent** (`inbox-triage-agent` edge fn + cron every 10min)
+- Watches `messages` (DM + chat) for new inbound from non-collaborators
+- Classifies: `lead` / `gig_inquiry` / `collab` / `fan` / `spam` / `admin`
+- For `lead`/`gig_inquiry`: extracts budget, timeline, scope → drafts reply (using rate memory) → drops `agent_proposal` (kind=`reply_draft`)
+- New "Needs your eyes" tray on Home, sorted by urgency
+- Tools: register `draft_reply`, `mark_lead`, `move_to_pipeline` in `orch_tool_registry`
+
+**1.2 Auto-Outreach Agent** (extends Sponsor Radar)
+- `sponsor_leads` already exists → add `outreach_drafts` table
+- New `draft-outreach-email` edge fn (Gemini 2.5 pro, tool-call): personalized pitch using EPK + recent credits + rate card
+- Gmail connector (already integrated for some flows) → "Send via Gmail" approval card
+- Daily proposal: "I found 5 brand fits. Want me to draft outreach to 3?"
+
+**1.3 Lead → Project handoff**
+- `convert_lead_to_project` tool: lead accepted → spins workspace, copies brief, drafts quote, schedules kickoff
+- One tap = full project bootstrap
+
+**Outcome:** users open the app and see "Thrive replied to 4 leads, drafted 2 outreach pitches, and bootstrapped 1 project. Approve?"
+
+---
+
+## Phase 2 — The Money Loop (week 2–3)
+*Close the get-paid gap that no creator platform owns.*
+
+**2.1 Money Agent** (extends Pricing Copilot)
+- Daily watcher: unpaid invoices > 7d → drafts polite chase email with `send_chase_email` tool (gated)
+- Deliverable marked done → auto-drafts invoice for that milestone (proposal, not auto-sent)
+- Receipt scan → auto-categorize + tag to project (already partial, finish the loop)
+- Weekly Money Brief is already on Home — make it *actionable*: each line has an inline Thrive action
+
+**2.2 Quote → Contract → Invoice chain**
+- `draft_quote` already wired; add `convert_quote_to_contract` (Hybrid Blockchain Contracts already exists, hash internally)
+- Quote approved by client → contract auto-generated → milestone invoices auto-scheduled
+- Each step is a Thrive proposal, user one-taps
+
+**2.3 EPK Auto-Updater (full loop)**
+- `epk_refresh_suggestions` already exists → add auto-pull from credits/projects/published work
+- "Thrive added 3 new credits to your EPK from last month's projects. Publish?" → one-tap
+
+---
+
+## Phase 3 — The Multi-Step Planner (week 3–4)
+*Move from single tool calls to true workflows.*
+
+**3.1 Planner/Executor split** (already scaffolded in `extractActions`/`ParsedPlan`)
+- New `agent-planner` edge fn (Gemini 2.5 Pro, reasoning=high): given goal + context → returns ordered DAG of tool calls
+- Executor (`agent-orchestrator`) runs DAG: safe_auto runs in sequence, requires_approval pauses with full plan visible
+- New UI: `<PlanCard />` in chat — collapsible step list with checkmarks as steps execute
+
+**3.2 Goal-shaped prompts on Home**
+- Replace generic Copilot prompt with goal templates that fan out to multi-step plans:
+  - "Land 3 paid gigs this month" → plan: scout + outreach + EPK refresh + portfolio sync
+  - "Close out the Acme project" → plan: final deliverable check + invoice + credit + asset archive
+  - "Get my taxes ready" → plan: pull receipts + categorize + summary + export
+
+**3.3 Memory autopilot**
+- `auto-extract-memory` background job: scans recent messages/projects → auto-proposes new `thrive_memory` entries (vendors mentioned, rates discussed, client preferences)
+- "I noticed Acme always pays NET-15 — saved to memory" (silent, with undo)
+
+---
+
+## Phase 4 — The Brand Pivot (week 4–5)
+*Make every surface say "Thrive does the work."*
+
+**4.1 Rebrand the experience (not the company)**
+- Tagline shift: **"Your creative business, on autopilot."**
+- Home hero: replace search-led ThrivePromptHero with **Thrive Brief**: live count of "what Thrive did today / what needs your eyes"
+- Empty states everywhere: not "post a gig" — "Tell Thrive what you're working on"
+- Discovery becomes a Thrive *capability* ("Thrive found 4 matches for your shoot") not a destination tab
+
+**4.2 Voice-first command bar**
+- Persistent mic on Home (`voice-to-task` already shipped) → routed through `route-thrive-intent`
+- "Hey Thrive, invoice Acme for $2,400, NET-15, mark project as wrapped" → multi-step plan → approval card
+
+**4.3 Public proof**
+- Thrive Activity Feed on profile (opt-in): "Booked 12 gigs, sent 47 invoices, $34k collected — managed by Thrive"
+- Share-card generator (existing infra) for "What Thrive did for me this month"
+
+---
+
+## Phase 5 — Sunset / hide what's no longer the wedge (week 5–6)
+
+- Keep gigs marketplace, but reposition: **"Gigs found by Thrive"** — Smart Gig Scout becomes the front door
+- Match/Discover: stays, but reframed as a Thrive tool surfaced when relevant, not a primary nav
+- Bottom nav reduced to: **Home · Studio · Money · Approvals · Profile** (Match/Gigs absorbed into Home + Studio surfaces)
+- Communities stays hidden (per memory)
+
+---
+
+## Technical architecture (for reference)
 
 ```text
-guest_wallets
-  id uuid pk, email text unique not null,
-  balance_cents int not null default 0,
-  currency text not null default 'USD',
-  created_at, updated_at
+                    ┌──────────────────────────┐
+   User intent ───► │  route-thrive-intent     │ ── classifies surface/goal
+                    └────────────┬─────────────┘
+                                 │
+                                 ▼
+                    ┌──────────────────────────┐
+                    │  agent-planner (NEW)     │ ── builds DAG (Gemini 2.5 Pro)
+                    └────────────┬─────────────┘
+                                 │ plan
+                                 ▼
+                    ┌──────────────────────────┐
+   tool registry ──►│  agent-orchestrator      │ ── runs DAG, gates by risk
+                    └────────────┬─────────────┘
+                       │         │         │
+                  safe_auto  approval   locked
+                       │         │         │
+                       ▼         ▼         ▼
+                  executes  agent_proposals  notify owner
 
-guest_wallet_sessions
-  token uuid pk, wallet_id uuid fk, expires_at timestamptz,
-  created_at, last_used_at
+   Background watchers (cron):
+   ─ inbox-triage-agent      (10min)
+   ─ desk-agent-watch        (15min — exists)
+   ─ money-agent-watch       (daily — NEW)
+   ─ scout-gigs              (daily — exists)
+   ─ opportunity-intel       (daily — exists)
+   ─ auto-extract-memory     (daily — NEW)
+   ─ epk-auto-refresh        (weekly — exists, needs full loop)
 
-guest_wallet_topups
-  id uuid pk, wallet_id uuid fk,
-  amount_cents int, currency text,
-  stripe_session_id text unique,
-  status text check in ('pending','succeeded','failed','cancelled'),
-  created_at, updated_at
-
-guest_wallet_transactions  (audit log; only credits in Phase 1)
-  id uuid pk, wallet_id uuid fk,
-  delta_cents int, kind text ('topup'|'spend'|'refund'|'adjustment'),
-  ref_id uuid, note text, created_at
+   All write to: agent_proposals + agent_actions
+   Surfaced via: AgentApprovalsTray (Home/Desk/Pay)
 ```
 
-RLS: tables are not exposed to the anon key for direct writes — all access goes through edge functions with the service-role key. Add a permissive `SELECT` policy gated on `false` plus the service role bypass.
+**New tables (3):**
+- `outreach_drafts` (lead_id, channel, subject, body, status, created_at)
+- `inbox_triage_classifications` (message_id, kind, confidence, extracted jsonb)
+- `agent_plans` (run_id, goal, dag jsonb, status, completed_steps)
 
-## Edge Functions
+**New edge functions (5):**
+- `inbox-triage-agent`, `draft-outreach-email`, `agent-planner`, `money-agent-watch`, `auto-extract-memory`
 
-- `guest-wallet-session` (POST `{email}`) — upsert wallet, mint session token, return `{token, walletId, balance, currency}`. Throttle by IP.
-- `guest-wallet-me` (GET, header `x-guest-token`) — validate token, return wallet snapshot + recent topups.
-- `guest-wallet-topup` (POST, header `x-guest-token`, body `{amount, currency}`) — validate ($1–$1000), create `guest_wallet_topups` row, create Stripe Checkout session in `payment` mode with `payment_method_types: ['card']` (Apple/Google Pay are auto-enabled on the wallet card method). Set `metadata.topup_id`. Return `{url}`.
-- `guest-wallet-webhook` (POST, public, no JWT) — verifies `stripe-signature`, on `checkout.session.completed` looks up topup by `metadata.topup_id`, increments `guest_wallets.balance_cents`, sets topup `succeeded`, writes a `guest_wallet_transactions` row. Idempotent (no-op if topup already `succeeded`).
+**Tools to add to `orch_tool_registry` (~8):**
+- `draft_reply`, `mark_lead`, `convert_lead_to_project`, `send_chase_email`, `convert_quote_to_contract`, `schedule_milestone_invoice`, `auto_log_credit`, `propose_memory`
 
-All functions use `verify_jwt = false` and validate input with Zod. Webhook needs raw body for signature verification.
+---
 
-## Frontend
+## What to ship first (this week)
 
-- `src/pages/GuestPay.tsx` — single page with three states:
-  1. **Email entry** — minimal card, email input, "Continue".
-  2. **Wallet view** — large balance, presets, "Add Funds" button, recent top-ups list, "Sign out of guest wallet" link.
-  3. **Success toast** when `?topup=success` is in URL → calls `guest-wallet-me` to refresh.
-- `src/lib/guestWallet.ts` — small client: `getToken()`, `setToken()`, `clearToken()` (localStorage), `api(path, init)` wrapper that adds `x-guest-token` header.
-- Route added in `src/App.tsx` at `/guest-pay` (public, no auth gate).
+If you approve the full plan, I'll start with **Phase 1.1 Inbox Triage Agent** end-to-end:
+1. Migration: `inbox_triage_classifications` + `outreach_drafts`
+2. Edge fn: `inbox-triage-agent` (Gemini 2.5 flash, classifier + drafter)
+3. Cron: every 10min
+4. Tools registered: `draft_reply`, `mark_lead`
+5. UI: "Needs your eyes" tray on Home (reuses `AgentApprovalsTray`)
+6. Memory + telemetry
 
-Uses semantic color tokens only. Reuses existing `Button`, `Input`, `Card`, `useToast`. Solid background (no backdrop-blur).
+Each phase is independently shippable and visible to users.
 
-## Stripe Configuration Notes (technical)
-
-- Apple Pay requires the Stripe-hosted Checkout to serve a domain-verification file. Stripe Checkout (vs Payment Element) handles this automatically — no `.well-known` hosting needed on our side.
-- Google Pay shows automatically in Checkout when card is enabled.
-- Webhook signing secret must be added as `STRIPE_WEBHOOK_SECRET` (we'll prompt the user once the function is deployed and they have the URL to register in Stripe Dashboard).
-
-## Implementation Order
-
-1. Migration: 4 tables + RLS lockdown.
-2. Edge fns: `guest-wallet-session`, `guest-wallet-me`, `guest-wallet-topup`, `guest-wallet-webhook`.
-3. `src/lib/guestWallet.ts` client helper.
-4. `src/pages/GuestPay.tsx` + route registration.
-5. Prompt user to add `STRIPE_WEBHOOK_SECRET` and register the webhook URL in Stripe Dashboard for event `checkout.session.completed`.
-
-## Open Question
-
-Should we require email verification (magic link) before allowing top-ups, or trust the entered email for v1? Recommended: **trust for v1** (lower friction; the wallet is bound to the device via session token, not the email's inbox). We can add OTP verification later if abuse appears.
+**Approve to ship Phase 1.1, or want me to adjust the order/scope first?**

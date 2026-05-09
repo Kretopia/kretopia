@@ -7042,6 +7042,75 @@ export type Database = {
         }
         Relationships: []
       }
+      inbox_triage_classifications: {
+        Row: {
+          acted_at: string | null
+          confidence: number
+          created_at: string
+          dismissed_reason: string | null
+          draft_reply: string | null
+          draft_subject: string | null
+          extracted: Json
+          id: string
+          kind: Database["public"]["Enums"]["inbox_triage_kind"]
+          message_id: string
+          owner_user_id: string
+          sender_user_id: string
+          status: Database["public"]["Enums"]["inbox_triage_status"]
+          summary: string | null
+          updated_at: string
+        }
+        Insert: {
+          acted_at?: string | null
+          confidence?: number
+          created_at?: string
+          dismissed_reason?: string | null
+          draft_reply?: string | null
+          draft_subject?: string | null
+          extracted?: Json
+          id?: string
+          kind: Database["public"]["Enums"]["inbox_triage_kind"]
+          message_id: string
+          owner_user_id: string
+          sender_user_id: string
+          status?: Database["public"]["Enums"]["inbox_triage_status"]
+          summary?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acted_at?: string | null
+          confidence?: number
+          created_at?: string
+          dismissed_reason?: string | null
+          draft_reply?: string | null
+          draft_subject?: string | null
+          extracted?: Json
+          id?: string
+          kind?: Database["public"]["Enums"]["inbox_triage_kind"]
+          message_id?: string
+          owner_user_id?: string
+          sender_user_id?: string
+          status?: Database["public"]["Enums"]["inbox_triage_status"]
+          summary?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbox_triage_classifications_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: true
+            referencedRelation: "conversation_list"
+            referencedColumns: ["message_id"]
+          },
+          {
+            foreignKeyName: "inbox_triage_classifications_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: true
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       income_goals: {
         Row: {
           created_at: string
@@ -17358,6 +17427,10 @@ export type Database = {
         Args: { _actor_name: string; _event: string; _opportunity_id: string }
         Returns: undefined
       }
+      pending_inbox_triage_count: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       persona_for_agent_kind: {
         Args: { _kind: string }
         Returns: Database["public"]["Enums"]["agent_persona"]
@@ -17493,6 +17566,20 @@ export type Database = {
         | "other"
       agent_proposal_status: "pending" | "accepted" | "dismissed" | "expired"
       app_role: "admin" | "moderator" | "user" | "writer"
+      inbox_triage_kind:
+        | "lead"
+        | "gig_inquiry"
+        | "collab"
+        | "fan"
+        | "spam"
+        | "admin"
+        | "other"
+      inbox_triage_status:
+        | "pending"
+        | "approved"
+        | "sent"
+        | "dismissed"
+        | "failed"
       location_precision: "exact" | "approximate" | "area_only"
       network_tier:
         | "none"
@@ -17679,6 +17766,22 @@ export const Constants = {
       ],
       agent_proposal_status: ["pending", "accepted", "dismissed", "expired"],
       app_role: ["admin", "moderator", "user", "writer"],
+      inbox_triage_kind: [
+        "lead",
+        "gig_inquiry",
+        "collab",
+        "fan",
+        "spam",
+        "admin",
+        "other",
+      ],
+      inbox_triage_status: [
+        "pending",
+        "approved",
+        "sent",
+        "dismissed",
+        "failed",
+      ],
       location_precision: ["exact", "approximate", "area_only"],
       network_tier: [
         "none",

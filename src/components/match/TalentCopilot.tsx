@@ -176,7 +176,7 @@ export const TalentCopilot = () => {
         <Textarea
           value={brief}
           onChange={(e) => setBrief(e.target.value)}
-          placeholder="e.g. Videographer in Trinidad for a 1-day brand shoot, budget under $500"
+          placeholder={placeholder}
           rows={3}
           className="resize-none mb-3 bg-background"
         />

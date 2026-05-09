@@ -135,18 +135,94 @@ export const ThriveAgentFab = () => {
 
   // Allow any surface to open the Copilot with a preset prompt:
   //   window.dispatchEvent(new CustomEvent("thrive-copilot:open", { detail: { prompt: "..." } }))
+  // Or open in explicit plan-and-execute mode:
+  //   window.dispatchEvent(new CustomEvent("thrive-copilot:open", { detail: { prompt: "...", mode: "plan" } }))
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { prompt?: string } | undefined;
+      const detail = (e as CustomEvent).detail as
+        | { prompt?: string; mode?: "plan" | "chat" }
+        | undefined;
       setOpen(true);
-      if (detail?.prompt) {
-        // Defer so the drawer mounts before we autofill.
-        setTimeout(() => setText(detail.prompt!), 50);
+      if (!detail?.prompt) return;
+
+      if (detail.mode === "plan") {
+        // Skip free-form chat — go straight to the planner and render a PlanCard.
+        const goal = detail.prompt;
+        setTimeout(() => {
+          setMessages((prev) => {
+            const userMsg: CopilotMessage = { role: "user", content: `Plan & execute: ${goal}` };
+            const assistantMsg: CopilotMessage = {
+              role: "assistant",
+              content: "Drafting a plan…",
+            };
+            const next = [...prev, userMsg, assistantMsg];
+            const assistantIdx = next.length - 1;
+            // Kick the planner asynchronously
+            (async () => {
+              try {
+                const projectId =
+                  (surfaceContext as any)?.project_id ??
+                  (surfaceContext as any)?.active_project?.id ??
+                  null;
+                const { data, error } = await supabase.functions.invoke("copilot-planner", {
+                  body: { goal, surface, project_id: projectId },
+                });
+                if (error) throw error;
+                if (data?.plan_id) {
+                  setPlansByMsg((p) => ({
+                    ...p,
+                    [assistantIdx]: [
+                      ...(p[assistantIdx] ?? []),
+                      {
+                        id: data.plan_id,
+                        goal,
+                        summary: data.summary,
+                        status: data.status ?? "proposed",
+                        steps: data.steps ?? [],
+                      },
+                    ],
+                  }));
+                  setMessages((prev2) =>
+                    prev2.map((m, i) =>
+                      i === assistantIdx
+                        ? { ...m, content: data.summary || "Here's the plan — review the steps below." }
+                        : m,
+                    ),
+                  );
+                } else {
+                  setMessages((prev2) =>
+                    prev2.map((m, i) =>
+                      i === assistantIdx
+                        ? { ...m, content: data?.summary || "Couldn't draft a plan for that. Try being more specific." }
+                        : m,
+                    ),
+                  );
+                }
+              } catch (err) {
+                console.warn("Plan-mode planner failed", err);
+                toast.error("Couldn't draft that plan — try again.");
+                setMessages((prev2) =>
+                  prev2.map((m, i) =>
+                    i === assistantIdx
+                      ? { ...m, content: "Sorry — planning failed. Try again." }
+                      : m,
+                  ),
+                );
+              }
+            })();
+            return next;
+          });
+        }, 50);
+        return;
       }
+
+      // Default: just prefill the composer.
+      setTimeout(() => setText(detail.prompt!), 50);
     };
     window.addEventListener("thrive-copilot:open", handler);
     return () => window.removeEventListener("thrive-copilot:open", handler);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [surface, surfaceContext]);
 
   // Resolve surface_context from the URL where helpful (project_id from /desk/:id)
   useEffect(() => {

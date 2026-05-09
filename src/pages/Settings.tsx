@@ -1072,3 +1072,19 @@ const Settings = () => {
 };
 
 export default Settings;
+function CaribbeanVoiceToggle() {
+  const { optIn, setOptIn, isTTGeo } = useTrinidadVoice();
+  return (
+    <div className="flex items-start justify-between gap-4 pt-4 border-t border-border">
+      <div className="flex-1">
+        <p className="text-sm font-medium">Caribbean voice</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {isTTGeo
+            ? "On automatically — yuh in T&T. Toggle off for neutral copy."
+            : "Show Trini-flavoured copy across the platform (great for diaspora)."}
+        </p>
+      </div>
+      <Switch checked={optIn || isTTGeo} onCheckedChange={setOptIn} disabled={isTTGeo && !optIn} />
+    </div>
+  );
+}

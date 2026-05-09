@@ -1,9 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Sparkles, Briefcase, LayoutDashboard, Home, UserSearch, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { memo, useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { memo } from "react";
+import { useAccountTone } from "@/hooks/useAccountTone";
 
 // Single, focused MVP nav: Home · Desk · Match · Gigs · Pay
 // `hint` is shown on hover/long-press so people don't have to guess what

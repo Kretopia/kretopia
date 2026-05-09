@@ -94,7 +94,16 @@ Deno.serve(async (req) => {
     if (!sttResp.ok) {
       const err = await sttResp.text();
       console.error("STT failed", sttResp.status, err);
-      return jsonResponse({ error: "stt_failed", detail: err }, 502);
+      const isAbuse = /detected_unusual_activity|Free Tier/i.test(err);
+      return jsonResponse(
+        {
+          error: isAbuse ? "voice_provider_unavailable" : "stt_failed",
+          detail: isAbuse
+            ? "Thrive Voice is temporarily unavailable. Our voice provider needs an upgrade — we're on it."
+            : err,
+        },
+        200, // 200 so the client toast shows the friendly message instead of a generic 502
+      );
     }
     const sttJson = await sttResp.json();
     const transcript: string = (sttJson?.text || "").trim();

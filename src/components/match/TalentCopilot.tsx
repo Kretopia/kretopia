@@ -56,6 +56,10 @@ export const TalentCopilot = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [drafting, setDrafting] = useState(false);
   const [proposedActions, setProposedActions] = useState<OrchAction[]>([]);
+  const { geo } = useCurrentGeoCountry();
+  const isTT = geo?.country === "Trinidad and Tobago" || geo?.country === "Trinidad" || geo?.city === "Port of Spain";
+  const SAMPLE_BRIEFS = isTT ? TT_BRIEFS : INTL_BRIEFS;
+  const placeholder = isTT ? TT_PLACEHOLDER : INTL_PLACEHOLDER;
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => {

@@ -353,8 +353,14 @@ serve(async (req) => {
     console.log("[scout] after recency+source filter", filtered.length, "of", extracted.length);
 
     let inserted = 0;
+    // Build url -> image map from raw search results to enrich gigs
+    const imgByUrl = new Map<string, string>();
+    for (const r of allRaw) {
+      if (r?.url && r?.image_url) imgByUrl.set(r.url, r.image_url);
+    }
     for (const g of filtered) {
       const key = dedupeKey(g);
+      const image_url = imgByUrl.get(g.source_url) || null;
       const { error } = await supabase.from("scouted_gigs").upsert({
         target_user_id: userId,
         source: g.source,
@@ -371,6 +377,7 @@ serve(async (req) => {
         skills: g.skills || null,
         fit_score: Math.round(g.fit_score),
         fit_reason: g.fit_reason || null,
+        image_url,
         dedupe_key: key,
         raw: g,
       }, { onConflict: "target_user_id,dedupe_key", ignoreDuplicates: false });

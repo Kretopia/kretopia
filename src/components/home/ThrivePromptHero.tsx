@@ -233,7 +233,23 @@ export function ThrivePromptHero() {
           </button>
         </form>
 
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setPlanMode((v) => !v)}
+            aria-pressed={planMode}
+            title="Plan & execute mode — Thrive drafts an ordered plan you approve before anything runs."
+            className={cn(
+              "inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors",
+              planMode
+                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                : "bg-foreground/5 hover:bg-foreground/10 text-foreground/75 border-transparent",
+            )}
+          >
+            <ListChecks className="h-3 w-3" />
+            {planMode ? "Plan mode: on" : "Plan mode"}
+          </button>
+          <span className="h-4 w-px bg-border/70 mx-0.5" aria-hidden />
           {SUGGESTIONS.map((s) => (
             <button
               key={s}
@@ -246,6 +262,12 @@ export function ThrivePromptHero() {
             </button>
           ))}
         </div>
+
+        {planMode && (
+          <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+            <span className="font-semibold text-foreground/80">Plan & execute:</span> Thrive will break your goal into ordered steps and wait for your approval before running them.
+          </p>
+        )}
 
         <AnimatePresence>
           {busy && (

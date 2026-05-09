@@ -116,7 +116,8 @@ Deno.serve(async (req) => {
 
     // --- Tier gate (count seconds against daily cap) ---
     const seconds = Math.max(1, Math.ceil(audioBytes.length / 2000));
-    const { data: gate, error: gateErr } = await admin.rpc("consume_voice_seconds", {
+    // Must use userClient — consume_voice_seconds reads auth.uid() from the JWT.
+    const { data: gate, error: gateErr } = await userClient.rpc("consume_voice_seconds", {
       _seconds: seconds,
     });
     if (gateErr) {

@@ -234,6 +234,36 @@ function dedupeKey(g: { source_url: string; title: string }) {
   return `${url}::${title}`;
 }
 
+// True if URL looks like a generic listing/search/category page rather than a
+// deep-link to ONE specific gig posting.
+function isGenericListingUrl(u: string): boolean {
+  if (!u) return true;
+  try {
+    const url = new URL(u);
+    const path = url.pathname.replace(/\/+$/, "").toLowerCase();
+    if (!path) return true;
+    const segs = path.split("/").filter(Boolean);
+    const last = segs[segs.length - 1] || "";
+    const generic = new Set([
+      "jobs","job","careers","career","search","browse","explore","listings",
+      "opportunities","gigs","work","hiring","tags","tag","category","categories",
+      "feed","home","casting","castings","openings","positions","postings","apply",
+    ]);
+    if (generic.has(last)) return true;
+    // Bare category page like /jobs/design with no specific posting id/slug
+    if (segs.length < 2 && last.length < 8) return true;
+    // Search-like URLs with only a query
+    if (url.search && /[?&](q|query|keyword|search)=/.test(url.search) && segs.length <= 2) return true;
+    // LinkedIn jobs needs /view/<id> to be a specific posting
+    if (/linkedin\.com$/.test(url.hostname) || /linkedin\.com$/.test(url.hostname.replace(/^www\./, ""))) {
+      if (!/\/jobs\/view\//.test(path)) return true;
+    }
+    return false;
+  } catch {
+    return true;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 

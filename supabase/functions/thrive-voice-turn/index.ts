@@ -305,7 +305,9 @@ Surface: ${surface}. ${profile?.location_city ? `User is in ${profile.location_c
       transcript,
       reply,
       audio_base64: audioB64,
-      audio_mime: "audio/mpeg",
+      audio_mime: audioB64 ? "audio/mpeg" : null,
+      tts_fallback: ttsFallback,
+      tts_error: ttsErrorMsg,
       conversation_id: convId,
       usage: gate,
     });

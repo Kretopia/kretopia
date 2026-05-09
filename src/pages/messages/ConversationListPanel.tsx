@@ -116,15 +116,25 @@ export const ConversationListPanel = ({
             </div>
             <p className="brand-eyebrow mb-2">{searchQuery ? "No matches" : "Inbox zero"}</p>
             <p className="text-xl font-black tracking-[-0.02em] mb-2">
-              {searchQuery ? "Nothing matches that" : "No messages yet"}
+              {searchQuery ? "Nothing matches that" : pick("No messages yet", "No conversations yet")}
             </p>
             <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
-              {searchQuery ? "Try a different name or keyword." : "Connect with a creative and start a conversation."}
+              {searchQuery
+                ? "Try a different name or keyword."
+                : pick(
+                    "Connect with a creative and start a conversation.",
+                    "Reach out to talent or wait for applicants to reply.",
+                  )}
             </p>
             {!searchQuery && (
               <>
-                <Button onClick={() => navigate("/circle")} variant="lime" size="sm" className="gap-2">
-                  Explore Match
+                <Button
+                  onClick={() => navigate(isBusiness ? "/talent-finder" : "/match")}
+                  variant="lime"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {pick("Find a match", "Find talent")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
                 <PushNotificationPrompt trigger="message" className="mt-4" />

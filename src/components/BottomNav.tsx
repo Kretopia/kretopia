@@ -1,48 +1,35 @@
 import { Link, useLocation } from "react-router-dom";
 import { Sparkles, Briefcase, LayoutDashboard, Home, UserSearch, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { memo, useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { memo } from "react";
+import { useAccountTone } from "@/hooks/useAccountTone";
 
 // Single, focused MVP nav: Home · Desk · Match · Gigs · Pay
+// `hint` is shown on hover/long-press so people don't have to guess what
+// "Desk" or "Match" mean — especially helpful for non-creator visitors.
 const NAV_ITEMS = [
-  { path: "/", icon: Home, label: "Home" },
-  { path: "/desk", icon: LayoutDashboard, label: "Desk" },
-  { path: "/circle", icon: Sparkles, label: "Match" },
-  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-  { path: "/thrivepay", icon: Wallet, label: "Pay" },
+  { path: "/", icon: Home, label: "Home", hint: "Your daily Home — what's new, what to do" },
+  { path: "/desk", icon: LayoutDashboard, label: "Desk", hint: "Your workspaces & projects" },
+  { path: "/circle", icon: Sparkles, label: "Match", hint: "Find people to collaborate with" },
+  { path: "/opportunities", icon: Briefcase, label: "Gigs", hint: "Paid gigs & open opportunities" },
+  { path: "/thrivepay", icon: Wallet, label: "Pay", hint: "Invoices, expenses & getting paid" },
 ];
 
 // Company accounts get a B2B-focused nav
 const COMPANY_ITEMS = [
-  { path: "/desk", icon: LayoutDashboard, label: "Desk" },
-  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-  { path: "/talent-finder", icon: UserSearch, label: "Talent" },
-  { path: "/thrivepay", icon: Wallet, label: "Pay" },
+  { path: "/desk", icon: LayoutDashboard, label: "Desk", hint: "Your briefs & active projects" },
+  { path: "/opportunities", icon: Briefcase, label: "Gigs", hint: "Roles you've posted & talent pool" },
+  { path: "/talent-finder", icon: UserSearch, label: "Talent", hint: "Find creators to hire" },
+  { path: "/thrivepay", icon: Wallet, label: "Pay", hint: "Pay creators & manage invoices" },
 ];
 
 const BottomNav = memo(() => {
   const location = useLocation();
-  const { user } = useAuth();
-  const [isCompany, setIsCompany] = useState(false);
-
-  useEffect(() => {
-    if (!user) return;
-    Promise.resolve(
-      supabase
-        .from("profiles")
-        .select("account_type")
-        .eq("user_id", user.id)
-        .maybeSingle()
-    ).then(({ data }) => {
-      setIsCompany(data?.account_type === "company");
-    }).catch(err => console.warn('[BottomNav] Error loading profile:', err));
-  }, [user?.id]);
+  const { isBusiness } = useAccountTone();
 
   if (location.pathname === "/auth") return null;
 
-  const items = isCompany ? COMPANY_ITEMS : NAV_ITEMS;
+  const items = isBusiness ? COMPANY_ITEMS : NAV_ITEMS;
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -67,7 +54,8 @@ const BottomNav = memo(() => {
             <Link
               key={item.path + item.label}
               to={item.path}
-              aria-label={`Navigate to ${item.label}`}
+              title={item.hint}
+              aria-label={`${item.label} — ${item.hint}`}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "relative flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-xl transition-all duration-200 flex-1 min-h-[48px]",

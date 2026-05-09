@@ -1,14 +1,10 @@
-// Thrive Voice — push-to-talk turn handler.
-// Pipeline: Gemini multimodal STT (Lovable AI) -> Gemini brain -> ElevenLabs TTS
-// (with graceful fallback to browser SpeechSynthesis when ElevenLabs is unavailable).
-// Persists the user transcript + assistant reply into the canonical Copilot
-// thread so voice and text history stay merged across surfaces.
-//
-// Tier-gated via consume_voice_seconds RPC (free 2min/day, Creator 15min,
-// Creator+ 60min, Founder unlimited).
+// Thrive Voice — STT + tier gate.
+// Records → returns transcript. Brain + TTS now live in the main agent
+// (thrive-ai-chat) and thrive-voice-tts so voice inherits every tool/action
+// the text agent supports (find_talent, draft_quote, draft_invoice,
+// start_video_call, remember_memory, etc).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { encodeBase64 as b64encode } from "https://deno.land/std@0.224.0/encoding/base64.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,21 +15,13 @@ const corsHeaders = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY") || "";
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 
-// Default voice — warm, professional. (Sarah)
-const DEFAULT_VOICE_ID = "EXAVITQu4vr4xnSDxMaL";
-const TTS_MODEL = "eleven_turbo_v2_5";
-const STT_MODEL = "google/gemini-2.5-flash"; // multimodal audio in
-const BRAIN_MODEL = "google/gemini-2.5-flash";
+const STT_MODEL = "google/gemini-2.5-flash";
 
 interface ReqBody {
   audio_base64: string;
   mime_type?: string;
-  surface?: string;
-  surface_context?: Record<string, unknown>;
-  voice_id?: string;
 }
 
 function jsonResponse(data: unknown, status = 200) {
@@ -61,12 +49,13 @@ Deno.serve(async (req) => {
     const token = authHeader.replace(/^Bearer\s+/i, "");
     if (!token) return jsonResponse({ error: "missing_auth" }, 401);
 
-    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY") || "", {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-    });
+    const userClient = createClient(
+      SUPABASE_URL,
+      Deno.env.get("SUPABASE_ANON_KEY") || "",
+      { global: { headers: { Authorization: `Bearer ${token}` } } },
+    );
     const { data: userData, error: userErr } = await userClient.auth.getUser();
     if (userErr || !userData?.user) return jsonResponse({ error: "invalid_auth" }, 401);
-    const userId = userData.user.id;
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE);
 
@@ -81,8 +70,7 @@ Deno.serve(async (req) => {
 
     const mime = body.mime_type || "audio/webm";
 
-    // --- 1) STT via Gemini multimodal (Lovable AI Gateway) ---
-    // Gemini accepts inline base64 audio. We ask it to transcribe verbatim.
+    // --- STT via Gemini multimodal (Lovable AI Gateway) ---
     const audioB64In = body.audio_base64.replace(/^data:[^;]+;base64,/, "");
     const sttResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -119,19 +107,15 @@ Deno.serve(async (req) => {
       console.error("STT failed", sttResp.status, err);
       if (sttResp.status === 429) return jsonResponse({ error: "rate_limited" }, 429);
       if (sttResp.status === 402) return jsonResponse({ error: "ai_credits_exhausted" }, 402);
-      return jsonResponse({ error: "stt_failed", detail: err }, 200);
+      return jsonResponse({ error: "stt_failed", detail: err }, 502);
     }
     const sttJson = await sttResp.json();
     const rawTranscript: string = (sttJson?.choices?.[0]?.message?.content || "").trim();
     const transcript = rawTranscript.replace(/^<empty>$/i, "").trim();
-    if (!transcript) {
-      return jsonResponse({ error: "no_speech_detected" }, 400);
-    }
+    if (!transcript) return jsonResponse({ error: "no_speech_detected" }, 400);
 
-    // Estimate seconds from audio bytes (rough: webm/opus ~ 16kbps avg)
+    // --- Tier gate (count seconds against daily cap) ---
     const seconds = Math.max(1, Math.ceil(audioBytes.length / 2000));
-
-    // --- 2) Tier gate ---
     const { data: gate, error: gateErr } = await admin.rpc("consume_voice_seconds", {
       _seconds: seconds,
     });
@@ -141,176 +125,12 @@ Deno.serve(async (req) => {
     }
     if (gate && (gate as { ok?: boolean }).ok === false) {
       return jsonResponse(
-        {
-          error: "voice_daily_limit",
-          ...(gate as Record<string, unknown>),
-          transcript, // still return so client can show what user said
-        },
+        { error: "voice_daily_limit", ...(gate as Record<string, unknown>), transcript },
         429,
       );
     }
 
-    // --- 3) Brain: keep it simple, fast, warm-spoken. ---
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("full_name, headline, location_city")
-      .eq("user_id", userId)
-      .maybeSingle();
-    const firstName = (profile?.full_name || "").trim().split(/\s+/)[0] || "there";
-
-    // Get-or-create canonical Copilot thread
-    let convId: string | null = null;
-    {
-      const { data: convo } = await admin
-        .from("ai_conversations")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("title", "__copilot__")
-        .maybeSingle();
-      if (convo?.id) {
-        convId = convo.id;
-      } else {
-        const { data: created } = await admin
-          .from("ai_conversations")
-          .insert({ user_id: userId, title: "__copilot__" })
-          .select("id")
-          .maybeSingle();
-        convId = created?.id ?? null;
-      }
-    }
-
-    // Pull last 10 turns for short-term memory.
-    let history: { role: string; content: string }[] = [];
-    if (convId) {
-      const { data: rows } = await admin
-        .from("ai_messages")
-        .select("role, content")
-        .eq("conversation_id", convId)
-        .order("created_at", { ascending: false })
-        .limit(10);
-      history = (rows ?? []).reverse();
-    }
-
-    const surface = body.surface || "home";
-    const sysPrompt = `You are Thrive — a warm, sharp creative-business sidekick speaking out loud to ${firstName}.
-You are SPEAKING, not writing. Rules:
-- Keep replies to 1–3 short sentences (under 60 words).
-- No markdown, no lists, no emoji, no code blocks.
-- Sound human. Contractions. Light warmth. Never robotic.
-- If the user asks you to DO something (draft, send, create, schedule), say what you'll tee up and tell them to tap the action card that appears in chat.
-- Never invent data you don't have — ask one quick clarifying question instead.
-Surface: ${surface}. ${profile?.location_city ? `User is in ${profile.location_city}.` : ""}`;
-
-    const brainResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: BRAIN_MODEL,
-        messages: [
-          { role: "system", content: sysPrompt },
-          ...history,
-          { role: "user", content: transcript },
-        ],
-        max_tokens: 220,
-        temperature: 0.6,
-      }),
-    });
-    if (!brainResp.ok) {
-      const err = await brainResp.text();
-      console.error("brain failed", brainResp.status, err);
-      if (brainResp.status === 429) {
-        return jsonResponse({ error: "rate_limited", transcript }, 429);
-      }
-      if (brainResp.status === 402) {
-        return jsonResponse({ error: "ai_credits_exhausted", transcript }, 402);
-      }
-      return jsonResponse({ error: "brain_failed", transcript }, 502);
-    }
-    const brainJson = await brainResp.json();
-    const reply: string =
-      (brainJson?.choices?.[0]?.message?.content || "").trim() ||
-      "Sorry — I didn't catch a clear answer for that. Try again?";
-
-    // --- 4) TTS via ElevenLabs (graceful fallback to browser SpeechSynthesis) ---
-    const voiceId = body.voice_id || DEFAULT_VOICE_ID;
-    let audioB64: string | null = null;
-    let ttsFallback = false;
-    let ttsErrorMsg: string | null = null;
-
-    if (!ELEVENLABS_API_KEY) {
-      ttsFallback = true;
-      ttsErrorMsg = "elevenlabs_not_configured";
-    } else {
-      try {
-        const ttsResp = await fetch(
-          `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
-          {
-            method: "POST",
-            headers: {
-              "xi-api-key": ELEVENLABS_API_KEY,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              text: reply,
-              model_id: TTS_MODEL,
-              voice_settings: {
-                stability: 0.45,
-                similarity_boost: 0.75,
-                style: 0.35,
-                use_speaker_boost: true,
-                speed: 1.0,
-              },
-            }),
-          },
-        );
-        if (!ttsResp.ok) {
-          const err = await ttsResp.text();
-          console.error("TTS failed", ttsResp.status, err);
-          ttsFallback = true;
-          ttsErrorMsg = /detected_unusual_activity|Free Tier/i.test(err)
-            ? "voice_provider_free_tier_blocked"
-            : `tts_${ttsResp.status}`;
-        } else {
-          const audioBuf = new Uint8Array(await ttsResp.arrayBuffer());
-          audioB64 = b64encode(audioBuf);
-        }
-      } catch (e) {
-        console.error("TTS exception", e);
-        ttsFallback = true;
-        ttsErrorMsg = "tts_network_error";
-      }
-    }
-
-    // --- 5) Persist turns (fire-and-forget) ---
-    if (convId) {
-      admin
-        .from("ai_messages")
-        .insert([
-          { conversation_id: convId, role: "user", content: transcript },
-          { conversation_id: convId, role: "assistant", content: reply },
-        ])
-        .then(() => {}, () => {});
-      admin
-        .from("ai_conversations")
-        .update({ updated_at: new Date().toISOString() })
-        .eq("id", convId)
-        .then(() => {}, () => {});
-    }
-
-    return jsonResponse({
-      ok: true,
-      transcript,
-      reply,
-      audio_base64: audioB64,
-      audio_mime: audioB64 ? "audio/mpeg" : null,
-      tts_fallback: ttsFallback,
-      tts_error: ttsErrorMsg,
-      conversation_id: convId,
-      usage: gate,
-    });
+    return jsonResponse({ ok: true, transcript, usage: gate });
   } catch (e) {
     console.error("voice-turn fatal", e);
     return jsonResponse(

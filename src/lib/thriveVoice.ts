@@ -1,18 +1,20 @@
 // Thrive Voice — push-to-talk client helper.
-// Handles MediaRecorder lifecycle, base64 encoding, edge-function call,
-// and audio playback. Returns transcript + reply for the chat to render.
+// Pipeline (split):
+//   stopAndSend()       → POST audio to thrive-voice-turn → returns {transcript}
+//   client agent path   → feeds transcript through the existing chat agent so
+//                         every tool/automation (talent finder, quote, invoice,
+//                         video call, memory…) fires exactly like text input
+//   synthesizeReply()   → POST reply text to thrive-voice-tts → returns audio
+//                         (or tts_fallback so we use browser SpeechSynthesis)
 
 import { supabase } from "@/integrations/supabase/client";
 
 const VOICE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/thrive-voice-turn`;
+const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/thrive-voice-tts`;
 
 export interface VoiceTurnResult {
   ok: true;
   transcript: string;
-  reply: string;
-  audioUrl: string | null;
-  /** When true, the server couldn't synthesize audio — caller should use browser TTS. */
-  ttsFallback?: boolean;
   usage?: { used: number; cap: number; tier: string };
 }
 
@@ -45,7 +47,6 @@ export async function startRecording(): Promise<void> {
   });
   activeStream = stream;
   chunks = [];
-  // Prefer opus/webm; fall back to default
   const mime =
     typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
       ? "audio/webm;codecs=opus"
@@ -77,7 +78,6 @@ export function cancelRecording() {
 async function blobToBase64(blob: Blob): Promise<string> {
   const buf = await blob.arrayBuffer();
   const bytes = new Uint8Array(buf);
-  // Chunked btoa to avoid call-stack overflow on large audio
   let binary = "";
   const CHUNK = 0x8000;
   for (let i = 0; i < bytes.length; i += CHUNK) {
@@ -86,15 +86,16 @@ async function blobToBase64(blob: Blob): Promise<string> {
   return btoa(binary);
 }
 
-export async function stopAndSend(opts: {
-  surface?: string;
-  surfaceContext?: Record<string, unknown>;
-}): Promise<VoiceTurnResult | VoiceTurnError> {
+/**
+ * Stop recording and POST the audio to thrive-voice-turn for STT + tier-gating.
+ * Returns the verbatim transcript only — caller is responsible for routing it
+ * through the agent (so every tool runs) and then calling synthesizeReply().
+ */
+export async function stopAndSend(): Promise<VoiceTurnResult | VoiceTurnError> {
   const rec = activeRecorder;
   if (!rec) {
     return { ok: false, code: "not_recording", message: "Nothing to send." };
   }
-  // Wait for the final dataavailable
   const stopped: Blob = await new Promise((resolve) => {
     rec.onstop = () => {
       const blob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
@@ -125,12 +126,7 @@ export async function stopAndSend(opts: {
         Authorization: `Bearer ${token}`,
         apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
       },
-      body: JSON.stringify({
-        audio_base64,
-        mime_type: stopped.type || "audio/webm",
-        surface: opts.surface,
-        surface_context: opts.surfaceContext,
-      }),
+      body: JSON.stringify({ audio_base64, mime_type: stopped.type || "audio/webm" }),
     });
   } catch (e) {
     return { ok: false, code: "network", message: e instanceof Error ? e.message : "Network error" };
@@ -153,9 +149,6 @@ export async function stopAndSend(opts: {
     if (data?.error === "no_speech_detected") {
       return { ok: false, code: "no_speech", message: "Didn't catch that — try speaking clearly into the mic." };
     }
-    if (data?.error === "voice_provider_unavailable") {
-      return { ok: false, code: "voice_provider_unavailable", message: data.detail || "Thrive Voice is temporarily unavailable." };
-    }
     return {
       ok: false,
       code: data?.error || "unknown",
@@ -168,19 +161,45 @@ export async function stopAndSend(opts: {
     };
   }
 
-  let audioUrl: string | null = null;
-  if (data.audio_base64) {
-    audioUrl = `data:${data.audio_mime || "audio/mpeg"};base64,${data.audio_base64}`;
+  return { ok: true, transcript: data.transcript, usage: data.usage };
+}
+
+/** Synthesize the agent's reply via ElevenLabs; falls back to browser TTS. */
+export async function synthesizeReply(text: string): Promise<{ audioUrl: string | null }> {
+  const trimmed = (text || "").trim();
+  if (!trimmed) return { audioUrl: null };
+
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) {
+    speakBrowser(trimmed);
+    return { audioUrl: null };
   }
 
-  return {
-    ok: true,
-    transcript: data.transcript,
-    reply: data.reply,
-    audioUrl,
-    ttsFallback: !!data.tts_fallback,
-    usage: data.usage,
-  };
+  try {
+    const resp = await fetch(TTS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      },
+      body: JSON.stringify({ text: trimmed }),
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (data?.audio_base64) {
+      const url = `data:${data.audio_mime || "audio/mpeg"};base64,${data.audio_base64}`;
+      playAudio(url);
+      return { audioUrl: url };
+    }
+    // Fallback (no key, free-tier blocked, network error, etc.)
+    speakBrowser(trimmed);
+    return { audioUrl: null };
+  } catch (e) {
+    console.warn("TTS request failed, falling back to browser TTS", e);
+    speakBrowser(trimmed);
+    return { audioUrl: null };
+  }
 }
 
 /** Speak via browser SpeechSynthesis — fallback when ElevenLabs is unavailable. */
@@ -192,7 +211,6 @@ function speakBrowser(text: string) {
     u.rate = 1.02;
     u.pitch = 1.0;
     u.volume = 1.0;
-    // Pick a warm English voice if available.
     const voices = window.speechSynthesis.getVoices();
     const preferred =
       voices.find((v) => /en[-_]US/i.test(v.lang) && /female|samantha|google.*us/i.test(v.name)) ||
@@ -211,16 +229,6 @@ export function playAudio(url: string): HTMLAudioElement {
   currentAudio = audio;
   audio.play().catch((e) => console.warn("voice playback failed", e));
   return audio;
-}
-
-/** Speak the reply — uses ElevenLabs audio if present, else browser TTS. */
-export function playReply(result: VoiceTurnResult) {
-  stopPlayback();
-  if (result.audioUrl) {
-    playAudio(result.audioUrl);
-  } else {
-    speakBrowser(result.reply);
-  }
 }
 
 export function stopPlayback() {

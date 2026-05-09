@@ -438,6 +438,7 @@ export const ThriveAgentFab = () => {
       } finally {
         abortRef.current = null;
       }
+      return assistantSoFar;
     },
     [text, sending, messages, surface, surfaceContext, conversationId],
   );

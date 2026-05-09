@@ -1,187 +1,73 @@
+# Agentic Platform — Next 3 Phases
 
-# ThriveIN → Thrive: The Agentic Creative OS
+Phase 1.1 (Inbox Triage Agent) is shipped. We have ~70% of the pieces for the rest of the loop already in the codebase — most of the work is **wiring + supervision UX**, not net-new infrastructure.
 
-## The strategic re-frame
-
-**The problem:** "Creators getting jobs and barters" is now table stakes — Instagram Creator Marketplace, LinkedIn, Upwork, Fiverr, Behance all do discovery + matching. If our wedge is *finding work*, we lose to platforms with 2B+ users and an existing graph.
-
-**The new wedge:** Nobody is building the **operating layer** for a creative business. Instagram matches you with a brand — then you're back to WhatsApp, Notes, Google Docs, Stripe, a lawyer, a spreadsheet, and chasing payment. The creator is still the agency, accountant, lawyer, project manager, and producer.
-
-**Thrive becomes the agent that *runs* the creative business.** Discovery is a feature, not the product. Your competitive moat is **work that gets done** — invoices sent, clients chased, scopes drafted, briefs structured, deliverables shipped, money received, credits logged, EPK updated. All by Thrive, with the creator approving.
-
-> Positioning shift: "Find creative work" → **"Your creative business, on autopilot."**
-> Instagram finds you the gig. **Thrive delivers it, bills it, banks it, and books the next one.**
-
-This also flips the Instagram threat into an opportunity: we ingest IG Creator Marketplace gigs (and LinkedIn, Upwork, etc.) via the existing Smart Gig Scout — we become the *workspace* for gigs sourced anywhere.
+This plan ships the missing connective tissue so a creator wakes up and Thrive has *already done work* — drafted replies, drafted pitches, sent chase emails, kept the EPK fresh — with a single "Approvals" tray as the human-in-the-loop.
 
 ---
 
-## What we already have (foundations are strong)
+## Phase 1.2 — Auto-Outreach Agent (close the inbound→outbound loop)
 
-- **Thrive Agent + orchestrator** with `orch_tool_registry` (9 tools, risk-gated: safe_auto / requires_approval / locked)
-- **Persistent memory** (`thrive_memory` — vendors, rates, clients, contacts) injected into every turn
-- **Desk Agent Autonomy** (15-min watcher → `agent_proposals` → ProactiveCards)
-- **Smart Gig Scout** + Opportunity Intel (daily crons, real gigs from web/LinkedIn/IG/ATS)
-- **Studio slices** that auto-generate work (shotlist, campaign matrix, release checklist, podcast Qs, brief)
-- **Pricing Co-Pilot** with vision (scan brief → quote)
-- **Approval surface** (`AgentApprovalsTray`) on Home/Desk/Pay
-- **Cross-surface chat** (`thrive-ai-chat`) with surface-aware context
-- **Studio room** with VibeHeader, presence, typing, mentions, voice-to-task
+**Already built:** `sponsor-radar`, `send-outreach-email`, `process-outreach-queue`, `OutreachTab`, `EventOutreachSegmentBuilder`, Gmail connection.
 
-We don't need to rebuild — we need to **connect the loops, raise autonomy, and rebrand the experience around "Thrive is doing it."**
+**Missing:** the *agent* that decides who to pitch, drafts the email, and parks it for one-tap approval.
 
----
+1. **Migration** — new table `outreach_drafts` (lead_id, user_id, subject, body, status: draft/approved/sent/dismissed, source: sponsor_radar/manual/scout, scheduled_for). Register orch tools `draft_outreach_email` (safe_auto) and `send_outreach_email` (requires_approval).
+2. **Edge fn `draft-outreach-email`** — Gemini 2.5 Pro, pulls: sponsor_lead context + creator EPK + thrive_memory (past wins, rate card) → personalized 4-line pitch with subject. Tool-calling for structured output.
+3. **Cron `auto-outreach-watch`** every 6h — for Pro+ users with Gmail connected: scan top 3 fresh `sponsor_leads` (score>0.7) → draft pitch → insert `outreach_drafts` (status=draft) → push notification ("Thrive drafted 3 pitches").
+4. **UI** — Sponsor Radar card on `/intel` gets "Draft pitch" button. New `/intel` Outbox tab shows pending drafts with Approve / Edit / Dismiss. Approve → `send-outreach-email`.
 
-## Phase 1 — The Inbox & Outbound Loop (week 1–2)
-*The single biggest "Thrive did this for me" moment.*
+## Phase 2 — Money Loop (autonomous AR)
 
-**1.1 Inbox Triage Agent** (`inbox-triage-agent` edge fn + cron every 10min)
-- Watches `messages` (DM + chat) for new inbound from non-collaborators
-- Classifies: `lead` / `gig_inquiry` / `collab` / `fan` / `spam` / `admin`
-- For `lead`/`gig_inquiry`: extracts budget, timeline, scope → drafts reply (using rate memory) → drops `agent_proposal` (kind=`reply_draft`)
-- New "Needs your eyes" tray on Home, sorted by urgency
-- Tools: register `draft_reply`, `mark_lead`, `move_to_pipeline` in `orch_tool_registry`
+**Already built:** invoices table, ThrivePay, `record_money_action`, `draft_invoice` orch tool, MoneyBrief.
 
-**1.2 Auto-Outreach Agent** (extends Sponsor Radar)
-- `sponsor_leads` already exists → add `outreach_drafts` table
-- New `draft-outreach-email` edge fn (Gemini 2.5 pro, tool-call): personalized pitch using EPK + recent credits + rate card
-- Gmail connector (already integrated for some flows) → "Send via Gmail" approval card
-- Daily proposal: "I found 5 brand fits. Want me to draft outreach to 3?"
+**Missing:** the agent that *chases* and *creates* without prompting.
 
-**1.3 Lead → Project handoff**
-- `convert_lead_to_project` tool: lead accepted → spins workspace, copies brief, drafts quote, schedules kickoff
-- One tap = full project bootstrap
+1. **Migration** — add `invoices.last_chase_sent_at`, `chase_count`. Register orch tools `send_chase_email` (requires_approval) and `draft_milestone_invoice` (safe_auto).
+2. **Edge fn `money-agent-watch`** — daily cron 09:00 UTC:
+   - Find overdue invoices (>3 days) → draft polite chase email → insert `agent_proposals` (kind='chase_invoice').
+   - Find projects where deliverable just moved to `approved` and no invoice exists → draft milestone invoice → insert proposal.
+   - Roll up weekly: "Last week: $X collected, $Y outstanding, 3 receipts uncategorized."
+3. **UI** — proposals appear in StudioRoom ProactiveCards + new "Approvals" tray on Home (consolidates inbox + outreach + money).
 
-**Outcome:** users open the app and see "Thrive replied to 4 leads, drafted 2 outreach pitches, and bootstrapped 1 project. Approve?"
+## Phase 3 — Multi-Step Planner (single-prompt orchestration)
+
+This is the *agentic* unlock — user says one thing, Thrive plans + executes 3-7 steps.
+
+1. **Migration** — `agent_plans` (user_id, goal, plan jsonb (DAG of tool calls), status: planning/executing/awaiting_approval/done/failed, current_step, results jsonb).
+2. **Edge fn `agent-planner`** — Gemini 2.5 Pro with the full `orch_tool_registry` as tool spec. Input: natural language goal ("Land 3 paid gigs this month" or "Close out the Adidas project"). Output: DAG of tool calls with dependencies + risk classification per step.
+3. **Edge fn `agent-executor`** — runs safe_auto steps automatically, pauses on requires_approval / locked, resumes on user accept. Streams progress via Realtime broadcast.
+4. **UI** — `ThrivePromptHero` on Home gets a "Plan & execute" mode toggle. New `/plan/:id` page shows the DAG live with per-step status and approval buttons inline.
 
 ---
 
-## Phase 2 — The Money Loop (week 2–3)
-*Close the get-paid gap that no creator platform owns.*
+## Unified Approvals Tray (cuts across all 3 phases)
 
-**2.1 Money Agent** (extends Pricing Copilot)
-- Daily watcher: unpaid invoices > 7d → drafts polite chase email with `send_chase_email` tool (gated)
-- Deliverable marked done → auto-drafts invoice for that milestone (proposal, not auto-sent)
-- Receipt scan → auto-categorize + tag to project (already partial, finish the loop)
-- Weekly Money Brief is already on Home — make it *actionable*: each line has an inline Thrive action
+New `<ApprovalsHub />` on Home — single feed of pending items across:
+- Inbox triage drafts (Phase 1.1)
+- Outreach drafts (Phase 1.2)
+- Money proposals (Phase 2)
+- Planner steps (Phase 3)
 
-**2.2 Quote → Contract → Invoice chain**
-- `draft_quote` already wired; add `convert_quote_to_contract` (Hybrid Blockchain Contracts already exists, hash internally)
-- Quote approved by client → contract auto-generated → milestone invoices auto-scheduled
-- Each step is a Thrive proposal, user one-taps
-
-**2.3 EPK Auto-Updater (full loop)**
-- `epk_refresh_suggestions` already exists → add auto-pull from credits/projects/published work
-- "Thrive added 3 new credits to your EPK from last month's projects. Publish?" → one-tap
+One mental model for the user: *"Thrive did things. Approve the ones you like."*
 
 ---
 
-## Phase 3 — The Multi-Step Planner (week 3–4)
-*Move from single tool calls to true workflows.*
+## Technical Notes
 
-**3.1 Planner/Executor split** (already scaffolded in `extractActions`/`ParsedPlan`)
-- New `agent-planner` edge fn (Gemini 2.5 Pro, reasoning=high): given goal + context → returns ordered DAG of tool calls
-- Executor (`agent-orchestrator`) runs DAG: safe_auto runs in sequence, requires_approval pauses with full plan visible
-- New UI: `<PlanCard />` in chat — collapsible step list with checkmarks as steps execute
-
-**3.2 Goal-shaped prompts on Home**
-- Replace generic Copilot prompt with goal templates that fan out to multi-step plans:
-  - "Land 3 paid gigs this month" → plan: scout + outreach + EPK refresh + portfolio sync
-  - "Close out the Acme project" → plan: final deliverable check + invoice + credit + asset archive
-  - "Get my taxes ready" → plan: pull receipts + categorize + summary + export
-
-**3.3 Memory autopilot**
-- `auto-extract-memory` background job: scans recent messages/projects → auto-proposes new `thrive_memory` entries (vendors mentioned, rates discussed, client preferences)
-- "I noticed Acme always pays NET-15 — saved to memory" (silent, with undo)
+- All new edge fns reuse existing patterns: `verify_jwt = false` + service-role client, CRON_SECRET auth on cron paths.
+- All new tools registered in `orch_tool_registry` so the chat agent can also invoke them on demand.
+- Risk gating consistent: drafting = `safe_auto`, sending external messages = `requires_approval`, financial movement = `locked` (manual only).
+- Realtime broadcast on `agent_proposals` already wired — new kinds inherit the ProactiveCards UX for free.
+- Daily caps already enforced on copilot via `consume_copilot_message`; planner gets its own counter (`consume_planner_run`) — Pro 5/day, Creator+ 25/day, Founder 100/day.
 
 ---
 
-## Phase 4 — The Brand Pivot (week 4–5)
-*Make every surface say "Thrive does the work."*
+## Order of execution
 
-**4.1 Rebrand the experience (not the company)**
-- Tagline shift: **"Your creative business, on autopilot."**
-- Home hero: replace search-led ThrivePromptHero with **Thrive Brief**: live count of "what Thrive did today / what needs your eyes"
-- Empty states everywhere: not "post a gig" — "Tell Thrive what you're working on"
-- Discovery becomes a Thrive *capability* ("Thrive found 4 matches for your shoot") not a destination tab
+1. **Phase 1.2** (Outreach) — biggest visible "Thrive did this for me" moment, ~1 day of work.
+2. **Approvals Hub** UI shell — so subsequent phases plug into one tray.
+3. **Phase 2** (Money Loop) — highest LTV impact (creators actually get paid).
+4. **Phase 3** (Planner) — the moonshot that completes "agentic OS" positioning.
 
-**4.2 Voice-first command bar**
-- Persistent mic on Home (`voice-to-task` already shipped) → routed through `route-thrive-intent`
-- "Hey Thrive, invoice Acme for $2,400, NET-15, mark project as wrapped" → multi-step plan → approval card
-
-**4.3 Public proof**
-- Thrive Activity Feed on profile (opt-in): "Booked 12 gigs, sent 47 invoices, $34k collected — managed by Thrive"
-- Share-card generator (existing infra) for "What Thrive did for me this month"
-
----
-
-## Phase 5 — Sunset / hide what's no longer the wedge (week 5–6)
-
-- Keep gigs marketplace, but reposition: **"Gigs found by Thrive"** — Smart Gig Scout becomes the front door
-- Match/Discover: stays, but reframed as a Thrive tool surfaced when relevant, not a primary nav
-- Bottom nav reduced to: **Home · Studio · Money · Approvals · Profile** (Match/Gigs absorbed into Home + Studio surfaces)
-- Communities stays hidden (per memory)
-
----
-
-## Technical architecture (for reference)
-
-```text
-                    ┌──────────────────────────┐
-   User intent ───► │  route-thrive-intent     │ ── classifies surface/goal
-                    └────────────┬─────────────┘
-                                 │
-                                 ▼
-                    ┌──────────────────────────┐
-                    │  agent-planner (NEW)     │ ── builds DAG (Gemini 2.5 Pro)
-                    └────────────┬─────────────┘
-                                 │ plan
-                                 ▼
-                    ┌──────────────────────────┐
-   tool registry ──►│  agent-orchestrator      │ ── runs DAG, gates by risk
-                    └────────────┬─────────────┘
-                       │         │         │
-                  safe_auto  approval   locked
-                       │         │         │
-                       ▼         ▼         ▼
-                  executes  agent_proposals  notify owner
-
-   Background watchers (cron):
-   ─ inbox-triage-agent      (10min)
-   ─ desk-agent-watch        (15min — exists)
-   ─ money-agent-watch       (daily — NEW)
-   ─ scout-gigs              (daily — exists)
-   ─ opportunity-intel       (daily — exists)
-   ─ auto-extract-memory     (daily — NEW)
-   ─ epk-auto-refresh        (weekly — exists, needs full loop)
-
-   All write to: agent_proposals + agent_actions
-   Surfaced via: AgentApprovalsTray (Home/Desk/Pay)
-```
-
-**New tables (3):**
-- `outreach_drafts` (lead_id, channel, subject, body, status, created_at)
-- `inbox_triage_classifications` (message_id, kind, confidence, extracted jsonb)
-- `agent_plans` (run_id, goal, dag jsonb, status, completed_steps)
-
-**New edge functions (5):**
-- `inbox-triage-agent`, `draft-outreach-email`, `agent-planner`, `money-agent-watch`, `auto-extract-memory`
-
-**Tools to add to `orch_tool_registry` (~8):**
-- `draft_reply`, `mark_lead`, `convert_lead_to_project`, `send_chase_email`, `convert_quote_to_contract`, `schedule_milestone_invoice`, `auto_log_credit`, `propose_memory`
-
----
-
-## What to ship first (this week)
-
-If you approve the full plan, I'll start with **Phase 1.1 Inbox Triage Agent** end-to-end:
-1. Migration: `inbox_triage_classifications` + `outreach_drafts`
-2. Edge fn: `inbox-triage-agent` (Gemini 2.5 flash, classifier + drafter)
-3. Cron: every 10min
-4. Tools registered: `draft_reply`, `mark_lead`
-5. UI: "Needs your eyes" tray on Home (reuses `AgentApprovalsTray`)
-6. Memory + telemetry
-
-Each phase is independently shippable and visible to users.
-
-**Approve to ship Phase 1.1, or want me to adjust the order/scope first?**
+Approve to start with **Phase 1.2 + Approvals Hub shell**, or want to reshuffle the order?

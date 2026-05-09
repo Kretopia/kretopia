@@ -9556,6 +9556,71 @@ export type Database = {
         }
         Relationships: []
       }
+      outreach_drafts: {
+        Row: {
+          body: string
+          brand_name: string | null
+          created_at: string
+          id: string
+          lead_id: string | null
+          meta: Json
+          recipient_email: string | null
+          recipient_name: string | null
+          scheduled_for: string | null
+          send_error: string | null
+          sent_at: string | null
+          source: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          brand_name?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          meta?: Json
+          recipient_email?: string | null
+          recipient_name?: string | null
+          scheduled_for?: string | null
+          send_error?: string | null
+          sent_at?: string | null
+          source?: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          brand_name?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          meta?: Json
+          recipient_email?: string | null
+          recipient_name?: string | null
+          scheduled_for?: string | null
+          send_error?: string | null
+          sent_at?: string | null
+          source?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_drafts_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sponsor_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outreach_sequences: {
         Row: {
           completed_steps: number | null

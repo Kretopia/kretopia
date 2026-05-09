@@ -81,45 +81,55 @@ Deno.serve(async (req) => {
 
     const mime = body.mime_type || "audio/webm";
 
-    // --- 1) STT via ElevenLabs ---
-    const sttForm = new FormData();
-    sttForm.append("file", new Blob([audioBytes], { type: mime }), "voice.webm");
-    sttForm.append("model_id", STT_MODEL);
-    sttForm.append("language_code", "eng");
-
-    const sttResp = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+    // --- 1) STT via Gemini multimodal (Lovable AI Gateway) ---
+    // Gemini accepts inline base64 audio. We ask it to transcribe verbatim.
+    const audioB64In = body.audio_base64.replace(/^data:[^;]+;base64,/, "");
+    const sttResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: { "xi-api-key": ELEVENLABS_API_KEY },
-      body: sttForm,
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: STT_MODEL,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a strict speech-to-text engine. Output ONLY the verbatim transcript of the audio. No commentary. If the audio is silent or unintelligible, output exactly: <empty>",
+          },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Transcribe this audio verbatim." },
+              {
+                type: "input_audio",
+                input_audio: { data: audioB64In, format: mime.includes("wav") ? "wav" : "webm" },
+              },
+            ],
+          },
+        ],
+        temperature: 0,
+        max_tokens: 500,
+      }),
     });
+
     if (!sttResp.ok) {
       const err = await sttResp.text();
       console.error("STT failed", sttResp.status, err);
-      const isAbuse = /detected_unusual_activity|Free Tier/i.test(err);
-      return jsonResponse(
-        {
-          error: isAbuse ? "voice_provider_unavailable" : "stt_failed",
-          detail: isAbuse
-            ? "Thrive Voice is temporarily unavailable. Our voice provider needs an upgrade — we're on it."
-            : err,
-        },
-        200, // 200 so the client toast shows the friendly message instead of a generic 502
-      );
+      if (sttResp.status === 429) return jsonResponse({ error: "rate_limited" }, 429);
+      if (sttResp.status === 402) return jsonResponse({ error: "ai_credits_exhausted" }, 402);
+      return jsonResponse({ error: "stt_failed", detail: err }, 200);
     }
     const sttJson = await sttResp.json();
-    const transcript: string = (sttJson?.text || "").trim();
+    const rawTranscript: string = (sttJson?.choices?.[0]?.message?.content || "").trim();
+    const transcript = rawTranscript.replace(/^<empty>$/i, "").trim();
     if (!transcript) {
       return jsonResponse({ error: "no_speech_detected" }, 400);
     }
 
     // Estimate seconds from audio bytes (rough: webm/opus ~ 16kbps avg)
-    let seconds = 0;
-    if (Array.isArray(sttJson?.words) && sttJson.words.length) {
-      const last = sttJson.words[sttJson.words.length - 1];
-      seconds = Math.max(1, Math.ceil(Number(last?.end || 0)));
-    } else {
-      seconds = Math.max(1, Math.ceil(audioBytes.length / 2000));
-    }
+    const seconds = Math.max(1, Math.ceil(audioBytes.length / 2000));
 
     // --- 2) Tier gate ---
     const { data: gate, error: gateErr } = await admin.rpc("consume_voice_seconds", {

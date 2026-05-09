@@ -263,11 +263,20 @@ export function ThrivePromptHero() {
           ))}
         </div>
 
-        {planMode && (
-          <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
-            <span className="font-semibold text-foreground/80">Plan & execute:</span> Thrive will break your goal into ordered steps and wait for your approval before running them.
-          </p>
-        )}
+        <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+          {planMode ? (
+            <>
+              <span className="font-semibold text-foreground/80">Plan mode is on.</span>{" "}
+              Thrive will break your goal into ordered steps and wait for your tap before running each one.
+            </>
+          ) : (
+            <>
+              <span className="font-semibold text-foreground/80">Tip:</span>{" "}
+              Turn on <span className="font-semibold">Plan mode</span> for big asks (e.g.{" "}
+              <span className="italic">"plan a 3-city pop-up tour"</span>) so you see every step before anything runs.
+            </>
+          )}
+        </p>
 
         <AnimatePresence>
           {busy && (

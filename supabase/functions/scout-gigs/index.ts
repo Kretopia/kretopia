@@ -144,6 +144,7 @@ async function firecrawlSearch(query: string, key: string) {
 async function extractAndScore(
   raw: Array<{ url: string; title?: string; markdown?: string; description?: string; source: string }>,
   profile: Profile,
+  prefs: ScoutPrefs,
   lovableKey: string,
 ) {
   if (raw.length === 0) return [];
@@ -154,11 +155,22 @@ async function extractAndScore(
     )
     .join("\n\n---\n\n");
 
+  const prefBlurb = [
+    prefs.job_types?.length ? `Wants roles: ${prefs.job_types.join(", ")}` : "",
+    prefs.employment_types?.length ? `Employment: ${prefs.employment_types.join(", ")}` : "",
+    prefs.locations?.length ? `Preferred locations: ${prefs.locations.join(", ")}` : "",
+    prefs.remote_only ? "Remote only: YES" : "",
+    prefs.travel_ok ? "Open to travel: YES" : "Open to travel: NO",
+    prefs.exclude_keywords?.length ? `Exclude: ${prefs.exclude_keywords.join(", ")}` : "",
+    prefs.instructions ? `User notes: ${prefs.instructions.slice(0, 600)}` : "",
+  ].filter(Boolean).join("\n");
+
   const profileBlurb = `Role: ${profile.role || "creative"}
 Sub-roles: ${(profile.sub_roles || []).join(", ")}
 Skills: ${(profile.skills || []).join(", ")}
 Location: ${profile.location || "remote"}
-Bio: ${(profile.bio || "").slice(0, 300)}`;
+Bio: ${(profile.bio || "").slice(0, 300)}
+${prefBlurb ? `\nUSER SCOUT PREFERENCES:\n${prefBlurb}` : ""}`;
 
   const r = await fetch(AI_URL, {
     method: "POST",

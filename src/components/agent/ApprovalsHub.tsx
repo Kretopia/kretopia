@@ -201,3 +201,7 @@ export const ApprovalsHub = ({ limit = 4 }: { limit?: number }) => {
           );
         })}
       </div>
+    </Card>
+  );
+};
+

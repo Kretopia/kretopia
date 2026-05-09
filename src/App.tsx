@@ -33,6 +33,7 @@ import UnifiedHome from "./components/home/UnifiedHome";
 import { GlobalIncomingCall } from "./components/calls/GlobalIncomingCall";
 import { ThriveAgentFab } from "./components/desk/ThriveAgentFab";
 import { DesktopCopilotRail } from "./components/desk/DesktopCopilotRail";
+import { ThriveBar } from "./components/agent/ThriveBar";
 
 // Lazy load active page components
 const Auth = lazy(() => import("./pages/Auth"));

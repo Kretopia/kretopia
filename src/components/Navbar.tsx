@@ -4,8 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
-  MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, Building2
+  MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, Building2, Inbox
 } from "lucide-react";
+import { useNotifications } from "@/hooks/useNotifications";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -45,6 +46,8 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const isLandingPage = location.pathname === "/" && !user;
   const isPro = subscriptionInfo.subscribed;
   const tierName = getTierDisplayName(subscriptionInfo.tier as any);
+  const { unreadCount } = useNotifications();
+  const inboxBadge = unreadCount > 0 ? (unreadCount > 99 ? "99+" : String(unreadCount)) : undefined;
 
   useEffect(() => {
     if (!user) return;
@@ -226,6 +229,10 @@ const Navbar = memo(({ user }: NavbarProps) => {
                 </SheetHeader>
 
                 <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
+
+                  {/* Inbox — unified Notifications + Thrive approvals */}
+                  <MenuButton icon={Inbox} label="Inbox" onClick={() => handleNavigation("/inbox")} path="/inbox" badge={inboxBadge} />
+                  <Separator className="my-3" />
 
                   {isCompany ? (
                     /* ====== COMPANY MENU ====== */

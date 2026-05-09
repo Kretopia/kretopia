@@ -6,20 +6,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 // Single, focused MVP nav: Home · Desk · Match · Gigs · Pay
+// `hint` is shown on hover/long-press so people don't have to guess what
+// "Desk" or "Match" mean — especially helpful for non-creator visitors.
 const NAV_ITEMS = [
-  { path: "/", icon: Home, label: "Home" },
-  { path: "/desk", icon: LayoutDashboard, label: "Desk" },
-  { path: "/circle", icon: Sparkles, label: "Match" },
-  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-  { path: "/thrivepay", icon: Wallet, label: "Pay" },
+  { path: "/", icon: Home, label: "Home", hint: "Your daily Home — what's new, what to do" },
+  { path: "/desk", icon: LayoutDashboard, label: "Desk", hint: "Your workspaces & projects" },
+  { path: "/circle", icon: Sparkles, label: "Match", hint: "Find people to collaborate with" },
+  { path: "/opportunities", icon: Briefcase, label: "Gigs", hint: "Paid gigs & open opportunities" },
+  { path: "/thrivepay", icon: Wallet, label: "Pay", hint: "Invoices, expenses & getting paid" },
 ];
 
 // Company accounts get a B2B-focused nav
 const COMPANY_ITEMS = [
-  { path: "/desk", icon: LayoutDashboard, label: "Desk" },
-  { path: "/opportunities", icon: Briefcase, label: "Gigs" },
-  { path: "/talent-finder", icon: UserSearch, label: "Talent" },
-  { path: "/thrivepay", icon: Wallet, label: "Pay" },
+  { path: "/desk", icon: LayoutDashboard, label: "Desk", hint: "Your briefs & active projects" },
+  { path: "/opportunities", icon: Briefcase, label: "Gigs", hint: "Roles you've posted & talent pool" },
+  { path: "/talent-finder", icon: UserSearch, label: "Talent", hint: "Find creators to hire" },
+  { path: "/thrivepay", icon: Wallet, label: "Pay", hint: "Pay creators & manage invoices" },
 ];
 
 const BottomNav = memo(() => {

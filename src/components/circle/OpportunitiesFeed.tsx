@@ -19,6 +19,9 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useNavigate } from "react-router-dom";
 import { DiscoveryGate, DiscoveryUpsell } from "@/components/DiscoveryGate";
+import { EmptyState } from "@/components/ui/empty-state";
+import { useAccountTone } from "@/hooks/useAccountTone";
+import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 
 interface Opportunity {
   id: string;

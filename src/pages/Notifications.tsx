@@ -1,6 +1,7 @@
 import { SEO } from "@/components/SEO";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAccountTone } from "@/hooks/useAccountTone";
+import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";

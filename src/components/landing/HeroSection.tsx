@@ -214,34 +214,60 @@ export const HeroSection = () => {
           <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
             <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-6 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
               <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-              The Creative OS
+              {pickVoice("The Creative OS", "Built for T&T Creatives")}
             </p>
 
             <h1 className="text-[2.75rem] sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[-0.04em] text-foreground leading-[0.92] mb-6">
-              Find Your<br />
-              People.<br />
-              Build Something{" "}
-              <span className="text-energy-glow">Real.</span>
+              {ttVoice ? (
+                <>
+                  Link Up.<br />
+                  Create.<br />
+                  Get{" "}
+                  <span className="text-energy-glow">Paid.</span>
+                </>
+              ) : (
+                <>
+                  Find Your<br />
+                  People.<br />
+                  Build Something{" "}
+                  <span className="text-energy-glow">Real.</span>
+                </>
+              )}
             </h1>
 
             <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mb-3">
-              Where{" "}
-              <span className="text-primary font-semibold inline-block min-w-[90px] sm:min-w-[130px] transition-all duration-500">
-                {roles[roleIdx]}s
-              </span>{" "}
-              build verified credits, connect with collaborators, and get paid.
+              {ttVoice ? (
+                <>
+                  Whether yuh in Carnival, Soca, Film, Fashion or Design — find verified{" "}
+                  <span className="text-primary font-semibold inline-block min-w-[90px] sm:min-w-[130px] transition-all duration-500">
+                    {roles[roleIdx].toLowerCase()}s
+                  </span>{" "}
+                  right here in T&T. Build credits, link collabs, get paid.
+                </>
+              ) : (
+                <>
+                  Where{" "}
+                  <span className="text-primary font-semibold inline-block min-w-[90px] sm:min-w-[130px] transition-all duration-500">
+                    {roles[roleIdx]}s
+                  </span>{" "}
+                  build verified credits, connect with collaborators, and get paid.
+                </>
+              )}
             </p>
 
             <p className="text-xs text-muted-foreground/60 mb-7">
-              Free to join · Early creators get priority access
+              {pickVoice(
+                "Free to join · Early creators get priority access",
+                "Free to start · No credit card · Made for we",
+              )}
             </p>
 
             <div className="flex items-center justify-center lg:justify-start gap-3 mb-8 flex-wrap">
               <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-8 py-4 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
-                Find Your People <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                {pickVoice("Find Your People", "Link Up Now")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-6 py-4 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
-                <Briefcase className="h-4 w-4 text-primary" /> Browse Gigs
+                <Briefcase className="h-4 w-4 text-primary" /> {pickVoice("Browse Gigs", "See Wha' Goin' On")}
               </Link>
             </div>
 

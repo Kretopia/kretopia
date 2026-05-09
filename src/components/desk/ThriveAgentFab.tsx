@@ -102,6 +102,7 @@ const QUICK_PROMPTS_BY_SURFACE: Partial<Record<CopilotSurface, string[]>> = {
 
 export const ThriveAgentFab = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -119,6 +120,17 @@ export const ThriveAgentFab = () => {
   const abortRef = useRef<AbortController | null>(null);
   const [deskTab, setDeskTab] = useState<string>("today");
   const [capsOpen, setCapsOpen] = useState(false);
+  // Voice state
+  const [recording, setRecording] = useState(false);
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [voiceMuted, setVoiceMuted] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("thriveVoice:muted") === "1";
+  });
+  const recordTimerRef = useRef<number | null>(null);
+  const [recordSec, setRecordSec] = useState(0);
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
 
   const surface: CopilotSurface = inferSurface(location.pathname);
 

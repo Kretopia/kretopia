@@ -455,6 +455,119 @@ export const ThriveAgentFab = () => {
     }
   }, [user]);
 
+  // ===== Thrive Voice (push-to-talk) =====
+  const handleStartVoice = useCallback(async () => {
+    if (recording || voiceBusy) return;
+    try {
+      stopPlayback();
+      setSpeaking(false);
+      await startRecording();
+      setRecording(true);
+      setRecordSec(0);
+      recordTimerRef.current = window.setInterval(() => {
+        setRecordSec((s) => {
+          const next = s + 1;
+          if (next >= 60) {
+            // Hard cap a single utterance at 60s
+            handleStopVoice();
+          }
+          return next;
+        });
+      }, 1000);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't access microphone");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recording, voiceBusy]);
+
+  const handleCancelVoice = useCallback(() => {
+    cancelRecording();
+    if (recordTimerRef.current) {
+      clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+    setRecording(false);
+    setRecordSec(0);
+  }, []);
+
+  const handleStopVoice = useCallback(async () => {
+    if (recordTimerRef.current) {
+      clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+    setRecording(false);
+    setVoiceBusy(true);
+    try {
+      const result = await stopAndSend({ surface, surfaceContext });
+      if (!result.ok) {
+        if (result.code === "voice_daily_limit") {
+          // Push the transcript so user sees what was heard, then upgrade toast
+          if (result.transcript) {
+            setMessages((prev) => [...prev, { role: "user", content: result.transcript! }]);
+          }
+          toast.error(
+            result.tier === "free"
+              ? "You've hit today's free voice limit (2 min/day). Upgrade for more."
+              : "You've hit today's voice limit. Upgrade for more.",
+            {
+              action: {
+                label: "Upgrade",
+                onClick: () => navigate("/subscription"),
+              },
+              duration: 8000,
+            },
+          );
+        } else if (result.code === "no_speech") {
+          toast.error(result.message);
+        } else {
+          toast.error(result.message);
+        }
+        return;
+      }
+      // Append both turns locally (server already persisted them)
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: `🎙️ ${result.transcript}` },
+        { role: "assistant", content: result.reply },
+      ]);
+      // Play TTS unless muted
+      if (result.audioUrl && !voiceMuted) {
+        const a = playAudio(result.audioUrl);
+        audioElRef.current = a;
+        setSpeaking(true);
+        a.onended = () => setSpeaking(false);
+        a.onerror = () => setSpeaking(false);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Voice turn failed");
+    } finally {
+      setVoiceBusy(false);
+      setRecordSec(0);
+    }
+  }, [surface, surfaceContext, voiceMuted, navigate]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (recordTimerRef.current) clearInterval(recordTimerRef.current);
+      cancelRecording();
+      stopPlayback();
+    };
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    setVoiceMuted((m) => {
+      const next = !m;
+      try { localStorage.setItem("thriveVoice:muted", next ? "1" : "0"); } catch { /* ignore */ }
+      if (next) {
+        stopPlayback();
+        setSpeaking(false);
+      }
+      return next;
+    });
+  }, []);
+
+
   // FAB visibility: hide the floating orb on chat surfaces & unauthenticated paths.
   // The Sheet itself remains mounted so the global header sparkle (thrive-copilot:open)
   // can still open the Copilot from anywhere — including /messages and Desk chat.

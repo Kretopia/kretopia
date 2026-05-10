@@ -200,11 +200,43 @@ async function addCollaborator(userId: string, body: any) {
   if (newUserId === userId) {
     return json({ ok: false, error: "You're already on this project." }, 400);
   }
+
+  // Validate the target actually has an auth.users row (FK target).
+  // Falls back to a name lookup if the LLM passed something invalid.
+  let resolvedUserId = newUserId;
+  try {
+    const { data: authLookup, error: authErr } = await admin.auth.admin.getUserById(newUserId);
+    if (authErr || !authLookup?.user) {
+      // Try resolving by name/username from body.invitee_name (LLM often includes it)
+      const hint = String(body.invitee_name ?? body.name_query ?? body.name ?? "").trim();
+      if (hint.length >= 2) {
+        const like = `%${hint}%`;
+        const { data: prof } = await admin
+          .from("profiles")
+          .select("user_id, full_name, username, is_claimed")
+          .or(`full_name.ilike.${like},username.ilike.${like}`)
+          .eq("is_claimed", true)
+          .limit(1)
+          .maybeSingle();
+        if (prof?.user_id) {
+          resolvedUserId = prof.user_id;
+        } else {
+          return json({ ok: false, error: `I couldn't find a claimed account for "${hint}". They may need to sign up first.` }, 400);
+        }
+      } else {
+        return json({ ok: false, error: "That user account doesn't exist yet. Ask them to sign up, then try again." }, 400);
+      }
+    }
+  } catch (e) {
+    console.error("auth.users lookup failed", e);
+    return json({ ok: false, error: "Couldn't verify that user account." }, 500);
+  }
+
   const { data: existing } = await admin
     .from("project_collaborators")
     .select("id, status, role")
     .eq("project_id", projectId)
-    .eq("user_id", newUserId)
+    .eq("user_id", resolvedUserId)
     .maybeSingle();
   if (existing) {
     return json({

@@ -171,78 +171,81 @@ export default function Circle() {
     <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
       <SEO title="Match - Find Your Creative Collaborators" description="Tap to connect with creators who fit your craft" />
       
-      {profilesCount > 0 && (
-        <div className="container mx-auto px-3 sm:px-4 pt-2">
-          <PageTip
-            id="circle"
-            title="Welcome to Match!"
-            message="Tap a creator to see their profile, then send a connect request. When they accept, you can start a conversation."
-          />
-        </div>
-      )}
-      
-      {/* Header — cinematic brand */}
-      <div className="sticky top-0 z-10 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-energy/10 border border-energy/30">
-                  <Sparkles className="h-4 w-4 text-energy" />
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-black tracking-[-0.03em] text-foreground">Match</h1>
-              </div>
-              <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 uppercase tracking-wider font-semibold">
-                {activeTab === 'foryou' ? 'Build your creative circle' :
-                 `${connections.length} collaborator${connections.length !== 1 ? 's' : ''} in your circle`}
-              </p>
+      {/* Header — lite, single line */}
+      <div className="sticky top-0 z-10 border-b border-border/50 bg-background">
+        <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Sparkles className="h-4 w-4 text-energy shrink-0" />
+              <h1 className="text-xl font-black tracking-[-0.03em] text-foreground truncate">Match</h1>
+              {activeTab === 'network' && connections.length > 0 && (
+                <span className="text-[11px] text-muted-foreground font-medium">· {connections.length}</span>
+              )}
             </div>
-            {activeTab === 'foryou' && (
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 shrink-0">
+              {activeTab === 'foryou' && (
                 <SwipeFilters filters={filters} onFiltersChange={handleFiltersChange} isPro={isPro} profilesCount={profilesCount} />
-              </div>
-            )}
+              )}
+              {user && (
+                <Button
+                  variant={activeTab === 'find' ? 'default' : 'ghost'}
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => handleTabChange(activeTab === 'find' ? 'foryou' : 'find')}
+                  aria-label="Search talent"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+      <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
         <ProfileActivationGate
           isVisible={profileVisibility.isVisible}
           missingFields={profileVisibility.missingFields}
           surfaceLabel="Match"
         >
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-3 sm:mb-4 h-10 sm:h-11">
-            <TabsTrigger value="foryou" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-              <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              For You
-            </TabsTrigger>
-            <TabsTrigger value="find" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-              <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Find
-            </TabsTrigger>
-            <TabsTrigger value="network" className="gap-1 sm:gap-2 text-xs sm:text-sm">
-              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Network
-              {connections.length > 0 && (
-                <span className="ml-1 text-[10px] bg-primary/10 text-primary px-1.5 rounded-full">
-                  {connections.length}
-                </span>
-              )}
-            </TabsTrigger>
-          </TabsList>
+          {/* Compact 2-tab pill — Find lives in header icon */}
+          {activeTab !== 'find' && (
+            <TabsList className="grid w-full grid-cols-2 mb-2 sm:mb-3 h-9">
+              <TabsTrigger value="foryou" className="gap-1.5 text-xs">
+                <Sparkles className="h-3.5 w-3.5" />
+                For You
+              </TabsTrigger>
+              <TabsTrigger value="network" className="gap-1.5 text-xs">
+                <Users className="h-3.5 w-3.5" />
+                Network
+                {connections.length > 0 && (
+                  <span className="ml-0.5 text-[10px] bg-primary/10 text-primary px-1.5 rounded-full">
+                    {connections.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          )}
 
-          <TabsContent value="foryou" className="space-y-4">
+          <TabsContent value="foryou" className="space-y-3">
             {user ? (
-              <SwipeFeature onMatch={handleMatch} filters={filters} onProfilesCountChange={setProfilesCount} />
+              <>
+                <SwipeFeature onMatch={handleMatch} filters={filters} onProfilesCountChange={setProfilesCount} />
+                {profilesCount > 0 && (
+                  <PageTip
+                    id="circle"
+                    title="Welcome to Match"
+                    message="Tap a creator to see their profile, then send a connect request. When they accept, you can start a conversation."
+                  />
+                )}
+              </>
             ) : (
               <GuestSwipePreview />
             )}
           </TabsContent>
 
-          <TabsContent value="find" className="space-y-4">
+          <TabsContent value="find" className="space-y-3">
             {user ? (
               <TalentCopilot />
             ) : (
@@ -252,7 +255,7 @@ export default function Circle() {
             )}
           </TabsContent>
 
-          <TabsContent value="network" className="space-y-6">
+          <TabsContent value="network" className="space-y-4">
             {user ? (
               <>
                 <InviteCircleCard variant="match" />

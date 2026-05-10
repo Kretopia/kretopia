@@ -127,18 +127,28 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
   };
 
   const isProposed = plan.status === "proposed";
+  const isRunning = plan.status === "running" || plan.status === "approved";
   const isTerminal = ["completed", "failed", "cancelled"].includes(plan.status);
+  const resultCards = plan.status === "completed" ? deriveResultCards(plan.steps) : [];
+
+  const headerLabel = isRunning
+    ? "Thrive is working"
+    : isProposed
+      ? (plan.summary ?? "Multi-step plan")
+      : (plan.summary ?? "Plan");
 
   return (
     <Card className="p-3 border-primary/30 bg-primary/5">
       <div className="flex items-start gap-3 mb-2">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15">
-          <Sparkles className="h-4 w-4 text-primary" />
+          {isRunning
+            ? <Loader2 className="h-4 w-4 text-primary animate-spin" />
+            : <Sparkles className="h-4 w-4 text-primary" />}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <p className="text-sm font-semibold truncate">
-              {plan.summary ?? "Multi-step plan"}
+            <p className="text-sm font-semibold truncate text-primary">
+              {headerLabel}
             </p>
             <Badge variant="outline" className="text-[10px] py-0 h-4 shrink-0">
               {plan.status === "proposed" ? `${plan.steps.length} steps` : plan.status}

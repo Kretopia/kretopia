@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, MessageSquare, Play, Star, Globe, Shield, CheckCircle } from "lucide-react";
+import { Search, Verified, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, MessageSquare, Play, Star, Globe, Shield, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,18 +19,16 @@ import { CreditThumb } from "@/components/onboarding/claim-flow/CreditThumb";
 import { ProfileHubCard } from "@/components/home/ProfileHubCard";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
-// TODO: Replace with real community photos before launch
-// To swap the hero visual, change this single import path:
-import heroCreators from "@/assets/hero-creators.jpg";
-const HERO_IMAGE = heroCreators;
+// Hero visual is now <HeroPhoneCarousel /> — no static image needed.
 
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
-import { ComparisonTableSection } from "@/components/landing/ComparisonTableSection";
-import { ClaimYourCreditsSection } from "@/components/landing/ClaimYourCreditsSection";
-import { ProductReelSection } from "@/components/landing/ProductReelSection";
-import { ThriveFundTeaserCard } from "@/components/landing/ThriveFundTeaserCard";
-import { BottomCTASection } from "@/components/landing/BottomCTASection";
+import { HeroPhoneCarousel } from "@/components/landing/HeroPhoneCarousel";
+import { ProductSectionMatch } from "@/components/landing/ProductSectionMatch";
+import { ProductSectionDesk } from "@/components/landing/ProductSectionDesk";
+import { ProductSectionPay } from "@/components/landing/ProductSectionPay";
+import { ProductSectionThrive } from "@/components/landing/ProductSectionThrive";
+import { CloseSection } from "@/components/landing/CloseSection";
 // StickyMobileCTA removed — dismissible popup handles guest CTA
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A
@@ -486,119 +484,9 @@ export const UnifiedHome = () => {
                 </p>
               </div>
 
-              {/* RIGHT — Cinematic stage: editorial photo + IMDb-style credit roll-call + OS proof tiles */}
+              {/* RIGHT — Auto-rotating phone carousel: Match → Desk → Pay → Thrive */}
               <div className="relative order-1 lg:order-2">
-                <div className="relative aspect-[4/5] lg:aspect-[3/4] rounded-3xl overflow-hidden border border-primary/25 shadow-glow">
-                  <img
-                    src={HERO_IMAGE}
-                    alt="Creative collaborators on set, captured in cinematic editorial light"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    width={1280}
-                    height={1600}
-                    loading="lazy"
-                  />
-                  {/* Cinematic letterbox + bottom fade so overlays read like film titling */}
-                  <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-background/80 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/80 to-transparent" />
-
-                  {/* Top-left — film-strip eyebrow (wedge: this is THE record) */}
-                  <div className="absolute top-3 left-3 sm:top-5 sm:left-5 animate-fade-in flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 rounded-full border border-primary/50 bg-background/90 backdrop-blur-md px-2.5 py-1.5">
-                      <Verified className="h-3 w-3 text-primary" />
-                      <span className="text-[9px] font-black text-foreground uppercase tracking-[0.2em]">The Record</span>
-                    </div>
-                  </div>
-
-                  {/* Top-right — Smart Match (the OS doing live work) */}
-                  <div className="absolute top-3 right-3 sm:top-5 sm:right-5 animate-fade-in" style={{ animationDelay: '0.15s' }}>
-                    <div className="rounded-xl sm:rounded-2xl border-2 border-energy/60 bg-background/90 backdrop-blur-md px-2.5 py-2 sm:p-3.5 shadow-glow-lime sm:min-w-[150px]">
-                      <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground mb-0.5">Smart Match</p>
-                      <p className="text-2xl sm:text-4xl font-black text-energy-glow tracking-tighter leading-none">94%</p>
-                      <p className="hidden sm:block text-[10px] text-foreground/80 mt-1.5 leading-tight">DP × Producer<br/>2.3km away</p>
-                    </div>
-                  </div>
-
-                  {/* CENTER-LEFT — IMDb-style CREDIT ROLL-CALL (the wedge made visual) */}
-                  <div className="absolute left-3 right-3 sm:left-5 sm:right-auto sm:max-w-[280px] top-[42%] sm:top-[38%] -translate-y-1/2 animate-fade-in" style={{ animationDelay: '0.25s' }}>
-                    <div className="rounded-2xl border border-primary/40 bg-card/95 backdrop-blur-md shadow-2xl overflow-hidden">
-                      <div className="flex items-center justify-between px-3 py-2 border-b border-border/60 bg-background/40">
-                        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground">Credits · Verified</p>
-                        <span className="text-[9px] font-bold text-energy">12</span>
-                      </div>
-                      <ul className="divide-y divide-border/50">
-                        {[
-                          { title: "MIDNIGHT BLOOM", role: "Director of Photography", year: "2025", tag: "Film" },
-                          { title: "RAYA — Live at Sound Forge", role: "Mix Engineer", year: "2025", tag: "Music" },
-                          { title: "Aurora SS26 Lookbook", role: "Creative Director", year: "2024", tag: "Fashion" },
-                        ].map((c) => (
-                          <li key={c.title} className="flex items-center gap-2.5 px-3 py-2">
-                            <Verified className="h-3 w-3 text-primary shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[11px] font-bold text-foreground truncate uppercase tracking-wide">{c.title}</p>
-                              <p className="text-[10px] text-muted-foreground truncate">{c.role} · {c.year}</p>
-                            </div>
-                            <span className="text-[8px] font-black uppercase tracking-wider text-energy/90 px-1.5 py-0.5 rounded bg-energy/10 shrink-0">{c.tag}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* BOTTOM — OS proof strip: invoice paid + project tile + Thrive draft */}
-                  <div className="absolute bottom-3 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-5 animate-fade-in" style={{ animationDelay: '0.35s' }}>
-                    <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.28em] text-muted-foreground/80 mb-1.5 px-1">The OS · running live</p>
-                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-                      {/* Invoice · Paid */}
-                      <div className="relative rounded-xl border border-primary/40 bg-gradient-to-br from-card to-card/80 backdrop-blur-md p-2 sm:p-2.5 shadow-xl overflow-hidden">
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <div className="h-3.5 w-3.5 rounded-md bg-primary/15 flex items-center justify-center">
-                            <Briefcase className="h-2 w-2 text-primary" />
-                          </div>
-                          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-foreground/70">Pay</p>
-                        </div>
-                        <p className="text-base sm:text-lg font-black text-foreground leading-none tracking-tight">$1,200</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                          <p className="text-[8px] font-black text-energy uppercase tracking-[0.15em]">Paid</p>
-                        </div>
-                      </div>
-                      {/* Desk · Project */}
-                      <div className="relative rounded-xl border border-primary/40 bg-gradient-to-br from-card to-card/80 backdrop-blur-md p-2 sm:p-2.5 shadow-xl overflow-hidden">
-                        <div className="flex items-center gap-1 mb-0.5">
-                          <div className="h-3.5 w-3.5 rounded-md bg-primary/15 flex items-center justify-center">
-                            <CheckCircle className="h-2 w-2 text-primary" />
-                          </div>
-                          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-foreground/70">Desk</p>
-                        </div>
-                        <p className="text-[11px] sm:text-xs font-black text-foreground leading-tight mt-0.5 truncate">SS26 Shoot</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <div className="flex gap-0.5">
-                            <span className="h-1 w-1 rounded-full bg-primary" />
-                            <span className="h-1 w-1 rounded-full bg-primary" />
-                            <span className="h-1 w-1 rounded-full bg-primary/30" />
-                          </div>
-                          <p className="text-[8px] font-black text-primary uppercase tracking-[0.15em]">2 / 3</p>
-                        </div>
-                      </div>
-                      {/* Thrive · Agent */}
-                      <div className="relative rounded-xl border border-energy/50 bg-gradient-to-br from-card to-card/80 backdrop-blur-md p-2 sm:p-2.5 shadow-xl overflow-hidden">
-                        <div className="absolute -top-4 -right-4 h-10 w-10 rounded-full bg-energy/15 blur-xl" />
-                        <div className="relative flex items-center gap-1 mb-0.5">
-                          <div className="h-3.5 w-3.5 rounded-md bg-energy/20 flex items-center justify-center">
-                            <Sparkles className="h-2 w-2 text-energy" />
-                          </div>
-                          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-foreground/70">Thrive</p>
-                        </div>
-                        <p className="relative text-[11px] sm:text-xs font-black text-foreground leading-tight mt-0.5 truncate">Drafted intro</p>
-                        <div className="relative flex items-center gap-1 mt-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                          <p className="text-[8px] font-black text-energy uppercase tracking-[0.15em]">Ready</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute -inset-4 -z-10 rounded-[2rem] bg-gradient-to-br from-primary/20 via-transparent to-energy/10 blur-2xl" />
+                <HeroPhoneCarousel />
               </div>
             </div>
 
@@ -719,15 +607,15 @@ export const UnifiedHome = () => {
 
 
 
-        {/* ═══════════ GUEST LANDING — 9-section narrative ═══════════ */}
-        {/* Hero (above) → 2. Proof Strip (above) → 3. Hook → 4. Reel → 5. Comparison → 6. Stories → 7. Pricing → 8. Fund Teaser → 9. Closing CTA */}
-        {!user && <ClaimYourCreditsSection onSearchSubmit={handleHeroClaimSearch} />}
-        {!user && <ProductReelSection />}
-        {!user && <ComparisonTableSection />}
+        {/* ═══════════ GUEST LANDING — Product-led narrative ═══════════
+            Hero (above) → 4 Product sections → Social proof → Pricing → Close */}
+        {!user && <ProductSectionMatch />}
+        {!user && <ProductSectionDesk />}
+        {!user && <ProductSectionPay />}
+        {!user && <ProductSectionThrive />}
         {!user && <SocialProofSection />}
         {!user && <PricingPreviewSection />}
-        {!user && <ThriveFundTeaserCard />}
-        {!user && <BottomCTASection />}
+        {!user && <CloseSection />}
 
 
         {/* ── 1. CREATORS FOR YOU (auth only) ── */}

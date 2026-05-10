@@ -406,15 +406,15 @@ export const UnifiedHome = () => {
                 </p>
 
                 {/* PRIMARY HEADLINE — editorial scale, IMDb-meets-OS wedge */}
-                <h1 className="text-[2.75rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-[-0.045em] text-foreground leading-[0.92] mb-5">
+                <h1 className="text-[2.25rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-[-0.045em] text-foreground leading-[0.95] mb-5">
                   Every credit.<br />
                   Every collab.<br />
                   <span className="text-energy-glow italic font-black">Every payout.</span>
                 </h1>
 
                 {/* Wedge subhead — IMDb for every creative industry + OS that runs the work */}
-                <p className="text-base sm:text-lg text-muted-foreground/95 font-medium mb-6 leading-[1.5] max-w-xl mx-auto lg:mx-0">
-                  The verified record for film, music, fashion, events &amp; design — and the operating system that runs the work behind it. <span className="text-foreground/90 font-semibold">One login. Nine tools.</span>
+                <p className="text-base sm:text-lg text-foreground/85 font-medium mb-6 leading-[1.55] max-w-xl mx-auto lg:mx-0">
+                  The verified record for film, music, fashion, events &amp; design — and the operating system that runs the work behind it. <span className="text-foreground font-bold">One login. Nine tools.</span>
                 </p>
 
                 {/* SEARCH BAR — first interactive element above the fold */}

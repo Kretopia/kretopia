@@ -181,22 +181,40 @@ export function ThrivePromptHero() {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-primary/8 via-background to-energy/5 p-5 sm:p-7">
+    <section className={cn(
+      "relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-primary/8 via-background to-energy/5 transition-all",
+      expanded ? "p-5 sm:p-7" : "p-4 sm:p-5",
+    )}>
       <div aria-hidden className="absolute -top-20 -right-16 h-56 w-56 rounded-full bg-primary/15 blur-3xl" />
       <div aria-hidden className="absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-energy/10 blur-3xl" />
 
       <div className="relative">
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex items-center justify-between gap-2 mb-1.5">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-foreground/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/70">
             <Sparkles className="h-3 w-3" /> Thrive
           </span>
+          <button
+            type="button"
+            onClick={() => setExpanded(v => !v)}
+            aria-expanded={expanded}
+            aria-label={expanded ? "Hide options" : "Show options"}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-full hover:bg-foreground/5"
+          >
+            {expanded ? "Less" : "More"}
+            <ChevronDown className={cn("h-3 w-3 transition-transform", expanded && "rotate-180")} />
+          </button>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black leading-[1.1] tracking-tight">
+        <h1 className={cn(
+          "font-black leading-[1.1] tracking-tight transition-all",
+          expanded ? "text-2xl sm:text-3xl" : "text-lg sm:text-xl",
+        )}>
           What are you trying to <span className="text-primary">create</span>?
         </h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-md">
-          Tell me your goal — I'll spin up the workspace, find the right people, scout the gigs, and help you ship it.
-        </p>
+        {expanded && (
+          <p className="text-sm text-muted-foreground mt-2 max-w-md">
+            Tell me your goal — I'll spin up the workspace, find the right people, scout the gigs, and help you ship it.
+          </p>
+        )}
 
         <form
           onSubmit={(e) => { e.preventDefault(); void submit(text); }}

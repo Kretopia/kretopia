@@ -49,7 +49,7 @@ import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
-import { LiveGigsStrip } from "@/components/landing/LiveGigsStrip";
+// LiveGigsStrip removed — see Smart Gig Scout
 // ThriveFundShowcase replaced by compact ThriveFundTeaserCard on landing
 import GigCard from "@/components/opportunity/GigCard";
 import { GigRailCard } from "@/components/opportunity/GigRailCard";
@@ -513,8 +513,8 @@ export const UnifiedHome = () => {
         </div>
       )}
 
-      {/* ═══════════ 2. PROOF STRIP — live gigs (guests only) ═══════════ */}
-      {!user && <LiveGigsStrip />}
+      {/* Live gigs strip removed — Smart Gig Scout is the new front door */}
+
 
       {/* ═══════════ AUTH HUB ═══════════ */}
       {user && profile && (

@@ -939,7 +939,8 @@ export const UnifiedHome = () => {
 
         {/* ── CTA CARD ── */}
         {/* ── CTA CARD ── Guests always; auth users only after they've taken an action */}
-        {(!user || (!isPro && (myCredits > 0 || myConnections > 0))) && (
+        {/* Pass B.1: Pro upsell hidden for auth users — upgrade lives in Account/Settings. */}
+        {!user && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}

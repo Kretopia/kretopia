@@ -454,7 +454,7 @@ serve(async (req) => {
     for (const r of allRaw) {
       if (r?.url && r?.image_url) imgByUrl.set(r.url, r.image_url);
     }
-    for (const g of filtered) {
+    for (const g of filtered.slice(0, perRunCap)) {
       const key = dedupeKey(g);
       const image_url = imgByUrl.get(g.source_url) || null;
       const { error } = await supabase.from("scouted_gigs").upsert({

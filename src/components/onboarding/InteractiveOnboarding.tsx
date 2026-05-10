@@ -383,6 +383,11 @@ export function InteractiveOnboarding() {
                   </button>
                 </div>
               )}
+              {step.id === "vibe" && (
+                <div className="pt-1">
+                  <VibePicker compact />
+                </div>
+              )}
               {step.tip && (
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/10">
                   <Sparkles className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />

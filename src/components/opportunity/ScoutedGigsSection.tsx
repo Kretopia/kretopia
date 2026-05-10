@@ -212,11 +212,11 @@ export function ScoutedGigsSection() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h2 className="text-lg font-bold flex items-center gap-2">
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-energy" />
             Scouted for you
           </h2>
-          <p className="text-xs text-muted-foreground">Real gigs from the open web — matched to your profile</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Real gigs from the open web — matched to your profile</p>
         </div>
         <div className="flex items-center gap-1.5">
           <Button size="sm" variant="ghost" onClick={() => setPrefsOpen(true)} title="Tune scout preferences">

@@ -236,13 +236,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       )}
                     </>
                   ) : (
-                    /* ====== UNIFIED MENU — Dashboard · Find · Money ====== */
+                    /* ====== UNIFIED MENU — Dashboard · Find · Money (MVP) ====== */
                     <>
-                      {/* DASHBOARD — everything you make + manage, in one place */}
+                      {/* DASHBOARD — daily-driver surfaces */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Dashboard</p>
                       <MenuButton icon={FolderKanban} label="Desk" onClick={() => handleNavigation("/desk")} path="/desk" />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} path="/credits" />
-                      <MenuButton icon={Building2} label="Manage" onClick={() => handleNavigation("/manage")} path="/manage" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
@@ -252,16 +251,12 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       {/* FIND — discovery surfaces */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Find</p>
                       <MenuButton icon={Briefcase} label="Gigs" onClick={() => handleNavigation("/opportunities")} path="/opportunities" />
-                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-                      <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} path="/nearby" />
-                      <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} path="/spotlight" />
 
                       <Separator className="my-3" />
 
-                      {/* MONEY — earning & funding */}
+                      {/* MONEY — earning */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Money</p>
                       <MenuButton icon={Wallet} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
-                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} path="/fund" />
                     </>
                   )}
 

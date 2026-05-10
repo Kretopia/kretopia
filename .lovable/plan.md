@@ -1,73 +1,102 @@
+# ThriveIN Pre-Launch Cleanup — CPO/VC Audit & Page-by-Page Plan
 
-# Vibe System — Daylight / Midnight / Neon
+## 1. The Moat (what we protect at all costs)
 
-## The three vibes
+Based on what's actually defensible vs. what every other "creator platform" has:
 
-| Vibe | Background | Text | Accent | Mood |
-|---|---|---|---|---|
-| **Daylight** (default) | Cream `#FAF8F5` | Near-black `#0F0F12` | Indigo `#5B6BF5` | Editorial, calm |
-| **Midnight** | Near-black `#0F0F12` | Off-white `#FAF8F5` | Indigo `#5B6BF5` | Focused, minimal |
-| **Neon** | Near-black `#0F0F12` | Off-white `#FAF8F5` | Lime `#D4FF3E` | Energetic, refined (no magenta) |
+| Moat | Why it's defensible | Status |
+|---|---|---|
+| **Verified Credits (IMDb for creatives)** | Only network-effect asset — every credit verified by a peer creates a graph competitors can't replicate | **HERO** |
+| **Smart Match (creative ↔ creative)** | Hinge-mechanic on a niche graph; LinkedIn/Behance don't do this | **HERO** |
+| **Smart Gig Scout** | We bring real web/IG/LinkedIn gigs to the user — opposite of Upwork's "creators bid" | **HERO** |
+| **ThriveDesk + Thrive (voice agent)** | Daily-driver retention; Slack/Notion don't speak creator | **CORE** |
+| **ThrivePay (Caribbean rails)** | PowerTranz TTD/USD invoicing — Stripe doesn't serve TT well | **CORE** |
 
-All three share the same layout, type scale, spacing, and components. Only the three CSS variables (`--background`, `--foreground`, `--primary`) and a couple of derivative tokens change.
+Everything else is a feature, not a moat. If it doesn't reinforce one of these five, it gets hidden behind a tier, a hamburger, or removed.
 
-## Implementation
+## 2. The VC Test — "What is ThriveIN in one sentence?"
 
-### 1. Database
-- Add `profiles.ui_vibe` enum: `'daylight' | 'midnight' | 'neon'`, default `'daylight'`.
-- Migration only — no RLS change (existing profile policies cover it).
+Today the answer is muddled because we ship **22+ surfaces**. The clean version:
 
-### 2. CSS tokens (`src/index.css`)
-- Keep current `:root` as **Daylight**.
-- Add `[data-vibe="midnight"]` block: swaps `--background` / `--foreground` / surface tokens to dark; keeps indigo `--primary`.
-- Add `[data-vibe="neon"]` block: dark surfaces + `--primary: 73 100% 62%` (lime). Drop magenta entirely. Foreground stays off-white; secondary accents stay neutral (no purple gradients).
-- Remove the legacy lime/magenta gradients from default `.dark` so the old maximalist look is opt-in via Neon only.
+> *"It's IMDb + Hinge + Slack for the creator economy — your verified resume, who to work with, and the studio to do the work."*
 
-### 3. `<VibeThemeSync />` (new, mirrors `ModeThemeSync`)
-- Reads `profiles.ui_vibe` once, sets `document.documentElement.dataset.vibe`.
-- Falls back to `localStorage('ui_vibe')` for guests so onboarding picks apply instantly before profile write.
-- Mounted in `App.tsx` next to `ModeThemeSync`.
-- Also forces `next-themes` `theme` to match: Daylight → `light`, Midnight & Neon → `dark` (so shadcn's `.dark` class still applies for component states).
+That sentence has **3 nouns**: Resume, Match, Studio. Everything in the app must reinforce one of those three. If a surface doesn't, it's noise.
 
-### 4. Onboarding step — `VibePicker`
-- New step inserted after discipline pick (existing onboarding flow).
-- Three large preview tiles (mini mock of Home card per vibe). Tap → save to `profiles.ui_vibe` + `localStorage` + `data-vibe` updates live.
-- Skippable → defaults to Daylight.
+## 3. MVP scope (Launch Day)
 
-### 5. Settings entry
-- New row in Settings → "Appearance" → 3 swatches with the same picker UI. Same write path. Live preview.
+### KEEP (core 10 surfaces)
+1. Auth / Onboarding
+2. **Home** — For You feed + GetStarted checklist
+3. **Match** — Swipe + Browse + Network
+4. **Desk** — Projects list + Studio Room (the daily driver)
+5. **Gigs** — Smart Scout strip + marketplace
+6. **Profile / EPK** — Verified Credits = the moat surface
+7. **Pay** — Money Brief + Invoices (creative tone)
+8. **Messages** — DMs + Calls history
+9. **Inbox** — Notifications + Approvals
+10. **Thrive** — Unified Bar/Drawer (already done)
 
-### 6. Memory
-- Update `mem://style/branding/warm-minimal-theme.md` → rename to `vibe-system.md` documenting all three vibes + the rule: **never hardcode a vibe-specific color; always use semantic tokens**.
-- Update Core memory line: "Default theme: Daylight (warm minimal). Two opt-in vibes: Midnight, Neon."
+Plus Settings, Search, and the public Landing/Claim funnel.
 
-## Files touched
+### HIDE (move out of nav, keep route alive for direct links)
+- **ThriveFund** — keep page, remove from bottom nav. Re-launch when 10 campaigns ready.
+- **Spotlight (Magazine + Podcast)** — content marketing; remove from nav, link from footer.
+- **Intel Hub** — Creator+ only feature; surface inside Profile, not nav.
+- **Manage Hub** — collapse Clients/Gigs/Events/Campaigns into Desk drill-downs.
+- **Website Builder / Creator Sites** — keep flow, but only entry from Profile → "My Website".
+- **Ambassador Hub** — invite-only link, no nav.
+- **Founding Member Quest** — keep card on Home + Profile, drop standalone tab.
+- **ICDB Hub / Brand Verify / Sales Dashboard / Wallet pages** — internal/admin or future; remove from any user-visible menu.
+- **Communities** — already hidden, confirm.
 
-**New**
-- `src/components/VibeThemeSync.tsx`
-- `src/components/onboarding/VibePicker.tsx`
-- `src/components/settings/AppearanceCard.tsx`
+### REMOVE entirely
+- Duplicate Thrive entry points (already removed: FAB, CopilotLauncher, Voice chip on Today Strip, Mic FAB on Studio cards grid).
+- Empty/half-built admin scaffolding pages with no production use.
 
-**Edited**
-- `src/index.css` — add `[data-vibe="midnight"]` and `[data-vibe="neon"]` blocks; clean legacy `.dark` magenta
-- `src/App.tsx` — mount `<VibeThemeSync />`
-- `src/main.tsx` — keep `defaultTheme="light"` but enable dark class so Midnight/Neon work
-- `src/components/onboarding/*` — wire `VibePicker` into the existing flow
-- `src/pages/Settings.tsx` (or equivalent) — add Appearance card
-- `mem://index.md` + `mem://style/branding/vibe-system.md`
+## 4. The page-by-page audit (the actual work)
 
-**Migration**
-- `profiles` add column `ui_vibe text default 'daylight' check (ui_vibe in ('daylight','midnight','neon'))`
+Two passes, one surface per loop. **Each pass = one short message from you, one focused PR from me.** No big-bang refactor.
 
-## What I'll ship in this pass
+### Pass A — Visibility cleanup (cheap, no logic changes)
+For each surface, decide one of: **KEEP / HIDE / REMOVE**. I make a single PR that:
+1. Removes hidden surfaces from `BottomNav` and Hamburger.
+2. Keeps the route alive (so old links don't 404) but stops surfacing it.
+3. Updates the `mvp-single-mode-nav` memory.
 
-1. Migration for `ui_vibe`.
-2. CSS token blocks for all three vibes.
-3. `<VibeThemeSync />` mounted globally.
-4. `VibePicker` component + insert into onboarding.
-5. Appearance card in Settings.
-6. Memory updates.
+### Pass B — Per-surface declutter (one page at a time)
+For each KEEP surface, in this order, I do one PR per page:
 
-After this, you and your siblings can flip between all three live and tell me which one feels right per use case. If Neon needs more or less energy, easy one-pass tweak — no component changes, just token values.
+```text
+1. Home          — verify only For You + GetStarted + MoneyBrief compact
+2. Match         — verify Swipe / Browse / Network only; kill orphan tabs
+3. Desk list     — projects grid + Today Strip (already cleaned)
+4. Studio Room   — audit 20+ widgets, hide non-MVP (Sponsor Radar, EPK Updater, etc.)
+5. Gigs          — Smart Scout above marketplace, kill duplicate filters
+6. Profile / EPK — Instagram-style layout, hide rate cards if empty, single CTA
+7. Pay           — Money Brief + Invoices only; hide accounting deep-tools
+8. Messages      — DM list + Calls; kill any unused tabs
+9. Inbox         — Approvals + Notifications only
+10. Settings     — group: Account / Vibe / Notifications / Privacy / Billing
+```
 
-Approve to ship?
+For each page I check: **What's the one job? What's noise? Does every CTA reinforce Resume / Match / Studio?**
+
+### Pass C — Polish (Apple-grade)
+After A + B are clean: typography rhythm, spacing tokens, motion, empty-state warmth.
+
+## 5. How we work to not break the platform
+
+1. **One surface per message.** You say "let's do Home" — I do Home only.
+2. **Plan before code.** I post a 5-line "what stays / what goes" diff before editing.
+3. **Routes preserved.** Hidden ≠ deleted. Old links keep working.
+4. **Memory updated each pass** so future me doesn't re-add what we removed.
+5. **No DB changes** in this cleanup. Pure UI/nav.
+
+## 6. What I need from you to start Pass A
+
+Pick one:
+- **A.** "Go — do Pass A as written" (I'll send the nav/hamburger PR for review first)
+- **B.** "Change the KEEP/HIDE list — [your edits]"
+- **C.** "Skip Pass A, jump to Home (Pass B)"
+
+My recommendation: **A first**. Removing 8+ surfaces from nav in one PR is the biggest perceived-clarity win for the smallest risk. Then we walk Pass B together, one page per session.

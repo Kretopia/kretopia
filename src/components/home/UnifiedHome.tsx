@@ -546,21 +546,54 @@ export const UnifiedHome = () => {
 
                   {/* BOTTOM — OS proof strip: invoice paid + project tile + Thrive draft */}
                   <div className="absolute bottom-3 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-5 animate-fade-in" style={{ animationDelay: '0.35s' }}>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="rounded-xl border border-primary/30 bg-card/95 backdrop-blur-md p-2 shadow-lg">
-                        <p className="text-[8px] font-black uppercase tracking-[0.18em] text-muted-foreground">Invoice</p>
-                        <p className="text-sm font-black text-foreground leading-tight mt-0.5">$1,200</p>
-                        <p className="text-[8px] font-bold text-energy uppercase tracking-wider mt-0.5">· Paid</p>
+                    <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.28em] text-muted-foreground/80 mb-1.5 px-1">The OS · running live</p>
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                      {/* Invoice · Paid */}
+                      <div className="relative rounded-xl border border-primary/40 bg-gradient-to-br from-card to-card/80 backdrop-blur-md p-2 sm:p-2.5 shadow-xl overflow-hidden">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <div className="h-3.5 w-3.5 rounded-md bg-primary/15 flex items-center justify-center">
+                            <Briefcase className="h-2 w-2 text-primary" />
+                          </div>
+                          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-foreground/70">Pay</p>
+                        </div>
+                        <p className="text-base sm:text-lg font-black text-foreground leading-none tracking-tight">$1,200</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+                          <p className="text-[8px] font-black text-energy uppercase tracking-[0.15em]">Paid</p>
+                        </div>
                       </div>
-                      <div className="rounded-xl border border-primary/30 bg-card/95 backdrop-blur-md p-2 shadow-lg">
-                        <p className="text-[8px] font-black uppercase tracking-[0.18em] text-muted-foreground">Desk</p>
-                        <p className="text-[10px] font-bold text-foreground leading-tight mt-0.5 truncate">SS26 Shoot</p>
-                        <p className="text-[8px] font-bold text-primary uppercase tracking-wider mt-0.5">3 tasks</p>
+                      {/* Desk · Project */}
+                      <div className="relative rounded-xl border border-primary/40 bg-gradient-to-br from-card to-card/80 backdrop-blur-md p-2 sm:p-2.5 shadow-xl overflow-hidden">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <div className="h-3.5 w-3.5 rounded-md bg-primary/15 flex items-center justify-center">
+                            <CheckCircle className="h-2 w-2 text-primary" />
+                          </div>
+                          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-foreground/70">Desk</p>
+                        </div>
+                        <p className="text-[11px] sm:text-xs font-black text-foreground leading-tight mt-0.5 truncate">SS26 Shoot</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <div className="flex gap-0.5">
+                            <span className="h-1 w-1 rounded-full bg-primary" />
+                            <span className="h-1 w-1 rounded-full bg-primary" />
+                            <span className="h-1 w-1 rounded-full bg-primary/30" />
+                          </div>
+                          <p className="text-[8px] font-black text-primary uppercase tracking-[0.15em]">2 / 3</p>
+                        </div>
                       </div>
-                      <div className="rounded-xl border border-energy/40 bg-card/95 backdrop-blur-md p-2 shadow-lg">
-                        <p className="text-[8px] font-black uppercase tracking-[0.18em] text-muted-foreground">Thrive</p>
-                        <p className="text-[10px] font-bold text-foreground leading-tight mt-0.5 truncate">Drafted intro</p>
-                        <p className="text-[8px] font-bold text-energy uppercase tracking-wider mt-0.5">Ready</p>
+                      {/* Thrive · Agent */}
+                      <div className="relative rounded-xl border border-energy/50 bg-gradient-to-br from-card to-card/80 backdrop-blur-md p-2 sm:p-2.5 shadow-xl overflow-hidden">
+                        <div className="absolute -top-4 -right-4 h-10 w-10 rounded-full bg-energy/15 blur-xl" />
+                        <div className="relative flex items-center gap-1 mb-0.5">
+                          <div className="h-3.5 w-3.5 rounded-md bg-energy/20 flex items-center justify-center">
+                            <Sparkles className="h-2 w-2 text-energy" />
+                          </div>
+                          <p className="text-[8px] font-black uppercase tracking-[0.16em] text-foreground/70">Thrive</p>
+                        </div>
+                        <p className="relative text-[11px] sm:text-xs font-black text-foreground leading-tight mt-0.5 truncate">Drafted intro</p>
+                        <div className="relative flex items-center gap-1 mt-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+                          <p className="text-[8px] font-black text-energy uppercase tracking-[0.15em]">Ready</p>
+                        </div>
                       </div>
                     </div>
                   </div>

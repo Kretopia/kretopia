@@ -143,14 +143,17 @@ export const VoiceFirstCreateModal = ({
     try {
       const data_base64 = await blobToBase64(blob);
       const { data, error } = await supabase.functions.invoke("extract-brief", {
-        body: { source: "audio", data_base64, mime_type: "audio/webm" },
+        body: { source: "audio", data_base64, mime_type: "audio/webm", workspace_type: workspaceType },
       });
       if (error) throw error;
       const result = (data ?? {}) as ExtractedBrief;
       if (!result?.project?.title) throw new Error("Couldn't catch what you said");
       setBrief(result);
       setSelected(new Set((result.deliverables ?? []).slice(0, 8).map((_, i) => i)));
-      setWorkspaceType(inferWorkspaceType(`${result.project.title} ${result.project.summary}`));
+      // Only auto-infer if user hadn't picked a type
+      if (workspaceType === "general") {
+        setWorkspaceType(inferWorkspaceType(`${result.project.title} ${result.project.summary}`));
+      }
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -169,9 +172,14 @@ export const VoiceFirstCreateModal = ({
     if (!trimmed) return;
     setRawInput(trimmed);
     setMode("thinking");
+    // If user hasn't picked a type yet, infer one before calling extract-brief
+    // so the AI uses the right producer persona.
+    const typeForCall: WorkspaceType =
+      workspaceType !== "general" ? workspaceType : inferWorkspaceType(trimmed);
+    if (typeForCall !== workspaceType) setWorkspaceType(typeForCall);
     try {
       const { data, error } = await supabase.functions.invoke("extract-brief", {
-        body: { source: "text", text: trimmed },
+        body: { source: "text", text: trimmed, workspace_type: typeForCall },
       });
       if (error) throw error;
       const result = (data ?? {}) as ExtractedBrief;
@@ -180,7 +188,6 @@ export const VoiceFirstCreateModal = ({
         : result;
       setBrief(finalBrief);
       setSelected(new Set((finalBrief.deliverables ?? []).slice(0, 8).map((_, i) => i)));
-      setWorkspaceType(inferWorkspaceType(`${trimmed} ${finalBrief.project.summary}`));
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -192,7 +199,6 @@ export const VoiceFirstCreateModal = ({
         },
       });
       setSelected(new Set());
-      setWorkspaceType(inferWorkspaceType(trimmed));
       setMode("review");
     }
   };
@@ -290,9 +296,41 @@ export const VoiceFirstCreateModal = ({
             <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
               What are you making?
             </h1>
-            <p className="text-sm text-muted-foreground max-w-sm mb-10">
-              Speak it out — name, vibe, who it's for. We'll set the room up around you.
+            <p className="text-sm text-muted-foreground max-w-sm mb-6">
+              Pick the kind of room — or just speak. We'll shape it around you.
             </p>
+
+            {/* Workspace type chips — visible from the start */}
+            <div className="w-full max-w-md mb-8">
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {(Object.keys(WORKSPACE_CONFIGS) as WorkspaceType[]).map((t) => {
+                  const cfg = WORKSPACE_CONFIGS[t];
+                  const Icon = cfg.icon;
+                  const active = workspaceType === t;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setWorkspaceType(t)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-colors",
+                        active
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40"
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {workspaceType !== "general" && (
+                <p className="mt-2 text-[11px] text-muted-foreground text-center">
+                  {WORKSPACE_CONFIGS[workspaceType].tagline}
+                </p>
+              )}
+            </div>
 
             {!showText ? (
               <>
@@ -324,7 +362,17 @@ export const VoiceFirstCreateModal = ({
                   autoFocus
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
-                  placeholder="A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday."
+                  placeholder={
+                    workspaceType === "event"
+                      ? "Bali Carnival — 2-day beach festival, Aug 2026, 5k guests, 3 stages."
+                      : workspaceType === "podcast"
+                      ? "Weekly interview show with creative founders. Pilot episode in 3 weeks."
+                      : workspaceType === "music"
+                      ? "Debut EP — 5 tracks, summer release, lo-fi beats with vocal features."
+                      : workspaceType === "campaign"
+                      ? "Spring brand launch for Acme — paid + organic across IG, TikTok, YouTube."
+                      : "A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday."
+                  }
                   className="min-h-[140px] text-base text-left"
                 />
                 <div className="flex items-center justify-between">

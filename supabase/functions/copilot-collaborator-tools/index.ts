@@ -250,7 +250,7 @@ async function addCollaborator(userId: string, body: any) {
   const { data: invitee } = await admin
     .from("public_profiles_safe")
     .select("full_name")
-    .eq("user_id", newUserId)
+    .eq("user_id", resolvedUserId)
     .maybeSingle();
   const inviteeName = invitee?.full_name ?? "New collaborator";
 
@@ -259,7 +259,7 @@ async function addCollaborator(userId: string, body: any) {
     .from("project_collaborators")
     .insert({
       project_id: projectId,
-      user_id: newUserId,
+      user_id: resolvedUserId,
       role: finalRole,
       status: "accepted",
       invited_by: userId,
@@ -283,7 +283,7 @@ async function addCollaborator(userId: string, body: any) {
   // Notification (best-effort)
   try {
     await admin.from("notifications").insert({
-      user_id: newUserId,
+      user_id: resolvedUserId,
       type: "project_invite",
       title: `Added to "${project.title}"`,
       message: `You've been added to a project as ${finalRole}.`,

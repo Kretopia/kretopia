@@ -296,9 +296,41 @@ export const VoiceFirstCreateModal = ({
             <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
               What are you making?
             </h1>
-            <p className="text-sm text-muted-foreground max-w-sm mb-10">
-              Speak it out — name, vibe, who it's for. We'll set the room up around you.
+            <p className="text-sm text-muted-foreground max-w-sm mb-6">
+              Pick the kind of room — or just speak. We'll shape it around you.
             </p>
+
+            {/* Workspace type chips — visible from the start */}
+            <div className="w-full max-w-md mb-8">
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {(Object.keys(WORKSPACE_CONFIGS) as WorkspaceType[]).map((t) => {
+                  const cfg = WORKSPACE_CONFIGS[t];
+                  const Icon = cfg.icon;
+                  const active = workspaceType === t;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setWorkspaceType(t)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-colors",
+                        active
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/40"
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {workspaceType !== "general" && (
+                <p className="mt-2 text-[11px] text-muted-foreground text-center">
+                  {WORKSPACE_CONFIGS[workspaceType].tagline}
+                </p>
+              )}
+            </div>
 
             {!showText ? (
               <>
@@ -330,7 +362,17 @@ export const VoiceFirstCreateModal = ({
                   autoFocus
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
-                  placeholder="A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday."
+                  placeholder={
+                    workspaceType === "event"
+                      ? "Bali Carnival — 2-day beach festival, Aug 2026, 5k guests, 3 stages."
+                      : workspaceType === "podcast"
+                      ? "Weekly interview show with creative founders. Pilot episode in 3 weeks."
+                      : workspaceType === "music"
+                      ? "Debut EP — 5 tracks, summer release, lo-fi beats with vocal features."
+                      : workspaceType === "campaign"
+                      ? "Spring brand launch for Acme — paid + organic across IG, TikTok, YouTube."
+                      : "A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday."
+                  }
                   className="min-h-[140px] text-base text-left"
                 />
                 <div className="flex items-center justify-between">

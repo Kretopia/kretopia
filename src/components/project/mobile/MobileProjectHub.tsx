@@ -293,27 +293,7 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
             ))}
           </div>
         </section>
-      </div>
-
-      {/* Combined action FAB: voice note + Project Copilot (opens global drawer) */}
-      <DeskActionFab
-        onVoice={() => setVoiceOpen(true)}
-        onCopilot={() => {
-          window.dispatchEvent(new CustomEvent("thrive-copilot:open"));
-          onOpenCopilot?.();
-        }}
-      />
     </div>
-
-    <VoiceTaskCapture
-      open={voiceOpen}
-      onOpenChange={setVoiceOpen}
-      projectId={projectId}
-      projectTitle={project?.title}
-      currentUserId={currentUserId}
-      collaborators={collaborators}
-      onTaskCreated={() => onTasksChanged?.()}
-    />
     </>
   );
 });

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { EVENT_ARCHETYPES, type EventArchetypeId } from "@/lib/eventArchetypes";
 import { cn } from "@/lib/utils";
-import { Sparkles, Check } from "lucide-react";
+import { Calendar, Check } from "lucide-react";
 
 interface Props {
   value: EventArchetypeId | null;
@@ -18,7 +18,7 @@ export function EventArchetypePicker({ value, onChange, compact }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[hsl(var(--energy))]">
-        <Sparkles className="h-3 w-3" />
+        <Calendar className="h-3 w-3" />
         What kind of event?
       </div>
       <div

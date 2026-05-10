@@ -30,7 +30,7 @@ export const HeroPhoneCarousel = () => {
   const label = LABELS[screen];
 
   return (
-    <div className="relative mx-auto w-full max-w-[340px] sm:max-w-[380px]">
+    <div className="relative mx-auto w-full max-w-[260px] sm:max-w-[320px] md:max-w-[360px]">
       {/* Glow */}
       <div className="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-br from-primary/30 via-transparent to-energy/20 blur-3xl" />
 

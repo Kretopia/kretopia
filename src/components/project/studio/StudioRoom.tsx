@@ -46,6 +46,7 @@ import { EventProducerDashboard } from "./EventProducerDashboard";
 import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
+import { HideableSection, SectionsBringBackTray } from "./HideableSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";

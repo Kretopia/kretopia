@@ -114,7 +114,28 @@ export const DiscoverCreativesRow = () => {
             </motion.button>
           ))}
         </AnimatePresence>
+
+        {/* See more creators CTA at end of row */}
+        <button
+          onClick={() => navigate("/search")}
+          className="shrink-0 snap-start group"
+        >
+          <div className="flex flex-col items-center gap-2 w-[72px]">
+            <div className="relative h-14 w-14 rounded-full border-2 border-dashed border-primary/60 bg-primary/5 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/10 transition-colors">
+              <ArrowRight className="h-5 w-5 text-primary" />
+            </div>
+            <p className="text-[10px] font-black text-primary text-center leading-tight">See<br/>more</p>
+          </div>
+        </button>
       </div>
+
+      {/* Bottom full-width CTA */}
+      <button
+        onClick={() => navigate("/search")}
+        className="w-full mt-1 py-2.5 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-xs font-bold text-primary flex items-center justify-center gap-1.5"
+      >
+        Browse all creators on ThriveIN <ArrowRight className="h-3.5 w-3.5" />
+      </button>
     </div>
   );
 };

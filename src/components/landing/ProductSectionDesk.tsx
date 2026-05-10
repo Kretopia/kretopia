@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { CheckCircle, Sparkles, FolderOpen, ArrowRight, Mic, FileText } from "lucide-react";
+import { CheckCircle, Sparkles, FolderOpen, Mic, FileText } from "lucide-react";
 
 /**
  * Desk — the project OS. Show: voice → brief → tasks → vault. The wedge is
@@ -101,12 +100,6 @@ export const ProductSectionDesk = () => (
               </li>
             ))}
           </ul>
-          <Link
-            to="/desk"
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-energy transition-colors"
-          >
-            Open ThriveDesk <ArrowRight className="h-4 w-4" />
-          </Link>
         </div>
       </div>
     </div>

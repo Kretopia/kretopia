@@ -1,27 +1,23 @@
 import { cn } from "@/lib/utils";
-import { CreativeLoader } from "./creative-loader";
+import { CreatorOrbitLoader } from "./creator-orbit-loader";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   text?: string;
-  /** Optional context (role / workspace_type) to smart-pick a creative vignette. */
+  /** Optional context (kept for API compatibility — ignored by orbit loader). */
   context?: string | null;
 }
 
 /**
- * Replaced the old generic <Loader2/> spinner with a creative vignette
- * (guitarist plugging in, photographer framing, DJ cueing, etc) — same
- * API so existing call sites keep working.
+ * Unified ThriveIN loader: rotating real-creator avatars orbiting a hero
+ * portrait. Same API as before — drop-in replacement for the previous
+ * CreativeLoader-backed spinner.
  */
-export const LoadingSpinner = ({ size = "md", className, text, context }: LoadingSpinnerProps) => {
+export const LoadingSpinner = ({ size = "md", className, text }: LoadingSpinnerProps) => {
   return (
     <div className={cn("flex items-center justify-center", className)}>
-      <CreativeLoader
-        size={size}
-        label={text}
-        context={context ?? undefined}
-      />
+      <CreatorOrbitLoader size={size} label={text} />
     </div>
   );
 };

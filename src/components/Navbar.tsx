@@ -242,10 +242,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Dashboard</p>
                       <MenuButton icon={FolderKanban} label="Desk" onClick={() => handleNavigation("/desk")} path="/desk" />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} path="/credits" />
-                      <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} path="/clients" />
-                      <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} path="/manage-opportunities" />
-                      <MenuButton icon={CalendarDays} label="My Events" onClick={() => handleNavigation("/events/backstage")} path="/events/backstage" />
-                      <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} path="/fund/manage" />
+                      <MenuButton icon={Building2} label="Manage" onClick={() => handleNavigation("/manage")} path="/manage" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}

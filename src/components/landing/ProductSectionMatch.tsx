@@ -41,12 +41,6 @@ export const ProductSectionMatch = () => {
                 </li>
               ))}
             </ul>
-            <Link
-              to="/match"
-              className="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-energy transition-colors"
-            >
-              See Smart Match in action <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
 
           {/* Mock — search results panel */}

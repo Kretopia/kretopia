@@ -682,8 +682,8 @@ export const UnifiedHome = () => {
         {false && user && <SpotlightFeedRow />}
         {false && user && <ThriveFundFeedRow />}
 
-        {/* ── 2. GIGS FOR YOU (auth only) ── */}
-        {user && (
+        {/* Pass B.1: Legacy "Gigs For You" hidden — ScoutedGigsSection above is the moat. */}
+        {false && user && (
           <section id="section-gigs" className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">

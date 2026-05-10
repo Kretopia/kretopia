@@ -252,50 +252,54 @@ export function ThrivePromptHero() {
           </button>
         </form>
 
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setPlanMode((v) => !v)}
-            aria-pressed={planMode}
-            title="Plan & execute mode — Thrive drafts an ordered plan you approve before anything runs."
-            className={cn(
-              "inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors",
-              planMode
-                ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                : "bg-foreground/5 hover:bg-foreground/10 text-foreground/75 border-transparent",
-            )}
-          >
-            <ListChecks className="h-3 w-3" />
-            {planMode ? "Plan mode: on" : "Plan mode"}
-          </button>
-          <span className="h-4 w-px bg-border/70 mx-0.5" aria-hidden />
-          {SUGGESTIONS.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => { setText(s); void submit(s); }}
-              disabled={busy}
-              className="text-[11px] px-2.5 py-1 rounded-full bg-foreground/5 hover:bg-foreground/10 text-foreground/75 transition-colors disabled:opacity-50"
-            >
-              {s}
-            </button>
-          ))}
-        </div>
+        {expanded && (
+          <>
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPlanMode((v) => !v)}
+                aria-pressed={planMode}
+                title="Plan & execute mode — Thrive drafts an ordered plan you approve before anything runs."
+                className={cn(
+                  "inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors",
+                  planMode
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-foreground/5 hover:bg-foreground/10 text-foreground/75 border-transparent",
+                )}
+              >
+                <ListChecks className="h-3 w-3" />
+                {planMode ? "Plan mode: on" : "Plan mode"}
+              </button>
+              <span className="h-4 w-px bg-border/70 mx-0.5" aria-hidden />
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => { setText(s); void submit(s); }}
+                  disabled={busy}
+                  className="text-[11px] px-2.5 py-1 rounded-full bg-foreground/5 hover:bg-foreground/10 text-foreground/75 transition-colors disabled:opacity-50"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
 
-        <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
-          {planMode ? (
-            <>
-              <span className="font-semibold text-foreground/80">Plan mode is on.</span>{" "}
-              Thrive will break your goal into ordered steps and wait for your tap before running each one.
-            </>
-          ) : (
-            <>
-              <span className="font-semibold text-foreground/80">Tip:</span>{" "}
-              Turn on <span className="font-semibold">Plan mode</span> for big asks (e.g.{" "}
-              <span className="italic">"plan a 3-city pop-up tour"</span>) so you see every step before anything runs.
-            </>
-          )}
-        </p>
+            <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+              {planMode ? (
+                <>
+                  <span className="font-semibold text-foreground/80">Plan mode is on.</span>{" "}
+                  Thrive will break your goal into ordered steps and wait for your tap before running each one.
+                </>
+              ) : (
+                <>
+                  <span className="font-semibold text-foreground/80">Tip:</span>{" "}
+                  Turn on <span className="font-semibold">Plan mode</span> for big asks (e.g.{" "}
+                  <span className="italic">"plan a 3-city pop-up tour"</span>) so you see every step before anything runs.
+                </>
+              )}
+            </p>
+          </>
+        )}
 
         <AnimatePresence>
           {busy && (

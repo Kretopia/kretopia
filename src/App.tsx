@@ -248,6 +248,7 @@ const AppContent = () => {
   return (
     <div className="h-full overflow-auto">
       <ModeThemeSync />
+      <VibeThemeSync />
       <NetworkStatus />
       <SkipLink />
       <PageViewTracker />

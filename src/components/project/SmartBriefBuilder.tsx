@@ -305,7 +305,59 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
         }
       }
 
-      // 3. Save the elevated brief itself as a project note for reference
+      // 3. Run of show
+      if (runOfShow.length) {
+        const rosRows = runOfShow
+          .filter((r) => r.segment_title?.trim())
+          .map((r, i) => ({
+            project_id: projectId,
+            created_by: me,
+            segment_title: r.segment_title.trim().slice(0, 200),
+            time_slot: r.time && /^\d{1,2}:\d{2}$/.test(r.time) ? `${r.time}:00` : null,
+            duration_min: r.duration_min ?? null,
+            notes: r.notes ?? null,
+            position: i,
+          }));
+        if (rosRows.length) {
+          await supabase.from("project_run_of_show").insert(rosRows as never).then(() => {}, () => {});
+        }
+      }
+
+      // 4. Suppliers
+      if (suppliers.length) {
+        const supRows = suppliers
+          .filter((s) => s.name?.trim())
+          .map((s) => ({
+            project_id: projectId,
+            created_by: me,
+            category: s.category || "other",
+            name: s.name.trim().slice(0, 200),
+            notes: s.notes ?? null,
+            status: "lead",
+          }));
+        if (supRows.length) {
+          await supabase.from("event_suppliers").insert(supRows as never).then(() => {}, () => {});
+        }
+      }
+
+      // 5. Talent
+      if (talent.length) {
+        const tRows = talent
+          .filter((t) => t.name?.trim())
+          .map((t) => ({
+            project_id: projectId,
+            created_by: me,
+            role: t.role || "performer",
+            name: t.name.trim().slice(0, 200),
+            notes: t.notes ?? null,
+            status: "invited",
+          }));
+        if (tRows.length) {
+          await supabase.from("event_talent").insert(tRows as never).then(() => {}, () => {});
+        }
+      }
+
+      // 6. Save the elevated brief itself as a project note for reference
       await supabase
         .from("project_notes")
         .insert({
@@ -327,7 +379,7 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
         } as never)
         .then(() => {}, () => { /* notes table optional — don't block */ });
 
-      // 4. Notify each unique assignee that work was assigned
+      // 7. Notify each unique assignee that work was assigned
       const assignees = new Set<string>();
       tasks.forEach((t) => t.suggested_assignee_id && t.suggested_assignee_id !== me && assignees.add(t.suggested_assignee_id));
       deliverables.forEach((d) => d.suggested_assignee_id && d.suggested_assignee_id !== me && assignees.add(d.suggested_assignee_id));
@@ -345,17 +397,31 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
         await supabase.from("notifications").insert(notifs as never).then(() => {}, () => {});
       }
 
+      const extras: string[] = [];
+      if (runOfShow.length) extras.push(`${runOfShow.length} run-of-show items`);
+      if (suppliers.length) extras.push(`${suppliers.length} suppliers`);
+      if (talent.length) extras.push(`${talent.length} talent`);
       toast({
         title: "Brief sent",
-        description: `${tasks.length} tasks and ${deliverables.length} deliverables ready. Assignees notified.`,
+        description: [
+          `${tasks.length} tasks · ${deliverables.length} deliverables`,
+          extras.length ? extras.join(" · ") : null,
+          "Assignees notified.",
+        ].filter(Boolean).join(" · "),
       });
       // reset
       setStage("input");
       setText("");
       setVoiceBlob(null);
+      setUploadedText("");
+      setUploadFileName(null);
+      setUploadInfo(null);
       setBrief(null);
       setTasks([]);
       setDeliverables([]);
+      setRunOfShow([]);
+      setSuppliers([]);
+      setTalent([]);
       onSent?.();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't send brief";

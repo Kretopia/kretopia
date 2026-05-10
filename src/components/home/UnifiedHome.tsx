@@ -551,79 +551,12 @@ export const UnifiedHome = () => {
               </p>
             </div>
 
-            <div className="mb-5">
-              <p className="text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-semibold mb-3">
-                {t("landing.howItWorks")}
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { step: "1", icon: Search, title: t("landing.step1Title"), desc: t("landing.step1Desc") },
-                  { step: "2", icon: Database, title: t("landing.step2Title"), desc: t("landing.step2Desc") },
-                  { step: "3", icon: Briefcase, title: t("landing.step3Title"), desc: t("landing.step3Desc") },
-                ].map((s, i) => (
-                  <motion.div
-                    key={s.title}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 + i * 0.1 }}
-                    className="rounded-2xl bg-card border border-border/60 p-3 text-center relative overflow-hidden"
-                  >
-                    <span className="absolute top-1.5 left-2 text-[10px] font-extrabold text-primary/20">{s.step}</span>
-                    <s.icon className="h-5 w-5 text-primary mx-auto mb-1.5" />
-                    <p className="text-xs font-bold text-foreground mb-0.5">{s.title}</p>
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">{s.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {/* What are ThriveCredits? - moved higher */}
-            <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5 mb-2">
-              <div className="flex items-start gap-3">
-                <div className="h-9 w-9 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-                  <Database className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-foreground mb-1">What are ThriveCredits?</h3>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Think of credits like IMDb — but for every creative industry. Each credit is a verified record of work you've done: a music video you directed, a brand shoot you styled, an event you produced.
-                  </p>
-                  <Link to="/auth?tab=signup" className="inline-flex items-center gap-1 mt-1.5 text-xs font-semibold text-primary hover:underline">
-                    Search your name to find your credits <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </div>
-            </section>
           </div>
         </div>
       )}
 
-      {/* ═══════════ LIVE GIGS STRIP (guests only) ═══════════ */}
+      {/* ═══════════ 2. PROOF STRIP — live gigs (guests only) ═══════════ */}
       {!user && <LiveGigsStrip />}
-
-      {/* ═══════════ LIVE ACTIVITY BAR (moved higher) ═══════════ */}
-      {activityMsg && !user && (
-        <div className="border-y border-border/50 bg-muted/30">
-          <div className="container mx-auto max-w-5xl px-4">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activityMsg}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3 }}
-                className="flex items-center justify-center gap-2 py-2"
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
-                </span>
-                <p className="text-[11px] text-muted-foreground">{activityMsg}</p>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      )}
 
       {/* ═══════════ AUTH HUB ═══════════ */}
       {user && profile && (

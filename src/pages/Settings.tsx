@@ -465,6 +465,22 @@ const Settings = () => {
             </CardContent>
           </Card>
 
+          {/* Appearance — Vibe picker */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Appearance
+              </CardTitle>
+              <CardDescription>
+                Pick your vibe — Daylight, Midnight, or Neon. Switches the whole app instantly.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <VibePicker />
+            </CardContent>
+          </Card>
+
           {/* Thrive Copilot Memory */}
           <Card>
             <CardHeader>

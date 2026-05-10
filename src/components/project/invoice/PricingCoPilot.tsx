@@ -487,6 +487,17 @@ export function PricingCoPilot({
           <Badge variant="outline" className="text-[9px] bg-white/10 border-white/20 text-white">
             {currency}
           </Badge>
+          {messages.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 text-primary-foreground hover:bg-white/20"
+              title="Reset chat"
+              onClick={clearDraft}
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"

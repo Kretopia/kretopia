@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, X, Sparkles, Loader2, CircleDot, CircleCheck, CircleX, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { AgentResultCard } from "./AgentResultCard";
+import { deriveResultCards } from "@/lib/agentResultCards";
 
 export interface PlanStep {
   index: number;
@@ -14,6 +16,7 @@ export interface PlanStep {
   label: string;
   rationale?: string;
   status: "pending" | "running" | "succeeded" | "failed" | "skipped";
+  result?: unknown;
 }
 
 export interface CopilotPlan {
@@ -22,6 +25,8 @@ export interface CopilotPlan {
   summary?: string | null;
   status: "proposed" | "approved" | "running" | "completed" | "failed" | "cancelled";
   steps: PlanStep[];
+  /** When true, the card auto-approves and runs on mount (no user tap needed). */
+  autoRun?: boolean;
 }
 
 interface Props {

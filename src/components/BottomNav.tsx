@@ -4,15 +4,12 @@ import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
 
-// Single, focused MVP nav: Home · Desk · Match · Gigs · Pay
-// `hint` is shown on hover/long-press so people don't have to guess what
-// "Desk" or "Match" mean — especially helpful for non-creator visitors.
+// MVP Calm Nav: Home · Match · Desk. Gigs + Pay live in the hamburger.
+// Hint = tooltip/long-press helper for first-timers.
 const NAV_ITEMS = [
   { path: "/", icon: Home, label: "Home", hint: "Your daily Home — what's new, what to do" },
-  { path: "/desk", icon: LayoutDashboard, label: "Desk", hint: "Your workspaces & projects" },
   { path: "/circle", icon: Sparkles, label: "Match", hint: "Find people to collaborate with" },
-  { path: "/opportunities", icon: Briefcase, label: "Gigs", hint: "Paid gigs & open opportunities" },
-  { path: "/thrivepay", icon: Wallet, label: "Pay", hint: "Invoices, expenses & getting paid" },
+  { path: "/desk", icon: LayoutDashboard, label: "Desk", hint: "Your workspaces & projects" },
 ];
 
 // Company accounts get a B2B-focused nav

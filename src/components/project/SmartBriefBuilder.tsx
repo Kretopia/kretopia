@@ -177,17 +177,44 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
     setRecording(false);
   };
 
+  const runElevate = async (payload: Record<string, unknown>) => {
+    const { data, error } = await supabase.functions.invoke("elevate-brief", { body: payload });
+    if (error) throw error;
+    if (!data?.elevated_brief) throw new Error("No brief returned");
+    setBrief(data.elevated_brief);
+    setDeliverables(data.deliverables ?? []);
+    setTasks(data.tasks ?? []);
+    setRunOfShow(Array.isArray(data.run_of_show) ? data.run_of_show : []);
+    setSuppliers(Array.isArray(data.suppliers) ? data.suppliers : []);
+    setTalent(Array.isArray(data.talent) ? data.talent : []);
+    setStage("review");
+  };
+
+  const basePayload = () => ({
+    project_title: projectTitle,
+    collaborators: collabs.map((c) => ({
+      user_id: c.user_id,
+      display_name: c.display_name,
+      role: c.role,
+    })),
+  });
+
+  const elevateFromText = async (textBody: string) => {
+    setBusy(true);
+    try {
+      await runElevate({ ...basePayload(), source: "text", text: textBody });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Couldn't elevate brief";
+      toast({ title: "Smart Brief failed", description: msg, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const elevate = async () => {
     setBusy(true);
     try {
-      const payload: Record<string, unknown> = {
-        project_title: projectTitle,
-        collaborators: collabs.map((c) => ({
-          user_id: c.user_id,
-          display_name: c.display_name,
-          role: c.role,
-        })),
-      };
+      const payload: Record<string, unknown> = basePayload();
       if (tab === "voice") {
         if (!voiceBlob) throw new Error("Record something first");
         payload.source = "audio";
@@ -202,18 +229,7 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
         payload.source = "text";
         payload.text = text;
       }
-
-      const { data, error } = await supabase.functions.invoke("elevate-brief", { body: payload });
-      if (error) throw error;
-      if (!data?.elevated_brief) throw new Error("No brief returned");
-
-      setBrief(data.elevated_brief);
-      setDeliverables(data.deliverables ?? []);
-      setTasks(data.tasks ?? []);
-      setRunOfShow(Array.isArray(data.run_of_show) ? data.run_of_show : []);
-      setSuppliers(Array.isArray(data.suppliers) ? data.suppliers : []);
-      setTalent(Array.isArray(data.talent) ? data.talent : []);
-      setStage("review");
+      await runElevate(payload);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't elevate brief";
       toast({ title: "Smart Brief failed", description: msg, variant: "destructive" });

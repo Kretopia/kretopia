@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Check, X, Sparkles, Loader2, CircleDot, CircleCheck, CircleX, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { AgentResultCard } from "./AgentResultCard";
+import { deriveResultCards } from "@/lib/agentResultCards";
 
 export interface PlanStep {
   index: number;
@@ -14,6 +16,7 @@ export interface PlanStep {
   label: string;
   rationale?: string;
   status: "pending" | "running" | "succeeded" | "failed" | "skipped";
+  result?: unknown;
 }
 
 export interface CopilotPlan {
@@ -22,6 +25,8 @@ export interface CopilotPlan {
   summary?: string | null;
   status: "proposed" | "approved" | "running" | "completed" | "failed" | "cancelled";
   steps: PlanStep[];
+  /** When true, the card auto-approves and runs on mount (no user tap needed). */
+  autoRun?: boolean;
 }
 
 interface Props {
@@ -45,7 +50,19 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
   const [selected, setSelected] = useState<Set<number>>(
     () => new Set(initial.steps.map((s) => s.index))
   );
+  const autoRanRef = useRef(false);
   const { toast } = useToast();
+
+  // Auto-run on mount when caller marked the plan as autoRun (e.g. opened in
+  // explicit "plan & execute" mode from the FAB). Skips the proposed-state UI
+  // entirely so users see "Thrive is working" immediately.
+  useEffect(() => {
+    if (!autoRanRef.current && initial.autoRun && plan.status === "proposed") {
+      autoRanRef.current = true;
+      handle("approved");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Poll while running
   useEffect(() => {
@@ -110,18 +127,28 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
   };
 
   const isProposed = plan.status === "proposed";
+  const isRunning = plan.status === "running" || plan.status === "approved";
   const isTerminal = ["completed", "failed", "cancelled"].includes(plan.status);
+  const resultCards = plan.status === "completed" ? deriveResultCards(plan.steps) : [];
+
+  const headerLabel = isRunning
+    ? "Thrive is working"
+    : isProposed
+      ? (plan.summary ?? "Multi-step plan")
+      : (plan.summary ?? "Plan");
 
   return (
     <Card className="p-3 border-primary/30 bg-primary/5">
       <div className="flex items-start gap-3 mb-2">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15">
-          <Sparkles className="h-4 w-4 text-primary" />
+          {isRunning
+            ? <Loader2 className="h-4 w-4 text-primary animate-spin" />
+            : <Sparkles className="h-4 w-4 text-primary" />}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <p className="text-sm font-semibold truncate">
-              {plan.summary ?? "Multi-step plan"}
+            <p className="text-sm font-semibold truncate text-primary">
+              {headerLabel}
             </p>
             <Badge variant="outline" className="text-[10px] py-0 h-4 shrink-0">
               {plan.status === "proposed" ? `${plan.steps.length} steps` : plan.status}
@@ -207,6 +234,14 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
         )}>
           {plan.summary}
         </p>
+      )}
+
+      {resultCards.length > 0 && (
+        <div className="space-y-2 mt-3">
+          {resultCards.map((c) => (
+            <AgentResultCard key={c.id} card={c} compact />
+          ))}
+        </div>
       )}
     </Card>
   );

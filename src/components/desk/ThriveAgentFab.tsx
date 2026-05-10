@@ -208,6 +208,7 @@ export const ThriveAgentFab = () => {
                         summary: data.summary,
                         status: data.status ?? "proposed",
                         steps: data.steps ?? [],
+                        autoRun: true,
                       },
                     ],
                   }));
@@ -420,6 +421,7 @@ export const ThriveAgentFab = () => {
                       summary: data.summary,
                       status: data.status ?? "proposed",
                       steps: data.steps ?? [],
+                      autoRun: true,
                     },
                   ],
                 }));

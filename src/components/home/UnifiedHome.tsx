@@ -308,7 +308,17 @@ export const UnifiedHome = () => {
             // Intent boost — complementary intents (gigs↔hire, collab↔collab, fund↔collab)
             const { boost, reason } = intentBoostForCreator(myIntents, c.primary_intents ?? c.primary_intent);
             relevance += boost;
-            return { ...c, _relevance: relevance, _intentReason: reason };
+            // Friendly fallback reason + score so the card always explains "why"
+            const sharedSkill = cSkills.find((s: string) => skillsLower.includes(s));
+            const sameCity = !!(locationCity && cLocation.includes(locationCity));
+            const fallbackReason =
+              reason ||
+              (sharedSkill && `Shares your ${sharedSkill} skills`) ||
+              (sameCity && `Based in ${(c.location || "").split(",")[0]}`) ||
+              (cRole && `${c.role} you may want to collab with`) ||
+              "Active creator on ThriveIN";
+            const score = Math.min(95, 60 + relevance * 4);
+            return { ...c, _relevance: relevance, _intentReason: reason, match_score: score, reason: fallbackReason };
           })
           .sort((a: any, b: any) => b._relevance - a._relevance)
           .slice(0, 10);
@@ -662,29 +672,52 @@ export const UnifiedHome = () => {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="shrink-0 w-[150px] snap-start"
+                  className="shrink-0 w-[210px] snap-start"
                 >
                   <div
-                    className="relative rounded-2xl border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group p-3 text-center h-full"
+                    className="relative rounded-2xl border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group h-full overflow-hidden"
                     onClick={() => navigate(`/profile/${c.user_id}`)}
                   >
                     {typeof c.match_score === "number" && (
-                      <span className="absolute top-1.5 right-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                        {c.match_score}%
+                      <span className="absolute top-2 right-2 z-10 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground shadow-sm">
+                        {c.match_score}% match
                       </span>
                     )}
-                    <Avatar className="h-14 w-14 mx-auto mb-2 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
-                      <AvatarImage src={c.avatar_url || ""} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
-                        {(c.full_name || "?")[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <p className="text-xs font-semibold text-foreground line-clamp-1">{c.full_name}</p>
-                    <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{c.role || "Creative"}</p>
-                    {c.reason && (
-                      <p className="text-[10px] text-primary/80 line-clamp-2 mt-1.5 leading-tight">
-                        {c.reason}
-                      </p>
+                    <div className="p-3 pb-2 flex items-start gap-2.5">
+                      <Avatar className="h-12 w-12 shrink-0 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
+                        <AvatarImage src={c.avatar_url || ""} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
+                          {(c.full_name || "?")[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1 pr-12">
+                        <p className="text-sm font-semibold text-foreground line-clamp-1 leading-tight">{c.full_name}</p>
+                        <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">{c.role || "Creative"}</p>
+                        {c.location && (
+                          <p className="text-[10px] text-muted-foreground/80 line-clamp-1 mt-0.5 flex items-center gap-0.5">
+                            <MapPin className="h-2.5 w-2.5" /> {String(c.location).split(",")[0]}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {(c.reason || (Array.isArray(c.skill_match) && c.skill_match.length > 0)) && (
+                      <div className="px-3 pb-3 pt-1 border-t border-border/40 mt-1">
+                        {c.reason && (
+                          <p className="text-[11px] text-foreground/80 line-clamp-2 leading-snug flex gap-1">
+                            <Sparkles className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+                            <span>{c.reason}</span>
+                          </p>
+                        )}
+                        {Array.isArray(c.skill_match) && c.skill_match.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {c.skill_match.slice(0, 2).map((s: string) => (
+                              <span key={s} className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </motion.div>

@@ -181,6 +181,52 @@ All colors MUST be HSL.
     --mode-accent-foreground: 250 35% 6%;
     --mode-glow: 0 0 40px hsl(72 100% 65% / 0.4);
   }
+
+  /* ============================================================
+     VIBE: MIDNIGHT — dark canvas, single indigo accent.
+     Same minimalism as Daylight, just inverted. Pairs with .dark class.
+     ============================================================ */
+  .dark[data-vibe="midnight"],
+  [data-vibe="midnight"].dark {
+    --primary: 232 87% 66%;
+    --primary-foreground: 0 0% 100%;
+    --accent: 232 35% 20%;
+    --accent-foreground: 240 15% 96%;
+    --energy: 232 87% 66%;
+    --energy-foreground: 0 0% 100%;
+    --ring: 232 87% 66%;
+    --gradient-primary: linear-gradient(135deg, hsl(232 87% 66%), hsl(232 87% 72%));
+    --gradient-secondary: linear-gradient(135deg, hsl(232 87% 66% / 0.18), hsl(232 87% 66% / 0.04));
+    --gradient-subtle: linear-gradient(180deg, hsl(232 87% 66% / 0.08), transparent);
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(232 87% 66% / 0.14), transparent 70%);
+    --shadow-glow: 0 0 32px hsl(232 87% 66% / 0.35);
+    --mode-accent: 232 87% 66%;
+    --mode-accent-foreground: 0 0% 100%;
+    --mode-glow: 0 0 32px hsl(232 87% 66% / 0.35);
+  }
+
+  /* ============================================================
+     VIBE: NEON — dark canvas, lime as the single bold accent.
+     Refined version of OG: drops magenta, keeps the energy.
+     ============================================================ */
+  .dark[data-vibe="neon"],
+  [data-vibe="neon"].dark {
+    --primary: 75 100% 50%;
+    --primary-foreground: 240 17% 7%;
+    --accent: 75 60% 18%;
+    --accent-foreground: 75 100% 70%;
+    --energy: 75 100% 50%;
+    --energy-foreground: 240 17% 7%;
+    --ring: 75 100% 50%;
+    --gradient-primary: linear-gradient(135deg, hsl(75 100% 50%), hsl(68 95% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(75 100% 50% / 0.18), hsl(75 100% 50% / 0.04));
+    --gradient-subtle: linear-gradient(180deg, hsl(75 100% 50% / 0.08), transparent);
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(75 100% 50% / 0.14), transparent 70%);
+    --shadow-glow: 0 0 32px hsl(75 100% 50% / 0.35);
+    --mode-accent: 75 100% 50%;
+    --mode-accent-foreground: 240 17% 7%;
+    --mode-glow: 0 0 32px hsl(75 100% 50% / 0.35);
+  }
 }
 
 /* Safe area utilities for mobile devices */

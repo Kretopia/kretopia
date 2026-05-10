@@ -10814,6 +10814,7 @@ export type Database = {
           tour_completed: boolean | null
           twitter_followers: number | null
           twitter_url: string | null
+          ui_vibe: string
           updated_at: string | null
           user_id: string
           username: string | null
@@ -10983,6 +10984,7 @@ export type Database = {
           tour_completed?: boolean | null
           twitter_followers?: number | null
           twitter_url?: string | null
+          ui_vibe?: string
           updated_at?: string | null
           user_id: string
           username?: string | null
@@ -11152,6 +11154,7 @@ export type Database = {
           tour_completed?: boolean | null
           twitter_followers?: number | null
           twitter_url?: string | null
+          ui_vibe?: string
           updated_at?: string | null
           user_id?: string
           username?: string | null

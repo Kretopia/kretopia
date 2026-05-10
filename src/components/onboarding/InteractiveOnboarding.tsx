@@ -8,6 +8,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { VibePicker } from "@/components/onboarding/VibePicker";
 
 interface OnboardingStep {
   id: string;
@@ -27,6 +28,15 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     title: "Who's using ThriveIN?",
     description: "We'll tune the language and what shows up first. You can switch anytime in Settings.",
     icon: <Sparkles className="h-6 w-6" />,
+    route: "/circle",
+    position: "center",
+    action: "Continue",
+  },
+  {
+    id: "vibe",
+    title: "Pick your vibe",
+    description: "Choose how the app looks. You can switch anytime in Settings.",
+    icon: <Palette className="h-6 w-6" />,
     route: "/circle",
     position: "center",
     action: "Continue",
@@ -371,6 +381,11 @@ export function InteractiveOnboarding() {
                       I hire creators, run a brand, agency, or production.
                     </p>
                   </button>
+                </div>
+              )}
+              {step.id === "vibe" && (
+                <div className="pt-1">
+                  <VibePicker compact />
                 </div>
               )}
               {step.tip && (

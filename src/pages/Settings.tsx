@@ -20,6 +20,8 @@ import { CreatorSiteSettings } from "@/components/settings/CreatorSiteSettings";
 import { BlockedUsersCard } from "@/components/settings/BlockedUsersCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
+import { VibePicker } from "@/components/onboarding/VibePicker";
+import { Palette } from "lucide-react";
 
 interface NotificationPreferences {
   email_matches: boolean;
@@ -460,6 +462,22 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <AccountSwitcher currentAccountType={accountType} variant="settings" />
+            </CardContent>
+          </Card>
+
+          {/* Appearance — Vibe picker */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Appearance
+              </CardTitle>
+              <CardDescription>
+                Pick your vibe — Daylight, Midnight, or Neon. Switches the whole app instantly.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <VibePicker />
             </CardContent>
           </Card>
 

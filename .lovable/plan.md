@@ -1,116 +1,73 @@
 
-# ThriveIN Calm Redesign — 3 Phases
+# Vibe System — Daylight / Midnight / Neon
 
-Goal: kill the "too busy" feeling. Cream + near-black + one accent. 3 tabs + hamburger. Progressive disclosure. Vibe-based theming for individuality.
+## The three vibes
 
----
+| Vibe | Background | Text | Accent | Mood |
+|---|---|---|---|---|
+| **Daylight** (default) | Cream `#FAF8F5` | Near-black `#0F0F12` | Indigo `#5B6BF5` | Editorial, calm |
+| **Midnight** | Near-black `#0F0F12` | Off-white `#FAF8F5` | Indigo `#5B6BF5` | Focused, minimal |
+| **Neon** | Near-black `#0F0F12` | Off-white `#FAF8F5` | Lime `#D4FF3E` | Energetic, refined (no magenta) |
 
-## Phase 1 — Clean the house (ship this week)
+All three share the same layout, type scale, spacing, and components. Only the three CSS variables (`--background`, `--foreground`, `--primary`) and a couple of derivative tokens change.
 
-**1.1 New default theme: Warm Minimal**
-- Background: cream `#FAF8F5` (light) — keep dark theme as opt-in
-- Text: near-black `#0F0F12`
-- One accent: keep `#5B6BF5` indigo for now (vibe picker can swap later)
-- Kill: lime `#D4FF3E` from default surfaces, indigo gradients on cards, glass-strong panels in light mode
-- All changes via `index.css` HSL tokens — no hardcoded Tailwind colors
-- `next-themes` default → `light`
+## Implementation
 
-**1.2 Bottom nav: 5 → 3 tabs**
-- New: `Home · Match · Desk`
-- Move to hamburger: Gigs, Pay, Spotlight, Fund, Founding Member, Settings, etc.
-- Keep `useAccountTone` business override (stays 4 tabs for company accounts since Talent/Pay are daily for them)
-- Update memory: `mvp-single-mode-nav` → 3-tab version
+### 1. Database
+- Add `profiles.ui_vibe` enum: `'daylight' | 'midnight' | 'neon'`, default `'daylight'`.
+- Migration only — no RLS change (existing profile policies cover it).
 
-**1.3 Home: radical simplification**
-- Keep: ThrivePromptHero (the prompt is the hero), Get-Started checklist (when <50%), one "next-up" card
-- Demote/remove from default view: streak chips row, opportunity intel card, money brief, recent intents drawer, founding quest card, scouted gigs preview, discover creatives row
-- Move all of those into a **"More for you"** collapsed accordion below the fold OR surface them via the prompt suggestions
-- Guest landing: same nine-section narrative but restyled with new tokens
+### 2. CSS tokens (`src/index.css`)
+- Keep current `:root` as **Daylight**.
+- Add `[data-vibe="midnight"]` block: swaps `--background` / `--foreground` / surface tokens to dark; keeps indigo `--primary`.
+- Add `[data-vibe="neon"]` block: dark surfaces + `--primary: 73 100% 62%` (lime). Drop magenta entirely. Foreground stays off-white; secondary accents stay neutral (no purple gradients).
+- Remove the legacy lime/magenta gradients from default `.dark` so the old maximalist look is opt-in via Neon only.
 
-**1.4 Hamburger menu rebuild**
-- Grouped: **Make** (Desk, Studios, Vault) · **Find** (Gigs, Match, Spotlight, Talent) · **Money** (Pay, Invoices, Fund) · **Account** (Profile, Settings, Founding)
-- Light, scannable, no icons-on-icons
+### 3. `<VibeThemeSync />` (new, mirrors `ModeThemeSync`)
+- Reads `profiles.ui_vibe` once, sets `document.documentElement.dataset.vibe`.
+- Falls back to `localStorage('ui_vibe')` for guests so onboarding picks apply instantly before profile write.
+- Mounted in `App.tsx` next to `ModeThemeSync`.
+- Also forces `next-themes` `theme` to match: Daylight → `light`, Midnight & Neon → `dark` (so shadcn's `.dark` class still applies for component states).
 
----
+### 4. Onboarding step — `VibePicker`
+- New step inserted after discipline pick (existing onboarding flow).
+- Three large preview tiles (mini mock of Home card per vibe). Tap → save to `profiles.ui_vibe` + `localStorage` + `data-vibe` updates live.
+- Skippable → defaults to Daylight.
 
-## Phase 2 — Progressive reveal (next sprint)
+### 5. Settings entry
+- New row in Settings → "Appearance" → 3 swatches with the same picker UI. Same write path. Live preview.
 
-**2.1 Prompt-first routing**
-- ThrivePromptHero already calls `route-thrive-intent`. Strengthen the suggestion chips so guests/new users see: "Find me a gig", "Draft an invoice", "Build my EPK", "Match me with a photographer"
-- Each chip routes to the right surface and pre-fills context
+### 6. Memory
+- Update `mem://style/branding/warm-minimal-theme.md` → rename to `vibe-system.md` documenting all three vibes + the rule: **never hardcode a vibe-specific color; always use semantic tokens**.
+- Update Core memory line: "Default theme: Daylight (warm minimal). Two opt-in vibes: Midnight, Neon."
 
-**2.2 Earn-your-place navigation**
-- Hamburger items show a soft "new" dot until first use
-- Pay only appears in hamburger top-group after first invoice/expense
-- Fund only after first contribution/campaign
-- Drives behavior: new tables `user_surface_unlocks (user_id, surface, unlocked_at)` OR derive from existing data (cheaper — no new table needed)
+## Files touched
 
-**2.3 Empty-state-as-onboarding**
-- Every surface shows ONE clear next-action when empty (already partly done with `EmptyState` + `useAccountTone.pick`)
-- Audit Match, Desk, Pay, Gigs empty states for new minimal tone
+**New**
+- `src/components/VibeThemeSync.tsx`
+- `src/components/onboarding/VibePicker.tsx`
+- `src/components/settings/AppearanceCard.tsx`
 
----
+**Edited**
+- `src/index.css` — add `[data-vibe="midnight"]` and `[data-vibe="neon"]` blocks; clean legacy `.dark` magenta
+- `src/App.tsx` — mount `<VibeThemeSync />`
+- `src/main.tsx` — keep `defaultTheme="light"` but enable dark class so Midnight/Neon work
+- `src/components/onboarding/*` — wire `VibePicker` into the existing flow
+- `src/pages/Settings.tsx` (or equivalent) — add Appearance card
+- `mem://index.md` + `mem://style/branding/vibe-system.md`
 
-## Phase 3 — Vibe-based theming (after Phase 1 ships and gets feedback)
+**Migration**
+- `profiles` add column `ui_vibe text default 'daylight' check (ui_vibe in ('daylight','midnight','neon'))`
 
-**3.1 Onboarding: pick your discipline + vibe**
-- Discipline: Fashion · Film · Music · Photo · Design · Writing · Other (drives suggested prompts, default workspace types, sample EPK)
-- Vibe (3 options only — keep it simple):
-  - **Editorial** — cream bg, serif headings, charcoal accent (default for fashion/writing)
-  - **Studio** — off-white bg, sans, indigo accent (default for film/design/music)
-  - **Gallery** — warm grey bg, sans, single bold accent (default for photo/visual)
-- Persisted on `profiles.ui_vibe` (new column, enum)
+## What I'll ship in this pass
 
-**3.2 Vibe → CSS variable swap**
-- New `<VibeThemeSync />` component (mirrors existing `ModeThemeSync`)
-- Sets `data-vibe="editorial|studio|gallery"` on `<html>`
-- `index.css` defines `[data-vibe="editorial"]` overrides for `--background`, `--foreground`, `--primary`, font stack
-- No component changes needed — pure token swap
+1. Migration for `ui_vibe`.
+2. CSS token blocks for all three vibes.
+3. `<VibeThemeSync />` mounted globally.
+4. `VibePicker` component + insert into onboarding.
+5. Appearance card in Settings.
+6. Memory updates.
 
-**3.3 Vibe → public EPK consistency**
-- Vibe also nudges (not forces) the default EPK template choice
-- Creator+ still gets all 9 templates in builder
+After this, you and your siblings can flip between all three live and tell me which one feels right per use case. If Neon needs more or less energy, easy one-pass tweak — no component changes, just token values.
 
----
-
-## Technical Details
-
-**Files Phase 1 will touch:**
-- `src/index.css` — new HSL tokens for warm-minimal light mode, demote lime
-- `tailwind.config.ts` — sanity check token wiring
-- `src/components/BottomNav.tsx` — drop to 3 items (creative tone), keep COMPANY_ITEMS as-is
-- `src/components/HamburgerMenu.tsx` (or wherever the drawer lives) — add Gigs + Pay to top group
-- `src/components/home/UnifiedHome.tsx` — collapse non-essential cards into "More for you"
-- `src/main.tsx` or theme provider — default theme to `light`
-- Memory: update `mvp-single-mode-nav`, add `warm-minimal-theme`
-
-**Files Phase 2 will touch:**
-- `src/components/home/ThrivePromptHero.tsx` — better suggestion chips
-- `src/components/HamburgerMenu.tsx` — conditional surface visibility based on user activity
-- Empty states across Match/Desk/Pay/Gigs
-
-**Files Phase 3 will touch:**
-- Migration: `profiles.ui_vibe` enum column
-- `src/components/onboarding/` — add VibePicker step
-- New `src/components/VibeThemeSync.tsx`
-- `src/index.css` — `[data-vibe]` overrides
-- `src/App.tsx` — mount VibeThemeSync
-
-**Memory updates after Phase 1:**
-- Update Core: nav is now 3 tabs, default theme is warm-minimal light
-- Add memory: `style/branding/warm-minimal-theme` documenting the cream/near-black/single-accent system
-
----
-
-## What I'll ship right now if you approve
-
-**Phase 1 only** — about 6-8 file edits, ~30 min build:
-1. Warm-minimal light theme tokens in `index.css` + default to light
-2. BottomNav → 3 tabs (creative); company unchanged
-3. Hamburger gets Gigs + Pay promoted into a "Find" / "Money" group
-4. UnifiedHome collapses secondary cards behind a "More for you" toggle
-5. Memory update
-
-Then you and your sister/brother view the preview. If their reaction is "yes this feels like us," we move to Phase 2. If they want it even more minimal (kill indigo entirely, go monochrome), one more pass before Phase 2.
-
-Approve to ship Phase 1?
+Approve to ship?

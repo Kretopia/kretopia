@@ -1,6 +1,8 @@
 // Event format taxonomy: caps, copy, Daily room behavior.
 // Used by event create/edit + the join card + the create-event-room edge fn.
 
+import { Users, Mic, Clapperboard, Headphones, type LucideIcon } from "lucide-react";
+
 export type EventMode = "irl" | "online" | "hybrid";
 export type OnlineFormat = "group_room" | "stage" | "watch_party" | "podcast";
 
@@ -8,7 +10,7 @@ export interface OnlineFormatConfig {
   value: OnlineFormat;
   label: string;
   short: string;
-  emoji: string;
+  icon: LucideIcon;
   description: string;
   defaultCap: number;
   minCap: number;
@@ -26,7 +28,7 @@ export const ONLINE_FORMATS: OnlineFormatConfig[] = [
     value: "group_room",
     label: "Group Room",
     short: "Everyone on cam",
-    emoji: "👥",
+    icon: Users,
     description: "Everyone sees and hears each other. Like a Zoom workshop.",
     defaultCap: 25,
     minCap: 2,
@@ -39,7 +41,7 @@ export const ONLINE_FORMATS: OnlineFormatConfig[] = [
     value: "stage",
     label: "Stage",
     short: "Hosts present, audience watches",
-    emoji: "🎤",
+    icon: Mic,
     description: "You + co-hosts go on stage. Audience watches and chats. Promote guests on the fly.",
     defaultCap: 200,
     minCap: 5,
@@ -52,7 +54,7 @@ export const ONLINE_FORMATS: OnlineFormatConfig[] = [
     value: "watch_party",
     label: "Watch Party",
     short: "Watch a video together",
-    emoji: "🎬",
+    icon: Clapperboard,
     description: "Drop a YouTube/Vimeo link. Everyone watches together with live chat & reactions.",
     defaultCap: 100,
     minCap: 2,
@@ -65,7 +67,7 @@ export const ONLINE_FORMATS: OnlineFormatConfig[] = [
     value: "podcast",
     label: "Podcast / Interview",
     short: "Recorded conversation",
-    emoji: "🎙️",
+    icon: Headphones,
     description: "2–4 on cam, auto-recorded. Repurpose for podcast, clips, or YouTube.",
     defaultCap: 4,
     minCap: 2,
@@ -87,9 +89,9 @@ export const formatCapacityLine = (
   if (!cfg) return "";
   const n = cap ?? cfg.defaultCap;
   if (cfg.value === "stage" || cfg.value === "watch_party") {
-    return `${cfg.emoji} ${cfg.label} · up to ${n} watching`;
+    return `${cfg.label} · up to ${n} watching`;
   }
-  return `${cfg.emoji} ${cfg.label} · up to ${n} on cam`;
+  return `${cfg.label} · up to ${n} on cam`;
 };
 
 export const eventModeLabel = (mode: EventMode): string =>

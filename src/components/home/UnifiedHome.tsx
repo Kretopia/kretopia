@@ -678,8 +678,8 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* Pass B.1: Spotlight + ThriveFund hidden — both are off-nav surfaces. */}
-        {false && user && <SpotlightFeedRow />}
+        {/* Spotlight back on Home — share-worthy content (Magazine + Podcast). */}
+        {user && <SpotlightFeedRow />}
         {false && user && <ThriveFundFeedRow />}
 
         {/* Pass B.1: Legacy "Gigs For You" hidden — ScoutedGigsSection above is the moat. */}

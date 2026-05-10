@@ -16,8 +16,8 @@ export function GuestBanner() {
   if (user || dismissed) return null;
 
   return (
-    <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-0 right-0 z-30 px-3 lg:bottom-4 lg:left-auto lg:right-4 lg:max-w-md lg:px-0 pointer-events-none">
-      <div className="pointer-events-auto bg-card/95 backdrop-blur-xl border-t lg:border border-primary/20 lg:rounded-2xl px-4 py-3 lg:py-4 shadow-2xl shadow-primary/10">
+    <div className="fixed bottom-[calc(72px+env(safe-area-inset-bottom))] left-0 right-0 z-30 px-3 lg:bottom-4 lg:left-auto lg:right-4 lg:max-w-md lg:px-0 pointer-events-none hidden sm:block">
+      <div className="pointer-events-auto bg-card/95 border-t lg:border border-primary/20 lg:rounded-2xl px-4 py-3 lg:py-4 shadow-2xl shadow-primary/10">
         <button
           onClick={() => setDismissed(true)}
           className="absolute top-2 right-2 p-1 rounded-full text-muted-foreground hover:text-foreground transition-colors"

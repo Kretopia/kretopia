@@ -111,7 +111,7 @@ async function planTools(
   context: Record<string, unknown>,
   userId: string,
   authHeader: string,
-): Promise<Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string }>> {
+): Promise<Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string; auto_result?: unknown; already_executed?: boolean }>> {
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
   const toolsForAgent = tools.filter(
@@ -151,7 +151,7 @@ async function planTools(
     { role: "user", content: intent },
   ];
 
-  const proposals: Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string }> = [];
+  const proposals: Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string; auto_result?: unknown; already_executed?: boolean }> = [];
   const MAX_TURNS = 3;
 
   for (let turn = 0; turn < MAX_TURNS; turn++) {
@@ -206,7 +206,21 @@ async function planTools(
           const execText = await execResp.text();
           messages.push({ role: "tool", tool_call_id: c.id, content: execText.slice(0, 4000) });
           didAutoExecute = true;
-          // Also surface the lookup as a (silent) action row by NOT pushing to proposals — only the final destructive action becomes a proposal
+          // Surface user-facing safe_auto tools as visible action rows so users see what ran.
+          // Internal lookups (find_user, list_my_projects, list_my_clients) stay silent.
+          const SILENT_LOOKUPS = new Set(["find_user", "list_my_projects", "list_my_clients", "list_recent_credits"]);
+          if (!SILENT_LOOKUPS.has(toolName)) {
+            let parsedResult: unknown = execText;
+            try { parsedResult = JSON.parse(execText); } catch { /* keep text */ }
+            proposals.push({
+              tool_name: toolName,
+              tool_args: args,
+              preview_title: preview.title ?? toolName,
+              preview_body: preview.body ?? "",
+              auto_result: parsedResult,
+              already_executed: execResp.ok,
+            });
+          }
         } catch (e) {
           messages.push({ role: "tool", tool_call_id: c.id, content: JSON.stringify({ error: String(e) }) });
         }
@@ -941,7 +955,10 @@ serve(async (req) => {
         .single();
 
       if (tool.risk_level === "safe_auto" && (settings?.auto_run_safe ?? true)) {
-        const result = await executeAction(action!.id, userId, tool, p.tool_args, authHeader);
+        // If the planner already ran this safe_auto tool inline, reuse the result instead of double-firing.
+        const result = p.already_executed
+          ? { ok: true, result: p.auto_result }
+          : await executeAction(action!.id, userId, tool, p.tool_args, authHeader);
         await admin
           .from("orch_actions")
           .update({

@@ -711,7 +711,80 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
         </Card>
       )}
 
-      <div className="sticky bottom-2 z-10">
+      {/* Run of show */}
+      {runOfShow.length > 0 && (
+        <Card>
+          <CardContent className="pt-5 sm:pt-6 px-4 sm:px-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Clock className="h-4 w-4 text-primary" />
+              <h3 className="font-semibold text-sm">Run of show ({runOfShow.length})</h3>
+              <Badge variant="outline" className="text-[10px] ml-auto">From document</Badge>
+            </div>
+            <ScrollArea className="max-h-[40vh] pr-2">
+              <ol className="space-y-1.5">
+                {runOfShow.map((r, i) => (
+                  <li key={i} className="rounded-md border bg-card px-3 py-2 flex items-start gap-3">
+                    <span className="text-xs font-mono w-12 shrink-0 text-muted-foreground pt-0.5">
+                      {r.time ?? "—"}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium leading-snug">{r.segment_title}</p>
+                      {r.notes && <p className="text-xs text-muted-foreground mt-0.5">{r.notes}</p>}
+                    </div>
+                    {r.duration_min ? (
+                      <span className="text-[10px] text-muted-foreground shrink-0 pt-0.5">{r.duration_min}m</span>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
+
+      {(suppliers.length > 0 || talent.length > 0) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {suppliers.length > 0 && (
+            <Card>
+              <CardContent className="pt-5 px-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold text-sm">Suppliers ({suppliers.length})</h3>
+                </div>
+                <ul className="space-y-1.5">
+                  {suppliers.map((s, i) => (
+                    <li key={i} className="text-xs">
+                      <span className="font-medium">{s.name}</span>
+                      <span className="text-muted-foreground"> · {s.category}</span>
+                      {s.notes && <p className="text-[11px] text-muted-foreground mt-0.5">{s.notes}</p>}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+          {talent.length > 0 && (
+            <Card>
+              <CardContent className="pt-5 px-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Mic2 className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold text-sm">Talent ({talent.length})</h3>
+                </div>
+                <ul className="space-y-1.5">
+                  {talent.map((t, i) => (
+                    <li key={i} className="text-xs">
+                      <span className="font-medium">{t.name}</span>
+                      <span className="text-muted-foreground"> · {t.role}</span>
+                      {t.notes && <p className="text-[11px] text-muted-foreground mt-0.5">{t.notes}</p>}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
         <Button onClick={sendToTeam} disabled={sending || !brief} size="lg" className="w-full shadow-lg">
           {sending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
           Send brief & assign work

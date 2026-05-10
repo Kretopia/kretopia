@@ -49,6 +49,7 @@ import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
+import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 // LiveGigsStrip removed — see Smart Gig Scout
 // ThriveFundShowcase replaced by compact ThriveFundTeaserCard on landing
 import GigCard from "@/components/opportunity/GigCard";

@@ -397,10 +397,10 @@ export const UnifiedHome = () => {
 
           <div className="relative container mx-auto max-w-6xl px-4 sm:px-6 pt-6 sm:pt-12 pb-8">
             {/* Two-column cinematic stage */}
-            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center mb-10 sm:mb-14">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center mb-8 sm:mb-14">
 
-              {/* LEFT — Editorial headline + wedge copy + search. Mobile: visual above, headline below. */}
-              <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
+              {/* LEFT — Editorial headline + wedge copy + search. */}
+              <div className="relative z-10 text-center lg:text-left order-1">
                 <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
                   <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
                   ThriveIN · The Creative OS
@@ -483,16 +483,16 @@ export const UnifiedHome = () => {
                     </AnimatePresence>
                   </span>
                 </p>
+
+                <div className="mt-6 text-left">
+                  <DiscoverCreativesRow />
+                </div>
               </div>
 
               {/* RIGHT — Auto-rotating phone carousel: Match → Desk → Pay → Thrive */}
-              <div className="relative order-1 lg:order-2">
+              <div className="relative order-2">
                 <HeroPhoneCarousel />
               </div>
-            </div>
-
-            <div className="mb-6">
-              <DiscoverCreativesRow />
             </div>
 
             {/* PRIMARY CTA — inline OAuth */}

@@ -12,11 +12,11 @@ const TRINIDAD_CONTENT = {
 };
 
 const DEFAULT_CONTENT = {
-  badge: "Free to Join · Pro from $29/mo",
-  heading: "Ready to Level Up?",
+  badge: "Free Forever · Pro from $29/mo",
+  heading: "Stop juggling tools. Start booking work.",
   subheading:
-    "Build verified credits, land real gigs, send invoices, and run your creative business — one platform replaces nine apps.",
-  tagline: "Free forever · 7-day Pro trial · Save 17% annually",
+    "Claim your credits. Match with collaborators. Send invoices. Get paid. One platform replaces nine apps — and Thrive does the busywork.",
+  tagline: "Free forever · 60-second setup · 7-day Pro trial",
   isTT: false,
 };
 

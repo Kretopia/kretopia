@@ -39,6 +39,7 @@ export function ThrivePromptHero() {
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
   const [planMode, setPlanMode] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 

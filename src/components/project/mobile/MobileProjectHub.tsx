@@ -293,8 +293,8 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
             ))}
           </div>
         </section>
+      </div>
     </div>
-    </>
   );
 });
 

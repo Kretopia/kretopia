@@ -191,6 +191,10 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
         payload.source = "audio";
         payload.data_base64 = await blobToBase64(voiceBlob);
         payload.mime_type = "audio/webm";
+      } else if (tab === "upload") {
+        if (!uploadedText.trim()) throw new Error("Upload a document first");
+        payload.source = "text";
+        payload.text = `[Uploaded brief — ${uploadFileName ?? "document"}]\n\n${uploadedText}`;
       } else {
         if (!text.trim()) throw new Error("Type a few words first");
         payload.source = "text";
@@ -204,10 +208,34 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
       setBrief(data.elevated_brief);
       setDeliverables(data.deliverables ?? []);
       setTasks(data.tasks ?? []);
+      setRunOfShow(Array.isArray(data.run_of_show) ? data.run_of_show : []);
+      setSuppliers(Array.isArray(data.suppliers) ? data.suppliers : []);
+      setTalent(Array.isArray(data.talent) ? data.talent : []);
       setStage("review");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't elevate brief";
       toast({ title: "Smart Brief failed", description: msg, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onPickFile = async (file: File | null) => {
+    if (!file) return;
+    setBusy(true);
+    setUploadInfo(null);
+    try {
+      if (file.size > 25 * 1024 * 1024) throw new Error("File too large (max 25 MB)");
+      const result = await extractTextFromFile(file);
+      if (!result.text.trim()) throw new Error("No readable text found in document");
+      setUploadFileName(file.name);
+      setUploadedText(result.text);
+      setUploadInfo(
+        `${file.name} · ${result.pages} page${result.pages === 1 ? "" : "s"}${result.truncated ? " · truncated to fit" : ""}`,
+      );
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Couldn't read file";
+      toast({ title: "Upload failed", description: msg, variant: "destructive" });
     } finally {
       setBusy(false);
     }

@@ -25,6 +25,9 @@ const ProjectsList = () => {
   >({});
   const [showVoiceCreate, setShowVoiceCreate] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "planning" | "wrapping" | "completed">("all");
+  const [payFilter, setPayFilter] = useState<"all" | "unsent" | "invoiced" | "paid">("all");
 
   useEffect(() => {
     if (user) {

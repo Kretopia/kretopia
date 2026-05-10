@@ -36,18 +36,38 @@ interface SuggestedDeliverable {
   suggested_assignee_id?: string | null;
 }
 
+interface RunOfShowItem {
+  time?: string | null;
+  duration_min?: number | null;
+  segment_title: string;
+  notes?: string | null;
+}
+interface SupplierItem {
+  category: string;
+  name: string;
+  notes?: string | null;
+}
+interface TalentItem {
+  role: string;
+  name: string;
+  notes?: string | null;
+}
+
 interface ElevateOut {
   elevated_brief: {
     title: string;
-    summary: string; // 1-2 sentence executive summary
-    objectives: string[]; // bullet objectives
+    summary: string;
+    objectives: string[];
     audience: string;
     tone: string;
     success_criteria: string[];
-    research_notes: string[]; // AI-added insights / context
+    research_notes: string[];
   };
   deliverables: SuggestedDeliverable[];
   tasks: SuggestedTask[];
+  run_of_show?: RunOfShowItem[];
+  suppliers?: SupplierItem[];
+  talent?: TalentItem[];
 }
 
 const buildSystemPrompt = (collaborators: Collaborator[]) => {

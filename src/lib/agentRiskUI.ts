@@ -57,6 +57,8 @@ const TOOL_LABELS: Record<string, { what: string; why?: string }> = {
   add_credit: {
     what: "Add a credit to your profile.",
   },
+  add_collaborator: { what: "Add someone to this project as a collaborator." },
+  remove_collaborator: { what: "Remove someone from this project." },
   remember: { what: "Save a fact to long-term memory." },
   recall_memory: { what: "Look up something from your memory." },
   forget_memory: { what: "Forget a stored fact." },

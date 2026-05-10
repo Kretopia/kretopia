@@ -236,12 +236,19 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       )}
                     </>
                   ) : (
-                    /* ====== UNIFIED MENU — Make · Find · Money · Manage ====== */
+                    /* ====== UNIFIED MENU — Dashboard · Find · Money ====== */
                     <>
-                      {/* MAKE — your workspaces and creative work */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Make</p>
+                      {/* DASHBOARD — everything you make + manage, in one place */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Dashboard</p>
                       <MenuButton icon={FolderKanban} label="Desk" onClick={() => handleNavigation("/desk")} path="/desk" />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} path="/credits" />
+                      <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} path="/clients" />
+                      <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} path="/manage-opportunities" />
+                      <MenuButton icon={CalendarDays} label="My Events" onClick={() => handleNavigation("/events/backstage")} path="/events/backstage" />
+                      <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} path="/fund/manage" />
+                      {isManagerMode && (
+                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
+                      )}
 
                       <Separator className="my-3" />
 
@@ -258,18 +265,6 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Money</p>
                       <MenuButton icon={Wallet} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
                       <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} path="/fund" />
-
-                      <Separator className="my-3" />
-
-                      {/* MANAGE — your posted things */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Manage</p>
-                      <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} path="/clients" />
-                      <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} path="/manage-opportunities" />
-                      <MenuButton icon={CalendarDays} label="My Events" onClick={() => handleNavigation("/events/backstage")} path="/events/backstage" />
-                      <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} path="/fund/manage" />
-                      {isManagerMode && (
-                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
-                      )}
                     </>
                   )}
 

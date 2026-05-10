@@ -181,7 +181,7 @@ ${prefBlurb ? `\nUSER SCOUT PREFERENCES:\n${prefBlurb}` : ""}`;
         {
           role: "system",
           content:
-            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) REJECT anything older than 14 days — if snippet says '3 weeks ago', '1 month ago', '6 months ago', 'no longer accepting', 'expired', 'closed', 'filled', REJECT. (2) REJECT generic listing/search/category pages, articles, blog posts, 'top 10' roundups. The URL MUST be a deep-link to ONE specific job/casting/gig posting (e.g. .../jobs/12345, .../p/AbC123, .../job-title-slug-id). REJECT URLs that end in /jobs, /jobs/, /careers, /search, /browse, /explore, /tags, /listings, /opportunities, or are just a domain homepage. (3) REJECT entries where you cannot extract a real role title AND at least one concrete detail (description, compensation, or company). Do NOT invent details. (4) BALANCE SOURCES — do not return more than 3 LinkedIn results total; prioritize gig boards, ATS, Instagram open calls, and indie creative platforms. (5) HONOR USER SCOUT PREFERENCES strictly — if user lists preferred job_types/employment_types, only return matching roles; if user lists preferred locations, only return gigs in those cities OR remote (unless travel_ok=YES); if remote_only=YES, only return remote gigs; respect 'Exclude' keywords and 'User notes' as hard filters. (6) Score fit 0-100 against the creator profile + preferences (boost when role/location/employment match).",
+            "You extract REAL, RECENTLY POSTED paid creative gigs from search results. STRICT RULES: (1) REJECT anything older than 14 days — if snippet says '3 weeks ago', '1 month ago', '6 months ago', 'no longer accepting', 'expired', 'closed', 'filled', REJECT. (2) REJECT generic listing/search/category pages, articles, blog posts, 'top 10' roundups. The URL MUST be a deep-link to ONE specific job/casting/gig posting (e.g. .../jobs/12345, .../p/AbC123, .../job-title-slug-id). REJECT URLs that end in /jobs, /jobs/, /careers, /search, /browse, /explore, /tags, /listings, /opportunities, or are just a domain homepage. (3) REJECT entries where you cannot extract a real role title AND at least one concrete detail (description, compensation, or company). Do NOT invent details. (4) BALANCE SOURCES — do not return more than 3 LinkedIn results total; prioritize gig boards, ATS, Instagram open calls, and indie creative platforms. (5) HONOR USER SCOUT PREFERENCES strictly — if user lists preferred job_types/employment_types, only return matching roles; if user lists preferred locations, only return gigs in those cities OR remote (unless travel_ok=YES); if remote_only=YES, only return remote gigs; respect 'Exclude' keywords and 'User notes' as hard filters. (6) Score fit 0-100 against the creator profile + preferences (boost when role/location/employment match). (7) ELIGIBILITY GATE — REJECT entirely any opportunity that restricts applicants by demographic (gender, age bracket, ethnicity, nationality, country/region of residence, religion, disability status, student status, alumni-only, members-only) UNLESS the creator profile clearly matches the restriction. Examples to REJECT for a generic profile: 'for women only', 'young women entrepreneurs', 'Black creators only', 'Africa-based founders', 'under 25', 'students only', 'US citizens only', 'EU residents only'. Do NOT include these as low-score gigs — drop them completely. When in doubt about eligibility, REJECT.",
         },
         {
           role: "user",
@@ -395,6 +395,30 @@ serve(async (req) => {
       if (desc.length < 40 && !g.compensation && !g.company) return false;
       const blob = `${g.title} ${desc} ${g.posted_age || ""}`.toLowerCase();
       if (/no longer accepting|expired|position closed|1 year ago|2 years ago|months ago/.test(blob)) return false;
+      // Demographic eligibility guardrail — drop restricted opps unless profile clearly matches
+      const profBlob = `${profile.bio || ""} ${(profile.sub_roles || []).join(" ")} ${profile.role || ""} ${profile.location || ""}`.toLowerCase();
+      const restrictions: Array<[RegExp, RegExp]> = [
+        [/\b(women|female)[- ]only|for women\b|young women|women entrepreneurs?|women in tech|she\/her only/i, /\b(she\/her|woman|female)\b/i],
+        [/\b(men|male)[- ]only|for men\b/i, /\b(he\/him|man|male)\b/i],
+        [/\bblack[- ](creators?|founders?|artists?|women|men)\b|black-only|for black\b/i, /\bblack\b/i],
+        [/\blatin[ax][- ]/i, /\blatin[ax]\b/i],
+        [/\bindigenous[- ]/i, /\bindigenous\b/i],
+        [/\bstudents? only|current students?\b/i, /\bstudent\b/i],
+        [/\balumni only\b/i, /\balumni\b/i],
+        [/\bunder[- ]?(18|21|25|30)\b|youth only/i, /\b(youth|under)\b/i],
+      ];
+      for (const [needle, profMatch] of restrictions) {
+        if (needle.test(blob) && !profMatch.test(profBlob)) {
+          console.log("[scout] dropped demographic-restricted:", g.title);
+          return false;
+        }
+      }
+      // Region restrictions — drop if gig restricts to a region not in user's location
+      const regionRestrict = blob.match(/\b(?:based in|residents? of|citizens? of|located in|from)\s+(africa|asia|europe|usa|united states|canada|uk|india|nigeria|kenya|south africa|brazil|mexico)\b/);
+      if (regionRestrict && !profBlob.includes(regionRestrict[1].toLowerCase())) {
+        console.log("[scout] dropped region-restricted:", g.title);
+        return false;
+      }
       if ((prefs.exclude_keywords || []).some((kw) => kw && blob.includes(kw.toLowerCase()))) return false;
       if (g.source === "linkedin") {
         if (linkedinCap.count >= linkedinCap.max) return false;

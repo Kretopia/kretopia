@@ -650,15 +650,15 @@ export const UnifiedHome = () => {
 
 
 
-        {!user && <WhyCreatorsChooseSection />}
-
-        {!user && <CreatorDashboardSection />}
-
+        {/* ═══════════ GUEST LANDING — 9-section narrative ═══════════ */}
+        {/* Hero (above) → 2. Proof Strip (above) → 3. Hook → 4. Reel → 5. Comparison → 6. Stories → 7. Pricing → 8. Fund Teaser → 9. Closing CTA */}
+        {!user && <ClaimYourCreditsSection onSearchSubmit={handleHeroClaimSearch} />}
+        {!user && <ProductReelSection />}
+        {!user && <ComparisonTableSection />}
         {!user && <SocialProofSection />}
-
-        {!user && <ThriveFundShowcase />}
-
         {!user && <PricingPreviewSection />}
+        {!user && <ThriveFundTeaserCard />}
+        {!user && <BottomCTASection />}
 
 
         {/* ── 1. CREATORS FOR YOU (auth only) ── */}

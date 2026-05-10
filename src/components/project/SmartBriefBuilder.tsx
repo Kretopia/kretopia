@@ -85,7 +85,8 @@ const offsetToISODate = (offset: number | null | undefined): string | null => {
 export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBriefBuilderProps) => {
   const { toast } = useToast();
   const [stage, setStage] = useState<"input" | "review">("input");
-  const [tab, setTab] = useState<"type" | "voice" | "upload">("type");
+  const [tab, setTab] = useState<"type" | "voice" | "upload">("upload");
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [sending, setSending] = useState(false);

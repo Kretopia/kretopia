@@ -308,7 +308,17 @@ export const UnifiedHome = () => {
             // Intent boost — complementary intents (gigs↔hire, collab↔collab, fund↔collab)
             const { boost, reason } = intentBoostForCreator(myIntents, c.primary_intents ?? c.primary_intent);
             relevance += boost;
-            return { ...c, _relevance: relevance, _intentReason: reason };
+            // Friendly fallback reason + score so the card always explains "why"
+            const sharedSkill = cSkills.find((s: string) => skillsLower.includes(s));
+            const sameCity = !!(locationCity && cLocation.includes(locationCity));
+            const fallbackReason =
+              reason ||
+              (sharedSkill && `Shares your ${sharedSkill} skills`) ||
+              (sameCity && `Based in ${(c.location || "").split(",")[0]}`) ||
+              (cRole && `${c.role} you may want to collab with`) ||
+              "Active creator on ThriveIN";
+            const score = Math.min(95, 60 + relevance * 4);
+            return { ...c, _relevance: relevance, _intentReason: reason, match_score: score, reason: fallbackReason };
           })
           .sort((a: any, b: any) => b._relevance - a._relevance)
           .slice(0, 10);

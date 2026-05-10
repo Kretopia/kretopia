@@ -20,6 +20,7 @@ import { NextStepCard } from "./NextStepCard";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import { ProactiveCards } from "./ProactiveCards";
 import { BriefSection } from "./BriefSection";
+import { BriefDropZone } from "./BriefDropZone";
 import { WorkSection } from "./WorkSection";
 import { MoneySection } from "./MoneySection";
 import { PeopleSection } from "./PeopleSection";

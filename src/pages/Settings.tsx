@@ -20,6 +20,8 @@ import { CreatorSiteSettings } from "@/components/settings/CreatorSiteSettings";
 import { BlockedUsersCard } from "@/components/settings/BlockedUsersCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
+import { VibePicker } from "@/components/onboarding/VibePicker";
+import { Palette } from "lucide-react";
 
 interface NotificationPreferences {
   email_matches: boolean;

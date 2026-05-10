@@ -342,7 +342,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
             </div>
           </div>
 
-          <ScrollArea className="h-[300px] rounded-md border">
+          <ScrollArea className="h-[260px] sm:h-[300px] rounded-md border">
             {/* Show filtered circle connections */}
             {filteredConnections.length > 0 && (
               <div className="p-2 space-y-1">

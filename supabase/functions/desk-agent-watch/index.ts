@@ -69,6 +69,20 @@ Deno.serve(async (req) => {
       return json({ error: "not project owner" }, 403);
     }
 
+    // Tier gate: Autonomous Agent (background proposals) is Creator+ / Founder / Brand Enterprise only.
+    // Lower tiers can still trigger proposals on-tap via the orchestrator; this background
+    // watcher is the privileged "runs in the background" surface from the pricing page.
+    const { data: prof } = await admin
+      .from("profiles")
+      .select("subscription_tier")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const tier = (prof?.subscription_tier ?? "free") as string;
+    const ALLOWED = new Set(["creator_pro", "founder", "brand_enterprise"]);
+    if (!ALLOWED.has(tier)) {
+      return json({ ok: true, gated: true, tier, proposals: [] });
+    }
+
     // Throttle: 1 run / project / 30 min
     const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
     const { data: recentRuns } = await admin

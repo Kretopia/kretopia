@@ -83,15 +83,17 @@ export const StudioCardsGrid = ({
 
   if (projects.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card p-10 text-center">
-        <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase mb-3">
+      <div className="rounded-3xl border border-border bg-card p-10 text-center">
+        <p className="text-[10px] font-bold tracking-[0.22em] text-primary uppercase mb-4">
           ThriveDesk · Studio
         </p>
         <div
-          className="mx-auto h-20 w-20 rounded-3xl flex items-center justify-center text-4xl mb-5 shadow-[var(--shadow-glow)]"
-          style={{ background: moodGradient("creative") }}
+          className="mx-auto h-20 w-20 rounded-2xl flex items-center justify-center mb-5 border border-border"
+          style={{ background: "hsl(var(--card))" }}
         >
-          🎨
+          <span className="text-2xl font-black tracking-tight" style={{ color: moodAccent("creative") }}>
+            ✦
+          </span>
         </div>
         <h2 className="text-2xl font-black tracking-[-0.02em] mb-1">Open your first room</h2>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-6">

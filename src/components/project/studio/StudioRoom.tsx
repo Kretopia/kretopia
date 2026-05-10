@@ -388,26 +388,51 @@ export const StudioRoom = ({
         {["music","music_release"].includes(project.workspace_type) && (
           <MusicStudioSection project={project} currentUserId={currentUserId} />
         )}
-        {["event","event_production"].includes(project.workspace_type) && (
+        {isEvent && (
           <>
-            <EventHeroCard project={project} />
-            <EventProducerDashboard project={project} currentUserId={currentUserId} />
-            <EventStudioSection project={project} currentUserId={currentUserId} />
-            <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
-            <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
-            <EventSponsorsKanban project={project} currentUserId={currentUserId} />
+            {/* Brief first — carries the event's main concept */}
+            {briefBlock}
+            <SectionsBringBackTray projectId={project.id} labels={EVENT_HIDEABLE_LABELS} />
+            <HideableSection projectId={project.id} sectionId="event-hero">
+              <EventHeroCard project={project} />
+            </HideableSection>
+            <HideableSection projectId={project.id} sectionId="event-producer">
+              <EventProducerDashboard project={project} currentUserId={currentUserId} />
+            </HideableSection>
+            <HideableSection projectId={project.id} sectionId="event-studio">
+              <EventStudioSection project={project} currentUserId={currentUserId} />
+            </HideableSection>
+            <HideableSection projectId={project.id} sectionId="event-suppliers">
+              <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
+            </HideableSection>
+            <HideableSection projectId={project.id} sectionId="event-talent">
+              <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
+            </HideableSection>
+            <HideableSection projectId={project.id} sectionId="event-sponsors">
+              <EventSponsorsKanban project={project} currentUserId={currentUserId} />
+            </HideableSection>
             {project.created_by === currentUserId && (
               <>
-                <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
-                <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
-                <EventSeatingPlanner project={project} currentUserId={currentUserId} />
-                <EventOutreachSegmentBuilder project={project} currentUserId={currentUserId} />
-                <EventPostRecapSection project={project} currentUserId={currentUserId} />
+                <HideableSection projectId={project.id} sectionId="event-rsvp">
+                  <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+                </HideableSection>
+                <HideableSection projectId={project.id} sectionId="event-matches">
+                  <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
+                </HideableSection>
+                <HideableSection projectId={project.id} sectionId="event-seating">
+                  <EventSeatingPlanner project={project} currentUserId={currentUserId} />
+                </HideableSection>
+                <HideableSection projectId={project.id} sectionId="event-outreach">
+                  <EventOutreachSegmentBuilder project={project} currentUserId={currentUserId} />
+                </HideableSection>
+                <HideableSection projectId={project.id} sectionId="event-recap">
+                  <EventPostRecapSection project={project} currentUserId={currentUserId} />
+                </HideableSection>
               </>
             )}
           </>
         )}
-        {mobileWorkColumn}
+        {mobileWorkColumn(!isEvent)}
         {mobileSideColumn}
         <div className="h-12" />
       </div>

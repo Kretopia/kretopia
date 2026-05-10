@@ -870,8 +870,8 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── 4. CREDITS IN YOUR WORLD (auth only) ── */}
-        {user && (
+        {/* Pass B.1: Trending credits hidden — accessible via Credits tab. */}
+        {false && user && (
           <section id="section-credits" className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">

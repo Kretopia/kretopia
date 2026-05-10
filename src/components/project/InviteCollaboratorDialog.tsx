@@ -269,15 +269,15 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           Invite
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Invite to the Studio</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-md p-4 sm:p-6 overflow-x-hidden">
+        <DialogHeader className="pr-8">
+          <DialogTitle className="text-base sm:text-lg">Invite to the Studio</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             Bring in teammates, or share a guest link with a client.
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="people" className="w-full">
+        <Tabs defaultValue="people" className="w-full min-w-0">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="people" className="gap-1.5">
               <Users className="h-3.5 w-3.5" /> People
@@ -296,7 +296,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           {/* Role picker */}
           <div className="space-y-2">
             <Label>Invite as</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {ROLE_OPTIONS.map((opt) => {
                 const Icon = opt.icon;
                 const active = selectedRole === opt.value;
@@ -306,15 +306,15 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
                     type="button"
                     onClick={() => setSelectedRole(opt.value)}
                     className={cn(
-                      "flex flex-col items-center gap-1 rounded-lg border px-2 py-3 text-center transition-colors",
+                      "min-w-0 flex flex-col items-center gap-1 rounded-lg border px-1.5 py-2.5 text-center transition-colors",
                       active
                         ? "border-primary bg-primary/10"
                         : "border-border hover:bg-accent"
                     )}
                   >
                     <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
-                    <span className="text-xs font-medium">{opt.label}</span>
-                    <span className="text-[10px] text-muted-foreground leading-tight">{opt.description}</span>
+                    <span className="text-xs font-medium truncate max-w-full">{opt.label}</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{opt.description}</span>
                   </button>
                 );
               })}
@@ -342,7 +342,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
             </div>
           </div>
 
-          <ScrollArea className="h-[300px] rounded-md border">
+          <ScrollArea className="h-[260px] sm:h-[300px] rounded-md border">
             {/* Show filtered circle connections */}
             {filteredConnections.length > 0 && (
               <div className="p-2 space-y-1">
@@ -554,8 +554,8 @@ const GuestLinkPanel = ({ projectId }: { projectId: string }) => {
       {token ? (
         <div className="space-y-2">
           <Label className="text-xs">Share this link</Label>
-          <div className="flex gap-2">
-            <Input readOnly value={url} className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
+          <div className="flex gap-2 min-w-0">
+            <Input readOnly value={url} className="font-mono text-xs min-w-0 flex-1 truncate" onFocus={(e) => e.currentTarget.select()} />
             <Button size="sm" onClick={copy} className="shrink-0 gap-1.5">
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               {copied ? "Copied" : "Copy"}

@@ -522,7 +522,7 @@ const GuestLinkPanel = ({ projectId }: { projectId: string }) => {
     }
   };
 
-  const url = token ? `${window.location.origin}/guest/${token}` : "";
+  const url = token ? getShareUrl(`/guest/${token}`) : "";
 
   const copy = async () => {
     if (!url) return;

@@ -50,7 +50,19 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
   const [selected, setSelected] = useState<Set<number>>(
     () => new Set(initial.steps.map((s) => s.index))
   );
+  const autoRanRef = useRef(false);
   const { toast } = useToast();
+
+  // Auto-run on mount when caller marked the plan as autoRun (e.g. opened in
+  // explicit "plan & execute" mode from the FAB). Skips the proposed-state UI
+  // entirely so users see "Thrive is working" immediately.
+  useEffect(() => {
+    if (!autoRanRef.current && initial.autoRun && plan.status === "proposed") {
+      autoRanRef.current = true;
+      handle("approved");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Poll while running
   useEffect(() => {

@@ -208,7 +208,15 @@ export const StudioRoom = ({
   };
 
   const briefBlock = (
-    <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
+    <>
+      <BriefDropZone
+        projectId={project.id}
+        projectTitle={project.title ?? "this project"}
+        isOwner={isOwner}
+        onIngested={onUpdated}
+      />
+      <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
+    </>
   );
 
   const mobileWorkColumn = (includeBrief: boolean) => (

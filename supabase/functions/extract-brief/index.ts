@@ -137,7 +137,7 @@ async function fetchPublicSheetAsCsv(url: string): Promise<string> {
   return await res.text();
 }
 
-async function callGemini(parts: unknown[], apiKey: string): Promise<BriefOut> {
+async function callGemini(parts: unknown[], systemPrompt: string, apiKey: string): Promise<BriefOut> {
   const res = await fetch(
     "https://ai.gateway.lovable.dev/v1/chat/completions",
     {
@@ -149,7 +149,7 @@ async function callGemini(parts: unknown[], apiKey: string): Promise<BriefOut> {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemPrompt },
           { role: "user", content: parts },
         ],
         response_format: { type: "json_object" },
@@ -188,6 +188,13 @@ serve(async (req) => {
     const body = await req.json();
     const source: Source = body.source;
     const projectTitle: string | undefined = body.project_title;
+    const rawType = (body.workspace_type ?? "general") as string;
+    const workspaceType: WorkspaceType = (
+      ["podcast","event","content","campaign","music","client","general"].includes(rawType)
+        ? rawType
+        : "general"
+    ) as WorkspaceType;
+    const systemPrompt = buildSystemPrompt(workspaceType);
 
     if (!source) {
       return new Response(JSON.stringify({ error: "source is required" }), {

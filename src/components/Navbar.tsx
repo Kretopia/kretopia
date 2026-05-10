@@ -194,15 +194,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
               )}
               {user && (
                 <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 sm:h-9 sm:w-9 relative text-primary hover:bg-primary/10"
-                    onClick={() => window.dispatchEvent(new CustomEvent("thrive-copilot:open"))}
-                    aria-label="Open Thrive Copilot"
-                  >
-                    <Sparkles className="h-[18px] w-[18px]" />
-                  </Button>
+                  {/* Top-nav Thrive ✨ removed — Home prompt + hamburger are the entry points */}
                   <Link to="/messages" aria-label="Messages">
                     <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
                       <MessageCircle className="h-[18px] w-[18px]" />

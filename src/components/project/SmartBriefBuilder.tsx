@@ -465,18 +465,72 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
             <div className="min-w-0">
               <h3 className="font-semibold">Smart Brief</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Type or speak the rough idea. We'll research it, polish the brief, generate tasks,
-                and route them to the right person.
+                Drop a plan, type the rough idea, or speak it. We'll polish the brief, generate
+                tasks, and route them to the right people.
               </p>
             </div>
           </div>
 
+          {busy && (
+            <div className="mb-4 animate-fade-in">
+              <StudioComingAliveLoader />
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                Reading your document and shaping the studio…
+              </p>
+            </div>
+          )}
+
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
             <TabsList className="grid grid-cols-3 w-full">
+              <TabsTrigger value="upload" className="gap-1.5"><Upload className="h-3.5 w-3.5" />Upload</TabsTrigger>
               <TabsTrigger value="type" className="gap-1.5"><PenLine className="h-3.5 w-3.5" />Type</TabsTrigger>
               <TabsTrigger value="voice" className="gap-1.5"><Mic className="h-3.5 w-3.5" />Voice</TabsTrigger>
-              <TabsTrigger value="upload" className="gap-1.5"><Upload className="h-3.5 w-3.5" />Upload</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="upload" className="space-y-3 pt-4">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.txt,.md,.markdown,.csv,application/pdf,text/plain,text/markdown,text/csv"
+                className="hidden"
+                onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+              />
+              <div
+                className={`flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-xl transition-colors ${busy ? "opacity-50 pointer-events-none" : "cursor-pointer hover:border-primary/60 hover:bg-primary/5"}`}
+                onClick={() => !busy && fileInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); }}
+                onDrop={(e) => { e.preventDefault(); if (!busy) onPickFile(e.dataTransfer.files?.[0] ?? null); }}
+              >
+                {uploadFileName && !uploadError ? (
+                  <>
+                    <FileText className="h-10 w-10 text-primary" />
+                    <p className="text-sm font-semibold text-center">{uploadFileName}</p>
+                    {uploadInfo && <p className="text-xs text-muted-foreground text-center">{uploadInfo}</p>}
+                    <Button variant="outline" size="sm" disabled={busy} onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
+                      Choose another file
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-10 w-10 text-primary" />
+                    <p className="text-base font-semibold text-center">Drop a brief, plan, or PDF here</p>
+                    <p className="text-xs text-muted-foreground text-center max-w-sm">
+                      Already used another AI to plan this? Drop the doc — we'll spread it across
+                      the studio: brief, tasks, deliverables, run-of-show, suppliers & talent.
+                    </p>
+                    <Button variant="default" size="sm">Browse files</Button>
+                  </>
+                )}
+              </div>
+              {uploadError && (
+                <div className="text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-2.5">
+                  {uploadError}
+                </div>
+              )}
+              <p className="text-[11px] text-muted-foreground text-center">
+                Supported: PDF, .txt, .md, .csv · max 25 MB · auto-organizes on drop
+              </p>
+            </TabsContent>
 
             <TabsContent value="type" className="space-y-3 pt-4">
               <Textarea
@@ -516,51 +570,6 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
               <p className="text-xs text-muted-foreground text-center">
                 Speak naturally — what you need, who it's for, deadlines.
               </p>
-            </TabsContent>
-
-            <TabsContent value="upload" className="space-y-3 pt-4">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.txt,.md,.markdown,.csv,application/pdf,text/plain,text/markdown,text/csv"
-                className="hidden"
-                onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
-              />
-              <div
-                className="flex flex-col items-center justify-center gap-3 p-6 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => { e.preventDefault(); }}
-                onDrop={(e) => { e.preventDefault(); onPickFile(e.dataTransfer.files?.[0] ?? null); }}
-              >
-                {uploadFileName ? (
-                  <>
-                    <FileText className="h-8 w-8 text-primary" />
-                    <p className="text-sm font-semibold text-center">{uploadFileName}</p>
-                    {uploadInfo && <p className="text-xs text-muted-foreground text-center">{uploadInfo}</p>}
-                    <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
-                      Choose another file
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-8 w-8 text-muted-foreground" />
-                    <p className="text-sm font-medium text-center">Drop a brief, plan, or PDF</p>
-                    <p className="text-xs text-muted-foreground text-center">
-                      We'll read it and turn it into tasks, deliverables, run-of-show, suppliers and talent.
-                    </p>
-                    <Button variant="outline" size="sm">Browse files</Button>
-                  </>
-                )}
-              </div>
-              <p className="text-[11px] text-muted-foreground text-center">
-                Supported: PDF, .txt, .md, .csv · max 25 MB
-              </p>
-              {uploadedText && (
-                <Button onClick={elevate} disabled={busy} className="w-full">
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                  Turn document into a plan
-                </Button>
-              )}
             </TabsContent>
           </Tabs>
 

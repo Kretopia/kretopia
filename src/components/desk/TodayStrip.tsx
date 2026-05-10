@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, DollarSign, MessageSquare, Mic, Calendar, Sparkles, ArrowRight, Wand2 } from "lucide-react";
+import { CheckCircle2, DollarSign, MessageSquare, Calendar, Sparkles, ArrowRight, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -93,14 +93,6 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
     tone: "energy" | "money" | "muted" | "primary";
     onClick: () => void;
   }> = [
-    {
-      key: "voice",
-      icon: Mic,
-      label: "Capture",
-      value: "Voice",
-      tone: "primary",
-      onClick: onVoice,
-    },
     {
       key: "today",
       icon: CheckCircle2,

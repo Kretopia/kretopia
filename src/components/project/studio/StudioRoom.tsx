@@ -20,6 +20,7 @@ import { NextStepCard } from "./NextStepCard";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import { ProactiveCards } from "./ProactiveCards";
 import { BriefSection } from "./BriefSection";
+import { BriefDropZone } from "./BriefDropZone";
 import { WorkSection } from "./WorkSection";
 import { MoneySection } from "./MoneySection";
 import { PeopleSection } from "./PeopleSection";
@@ -208,7 +209,15 @@ export const StudioRoom = ({
   };
 
   const briefBlock = (
-    <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
+    <>
+      <BriefDropZone
+        projectId={project.id}
+        projectTitle={project.title ?? "this project"}
+        isOwner={isOwner}
+        onIngested={onUpdated}
+      />
+      <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
+    </>
   );
 
   const mobileWorkColumn = (includeBrief: boolean) => (

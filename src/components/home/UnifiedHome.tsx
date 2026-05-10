@@ -759,8 +759,8 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── 3. WHAT'S HAPPENING NEAR YOU (auth only) ── */}
-        {user && (
+        {/* Pass B.1: Events row hidden — Events surface is off-nav for MVP. */}
+        {false && user && (
           <section className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">

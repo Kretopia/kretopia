@@ -269,15 +269,15 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           Invite
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Invite to the Studio</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-md p-4 sm:p-6 overflow-x-hidden">
+        <DialogHeader className="pr-8">
+          <DialogTitle className="text-base sm:text-lg">Invite to the Studio</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             Bring in teammates, or share a guest link with a client.
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="people" className="w-full">
+        <Tabs defaultValue="people" className="w-full min-w-0">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="people" className="gap-1.5">
               <Users className="h-3.5 w-3.5" /> People

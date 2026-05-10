@@ -110,20 +110,39 @@ Output STRICT JSON matching this TypeScript type:
     "suggested_assignee_id": string | null  // MUST be a user_id from the roster, or null
   }>,
   "tasks": Array<{
-    "title": string,                    // short imperative, < 80 chars
-    "description": string,              // 1-2 sentences of context
+    "title": string,
+    "description": string,
     "due_offset_days": number | null,
     "suggested_assignee_id": string | null,
     "priority": "low" | "normal" | "high"
+  }>,
+  "run_of_show": Array<{
+    "time": string | null,
+    "duration_min": number | null,
+    "segment_title": string,
+    "notes": string | null
+  }>,
+  "suppliers": Array<{
+    "category": "venue"|"catering"|"av"|"decor"|"transport"|"security"|"production"|"other",
+    "name": string,
+    "notes": string | null
+  }>,
+  "talent": Array<{
+    "role": "performer"|"host"|"dj"|"speaker"|"musician"|"other",
+    "name": string,
+    "notes": string | null
   }>
 }
 
 Rules:
 - Be concrete and creative. Add VALUE — don't just rephrase the rough input.
-- Use research_notes to surface things the founder might not have thought of (e.g. "Consider 9:16 cuts for Reels", "Spring drops typically peak engagement Tue/Thu 7pm").
-- For assignee suggestions: match the task to the role. If only one collaborator exists, assign most tasks to them.
-- ALWAYS produce AT LEAST 2 deliverables and 4-10 tasks. NEVER return a single task — break the work into the concrete steps a collaborator needs to execute it (e.g. research, draft, design, review, schedule, publish).
-- Each task should be one clear action under 80 chars, with 1-2 sentences of context in description.
+- Use research_notes to surface industry insights the founder might not have thought of.
+- Match each task/deliverable to the best collaborator's role.
+- ALWAYS produce 2+ deliverables and 4-10 tasks. NEVER return a single task.
+- If the brief has a schedule / run-of-show / itinerary, extract it into run_of_show in chronological order (use 24h "HH:MM").
+- If the brief lists vendors, suppliers, bands, performers, or DJs by name, extract them into suppliers / talent.
+- If the brief has a "decisions needed" or open-questions section, turn EACH into a HIGH-priority task.
+- Omit run_of_show / suppliers / talent (return []) when the brief isn't an event/production.
 - Return ONLY the JSON object, no prose, no markdown fences.`;
 };
 

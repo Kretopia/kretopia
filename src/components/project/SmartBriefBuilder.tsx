@@ -584,8 +584,42 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
   }
 
   // ---------- REVIEW STAGE ----------
+  const summaryRows = [
+    { label: "Tasks", n: tasks.length, where: "Studio feed" },
+    { label: "Deliverables", n: deliverables.length, where: "Vault → Deliverables" },
+    { label: "Run of show", n: runOfShow.length, where: "Event → Run of show" },
+    { label: "Suppliers", n: suppliers.length, where: "Event → Suppliers" },
+    { label: "Talent", n: talent.length, where: "Event → Talent" },
+  ].filter((r) => r.n > 0);
+
   return (
     <div className="space-y-4">
+      {/* What we did — at-a-glance */}
+      <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent animate-fade-in">
+        <CardContent className="pt-5 px-4 sm:px-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h3 className="font-semibold text-sm">Here's what landed in your studio</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Review and tweak below, then tap <span className="font-medium">Send brief</span> to push everything live.
+          </p>
+          {summaryRows.length > 0 ? (
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {summaryRows.map((r) => (
+                <li key={r.label} className="flex items-center gap-2 text-xs">
+                  <Badge variant="secondary" className="rounded-full font-bold tabular-nums min-w-[28px] justify-center">{r.n}</Badge>
+                  <span className="font-medium">{r.label}</span>
+                  <span className="text-muted-foreground">→ {r.where}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-muted-foreground">Just the brief — no tasks or deliverables generated.</p>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent className="pt-5 sm:pt-6 px-4 sm:px-6">
           <div className="flex items-center justify-between gap-2 mb-3">

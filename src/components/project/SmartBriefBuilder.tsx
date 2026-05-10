@@ -84,7 +84,7 @@ const offsetToISODate = (offset: number | null | undefined): string | null => {
 export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBriefBuilderProps) => {
   const { toast } = useToast();
   const [stage, setStage] = useState<"input" | "review">("input");
-  const [tab, setTab] = useState<"type" | "voice">("type");
+  const [tab, setTab] = useState<"type" | "voice" | "upload">("type");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [sending, setSending] = useState(false);
@@ -95,6 +95,12 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
   const chunksRef = useRef<Blob[]>([]);
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
 
+  // upload
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadFileName, setUploadFileName] = useState<string | null>(null);
+  const [uploadedText, setUploadedText] = useState<string>("");
+  const [uploadInfo, setUploadInfo] = useState<string | null>(null);
+
   // collaborators (assignee dropdowns)
   const [collabs, setCollabs] = useState<Collab[]>([]);
 
@@ -102,6 +108,9 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
   const [brief, setBrief] = useState<ElevatedBrief | null>(null);
   const [deliverables, setDeliverables] = useState<SuggDeliverable[]>([]);
   const [tasks, setTasks] = useState<SuggTask[]>([]);
+  const [runOfShow, setRunOfShow] = useState<RunOfShowItem[]>([]);
+  const [suppliers, setSuppliers] = useState<SupplierItem[]>([]);
+  const [talent, setTalent] = useState<TalentItem[]>([]);
 
   useEffect(() => {
     (async () => {

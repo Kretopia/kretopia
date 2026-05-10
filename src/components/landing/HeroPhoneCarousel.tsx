@@ -46,7 +46,7 @@ export const HeroPhoneCarousel = () => {
       </div>
 
       {/* Phone frame */}
-      <div className="relative aspect-[9/19] rounded-[2.5rem] border-[10px] border-foreground/90 bg-background shadow-[0_30px_80px_-20px_hsl(var(--primary)/0.5)] overflow-hidden">
+      <div className="relative aspect-[9/16] rounded-[2rem] border-[8px] border-foreground/90 bg-background shadow-[0_30px_80px_-20px_hsl(var(--primary)/0.5)] overflow-hidden">
         {/* notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 h-5 w-28 rounded-b-2xl bg-foreground/90 z-30" />
 

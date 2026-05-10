@@ -23,16 +23,20 @@ export const DiscoverCreativesRow = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, avatar_url, role, verification_tier")
-        .eq("onboarding_completed", true)
-        .not("avatar_url", "is", null)
-        .not("full_name", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(15);
-      if (data && data.length > 0) {
-        setCreators(data.sort(() => Math.random() - 0.5).slice(0, 10));
+      try {
+        const { data } = await supabase
+          .from("public_profiles_safe")
+          .select("user_id, full_name, avatar_url, role, verification_tier")
+          .eq("onboarding_completed", true)
+          .not("avatar_url", "is", null)
+          .not("full_name", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(15);
+        if (data && data.length > 0) {
+          setCreators(data.sort(() => Math.random() - 0.5).slice(0, 10) as Creator[]);
+        }
+      } catch {
+        /* silent */
       }
     };
     load();

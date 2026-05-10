@@ -14,11 +14,13 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const { line_items, currency } = await req.json();
+    const { line_items, currency, location, project_location } = await req.json();
 
     const itemsList = line_items
       .map((i: any, idx: number) => `${idx + 1}. "${i.description}" — Qty: ${i.quantity}, Rate: ${currency} ${i.rate}`)
       .join("\n");
+
+    const locLine = [project_location, location].filter(Boolean).join(" | ") || "unknown";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -31,17 +33,21 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a freelance pricing expert for the creative industry. Given line items from an invoice or quote, suggest an appropriate markup percentage. Consider:
-- Industry standards for creative/media work (typically 15-100%)
-- Rush work typically gets 50-100% markup
-- Agency-level work gets 25-50%
-- Standard freelance gets 15-30%
-- Consider the type of work described in each line item
-Always return structured data via the tool provided.`,
+            content: `You are a freelance pricing expert for the creative industry. Given line items and a LOCATION, suggest an appropriate markup percentage that wins the job in the LOCAL market.
+
+LOCAL MARKET RULES (critical):
+- Bali / Lombok / SE Asia tourism: ~30–60% of US/EU rates. Cap markup at ~20–25% unless rush.
+- LATAM / Caribbean / Africa: discount US rates ~35–55%. Standard markup 15–25%.
+- US tier-1, London, Sydney, Dubai, Singapore: full premium, markup 25–40% normal, 50–100% for rush.
+- Default to the LOWER end of the range when unsure — losing a job to over-pricing is worse than leaving 10% on the table.
+- Always state your industry_range using LOCAL norms, not global averages.
+- Reasoning MUST mention the location and why the markup fits it.
+
+Return structured data via the tool provided.`,
           },
           {
             role: "user",
-            content: `Analyze these line items and suggest a markup:\n\n${itemsList}\n\nCurrency: ${currency}`,
+            content: `Location: ${locLine}\nCurrency: ${currency}\n\nLine items:\n${itemsList}\n\nSuggest a markup that wins the job in this market.`,
           },
         ],
         tools: [

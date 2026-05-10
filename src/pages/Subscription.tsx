@@ -12,7 +12,7 @@ import {
   type AccountType, type BillingInterval, hasProAccess, isBrandTier,
   getYearlySavings, getEffectiveMonthlyPrice,
 } from "@/lib/subscriptionConfig";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs import removed — Creator/Brand toggle deprecated; view derives from account_type
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 

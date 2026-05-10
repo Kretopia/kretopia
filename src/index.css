@@ -8,99 +8,93 @@ All colors MUST be HSL.
 
 @layer base {
   /* ============================================================
-     LIGHT MODE — warm, editorial canvas. Violet primary, lime accent.
-     Available via toggle but app ships dark by default.
+     LIGHT MODE — DEFAULT. Warm Minimal canvas.
+     Cream background · near-black text · single indigo accent.
+     Inspired by Read.cv / Cargo / Are.na. The user's WORK is the color.
      ============================================================ */
   :root {
-    --background: 250 25% 98%;
-    --foreground: 250 30% 8%;
+    /* Warm cream #FAF8F5 — softer than pure white, editorial feel */
+    --background: 36 27% 97%;
+    --foreground: 240 11% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 250 30% 8%;
+    --card-foreground: 240 11% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 250 30% 8%;
+    --popover-foreground: 240 11% 8%;
 
-    /* Purple #7B61FF — dominant brand */
-    --primary: 248 100% 69%;
+    /* ThriveIN indigo #5B6BF5 — the ONE accent. Used sparingly. */
+    --primary: 232 87% 66%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 250 20% 94%;
-    --secondary-foreground: 250 30% 15%;
+    --secondary: 36 18% 93%;
+    --secondary-foreground: 240 11% 12%;
 
-    --muted: 250 15% 95%;
-    --muted-foreground: 250 8% 45%;
+    --muted: 36 16% 94%;
+    --muted-foreground: 240 6% 42%;
 
-    /* Warm cream — neutral editorial surface (3rd tone) */
-    --cream: 38 40% 94%;
-    --cream-foreground: 250 30% 12%;
+    /* Warm cream alternate surface */
+    --cream: 36 30% 95%;
+    --cream-foreground: 240 11% 12%;
 
-    /* Shadcn accent — violet-tinted neutral (used for hovers, selected rows, menus).
-       Kept readable; NOT lime. Lime lives on --energy below. */
-    --accent: 252 40% 94%;
-    --accent-foreground: 252 60% 20%;
+    /* Subtle indigo-tinted hover/selected — quiet, not loud */
+    --accent: 232 60% 96%;
+    --accent-foreground: 232 70% 35%;
 
-    /* Energy accent — Electric Magenta in light mode (lime is too neon on cream).
-       Dark mode overrides this back to electric lime #C6FF00 below.
-       Magenta #E91E8C ≈ hsl(327 82% 51%) — pulls from the violet→magenta gradient. */
-    --energy: 327 82% 51%;
+    /* Energy = primary in light minimal mode (no magenta, no lime).
+       Dark mode restores electric lime below. */
+    --energy: 232 87% 66%;
     --energy-foreground: 0 0% 100%;
 
-    --destructive: 0 75% 55%;
+    --destructive: 0 70% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 250 15% 90%;
-    --input: 250 15% 90%;
-    --ring: 252 100% 68%;
+    /* Hairline borders — barely visible, more whitespace */
+    --border: 36 15% 88%;
+    --input: 36 15% 88%;
+    --ring: 232 87% 66%;
 
-    --success: 152 60% 42%;
+    --success: 152 55% 38%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 90% 48%;
     --warning-foreground: 30 50% 12%;
     --radius: 1rem;
 
-    /* Gradient system — violet → magenta hero, lime energy */
-    --gradient-primary: linear-gradient(135deg, hsl(252 100% 68%), hsl(285 90% 65%));
-    --gradient-secondary: linear-gradient(135deg, hsl(252 100% 68% / 0.10), hsl(285 90% 65% / 0.04));
-    --gradient-accent: linear-gradient(180deg, hsl(250 25% 98%), hsl(250 20% 96%));
-    --gradient-subtle: linear-gradient(180deg, hsl(252 100% 68% / 0.04), transparent);
-    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.92), hsl(0 0% 100% / 0.75));
-    --gradient-gold: linear-gradient(135deg, hsl(72 100% 65%), hsl(60 95% 55%));
-    --gradient-hero: linear-gradient(180deg, hsl(252 100% 68% / 0.08), transparent);
+    /* Quieter gradient system — single-hue indigo, no purple→magenta */
+    --gradient-primary: linear-gradient(135deg, hsl(232 87% 66%), hsl(232 87% 72%));
+    --gradient-secondary: linear-gradient(135deg, hsl(232 87% 66% / 0.06), hsl(232 87% 66% / 0.02));
+    --gradient-accent: linear-gradient(180deg, hsl(36 27% 97%), hsl(36 22% 95%));
+    --gradient-subtle: linear-gradient(180deg, hsl(232 87% 66% / 0.03), transparent);
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.95), hsl(0 0% 100% / 0.85));
+    --gradient-gold: linear-gradient(135deg, hsl(45 90% 60%), hsl(38 90% 55%));
+    --gradient-hero: linear-gradient(180deg, hsl(232 87% 66% / 0.05), transparent);
 
-    /* Shadow system */
-    --shadow-xs: 0 1px 2px hsl(252 30% 10% / 0.04);
-    --shadow-sm: 0 2px 4px hsl(252 30% 10% / 0.05);
-    --shadow-md: 0 4px 12px hsl(252 30% 10% / 0.07);
-    --shadow-lg: 0 8px 24px hsl(252 30% 10% / 0.10);
-    --shadow-xl: 0 16px 48px hsl(252 30% 10% / 0.14);
-    --shadow-glow: 0 0 40px hsl(252 100% 68% / 0.35);
-    --shadow-glow-lime: 0 0 14px hsl(327 82% 51% / 0.18), 0 0 4px hsl(327 82% 51% / 0.14);
-    --shadow-card: 0 1px 3px hsl(252 30% 10% / 0.06), 0 4px 16px -4px hsl(252 30% 10% / 0.08);
-    --shadow-card-hover: 0 4px 8px hsl(252 30% 10% / 0.08), 0 8px 24px -4px hsl(252 30% 10% / 0.12);
+    /* Shadow system — softer, warm-tinted */
+    --shadow-xs: 0 1px 2px hsl(240 11% 8% / 0.03);
+    --shadow-sm: 0 1px 3px hsl(240 11% 8% / 0.04);
+    --shadow-md: 0 4px 12px hsl(240 11% 8% / 0.06);
+    --shadow-lg: 0 8px 24px hsl(240 11% 8% / 0.08);
+    --shadow-xl: 0 16px 48px hsl(240 11% 8% / 0.12);
+    --shadow-glow: 0 0 32px hsl(232 87% 66% / 0.20);
+    --shadow-glow-lime: 0 0 12px hsl(232 87% 66% / 0.15);
+    --shadow-card: 0 1px 2px hsl(240 11% 8% / 0.04), 0 2px 8px -2px hsl(240 11% 8% / 0.05);
+    --shadow-card-hover: 0 2px 4px hsl(240 11% 8% / 0.05), 0 6px 16px -4px hsl(240 11% 8% / 0.08);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    /* Mode accent tokens — overridden by [data-nav-mode] */
-    --mode-accent: 252 100% 68%;
+    /* Mode accent tokens */
+    --mode-accent: 232 87% 66%;
     --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 40px hsl(252 100% 68% / 0.3);
+    --mode-glow: 0 0 32px hsl(232 87% 66% / 0.25);
   }
 
-  /* Explore mode — electric violet */
-  [data-nav-mode="create"] {
-    --mode-accent: 252 100% 68%;
-    --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 40px hsl(252 100% 68% / 0.3);
-  }
-
-  /* Work mode — magenta focus in light mode (lime is too bright on cream canvas).
-     Dark mode overrides this back to electric lime below. */
+  /* Modes collapse to single indigo accent in warm-minimal */
+  [data-nav-mode="create"],
   [data-nav-mode="work"] {
-    --mode-accent: 327 82% 51%;
+    --mode-accent: 232 87% 66%;
     --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 40px hsl(327 82% 51% / 0.3);
+    --mode-glow: 0 0 32px hsl(232 87% 66% / 0.25);
   }
 
   /* ============================================================

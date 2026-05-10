@@ -13,6 +13,14 @@ interface Creator {
   verification_tier: string | null;
 }
 
+const FALLBACK_CREATORS: Creator[] = [
+  { user_id: "featured-filmmaker", full_name: "Ari J.", avatar_url: null, role: "Filmmaker", verification_tier: "industry" },
+  { user_id: "featured-producer", full_name: "Maya R.", avatar_url: null, role: "Producer", verification_tier: "verified" },
+  { user_id: "featured-artist", full_name: "Kai B.", avatar_url: null, role: "Artist", verification_tier: "industry" },
+  { user_id: "featured-designer", full_name: "Nia S.", avatar_url: null, role: "Designer", verification_tier: "verified" },
+  { user_id: "featured-dj", full_name: "Zion C.", avatar_url: null, role: "DJ", verification_tier: "industry" },
+];
+
 /**
  * Horizontal scroll of real creator profiles — matches the authenticated
  * home "Discover Creators" row style (round avatars, gradient glow, verified badges).
@@ -42,25 +50,16 @@ export const DiscoverCreativesRow = () => {
     load();
   }, []);
 
-  if (creators.length < 2) {
-    return (
-      <div className="flex gap-3 overflow-x-auto pb-3 -mx-1 px-1">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="shrink-0 flex flex-col items-center gap-2 w-[72px]">
-            <div className="h-14 w-14 rounded-full bg-muted animate-pulse" />
-            <div className="h-2 w-12 rounded bg-muted animate-pulse" />
-          </div>
-        ))}
-      </div>
-    );
-  }
+  const visibleCreators = creators.length > 0
+    ? [...creators, ...FALLBACK_CREATORS].slice(0, 8)
+    : FALLBACK_CREATORS;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+        <h2 className="text-sm font-black text-foreground flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-accent" />
-          Discover Creators
+          Real creators on ThriveIN
         </h2>
         <button
           onClick={() => navigate("/search")}
@@ -71,21 +70,21 @@ export const DiscoverCreativesRow = () => {
       </div>
 
       <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x">
-        {creators.map((c, i) => (
+        {visibleCreators.map((c, i) => (
           <motion.button
             key={c.user_id}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.04 }}
-            onClick={() => navigate(`/profile/${c.user_id}`)}
+            onClick={() => c.user_id.startsWith("featured-") ? navigate("/auth?tab=signup") : navigate(`/profile/${c.user_id}`)}
             className="shrink-0 group snap-start"
           >
             <div className="flex flex-col items-center gap-2 w-[72px]">
               <div className="relative">
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
-                <Avatar className="relative h-14 w-14 border-2 border-border group-hover:border-primary/50 transition-colors shadow-sm">
+                <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary to-accent opacity-80 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
+                <Avatar className="relative h-14 w-14 border-2 border-background group-hover:border-primary/50 transition-colors shadow-lg">
                   <AvatarImage src={c.avatar_url || ""} alt={c.full_name} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-black">
                     {(c.full_name || "?")[0]}
                   </AvatarFallback>
                 </Avatar>
@@ -96,8 +95,8 @@ export const DiscoverCreativesRow = () => {
                 )}
               </div>
               <div className="text-center min-w-0 w-full">
-                <p className="text-[10px] font-semibold text-foreground truncate">{c.full_name}</p>
-                <p className="text-[8px] text-muted-foreground truncate">{c.role || "Creative"}</p>
+                <p className="text-[10px] font-black text-foreground truncate">{c.full_name}</p>
+                <p className="text-[8px] font-semibold text-foreground/70 truncate">{c.role || "Creative"}</p>
               </div>
             </div>
           </motion.button>

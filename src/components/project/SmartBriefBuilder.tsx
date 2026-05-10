@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import {
   Sparkles, Mic, Loader2, Square, PenLine, Lightbulb, ListChecks,
-  CheckCircle2, ArrowLeft, Send, Wand2,
+  CheckCircle2, ArrowLeft, Send, Wand2, Upload, FileText, Clock, Users, Mic2,
 } from "lucide-react";
+import { extractTextFromFile } from "@/lib/extractBriefDocument";
 
 interface SmartBriefBuilderProps {
   projectId: string;
@@ -51,6 +52,15 @@ interface SuggTask {
   suggested_assignee_id?: string | null;
   priority?: "low" | "normal" | "high";
 }
+
+interface RunOfShowItem {
+  time?: string | null;
+  duration_min?: number | null;
+  segment_title: string;
+  notes?: string | null;
+}
+interface SupplierItem { category: string; name: string; notes?: string | null; }
+interface TalentItem { role: string; name: string; notes?: string | null; }
 
 async function blobToBase64(blob: Blob): Promise<string> {
   return await new Promise((resolve, reject) => {

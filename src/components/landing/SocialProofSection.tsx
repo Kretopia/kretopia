@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Link2, Award, Globe2, Sparkles } from "lucide-react";
+import { Users, Link2, Award, Globe2, Sparkles, Quote } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { testimonials } from "@/data/testimonials";
 
 interface PublicStats {
   stats: {

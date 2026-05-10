@@ -101,12 +101,6 @@ export const ProductSectionDesk = () => (
               </li>
             ))}
           </ul>
-          <Link
-            to="/desk"
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-energy transition-colors"
-          >
-            Open ThriveDesk <ArrowRight className="h-4 w-4" />
-          </Link>
         </div>
       </div>
     </div>

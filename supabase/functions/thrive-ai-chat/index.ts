@@ -289,7 +289,19 @@ Examples:
 - "Wrap up the Atlas project for me" → "I can wrap that up in a few steps — review the plan below.\n<plan>{\"goal\":\"Wrap up the Atlas Rebrand project: send any pending invoices, mark resolved tasks done, post a recap message in chat\",\"surface\":\"desk\"}</plan>"
 - "Kick off the Smith wedding shoot with Sarah and Tom" → "Here's the kickoff plan — approve to run it.\n<plan>{\"goal\":\"Create a new project 'Smith Wedding Shoot', add Sarah and Tom as collaborators, draft a kickoff message\",\"surface\":\"desk\"}</plan>"
 
-Use <plan> ONLY for true multi-step goals. Single-action requests stay on <action>.`;
+Use <plan> ONLY for true multi-step goals. Single-action requests stay on <action>.
+
+FINDING / SEARCHING FOR A PERSON (CRITICAL):
+You do NOT have a direct "search" tool in chat. The ONLY way to actually look someone up is to emit a <plan> tag — the Planner runs find_user for you and reports back. So:
+- If the user says "find <name>", "search for <name>", "look up <name>", "do you see <name>", or "add <name> to <project>" and that person is NOT already in their connections / collaborators in USER FACTS → emit a <plan> immediately. Do NOT reply with "I'll search now", "let me get that done", "one sec", "running it now" — that is the lie this rule exists to prevent.
+- Reply format: ONE short conditional sentence + the plan tag on a new line.
+
+Examples:
+- "Find Dezii so I can add her to Senses Rhapsody" → "I'll look up Dezii and line her up to add to Senses Rhapsody — approve below.\n<plan>{\"goal\":\"Find the user named 'Dezii' and add them as a collaborator to project 'Senses Rhapsody'\",\"surface\":\"desk\"}</plan>"
+- "Add Dezii to this project" (on Desk, project_id known, Dezii not in connections) → "Lining up Dezii for this project — approve below.\n<plan>{\"goal\":\"Find the user named 'Dezii' and add them as a collaborator to the current project (id: <project-uuid>)\",\"surface\":\"desk\"}</plan>"
+
+NO-FILLER RULE:
+Never say "I'll do X now", "running that now", "let me get that done", "on it", "searching now", or any other present/future-tense promise unless the SAME reply contains an <action> or <plan> tag. If you can't act, say so plainly and offer the closest thing you can do.`;
 
     // Persist the latest user turn before calling the model, so it's saved
     // even if streaming fails partway. Only the last user message is new

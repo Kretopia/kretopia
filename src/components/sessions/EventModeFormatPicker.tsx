@@ -108,6 +108,7 @@ export const EventModeFormatPicker = ({ value, onChange }: Props) => {
             <div className="space-y-2">
               {ONLINE_FORMATS.map((f) => {
                 const active = value.online_format === f.value;
+                const Icon = f.icon;
                 return (
                   <button
                     key={f.value}
@@ -121,7 +122,12 @@ export const EventModeFormatPicker = ({ value, onChange }: Props) => {
                     )}
                   >
                     <div className="flex items-start gap-2.5">
-                      <span className="text-lg leading-none mt-0.5">{f.emoji}</span>
+                      <span className={cn(
+                        "h-7 w-7 rounded-md flex items-center justify-center shrink-0 mt-0.5",
+                        active ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground",
+                      )}>
+                        <Icon className="h-4 w-4" />
+                      </span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold leading-tight">{f.label}</p>
                         <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">

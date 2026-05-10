@@ -159,8 +159,8 @@ export const JoinOnlineCard = ({
       <Card className="mb-6 overflow-hidden border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
         <CardContent className="p-5 space-y-4">
           <div className="flex items-start gap-3">
-            <div className="h-11 w-11 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 text-2xl">
-              {cfg.emoji}
+            <div className="h-11 w-11 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+              {(() => { const Icon = cfg.icon; return <Icon className="h-5 w-5" />; })()}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">

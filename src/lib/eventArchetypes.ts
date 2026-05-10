@@ -23,7 +23,6 @@ export type EventArchetypeId =
 export interface EventArchetype {
   id: EventArchetypeId;
   label: string;
-  emoji: string;
   icon: LucideIcon;
   blurb: string;
   /** Maps to creative_jams.category */
@@ -40,7 +39,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "networking_dinner",
     label: "Networking Dinner",
-    emoji: "🍷",
     icon: Wine,
     blurb: "Curated table, intentional intros, beautiful flow.",
     category: "networking",
@@ -52,7 +50,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "conference",
     label: "Conference",
-    emoji: "🎤",
     icon: Mic,
     blurb: "Multi-stage program, speakers, sponsors, registration.",
     category: "workshop",
@@ -64,7 +61,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "festival",
     label: "Festival",
-    emoji: "🎪",
     icon: PartyPopper,
     blurb: "Multi-act lineup, vendors, production, security.",
     category: "festival",
@@ -76,7 +72,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "brand_activation",
     label: "Brand Activation",
-    emoji: "✨",
     icon: Sparkles,
     blurb: "Experiential moment for a brand or sponsor.",
     category: "showcase",
@@ -88,7 +83,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "podcast_event",
     label: "Podcast Event",
-    emoji: "🎙️",
     icon: Headphones,
     blurb: "Live recording, intimate audience, polished AV.",
     category: "podcast",
@@ -100,7 +94,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "masterclass",
     label: "Masterclass",
-    emoji: "🎓",
     icon: GraduationCap,
     blurb: "Educational deep-dive with one host or expert.",
     category: "workshop",
@@ -112,7 +105,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "launch_party",
     label: "Launch Party",
-    emoji: "🥂",
     icon: PartyPopper,
     blurb: "Product or brand reveal with media moment.",
     category: "showcase",
@@ -124,7 +116,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "workshop",
     label: "Workshop",
-    emoji: "🛠️",
     icon: Hammer,
     blurb: "Hands-on session with materials and small group.",
     category: "workshop",
@@ -136,7 +127,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "wedding",
     label: "Wedding",
-    emoji: "💍",
     icon: Heart,
     blurb: "Ceremony, reception, vendors, guest flow.",
     category: "general",
@@ -148,7 +138,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "creator_meetup",
     label: "Creator Meetup",
-    emoji: "👥",
     icon: Users,
     blurb: "Casual, community-driven gathering for creators.",
     category: "networking",
@@ -160,7 +149,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "music_event",
     label: "Music Event",
-    emoji: "🎵",
     icon: Music,
     blurb: "Live performance, DJ night, concert.",
     category: "music",
@@ -172,7 +160,6 @@ export const EVENT_ARCHETYPES: EventArchetype[] = [
   {
     id: "corporate_event",
     label: "Corporate Event",
-    emoji: "🏢",
     icon: Briefcase,
     blurb: "Off-site, town-hall, kickoff or partner event.",
     category: "general",

@@ -8,6 +8,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { VibePicker } from "@/components/onboarding/VibePicker";
 
 interface OnboardingStep {
   id: string;

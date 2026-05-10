@@ -94,14 +94,6 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
     onClick: () => void;
   }> = [
     {
-      key: "voice",
-      icon: Mic,
-      label: "Capture",
-      value: "Voice",
-      tone: "primary",
-      onClick: onVoice,
-    },
-    {
       key: "today",
       icon: CheckCircle2,
       label: stats.dueToday + stats.overdue === 0 ? "All clear" : "Due today",

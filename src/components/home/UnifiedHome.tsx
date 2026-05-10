@@ -529,21 +529,10 @@ export const UnifiedHome = () => {
             </Link>
           </div>
 
-          {/* Persona signal — Scout · Deal · Producer at-a-glance */}
-          <PersonaCardsRow className="mb-3" />
-
           {/* Conversational entry — Tell Thrive what you want to create. THE hero of Home. */}
-          <div className="mb-3">
+          <div className="mb-4">
             <ThrivePromptHero />
           </div>
-          <RecentIntentsDrawer
-            className="mb-4"
-            onPick={(prompt) =>
-              window.dispatchEvent(
-                new CustomEvent("thrive-prompt:fill", { detail: { prompt, submit: true } }),
-              )
-            }
-          />
 
           {/* Magic Home — single hero CTA for fresh accounts (<24h) or low-completion profiles */}
           {(() => {

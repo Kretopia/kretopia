@@ -15,6 +15,7 @@ import BottomNav from "./components/BottomNav";
 import QuickActionFab from "./components/QuickActionFab";
 
 import { ModeThemeSync } from "./components/ModeThemeSync";
+import { VibeThemeSync } from "./components/VibeThemeSync";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { InteractiveOnboarding } from "./components/onboarding/InteractiveOnboarding";
 import { SkipLink } from "./components/ui/skip-link";

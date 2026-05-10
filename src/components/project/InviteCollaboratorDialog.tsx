@@ -554,8 +554,8 @@ const GuestLinkPanel = ({ projectId }: { projectId: string }) => {
       {token ? (
         <div className="space-y-2">
           <Label className="text-xs">Share this link</Label>
-          <div className="flex gap-2">
-            <Input readOnly value={url} className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
+          <div className="flex gap-2 min-w-0">
+            <Input readOnly value={url} className="font-mono text-xs min-w-0 flex-1 truncate" onFocus={(e) => e.currentTarget.select()} />
             <Button size="sm" onClick={copy} className="shrink-0 gap-1.5">
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               {copied ? "Copied" : "Copy"}

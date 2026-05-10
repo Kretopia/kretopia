@@ -296,7 +296,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
           {/* Role picker */}
           <div className="space-y-2">
             <Label>Invite as</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {ROLE_OPTIONS.map((opt) => {
                 const Icon = opt.icon;
                 const active = selectedRole === opt.value;
@@ -306,15 +306,15 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
                     type="button"
                     onClick={() => setSelectedRole(opt.value)}
                     className={cn(
-                      "flex flex-col items-center gap-1 rounded-lg border px-2 py-3 text-center transition-colors",
+                      "min-w-0 flex flex-col items-center gap-1 rounded-lg border px-1.5 py-2.5 text-center transition-colors",
                       active
                         ? "border-primary bg-primary/10"
                         : "border-border hover:bg-accent"
                     )}
                   >
                     <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
-                    <span className="text-xs font-medium">{opt.label}</span>
-                    <span className="text-[10px] text-muted-foreground leading-tight">{opt.description}</span>
+                    <span className="text-xs font-medium truncate max-w-full">{opt.label}</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{opt.description}</span>
                   </button>
                 );
               })}

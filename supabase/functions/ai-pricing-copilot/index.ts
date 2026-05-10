@@ -165,7 +165,9 @@ RULES:
 
 ${existing_items && existing_items.length > 0 ? `\nCurrent line items on the document:\n${existing_items.map((i: any, idx: number) => `${idx + 1}. "${i.description}" — Qty: ${i.quantity}, Rate: ${currency} ${i.rate}`).join("\n")}` : ""}
 
-${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}${projectBlock}${memoryBlock}`;
+${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}${projectBlock}${memoryBlock}${locationBlock}
+
+REMINDER: You can make mistakes. When you're not sure (rate, currency, unit, scope), ASK — don't guess. The user is the final approver.`;
 
     // If the client included a scanned brief/flyer image, attach it as multimodal
     // content on the LAST user message so Gemini can read it.

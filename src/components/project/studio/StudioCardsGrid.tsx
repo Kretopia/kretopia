@@ -1,11 +1,28 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNowStrict } from "date-fns";
-import { CheckCircle2, Clock, Mic, Sparkles } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Clock, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { moodEmoji } from "./MoodPicker";
-import { moodGradient, moodLabel } from "./moodGradient";
+import { moodLabel } from "./moodGradient";
+
+// Solid, on-brand accent colors per mood (no gradients — keeps it editorial).
+const MOOD_ACCENT: Record<string, string> = {
+  creative: "hsl(232 87% 66%)", // indigo (brand)
+  urgent: "hsl(8 80% 58%)",
+  musical: "hsl(280 70% 55%)",
+  visual: "hsl(190 70% 45%)",
+  chill: "hsl(160 45% 45%)",
+};
+const moodAccent = (m?: string | null) => MOOD_ACCENT[m ?? "creative"] ?? MOOD_ACCENT.creative;
+
+// Two-letter monogram from project title.
+const monogram = (title: string) => {
+  const words = title.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "·";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+};
 
 interface StudioProject {
   id: string;

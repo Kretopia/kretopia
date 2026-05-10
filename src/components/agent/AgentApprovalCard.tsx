@@ -56,20 +56,16 @@ export const AgentApprovalCard = ({ action, onResolved, compact }: Props) => {
   const friendly = toolFriendly(action.tool_name);
 
   return (
-    <Card className={`p-3 border-primary/30 bg-primary/5 ${compact ? "" : "p-4"}`}>
+    <Card className={`p-4 border-primary/30 bg-primary/5 ${compact ? "" : "p-5"}`}>
       <div className="flex items-start gap-3">
-        <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", persona.chipBg)}>
+        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", persona.chipBg)}>
           <PersonaIcon className="h-4 w-4" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-            <span className={cn("text-[10px] font-bold uppercase tracking-wider", persona.accent)}>
+          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+            <span className={cn("text-[11px] font-bold uppercase tracking-wider", persona.accent)}>
               {persona.label}
             </span>
-            <span className="text-muted-foreground text-[10px]">·</span>
-            <p className="text-sm font-semibold truncate flex-1 min-w-0">
-              {action.preview_title ?? friendly.what}
-            </p>
             <Badge
               variant="outline"
               className={cn("text-[10px] py-0 h-4 shrink-0 border", risk.className)}
@@ -78,17 +74,20 @@ export const AgentApprovalCard = ({ action, onResolved, compact }: Props) => {
               {risk.label}
             </Badge>
           </div>
+          <p className="text-base font-semibold leading-snug break-words mb-1">
+            {action.preview_title ?? friendly.what}
+          </p>
           {action.preview_body ? (
-            <p className="text-xs text-muted-foreground line-clamp-3">
+            <p className="text-sm text-muted-foreground leading-relaxed break-words">
               {action.preview_body}
             </p>
           ) : (
-            <p className="text-xs text-muted-foreground line-clamp-2">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {friendly.what}
             </p>
           )}
           {friendly.why && (
-            <p className="text-[11px] text-muted-foreground/80 mt-1">
+            <p className="text-xs text-muted-foreground/80 mt-1.5">
               <span className="font-semibold text-foreground/70">Why: </span>{friendly.why}
             </p>
           )}

@@ -49,6 +49,7 @@ import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
+import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 // LiveGigsStrip removed — see Smart Gig Scout
 // ThriveFundShowcase replaced by compact ThriveFundTeaserCard on landing
 import GigCard from "@/components/opportunity/GigCard";
@@ -534,8 +535,8 @@ export const UnifiedHome = () => {
             <ThrivePromptHero />
           </div>
 
-          {/* Magic Home — single hero CTA for fresh accounts (<24h) or low-completion profiles */}
-          {(() => {
+          {/* Pass B.1: MagicHomeHero hidden — ThrivePromptHero is the single hero. */}
+          {false && (() => {
             const created = profileFull?.created_at ? new Date(profileFull.created_at).getTime() : 0;
             const ageHrs = (Date.now() - created) / 3_600_000;
             const pct = checkProfileCompletion(profileFull || profile, myCredits).percentage;
@@ -562,39 +563,46 @@ export const UnifiedHome = () => {
             </div>
           )}
 
-          {/* Wave 3: Profile Hub Card */}
-          <ProfileHubCard
-            userId={user.id}
-            profile={profileFull || profile}
-            creditsCount={myCredits}
-            connectionsCount={myConnections}
-            className="mb-4"
-          />
+          {/* Pass B.1: ProfileHubCard hidden — Profile tab covers this. */}
+          {false && (
+            <ProfileHubCard
+              userId={user.id}
+              profile={profileFull || profile}
+              creditsCount={myCredits}
+              connectionsCount={myConnections}
+              className="mb-4"
+            />
+          )}
 
-          {/* Unified Approvals — Copilot actions + auto-drafted outreach/chases */}
+          {/* Unified Approvals — only renders when there are pending items */}
           <div className="mb-4">
             <ApprovalsHub limit={4} />
           </div>
 
-          {/* Secondary surfaces — collapsed by default to keep Home calm.
-              Power users expand once; first-timers see only the essentials. */}
-          <details className="group mb-4 rounded-2xl border border-border/60 bg-card/50 [&[open]]:bg-card transition-colors">
-            <summary className="flex items-center justify-between cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
-              <span className="flex items-center gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                More for you
-              </span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
-            </summary>
-            <div className="px-4 pb-4 pt-1 space-y-4">
-              <WeeklyIntentCard />
-              <MoneyBrief variant="compact" />
-              <NewMemberStarterCard />
-              <FoundingMemberCard />
-              <InviteCircleCard variant="home" />
-              <PushNotificationPrompt trigger="default" />
-            </div>
-          </details>
+          {/* Pass B.1: "More for you" details collapsed — moved to dedicated surfaces.
+              WeeklyIntent → Desk · MoneyBrief → Pay · Founding/Invite → their own pages. */}
+          {false && (
+            <details className="group mb-4 rounded-2xl border border-border/60 bg-card/50 [&[open]]:bg-card transition-colors">
+              <summary className="flex items-center justify-between cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
+                <span className="flex items-center gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  More for you
+                </span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="px-4 pb-4 pt-1 space-y-4">
+                <WeeklyIntentCard />
+                <MoneyBrief variant="compact" />
+                <NewMemberStarterCard />
+                <FoundingMemberCard />
+                <InviteCircleCard variant="home" />
+                <PushNotificationPrompt trigger="default" />
+              </div>
+            </details>
+          )}
+
+          {/* Push prompt still fires (cooldown-gated) but lives quietly outside the section. */}
+          <PushNotificationPrompt trigger="default" />
         </div>
       )}
 
@@ -656,14 +664,26 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── Spotlight (auth only — accessible via hamburger menu for guests) ── */}
-        {user && <SpotlightFeedRow />}
-
-        {/* ── ThriveFund (auth only) ── */}
-        {user && <ThriveFundFeedRow />}
-
-        {/* ── 2. GIGS FOR YOU (auth only) ── */}
+        {/* Pass B.1: ScoutedGigsSection — the moat. Real gigs from across the web. */}
         {user && (
+          <section className="mb-8 scroll-mt-14">
+            <ScoutedGigsSection />
+          </section>
+        )}
+
+        {/* Pass B.1: Quiet streak row — single line of utility. */}
+        {user && (
+          <section className="mb-8">
+            <StreakChipsRow />
+          </section>
+        )}
+
+        {/* Pass B.1: Spotlight + ThriveFund hidden — both are off-nav surfaces. */}
+        {false && user && <SpotlightFeedRow />}
+        {false && user && <ThriveFundFeedRow />}
+
+        {/* Pass B.1: Legacy "Gigs For You" hidden — ScoutedGigsSection above is the moat. */}
+        {false && user && (
           <section id="section-gigs" className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -739,8 +759,8 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── 3. WHAT'S HAPPENING NEAR YOU (auth only) ── */}
-        {user && (
+        {/* Pass B.1: Events row hidden — Events surface is off-nav for MVP. */}
+        {false && user && (
           <section className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -850,8 +870,8 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── 4. CREDITS IN YOUR WORLD (auth only) ── */}
-        {user && (
+        {/* Pass B.1: Trending credits hidden — accessible via Credits tab. */}
+        {false && user && (
           <section id="section-credits" className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -919,7 +939,8 @@ export const UnifiedHome = () => {
 
         {/* ── CTA CARD ── */}
         {/* ── CTA CARD ── Guests always; auth users only after they've taken an action */}
-        {(!user || (!isPro && (myCredits > 0 || myConnections > 0))) && (
+        {/* Pass B.1: Pro upsell hidden for auth users — upgrade lives in Account/Settings. */}
+        {!user && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}

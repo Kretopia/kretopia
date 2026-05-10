@@ -213,21 +213,7 @@ export const StudioCardsGrid = ({
         </div>
       </div>
 
-      {/* Floating mic-icon FAB */}
-      <button
-        type="button"
-        onClick={onNewProject}
-        aria-label="New project"
-        className={cn(
-          "fixed z-30 right-4 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] sm:bottom-8",
-          "h-14 w-14 rounded-full bg-primary text-primary-foreground",
-          "flex items-center justify-center shadow-lg",
-          "transition-all hover:scale-105 active:scale-95",
-          "ring-4 ring-primary/20",
-        )}
-      >
-        <Mic className="h-6 w-6" />
-      </button>
+      {/* Floating mic FAB removed — Thrive Bar is the unified voice/AI entry. */}
     </>
   );
 };

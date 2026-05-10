@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Verified, ArrowRight, Sparkles } from "lucide-react";
+import { Verified, Sparkles } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,8 +18,7 @@ const ROTATE_MS = 6000;
 
 /**
  * Horizontal scroll of REAL creator profiles for the landing page.
- * Pulls from public_profiles_safe (anon-readable, security_definer view)
- * and rotates the visible window every few seconds so the row feels alive.
+ * Guests see avatars but any tap routes to /auth?tab=signup (sign-in required to view profiles/explore).
  */
 export const DiscoverCreativesRow = () => {
   const [pool, setPool] = useState<Creator[]>([]);
@@ -37,7 +36,6 @@ export const DiscoverCreativesRow = () => {
           .order("created_at", { ascending: false })
           .limit(60);
         if (data && data.length > 0) {
-          // shuffle once on mount so order varies per visit
           setPool([...data].sort(() => Math.random() - 0.5) as Creator[]);
         }
       } catch {
@@ -46,7 +44,6 @@ export const DiscoverCreativesRow = () => {
     })();
   }, []);
 
-  // rotate the visible window every ROTATE_MS
   useEffect(() => {
     if (pool.length <= PAGE_SIZE) return;
     const t = setInterval(() => setPage((p) => p + 1), ROTATE_MS);
@@ -63,6 +60,8 @@ export const DiscoverCreativesRow = () => {
 
   if (visible.length === 0) return null;
 
+  const goAuth = () => navigate("/auth?tab=signup");
+
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
@@ -70,12 +69,6 @@ export const DiscoverCreativesRow = () => {
           <Sparkles className="h-4 w-4 text-accent" />
           Real creators on ThriveIN
         </h2>
-        <button
-          onClick={() => navigate("/search")}
-          className="text-xs text-primary font-medium flex items-center gap-1 hover:underline"
-        >
-          Explore <ArrowRight className="h-3 w-3" />
-        </button>
       </div>
 
       <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x">
@@ -88,7 +81,7 @@ export const DiscoverCreativesRow = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85 }}
               transition={{ delay: i * 0.03, duration: 0.35 }}
-              onClick={() => navigate(`/profile/${c.user_id}`)}
+              onClick={goAuth}
               className="shrink-0 group snap-start"
             >
               <div className="flex flex-col items-center gap-2 w-[72px]">
@@ -114,28 +107,7 @@ export const DiscoverCreativesRow = () => {
             </motion.button>
           ))}
         </AnimatePresence>
-
-        {/* See more creators CTA at end of row */}
-        <button
-          onClick={() => navigate("/search")}
-          className="shrink-0 snap-start group"
-        >
-          <div className="flex flex-col items-center gap-2 w-[72px]">
-            <div className="relative h-14 w-14 rounded-full border-2 border-dashed border-primary/60 bg-primary/5 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/10 transition-colors">
-              <ArrowRight className="h-5 w-5 text-primary" />
-            </div>
-            <p className="text-[10px] font-black text-primary text-center leading-tight">See<br/>more</p>
-          </div>
-        </button>
       </div>
-
-      {/* Bottom full-width CTA */}
-      <button
-        onClick={() => navigate("/search")}
-        className="w-full mt-1 py-2.5 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors text-xs font-bold text-primary flex items-center justify-center gap-1.5"
-      >
-        Browse all creators on ThriveIN <ArrowRight className="h-3.5 w-3.5" />
-      </button>
     </div>
   );
 };

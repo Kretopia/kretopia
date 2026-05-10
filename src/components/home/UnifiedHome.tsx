@@ -389,6 +389,7 @@ export const UnifiedHome = () => {
       {!user && (
         <div className="relative overflow-hidden bg-cinematic dark">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0 bg-background/60" />
             <div className="absolute -top-40 -left-20 h-[600px] w-[600px] rounded-full bg-primary/25 blur-[160px]" />
             <div className="absolute top-20 -right-20 h-[500px] w-[500px] rounded-full bg-[hsl(282_95%_60%/0.18)] blur-[140px]" />
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
@@ -406,14 +407,14 @@ export const UnifiedHome = () => {
                 </p>
 
                 {/* PRIMARY HEADLINE — editorial scale, IMDb-meets-OS wedge */}
-                <h1 className="text-[2.25rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-[-0.045em] text-foreground leading-[0.95] mb-5">
+                <h1 className="text-[2rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-tight text-foreground leading-[1.02] mb-4">
                   Every credit.<br />
                   Every collab.<br />
                   <span className="text-energy-glow italic font-black">Every payout.</span>
                 </h1>
 
                 {/* Wedge subhead — IMDb for every creative industry + OS that runs the work */}
-                <p className="text-base sm:text-lg text-foreground/85 font-medium mb-6 leading-[1.55] max-w-xl mx-auto lg:mx-0">
+                <p className="text-[0.95rem] sm:text-lg text-foreground font-semibold mb-5 leading-[1.5] max-w-xl mx-auto lg:mx-0">
                   The verified record for film, music, fashion, events &amp; design — and the operating system that runs the work behind it. <span className="text-foreground font-bold">One login. Nine tools.</span>
                 </p>
 
@@ -424,7 +425,7 @@ export const UnifiedHome = () => {
                       Already have work? Search your name
                       <ArrowRight className="h-4 w-4 text-energy" />
                     </p>
-                    <p className="text-[11px] text-muted-foreground mt-1">
+                    <p className="text-xs text-foreground/75 font-medium mt-1">
                       We'll find your verified credits across the web
                     </p>
                   </div>
@@ -456,7 +457,7 @@ export const UnifiedHome = () => {
                           {i > 0 && <div className="w-px h-7 bg-border" />}
                           <div className="text-center lg:text-left">
                             <p className="text-lg sm:text-xl font-extrabold text-foreground">{item.value.toLocaleString()}+</p>
-                            <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{item.label}</p>
+                            <p className="text-[9px] sm:text-[10px] text-foreground/70 font-bold uppercase tracking-wider">{item.label}</p>
                           </div>
                         </div>
                       ))}
@@ -465,7 +466,7 @@ export const UnifiedHome = () => {
                 })()}
 
                 {/* Industry rotator — cinematic flicker */}
-                <p className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mx-auto lg:mx-0 leading-relaxed mt-5 uppercase tracking-[0.2em] font-bold">
+                <p className="text-xs sm:text-sm text-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mt-5 uppercase tracking-[0.2em] font-black">
                   For{" "}
                   <span className="text-energy inline-block min-w-[110px]">
                     <AnimatePresence mode="wait">

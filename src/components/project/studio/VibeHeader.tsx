@@ -1,12 +1,11 @@
-import { useState, useRef } from "react";
-import { Camera, Loader2, Pencil, Calendar } from "lucide-react";
+import { useState } from "react";
+import { Pencil, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { MoodPicker, moodEmoji, type MoodId } from "./MoodPicker";
-import { moodGradient } from "./moodGradient";
 import { LivePresencePile } from "./LivePresencePile";
 import { StudioTimer } from "./StudioTimer";
 import { format } from "date-fns";

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { MoodPicker, moodEmoji, type MoodId } from "./MoodPicker";
+import { MoodPicker, type MoodId } from "./MoodPicker";
 import { LivePresencePile } from "./LivePresencePile";
 import { StudioTimer } from "./StudioTimer";
 import { format } from "date-fns";

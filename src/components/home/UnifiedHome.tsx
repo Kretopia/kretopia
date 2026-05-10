@@ -398,25 +398,25 @@ export const UnifiedHome = () => {
 
           <div className="relative container mx-auto max-w-6xl px-4 sm:px-6 pt-6 sm:pt-12 pb-8">
             {/* Two-column cinematic stage */}
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-10 sm:mb-14">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center mb-10 sm:mb-14">
 
-              {/* LEFT — Headline + Search + Stats (search is FIRST interactive element above the fold on mobile) */}
-              <div className="relative z-10 text-center lg:text-left order-1 lg:order-1">
+              {/* LEFT — Headline + Search + Stats. On mobile the visual sits ABOVE so faces are first thing seen. */}
+              <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
                 <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
                   <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                  From Profile to Paid
+                  Built by creatives · for creatives
                 </p>
 
-                {/* PRIMARY HEADLINE */}
-                <h1 className="text-[2.25rem] sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.035em] text-foreground leading-[0.95] mb-4">
-                  Claim your work.<br />
-                  Get matched.<br />
-                  <span className="text-energy-glow">Get paid.</span>
+                {/* PRIMARY HEADLINE — warm, community-first */}
+                <h1 className="text-[2.5rem] sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.035em] text-foreground leading-[0.95] mb-4">
+                  Find your<br />
+                  <span className="text-energy-glow">people.</span><br />
+                  Build the work.
                 </h1>
 
-                {/* Secondary headline */}
-                <p className="text-sm sm:text-base text-muted-foreground/90 font-semibold mb-5">
-                  One home for your credits, your collaborators, your gigs and your money — with Thrive doing the busy work.
+                {/* Secondary headline — warmer, human */}
+                <p className="text-sm sm:text-base text-muted-foreground/90 font-medium mb-5 leading-relaxed">
+                  The home for creatives. Match with collaborators in your city, run the project together, and get paid — without juggling nine apps.
                 </p>
 
                 {/* SEARCH BAR — first interactive element above the fold */}

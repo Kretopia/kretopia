@@ -466,23 +466,23 @@ export const UnifiedHome = () => {
                   );
                 })()}
 
-                <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mt-5">
-                  Where{" "}
-                  <span className="text-primary font-semibold inline-block min-w-[100px]">
+                {/* Industry rotator — cinematic flicker */}
+                <p className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mx-auto lg:mx-0 leading-relaxed mt-5 uppercase tracking-[0.2em] font-bold">
+                  For{" "}
+                  <span className="text-energy inline-block min-w-[110px]">
                     <AnimatePresence mode="wait">
                       <motion.span
                         key={heroRoleIdx}
-                        initial={{ y: 14, opacity: 0, filter: "blur(4px)" }}
+                        initial={{ y: 10, opacity: 0, filter: "blur(4px)" }}
                         animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
-                        exit={{ y: -14, opacity: 0, filter: "blur(4px)" }}
+                        exit={{ y: -10, opacity: 0, filter: "blur(4px)" }}
                         transition={{ duration: 0.3 }}
                         className="inline-block"
                       >
                         {HERO_ROLES[heroRoleIdx]}s
                       </motion.span>
                     </AnimatePresence>
-                  </span>{" "}
-                  claim verified credits, match with collaborators, run the project, and get paid — all in one app.
+                  </span>
                 </p>
               </div>
 

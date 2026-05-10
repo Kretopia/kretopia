@@ -16243,6 +16243,7 @@ export type Database = {
           twitter_url: string | null
           updated_at: string | null
           user_id: string | null
+          username: string | null
           verification_status: string | null
           verification_tier: string | null
           xp: number | null
@@ -16273,6 +16274,7 @@ export type Database = {
           twitter_url?: string | null
           updated_at?: string | null
           user_id?: string | null
+          username?: string | null
           verification_status?: string | null
           verification_tier?: string | null
           xp?: number | null
@@ -16303,6 +16305,7 @@ export type Database = {
           twitter_url?: string | null
           updated_at?: string | null
           user_id?: string | null
+          username?: string | null
           verification_status?: string | null
           verification_tier?: string | null
           xp?: number | null

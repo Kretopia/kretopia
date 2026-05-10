@@ -33,12 +33,6 @@ export const ProductSectionPay = () => (
               </li>
             ))}
           </ul>
-          <Link
-            to="/thrivepay"
-            className="inline-flex items-center gap-1.5 text-sm font-bold text-primary hover:text-energy transition-colors"
-          >
-            Open ThrivePay <ArrowRight className="h-4 w-4" />
-          </Link>
         </div>
 
         {/* Mock — invoice + chat side by side */}

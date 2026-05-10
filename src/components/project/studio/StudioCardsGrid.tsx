@@ -244,7 +244,7 @@ interface FeatureCardProps {
 
 const FeatureCard = ({ project, pay, onClick }: FeatureCardProps) => {
   const status = STATUS_PILL[project.status ?? "active"] ?? STATUS_PILL.active;
-  const glyph = moodEmoji(project.mood) ?? "🎨";
+  const accent = moodAccent(project.mood);
   const isDone = project.status === "completed";
 
   return (
@@ -252,98 +252,76 @@ const FeatureCard = ({ project, pay, onClick }: FeatureCardProps) => {
       type="button"
       onClick={onClick}
       className={cn(
-        "group relative w-full text-left overflow-hidden rounded-2xl",
-        "border border-primary/25 bg-card",
-        "transition-all hover:border-primary/60 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5",
+        "group relative w-full text-left overflow-hidden rounded-3xl",
+        "border border-border bg-card",
+        "transition-all hover:border-foreground/30 hover:shadow-lg hover:-translate-y-0.5",
         "focus:outline-none focus:ring-2 focus:ring-primary",
       )}
     >
-      <div className="flex">
-        {/* Left: cover */}
-        <div className="relative w-[42%] sm:w-[38%] shrink-0 aspect-[4/5] sm:aspect-[5/6] overflow-hidden">
-          {project.cover_url ? (
-            <img
-              src={project.cover_url}
-              alt=""
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div
-              className="absolute inset-0 flex items-center justify-center text-5xl"
-              style={{ background: moodGradient(project.mood) }}
-              aria-label={moodLabel(project.mood)}
-            >
-              <span className="opacity-90 drop-shadow-sm">{glyph}</span>
-            </div>
-          )}
-          {project.cover_url && (
-            <div
-              className="absolute inset-0 mix-blend-multiply opacity-40"
-              style={{ background: "var(--gradient-primary)" }}
-            />
-          )}
+      {/* Hairline accent bar across top */}
+      <span
+        className="absolute left-0 right-0 top-0 h-[3px]"
+        style={{ background: accent }}
+        aria-hidden
+      />
+
+      <div className="p-5 sm:p-6 space-y-4">
+        {/* Eyebrow row */}
+        <div className="flex items-center justify-between gap-3">
+          <span
+            className="text-[10px] font-bold uppercase tracking-[0.22em]"
+            style={{ color: accent }}
+          >
+            Now in the studio
+          </span>
+          <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            {status.label}
+          </span>
         </div>
 
-        {/* Right: meta */}
-        <div className="flex-1 min-w-0 p-3.5 sm:p-4 flex flex-col justify-between gap-3">
-          <div className="space-y-2">
-            {/* eyebrow */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-[0.16em] text-primary uppercase">
-                <Sparkles className="h-2.5 w-2.5" />
-                Featured Room
-              </span>
-              <span
-                className={cn(
-                  "text-[9px] font-bold uppercase tracking-[0.1em] px-1.5 py-0.5 rounded-full",
-                  status.tone,
-                )}
-              >
-                {status.label}
-              </span>
-            </div>
-
-            <h2 className="text-base sm:text-lg font-bold leading-tight line-clamp-2">
+        {/* Monogram + title */}
+        <div className="flex items-start gap-4">
+          <div
+            className="shrink-0 h-14 w-14 rounded-xl border border-border flex items-center justify-center font-black text-lg tracking-tight"
+            style={{ color: accent }}
+            aria-hidden
+          >
+            {monogram(project.title)}
+          </div>
+          <div className="min-w-0 flex-1 space-y-1">
+            <h2 className="text-xl sm:text-2xl font-black leading-[1.05] tracking-[-0.02em] line-clamp-2">
               {project.title}
             </h2>
-
             {(project.client_name || project.description) && (
-              <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-2">
+              <p className="text-[12px] sm:text-[13px] text-muted-foreground line-clamp-1">
                 {project.client_name ?? project.description}
               </p>
             )}
           </div>
+          <ArrowUpRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
+        </div>
 
-          {/* footer meta */}
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <span
-                className="inline-block h-2 w-2 rounded-full"
-                style={{ background: moodGradient(project.mood) }}
-              />
-              {project.pinned_stage || moodLabel(project.mood)}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              {pay && (
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full",
-                    pay === "paid" && "bg-emerald-500/10 text-emerald-400",
-                    pay === "invoiced" && "bg-amber-500/10 text-amber-400",
-                    pay === "unsent" && "bg-rose-500/10 text-rose-400",
-                  )}
-                >
-                  <span className={cn("h-1 w-1 rounded-full", PAY_DOT[pay])} />
-                  {PAY_LABEL[pay]}
-                </span>
-              )}
-              <span className="inline-flex items-center gap-1">
-                {isDone ? <CheckCircle2 className="h-2.5 w-2.5" /> : <Clock className="h-2.5 w-2.5" />}
-                {formatDistanceToNowStrict(new Date(project.updated_at))}
+        {/* Footer meta */}
+        <div className="pt-4 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-foreground/70 truncate">
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{ background: accent }}
+            />
+            {project.pinned_stage || moodLabel(project.mood)}
+          </span>
+          <span className="inline-flex items-center gap-3 shrink-0">
+            {pay && (
+              <span className="inline-flex items-center gap-1 font-semibold uppercase tracking-wider">
+                <span className={cn("h-1.5 w-1.5 rounded-full", PAY_DOT[pay])} />
+                {PAY_LABEL[pay]}
               </span>
+            )}
+            <span className="inline-flex items-center gap-1">
+              {isDone ? <CheckCircle2 className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+              {formatDistanceToNowStrict(new Date(project.updated_at))}
             </span>
-          </div>
+          </span>
         </div>
       </div>
     </button>

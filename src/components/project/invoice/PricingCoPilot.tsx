@@ -74,6 +74,72 @@ export function PricingCoPilot({
   const [isScanning, setIsScanning] = useState(false);
   const [pendingScan, setPendingScan] = useState<{ dataUrl: string; name: string } | null>(null);
 
+  // ── Auto-save chat + draft state so the user can leave the page (to look up
+  // a number, take a call, switch apps) and come back to the same conversation.
+  // Keyed by (documentType, projectId) so quote and invoice drafts stay separate.
+  const draftKey = `pricing-copilot:${documentType}:${projectId || "scratch"}`;
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Date.now() - (parsed.savedAt || 0) > 7 * 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(draftKey);
+        return;
+      }
+      const d = parsed.data || {};
+      if (Array.isArray(d.messages) && d.messages.length > 0) {
+        setMessages(d.messages);
+        if (d.detailsSummary) setDetailsSummary(d.detailsSummary);
+        if (d.pendingScan) setPendingScan(d.pendingScan);
+        if (typeof d.input === "string") setInput(d.input);
+        toast.message("Resumed your draft", {
+          description: "Picked up where you left off — full chat memory restored.",
+          duration: 2500,
+        });
+      }
+    } catch (e) {
+      console.warn("PricingCoPilot: failed to restore draft", e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftKey]);
+
+  // Debounced persist on every change to messages / details / input / scan
+  useEffect(() => {
+    if (!restoredRef.current) return;
+    const t = setTimeout(() => {
+      try {
+        // Skip persisting empty state
+        if (messages.length === 0 && !detailsSummary && !pendingScan && !input) {
+          return;
+        }
+        localStorage.setItem(
+          draftKey,
+          JSON.stringify({
+            data: { messages, detailsSummary, pendingScan, input },
+            savedAt: Date.now(),
+          }),
+        );
+      } catch (e) {
+        // Quota or serialization — non-fatal
+        console.warn("PricingCoPilot: autosave failed", e);
+      }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [draftKey, messages, detailsSummary, pendingScan, input]);
+
+  const clearDraft = () => {
+    try { localStorage.removeItem(draftKey); } catch {}
+    setMessages([]);
+    setDetailsSummary(null);
+    setPendingScan(null);
+    setInput("");
+    toast.success("Chat cleared");
+  };
+
   /** Compress an image file to ~1024px wide JPEG data URL so the gateway accepts it. */
   const fileToCompressedDataUrl = (file: File, maxDim = 1280, quality = 0.82): Promise<string> =>
     new Promise((resolve, reject) => {

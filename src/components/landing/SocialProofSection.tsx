@@ -48,41 +48,72 @@ export const SocialProofSection = () => {
     { icon: Globe2, label: "Countries", value: formatNum(stats.countries) },
   ];
 
+  // Only show testimonial cards once we have 3+ real ones (no fake quotes)
+  const showTestimonials = testimonials.length >= 3;
+
   return (
     <section className="py-16 sm:py-24 px-4 border-y border-border/40">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-10 sm:mb-14">
           <Badge variant="outline" className="mb-4 gap-1.5 border-energy/40 text-energy bg-energy/5">
             <Sparkles className="w-3 h-3" />
-            Live network signal
+            {showTestimonials ? "Creator stories" : "Live network signal"}
           </Badge>
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.95] text-foreground mb-5">
-            Built by creators.<br />
-            <span className="text-energy-glow">Proven by data.</span>
+            {showTestimonials ? (
+              <>Built by creators.<br /><span className="text-energy-glow">Booking real work.</span></>
+            ) : (
+              <>Built by creators.<br /><span className="text-energy-glow">Proven by data.</span></>
+            )}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
-            Real numbers from the network — updated automatically. No vanity metrics.
+            {showTestimonials
+              ? "Real creators. Real outcomes. No fake reviews."
+              : "Real numbers from the network — updated automatically. No vanity metrics."}
           </p>
         </div>
 
-        {/* Headline stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {headlineStats.map((s) => (
-            <div
-              key={s.label}
-              className="rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6 text-center hover:border-energy/40 transition-colors"
-            >
-              <s.icon className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 text-energy" />
-              <p className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">{s.value}</p>
-              <p className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground mt-1 font-medium">
-                {s.label}
-              </p>
-            </div>
-          ))}
-        </div>
+        {showTestimonials ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {testimonials.slice(0, 3).map((t) => (
+              <article
+                key={t.name}
+                className="rounded-2xl border border-border/60 bg-card/50 p-6 hover:border-energy/40 transition-colors"
+              >
+                <Quote className="h-5 w-5 text-energy/60 mb-3" />
+                <p className="text-sm text-foreground leading-relaxed mb-5">"{t.quote}"</p>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9">
+                    {t.avatarUrl && <AvatarImage src={t.avatarUrl} alt={t.name} />}
+                    <AvatarFallback className="text-xs">{t.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-bold text-foreground leading-tight">{t.name}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {t.role}{t.location ? ` · ${t.location}` : ""}
+                    </p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {headlineStats.map((s) => (
+              <div
+                key={s.label}
+                className="rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6 text-center hover:border-energy/40 transition-colors"
+              >
+                <s.icon className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 text-energy" />
+                <p className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">{s.value}</p>
+                <p className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground mt-1 font-medium">
+                  {s.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Footer microcopy */}
         <p className="text-center text-[11px] text-muted-foreground/70 mt-8">
           Updated live · Excludes internal accounts
         </p>

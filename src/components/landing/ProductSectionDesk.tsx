@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { CheckCircle, Sparkles, FolderOpen, ArrowRight, Mic, FileText } from "lucide-react";
+import { CheckCircle, Sparkles, FolderOpen, Mic, FileText } from "lucide-react";
 
 /**
  * Desk — the project OS. Show: voice → brief → tasks → vault. The wedge is

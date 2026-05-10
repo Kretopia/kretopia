@@ -320,10 +320,30 @@ serve(async (req) => {
 
     const [{ data: profile }, { data: prefsRow }] = await Promise.all([
       supabase.from("profiles")
-        .select("user_id, full_name, role, sub_roles, professional_skills, passion_skills, location, bio")
+        .select("user_id, full_name, role, sub_roles, professional_skills, passion_skills, location, bio, subscription_tier")
         .eq("user_id", userId).maybeSingle(),
       supabase.from("scout_preferences").select("*").eq("user_id", userId).maybeSingle(),
     ]);
+
+    // Tier gating: free=1 preview/week, creator=daily full, creator_pro=priority+unlimited, founder=unlimited
+    const tier = ((profile as any)?.subscription_tier || "free").toLowerCase();
+    const isFree = tier === "free" || tier === "spark" || tier === "";
+    const isPro = tier === "creator_pro" || tier === "founder" || tier === "brand_enterprise";
+    let perRunCap = isFree ? 1 : (tier === "creator" ? 10 : 25);
+    if (isFree) {
+      const weekAgo = new Date(Date.now() - 7 * 86400_000).toISOString();
+      const { count } = await supabase
+        .from("scouted_gigs")
+        .select("id", { count: "exact", head: true })
+        .eq("target_user_id", userId)
+        .gte("created_at", weekAgo);
+      if ((count ?? 0) >= 1) {
+        return new Response(JSON.stringify({
+          ok: true, gated: true, tier, message: "Free tier: 1 Scout preview per week. Upgrade to Creator for daily Scout + auto-drafted applications.",
+          found: 0, inserted: 0,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
+      }
+    }
 
     if (!profile) {
       return new Response(JSON.stringify({ error: "Profile not found" }), {
@@ -434,7 +454,7 @@ serve(async (req) => {
     for (const r of allRaw) {
       if (r?.url && r?.image_url) imgByUrl.set(r.url, r.image_url);
     }
-    for (const g of filtered) {
+    for (const g of filtered.slice(0, perRunCap)) {
       const key = dedupeKey(g);
       const image_url = imgByUrl.get(g.source_url) || null;
       const { error } = await supabase.from("scouted_gigs").upsert({

@@ -143,14 +143,17 @@ export const VoiceFirstCreateModal = ({
     try {
       const data_base64 = await blobToBase64(blob);
       const { data, error } = await supabase.functions.invoke("extract-brief", {
-        body: { source: "audio", data_base64, mime_type: "audio/webm" },
+        body: { source: "audio", data_base64, mime_type: "audio/webm", workspace_type: workspaceType },
       });
       if (error) throw error;
       const result = (data ?? {}) as ExtractedBrief;
       if (!result?.project?.title) throw new Error("Couldn't catch what you said");
       setBrief(result);
       setSelected(new Set((result.deliverables ?? []).slice(0, 8).map((_, i) => i)));
-      setWorkspaceType(inferWorkspaceType(`${result.project.title} ${result.project.summary}`));
+      // Only auto-infer if user hadn't picked a type
+      if (workspaceType === "general") {
+        setWorkspaceType(inferWorkspaceType(`${result.project.title} ${result.project.summary}`));
+      }
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -169,9 +172,14 @@ export const VoiceFirstCreateModal = ({
     if (!trimmed) return;
     setRawInput(trimmed);
     setMode("thinking");
+    // If user hasn't picked a type yet, infer one before calling extract-brief
+    // so the AI uses the right producer persona.
+    const typeForCall: WorkspaceType =
+      workspaceType !== "general" ? workspaceType : inferWorkspaceType(trimmed);
+    if (typeForCall !== workspaceType) setWorkspaceType(typeForCall);
     try {
       const { data, error } = await supabase.functions.invoke("extract-brief", {
-        body: { source: "text", text: trimmed },
+        body: { source: "text", text: trimmed, workspace_type: typeForCall },
       });
       if (error) throw error;
       const result = (data ?? {}) as ExtractedBrief;
@@ -180,7 +188,6 @@ export const VoiceFirstCreateModal = ({
         : result;
       setBrief(finalBrief);
       setSelected(new Set((finalBrief.deliverables ?? []).slice(0, 8).map((_, i) => i)));
-      setWorkspaceType(inferWorkspaceType(`${trimmed} ${finalBrief.project.summary}`));
       setMode("review");
     } catch (err: any) {
       console.error(err);
@@ -192,7 +199,6 @@ export const VoiceFirstCreateModal = ({
         },
       });
       setSelected(new Set());
-      setWorkspaceType(inferWorkspaceType(trimmed));
       setMode("review");
     }
   };

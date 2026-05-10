@@ -535,8 +535,8 @@ export const UnifiedHome = () => {
             <ThrivePromptHero />
           </div>
 
-          {/* Magic Home — single hero CTA for fresh accounts (<24h) or low-completion profiles */}
-          {(() => {
+          {/* Pass B.1: MagicHomeHero hidden — ThrivePromptHero is the single hero. */}
+          {false && (() => {
             const created = profileFull?.created_at ? new Date(profileFull.created_at).getTime() : 0;
             const ageHrs = (Date.now() - created) / 3_600_000;
             const pct = checkProfileCompletion(profileFull || profile, myCredits).percentage;
@@ -563,39 +563,46 @@ export const UnifiedHome = () => {
             </div>
           )}
 
-          {/* Wave 3: Profile Hub Card */}
-          <ProfileHubCard
-            userId={user.id}
-            profile={profileFull || profile}
-            creditsCount={myCredits}
-            connectionsCount={myConnections}
-            className="mb-4"
-          />
+          {/* Pass B.1: ProfileHubCard hidden — Profile tab covers this. */}
+          {false && (
+            <ProfileHubCard
+              userId={user.id}
+              profile={profileFull || profile}
+              creditsCount={myCredits}
+              connectionsCount={myConnections}
+              className="mb-4"
+            />
+          )}
 
-          {/* Unified Approvals — Copilot actions + auto-drafted outreach/chases */}
+          {/* Unified Approvals — only renders when there are pending items */}
           <div className="mb-4">
             <ApprovalsHub limit={4} />
           </div>
 
-          {/* Secondary surfaces — collapsed by default to keep Home calm.
-              Power users expand once; first-timers see only the essentials. */}
-          <details className="group mb-4 rounded-2xl border border-border/60 bg-card/50 [&[open]]:bg-card transition-colors">
-            <summary className="flex items-center justify-between cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
-              <span className="flex items-center gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                More for you
-              </span>
-              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
-            </summary>
-            <div className="px-4 pb-4 pt-1 space-y-4">
-              <WeeklyIntentCard />
-              <MoneyBrief variant="compact" />
-              <NewMemberStarterCard />
-              <FoundingMemberCard />
-              <InviteCircleCard variant="home" />
-              <PushNotificationPrompt trigger="default" />
-            </div>
-          </details>
+          {/* Pass B.1: "More for you" details collapsed — moved to dedicated surfaces.
+              WeeklyIntent → Desk · MoneyBrief → Pay · Founding/Invite → their own pages. */}
+          {false && (
+            <details className="group mb-4 rounded-2xl border border-border/60 bg-card/50 [&[open]]:bg-card transition-colors">
+              <summary className="flex items-center justify-between cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
+                <span className="flex items-center gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  More for you
+                </span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
+              </summary>
+              <div className="px-4 pb-4 pt-1 space-y-4">
+                <WeeklyIntentCard />
+                <MoneyBrief variant="compact" />
+                <NewMemberStarterCard />
+                <FoundingMemberCard />
+                <InviteCircleCard variant="home" />
+                <PushNotificationPrompt trigger="default" />
+              </div>
+            </details>
+          )}
+
+          {/* Push prompt still fires (cooldown-gated) but lives quietly outside the section. */}
+          <PushNotificationPrompt trigger="default" />
         </div>
       )}
 

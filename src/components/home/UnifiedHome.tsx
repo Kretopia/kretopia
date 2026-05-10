@@ -24,10 +24,13 @@ import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import heroCreators from "@/assets/hero-creators.jpg";
 const HERO_IMAGE = heroCreators;
 
-import { WhyCreatorsChooseSection } from "@/components/landing/WhyCreatorsChooseSection";
-import { CreatorDashboardSection } from "@/components/landing/CreatorDashboardSection";
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";
+import { ComparisonTableSection } from "@/components/landing/ComparisonTableSection";
+import { ClaimYourCreditsSection } from "@/components/landing/ClaimYourCreditsSection";
+import { ProductReelSection } from "@/components/landing/ProductReelSection";
+import { ThriveFundTeaserCard } from "@/components/landing/ThriveFundTeaserCard";
+import { BottomCTASection } from "@/components/landing/BottomCTASection";
 // StickyMobileCTA removed — dismissible popup handles guest CTA
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A

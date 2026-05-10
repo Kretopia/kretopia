@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { DollarSign, ArrowRight, Sparkles, CheckCircle, Receipt } from "lucide-react";
+import { DollarSign, Sparkles, CheckCircle, Receipt } from "lucide-react";
 
 /**
  * Pay — invoices, quotes, receipts. Show the chat that drafts/edits invoices

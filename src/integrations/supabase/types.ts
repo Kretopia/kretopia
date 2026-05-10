@@ -16925,16 +16925,6 @@ export type Database = {
       }
     }
     Functions: {
-      _admin_list_cron_jobs: {
-        Args: never
-        Returns: {
-          active: boolean
-          command: string
-          jobid: number
-          jobname: string
-          schedule: string
-        }[]
-      }
       admin_confirm_bank_transfer: {
         Args: { p_admin_notes?: string; p_transfer_id: string }
         Returns: Json

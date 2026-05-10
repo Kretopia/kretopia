@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Database, Verified, Briefcase, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, MessageSquare, Play, Star, Globe, Shield, CheckCircle } from "lucide-react";
+import { Search, Verified, MapPin, ArrowRight, TrendingUp, Users, Sparkles, PlusCircle, CalendarDays, ChevronRight, Zap, MessageSquare, Play, Star, Globe, Shield, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +19,7 @@ import { CreditThumb } from "@/components/onboarding/claim-flow/CreditThumb";
 import { ProfileHubCard } from "@/components/home/ProfileHubCard";
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
-// TODO: Replace with real community photos before launch
-// To swap the hero visual, change this single import path:
-import heroCreators from "@/assets/hero-creators.jpg";
-const HERO_IMAGE = heroCreators;
+// Hero visual is now <HeroPhoneCarousel /> — no static image needed.
 
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { PricingPreviewSection } from "@/components/landing/PricingPreviewSection";

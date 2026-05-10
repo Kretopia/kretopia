@@ -67,8 +67,6 @@ export const VibeHeader = ({
   const { toast } = useToast();
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(project.title);
-  const [uploading, setUploading] = useState(false);
-  const fileRef = useRef<HTMLInputElement | null>(null);
 
   const status = STATUS_LABELS[project.status ?? "active"] ?? STATUS_LABELS.active;
   const moodGlyph = moodEmoji(project.mood);
@@ -100,112 +98,10 @@ export const VibeHeader = ({
     if (ok) setEditingTitle(false);
   };
 
-  const handleCoverPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${project.id}/cover-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("project-files")
-        .upload(path, file, { cacheControl: "3600", upsert: true });
-      if (upErr) throw upErr;
-      const { data } = supabase.storage.from("project-files").getPublicUrl(path);
-      await updateProject({ cover_url: data.publicUrl });
-    } catch (err: any) {
-      toast({ title: "Cover upload failed", description: err.message, variant: "destructive" });
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  };
-
-  const [coverFailed, setCoverFailed] = useState(false);
-  const hasCover = !!project.cover_url && !coverFailed;
-
   return (
     <section className="relative">
-      {/* Cinematic cover — taller, with violet→magenta veil so titles read like
-          a film poster. No-cover state still uses a mood gradient strip. */}
-      <div
-        className={cn(
-          "relative w-full overflow-hidden",
-          hasCover ? "aspect-[16/9] sm:aspect-[21/9]" : "h-24 sm:h-28",
-        )}
-        style={
-          hasCover
-            ? undefined
-            : { background: moodGradient(project.mood) }
-        }
-      >
-        {hasCover && (
-          <img
-            src={project.cover_url!}
-            alt=""
-            onError={() => setCoverFailed(true)}
-            className="absolute inset-0 w-full h-full object-cover scale-[1.02]"
-          />
-        )}
-
-        {/* Brand veil — violet tint + dark fade. Pulls cover into the brand
-            world without killing the photo. */}
-        {hasCover && (
-          <>
-            <div
-              className="absolute inset-0 mix-blend-multiply opacity-60"
-              style={{ background: "var(--gradient-primary)" }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/10" />
-          </>
-        )}
-        {!hasCover && (
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-        )}
-
-        {/* Tiny mood glyph for empty state */}
-        {!hasCover && moodGlyph && (
-          <span className="absolute top-2 left-3 text-base opacity-70 select-none">
-            {moodGlyph}
-          </span>
-        )}
-
-        {isOwner && (
-          <>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleCoverPick}
-            />
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              aria-label={hasCover ? "Change cover" : "Add cover photo"}
-              className="absolute top-3 right-3 h-7 gap-1 rounded-full bg-background/85 hover:bg-background text-xs"
-              disabled={uploading}
-              onClick={() => fileRef.current?.click()}
-            >
-              {uploading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Camera className="h-3.5 w-3.5" />
-              )}
-              {!hasCover && <span>Add cover</span>}
-            </Button>
-          </>
-        )}
-      </div>
-
-      {/* Body — sits over the bottom of the cover for a magazine feel */}
-      <div
-        className={cn(
-          "px-4 relative z-10 space-y-3",
-          hasCover ? "-mt-20 sm:-mt-24" : "pt-3",
-        )}
-      >
+      {/* Body — clean, no cover. Brief carries the visual identity. */}
+      <div className="px-4 pt-3 relative z-10 space-y-3">
         {/* Eyebrow + Status row */}
         <div className="flex items-center justify-between gap-2">
           <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase">

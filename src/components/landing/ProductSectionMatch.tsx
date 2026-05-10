@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { Sparkles, MapPin, Verified, ArrowRight } from "lucide-react";
+import { Sparkles, MapPin, Verified } from "lucide-react";
 
 /**
  * Match — the matchmaker. Tease the killer wedge: "we don't just let you

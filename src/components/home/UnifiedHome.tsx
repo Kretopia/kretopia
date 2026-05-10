@@ -513,8 +513,8 @@ export const UnifiedHome = () => {
         </div>
       )}
 
-      {/* ═══════════ 2. PROOF STRIP — live gigs (guests only) ═══════════ */}
-      {!user && <LiveGigsStrip />}
+      {/* Live gigs strip removed — Smart Gig Scout is the new front door */}
+
 
       {/* ═══════════ AUTH HUB ═══════════ */}
       {user && profile && (

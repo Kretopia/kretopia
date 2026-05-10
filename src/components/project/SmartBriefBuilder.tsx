@@ -785,6 +785,7 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
         </div>
       )}
 
+      <div className="sticky bottom-2 z-10">
         <Button onClick={sendToTeam} disabled={sending || !brief} size="lg" className="w-full shadow-lg">
           {sending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
           Send brief & assign work

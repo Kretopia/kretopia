@@ -189,8 +189,27 @@ export const StudioRoom = ({
     </button>
   );
 
+  const isEvent = ["event", "event_production"].includes(project.workspace_type);
+
+  // Labels used by the "Hidden sections" tray so users can re-show what they
+  // dismissed. Only event sub-sections are hideable for now.
+  const EVENT_HIDEABLE_LABELS: Record<string, string> = {
+    "event-hero": "Event details",
+    "event-producer": "Producer dashboard",
+    "event-studio": "Run of show",
+    "event-suppliers": "Suppliers",
+    "event-talent": "Talent",
+    "event-sponsors": "Sponsors",
+    "event-rsvp": "RSVP questions",
+    "event-matches": "Guest matches",
+    "event-seating": "Seating planner",
+    "event-outreach": "Outreach segments",
+    "event-recap": "Post-event recap",
+  };
+
   const mobileWorkColumn = (
     <div className="divide-y divide-border/60">
+      {/* Brief stays at the very top — it carries the studio's main concept */}
       <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
       <StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />
       <DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />

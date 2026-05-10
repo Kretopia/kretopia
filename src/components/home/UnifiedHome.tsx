@@ -398,25 +398,25 @@ export const UnifiedHome = () => {
 
           <div className="relative container mx-auto max-w-6xl px-4 sm:px-6 pt-6 sm:pt-12 pb-8">
             {/* Two-column cinematic stage */}
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-10 sm:mb-14">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center mb-10 sm:mb-14">
 
-              {/* LEFT — Headline + Search + Stats (search is FIRST interactive element above the fold on mobile) */}
-              <div className="relative z-10 text-center lg:text-left order-1 lg:order-1">
+              {/* LEFT — Headline + Search + Stats. On mobile the visual sits ABOVE so faces are first thing seen. */}
+              <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
                 <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
                   <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                  From Profile to Paid
+                  Built by creatives · for creatives
                 </p>
 
-                {/* PRIMARY HEADLINE */}
-                <h1 className="text-[2.25rem] sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.035em] text-foreground leading-[0.95] mb-4">
-                  Claim your work.<br />
-                  Get matched.<br />
-                  <span className="text-energy-glow">Get paid.</span>
+                {/* PRIMARY HEADLINE — warm, community-first */}
+                <h1 className="text-[2.5rem] sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.035em] text-foreground leading-[0.95] mb-4">
+                  Find your<br />
+                  <span className="text-energy-glow">people.</span><br />
+                  Build the work.
                 </h1>
 
-                {/* Secondary headline */}
-                <p className="text-sm sm:text-base text-muted-foreground/90 font-semibold mb-5">
-                  One home for your credits, your collaborators, your gigs and your money — with Thrive doing the busy work.
+                {/* Secondary headline — warmer, human */}
+                <p className="text-sm sm:text-base text-muted-foreground/90 font-medium mb-5 leading-relaxed">
+                  The home for creatives. Match with collaborators in your city, run the project together, and get paid — without juggling nine apps.
                 </p>
 
                 {/* SEARCH BAR — first interactive element above the fold */}
@@ -442,28 +442,29 @@ export const UnifiedHome = () => {
                   </div>
                 </div>
 
-                {/* STATS BAR — strongest social proof, immediately after search */}
-                <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-5 mt-4 mb-2 flex-wrap">
-                  <div className="text-center lg:text-left">
-                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.creators.toLocaleString()}+</p>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCreators")}</p>
-                  </div>
-                  <div className="w-px h-7 bg-border" />
-                  <div className="text-center lg:text-left">
-                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.connections.toLocaleString()}+</p>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Connections</p>
-                  </div>
-                  <div className="w-px h-7 bg-border" />
-                  <div className="text-center lg:text-left">
-                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.credits.toLocaleString()}+</p>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCredits")}</p>
-                  </div>
-                  <div className="w-px h-7 bg-border" />
-                  <div className="text-center lg:text-left">
-                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.gigs.toLocaleString()}+</p>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsGigs")}</p>
-                  </div>
-                </div>
+                {/* STATS BAR — only render counters with real values (no empty 0+ noise) */}
+                {(() => {
+                  const items = [
+                    { key: "creators", value: stats.creators, label: t("landing.statsCreators") },
+                    { key: "connections", value: stats.connections, label: "Connections" },
+                    { key: "credits", value: stats.credits, label: t("landing.statsCredits") },
+                    { key: "gigs", value: stats.gigs, label: t("landing.statsGigs") },
+                  ].filter((x) => (x.value ?? 0) > 0);
+                  if (items.length === 0) return null;
+                  return (
+                    <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-5 mt-4 mb-2 flex-wrap">
+                      {items.map((item, i) => (
+                        <div key={item.key} className="flex items-center gap-3 sm:gap-5">
+                          {i > 0 && <div className="w-px h-7 bg-border" />}
+                          <div className="text-center lg:text-left">
+                            <p className="text-lg sm:text-xl font-extrabold text-foreground">{item.value.toLocaleString()}+</p>
+                            <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{item.label}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
 
                 <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mt-5">
                   Where{" "}
@@ -487,7 +488,7 @@ export const UnifiedHome = () => {
 
               {/* RIGHT — Cinematic creator image with overlays. On mobile this loads BELOW the search bar. */}
               {/* TODO: Replace with real community photos before launch */}
-              <div className="relative order-2 lg:order-2">
+              <div className="relative order-1 lg:order-2">
                 <div className="relative aspect-[4/5] lg:aspect-[3/4] rounded-3xl overflow-hidden border border-primary/25 shadow-glow">
                   <img
                     src={HERO_IMAGE}

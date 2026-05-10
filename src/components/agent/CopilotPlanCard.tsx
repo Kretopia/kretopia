@@ -235,6 +235,14 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
           {plan.summary}
         </p>
       )}
+
+      {resultCards.length > 0 && (
+        <div className="space-y-2 mt-3">
+          {resultCards.map((c) => (
+            <AgentResultCard key={c.id} card={c} compact />
+          ))}
+        </div>
+      )}
     </Card>
   );
 };

@@ -654,6 +654,25 @@ export const UnifiedHome = () => {
 
 
         {/* ── 1. CREATORS FOR YOU (auth only) ── */}
+        {user && featuredCreators.length === 0 && (
+          <section className="mb-8">
+            <div className="rounded-2xl border border-dashed border-primary/30 bg-gradient-to-br from-primary/[0.06] via-card to-accent/[0.04] p-5 text-center">
+              <div className="mx-auto mb-3 h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-sm font-bold text-foreground">Your matches are warming up</p>
+              <p className="text-[12px] text-muted-foreground mt-1 max-w-xs mx-auto">
+                Add your skills, location, and a few credits — Thrive will line up creators and gigs that fit you.
+              </p>
+              <button
+                onClick={() => navigate("/profile/edit")}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Finish your profile <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
+          </section>
+        )}
         {user && featuredCreators.length > 0 && (
           <section className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">

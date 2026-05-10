@@ -52,7 +52,7 @@ import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
 import { LiveGigsStrip } from "@/components/landing/LiveGigsStrip";
-import { ThriveFundShowcase } from "@/components/landing/ThriveFundShowcase";
+// ThriveFundShowcase replaced by compact ThriveFundTeaserCard on landing
 import GigCard from "@/components/opportunity/GigCard";
 import { GigRailCard } from "@/components/opportunity/GigRailCard";
 import { intentBoostForCreator, intentBoostForGig, intentBoostForEvent } from "@/lib/intentMatching";

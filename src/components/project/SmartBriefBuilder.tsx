@@ -14,6 +14,7 @@ import {
   CheckCircle2, ArrowLeft, Send, Wand2, Upload, FileText, Clock, Users, Mic2,
 } from "lucide-react";
 import { extractTextFromFile } from "@/lib/extractBriefDocument";
+import { StudioComingAliveLoader } from "@/components/onboarding/claim-flow/StudioComingAliveLoader";
 
 interface SmartBriefBuilderProps {
   projectId: string;
@@ -84,7 +85,8 @@ const offsetToISODate = (offset: number | null | undefined): string | null => {
 export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBriefBuilderProps) => {
   const { toast } = useToast();
   const [stage, setStage] = useState<"input" | "review">("input");
-  const [tab, setTab] = useState<"type" | "voice" | "upload">("type");
+  const [tab, setTab] = useState<"type" | "voice" | "upload">("upload");
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [sending, setSending] = useState(false);
@@ -175,17 +177,44 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
     setRecording(false);
   };
 
+  const runElevate = async (payload: Record<string, unknown>) => {
+    const { data, error } = await supabase.functions.invoke("elevate-brief", { body: payload });
+    if (error) throw error;
+    if (!data?.elevated_brief) throw new Error("No brief returned");
+    setBrief(data.elevated_brief);
+    setDeliverables(data.deliverables ?? []);
+    setTasks(data.tasks ?? []);
+    setRunOfShow(Array.isArray(data.run_of_show) ? data.run_of_show : []);
+    setSuppliers(Array.isArray(data.suppliers) ? data.suppliers : []);
+    setTalent(Array.isArray(data.talent) ? data.talent : []);
+    setStage("review");
+  };
+
+  const basePayload = () => ({
+    project_title: projectTitle,
+    collaborators: collabs.map((c) => ({
+      user_id: c.user_id,
+      display_name: c.display_name,
+      role: c.role,
+    })),
+  });
+
+  const elevateFromText = async (textBody: string) => {
+    setBusy(true);
+    try {
+      await runElevate({ ...basePayload(), source: "text", text: textBody });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Couldn't elevate brief";
+      toast({ title: "Smart Brief failed", description: msg, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const elevate = async () => {
     setBusy(true);
     try {
-      const payload: Record<string, unknown> = {
-        project_title: projectTitle,
-        collaborators: collabs.map((c) => ({
-          user_id: c.user_id,
-          display_name: c.display_name,
-          role: c.role,
-        })),
-      };
+      const payload: Record<string, unknown> = basePayload();
       if (tab === "voice") {
         if (!voiceBlob) throw new Error("Record something first");
         payload.source = "audio";
@@ -200,18 +229,7 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
         payload.source = "text";
         payload.text = text;
       }
-
-      const { data, error } = await supabase.functions.invoke("elevate-brief", { body: payload });
-      if (error) throw error;
-      if (!data?.elevated_brief) throw new Error("No brief returned");
-
-      setBrief(data.elevated_brief);
-      setDeliverables(data.deliverables ?? []);
-      setTasks(data.tasks ?? []);
-      setRunOfShow(Array.isArray(data.run_of_show) ? data.run_of_show : []);
-      setSuppliers(Array.isArray(data.suppliers) ? data.suppliers : []);
-      setTalent(Array.isArray(data.talent) ? data.talent : []);
-      setStage("review");
+      await runElevate(payload);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't elevate brief";
       toast({ title: "Smart Brief failed", description: msg, variant: "destructive" });
@@ -224,17 +242,21 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
     if (!file) return;
     setBusy(true);
     setUploadInfo(null);
+    setUploadError(null);
     try {
       if (file.size > 25 * 1024 * 1024) throw new Error("File too large (max 25 MB)");
       const result = await extractTextFromFile(file);
-      if (!result.text.trim()) throw new Error("No readable text found in document");
+      if (!result.text.trim()) throw new Error("No readable text found in this document. If it's a scanned PDF, paste the text into the Type tab.");
       setUploadFileName(file.name);
       setUploadedText(result.text);
       setUploadInfo(
         `${file.name} · ${result.pages} page${result.pages === 1 ? "" : "s"}${result.truncated ? " · truncated to fit" : ""}`,
       );
+      // Auto-elevate immediately — user shouldn't have to tap a second button
+      await elevateFromText(`[Uploaded brief — ${file.name}]\n\n${result.text}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't read file";
+      setUploadError(msg);
       toast({ title: "Upload failed", description: msg, variant: "destructive" });
     } finally {
       setBusy(false);
@@ -443,18 +465,72 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
             <div className="min-w-0">
               <h3 className="font-semibold">Smart Brief</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Type or speak the rough idea. We'll research it, polish the brief, generate tasks,
-                and route them to the right person.
+                Drop a plan, type the rough idea, or speak it. We'll polish the brief, generate
+                tasks, and route them to the right people.
               </p>
             </div>
           </div>
 
+          {busy && (
+            <div className="mb-4 animate-fade-in">
+              <StudioComingAliveLoader />
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                Reading your document and shaping the studio…
+              </p>
+            </div>
+          )}
+
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
             <TabsList className="grid grid-cols-3 w-full">
+              <TabsTrigger value="upload" className="gap-1.5"><Upload className="h-3.5 w-3.5" />Upload</TabsTrigger>
               <TabsTrigger value="type" className="gap-1.5"><PenLine className="h-3.5 w-3.5" />Type</TabsTrigger>
               <TabsTrigger value="voice" className="gap-1.5"><Mic className="h-3.5 w-3.5" />Voice</TabsTrigger>
-              <TabsTrigger value="upload" className="gap-1.5"><Upload className="h-3.5 w-3.5" />Upload</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="upload" className="space-y-3 pt-4">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.txt,.md,.markdown,.csv,application/pdf,text/plain,text/markdown,text/csv"
+                className="hidden"
+                onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+              />
+              <div
+                className={`flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-xl transition-colors ${busy ? "opacity-50 pointer-events-none" : "cursor-pointer hover:border-primary/60 hover:bg-primary/5"}`}
+                onClick={() => !busy && fileInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); }}
+                onDrop={(e) => { e.preventDefault(); if (!busy) onPickFile(e.dataTransfer.files?.[0] ?? null); }}
+              >
+                {uploadFileName && !uploadError ? (
+                  <>
+                    <FileText className="h-10 w-10 text-primary" />
+                    <p className="text-sm font-semibold text-center">{uploadFileName}</p>
+                    {uploadInfo && <p className="text-xs text-muted-foreground text-center">{uploadInfo}</p>}
+                    <Button variant="outline" size="sm" disabled={busy} onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
+                      Choose another file
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-10 w-10 text-primary" />
+                    <p className="text-base font-semibold text-center">Drop a brief, plan, or PDF here</p>
+                    <p className="text-xs text-muted-foreground text-center max-w-sm">
+                      Already used another AI to plan this? Drop the doc — we'll spread it across
+                      the studio: brief, tasks, deliverables, run-of-show, suppliers & talent.
+                    </p>
+                    <Button variant="default" size="sm">Browse files</Button>
+                  </>
+                )}
+              </div>
+              {uploadError && (
+                <div className="text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-2.5">
+                  {uploadError}
+                </div>
+              )}
+              <p className="text-[11px] text-muted-foreground text-center">
+                Supported: PDF, .txt, .md, .csv · max 25 MB · auto-organizes on drop
+              </p>
+            </TabsContent>
 
             <TabsContent value="type" className="space-y-3 pt-4">
               <Textarea
@@ -495,51 +571,6 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
                 Speak naturally — what you need, who it's for, deadlines.
               </p>
             </TabsContent>
-
-            <TabsContent value="upload" className="space-y-3 pt-4">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.txt,.md,.markdown,.csv,application/pdf,text/plain,text/markdown,text/csv"
-                className="hidden"
-                onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
-              />
-              <div
-                className="flex flex-col items-center justify-center gap-3 p-6 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={(e) => { e.preventDefault(); }}
-                onDrop={(e) => { e.preventDefault(); onPickFile(e.dataTransfer.files?.[0] ?? null); }}
-              >
-                {uploadFileName ? (
-                  <>
-                    <FileText className="h-8 w-8 text-primary" />
-                    <p className="text-sm font-semibold text-center">{uploadFileName}</p>
-                    {uploadInfo && <p className="text-xs text-muted-foreground text-center">{uploadInfo}</p>}
-                    <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
-                      Choose another file
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-8 w-8 text-muted-foreground" />
-                    <p className="text-sm font-medium text-center">Drop a brief, plan, or PDF</p>
-                    <p className="text-xs text-muted-foreground text-center">
-                      We'll read it and turn it into tasks, deliverables, run-of-show, suppliers and talent.
-                    </p>
-                    <Button variant="outline" size="sm">Browse files</Button>
-                  </>
-                )}
-              </div>
-              <p className="text-[11px] text-muted-foreground text-center">
-                Supported: PDF, .txt, .md, .csv · max 25 MB
-              </p>
-              {uploadedText && (
-                <Button onClick={elevate} disabled={busy} className="w-full">
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                  Turn document into a plan
-                </Button>
-              )}
-            </TabsContent>
           </Tabs>
 
           {collabs.length === 0 && (
@@ -553,8 +584,42 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
   }
 
   // ---------- REVIEW STAGE ----------
+  const summaryRows = [
+    { label: "Tasks", n: tasks.length, where: "Studio feed" },
+    { label: "Deliverables", n: deliverables.length, where: "Vault → Deliverables" },
+    { label: "Run of show", n: runOfShow.length, where: "Event → Run of show" },
+    { label: "Suppliers", n: suppliers.length, where: "Event → Suppliers" },
+    { label: "Talent", n: talent.length, where: "Event → Talent" },
+  ].filter((r) => r.n > 0);
+
   return (
     <div className="space-y-4">
+      {/* What we did — at-a-glance */}
+      <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent animate-fade-in">
+        <CardContent className="pt-5 px-4 sm:px-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h3 className="font-semibold text-sm">Here's what landed in your studio</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Review and tweak below, then tap <span className="font-medium">Send brief</span> to push everything live.
+          </p>
+          {summaryRows.length > 0 ? (
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {summaryRows.map((r) => (
+                <li key={r.label} className="flex items-center gap-2 text-xs">
+                  <Badge variant="secondary" className="rounded-full font-bold tabular-nums min-w-[28px] justify-center">{r.n}</Badge>
+                  <span className="font-medium">{r.label}</span>
+                  <span className="text-muted-foreground">→ {r.where}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-muted-foreground">Just the brief — no tasks or deliverables generated.</p>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent className="pt-5 sm:pt-6 px-4 sm:px-6">
           <div className="flex items-center justify-between gap-2 mb-3">

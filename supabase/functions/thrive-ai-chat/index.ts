@@ -83,14 +83,16 @@ serve(async (req) => {
         if (user) {
           userId = user.id;
 
-          // ---- Per-tier daily message cap (industry-standard rate limiting) ----
-          // Spark 20 / Pro 150 / Creator+ 500 / Founder 1000 / Brand Pro 200 / Brand Ent unlimited
+          // ---- Per-tier daily message cap ----
+          // Bundled with Thrive Voice into a single "Thrive Talk" budget surfaced as minutes.
+          // Chat caps are deliberately generous so VOICE minutes are the visible bottleneck:
+          // Spark 30 / Creator 1000 / Creator+ 5000 / Founder/Brand Ent unlimited / Brand Pro 1000
           const TIER_DAILY_CAPS: Record<string, number> = {
-            free: 20,
-            pro: 150,
-            creator_pro: 500,
-            founder: 1000,
-            brand_pro: 200,
+            free: 30,
+            pro: 1000,
+            creator_pro: 5000,
+            founder: -1,
+            brand_pro: 1000,
             brand_enterprise: -1,
           };
           const { data: profile } = await admin

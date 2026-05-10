@@ -442,28 +442,29 @@ export const UnifiedHome = () => {
                   </div>
                 </div>
 
-                {/* STATS BAR — strongest social proof, immediately after search */}
-                <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-5 mt-4 mb-2 flex-wrap">
-                  <div className="text-center lg:text-left">
-                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.creators.toLocaleString()}+</p>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCreators")}</p>
-                  </div>
-                  <div className="w-px h-7 bg-border" />
-                  <div className="text-center lg:text-left">
-                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.connections.toLocaleString()}+</p>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Connections</p>
-                  </div>
-                  <div className="w-px h-7 bg-border" />
-                  <div className="text-center lg:text-left">
-                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.credits.toLocaleString()}+</p>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsCredits")}</p>
-                  </div>
-                  <div className="w-px h-7 bg-border" />
-                  <div className="text-center lg:text-left">
-                    <p className="text-lg sm:text-xl font-extrabold text-foreground">{stats.gigs.toLocaleString()}+</p>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t("landing.statsGigs")}</p>
-                  </div>
-                </div>
+                {/* STATS BAR — only render counters with real values (no empty 0+ noise) */}
+                {(() => {
+                  const items = [
+                    { key: "creators", value: stats.creators, label: t("landing.statsCreators") },
+                    { key: "connections", value: stats.connections, label: "Connections" },
+                    { key: "credits", value: stats.credits, label: t("landing.statsCredits") },
+                    { key: "gigs", value: stats.gigs, label: t("landing.statsGigs") },
+                  ].filter((x) => (x.value ?? 0) > 0);
+                  if (items.length === 0) return null;
+                  return (
+                    <div className="flex items-center justify-center lg:justify-start gap-3 sm:gap-5 mt-4 mb-2 flex-wrap">
+                      {items.map((item, i) => (
+                        <div key={item.key} className="flex items-center gap-3 sm:gap-5">
+                          {i > 0 && <div className="w-px h-7 bg-border" />}
+                          <div className="text-center lg:text-left">
+                            <p className="text-lg sm:text-xl font-extrabold text-foreground">{item.value.toLocaleString()}+</p>
+                            <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{item.label}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
 
                 <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mt-5">
                   Where{" "}

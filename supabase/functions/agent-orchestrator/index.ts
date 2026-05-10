@@ -226,11 +226,37 @@ async function planTools(
         }
       } else {
         // requires_approval / locked / inline → record as a proposal and tell the model it's queued
+        let pTitle = preview.title ?? "";
+        let pBody = preview.body ?? "";
+        // Fallback enrichment so the approval card is never generic
+        if ((toolName === "add_collaborator" || toolName === "remove_collaborator") && (!pTitle || !pBody)) {
+          try {
+            const targetUserId = (args.user_id_to_add || args.user_id_to_remove || args.user_id) as string | undefined;
+            const targetProjectId = (args.target_project_id || args.project_id) as string | undefined;
+            let personName: string | null = null;
+            let projectTitle: string | null = null;
+            if (targetUserId) {
+              const { data: p } = await admin.from("profiles").select("full_name, username").eq("user_id", targetUserId).maybeSingle();
+              personName = (p as any)?.full_name || (p as any)?.username || null;
+            }
+            if (targetProjectId) {
+              const { data: pr } = await admin.from("projects").select("title").eq("id", targetProjectId).maybeSingle();
+              projectTitle = (pr as any)?.title || null;
+            }
+            const verb = toolName === "add_collaborator" ? "Add" : "Remove";
+            const prep = toolName === "add_collaborator" ? "to" : "from";
+            if (personName || projectTitle) {
+              pTitle = pTitle || `${verb} ${personName ?? "collaborator"} ${prep} ${projectTitle ?? "this project"}`;
+              pBody = pBody || `${personName ?? "They"} will ${toolName === "add_collaborator" ? "get full access to chat, tasks, files and calls in" : "lose access to"} ${projectTitle ?? "the project"}.`;
+            }
+          } catch (_) { /* fallback to defaults below */ }
+        }
+        if (!pTitle) pTitle = toolName.replace(/_/g, " ");
         proposals.push({
           tool_name: toolName,
           tool_args: args,
-          preview_title: preview.title ?? toolName,
-          preview_body: preview.body ?? "",
+          preview_title: pTitle,
+          preview_body: pBody,
         });
         messages.push({ role: "tool", tool_call_id: c.id, content: JSON.stringify({ ok: true, queued: true, awaiting_user_approval: true }) });
       }

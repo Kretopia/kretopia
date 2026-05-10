@@ -257,7 +257,7 @@ serve(async (req) => {
       throw new Error(`Unknown source: ${source}`);
     }
 
-    const result = await callGemini(parts, LOVABLE_API_KEY);
+    const result = await callGemini(parts, systemPrompt, LOVABLE_API_KEY);
 
     return new Response(JSON.stringify(result), {
       status: 200,

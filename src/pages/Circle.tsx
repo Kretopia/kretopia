@@ -258,7 +258,7 @@ export default function Circle() {
           <TabsContent value="network" className="space-y-4">
             {user ? (
               <>
-                <InviteCircleCard variant="match" />
+                {connections.length === 0 && <InviteCircleCard variant="match" />}
                 <NetworkVisualization onInvite={() => setShowInvite(true)} />
                 {connections.length > 0 && (
                   <div className="border-t pt-6">

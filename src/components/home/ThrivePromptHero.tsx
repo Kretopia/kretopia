@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, ArrowUp, Loader2, Sparkles, ListChecks } from "lucide-react";
+import { Mic, ArrowUp, Loader2, Sparkles, ListChecks, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +39,7 @@ export function ThrivePromptHero() {
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
   const [planMode, setPlanMode] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -180,22 +181,40 @@ export function ThrivePromptHero() {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-primary/8 via-background to-energy/5 p-5 sm:p-7">
+    <section className={cn(
+      "relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-primary/8 via-background to-energy/5 transition-all",
+      expanded ? "p-5 sm:p-7" : "p-4 sm:p-5",
+    )}>
       <div aria-hidden className="absolute -top-20 -right-16 h-56 w-56 rounded-full bg-primary/15 blur-3xl" />
       <div aria-hidden className="absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-energy/10 blur-3xl" />
 
       <div className="relative">
-        <div className="flex items-center gap-2 mb-1.5">
+        <div className="flex items-center justify-between gap-2 mb-1.5">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-foreground/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/70">
             <Sparkles className="h-3 w-3" /> Thrive
           </span>
+          <button
+            type="button"
+            onClick={() => setExpanded(v => !v)}
+            aria-expanded={expanded}
+            aria-label={expanded ? "Hide options" : "Show options"}
+            className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-full hover:bg-foreground/5"
+          >
+            {expanded ? "Less" : "More"}
+            <ChevronDown className={cn("h-3 w-3 transition-transform", expanded && "rotate-180")} />
+          </button>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black leading-[1.1] tracking-tight">
+        <h1 className={cn(
+          "font-black leading-[1.1] tracking-tight transition-all",
+          expanded ? "text-2xl sm:text-3xl" : "text-lg sm:text-xl",
+        )}>
           What are you trying to <span className="text-primary">create</span>?
         </h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-md">
-          Tell me your goal — I'll spin up the workspace, find the right people, scout the gigs, and help you ship it.
-        </p>
+        {expanded && (
+          <p className="text-sm text-muted-foreground mt-2 max-w-md">
+            Tell me your goal — I'll spin up the workspace, find the right people, scout the gigs, and help you ship it.
+          </p>
+        )}
 
         <form
           onSubmit={(e) => { e.preventDefault(); void submit(text); }}
@@ -233,50 +252,54 @@ export function ThrivePromptHero() {
           </button>
         </form>
 
-        <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setPlanMode((v) => !v)}
-            aria-pressed={planMode}
-            title="Plan & execute mode — Thrive drafts an ordered plan you approve before anything runs."
-            className={cn(
-              "inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors",
-              planMode
-                ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                : "bg-foreground/5 hover:bg-foreground/10 text-foreground/75 border-transparent",
-            )}
-          >
-            <ListChecks className="h-3 w-3" />
-            {planMode ? "Plan mode: on" : "Plan mode"}
-          </button>
-          <span className="h-4 w-px bg-border/70 mx-0.5" aria-hidden />
-          {SUGGESTIONS.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => { setText(s); void submit(s); }}
-              disabled={busy}
-              className="text-[11px] px-2.5 py-1 rounded-full bg-foreground/5 hover:bg-foreground/10 text-foreground/75 transition-colors disabled:opacity-50"
-            >
-              {s}
-            </button>
-          ))}
-        </div>
+        {expanded && (
+          <>
+            <div className="mt-3 flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPlanMode((v) => !v)}
+                aria-pressed={planMode}
+                title="Plan & execute mode — Thrive drafts an ordered plan you approve before anything runs."
+                className={cn(
+                  "inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors",
+                  planMode
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-foreground/5 hover:bg-foreground/10 text-foreground/75 border-transparent",
+                )}
+              >
+                <ListChecks className="h-3 w-3" />
+                {planMode ? "Plan mode: on" : "Plan mode"}
+              </button>
+              <span className="h-4 w-px bg-border/70 mx-0.5" aria-hidden />
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => { setText(s); void submit(s); }}
+                  disabled={busy}
+                  className="text-[11px] px-2.5 py-1 rounded-full bg-foreground/5 hover:bg-foreground/10 text-foreground/75 transition-colors disabled:opacity-50"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
 
-        <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
-          {planMode ? (
-            <>
-              <span className="font-semibold text-foreground/80">Plan mode is on.</span>{" "}
-              Thrive will break your goal into ordered steps and wait for your tap before running each one.
-            </>
-          ) : (
-            <>
-              <span className="font-semibold text-foreground/80">Tip:</span>{" "}
-              Turn on <span className="font-semibold">Plan mode</span> for big asks (e.g.{" "}
-              <span className="italic">"plan a 3-city pop-up tour"</span>) so you see every step before anything runs.
-            </>
-          )}
-        </p>
+            <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">
+              {planMode ? (
+                <>
+                  <span className="font-semibold text-foreground/80">Plan mode is on.</span>{" "}
+                  Thrive will break your goal into ordered steps and wait for your tap before running each one.
+                </>
+              ) : (
+                <>
+                  <span className="font-semibold text-foreground/80">Tip:</span>{" "}
+                  Turn on <span className="font-semibold">Plan mode</span> for big asks (e.g.{" "}
+                  <span className="italic">"plan a 3-city pop-up tour"</span>) so you see every step before anything runs.
+                </>
+              )}
+            </p>
+          </>
+        )}
 
         <AnimatePresence>
           {busy && (

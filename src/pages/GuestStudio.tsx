@@ -410,32 +410,44 @@ export default function GuestStudio() {
         )}
       </main>
 
-      {/* Persistent Claim CTA */}
+      {/* Persistent Sign in / Sign up CTA */}
       <div className="fixed bottom-0 inset-x-0 z-20 border-t border-border bg-card/95 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-2xl">
         <div className="flex items-center gap-3 max-w-md mx-auto">
           <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0">
             <UserPlus className="h-5 w-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold leading-tight">Claim your profile</p>
+            <p className="text-sm font-bold leading-tight">Get full Studio access</p>
             <p className="text-[11px] text-muted-foreground leading-tight">
-              Get the full ThriveIN — projects, payments, your creative resume.
+              Sign in or create your free ThriveIN account to collaborate.
             </p>
           </div>
-          <Button
-            size="sm"
-            onClick={() => {
-              const params = new URLSearchParams({
-                email,
-                name,
-                redirect: `/guest/${token}`,
-              });
-              navigate(`/auth?${params.toString()}`);
-            }}
-            className="shrink-0 bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold"
-          >
-            Claim
-          </Button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const params = new URLSearchParams({ redirect: `/guest/${token}` });
+                if (email) params.set("email", email);
+                navigate(`/auth?mode=signin&${params.toString()}`);
+              }}
+              className="font-semibold"
+            >
+              Sign in
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                const params = new URLSearchParams({ redirect: `/guest/${token}` });
+                if (email) params.set("email", email);
+                if (name) params.set("name", name);
+                navigate(`/auth?mode=signup&${params.toString()}`);
+              }}
+              className="bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold"
+            >
+              Sign up
+            </Button>
+          </div>
         </div>
       </div>
     </div>

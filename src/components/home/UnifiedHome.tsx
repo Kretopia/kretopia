@@ -662,12 +662,17 @@ export const UnifiedHome = () => {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="shrink-0 w-[120px] snap-start"
+                  className="shrink-0 w-[150px] snap-start"
                 >
                   <div
-                    className="rounded-2xl border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group p-3 text-center"
+                    className="relative rounded-2xl border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group p-3 text-center h-full"
                     onClick={() => navigate(`/profile/${c.user_id}`)}
                   >
+                    {typeof c.match_score === "number" && (
+                      <span className="absolute top-1.5 right-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                        {c.match_score}%
+                      </span>
+                    )}
                     <Avatar className="h-14 w-14 mx-auto mb-2 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
                       <AvatarImage src={c.avatar_url || ""} />
                       <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
@@ -676,6 +681,11 @@ export const UnifiedHome = () => {
                     </Avatar>
                     <p className="text-xs font-semibold text-foreground line-clamp-1">{c.full_name}</p>
                     <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{c.role || "Creative"}</p>
+                    {c.reason && (
+                      <p className="text-[10px] text-primary/80 line-clamp-2 mt-1.5 leading-tight">
+                        {c.reason}
+                      </p>
+                    )}
                   </div>
                 </motion.div>
               ))}

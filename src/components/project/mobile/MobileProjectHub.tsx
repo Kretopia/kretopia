@@ -66,8 +66,6 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
     isPro = false,
   } = props;
 
-  const [voiceOpen, setVoiceOpen] = useState(false);
-  
 
   const openTasks = useMemo(() => tasks.filter((t) => t.status !== "done").length, [tasks]);
   const doneTasks = tasks.length - openTasks;

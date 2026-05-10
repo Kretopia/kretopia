@@ -1,11 +1,28 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNowStrict } from "date-fns";
-import { CheckCircle2, Clock, Mic, Sparkles } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Clock, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { moodEmoji } from "./MoodPicker";
-import { moodGradient, moodLabel } from "./moodGradient";
+import { moodLabel } from "./moodGradient";
+
+// Solid, on-brand accent colors per mood (no gradients — keeps it editorial).
+const MOOD_ACCENT: Record<string, string> = {
+  creative: "hsl(232 87% 66%)", // indigo (brand)
+  urgent: "hsl(8 80% 58%)",
+  musical: "hsl(280 70% 55%)",
+  visual: "hsl(190 70% 45%)",
+  chill: "hsl(160 45% 45%)",
+};
+const moodAccent = (m?: string | null) => MOOD_ACCENT[m ?? "creative"] ?? MOOD_ACCENT.creative;
+
+// Two-letter monogram from project title.
+const monogram = (title: string) => {
+  const words = title.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "·";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+};
 
 interface StudioProject {
   id: string;
@@ -66,15 +83,17 @@ export const StudioCardsGrid = ({
 
   if (projects.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card p-10 text-center">
-        <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase mb-3">
+      <div className="rounded-3xl border border-border bg-card p-10 text-center">
+        <p className="text-[10px] font-bold tracking-[0.22em] text-primary uppercase mb-4">
           ThriveDesk · Studio
         </p>
         <div
-          className="mx-auto h-20 w-20 rounded-3xl flex items-center justify-center text-4xl mb-5 shadow-[var(--shadow-glow)]"
-          style={{ background: moodGradient("creative") }}
+          className="mx-auto h-20 w-20 rounded-2xl flex items-center justify-center mb-5 border border-border"
+          style={{ background: "hsl(var(--card))" }}
         >
-          🎨
+          <span className="text-2xl font-black tracking-tight" style={{ color: moodAccent("creative") }}>
+            ✦
+          </span>
         </div>
         <h2 className="text-2xl font-black tracking-[-0.02em] mb-1">Open your first room</h2>
         <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-6">
@@ -100,11 +119,11 @@ export const StudioCardsGrid = ({
           />
         )}
 
-        {/* Dense studio grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+        {/* Editorial studio grid — typography-led, no gradient blocks */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {(rest.length > 0 ? rest : projects).map((project) => {
             const status = STATUS_PILL[project.status ?? "active"] ?? STATUS_PILL.active;
-            const glyph = moodEmoji(project.mood) ?? "🎨";
+            const accent = moodAccent(project.mood);
             const pay = invoicesByProject[project.id];
             const isDone = project.status === "completed";
 
@@ -114,79 +133,68 @@ export const StudioCardsGrid = ({
                 type="button"
                 onClick={() => navigate(`/desk/${project.id}`)}
                 className={cn(
-                  "group relative text-left overflow-hidden rounded-xl",
-                  "border border-border/70 bg-card",
-                  "transition-all hover:border-primary/50 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5",
+                  "group relative text-left overflow-hidden rounded-2xl",
+                  "border border-border bg-card",
+                  "transition-all hover:border-foreground/30 hover:shadow-md hover:-translate-y-0.5",
                   "focus:outline-none focus:ring-2 focus:ring-primary",
                 )}
               >
-                {/* Compact 16:10 cover */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden">
-                  {project.cover_url ? (
-                    <img
-                      src={project.cover_url}
-                      alt=""
-                      loading="lazy"
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div
-                      className="absolute inset-0 flex items-center justify-center text-3xl"
-                      style={{ background: moodGradient(project.mood) }}
-                      aria-label={moodLabel(project.mood)}
-                    >
-                      <span className="opacity-90 drop-shadow-sm">{glyph}</span>
-                    </div>
-                  )}
+                {/* Hairline accent strip — the only color, very thin */}
+                <span
+                  className="absolute left-0 top-0 bottom-0 w-[3px]"
+                  style={{ background: accent }}
+                  aria-hidden
+                />
 
-                  {project.cover_url && (
-                    <div
-                      className="absolute inset-0 mix-blend-multiply opacity-40 transition-opacity group-hover:opacity-25"
-                      style={{ background: "var(--gradient-primary)" }}
-                    />
-                  )}
-
-                  {/* Top-left: status pill */}
-                  <span
-                    className={cn(
-                      "absolute top-2 left-2 text-[9px] font-bold uppercase tracking-[0.1em] px-1.5 py-0.5 rounded-full backdrop-blur-md",
-                      status.tone,
-                    )}
-                  >
-                    {status.label}
-                  </span>
-
-                  {/* Top-right: payment dot only (pill in body) */}
-                  {pay && (
+                <div className="pl-4 pr-3 py-3.5 space-y-3">
+                  {/* Eyebrow row: status + payment dot */}
+                  <div className="flex items-center justify-between gap-2">
                     <span
-                      className="absolute top-2 right-2 h-2 w-2 rounded-full ring-2 ring-black/40"
-                      title={PAY_LABEL[pay]}
+                      className={cn(
+                        "text-[9px] font-bold uppercase tracking-[0.14em]",
+                        status.label === "Delivered" ? "text-emerald-600" : "text-muted-foreground",
+                      )}
                     >
-                      <span className={cn("block h-full w-full rounded-full", PAY_DOT[pay])} />
+                      {status.label}
                     </span>
-                  )}
-                </div>
+                    {pay && (
+                      <span
+                        className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground"
+                        title={PAY_LABEL[pay]}
+                      >
+                        <span className={cn("h-1.5 w-1.5 rounded-full", PAY_DOT[pay])} />
+                        {PAY_LABEL[pay]}
+                      </span>
+                    )}
+                  </div>
 
-                {/* Body — tighter, richer */}
-                <div className="px-3 py-2.5 space-y-1.5">
-                  <h3 className="font-semibold text-[13px] leading-tight line-clamp-1">
+                  {/* Title — the hero of the card */}
+                  <h3 className="font-bold text-[17px] leading-[1.15] tracking-[-0.01em] line-clamp-2 min-h-[2.6em]">
                     {project.title}
                   </h3>
 
-                  {/* meta row 1: mood / stage */}
-                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                    <span
-                      className="inline-block h-1.5 w-1.5 rounded-full"
-                      style={{ background: moodGradient(project.mood) }}
-                    />
-                    <span className="truncate">
-                      {project.pinned_stage || moodLabel(project.mood)}
-                    </span>
-                  </div>
+                  {/* Optional client / one-liner */}
+                  {(project.client_name || project.description) && (
+                    <p className="text-[12px] text-muted-foreground line-clamp-1">
+                      {project.client_name ?? project.description}
+                    </p>
+                  )}
 
-                  {/* meta row 2: time + payment chip */}
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span className="inline-flex items-center gap-1 truncate">
+                  {/* Footer rule + meta */}
+                  <div className="pt-2.5 border-t border-border/60 flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span
+                      className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] truncate"
+                      style={{ color: accent }}
+                    >
+                      <span
+                        className="inline-block h-1.5 w-1.5 rounded-full"
+                        style={{ background: accent }}
+                      />
+                      <span className="truncate text-foreground/70">
+                        {project.pinned_stage || moodLabel(project.mood)}
+                      </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 shrink-0">
                       {isDone ? (
                         <CheckCircle2 className="h-2.5 w-2.5" />
                       ) : (
@@ -194,21 +202,11 @@ export const StudioCardsGrid = ({
                       )}
                       {formatDistanceToNowStrict(new Date(project.updated_at))}
                     </span>
-                    {pay && (
-                      <span
-                        className={cn(
-                          "shrink-0 ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full",
-                          pay === "paid" && "bg-emerald-500/10 text-emerald-400",
-                          pay === "invoiced" && "bg-amber-500/10 text-amber-400",
-                          pay === "unsent" && "bg-rose-500/10 text-rose-400",
-                        )}
-                      >
-                        <span className={cn("h-1 w-1 rounded-full", PAY_DOT[pay])} />
-                        {PAY_LABEL[pay]}
-                      </span>
-                    )}
                   </div>
                 </div>
+
+                {/* Subtle open arrow on hover */}
+                <ArrowUpRight className="absolute top-3 right-3 h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-foreground/60 transition-colors" />
               </button>
             );
           })}
@@ -246,7 +244,7 @@ interface FeatureCardProps {
 
 const FeatureCard = ({ project, pay, onClick }: FeatureCardProps) => {
   const status = STATUS_PILL[project.status ?? "active"] ?? STATUS_PILL.active;
-  const glyph = moodEmoji(project.mood) ?? "🎨";
+  const accent = moodAccent(project.mood);
   const isDone = project.status === "completed";
 
   return (
@@ -254,98 +252,76 @@ const FeatureCard = ({ project, pay, onClick }: FeatureCardProps) => {
       type="button"
       onClick={onClick}
       className={cn(
-        "group relative w-full text-left overflow-hidden rounded-2xl",
-        "border border-primary/25 bg-card",
-        "transition-all hover:border-primary/60 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5",
+        "group relative w-full text-left overflow-hidden rounded-3xl",
+        "border border-border bg-card",
+        "transition-all hover:border-foreground/30 hover:shadow-lg hover:-translate-y-0.5",
         "focus:outline-none focus:ring-2 focus:ring-primary",
       )}
     >
-      <div className="flex">
-        {/* Left: cover */}
-        <div className="relative w-[42%] sm:w-[38%] shrink-0 aspect-[4/5] sm:aspect-[5/6] overflow-hidden">
-          {project.cover_url ? (
-            <img
-              src={project.cover_url}
-              alt=""
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div
-              className="absolute inset-0 flex items-center justify-center text-5xl"
-              style={{ background: moodGradient(project.mood) }}
-              aria-label={moodLabel(project.mood)}
-            >
-              <span className="opacity-90 drop-shadow-sm">{glyph}</span>
-            </div>
-          )}
-          {project.cover_url && (
-            <div
-              className="absolute inset-0 mix-blend-multiply opacity-40"
-              style={{ background: "var(--gradient-primary)" }}
-            />
-          )}
+      {/* Hairline accent bar across top */}
+      <span
+        className="absolute left-0 right-0 top-0 h-[3px]"
+        style={{ background: accent }}
+        aria-hidden
+      />
+
+      <div className="p-5 sm:p-6 space-y-4">
+        {/* Eyebrow row */}
+        <div className="flex items-center justify-between gap-3">
+          <span
+            className="text-[10px] font-bold uppercase tracking-[0.22em]"
+            style={{ color: accent }}
+          >
+            Now in the studio
+          </span>
+          <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            {status.label}
+          </span>
         </div>
 
-        {/* Right: meta */}
-        <div className="flex-1 min-w-0 p-3.5 sm:p-4 flex flex-col justify-between gap-3">
-          <div className="space-y-2">
-            {/* eyebrow */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-[0.16em] text-primary uppercase">
-                <Sparkles className="h-2.5 w-2.5" />
-                Featured Room
-              </span>
-              <span
-                className={cn(
-                  "text-[9px] font-bold uppercase tracking-[0.1em] px-1.5 py-0.5 rounded-full",
-                  status.tone,
-                )}
-              >
-                {status.label}
-              </span>
-            </div>
-
-            <h2 className="text-base sm:text-lg font-bold leading-tight line-clamp-2">
+        {/* Monogram + title */}
+        <div className="flex items-start gap-4">
+          <div
+            className="shrink-0 h-14 w-14 rounded-xl border border-border flex items-center justify-center font-black text-lg tracking-tight"
+            style={{ color: accent }}
+            aria-hidden
+          >
+            {monogram(project.title)}
+          </div>
+          <div className="min-w-0 flex-1 space-y-1">
+            <h2 className="text-xl sm:text-2xl font-black leading-[1.05] tracking-[-0.02em] line-clamp-2">
               {project.title}
             </h2>
-
             {(project.client_name || project.description) && (
-              <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-2">
+              <p className="text-[12px] sm:text-[13px] text-muted-foreground line-clamp-1">
                 {project.client_name ?? project.description}
               </p>
             )}
           </div>
+          <ArrowUpRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-foreground transition-colors" />
+        </div>
 
-          {/* footer meta */}
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <span
-                className="inline-block h-2 w-2 rounded-full"
-                style={{ background: moodGradient(project.mood) }}
-              />
-              {project.pinned_stage || moodLabel(project.mood)}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              {pay && (
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full",
-                    pay === "paid" && "bg-emerald-500/10 text-emerald-400",
-                    pay === "invoiced" && "bg-amber-500/10 text-amber-400",
-                    pay === "unsent" && "bg-rose-500/10 text-rose-400",
-                  )}
-                >
-                  <span className={cn("h-1 w-1 rounded-full", PAY_DOT[pay])} />
-                  {PAY_LABEL[pay]}
-                </span>
-              )}
-              <span className="inline-flex items-center gap-1">
-                {isDone ? <CheckCircle2 className="h-2.5 w-2.5" /> : <Clock className="h-2.5 w-2.5" />}
-                {formatDistanceToNowStrict(new Date(project.updated_at))}
+        {/* Footer meta */}
+        <div className="pt-4 border-t border-border/60 flex items-center justify-between text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] text-foreground/70 truncate">
+            <span
+              className="inline-block h-1.5 w-1.5 rounded-full"
+              style={{ background: accent }}
+            />
+            {project.pinned_stage || moodLabel(project.mood)}
+          </span>
+          <span className="inline-flex items-center gap-3 shrink-0">
+            {pay && (
+              <span className="inline-flex items-center gap-1 font-semibold uppercase tracking-wider">
+                <span className={cn("h-1.5 w-1.5 rounded-full", PAY_DOT[pay])} />
+                {PAY_LABEL[pay]}
               </span>
+            )}
+            <span className="inline-flex items-center gap-1">
+              {isDone ? <CheckCircle2 className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+              {formatDistanceToNowStrict(new Date(project.updated_at))}
             </span>
-          </div>
+          </span>
         </div>
       </div>
     </button>

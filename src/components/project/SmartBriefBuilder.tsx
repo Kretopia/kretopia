@@ -14,6 +14,7 @@ import {
   CheckCircle2, ArrowLeft, Send, Wand2, Upload, FileText, Clock, Users, Mic2,
 } from "lucide-react";
 import { extractTextFromFile } from "@/lib/extractBriefDocument";
+import { StudioComingAliveLoader } from "@/components/onboarding/claim-flow/StudioComingAliveLoader";
 
 interface SmartBriefBuilderProps {
   projectId: string;

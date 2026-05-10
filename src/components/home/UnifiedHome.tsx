@@ -389,6 +389,7 @@ export const UnifiedHome = () => {
       {!user && (
         <div className="relative overflow-hidden bg-cinematic dark">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0 bg-background/60" />
             <div className="absolute -top-40 -left-20 h-[600px] w-[600px] rounded-full bg-primary/25 blur-[160px]" />
             <div className="absolute top-20 -right-20 h-[500px] w-[500px] rounded-full bg-[hsl(282_95%_60%/0.18)] blur-[140px]" />
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
@@ -396,35 +397,35 @@ export const UnifiedHome = () => {
 
           <div className="relative container mx-auto max-w-6xl px-4 sm:px-6 pt-6 sm:pt-12 pb-8">
             {/* Two-column cinematic stage */}
-            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center mb-10 sm:mb-14">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center mb-8 sm:mb-14 min-w-0">
 
-              {/* LEFT — Editorial headline + wedge copy + search. Mobile: visual above, headline below. */}
-              <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
-                <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
+              {/* LEFT — Editorial headline + wedge copy + search. */}
+              <div className="relative z-10 text-center lg:text-left order-1 min-w-0 overflow-hidden">
+                <p className="inline-flex max-w-full items-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.18em] sm:tracking-[0.3em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04] overflow-hidden whitespace-nowrap">
                   <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                  ThriveIN · The Creative OS
+                  <span className="truncate">ThriveIN · The Creative OS</span>
                 </p>
 
                 {/* PRIMARY HEADLINE — editorial scale, IMDb-meets-OS wedge */}
-                <h1 className="text-[2.25rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-[-0.045em] text-foreground leading-[0.95] mb-5">
+                <h1 className="text-[2rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-tight text-foreground leading-[1.02] mb-4">
                   Every credit.<br />
                   Every collab.<br />
                   <span className="text-energy-glow italic font-black">Every payout.</span>
                 </h1>
 
                 {/* Wedge subhead — IMDb for every creative industry + OS that runs the work */}
-                <p className="text-base sm:text-lg text-foreground/85 font-medium mb-6 leading-[1.55] max-w-xl mx-auto lg:mx-0">
+                <p className="text-[0.95rem] sm:text-lg text-foreground font-semibold mb-5 leading-[1.5] max-w-xl mx-auto lg:mx-0">
                   The verified record for film, music, fashion, events &amp; design — and the operating system that runs the work behind it. <span className="text-foreground font-bold">One login. Nine tools.</span>
                 </p>
 
                 {/* SEARCH BAR — first interactive element above the fold */}
                 <div className="max-w-xl mx-auto lg:mx-0 mb-3">
                   <div className="text-center lg:text-left mb-2">
-                    <p className="inline-flex items-center gap-2 text-sm sm:text-base font-black text-energy">
-                      Already have work? Search your name
+                    <p className="inline-flex max-w-full items-center gap-2 text-xs sm:text-base font-black text-energy">
+                      <span className="truncate">Already have work? Search your name</span>
                       <ArrowRight className="h-4 w-4 text-energy" />
                     </p>
-                    <p className="text-[11px] text-muted-foreground mt-1">
+                    <p className="text-xs text-foreground/75 font-medium mt-1">
                       We'll find your verified credits across the web
                     </p>
                   </div>
@@ -456,7 +457,7 @@ export const UnifiedHome = () => {
                           {i > 0 && <div className="w-px h-7 bg-border" />}
                           <div className="text-center lg:text-left">
                             <p className="text-lg sm:text-xl font-extrabold text-foreground">{item.value.toLocaleString()}+</p>
-                            <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{item.label}</p>
+                            <p className="text-[9px] sm:text-[10px] text-foreground/70 font-bold uppercase tracking-wider">{item.label}</p>
                           </div>
                         </div>
                       ))}
@@ -465,7 +466,7 @@ export const UnifiedHome = () => {
                 })()}
 
                 {/* Industry rotator — cinematic flicker */}
-                <p className="text-xs sm:text-sm text-muted-foreground/80 max-w-md mx-auto lg:mx-0 leading-relaxed mt-5 uppercase tracking-[0.2em] font-bold">
+                <p className="text-xs sm:text-sm text-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mt-5 uppercase tracking-[0.16em] sm:tracking-[0.2em] font-black">
                   For{" "}
                   <span className="text-energy inline-block min-w-[110px]">
                     <AnimatePresence mode="wait">
@@ -482,16 +483,16 @@ export const UnifiedHome = () => {
                     </AnimatePresence>
                   </span>
                 </p>
+
+                <div className="mt-6 text-left">
+                  <DiscoverCreativesRow />
+                </div>
               </div>
 
               {/* RIGHT — Auto-rotating phone carousel: Match → Desk → Pay → Thrive */}
-              <div className="relative order-1 lg:order-2">
+              <div className="relative order-2 min-w-0 overflow-hidden">
                 <HeroPhoneCarousel />
               </div>
-            </div>
-
-            <div className="mb-6">
-              <DiscoverCreativesRow />
             </div>
 
             {/* PRIMARY CTA — inline OAuth */}

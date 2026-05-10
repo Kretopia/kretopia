@@ -529,21 +529,10 @@ export const UnifiedHome = () => {
             </Link>
           </div>
 
-          {/* Persona signal — Scout · Deal · Producer at-a-glance */}
-          <PersonaCardsRow className="mb-3" />
-
           {/* Conversational entry — Tell Thrive what you want to create. THE hero of Home. */}
-          <div className="mb-3">
+          <div className="mb-4">
             <ThrivePromptHero />
           </div>
-          <RecentIntentsDrawer
-            className="mb-4"
-            onPick={(prompt) =>
-              window.dispatchEvent(
-                new CustomEvent("thrive-prompt:fill", { detail: { prompt, submit: true } }),
-              )
-            }
-          />
 
           {/* Magic Home — single hero CTA for fresh accounts (<24h) or low-completion profiles */}
           {(() => {
@@ -587,24 +576,32 @@ export const UnifiedHome = () => {
             <ApprovalsHub limit={4} />
           </div>
 
-          <WeeklyIntentCard className="mb-4" />
-          <MoneyBrief variant="compact" className="mb-4" />
-          <NewMemberStarterCard className="mb-4" />
-          <FoundingMemberCard className="mb-4" />
-          <InviteCircleCard variant="home" className="mb-4" />
-          {/* StartCircleNudgeCard hidden — Circles paused on discovery surfaces (Pass A) */}
-
-          <PushNotificationPrompt trigger="default" className="mb-4" />
+          {/* Secondary surfaces — collapsed by default to keep Home calm.
+              Power users expand once; first-timers see only the essentials. */}
+          <details className="group mb-4 rounded-2xl border border-border/60 bg-card/50 [&[open]]:bg-card transition-colors">
+            <summary className="flex items-center justify-between cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
+              <span className="flex items-center gap-2">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                More for you
+              </span>
+              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
+            </summary>
+            <div className="px-4 pb-4 pt-1 space-y-4">
+              <WeeklyIntentCard />
+              <MoneyBrief variant="compact" />
+              <NewMemberStarterCard />
+              <FoundingMemberCard />
+              <InviteCircleCard variant="home" />
+              <PushNotificationPrompt trigger="default" />
+            </div>
+          </details>
         </div>
       )}
 
       {/* ═══════════ CONTENT SECTIONS ═══════════ */}
       <div className="container mx-auto max-w-5xl px-4 sm:px-6 pb-28">
 
-          {/* Daily streak chips — Duolingo loop */}
-          <StreakChipsRow className="mb-4" />
-
-          {user && <OpportunityIntelCard className="mb-4" />}
+          {/* Streak chips and Opportunity Intel moved into "More for you" — keep Home calm */}
 
 
 

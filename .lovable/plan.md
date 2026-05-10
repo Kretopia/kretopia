@@ -1,148 +1,116 @@
 
-# Landing Page Restructure — Strategy + Copy
+# ThriveIN Calm Redesign — 3 Phases
 
-## What's wrong today
+Goal: kill the "too busy" feeling. Cream + near-black + one accent. 3 tabs + hamburger. Progressive disclosure. Vibe-based theming for individuality.
 
-The guest landing currently stacks ~10+ sections that overlap in message:
+---
 
-```
-Hero  →  DiscoverCreativesRow  →  OAuth CTA  →  How It Works (3 steps)
-→  "What are ThriveCredits?" card  →  LiveGigsStrip  →  Live activity bar
-→  WhyCreatorsChooseSection  →  CreatorDashboardSection  →  SocialProofSection
-→  ThriveFundShowcase  →  PricingPreviewSection  →  Bottom CTA
-```
+## Phase 1 — Clean the house (ship this week)
 
-Repetition / drag:
-- Three different "what we do" sections (`WhyCreatorsChoose`, `CreatorDashboard`, hero copy) saying overlapping things.
-- Two credibility sections (live activity bar + SocialProof) doing the same job, weakly.
-- Hero already shows Smart Match + Thrive chat + Verified — then `CreatorDashboardSection` re-shows the product. We pick one.
-- ThriveFund + ThriveCredits + Smart Match all introduced as headline features → no single hero idea sticks.
-- 3 CTAs above the fold competing (OAuth, Search-name, Browse).
+**1.1 New default theme: Warm Minimal**
+- Background: cream `#FAF8F5` (light) — keep dark theme as opt-in
+- Text: near-black `#0F0F12`
+- One accent: keep `#5B6BF5` indigo for now (vibe picker can swap later)
+- Kill: lime `#D4FF3E` from default surfaces, indigo gradients on cards, glass-strong panels in light mode
+- All changes via `index.css` HSL tokens — no hardcoded Tailwind colors
+- `next-themes` default → `light`
 
-## What top platforms do (pattern we'll borrow)
+**1.2 Bottom nav: 5 → 3 tabs**
+- New: `Home · Match · Desk`
+- Move to hamburger: Gigs, Pay, Spotlight, Fund, Founding Member, Settings, etc.
+- Keep `useAccountTone` business override (stays 4 tabs for company accounts since Talent/Pay are daily for them)
+- Update memory: `mvp-single-mode-nav` → 3-tab version
 
-- **Linear / Cal.com / Framer** — one bold hero claim, one CTA, then a vertical "show the product working" reel (1 screenshot per scroll), then proof, then pricing, then close. No repeated value props.
-- **Notion / Beehiiv** — "replaces N tools" comparison block as the single differentiator section.
-- **Fiverr / Upwork** — category strip + live supply (gigs/creators) high up to prove marketplace density.
-- **Patreon / Behance** — creator stories as the social proof, not logo walls.
-- **Vampr / Bumble Bizz** — match/swipe demo as a literal animated tile, not a screenshot.
-- **IMDb / Muso.io** — "search your name, claim your credits" is THE conversion hook (we already have this — we just bury it).
+**1.3 Home: radical simplification**
+- Keep: ThrivePromptHero (the prompt is the hero), Get-Started checklist (when <50%), one "next-up" card
+- Demote/remove from default view: streak chips row, opportunity intel card, money brief, recent intents drawer, founding quest card, scouted gigs preview, discover creatives row
+- Move all of those into a **"More for you"** collapsed accordion below the fold OR surface them via the prompt suggestions
+- Guest landing: same nine-section narrative but restyled with new tokens
 
-Common across all: ~7–9 sections, each does ONE job, no two sections overlap.
+**1.4 Hamburger menu rebuild**
+- Grouped: **Make** (Desk, Studios, Vault) · **Find** (Gigs, Match, Spotlight, Talent) · **Money** (Pay, Invoices, Fund) · **Account** (Profile, Settings, Founding)
+- Light, scannable, no icons-on-icons
 
-## Proposed structure (guest landing)
+---
 
-```
-1. HERO — one promise, one CTA, one product visual
-2. PROOF STRIP — live gigs + creator avatars (marketplace density)
-3. THE HOOK — "Search your name → claim your credits" (the IMDb moment)
-4. THE PRODUCT REEL — 4 stacked tiles, one per pillar (no Why/Dashboard duplicates)
-5. REPLACES 9 APPS — comparison table (the differentiator)
-6. CREATOR STORIES — 3 testimonials + outcome metric
-7. PRICING — 3 cards, founder note
-8. THRIVEFUND TEASER — single card, link out
-9. CLOSING CTA — same promise as hero, different CTA verb
-```
+## Phase 2 — Progressive reveal (next sprint)
 
-Auth users keep their existing personalised hub — no changes there.
+**2.1 Prompt-first routing**
+- ThrivePromptHero already calls `route-thrive-intent`. Strengthen the suggestion chips so guests/new users see: "Find me a gig", "Draft an invoice", "Build my EPK", "Match me with a photographer"
+- Each chip routes to the right surface and pre-fills context
 
-### Section-by-section: copy + which existing component to keep/cut/merge
+**2.2 Earn-your-place navigation**
+- Hamburger items show a soft "new" dot until first use
+- Pay only appears in hamburger top-group after first invoice/expense
+- Fund only after first contribution/campaign
+- Drives behavior: new tables `user_surface_unlocks (user_id, surface, unlocked_at)` OR derive from existing data (cheaper — no new table needed)
 
-**1. HERO** (rebuild `HeroSection.tsx`)
-- Eyebrow: `THE CREATIVE OS · BETA`
-- H1: **"The home creatives have been waiting for."**
-- Sub: "Claim your credits. Land real gigs. Send invoices. Run your whole creative business in one place — with Thrive doing the busywork."
-- Primary CTA: **`Claim your free profile`** (Google + email, inline)
-- Secondary (text link): **`Already have credits? Search your name →`**
-- Visual: keep the current Smart Match + Thrive chat overlay phone mock. It's strong.
-- Trust line under CTA: `Free forever · 60-second setup · 7-day Pro trial`
+**2.3 Empty-state-as-onboarding**
+- Every surface shows ONE clear next-action when empty (already partly done with `EmptyState` + `useAccountTone.pick`)
+- Audit Match, Desk, Pay, Gigs empty states for new minimal tone
 
-**2. PROOF STRIP** (keep `LiveGigsStrip`, add inline avatar pile)
-- One row, 60px tall: "🟢 12 gigs posted today · 4 paid in the last hour" + scrolling gig titles + 6 creator avatars on the right.
-- Replaces the standalone "Live activity bar". One bar, not two.
+---
 
-**3. THE HOOK — Claim Your Credits** (new tight section, kills the buried "What are ThriveCredits?" card)
-- H2: **"Your work is already out there. Make it count."**
-- Sub: "Type your name. We'll surface every credit, feature, and project we can find on the web — verified and yours to claim. Like IMDb, but for every creative industry."
-- Inline search box → `/search?intent=claim`
-- Small caption: `Used by 1,200+ creatives across film, music, fashion, design.` (only show when true)
+## Phase 3 — Vibe-based theming (after Phase 1 ships and gets feedback)
 
-**4. THE PRODUCT REEL** (replaces `WhyCreatorsChooseSection` + `CreatorDashboardSection` — pick one, kill the other)
-- Four stacked tiles, alternating left/right image:
-  1. **Smart Match** — "Find collaborators in your city in 30 seconds." (swipe demo gif)
-  2. **ThriveDesk** — "Brief → tasks → invoice. One workspace per project." (Studio Room screenshot)
-  3. **Thrive Copilot** — "Drafts intros, quotes, and gig replies while you sleep." (chat screenshot)
-  4. **ThrivePay** — "Quotes, invoices, milestone payments — get paid in your currency." (MoneyBrief screenshot)
-- Each tile = 1 H3 + 1-line sub + 1 visual + 1 chip ("Included free" / "Pro" / "Creator+").
+**3.1 Onboarding: pick your discipline + vibe**
+- Discipline: Fashion · Film · Music · Photo · Design · Writing · Other (drives suggested prompts, default workspace types, sample EPK)
+- Vibe (3 options only — keep it simple):
+  - **Editorial** — cream bg, serif headings, charcoal accent (default for fashion/writing)
+  - **Studio** — off-white bg, sans, indigo accent (default for film/design/music)
+  - **Gallery** — warm grey bg, sans, single bold accent (default for photo/visual)
+- Persisted on `profiles.ui_vibe` (new column, enum)
 
-**5. REPLACES 9 APPS** (keep `ComparisonTableSection`, promote it here)
-- H2: **"One login. Nine tools you stop paying for."**
-- Table: ThriveIN ✓ vs LinkedIn / Behance / Fiverr / Notion / Slack / Trello / Drive / Stripe / IMDb.
-- This is the strongest differentiator — currently buried.
+**3.2 Vibe → CSS variable swap**
+- New `<VibeThemeSync />` component (mirrors existing `ModeThemeSync`)
+- Sets `data-vibe="editorial|studio|gallery"` on `<html>`
+- `index.css` defines `[data-vibe="editorial"]` overrides for `--background`, `--foreground`, `--primary`, font stack
+- No component changes needed — pure token swap
 
-**6. CREATOR STORIES** (rebuild `SocialProofSection` around real quotes)
-- 3 testimonial cards with name + role + city + outcome metric ("Booked 4 gigs in 30 days").
-- Until we have 3 real ones, hide the section (we already have 1 in `data/testimonials.ts` — gate on `length >= 3`).
-- No fake logo wall. Empty > fake.
+**3.3 Vibe → public EPK consistency**
+- Vibe also nudges (not forces) the default EPK template choice
+- Creator+ still gets all 9 templates in builder
 
-**7. PRICING** (keep `PricingPreviewSection`, tighten headline)
-- H2: **"Free forever. Pro when you're booking."**
-- Sub: "Spark $0 · Creator $29 · Creator+ $59 — save 17% annually. Founding Member: $499 lifetime, capped at 135."
+---
 
-**8. THRIVEFUND TEASER** (shrink `ThriveFundShowcase` to 1 card)
-- One card, not a full section: "Crowdfund your next project — verified creators, milestone payouts." → `Explore campaigns →`
-- Currently `ThriveFundShowcase` competes with the hero. Demote it.
+## Technical Details
 
-**9. CLOSING CTA** (keep `BottomCTASection`)
-- H2: **"Stop juggling tools. Start booking work."**
-- CTA: `Get started — it's free` + `Book a 1:1 with the founder` (small link).
-- Keep the Trinidad geo-variant already in place.
+**Files Phase 1 will touch:**
+- `src/index.css` — new HSL tokens for warm-minimal light mode, demote lime
+- `tailwind.config.ts` — sanity check token wiring
+- `src/components/BottomNav.tsx` — drop to 3 items (creative tone), keep COMPANY_ITEMS as-is
+- `src/components/HamburgerMenu.tsx` (or wherever the drawer lives) — add Gigs + Pay to top group
+- `src/components/home/UnifiedHome.tsx` — collapse non-essential cards into "More for you"
+- `src/main.tsx` or theme provider — default theme to `light`
+- Memory: update `mvp-single-mode-nav`, add `warm-minimal-theme`
 
-### Components to delete or fold in
+**Files Phase 2 will touch:**
+- `src/components/home/ThrivePromptHero.tsx` — better suggestion chips
+- `src/components/HamburgerMenu.tsx` — conditional surface visibility based on user activity
+- Empty states across Match/Desk/Pay/Gigs
 
-| Component | Action |
-|---|---|
-| `WhyCreatorsChooseSection` | DELETE — folded into Product Reel |
-| `CreatorDashboardSection` | DELETE — folded into Product Reel |
-| Inline `LIVE ACTIVITY BAR` (UnifiedHome 601-623) | DELETE — folded into Proof Strip |
-| Inline "What are ThriveCredits?" card (577-593) | DELETE — replaced by The Hook section |
-| `ThriveFundShowcase` | SHRINK to a single card variant |
-| `SocialProofSection` | REBUILD around real testimonials, gate on count >= 3 |
-| `HeroSection` | REWRITE copy + cut secondary CTAs to one |
-| `BottomCTASection` | Keep, swap H2 copy |
-| `ComparisonTableSection` | KEEP, promote position |
-| `PricingPreviewSection` | KEEP, tighten H2 |
-| `LiveGigsStrip` | KEEP, merge with avatar pile |
+**Files Phase 3 will touch:**
+- Migration: `profiles.ui_vibe` enum column
+- `src/components/onboarding/` — add VibePicker step
+- New `src/components/VibeThemeSync.tsx`
+- `src/index.css` — `[data-vibe]` overrides
+- `src/App.tsx` — mount VibeThemeSync
 
-### CMO-grade copy principles applied
+**Memory updates after Phase 1:**
+- Update Core: nav is now 3 tabs, default theme is warm-minimal light
+- Add memory: `style/branding/warm-minimal-theme` documenting the cream/near-black/single-accent system
 
-- **One promise per section.** No section repeats another's job.
-- **Outcomes, not features.** "Get booked" > "AI matching".
-- **Specific numbers.** "60 seconds", "9 tools", "$29", "135 spots" — concrete beats vague.
-- **Verbs in CTAs.** Claim · Search · Get paid · Stop juggling.
-- **No "AI" in user-facing copy** (per memory rule). Use "Smart Match", "Thrive Copilot", "Thrive drafts…".
-- **No emojis in headers** (per brand rule). Status dots OK in proof strip.
-- **One CTA above the fold.** Secondary becomes a text link.
+---
 
-### Technical notes
+## What I'll ship right now if you approve
 
-- All work is presentation-layer: edits in `src/components/landing/*` and the guest branch of `src/components/home/UnifiedHome.tsx` (lines ~533-594, 599, 717-725).
-- No DB / edge function / business-logic changes.
-- Keep all i18n keys; add new ones to `en.json` and stub `es.json` / `fr.json` with English fallback so nothing breaks.
-- `ComparisonTableSection` already exists and is unused on the live composition — just import and place it.
-- Mobile-first (current viewport is 360px) — every new tile must collapse to single column and respect `pb-36` safe-area rule (Core memory).
+**Phase 1 only** — about 6-8 file edits, ~30 min build:
+1. Warm-minimal light theme tokens in `index.css` + default to light
+2. BottomNav → 3 tabs (creative); company unchanged
+3. Hamburger gets Gigs + Pay promoted into a "Find" / "Money" group
+4. UnifiedHome collapses secondary cards behind a "More for you" toggle
+5. Memory update
 
-### What I'd ship in the implementation pass (after you approve)
+Then you and your sister/brother view the preview. If their reaction is "yes this feels like us," we move to Phase 2. If they want it even more minimal (kill indigo entirely, go monochrome), one more pass before Phase 2.
 
-1. Rewrite `HeroSection.tsx` copy + collapse to one CTA.
-2. New `ClaimYourCreditsSection.tsx` (The Hook).
-3. New `ProductReelSection.tsx` (4 tiles, replaces Why + Dashboard).
-4. Merge live activity into `LiveGigsStrip`.
-5. Reorder guest branch in `UnifiedHome.tsx` to the 9-section sequence above.
-6. Delete `WhyCreatorsChooseSection`, `CreatorDashboardSection`.
-7. Add `<ComparisonTableSection />` between Reel and Stories.
-8. Shrink `ThriveFundShowcase` to a single-card variant.
-9. Update `BottomCTASection` H2 + add founder-call link.
-10. Update `en.json` with new copy keys.
-
-Want me to proceed with all 10 in one pass, or split into (a) structure + (b) copy polish?
+Approve to ship Phase 1?

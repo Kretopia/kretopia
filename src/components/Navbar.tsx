@@ -244,24 +244,37 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       )}
                     </>
                   ) : (
-                    /* ====== UNIFIED MENU — grouped: Primary · More · (My stuff) ====== */
+                    /* ====== UNIFIED MENU — Make · Find · Money · Manage ====== */
                     <>
-                      {/* Explore — secondary surfaces (primary tabs live in bottom nav) */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Explore</p>
-                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} path="/fund" />
-                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-                      <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} path="/nearby" />
-                      <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} path="/spotlight" />
+                      {/* MAKE — your workspaces and creative work */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Make</p>
+                      <MenuButton icon={FolderKanban} label="Desk" onClick={() => handleNavigation("/desk")} path="/desk" />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} path="/credits" />
 
                       <Separator className="my-3" />
 
-                      {/* My stuff */}
+                      {/* FIND — discovery surfaces */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Find</p>
+                      <MenuButton icon={Briefcase} label="Gigs" onClick={() => handleNavigation("/opportunities")} path="/opportunities" />
+                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
+                      <MenuButton icon={MapPin} label="Discover" onClick={() => handleNavigation("/nearby")} path="/nearby" />
+                      <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} path="/spotlight" />
+
+                      <Separator className="my-3" />
+
+                      {/* MONEY — earning & funding */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Money</p>
+                      <MenuButton icon={Wallet} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
+                      <MenuButton icon={Rocket} label="ThriveFund" onClick={() => handleNavigation("/fund")} path="/fund" />
+
+                      <Separator className="my-3" />
+
+                      {/* MANAGE — your posted things */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Manage</p>
                       <MenuButton icon={Building2} label="Clients" onClick={() => handleNavigation("/clients")} path="/clients" />
-                      <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} path="/fund/manage" />
                       <MenuButton icon={Briefcase} label="My Gigs" onClick={() => handleNavigation("/manage-opportunities")} path="/manage-opportunities" />
                       <MenuButton icon={CalendarDays} label="My Events" onClick={() => handleNavigation("/events/backstage")} path="/events/backstage" />
+                      <MenuButton icon={Rocket} label="My Campaigns" onClick={() => handleNavigation("/fund/manage")} path="/fund/manage" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}

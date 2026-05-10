@@ -12,7 +12,7 @@ import {
   type AccountType, type BillingInterval, hasProAccess, isBrandTier,
   getYearlySavings, getEffectiveMonthlyPrice,
 } from "@/lib/subscriptionConfig";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs import removed — Creator/Brand toggle deprecated; view derives from account_type
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
@@ -265,19 +265,15 @@ export default function Subscription() {
             : "Unlock the full potential of ThriveIN"}
         </p>
 
-        {/* Creator / Brand toggle */}
-        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "creator" | "brand")} className="inline-flex">
-          <TabsList className="grid grid-cols-2 w-64">
-            <TabsTrigger value="creator" className="flex items-center gap-1.5">
-              <User className="h-4 w-4" />
-              Creator
-            </TabsTrigger>
-            <TabsTrigger value="brand" className="flex items-center gap-1.5">
-              <Briefcase className="h-4 w-4" />
-              Brand
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {/* View mode is derived from account_type — companies see Brand tiers, creators see Creator tiers.
+            Manual toggle removed: account type is set during onboarding and edited from profile settings. */}
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/60 bg-card/40 text-xs font-semibold text-muted-foreground">
+          {viewMode === "brand" ? (
+            <><Briefcase className="h-3.5 w-3.5" /> Brand plans</>
+          ) : (
+            <><User className="h-3.5 w-3.5" /> Creator plans</>
+          )}
+        </div>
 
         {/* Billing interval toggle */}
         <div className="flex items-center justify-center gap-3 mt-4">

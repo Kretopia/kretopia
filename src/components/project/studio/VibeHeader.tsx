@@ -69,7 +69,7 @@ export const VibeHeader = ({
   const [titleDraft, setTitleDraft] = useState(project.title);
 
   const status = STATUS_LABELS[project.status ?? "active"] ?? STATUS_LABELS.active;
-  void moodEmoji; // mood glyph no longer rendered (cover removed)
+  
   const due = project.deadline ? new Date(project.deadline) : null;
 
   const updateProject = async (patch: Record<string, any>) => {

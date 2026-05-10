@@ -33,6 +33,15 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     action: "Continue",
   },
   {
+    id: "vibe",
+    title: "Pick your vibe",
+    description: "Choose how the app looks. You can switch anytime in Settings.",
+    icon: <Palette className="h-6 w-6" />,
+    route: "/circle",
+    position: "center",
+    action: "Continue",
+  },
+  {
     id: "welcome",
     title: "Welcome to ThriveIN",
     description: "Your creative network awaits. Let's get you set up in under 2 minutes.",

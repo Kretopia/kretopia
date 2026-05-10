@@ -114,6 +114,34 @@ const ProjectsList = () => {
   const activeCount = projects.filter((p) => p.status === "active").length;
   const completedCount = projects.filter((p) => p.status === "completed").length;
 
+  const filteredProjects = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return projects.filter((p) => {
+      if (statusFilter !== "all" && p.status !== statusFilter) return false;
+      if (payFilter !== "all" && (invoicesByProject[p.id] ?? "unsent") !== payFilter) return false;
+      if (q) {
+        const hay = `${p.title ?? ""} ${p.client_name ?? ""} ${p.description ?? ""}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [projects, query, statusFilter, payFilter, invoicesByProject]);
+
+  const filtersActive = query.trim() !== "" || statusFilter !== "all" || payFilter !== "all";
+
+  const STATUS_CHIPS: { id: typeof statusFilter; label: string }[] = [
+    { id: "all", label: "All" },
+    { id: "active", label: "In progress" },
+    { id: "planning", label: "Planning" },
+    { id: "wrapping", label: "Wrapping" },
+    { id: "completed", label: "Delivered" },
+  ];
+  const PAY_CHIPS: { id: typeof payFilter; label: string; dot?: string }[] = [
+    { id: "unsent", label: "No invoice", dot: "bg-rose-500" },
+    { id: "invoiced", label: "Invoiced", dot: "bg-amber-500" },
+    { id: "paid", label: "Paid", dot: "bg-emerald-500" },
+  ];
+
   return (
     <div className="container max-w-6xl mx-auto py-3 sm:py-4 px-3 sm:px-4 space-y-3 sm:space-y-4 pb-32 md:pb-12 overflow-y-auto">
       {/* Header — lite, single line */}

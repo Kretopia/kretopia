@@ -450,9 +450,10 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
           </div>
 
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-            <TabsList className="grid grid-cols-2 w-full">
+            <TabsList className="grid grid-cols-3 w-full">
               <TabsTrigger value="type" className="gap-1.5"><PenLine className="h-3.5 w-3.5" />Type</TabsTrigger>
               <TabsTrigger value="voice" className="gap-1.5"><Mic className="h-3.5 w-3.5" />Voice</TabsTrigger>
+              <TabsTrigger value="upload" className="gap-1.5"><Upload className="h-3.5 w-3.5" />Upload</TabsTrigger>
             </TabsList>
 
             <TabsContent value="type" className="space-y-3 pt-4">

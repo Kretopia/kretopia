@@ -119,11 +119,11 @@ export const StudioCardsGrid = ({
           />
         )}
 
-        {/* Dense studio grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+        {/* Editorial studio grid — typography-led, no gradient blocks */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {(rest.length > 0 ? rest : projects).map((project) => {
             const status = STATUS_PILL[project.status ?? "active"] ?? STATUS_PILL.active;
-            const glyph = moodEmoji(project.mood) ?? "🎨";
+            const accent = moodAccent(project.mood);
             const pay = invoicesByProject[project.id];
             const isDone = project.status === "completed";
 
@@ -133,79 +133,68 @@ export const StudioCardsGrid = ({
                 type="button"
                 onClick={() => navigate(`/desk/${project.id}`)}
                 className={cn(
-                  "group relative text-left overflow-hidden rounded-xl",
-                  "border border-border/70 bg-card",
-                  "transition-all hover:border-primary/50 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5",
+                  "group relative text-left overflow-hidden rounded-2xl",
+                  "border border-border bg-card",
+                  "transition-all hover:border-foreground/30 hover:shadow-md hover:-translate-y-0.5",
                   "focus:outline-none focus:ring-2 focus:ring-primary",
                 )}
               >
-                {/* Compact 16:10 cover */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden">
-                  {project.cover_url ? (
-                    <img
-                      src={project.cover_url}
-                      alt=""
-                      loading="lazy"
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div
-                      className="absolute inset-0 flex items-center justify-center text-3xl"
-                      style={{ background: moodGradient(project.mood) }}
-                      aria-label={moodLabel(project.mood)}
-                    >
-                      <span className="opacity-90 drop-shadow-sm">{glyph}</span>
-                    </div>
-                  )}
+                {/* Hairline accent strip — the only color, very thin */}
+                <span
+                  className="absolute left-0 top-0 bottom-0 w-[3px]"
+                  style={{ background: accent }}
+                  aria-hidden
+                />
 
-                  {project.cover_url && (
-                    <div
-                      className="absolute inset-0 mix-blend-multiply opacity-40 transition-opacity group-hover:opacity-25"
-                      style={{ background: "var(--gradient-primary)" }}
-                    />
-                  )}
-
-                  {/* Top-left: status pill */}
-                  <span
-                    className={cn(
-                      "absolute top-2 left-2 text-[9px] font-bold uppercase tracking-[0.1em] px-1.5 py-0.5 rounded-full backdrop-blur-md",
-                      status.tone,
-                    )}
-                  >
-                    {status.label}
-                  </span>
-
-                  {/* Top-right: payment dot only (pill in body) */}
-                  {pay && (
+                <div className="pl-4 pr-3 py-3.5 space-y-3">
+                  {/* Eyebrow row: status + payment dot */}
+                  <div className="flex items-center justify-between gap-2">
                     <span
-                      className="absolute top-2 right-2 h-2 w-2 rounded-full ring-2 ring-black/40"
-                      title={PAY_LABEL[pay]}
+                      className={cn(
+                        "text-[9px] font-bold uppercase tracking-[0.14em]",
+                        status.label === "Delivered" ? "text-emerald-600" : "text-muted-foreground",
+                      )}
                     >
-                      <span className={cn("block h-full w-full rounded-full", PAY_DOT[pay])} />
+                      {status.label}
                     </span>
-                  )}
-                </div>
+                    {pay && (
+                      <span
+                        className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground"
+                        title={PAY_LABEL[pay]}
+                      >
+                        <span className={cn("h-1.5 w-1.5 rounded-full", PAY_DOT[pay])} />
+                        {PAY_LABEL[pay]}
+                      </span>
+                    )}
+                  </div>
 
-                {/* Body — tighter, richer */}
-                <div className="px-3 py-2.5 space-y-1.5">
-                  <h3 className="font-semibold text-[13px] leading-tight line-clamp-1">
+                  {/* Title — the hero of the card */}
+                  <h3 className="font-bold text-[17px] leading-[1.15] tracking-[-0.01em] line-clamp-2 min-h-[2.6em]">
                     {project.title}
                   </h3>
 
-                  {/* meta row 1: mood / stage */}
-                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                    <span
-                      className="inline-block h-1.5 w-1.5 rounded-full"
-                      style={{ background: moodGradient(project.mood) }}
-                    />
-                    <span className="truncate">
-                      {project.pinned_stage || moodLabel(project.mood)}
-                    </span>
-                  </div>
+                  {/* Optional client / one-liner */}
+                  {(project.client_name || project.description) && (
+                    <p className="text-[12px] text-muted-foreground line-clamp-1">
+                      {project.client_name ?? project.description}
+                    </p>
+                  )}
 
-                  {/* meta row 2: time + payment chip */}
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span className="inline-flex items-center gap-1 truncate">
+                  {/* Footer rule + meta */}
+                  <div className="pt-2.5 border-t border-border/60 flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span
+                      className="inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.08em] truncate"
+                      style={{ color: accent }}
+                    >
+                      <span
+                        className="inline-block h-1.5 w-1.5 rounded-full"
+                        style={{ background: accent }}
+                      />
+                      <span className="truncate text-foreground/70">
+                        {project.pinned_stage || moodLabel(project.mood)}
+                      </span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 shrink-0">
                       {isDone ? (
                         <CheckCircle2 className="h-2.5 w-2.5" />
                       ) : (
@@ -213,21 +202,11 @@ export const StudioCardsGrid = ({
                       )}
                       {formatDistanceToNowStrict(new Date(project.updated_at))}
                     </span>
-                    {pay && (
-                      <span
-                        className={cn(
-                          "shrink-0 ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full",
-                          pay === "paid" && "bg-emerald-500/10 text-emerald-400",
-                          pay === "invoiced" && "bg-amber-500/10 text-amber-400",
-                          pay === "unsent" && "bg-rose-500/10 text-rose-400",
-                        )}
-                      >
-                        <span className={cn("h-1 w-1 rounded-full", PAY_DOT[pay])} />
-                        {PAY_LABEL[pay]}
-                      </span>
-                    )}
                   </div>
                 </div>
+
+                {/* Subtle open arrow on hover */}
+                <ArrowUpRight className="absolute top-3 right-3 h-3.5 w-3.5 text-muted-foreground/0 group-hover:text-foreground/60 transition-colors" />
               </button>
             );
           })}

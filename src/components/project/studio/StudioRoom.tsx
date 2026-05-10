@@ -207,10 +207,13 @@ export const StudioRoom = ({
     "event-recap": "Post-event recap",
   };
 
-  const mobileWorkColumn = (
+  const briefBlock = (
+    <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
+  );
+
+  const mobileWorkColumn = (includeBrief: boolean) => (
     <div className="divide-y divide-border/60">
-      {/* Brief stays at the very top — it carries the studio's main concept */}
-      <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
+      {includeBrief && briefBlock}
       <StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />
       <DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />
       <PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />

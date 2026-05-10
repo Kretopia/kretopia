@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getShareUrl } from "@/lib/constants";
 
 interface InviteCollaboratorDialogProps {
   projectId: string;

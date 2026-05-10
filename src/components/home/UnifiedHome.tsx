@@ -488,7 +488,7 @@ export const UnifiedHome = () => {
 
               {/* RIGHT — Cinematic creator image with overlays. On mobile this loads BELOW the search bar. */}
               {/* TODO: Replace with real community photos before launch */}
-              <div className="relative order-2 lg:order-2">
+              <div className="relative order-1 lg:order-2">
                 <div className="relative aspect-[4/5] lg:aspect-[3/4] rounded-3xl overflow-hidden border border-primary/25 shadow-glow">
                   <img
                     src={HERO_IMAGE}

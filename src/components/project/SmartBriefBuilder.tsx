@@ -226,17 +226,21 @@ export const SmartBriefBuilder = ({ projectId, projectTitle, onSent }: SmartBrie
     if (!file) return;
     setBusy(true);
     setUploadInfo(null);
+    setUploadError(null);
     try {
       if (file.size > 25 * 1024 * 1024) throw new Error("File too large (max 25 MB)");
       const result = await extractTextFromFile(file);
-      if (!result.text.trim()) throw new Error("No readable text found in document");
+      if (!result.text.trim()) throw new Error("No readable text found in this document. If it's a scanned PDF, paste the text into the Type tab.");
       setUploadFileName(file.name);
       setUploadedText(result.text);
       setUploadInfo(
         `${file.name} · ${result.pages} page${result.pages === 1 ? "" : "s"}${result.truncated ? " · truncated to fit" : ""}`,
       );
+      // Auto-elevate immediately — user shouldn't have to tap a second button
+      await elevateFromText(`[Uploaded brief — ${file.name}]\n\n${result.text}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't read file";
+      setUploadError(msg);
       toast({ title: "Upload failed", description: msg, variant: "destructive" });
     } finally {
       setBusy(false);

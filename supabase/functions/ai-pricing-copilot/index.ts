@@ -54,7 +54,10 @@ ${files.length ? `Files in Vault (${files.length}): ${files.map((f: any) => f.fi
 
     // Pull THRIVE MEMORY (saved rates, vendors, repeat clients, preferences) so
     // the co-pilot remembers what the user has told it across sessions.
+    // Also pull the user's profile location so pricing is sanity-checked
+    // against the local market (Bali ≠ NYC ≠ London).
     let memoryBlock = "";
+    let locationBlock = "";
     const authHeader = req.headers.get("Authorization") ?? "";
     if (authHeader.startsWith("Bearer ")) {
       try {
@@ -63,14 +66,22 @@ ${files.length ? `Files in Vault (${files.length}): ${files.map((f: any) => f.fi
         });
         const { data: { user } } = await userClient.auth.getUser();
         if (user) {
-          const { data: memRows } = await userClient
-            .from("thrive_memory")
-            .select("kind, label, body, importance")
-            .eq("user_id", user.id)
-            .in("kind", ["rate", "vendor", "client", "preference", "contact", "fact"])
-            .order("importance", { ascending: false })
-            .order("last_used_at", { ascending: false, nullsFirst: false })
-            .limit(25);
+          const [memRes, profRes] = await Promise.all([
+            userClient
+              .from("thrive_memory")
+              .select("kind, label, body, importance")
+              .eq("user_id", user.id)
+              .in("kind", ["rate", "vendor", "client", "preference", "contact", "fact"])
+              .order("importance", { ascending: false })
+              .order("last_used_at", { ascending: false, nullsFirst: false })
+              .limit(25),
+            userClient
+              .from("profiles")
+              .select("country, city, primary_role")
+              .eq("user_id", user.id)
+              .maybeSingle(),
+          ]);
+          const memRows = memRes.data;
           if (memRows && memRows.length) {
             memoryBlock = `\n\n=== THRIVE MEMORY (things this user has told you to remember) ===
 Use these as defaults — saved rates, repeat clients, vendor costs, preferences. Reference them by name when relevant ("your usual rate is…", "for ${"${client}"} you normally…"). Don't repeat back the whole block; weave them in.
@@ -78,9 +89,30 @@ Use these as defaults — saved rates, repeat clients, vendor costs, preferences
 ${memRows.map((m: any) => `- [${m.kind}] ${m.label}${m.body ? `: ${String(m.body).slice(0, 240)}` : ""}`).join("\n")}
 === END THRIVE MEMORY ===`;
           }
+          const prof = profRes.data;
+          const projLocation = (project_context?.project as any)?.location
+            || (project_context?.client as any)?.address
+            || null;
+          if (prof?.country || prof?.city || projLocation) {
+            locationBlock = `\n\n=== LOCATION CONTEXT ===
+User base: ${[prof?.city, prof?.country].filter(Boolean).join(", ") || "unknown"}
+${prof?.primary_role ? `Role: ${prof.primary_role}` : ""}
+${projLocation ? `Project / client location: ${projLocation}` : ""}
+Currency on the document: ${currency || "USD"}
+
+PRICING MUST BE LOCAL-MARKET-AWARE:
+- Bali / Lombok / SE Asia tourism creative work runs ~30–60% of US/EU rates. A "good" day rate for a Bali photo/video shoot is typically USD 250–600/day, not USD 1,200+.
+- LATAM / Caribbean / Africa: discount US rates ~35–55%.
+- US tier-1 cities, London, Sydney, Dubai, Singapore: full premium rates.
+- Always think about WHERE THE WORK IS DELIVERED and WHO THE CLIENT IS, not where the freelancer normally lives.
+- When you propose a rate, present a RANGE first (low / typical / high) for that locale, then the recommended number — so the user has a sanity check.
+- If your suggestion is >40% above the local typical, FLAG IT explicitly: "⚠️ This is well above local norms — great if they say yes, but could lose the job. Want to drop to {typical}?"
+- Default markups: 15–25% standard, 25–40% agency, 50%+ only for rush or specialized work. Never silently apply >40% markup; always show the math and ask.
+=== END LOCATION CONTEXT ===`;
+          }
         }
       } catch (e) {
-        console.warn("ai-pricing-copilot: memory fetch failed", e);
+        console.warn("ai-pricing-copilot: memory/profile fetch failed", e);
       }
     }
 
@@ -133,7 +165,9 @@ RULES:
 
 ${existing_items && existing_items.length > 0 ? `\nCurrent line items on the document:\n${existing_items.map((i: any, idx: number) => `${idx + 1}. "${i.description}" — Qty: ${i.quantity}, Rate: ${currency} ${i.rate}`).join("\n")}` : ""}
 
-${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}${projectBlock}${memoryBlock}`;
+${current_details ? `\nCurrently captured details:\n${JSON.stringify(current_details, null, 2)}` : ""}${projectBlock}${memoryBlock}${locationBlock}
+
+REMINDER: You can make mistakes. When you're not sure (rate, currency, unit, scope), ASK — don't guess. The user is the final approver.`;
 
     // If the client included a scanned brief/flyer image, attach it as multimodal
     // content on the LAST user message so Gemini can read it.

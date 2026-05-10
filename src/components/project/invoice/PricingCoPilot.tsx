@@ -817,8 +817,9 @@ export function PricingCoPilot({
             <Send className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-[9px] text-muted-foreground/50 mt-1.5 text-center">
-          Scan a brief, ask for rates — Thrive remembers your usual prices & clients.
+        <p className="text-[10px] text-muted-foreground/70 mt-1.5 text-center leading-relaxed">
+          Thrive can make mistakes — always sanity-check rates, currency &amp; totals
+          against your local market before sending. You're the final approver.
         </p>
       </div>
     </Card>

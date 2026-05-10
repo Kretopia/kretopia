@@ -238,6 +238,10 @@ export function AIMarkupHelper({ lineItems, currency, onApplyMarkup }: AIMarkupH
                 <Button size="sm" className="w-full h-7 text-xs gap-1" onClick={applyAISuggestion}>
                   <Sparkles className="h-3 w-3" /> Apply AI Suggestion
                 </Button>
+                <p className="text-[10px] text-muted-foreground/80 leading-relaxed">
+                  Thrive can make mistakes — sanity-check this against your local
+                  market (Bali ≠ NYC) before sending to the client.
+                </p>
               </Card>
             )}
           </div>

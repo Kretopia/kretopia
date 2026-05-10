@@ -400,23 +400,23 @@ export const UnifiedHome = () => {
             {/* Two-column cinematic stage */}
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center mb-10 sm:mb-14">
 
-              {/* LEFT — Headline + Search + Stats. On mobile the visual sits ABOVE so faces are first thing seen. */}
+              {/* LEFT — Editorial headline + wedge copy + search. Mobile: visual above, headline below. */}
               <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
-                <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
+                <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
                   <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                  Built by creatives · for creatives
+                  ThriveIN · The Creative OS
                 </p>
 
-                {/* PRIMARY HEADLINE — warm, community-first */}
-                <h1 className="text-[2.5rem] sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.035em] text-foreground leading-[0.95] mb-4">
-                  Find your<br />
-                  <span className="text-energy-glow">people.</span><br />
-                  Build the work.
+                {/* PRIMARY HEADLINE — editorial scale, IMDb-meets-OS wedge */}
+                <h1 className="text-[2.75rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-[-0.045em] text-foreground leading-[0.92] mb-5">
+                  Every credit.<br />
+                  Every collab.<br />
+                  <span className="text-energy-glow italic font-black">Every payout.</span>
                 </h1>
 
-                {/* Secondary headline — warmer, human */}
-                <p className="text-sm sm:text-base text-muted-foreground/90 font-medium mb-5 leading-relaxed">
-                  The home for creatives. Match with collaborators in your city, run the project together, and get paid — without juggling nine apps.
+                {/* Wedge subhead — IMDb for every creative industry + OS that runs the work */}
+                <p className="text-base sm:text-lg text-muted-foreground/95 font-medium mb-6 leading-[1.5] max-w-xl mx-auto lg:mx-0">
+                  The verified record for film, music, fashion, events &amp; design — and the operating system that runs the work behind it. <span className="text-foreground/90 font-semibold">One login. Nine tools.</span>
                 </p>
 
                 {/* SEARCH BAR — first interactive element above the fold */}
@@ -486,47 +486,82 @@ export const UnifiedHome = () => {
                 </p>
               </div>
 
-              {/* RIGHT — Cinematic creator image with overlays. On mobile this loads BELOW the search bar. */}
-              {/* TODO: Replace with real community photos before launch */}
+              {/* RIGHT — Cinematic stage: editorial photo + IMDb-style credit roll-call + OS proof tiles */}
               <div className="relative order-1 lg:order-2">
                 <div className="relative aspect-[4/5] lg:aspect-[3/4] rounded-3xl overflow-hidden border border-primary/25 shadow-glow">
                   <img
                     src={HERO_IMAGE}
-                    alt="Two creative collaborators captured in cinematic editorial light"
+                    alt="Creative collaborators on set, captured in cinematic editorial light"
                     className="absolute inset-0 w-full h-full object-cover"
                     width={1280}
                     height={1600}
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-background/10" />
+                  {/* Cinematic letterbox + bottom fade so overlays read like film titling */}
+                  <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-background/80 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background via-background/80 to-transparent" />
 
-                  {/* Signature Smart Match card — compact on mobile so it doesn't cover faces */}
-                  <div className="absolute top-2 right-2 sm:top-5 sm:right-5 animate-fade-in">
-                    <div className="rounded-xl sm:rounded-2xl border-2 border-energy/60 bg-background/85 backdrop-blur-md px-2.5 py-2 sm:p-4 shadow-glow-lime sm:min-w-[160px]">
-                      <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-0.5 sm:mb-1">Smart Match</p>
-                      <p className="text-xl sm:text-4xl font-black text-energy-glow tracking-tighter leading-none">94%</p>
-                      <p className="hidden sm:block text-[10px] text-foreground/80 mt-1.5 leading-tight">Photographer × Producer<br/>2.3km away</p>
-                    </div>
-                  </div>
-
-                  {/* Verified chip */}
-                  <div className="absolute top-3 left-3 sm:top-5 sm:left-5 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                    <div className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-background/85 backdrop-blur-md px-2.5 py-1.5">
+                  {/* Top-left — film-strip eyebrow (wedge: this is THE record) */}
+                  <div className="absolute top-3 left-3 sm:top-5 sm:left-5 animate-fade-in flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 rounded-full border border-primary/50 bg-background/90 backdrop-blur-md px-2.5 py-1.5">
                       <Verified className="h-3 w-3 text-primary" />
-                      <span className="text-[9px] font-bold text-foreground uppercase tracking-wider">Verified Credits</span>
+                      <span className="text-[9px] font-black text-foreground uppercase tracking-[0.2em]">The Record</span>
                     </div>
                   </div>
 
-                  {/* Chat overlay — Thrive doing the work */}
-                  <div className="absolute bottom-4 left-3 right-3 sm:left-5 sm:right-auto sm:max-w-[260px] animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                    <div className="rounded-2xl rounded-bl-sm border border-primary/40 bg-card/95 backdrop-blur-md p-3 shadow-xl">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
-                          <MessageSquare className="h-3 w-3 text-primary" />
-                        </div>
-                        <p className="text-[10px] font-bold text-foreground">Thrive · drafted just now</p>
+                  {/* Top-right — Smart Match (the OS doing live work) */}
+                  <div className="absolute top-3 right-3 sm:top-5 sm:right-5 animate-fade-in" style={{ animationDelay: '0.15s' }}>
+                    <div className="rounded-xl sm:rounded-2xl border-2 border-energy/60 bg-background/90 backdrop-blur-md px-2.5 py-2 sm:p-3.5 shadow-glow-lime sm:min-w-[150px]">
+                      <p className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground mb-0.5">Smart Match</p>
+                      <p className="text-2xl sm:text-4xl font-black text-energy-glow tracking-tighter leading-none">94%</p>
+                      <p className="hidden sm:block text-[10px] text-foreground/80 mt-1.5 leading-tight">DP × Producer<br/>2.3km away</p>
+                    </div>
+                  </div>
+
+                  {/* CENTER-LEFT — IMDb-style CREDIT ROLL-CALL (the wedge made visual) */}
+                  <div className="absolute left-3 right-3 sm:left-5 sm:right-auto sm:max-w-[280px] top-[42%] sm:top-[38%] -translate-y-1/2 animate-fade-in" style={{ animationDelay: '0.25s' }}>
+                    <div className="rounded-2xl border border-primary/40 bg-card/95 backdrop-blur-md shadow-2xl overflow-hidden">
+                      <div className="flex items-center justify-between px-3 py-2 border-b border-border/60 bg-background/40">
+                        <p className="text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground">Credits · Verified</p>
+                        <span className="text-[9px] font-bold text-energy">12</span>
                       </div>
-                      <p className="text-xs text-foreground/90 leading-snug">"Maya is a 94% match. I drafted the intro and a $1,200 quote — open to send?"</p>
+                      <ul className="divide-y divide-border/50">
+                        {[
+                          { title: "MIDNIGHT BLOOM", role: "Director of Photography", year: "2025", tag: "Film" },
+                          { title: "RAYA — Live at Sound Forge", role: "Mix Engineer", year: "2025", tag: "Music" },
+                          { title: "Aurora SS26 Lookbook", role: "Creative Director", year: "2024", tag: "Fashion" },
+                        ].map((c) => (
+                          <li key={c.title} className="flex items-center gap-2.5 px-3 py-2">
+                            <Verified className="h-3 w-3 text-primary shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[11px] font-bold text-foreground truncate uppercase tracking-wide">{c.title}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">{c.role} · {c.year}</p>
+                            </div>
+                            <span className="text-[8px] font-black uppercase tracking-wider text-energy/90 px-1.5 py-0.5 rounded bg-energy/10 shrink-0">{c.tag}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* BOTTOM — OS proof strip: invoice paid + project tile + Thrive draft */}
+                  <div className="absolute bottom-3 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-5 animate-fade-in" style={{ animationDelay: '0.35s' }}>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="rounded-xl border border-primary/30 bg-card/95 backdrop-blur-md p-2 shadow-lg">
+                        <p className="text-[8px] font-black uppercase tracking-[0.18em] text-muted-foreground">Invoice</p>
+                        <p className="text-sm font-black text-foreground leading-tight mt-0.5">$1,200</p>
+                        <p className="text-[8px] font-bold text-energy uppercase tracking-wider mt-0.5">· Paid</p>
+                      </div>
+                      <div className="rounded-xl border border-primary/30 bg-card/95 backdrop-blur-md p-2 shadow-lg">
+                        <p className="text-[8px] font-black uppercase tracking-[0.18em] text-muted-foreground">Desk</p>
+                        <p className="text-[10px] font-bold text-foreground leading-tight mt-0.5 truncate">SS26 Shoot</p>
+                        <p className="text-[8px] font-bold text-primary uppercase tracking-wider mt-0.5">3 tasks</p>
+                      </div>
+                      <div className="rounded-xl border border-energy/40 bg-card/95 backdrop-blur-md p-2 shadow-lg">
+                        <p className="text-[8px] font-black uppercase tracking-[0.18em] text-muted-foreground">Thrive</p>
+                        <p className="text-[10px] font-bold text-foreground leading-tight mt-0.5 truncate">Drafted intro</p>
+                        <p className="text-[8px] font-bold text-energy uppercase tracking-wider mt-0.5">Ready</p>
+                      </div>
                     </div>
                   </div>
                 </div>

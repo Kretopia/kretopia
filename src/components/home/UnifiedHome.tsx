@@ -400,23 +400,23 @@ export const UnifiedHome = () => {
             {/* Two-column cinematic stage */}
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center mb-10 sm:mb-14">
 
-              {/* LEFT — Headline + Search + Stats. On mobile the visual sits ABOVE so faces are first thing seen. */}
+              {/* LEFT — Editorial headline + wedge copy + search. Mobile: visual above, headline below. */}
               <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
-                <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
+                <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
                   <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-                  Built by creatives · for creatives
+                  ThriveIN · The Creative OS
                 </p>
 
-                {/* PRIMARY HEADLINE — warm, community-first */}
-                <h1 className="text-[2.5rem] sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-[-0.035em] text-foreground leading-[0.95] mb-4">
-                  Find your<br />
-                  <span className="text-energy-glow">people.</span><br />
-                  Build the work.
+                {/* PRIMARY HEADLINE — editorial scale, IMDb-meets-OS wedge */}
+                <h1 className="text-[2.75rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-[-0.045em] text-foreground leading-[0.92] mb-5">
+                  Every credit.<br />
+                  Every collab.<br />
+                  <span className="text-energy-glow italic font-black">Every payout.</span>
                 </h1>
 
-                {/* Secondary headline — warmer, human */}
-                <p className="text-sm sm:text-base text-muted-foreground/90 font-medium mb-5 leading-relaxed">
-                  The home for creatives. Match with collaborators in your city, run the project together, and get paid — without juggling nine apps.
+                {/* Wedge subhead — IMDb for every creative industry + OS that runs the work */}
+                <p className="text-base sm:text-lg text-muted-foreground/95 font-medium mb-6 leading-[1.5] max-w-xl mx-auto lg:mx-0">
+                  The verified record for film, music, fashion, events &amp; design — and the operating system that runs the work behind it. <span className="text-foreground/90 font-semibold">One login. Nine tools.</span>
                 </p>
 
                 {/* SEARCH BAR — first interactive element above the fold */}

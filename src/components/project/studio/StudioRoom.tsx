@@ -46,6 +46,7 @@ import { EventProducerDashboard } from "./EventProducerDashboard";
 import { RequestPaymentCard } from "./RequestPaymentCard";
 import { SortableSection } from "./SortableSection";
 import { WidgetErrorBoundary } from "./WidgetErrorBoundary";
+import { HideableSection, SectionsBringBackTray } from "./HideableSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStudioPresence } from "@/hooks/useStudioPresence";
@@ -188,9 +189,31 @@ export const StudioRoom = ({
     </button>
   );
 
-  const mobileWorkColumn = (
+  const isEvent = ["event", "event_production"].includes(project.workspace_type);
+
+  // Labels used by the "Hidden sections" tray so users can re-show what they
+  // dismissed. Only event sub-sections are hideable for now.
+  const EVENT_HIDEABLE_LABELS: Record<string, string> = {
+    "event-hero": "Event details",
+    "event-producer": "Producer dashboard",
+    "event-studio": "Run of show",
+    "event-suppliers": "Suppliers",
+    "event-talent": "Talent",
+    "event-sponsors": "Sponsors",
+    "event-rsvp": "RSVP questions",
+    "event-matches": "Guest matches",
+    "event-seating": "Seating planner",
+    "event-outreach": "Outreach segments",
+    "event-recap": "Post-event recap",
+  };
+
+  const briefBlock = (
+    <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
+  );
+
+  const mobileWorkColumn = (includeBrief: boolean) => (
     <div className="divide-y divide-border/60">
-      <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
+      {includeBrief && briefBlock}
       <StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />
       <DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />
       <PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />
@@ -365,26 +388,51 @@ export const StudioRoom = ({
         {["music","music_release"].includes(project.workspace_type) && (
           <MusicStudioSection project={project} currentUserId={currentUserId} />
         )}
-        {["event","event_production"].includes(project.workspace_type) && (
+        {isEvent && (
           <>
-            <EventHeroCard project={project} />
-            <EventProducerDashboard project={project} currentUserId={currentUserId} />
-            <EventStudioSection project={project} currentUserId={currentUserId} />
-            <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
-            <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
-            <EventSponsorsKanban project={project} currentUserId={currentUserId} />
+            {/* Brief first — carries the event's main concept */}
+            {briefBlock}
+            <SectionsBringBackTray projectId={project.id} labels={EVENT_HIDEABLE_LABELS} />
+            <HideableSection projectId={project.id} sectionId="event-hero">
+              <EventHeroCard project={project} />
+            </HideableSection>
+            <HideableSection projectId={project.id} sectionId="event-producer">
+              <EventProducerDashboard project={project} currentUserId={currentUserId} />
+            </HideableSection>
+            <HideableSection projectId={project.id} sectionId="event-studio">
+              <EventStudioSection project={project} currentUserId={currentUserId} />
+            </HideableSection>
+            <HideableSection projectId={project.id} sectionId="event-suppliers">
+              <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
+            </HideableSection>
+            <HideableSection projectId={project.id} sectionId="event-talent">
+              <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
+            </HideableSection>
+            <HideableSection projectId={project.id} sectionId="event-sponsors">
+              <EventSponsorsKanban project={project} currentUserId={currentUserId} />
+            </HideableSection>
             {project.created_by === currentUserId && (
               <>
-                <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
-                <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
-                <EventSeatingPlanner project={project} currentUserId={currentUserId} />
-                <EventOutreachSegmentBuilder project={project} currentUserId={currentUserId} />
-                <EventPostRecapSection project={project} currentUserId={currentUserId} />
+                <HideableSection projectId={project.id} sectionId="event-rsvp">
+                  <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+                </HideableSection>
+                <HideableSection projectId={project.id} sectionId="event-matches">
+                  <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
+                </HideableSection>
+                <HideableSection projectId={project.id} sectionId="event-seating">
+                  <EventSeatingPlanner project={project} currentUserId={currentUserId} />
+                </HideableSection>
+                <HideableSection projectId={project.id} sectionId="event-outreach">
+                  <EventOutreachSegmentBuilder project={project} currentUserId={currentUserId} />
+                </HideableSection>
+                <HideableSection projectId={project.id} sectionId="event-recap">
+                  <EventPostRecapSection project={project} currentUserId={currentUserId} />
+                </HideableSection>
               </>
             )}
           </>
         )}
-        {mobileWorkColumn}
+        {mobileWorkColumn(!isEvent)}
         {mobileSideColumn}
         <div className="h-12" />
       </div>
@@ -413,29 +461,48 @@ export const StudioRoom = ({
               <MusicStudioSection project={project} currentUserId={currentUserId} />
             </div>
           )}
-          {["event","event_production"].includes(project.workspace_type) && (
+          {isEvent && (
             <>
-              <EventHeroCard project={project} />
-              <EventProducerDashboard project={project} currentUserId={currentUserId} />
+              {/* Brief first on desktop too */}
               <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+                {briefBlock}
+              </div>
+              <SectionsBringBackTray projectId={project.id} labels={EVENT_HIDEABLE_LABELS} />
+              <HideableSection projectId={project.id} sectionId="event-hero">
+                <EventHeroCard project={project} />
+              </HideableSection>
+              <HideableSection projectId={project.id} sectionId="event-producer">
+                <EventProducerDashboard project={project} currentUserId={currentUserId} />
+              </HideableSection>
+              <HideableSection projectId={project.id} sectionId="event-studio" className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
                 <EventStudioSection project={project} currentUserId={currentUserId} />
-              </div>
-              <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+              </HideableSection>
+              <HideableSection projectId={project.id} sectionId="event-suppliers" className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
                 <EventCrmSection project={project} currentUserId={currentUserId} kind="supplier" />
-              </div>
-              <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+              </HideableSection>
+              <HideableSection projectId={project.id} sectionId="event-talent" className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
                 <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
-              </div>
-              <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+              </HideableSection>
+              <HideableSection projectId={project.id} sectionId="event-sponsors" className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
                 <EventSponsorsKanban project={project} currentUserId={currentUserId} />
-              </div>
+              </HideableSection>
               {project.created_by === currentUserId && (
                 <>
-                  <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
-                  <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
-                  <EventSeatingPlanner project={project} currentUserId={currentUserId} />
-                  <EventOutreachSegmentBuilder project={project} currentUserId={currentUserId} />
-                  <EventPostRecapSection project={project} currentUserId={currentUserId} />
+                  <HideableSection projectId={project.id} sectionId="event-rsvp">
+                    <EventRsvpQuestionsBuilder project={project} currentUserId={currentUserId} />
+                  </HideableSection>
+                  <HideableSection projectId={project.id} sectionId="event-matches">
+                    <EventGuestMatchesSection project={project} currentUserId={currentUserId} />
+                  </HideableSection>
+                  <HideableSection projectId={project.id} sectionId="event-seating">
+                    <EventSeatingPlanner project={project} currentUserId={currentUserId} />
+                  </HideableSection>
+                  <HideableSection projectId={project.id} sectionId="event-outreach">
+                    <EventOutreachSegmentBuilder project={project} currentUserId={currentUserId} />
+                  </HideableSection>
+                  <HideableSection projectId={project.id} sectionId="event-recap">
+                    <EventPostRecapSection project={project} currentUserId={currentUserId} />
+                  </HideableSection>
                 </>
               )}
             </>
@@ -453,7 +520,7 @@ export const StudioRoom = ({
               Reset layout
             </button>
           </div>
-          {renderColumn(leftOrder, "left")}
+          {renderColumn(isEvent ? leftOrder.filter((id) => id !== "brief") : leftOrder, "left")}
         </div>
         <aside className="col-span-12 xl:col-span-4 space-y-4 min-w-0">
           {RoomChatButton}

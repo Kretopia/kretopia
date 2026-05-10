@@ -323,18 +323,36 @@ export const ThriveAgentFab = () => {
       setText("");
       setSending(true);
 
-      // Optimistic empty assistant placeholder so streaming can fill it
+      // Optimistic empty assistant placeholder so streaming can fill it.
+      // Strip <action>/<plan> tags live so the user never sees raw XML/JSON
+      // mid-stream — even partial/unclosed tags get hidden.
       let assistantSoFar = "";
+      const stripTagsLive = (raw: string) => {
+        // Remove fully-closed tags first
+        let out = raw
+          .replace(/<action>[\s\S]*?<\/action>/g, "")
+          .replace(/<plan>[\s\S]*?<\/plan>/g, "");
+        // Hide any half-streamed opening tag and everything after it
+        const openIdx = Math.min(
+          ...["<action", "<plan"].map((t) => {
+            const i = out.indexOf(t);
+            return i === -1 ? Infinity : i;
+          }),
+        );
+        if (openIdx !== Infinity) out = out.slice(0, openIdx);
+        return out;
+      };
       const upsertAssistant = (chunk: string) => {
         assistantSoFar += chunk;
+        const visible = stripTagsLive(assistantSoFar);
         setMessages((prev) => {
           const last = prev[prev.length - 1];
           if (last?.role === "assistant") {
             return prev.map((m, i) =>
-              i === prev.length - 1 ? { ...m, content: assistantSoFar } : m,
+              i === prev.length - 1 ? { ...m, content: visible } : m,
             );
           }
-          return [...prev, { role: "assistant", content: assistantSoFar }];
+          return [...prev, { role: "assistant", content: visible }];
         });
       };
 

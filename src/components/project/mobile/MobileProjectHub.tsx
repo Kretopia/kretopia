@@ -13,8 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROJECT_FLOW_STAGES, type ProjectFlow, type ProjectFlowStageId } from "@/hooks/useProjectFlow";
-import { VoiceTaskCapture } from "@/components/project/mobile/VoiceTaskCapture";
-import { DeskActionFab } from "@/components/project/mobile/DeskActionFab";
 
 
 
@@ -68,8 +66,6 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
     isPro = false,
   } = props;
 
-  const [voiceOpen, setVoiceOpen] = useState(false);
-  
 
   const openTasks = useMemo(() => tasks.filter((t) => t.status !== "done").length, [tasks]);
   const doneTasks = tasks.length - openTasks;
@@ -85,7 +81,6 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
     }).format(n);
 
   return (
-    <>
     <div className="flex-1 min-h-0 overflow-y-auto relative">
       <div className="px-4 pt-3 pb-32 space-y-4">
         {/* === Stage strip (horizontal scroll) === */}
@@ -296,27 +291,7 @@ export const MobileProjectHub = memo((props: MobileProjectHubProps) => {
           </div>
         </section>
       </div>
-
-      {/* Combined action FAB: voice note + Project Copilot (opens global drawer) */}
-      <DeskActionFab
-        onVoice={() => setVoiceOpen(true)}
-        onCopilot={() => {
-          window.dispatchEvent(new CustomEvent("thrive-copilot:open"));
-          onOpenCopilot?.();
-        }}
-      />
     </div>
-
-    <VoiceTaskCapture
-      open={voiceOpen}
-      onOpenChange={setVoiceOpen}
-      projectId={projectId}
-      projectTitle={project?.title}
-      currentUserId={currentUserId}
-      collaborators={collaborators}
-      onTaskCreated={() => onTasksChanged?.()}
-    />
-    </>
   );
 });
 

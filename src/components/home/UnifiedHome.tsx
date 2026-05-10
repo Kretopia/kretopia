@@ -664,11 +664,23 @@ export const UnifiedHome = () => {
           </section>
         )}
 
-        {/* ── Spotlight (auth only — accessible via hamburger menu for guests) ── */}
-        {user && <SpotlightFeedRow />}
+        {/* Pass B.1: ScoutedGigsSection — the moat. Real gigs from across the web. */}
+        {user && (
+          <section className="mb-8 scroll-mt-14">
+            <ScoutedGigsSection />
+          </section>
+        )}
 
-        {/* ── ThriveFund (auth only) ── */}
-        {user && <ThriveFundFeedRow />}
+        {/* Pass B.1: Quiet streak row — single line of utility. */}
+        {user && (
+          <section className="mb-8">
+            <StreakChipsRow />
+          </section>
+        )}
+
+        {/* Pass B.1: Spotlight + ThriveFund hidden — both are off-nav surfaces. */}
+        {false && user && <SpotlightFeedRow />}
+        {false && user && <ThriveFundFeedRow />}
 
         {/* ── 2. GIGS FOR YOU (auth only) ── */}
         {user && (

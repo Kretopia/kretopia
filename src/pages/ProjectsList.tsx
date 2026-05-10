@@ -110,45 +110,31 @@ const ProjectsList = () => {
   const completedCount = projects.filter((p) => p.status === "completed").length;
 
   return (
-    <div className="container max-w-6xl mx-auto py-6 px-4 space-y-6 pb-32 md:pb-12 overflow-y-auto">
-      {/* Header — warm studio tone */}
-      <header className="flex items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold tracking-[0.18em] text-muted-foreground uppercase mb-1">
-            ThriveDesk
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
-            Your studio rooms
-          </h1>
+    <div className="container max-w-6xl mx-auto py-3 sm:py-4 px-3 sm:px-4 space-y-3 sm:space-y-4 pb-32 md:pb-12 overflow-y-auto">
+      {/* Header — lite, single line */}
+      <header className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <FolderKanban className="h-4 w-4 text-primary shrink-0" />
+          <h1 className="text-xl font-black tracking-[-0.03em] truncate">Desk</h1>
           {projects.length > 0 && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {activeCount} in progress · {completedCount} delivered
-            </p>
+            <span className="text-[11px] text-muted-foreground font-medium shrink-0">
+              · {activeCount} active
+            </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => setShowVoiceCreate(true)}
-            size="sm"
-            className="gap-1.5 rounded-full"
-          >
-            <Plus className="h-4 w-4" />
-            <span>New project</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowWizard(true)}
-            className="gap-1.5 text-xs"
-            title="Advanced setup"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-            <span className="hidden sm:inline">Advanced</span>
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowWizard(true)}
+          className="h-8 w-8 text-muted-foreground"
+          title="Advanced setup"
+          aria-label="Advanced setup"
+        >
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
       </header>
 
-      {/* Pending Invitations */}
+      {/* Pending Invitations (only if any) */}
       <MyPendingInvitations />
 
       {/* Studio Cards grid (or empty state) */}
@@ -157,6 +143,16 @@ const ProjectsList = () => {
         invoicesByProject={invoicesByProject}
         onNewProject={() => setShowVoiceCreate(true)}
       />
+
+      {/* Floating New Project FAB */}
+      <Button
+        onClick={() => setShowVoiceCreate(true)}
+        size="lg"
+        className="fixed right-4 bottom-32 sm:bottom-24 md:bottom-8 z-30 h-14 w-14 rounded-full shadow-xl p-0"
+        aria-label="New project"
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
 
       {/* Voice-first entry */}
       <VoiceFirstCreateModal

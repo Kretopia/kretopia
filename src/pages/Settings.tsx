@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Lock, Mail, Bell, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft, CreditCard, Globe, Brain, ChevronRight } from "lucide-react";
+import { CreatorSiteSettings } from "@/components/settings/CreatorSiteSettings";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { ManualMergeAccountPanel } from "@/components/account/ManualMergeAccountPanel";
 import { Link } from "react-router-dom";
@@ -761,9 +762,10 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Creator Site / Privacy toggles — hidden for MVP.
-              CreatorSiteSettings: website-builder is off-nav per MVP scope.
-              Privacy switches were never persisted (local state only). Re-add when wired to backend. */}
+          {/* Creator Site (My Website) — included in Creator+ subscription */}
+          <CreatorSiteSettings />
+
+          {/* Privacy toggles hidden for MVP — were never persisted (local state only). Re-add when wired to backend. */}
 
           {/* Blocked Users */}
           <BlockedUsersCard />

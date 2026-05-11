@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { BlockedUsersCard } from "@/components/settings/BlockedUsersCard";
 import { TelegramConnectCard } from "@/components/settings/TelegramConnectCard";
+import { TelegramStatusCard } from "@/components/settings/TelegramStatusCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 import { VibePicker } from "@/components/onboarding/VibePicker";
@@ -770,6 +771,7 @@ const Settings = () => {
 
           {/* Telegram bot */}
           <TelegramConnectCard />
+          <TelegramStatusCard />
 
           {/* Blocked Users */}
           <BlockedUsersCard />

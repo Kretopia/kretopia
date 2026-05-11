@@ -366,7 +366,7 @@ Never say "I'll do X now", "running that now", "let me get that done", "on it", 
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: modelMessages,
-        stream: true,
+        stream: stream,
       }),
     });
 

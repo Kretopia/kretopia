@@ -18,6 +18,7 @@ import { NotificationSettings } from "@/components/profile/NotificationSettings"
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { BlockedUsersCard } from "@/components/settings/BlockedUsersCard";
+import { TelegramConnectCard } from "@/components/settings/TelegramConnectCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
 import { VibePicker } from "@/components/onboarding/VibePicker";
@@ -766,6 +767,9 @@ const Settings = () => {
           <CreatorSiteSettings />
 
           {/* Privacy toggles hidden for MVP — were never persisted (local state only). Re-add when wired to backend. */}
+
+          {/* Telegram bot */}
+          <TelegramConnectCard />
 
           {/* Blocked Users */}
           <BlockedUsersCard />

@@ -10,6 +10,7 @@ export interface Collaborator {
   full_name: string;
   avatar_url: string | null;
   role: string | null;
+  collaborator_status?: string | null;
 }
 
 export interface ProjectMessage {
@@ -51,36 +52,22 @@ export function useProjectData(projectId: string | undefined) {
 
   const fetchCollaborators = useCallback(
     async (projectData: any) => {
-      const { data: collabData } = await supabase
-        .from("project_collaborators")
-        .select("user_id")
-        .eq("project_id", projectId!)
-        .eq("status", "accepted");
-
-      const userIds = new Set<string>();
-      userIds.add(projectData.created_by);
-      collabData?.forEach((c) => {
-        if (c.user_id) userIds.add(c.user_id);
+      const { data: people, error } = await supabase.rpc("get_project_people" as any, {
+        _project_id: projectData.id,
       });
+      if (error) throw error;
 
-      const { data: profiles } = await supabase
-        .from("public_profiles_safe")
-        .select("user_id, full_name, avatar_url, role")
-        .in("user_id", Array.from(userIds));
-
-      if (!profiles) return [];
-
-      const sorted = profiles.sort((a, b) =>
-        a.user_id === projectData.created_by ? -1 : b.user_id === projectData.created_by ? 1 : 0
-      );
-      return sorted.map((p) => ({
-        id: p.user_id,
-        full_name: p.full_name || "",
-        avatar_url: p.avatar_url,
-        role: p.role,
-      }));
+      return ((people || []) as any[])
+        .filter((p) => p.collaborator_status === "accepted")
+        .map((p) => ({
+          id: p.user_id,
+          full_name: p.full_name || "Member",
+          avatar_url: p.avatar_url,
+          role: p.role,
+          collaborator_status: p.collaborator_status,
+        }));
     },
-    [projectId]
+    []
   );
 
   const fetchMessages = useCallback(async () => {

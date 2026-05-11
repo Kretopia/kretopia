@@ -207,27 +207,35 @@ async function addCollaborator(userId: string, body: any) {
   }
 
   // Validate the target actually has an auth.users row (FK target).
-  // Falls back to a name lookup if the LLM passed something invalid.
+  // Falls back to a name lookup if the LLM passed something invalid — but
+  // refuses if the fallback is ambiguous (2+ matches), so we never silently
+  // add the wrong person.
   let resolvedUserId = newUserId;
   try {
     const { data: authLookup, error: authErr } = await admin.auth.admin.getUserById(newUserId);
     if (authErr || !authLookup?.user) {
-      // Try resolving by name/username from body.invitee_name (LLM often includes it)
       const hint = String(body.invitee_name ?? body.name_query ?? body.name ?? "").trim();
       if (hint.length >= 2) {
         const like = `%${hint}%`;
-        const { data: prof } = await admin
+        const { data: candidates } = await admin
           .from("profiles")
           .select("user_id, full_name, username, is_claimed")
           .or(`full_name.ilike.${like},username.ilike.${like}`)
           .eq("is_claimed", true)
-          .limit(1)
-          .maybeSingle();
-        if (prof?.user_id) {
-          resolvedUserId = prof.user_id;
-        } else {
+          .limit(3);
+        const list = candidates ?? [];
+        if (list.length === 0) {
           return json({ ok: false, error: `I couldn't find a claimed account for "${hint}". They may need to sign up first.` }, 400);
         }
+        if (list.length > 1) {
+          return json({
+            ok: false,
+            needs_clarification: true,
+            error: `Multiple people match "${hint}" — ask the user which one (${list.map((c: any) => c.full_name ?? c.username).join(", ")}).`,
+            candidates: list,
+          }, 409);
+        }
+        resolvedUserId = list[0].user_id;
       } else {
         return json({ ok: false, error: "That user account doesn't exist yet. Ask them to sign up, then try again." }, 400);
       }
@@ -251,10 +259,10 @@ async function addCollaborator(userId: string, body: any) {
     });
   }
 
-  // Resolve invitee name for the chat message
+  // Resolve invitee name + avatar for the chat message and any downstream UI
   const { data: invitee } = await admin
     .from("public_profiles_safe")
-    .select("full_name")
+    .select("full_name, avatar_url, username, role")
     .eq("user_id", resolvedUserId)
     .maybeSingle();
   const inviteeName = invitee?.full_name ?? "New collaborator";

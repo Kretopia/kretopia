@@ -18,6 +18,8 @@ import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EventItem {
   id: string;

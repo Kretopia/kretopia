@@ -72,7 +72,12 @@ function MiniMarkdown({ md }: { md: string }) {
   );
 }
 
-export function ScoutedGigsSection() {
+interface ScoutedGigsSectionProps {
+  /** When set, only show this many gigs and append a "See all" link to /opportunities. */
+  limit?: number;
+}
+
+export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [gigs, setGigs] = useState<ScoutedGig[]>([]);

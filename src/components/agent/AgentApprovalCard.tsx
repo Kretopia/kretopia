@@ -56,6 +56,19 @@ export const AgentApprovalCard = ({ action, onResolved, compact }: Props) => {
   const risk = riskPill(action.risk_level);
   const friendly = toolFriendly(action.tool_name);
 
+  // Visual confirmation block: when the planner attached a person to _preview
+  // (avatar / subtitle), surface it so the user can verify "is this the right Dezii?"
+  // before approving.
+  const previewMeta = (action.tool_args as any)?._preview ?? {};
+  const previewAvatar: string | null = previewMeta.avatar_url ?? null;
+  const previewSubtitle: string | null = previewMeta.subtitle ?? null;
+  const previewContextLine: string | null = previewMeta.context_line ?? null;
+  const previewName: string | null =
+    previewMeta.full_name ??
+    (typeof action.preview_title === "string"
+      ? action.preview_title.replace(/^(Add|Remove)\s+/i, "").split(/\s+(to|from)\s+/i)[0]
+      : null);
+
   return (
     <Card className={`p-4 border-primary/30 bg-primary/5 ${compact ? "" : "p-5"}`}>
       <div className="flex items-start gap-3">
@@ -78,6 +91,25 @@ export const AgentApprovalCard = ({ action, onResolved, compact }: Props) => {
           <p className="text-base font-semibold leading-snug break-words mb-1">
             {action.preview_title ?? friendly.what}
           </p>
+          {previewAvatar && (
+            <div className="flex items-center gap-2 mt-2 mb-2 rounded-md border bg-background/60 px-2.5 py-2">
+              <Avatar className="h-9 w-9 shrink-0">
+                <AvatarImage src={previewAvatar} alt={previewName ?? "Person"} />
+                <AvatarFallback>{(previewName ?? "?").slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                {previewName && (
+                  <p className="text-sm font-medium truncate">{previewName}</p>
+                )}
+                {previewSubtitle && (
+                  <p className="text-xs text-muted-foreground truncate">{previewSubtitle}</p>
+                )}
+                {previewContextLine && (
+                  <p className="text-[11px] text-muted-foreground/80 truncate">{previewContextLine}</p>
+                )}
+              </div>
+            </div>
+          )}
           {action.preview_body ? (
             <p className="text-sm text-muted-foreground leading-relaxed break-words">
               {action.preview_body}

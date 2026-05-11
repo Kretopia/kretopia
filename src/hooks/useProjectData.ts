@@ -64,7 +64,7 @@ export function useProjectData(projectId: string | undefined) {
       });
 
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("public_profiles_safe")
         .select("user_id, full_name, avatar_url, role")
         .in("user_id", Array.from(userIds));
 

@@ -96,10 +96,7 @@ const Settings = () => {
   // Email change
   const [newEmail, setNewEmail] = useState("");
   
-  // Privacy settings
-  const [profilePublic, setProfilePublic] = useState(true);
-  const [showEmail, setShowEmail] = useState(false);
-  const [allowMessages, setAllowMessages] = useState(true);
+  // Privacy switches removed — were never persisted. Re-add when wired to backend.
 
   // Notification preferences
   const [preferences, setPreferences] = useState<NotificationPreferences>({

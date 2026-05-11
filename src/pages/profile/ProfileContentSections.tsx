@@ -1,19 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, Zap, DollarSign, Code } from "lucide-react";
+import { Briefcase, Star, Zap, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
 
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
-import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
-import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { SkillsSection } from "@/components/profile/SkillsSection";
-import { PressLinksSection } from "@/components/profile/PressLinksSection";
-import { AwardsSection } from "@/components/profile/AwardsSection";
 import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
-import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
 import { RateCardSection } from "@/components/profile/RateCardSection";
 import { AvailabilityCalendarSection } from "@/components/profile/AvailabilityCalendarSection";

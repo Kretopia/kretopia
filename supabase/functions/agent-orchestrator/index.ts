@@ -280,6 +280,21 @@ async function planTools(
                 .maybeSingle();
               personRow = p;
             }
+            // GUARD: if the model invented a UUID (no profile row), refuse to queue.
+            // Push the model back so it MUST call find_user → ask_clarification.
+            if (!targetUserId || !personRow) {
+              messages.push({
+                role: "tool",
+                tool_call_id: c.id,
+                content: JSON.stringify({
+                  ok: false,
+                  error: "INVALID_USER_ID",
+                  message: `No profile found for user_id=${targetUserId ?? "(missing)"}. You MUST call find_user first to resolve the person by name/handle, then use the exact user_id from matches[]. If find_user returns 0 or >1 matches, call ask_clarification — DO NOT guess a UUID.`,
+                }),
+              });
+              didAutoExecute = true; // force another planner turn
+              continue;
+            }
             if (targetProjectId) {
               const { data: pr } = await admin.from("projects").select("title").eq("id", targetProjectId).maybeSingle();
               projectTitle = (pr as any)?.title || null;

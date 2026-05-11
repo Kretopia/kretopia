@@ -119,7 +119,7 @@ export const TelegramConnectCard = () => {
         ) : (
           <>
             <p className="text-sm text-muted-foreground">
-              One tap opens @thriveinbot and links it to your account. Link expires in 15 minutes.
+              One tap opens @Thrivecopilotbot and links it to your account. Link expires in 15 minutes.
             </p>
             <Button onClick={handleConnect} disabled={busy}>
               {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}

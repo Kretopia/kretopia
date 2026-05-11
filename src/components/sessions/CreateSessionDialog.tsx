@@ -92,25 +92,7 @@ export const CreateSessionDialog = ({
     recording_enabled: false,
   });
 
-  // Fetch user's circles for the dropdown
-  useEffect(() => {
-    if (!user || !open) return;
-    const fetchCircles = async () => {
-      const { data: memberships } = await supabase
-        .from("spark_room_members")
-        .select("room_id")
-        .eq("user_id", user.id);
-      if (!memberships?.length) return;
-      const roomIds = memberships.map(m => m.room_id);
-      const { data: rooms } = await supabase
-        .from("spark_rooms")
-        .select("id, title, icon_emoji")
-        .in("id", roomIds)
-        .eq("is_active", true);
-      setUserCircles(rooms || []);
-    };
-    fetchCircles();
-  }, [user, open]);
+  // (Circle linking removed — Circles are not part of the active product surface.)
 
   const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

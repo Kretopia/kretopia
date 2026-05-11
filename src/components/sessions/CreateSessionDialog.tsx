@@ -222,7 +222,7 @@ export const CreateSessionDialog = ({
         const rows = rsvpQuestions.map((q, idx) => ({
           event_id: inserted.id as string,
           question: q.question,
-          question_type: "text",
+          question_type: "short_text",
           required: q.required,
           position: idx,
           created_by: user.id,

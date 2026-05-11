@@ -55,7 +55,7 @@ export const ScanFlyerDialog = ({ open, onOpenChange, onExtracted }: ScanFlyerDi
     try {
       const image_base64 = await fileToBase64(file);
       const { data, error } = await supabase.functions.invoke("extract-event-details", {
-        body: { image_base64 },
+        body: { image_base64, extract_only: true },
       });
       if (error) throw new Error(error.message || "Edge function error");
       if (data?.error) throw new Error(data.error);

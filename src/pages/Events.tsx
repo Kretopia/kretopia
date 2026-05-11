@@ -596,6 +596,86 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
       </div>
 
       <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchEvents} />
+
+      <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
+        <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto">
+          <SheetHeader className="text-left">
+            <SheetTitle>Filter events</SheetTitle>
+            <SheetDescription>Narrow down what's on by category, time, price and mode.</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-5 py-4">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Category</label>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORY_FILTERS.map(c => (
+                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">When</label>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { v: 'any', l: 'Anytime' },
+                  { v: 'week', l: 'Next 7 days' },
+                  { v: 'weekend', l: 'This weekend' },
+                  { v: 'month', l: 'Next 30 days' },
+                ] as const).map(o => (
+                  <Button key={o.v} type="button" variant={whenFilter === o.v ? 'default' : 'outline'}
+                    size="sm" className="rounded-full" onClick={() => setWhenFilter(o.v)}>{o.l}</Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Price</label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { v: 'any', l: 'Any' },
+                  { v: 'free', l: 'Free' },
+                  { v: 'paid', l: 'Paid' },
+                ] as const).map(o => (
+                  <Button key={o.v} type="button" variant={priceFilter === o.v ? 'default' : 'outline'}
+                    size="sm" className="rounded-full" onClick={() => setPriceFilter(o.v)}>{o.l}</Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Mode</label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { v: 'any', l: 'Any' },
+                  { v: 'irl', l: 'In person' },
+                  { v: 'online', l: 'Online' },
+                ] as const).map(o => (
+                  <Button key={o.v} type="button" variant={modeFilter === o.v ? 'default' : 'outline'}
+                    size="sm" className="rounded-full" onClick={() => setModeFilter(o.v)}>{o.l}</Button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <SheetFooter className="flex-row gap-2 sm:justify-between">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setCategoryFilter('all');
+                setWhenFilter('any');
+                setPriceFilter('any');
+                setModeFilter('any');
+              }}
+            >Clear all</Button>
+            <Button variant="gradient" onClick={() => setFilterOpen(false)}>
+              Show {filteredEvents.length} events
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
       <SessionDetailDialog 
         session={selectedEvent} 
         open={!!selectedEvent} 

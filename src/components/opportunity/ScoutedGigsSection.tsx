@@ -266,7 +266,7 @@ export function ScoutedGigsSection() {
           No scouted gigs yet. Tap <span className="font-semibold text-foreground">Scan now</span> to find real jobs across the web matched to your skills.
         </Card>
       ) : (
-        <div className="flex sm:grid sm:grid-cols-2 gap-3 overflow-x-auto sm:overflow-visible -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory scrollbar-hide pb-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {gigs.map((g) => {
             const Icon = SOURCE_ICON[g.source] || Globe;
             return (

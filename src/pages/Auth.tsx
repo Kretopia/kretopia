@@ -250,6 +250,8 @@ const Auth = () => {
       } else {
         const { analytics } = await import("@/lib/analytics");
         analytics.signIn('email');
+        const { setLastSignInMethod } = await import("@/lib/authProviderHints");
+        setLastSignInMethod("email");
 
         const { data: { user: signedInUser } } = await supabase.auth.getUser();
         if (signedInUser) {
@@ -299,6 +301,8 @@ const Auth = () => {
         setLoadingFn(false); return;
       } else {
         analytics.signIn(provider);
+        const { setLastSignInMethod } = await import("@/lib/authProviderHints");
+        setLastSignInMethod(provider);
         toast({ title: "Welcome!", description: `Signed in with ${provider === "google" ? "Google" : "Apple"} successfully.` });
       }
     } catch (err: any) {

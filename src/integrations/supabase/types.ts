@@ -17433,6 +17433,17 @@ export type Database = {
           workspace_type: string
         }[]
       }
+      get_project_people: {
+        Args: { _project_id: string }
+        Returns: {
+          avatar_url: string
+          collaborator_status: string
+          full_name: string
+          is_owner: boolean
+          role: string
+          user_id: string
+        }[]
+      }
       get_review_request_by_token: {
         Args: { token_param: string }
         Returns: {

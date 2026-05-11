@@ -75,9 +75,17 @@ async function classifyIntent(
           {
             role: "system",
             content:
-              "You are an intent router for a creative-economy platform. Given a user request, pick the single best sub-agent from this list:\n\n" +
+              "You are an intent router for a creative-economy platform. Pick the SINGLE best sub-agent.\n\n" +
+              "Sub-agents:\n" +
               kinds.join(", ") +
-              "\n\nReturn JSON only: {\"agent_kind\":\"<one_of_the_above>\",\"reasoning\":\"<one short sentence>\"}",
+              "\n\nDISAMBIGUATION RULES:\n" +
+              "- 'add <person> to <project>', 'invite <person> to my project', 'put X on the team', 'remove X from project' → project_manager (this is a collaborator action on an EXISTING project, NOT talent search).\n" +
+              "- 'find me a <role>', 'search for photographers', 'who can shoot in Bali' → talent (discovering new people).\n" +
+              "- 'create task', 'mark done', 'project status' → project_manager.\n" +
+              "- 'apply to <gig>', 'find gigs', 'draft cover letter' → gig.\n" +
+              "- 'send DM to <person>', 'message X' → talent.\n" +
+              "- 'remember that...', 'forget...' → memory.\n\n" +
+              "Return JSON only: {\"agent_kind\":\"<one_of_the_above>\",\"reasoning\":\"<one short sentence>\"}",
           },
           { role: "user", content: intent },
         ],

@@ -426,9 +426,22 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
                   : "Real-life moments with the creative community"}
               </p>
             </div>
-            <Button variant="gradient" size="sm" onClick={handleHostEvent} className="gap-1.5 rounded-full shrink-0">
-              <Plus className="h-4 w-4" /> Host one
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              {user && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/events/backstage")}
+                  className="gap-1.5 rounded-full"
+                  title="Manage your events"
+                >
+                  <Sparkles className="h-4 w-4" /> Backstage
+                </Button>
+              )}
+              <Button variant="gradient" size="sm" onClick={handleHostEvent} className="gap-1.5 rounded-full">
+                <Plus className="h-4 w-4" /> Host one
+              </Button>
+            </div>
           </div>
 
           {/* Search + Filter button */}

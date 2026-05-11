@@ -748,7 +748,7 @@ export const UnifiedHome = () => {
         {/* Pass B.1: ScoutedGigsSection — the moat. Real gigs from across the web. */}
         {user && (
           <section className="mb-8 scroll-mt-14">
-            <ScoutedGigsSection />
+            <ScoutedGigsSection limit={3} />
           </section>
         )}
 

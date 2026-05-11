@@ -93,8 +93,10 @@ async function findUser(userId: string, body: any) {
     .filter(Boolean);
 
   // Widen SELECT so the planner has enough to disambiguate AND to build a rich
-  // approval-card preview (avatar + role + username + city).
-  const SELECT_COLS = "user_id, full_name, username, role, avatar_url, city, country";
+  // approval-card preview (avatar + role + username + location).
+  // Only columns actually exposed by public_profiles_safe — adding unknown
+  // columns silently returns 0 rows.
+  const SELECT_COLS = "user_id, full_name, username, role, avatar_url, location";
 
   let connMatches: any[] = [];
   if (peerIds.length) {

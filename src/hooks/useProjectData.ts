@@ -188,6 +188,7 @@ export function useProjectData(projectId: string | undefined) {
       .on("postgres_changes", { event: "*", schema: "public", table: "project_messages", filter: `project_id=eq.${projectId}` }, () => fetchProjectData())
       .on("postgres_changes", { event: "*", schema: "public", table: "project_tasks", filter: `project_id=eq.${projectId}` }, () => fetchProjectData())
       .on("postgres_changes", { event: "*", schema: "public", table: "milestones", filter: `project_id=eq.${projectId}` }, () => fetchProjectData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "project_collaborators", filter: `project_id=eq.${projectId}` }, () => fetchProjectData())
       .subscribe();
 
     return () => {

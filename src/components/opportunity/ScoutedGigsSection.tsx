@@ -173,7 +173,7 @@ export function ScoutedGigsSection() {
   };
 
   const draftLetter = async () => {
-    if (!openGig) return;
+    if (!openGig || !user) return;
     setDrafting(true);
     const { data, error } = await supabase.functions.invoke("draft-gig-application", {
       body: { scouted_gig_id: openGig.id },
@@ -184,6 +184,16 @@ export function ScoutedGigsSection() {
       return;
     }
     setCoverLetter(data.cover_letter);
+    supabase.from("scouted_gig_actions").upsert({
+      user_id: user.id, scouted_gig_id: openGig.id, action: "drafted",
+    }).then(() => {}, () => {});
+  };
+
+  const trackApplyClick = () => {
+    if (!user || !openGig) return;
+    supabase.from("scouted_gig_actions").upsert({
+      user_id: user.id, scouted_gig_id: openGig.id, action: "apply_clicked",
+    }).then(() => {}, () => {});
   };
 
   const markApplied = async () => {
@@ -192,7 +202,15 @@ export function ScoutedGigsSection() {
       user_id: user.id, scouted_gig_id: openGig.id, action: "applied",
       cover_letter: coverLetter, outcome: "pending",
     });
-    toast({ title: "Marked as applied", description: "We'll check in to see how it went." });
+    toast({ title: "Marked as applied", description: "Tap Won / Lost / Ghosted later to track outcome." });
+    setOpenGig(null);
+  };
+
+  const setOutcome = async (outcome: "won" | "lost" | "ghosted") => {
+    if (!user || !openGig) return;
+    await supabase.from("scouted_gig_actions").update({ outcome })
+      .eq("user_id", user.id).eq("scouted_gig_id", openGig.id).eq("action", "applied");
+    toast({ title: outcome === "won" ? "Congrats — booked!" : `Marked ${outcome}` });
     setOpenGig(null);
   };
 

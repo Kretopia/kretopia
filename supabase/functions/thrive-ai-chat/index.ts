@@ -82,112 +82,121 @@ serve(async (req) => {
       !!internalUserId &&
       authHeader === `Bearer ${SERVICE_KEY}`;
 
+    // Resolve user: either internal (service role + header) or public (user JWT).
+    let resolvedUser: { id: string } | null = null;
     if (isInternal) {
+      resolvedUser = { id: internalUserId! };
+    } else if (authHeader.startsWith("Bearer ")) {
       try {
-        const user = { id: internalUserId! };
+        const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: { user } } = await userClient.auth.getUser();
+        if (user) resolvedUser = { id: user.id };
+      } catch (e) {
+        console.warn("auth.getUser failed", e);
+      }
+    }
+
+    if (resolvedUser) {
+      try {
+        const user = resolvedUser;
         userId = user.id;
 
-          // ---- Per-tier daily message cap ----
-          // Bundled with Thrive Voice into a single "Thrive Talk" budget surfaced as minutes.
-          // Chat caps are deliberately generous so VOICE minutes are the visible bottleneck:
-          // Spark 30 / Creator 1000 / Creator+ 5000 / Founder/Brand Ent unlimited / Brand Pro 1000
-          const TIER_DAILY_CAPS: Record<string, number> = {
-            free: 30,
-            pro: 1000,
-            creator_pro: 5000,
-            founder: -1,
-            brand_pro: 1000,
-            brand_enterprise: -1,
-          };
-          const { data: profile } = await admin
-            .from("profiles")
-            .select("subscription_tier")
-            .eq("user_id", user.id)
-            .maybeSingle();
-          const tier = (profile?.subscription_tier as string) || "free";
-          const dailyCap = TIER_DAILY_CAPS[tier] ?? 20;
+        // ---- Per-tier daily message cap ----
+        const TIER_DAILY_CAPS: Record<string, number> = {
+          free: 30,
+          pro: 1000,
+          creator_pro: 5000,
+          founder: -1,
+          brand_pro: 1000,
+          brand_enterprise: -1,
+        };
+        const { data: profile } = await admin
+          .from("profiles")
+          .select("subscription_tier")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const tier = (profile?.subscription_tier as string) || "free";
+        const dailyCap = TIER_DAILY_CAPS[tier] ?? 20;
 
-          const { data: capCheck, error: capErr } = await admin.rpc(
-            "consume_copilot_message",
-            { _user_id: user.id, _daily_cap: dailyCap },
+        const { data: capCheck, error: capErr } = await admin.rpc(
+          "consume_copilot_message",
+          { _user_id: user.id, _daily_cap: dailyCap },
+        );
+        if (capErr) {
+          console.warn("consume_copilot_message failed", capErr);
+        } else if (Array.isArray(capCheck) && capCheck[0] && !capCheck[0].allowed) {
+          const used = capCheck[0].used;
+          const cap = capCheck[0].cap;
+          return new Response(
+            JSON.stringify({
+              error: `Daily Copilot limit reached (${used}/${cap}). Upgrade your plan or come back tomorrow.`,
+              code: "COPILOT_DAILY_LIMIT",
+              tier,
+              used,
+              cap,
+            }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
           );
-          if (capErr) {
-            console.warn("consume_copilot_message failed", capErr);
-          } else if (Array.isArray(capCheck) && capCheck[0] && !capCheck[0].allowed) {
-            const used = capCheck[0].used;
-            const cap = capCheck[0].cap;
-            return new Response(
-              JSON.stringify({
-                error: `Daily Copilot limit reached (${used}/${cap}). Upgrade your plan or come back tomorrow.`,
-                code: "COPILOT_DAILY_LIMIT",
-                tier,
-                used,
-                cap,
-              }),
-              { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-            );
-          }
+        }
 
-          // Load the unified context. Bounded internally; never blocks > 2s.
-          const ctx = await loadCopilotContext(admin, user.id);
-          contextPreamble = renderContextPreamble(ctx, surface, surface_context);
+        // Load the unified context. Bounded internally; never blocks > 2s.
+        const ctx = await loadCopilotContext(admin, user.id);
+        contextPreamble = renderContextPreamble(ctx, surface, surface_context);
 
-          // ---- Thrive Brain: retrieve relevant long-term memories ----
-          // Embed the latest user turn, semantic-search copilot_memories,
-          // and inject the top hits into the system prompt as <memory>.
-          try {
-            const latestForMem = [...messages].reverse().find((m) => m.role === "user")?.content;
-            if (latestForMem && latestForMem.length > 3) {
-              const qEmb = await embedText(latestForMem);
-              if (qEmb) {
-                const { data: mems } = await admin.rpc("match_copilot_memories", {
-                  p_user_id: user.id,
-                  p_query_embedding: toPgVector(qEmb) as unknown as number[],
-                  p_match_count: 6,
-                  p_min_similarity: 0.55,
-                });
-                if (Array.isArray(mems) && mems.length) {
-                  const lines = mems
-                    .map((m: any) => `- [${m.kind}] ${m.content}`)
-                    .join("\n");
-                  contextPreamble += `\n\nLONG-TERM MEMORY (things you've learned about this user — use naturally, don't quote verbatim, never say "according to my memory"):\n${lines}\n`;
-                  // Bump usage stats async (don't await)
-                  for (const m of mems as Array<{ id: string }>) {
-                    admin.rpc("touch_copilot_memory", { p_memory_id: m.id }).then(() => {}, () => {});
-                  }
+        // ---- Thrive Brain: retrieve relevant long-term memories ----
+        try {
+          const latestForMem = [...messages].reverse().find((m) => m.role === "user")?.content;
+          if (latestForMem && latestForMem.length > 3) {
+            const qEmb = await embedText(latestForMem);
+            if (qEmb) {
+              const { data: mems } = await admin.rpc("match_copilot_memories", {
+                p_user_id: user.id,
+                p_query_embedding: toPgVector(qEmb) as unknown as number[],
+                p_match_count: 6,
+                p_min_similarity: 0.55,
+              });
+              if (Array.isArray(mems) && mems.length) {
+                const lines = mems
+                  .map((m: any) => `- [${m.kind}] ${m.content}`)
+                  .join("\n");
+                contextPreamble += `\n\nLONG-TERM MEMORY (things you've learned about this user — use naturally, don't quote verbatim, never say "according to my memory"):\n${lines}\n`;
+                for (const m of mems as Array<{ id: string }>) {
+                  admin.rpc("touch_copilot_memory", { p_memory_id: m.id }).then(() => {}, () => {});
                 }
               }
             }
-          } catch (memErr) {
-            console.warn("memory retrieval failed", memErr);
           }
+        } catch (memErr) {
+          console.warn("memory retrieval failed", memErr);
+        }
 
-          // ---- Thrive long-term memory (vendors, sponsors, contacts, follow-ups) ----
+        // ---- Thrive long-term memory ----
+        try {
+          const { data: tm } = await admin
+            .from("thrive_memory")
+            .select("kind, label, body, importance")
+            .eq("user_id", user.id)
+            .order("importance", { ascending: false })
+            .order("last_used_at", { ascending: false, nullsFirst: false })
+            .limit(20);
+          if (Array.isArray(tm) && tm.length) {
+            const lines = tm
+              .map((m: any) => `- [${m.kind}] ${m.label}${m.body ? ` — ${m.body}` : ""}`)
+              .join("\n");
+            contextPreamble += `\n\nTHRIVE MEMORY (people, vendors, sponsors, follow-ups this user has saved — use naturally, don't quote verbatim):\n${lines}\n`;
+          }
+        } catch (e) {
+          console.warn("thrive_memory load failed", e);
+        }
+
+        // Auto-resolve canonical thread when surface is set and no thread provided.
+        if (!conversationId && (surface || persist)) {
           try {
-            const { data: tm } = await admin
-              .from("thrive_memory")
-              .select("kind, label, body, importance")
-              .eq("user_id", user.id)
-              .order("importance", { ascending: false })
-              .order("last_used_at", { ascending: false, nullsFirst: false })
-              .limit(20);
-            if (Array.isArray(tm) && tm.length) {
-              const lines = tm
-                .map((m: any) => `- [${m.kind}] ${m.label}${m.body ? ` — ${m.body}` : ""}`)
-                .join("\n");
-              contextPreamble += `\n\nTHRIVE MEMORY (people, vendors, sponsors, follow-ups this user has saved — use naturally, don't quote verbatim):\n${lines}\n`;
-            }
+            conversationId = await getOrCreateCopilotThread(admin, user.id);
           } catch (e) {
-            console.warn("thrive_memory load failed", e);
-          }
-
-          // Auto-resolve canonical thread when surface is set and no thread provided.
-          if (!conversationId && (surface || persist)) {
-            try {
-              conversationId = await getOrCreateCopilotThread(admin, user.id);
-            } catch (e) {
-              console.warn("Copilot thread resolve failed", e);
-            }
+            console.warn("Copilot thread resolve failed", e);
           }
         }
       } catch (e) {

@@ -24,7 +24,7 @@ import { EditEventDialog } from "./EditEventDialog";
 import { EventCohosts } from "./EventCohosts";
 import { EventRecapButton } from "./EventRecapButton";
 import { EventCheckInDialog } from "./EventCheckInDialog";
-import { ContinueAsCircle } from "./ContinueAsCircle";
+// ContinueAsCircle removed — event→circle linking deprecated
 
 interface Session {
   id: string;

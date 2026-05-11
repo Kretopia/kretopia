@@ -1,90 +1,59 @@
-## Vision: Lite everywhere, Home is the brain
+## Goal
 
-**Philosophy (Apple/Instagram-grade):** Every surface does ONE job at a glance. Depth lives in drill-downs, not on the page. New users should "get it" in 3 seconds without reading.
+Make Thrive's "add a person to a project" flow bulletproof — Search → Confirm → Add — and tighten the rest of the agent surface in the same pass.
 
-**Pattern across all dashboards:**
-- 1 hero (what to do right now) + 1 primary feed/list + 1 quiet utility row. Nothing else above the fold.
-- Everything else moves to the surface's own drill-down (Desk → project, Match → swipe, Pay → invoices) or the hamburger.
-- Empty states are warm, single-CTA, never a wall of cards.
+## What's already working (verified just now)
 
-So: **Home = light hero + smart feed**, not a kitchen sink. Other dashboards stay light too — Home is just the most personal, not the heaviest.
+- `agent-orchestrator` already runs a 2-stage flow: `find_user` (auto) + `list_my_projects` (auto) → `add_collaborator` (requires_approval).
+- Approval card already shows "Add DEZii to ThriveIN Content" with body copy (yesterday's enrichment fix).
+- LLM gets explicit instructions to call `find_user` first, never invent UUIDs, and use `ask_clarification` when ambiguous.
 
----
+## What's broken / weak
 
-## Pass B.1 — Home (signed-in) cleanup
+1. **Confirmation is text-only.** When the user says "add Dezii", the approval card shows the name in text but no avatar/role — easy to approve the wrong person if there are duplicate names. The `_preview` payload only carries `title` + `body`.
+2. **Single-match still proposes silently.** Even with one match, the user has not seen *which* "Dezii" the agent picked until the approval card appears. If 0 matches, today the LLM may still propose `add_collaborator` with a hallucinated id (we caught that yesterday with FK validation, but it should never get that far).
+3. **`ask_clarification` is rarely fired.** The system prompt mentions it but the flow doesn't reliably invoke it on `match_count !== 1`.
+4. **Other agent tools (audit pass):**
+   - `assign_task`, `mark_task_done`, `create_task`, `remove_collaborator` have the same UUID-resolution risk — they trust LLM-supplied ids.
+   - `send_dm`, `send_message`, `send_triage_reply` don't validate recipient ids before drafting.
+   - `apply_to_gig`, `draft_gig_application` don't validate `gig_id` exists before drafting.
 
-`src/components/home/UnifiedHome.tsx` currently renders ~20 sections stacked. We cut to **5 zones**, in order:
+## Scope (this loop)
 
-```text
-┌──────────────────────────────────────┐
-│ 1. ThrivePromptHero                  │  "What are we making today?" (the moat entry)
-├──────────────────────────────────────┤
-│ 2. GetStartedChecklist (only <100%)  │  Auto-hides when profile complete
-├──────────────────────────────────────┤
-│ 3. ForYou Feed                       │  Smart Match suggestions + Scouted gigs (interleaved)
-│    - 3 creators to match             │
-│    - 2 scouted gigs                  │
-│    - 1 active project nudge (Desk)   │
-├──────────────────────────────────────┤
-│ 4. StreakChipsRow (compact)          │  Single line, quiet
-├──────────────────────────────────────┤
-│ 5. ApprovalsHub (only if items)      │  Auto-hides when empty
-└──────────────────────────────────────┘
-```
+### Phase 1 — Add-Collaborator hardening (the user's main complaint)
 
-### KEEP (5 components)
-- `ThrivePromptHero` — the unified entry (replaces MagicHomeHero duplicate)
-- `GetStartedChecklist` — conditional (<50% profile)
-- New `ForYouFeed` wrapper that interleaves: `DiscoverCreativesRow` items + `ScoutedGigsSection` items + 1 Desk nudge
-- `StreakChipsRow` — single line at bottom
-- `ApprovalsHub` — conditional (only if pending)
+1. Extend `find_user` to return `username`, `role`, `avatar_url`, and a `disambiguator` (city or username). Already-public fields, just widen the SELECT.
+2. Update orchestrator system prompt to:
+   - REQUIRE `ask_clarification` when `find_user` returns 0 matches OR >1 matches.
+   - Pass the chosen person's `full_name`, `avatar_url`, `role`, `username`, plus `project_title` into `_preview` so the approval card shows a face.
+3. Extend `AgentApprovalCard` to render the person's avatar + role line when `tool_args._preview.avatar_url` is set, so confirmation is visual not textual.
+4. Server-side guard in `copilot-collaborator-tools` `add_collaborator`: if the resolved name fallback finds 2+ candidates, refuse and return `needs_clarification: true` (already half-built — finish it).
 
-### HIDE (comment out, keep imports for later)
-- `MagicHomeHero` (duplicate of ThrivePromptHero)
-- `PersonaCardsRow` (decision fatigue on first load)
-- `OpportunityIntelCard` (Creator+ only — move to /intel)
-- `WeeklyIntentCard` (move to Desk)
-- `ThriveFundFeedRow` (Fund is hidden surface)
-- `SpotlightFeedRow` (Spotlight is hidden surface)
-- `MoneyBrief` compact (move to Pay tab only)
-- `FoundingMemberCard` (move to /founding-member)
-- `NewMemberStarterCard` (redundant with checklist)
-- `InviteCircleCard` (Circle is secondary — move to Circle tab)
-- `ProfileHubCard` (redundant — Profile tab exists)
-- `RecentIntentsDrawer` (keep mounted but no auto-open)
-- `FirstWinSheet` (keep — fires once)
-- `PushNotificationPrompt` (keep — fires once on cooldown)
+### Phase 2 — Same-shape hardening for sibling tools
 
-### KEEP guest landing untouched
-The 9-section guest narrative (Hero · Claim · Reel · Comparison · Proof · Pricing · Fund teaser · CTA) is locked per `landing/nine-section-narrative` memory. Only signed-in Home changes.
+1. `remove_collaborator` — confirm by avatar in preview (same `_preview` extension).
+2. `assign_task` / `mark_task_done` — server-side check that the assignee is actually a collaborator on the project.
+3. `send_dm` / `send_message` — server-side guard that recipient exists in `auth.users` (mirror the FK validation we added yesterday).
 
----
+### Phase 3 — Live end-to-end smoke tests
 
-## Future passes (preview, not this PR)
+After deploying, call `agent-orchestrator` with `intent="Add Dezii to <real project>"` for the user's account and verify:
+- `find_user` returns DEZii with avatar.
+- One `add_collaborator` proposal with rich preview.
+- Tap-to-approve actually inserts the row + posts the system message + creates the notification.
 
-| Pass | Surface | Lite vision |
-|---|---|---|
-| B.2 | Match | Just the swipe deck. Browse/Network move to tabs inside. |
-| B.3 | Desk list | Studio cards grid + 1 Voice-First create FAB. Nothing else. |
-| B.4 | Studio Room | Already lite. Audit + remove duplicate menus. |
-| B.5 | Gigs | Scouted strip on top + marketplace list. Filters in sheet. |
-| B.6 | Profile | Already EPK-style. Audit empty states. |
-| B.7 | Pay | MoneyBrief hero + invoices list + streak. |
-| B.8 | Messages / Inbox | Already lite. Audit. |
-| B.9 | Settings | Group into 4 sections: Account · Notifications · Billing · Advanced. |
+Rollback safety: every change is additive. If anything misbehaves the previous behaviour (text-only preview, FK validation safety net) still catches it.
 
----
+## What is NOT in this loop
 
-## Technical notes (for me, not the user)
+- A from-scratch rewrite of the orchestrator. The pattern is sound; we are tightening it.
+- Deep audit of `desk-agent`'s 9 internal tools (invoice/quote/credit/video) — those don't take name-based inputs from the LLM, they take ids the agent watches generate. Defer unless you want it.
+- Voice-mode (`thrive-voice-turn`) flow — same orchestrator under the hood, will inherit the fix.
 
-- File touched this PR: `src/components/home/UnifiedHome.tsx` only.
-- Hide via `{false && ...}` blocks or comments — no deletions, routes still work.
-- Create one new wrapper `src/components/home/ForYouFeed.tsx` that composes existing data (creators query + scouted gigs query + active project) into a single interleaved list — no new tables, no edge functions.
-- No DB changes. No memory changes (mvp-launch-scope already locked).
-- Preserve `FirstWinSheet`, `DuplicateAccountBanner`, `PushNotificationPrompt`, `QuickPostModal`, SEO.
+## Technical notes
 
----
+- `_preview` is already passed through and stripped by the planner — adding `avatar_url`, `role`, `subtitle` requires no schema migration; just widen the type used in `AgentApprovalCard`.
+- All edge-function changes need `deploy_edge_functions`. I'll batch them.
+- Smoke test will be a single `supabase--curl_edge_functions` call against `/agent-orchestrator` as your logged-in session.
 
-## Approve to proceed
-
-Reply **Go** and I'll ship Pass B.1 (Home only). Or tell me which sections to keep/cut differently.
+Approve to proceed with Phase 1+2+3, or tell me to slim it down (e.g. "Phase 1 only, ship today").

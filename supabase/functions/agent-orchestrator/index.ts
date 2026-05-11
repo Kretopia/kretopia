@@ -241,27 +241,46 @@ async function planTools(
         // requires_approval / locked / inline → record as a proposal and tell the model it's queued
         let pTitle = preview.title ?? "";
         let pBody = preview.body ?? "";
-        // Fallback enrichment so the approval card is never generic
-        if ((toolName === "add_collaborator" || toolName === "remove_collaborator") && (!pTitle || !pBody)) {
+        // Always fetch person+project metadata for collaborator actions so the
+        // approval card can render an avatar + role line, even when the LLM
+        // forgot to include them in _preview.
+        if (toolName === "add_collaborator" || toolName === "remove_collaborator") {
           try {
             const targetUserId = (args.user_id_to_add || args.user_id_to_remove || args.user_id) as string | undefined;
             const targetProjectId = (args.target_project_id || args.project_id) as string | undefined;
-            let personName: string | null = null;
+            let personRow: any = null;
             let projectTitle: string | null = null;
             if (targetUserId) {
-              const { data: p } = await admin.from("profiles").select("full_name, username").eq("user_id", targetUserId).maybeSingle();
-              personName = (p as any)?.full_name || (p as any)?.username || null;
+              const { data: p } = await admin
+                .from("public_profiles_safe")
+                .select("full_name, username, role, avatar_url")
+                .eq("user_id", targetUserId)
+                .maybeSingle();
+              personRow = p;
             }
             if (targetProjectId) {
               const { data: pr } = await admin.from("projects").select("title").eq("id", targetProjectId).maybeSingle();
               projectTitle = (pr as any)?.title || null;
             }
+            const personName = personRow?.full_name || personRow?.username || null;
             const verb = toolName === "add_collaborator" ? "Add" : "Remove";
             const prep = toolName === "add_collaborator" ? "to" : "from";
-            if (personName || projectTitle) {
-              pTitle = pTitle || `${verb} ${personName ?? "collaborator"} ${prep} ${projectTitle ?? "this project"}`;
-              pBody = pBody || `${personName ?? "They"} will ${toolName === "add_collaborator" ? "get full access to chat, tasks, files and calls in" : "lose access to"} ${projectTitle ?? "the project"}.`;
+            if (!pTitle && (personName || projectTitle)) {
+              pTitle = `${verb} ${personName ?? "collaborator"} ${prep} ${projectTitle ?? "this project"}`;
             }
+            if (!pBody && (personName || projectTitle)) {
+              pBody = `${personName ?? "They"} will ${toolName === "add_collaborator" ? "get full access to chat, tasks, files and calls in" : "lose access to"} ${projectTitle ?? "the project"}.`;
+            }
+            // Persist enriched preview metadata into tool_args so the client card can render avatar + subtitle.
+            const subtitleParts: string[] = [];
+            if (personRow?.username) subtitleParts.push(`@${personRow.username}`);
+            if (personRow?.role) subtitleParts.push(personRow.role);
+            args._preview = {
+              ...(preview ?? {}),
+              avatar_url: preview.avatar_url ?? personRow?.avatar_url ?? null,
+              subtitle: preview.subtitle ?? (subtitleParts.length ? subtitleParts.join(" · ") : null),
+              context_line: preview.context_line ?? (projectTitle ? `Project: ${projectTitle}` : null),
+            };
           } catch (_) { /* fallback to defaults below */ }
         }
         if (!pTitle) pTitle = toolName.replace(/_/g, " ");

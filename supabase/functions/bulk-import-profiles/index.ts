@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireAdminOrCron } from "../_shared/admin-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,6 +34,8 @@ serve(async (req) => {
   }
 
   try {
+    const _guard = await requireAdminOrCron(req);
+    if (!_guard.ok) return _guard.response;
     const { contacts, importDirectly = false } = await req.json();
     
     if (!contacts || !Array.isArray(contacts) || contacts.length === 0) {

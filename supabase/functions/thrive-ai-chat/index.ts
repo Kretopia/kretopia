@@ -391,6 +391,31 @@ Never say "I'll do X now", "running that now", "let me get that done", "on it", 
       });
     }
 
+    // Non-streaming path (e.g. Telegram webhook). Persist + return JSON.
+    if (!stream) {
+      const j = await upstream.json();
+      const content: string = j?.choices?.[0]?.message?.content?.trim() ?? "";
+      if (persist && conversationId && content) {
+        try {
+          await admin.from("ai_messages").insert({
+            conversation_id: conversationId,
+            role: "assistant",
+            content,
+          });
+          await admin
+            .from("ai_conversations")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", conversationId);
+        } catch (e) {
+          console.warn("Persist (non-stream) assistant turn failed", e);
+        }
+      }
+      return new Response(
+        JSON.stringify({ content, conversation_id: conversationId }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // If we don't need to persist, forward the stream directly (zero-overhead path —
     // identical to the original behavior for AIChatTab).
     if (!persist || !conversationId || !upstream.body) {

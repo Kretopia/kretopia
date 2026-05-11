@@ -524,6 +524,57 @@ export const CreateSessionDialog = ({
             )}
           </div>
 
+          {/* Custom RSVP Questions (optional) — captured at creation, editable later in Backstage */}
+          <div className="space-y-3 rounded-lg border p-3">
+            <div className="flex items-start gap-2">
+              <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <Label className="text-sm font-medium">RSVP Questions <span className="text-xs text-muted-foreground font-normal">(optional)</span></Label>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  Ask guests up to 5 questions when they RSVP — dietary needs, what they create, what would make this a win for them. Editable later in Backstage.
+                </p>
+              </div>
+            </div>
+
+            {rsvpQuestions.length > 0 && (
+              <div className="space-y-1.5">
+                {rsvpQuestions.map((q, i) => (
+                  <div key={i} className="flex items-start gap-2 rounded-md border border-border/60 bg-muted/30 p-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs">{q.question}</p>
+                      {q.required && <span className="text-[10px] text-muted-foreground">Required</span>}
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => removeRsvpQuestion(i)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {rsvpQuestions.length < 5 && (
+              <div className="space-y-2">
+                <Input
+                  placeholder="e.g., What do you create?"
+                  value={newRsvpQ}
+                  onChange={(e) => setNewRsvpQ(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { e.preventDefault(); addRsvpQuestion(); }
+                  }}
+                />
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+                    <Switch checked={newRsvpReq} onCheckedChange={setNewRsvpReq} />
+                    Required
+                  </label>
+                  <Button type="button" size="sm" variant="outline" onClick={addRsvpQuestion} disabled={!newRsvpQ.trim()} className="gap-1.5">
+                    <Plus className="h-3.5 w-3.5" /> Add
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Circle linking removed */}
 
           <div className="flex gap-3 pt-4">

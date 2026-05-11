@@ -505,6 +505,11 @@ const EventBackstage = () => {
                         <MessageSquare className="h-4 w-4 mr-2" /> In-app notification
                       </DropdownMenuItem>
                     )}
+                    {!isDraft && (
+                      <DropdownMenuItem onClick={() => setHostToolsFor(ev)}>
+                        <Sparkles className="h-4 w-4 mr-2" /> Host tools (Q&amp;A · Match · Seating)
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleDuplicate(ev)}>
                       <Copy className="h-4 w-4 mr-2" /> Duplicate

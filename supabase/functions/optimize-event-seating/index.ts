@@ -169,11 +169,11 @@ serve(async (req) => {
     }
 
     // Persist: clear + insert assignments
-    await admin.from("event_seating_assignments").delete().eq("layout_id", layout_id);
+    await admin.from("event_seating_assignments").delete().eq("layout_id", resolvedLayoutId);
     const rows: any[] = [];
     Object.entries(tableSeats).forEach(([tid, occupants]) => {
       occupants.forEach((uid, idx) => {
-        rows.push({ event_id, layout_id, table_id: tid, seat_index: idx, user_id: uid });
+        rows.push({ event_id, layout_id: resolvedLayoutId, table_id: tid, seat_index: idx, user_id: uid });
       });
     });
     if (rows.length > 0) {
@@ -181,7 +181,7 @@ serve(async (req) => {
       if (error) throw error;
     }
 
-    return new Response(JSON.stringify({ ok: true, assigned: rows.length, tables: tables.length }),
+    return new Response(JSON.stringify({ ok: true, assigned: rows.length, tables: tables.length, layout_id: resolvedLayoutId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     console.error("optimize-event-seating error:", err);

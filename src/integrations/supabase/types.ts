@@ -17634,6 +17634,7 @@ export type Database = {
         }
         Returns: string
       }
+      seed_new_user_experience: { Args: { p_user_id: string }; Returns: Json }
       send_opportunity_alerts: {
         Args: { opportunity_id_param: string }
         Returns: undefined

@@ -410,6 +410,11 @@ export default function Onboarding() {
         await seedAfterClaimNudges(user.id, { role, location, intents: primaryIntents });
       } catch (e) { console.error("[Onboarding] after-claim nudges:", e); }
 
+      // Seed first-run experience: demo Desk project, 3 suggested matches, 1 scouted gig (non-blocking)
+      try {
+        await supabase.rpc("seed_new_user_experience", { p_user_id: user.id });
+      } catch (e) { console.error("[Onboarding] seed new user experience:", e); }
+
       // Process pending event join
       const pendingEventJoin = sessionStorage.getItem("pending_event_join");
       if (pendingEventJoin && user) {

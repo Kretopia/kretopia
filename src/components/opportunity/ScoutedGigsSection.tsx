@@ -273,7 +273,7 @@ export function ScoutedGigsSection() {
               <div
                 key={g.id}
                 onClick={() => openDetail(g)}
-                className="group relative h-full flex flex-col rounded-2xl overflow-hidden border border-border bg-card cursor-pointer transition-all hover:border-energy/40 hover:shadow-2xl hover:shadow-energy/10 shrink-0 w-[82%] sm:w-auto snap-start"
+                className="group relative h-full flex flex-col rounded-2xl overflow-hidden border border-border bg-card cursor-pointer transition-all hover:border-energy/40 hover:shadow-2xl hover:shadow-energy/10"
               >
                 {/* Hero */}
                 <div className="relative aspect-[16/9] overflow-hidden shrink-0">

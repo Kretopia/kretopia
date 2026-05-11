@@ -30,11 +30,13 @@ serve(async (req) => {
     if (authError || !user) return json({ error: "Unauthorized" }, 401);
 
     const body = await req.json().catch(() => ({}));
-    const { text, image_base64, source_platform, source_url } = body as {
+    const { text, image_base64, source_platform, source_url, extract_only } = body as {
       text?: string;
       image_base64?: string;
       source_platform?: string;
       source_url?: string;
+      /** When true, only return extracted JSON — do NOT create an unclaimed event row or generate a cover. Used by the host create-flow flyer scanner. */
+      extract_only?: boolean;
     };
 
     if (!text && !image_base64 && !source_url) {

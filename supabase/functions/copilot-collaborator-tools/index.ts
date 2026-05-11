@@ -92,23 +92,28 @@ async function findUser(userId: string, body: any) {
     .map((c: any) => (c.user_id === userId ? c.connected_user_id : c.user_id))
     .filter(Boolean);
 
+  // Widen SELECT so the planner has enough to disambiguate AND to build a rich
+  // approval-card preview (avatar + role + username + city).
+  const SELECT_COLS = "user_id, full_name, username, role, avatar_url, city, country";
+
   let connMatches: any[] = [];
   if (peerIds.length) {
-    const { data } = await admin
+    // Match on full_name OR username so "@dezii" works the same as "Dezii".
+    const { data: byName } = await admin
       .from("public_profiles_safe")
-      .select("user_id, full_name, avatar_url")
+      .select(SELECT_COLS)
       .in("user_id", peerIds)
-      .ilike("full_name", like)
+      .or(`full_name.ilike.${like},username.ilike.${like}`)
       .limit(5);
-    connMatches = (data ?? []).map((p: any) => ({ ...p, source: "connection" }));
+    connMatches = (byName ?? []).map((p: any) => ({ ...p, source: "connection" }));
   }
 
   let publicMatches: any[] = [];
   if (connMatches.length < 3) {
     const { data } = await admin
       .from("public_profiles_safe")
-      .select("user_id, full_name, avatar_url")
-      .ilike("full_name", like)
+      .select(SELECT_COLS)
+      .or(`full_name.ilike.${like},username.ilike.${like}`)
       .neq("user_id", userId)
       .limit(5);
     publicMatches = (data ?? [])

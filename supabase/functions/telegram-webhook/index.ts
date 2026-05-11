@@ -195,50 +195,41 @@ Deno.serve(async (req) => {
   // Show typing indicator
   await tg("sendChatAction", { chat_id: chatId, action: "typing" }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
 
-  // Pull last 6 turns for short context
-  const { data: history } = await admin
-    .from("telegram_messages")
-    .select("text, telegram_user_id, raw_update")
-    .eq("chat_id", chatId)
-    .not("text", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(7);
-  const turns = (history ?? []).reverse().slice(0, -1); // exclude current
-
-  const aiMessages = [
-    {
-      role: "system",
-      content:
-        "You are Thrive — a warm, sharp creative-industry copilot reaching the user via Telegram. " +
-        "Keep replies short (1-3 sentences), action-oriented, and conversational. " +
-        "If they ask for something that needs in-app actions (invoices, video calls, posting gigs), " +
-        "tell them you'll wire that up soon and suggest opening the app for now.",
-    },
-    ...turns.map((t) => ({
-      role: t.telegram_user_id ? "user" : "assistant",
-      content: t.text ?? "",
-    })),
-    { role: "user", content: text },
-  ];
-
+  // Route through the REAL Thrive Copilot (thrive-ai-chat) so the user gets the
+  // same context-aware, memory-loaded, anti-hallucination assistant they'd get
+  // in-app. Internal call: service-role bearer + x-internal-user-id header.
   let reply = "Got it — I'll get back to you shortly.";
   try {
-    const aiResp = await fetch(LOVABLE_AI, {
+    const aiResp = await fetch(`${SUPABASE_URL}/functions/v1/thrive-ai-chat`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${SERVICE}`,
+        "x-internal-user-id": resolvedUserId,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ model: MODEL, messages: aiMessages, max_tokens: 400 }),
+      body: JSON.stringify({
+        messages: [{ role: "user", content: text }],
+        surface: "home",
+        surface_context: { channel: "telegram" },
+        persist: true,
+        stream: false,
+      }),
     });
     if (aiResp.ok) {
       const j = await aiResp.json();
-      reply = j?.choices?.[0]?.message?.content?.trim() || reply;
+      const raw = (j?.content ?? "").toString().trim();
+      // Strip <action>/<plan> tags — Telegram has no approval UI yet.
+      const cleaned = raw
+        .replace(/<action>[\s\S]*?<\/action>/g, "")
+        .replace(/<plan>[\s\S]*?<\/plan>/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+      if (cleaned) reply = cleaned;
     } else {
-      console.error("ai gateway failed", aiResp.status, await aiResp.text());
+      console.error("thrive-ai-chat failed", aiResp.status, await aiResp.text());
     }
   } catch (e) {
-    console.error("ai call threw", e);
+    console.error("thrive-ai-chat call threw", e);
   }
 
   await tg("sendMessage", { chat_id: chatId, text: reply }, LOVABLE_API_KEY, TELEGRAM_API_KEY);

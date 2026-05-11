@@ -1,19 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Crown, Handshake, Briefcase, Star, Award, Newspaper, Zap, DollarSign, Code } from "lucide-react";
+import { Briefcase, Star, Zap, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
 
 import { ReviewsSection } from "@/components/profile/ReviewsSection";
-import { IndustryStatsSection } from "@/components/profile/IndustryStatsSection";
-import { AchievementBadges } from "@/components/profile/AchievementBadges";
 import { SkillsSection } from "@/components/profile/SkillsSection";
-import { PressLinksSection } from "@/components/profile/PressLinksSection";
-import { AwardsSection } from "@/components/profile/AwardsSection";
 import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
-import { CollaborationHistory } from "@/components/profile/CollaborationHistory";
 import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
 import { RateCardSection } from "@/components/profile/RateCardSection";
 import { AvailabilityCalendarSection } from "@/components/profile/AvailabilityCalendarSection";
@@ -31,12 +26,12 @@ interface ProfileContentSectionsProps {
   onRefresh: () => void;
 }
 
+// MVP: removed "More" tab (Press/Awards/Industry Stats/Collab History) — non-MVP enrichment.
 const PROFILE_TABS = [
   { id: "work", label: "Credits", icon: Briefcase },
   { id: "hire", label: "Work With Me", icon: DollarSign },
   { id: "skills", label: "Skills", icon: Zap },
   { id: "reviews", label: "Reviews", icon: Star },
-  { id: "more", label: "More", icon: Award },
 ] as const;
 
 type TabId = typeof PROFILE_TABS[number]["id"];
@@ -116,51 +111,6 @@ export const ProfileContentSections = ({
             profileUserId={profile.user_id}
             onRefresh={onRefresh}
           />
-        );
-
-      case "more":
-        return (
-          <div className="space-y-8">
-            {/* Collaboration History */}
-            <div>
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Handshake className="h-5 w-5 text-primary" />
-                Collaboration History
-              </h2>
-              <CollaborationHistory userId={profile.user_id} isOwnProfile={true} />
-            </div>
-
-            {/* Press & Awards — now available to ALL tiers (was Pro-only) */}
-            <div className="space-y-6">
-              {(profile.achievement_badges?.length > 0) && (
-                <AchievementBadges achievements={profile.achievement_badges || []} showAll={false} />
-              )}
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-                <div>
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Newspaper className="h-4 w-4 text-primary" />
-                    Press Coverage
-                  </h3>
-                  <PressLinksSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Award className="h-4 w-4 text-primary" />
-                    Awards
-                  </h3>
-                  <AwardsSection userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-                </div>
-              </div>
-              {industryStats.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Industry Stats</h3>
-                  <IndustryStatsSection stats={industryStats} isOwnProfile={true} onRefresh={onRefresh} />
-                </div>
-              )}
-            </div>
-
-            {/* Embeddable widget moved to /website-builder */}
-          </div>
         );
 
       default:

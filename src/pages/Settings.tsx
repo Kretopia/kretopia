@@ -9,14 +9,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft, CreditCard, Globe, Brain, ChevronRight } from "lucide-react";
+import { Lock, Mail, Bell, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft, CreditCard, Globe, Brain, ChevronRight } from "lucide-react";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { ManualMergeAccountPanel } from "@/components/account/ManualMergeAccountPanel";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { CreatorSiteSettings } from "@/components/settings/CreatorSiteSettings";
 import { BlockedUsersCard } from "@/components/settings/BlockedUsersCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";
@@ -96,10 +95,7 @@ const Settings = () => {
   // Email change
   const [newEmail, setNewEmail] = useState("");
   
-  // Privacy settings
-  const [profilePublic, setProfilePublic] = useState(true);
-  const [showEmail, setShowEmail] = useState(false);
-  const [allowMessages, setAllowMessages] = useState(true);
+  // Privacy switches removed — were never persisted. Re-add when wired to backend.
 
   // Notification preferences
   const [preferences, setPreferences] = useState<NotificationPreferences>({
@@ -765,65 +761,9 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Creator Site */}
-          <CreatorSiteSettings />
-
-          {/* Privacy Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Privacy & Visibility
-              </CardTitle>
-              <CardDescription>
-                Control who can see your profile and contact you
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Public Profile</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow others to view your profile
-                  </p>
-                </div>
-                <Switch
-                  checked={profilePublic}
-                  onCheckedChange={setProfilePublic}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Show Email</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Display email on your public profile
-                  </p>
-                </div>
-                <Switch
-                  checked={showEmail}
-                  onCheckedChange={setShowEmail}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Allow Direct Messages</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Let others send you messages
-                  </p>
-                </div>
-                <Switch
-                  checked={allowMessages}
-                  onCheckedChange={setAllowMessages}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          {/* Creator Site / Privacy toggles — hidden for MVP.
+              CreatorSiteSettings: website-builder is off-nav per MVP scope.
+              Privacy switches were never persisted (local state only). Re-add when wired to backend. */}
 
           {/* Blocked Users */}
           <BlockedUsersCard />

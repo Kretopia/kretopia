@@ -17459,6 +17459,29 @@ export type Database = {
           status: string
         }[]
       }
+      get_scout_funnel_by_source: {
+        Args: { _days?: number }
+        Returns: {
+          applied: number
+          opened: number
+          scouted: number
+          source: string
+          won: number
+        }[]
+      }
+      get_scout_funnel_stats: {
+        Args: { _days?: number }
+        Returns: {
+          applied: number
+          apply_clicked: number
+          drafted: number
+          ghosted: number
+          lost: number
+          opened: number
+          scouted: number
+          won: number
+        }[]
+      }
       get_tier_storage_limit: { Args: { tier: string }; Returns: number }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       guest_drop_post: {

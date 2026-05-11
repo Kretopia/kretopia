@@ -20,15 +20,19 @@ export const TelegramConnectCard = () => {
   const { toast } = useToast();
 
   const refresh = async () => {
-    const { data } = await supabase
-      .from("messaging_channels")
-      .select("id, external_username, external_display_name, linked_at")
-      .eq("channel", "telegram")
-      .eq("is_active", true)
-      .maybeSingle()
-      .catch(() => ({ data: null }) as any);
-    setLinked(data ?? null);
-    setLoading(false);
+    try {
+      const { data } = await supabase
+        .from("messaging_channels")
+        .select("id, external_username, external_display_name, linked_at")
+        .eq("channel", "telegram")
+        .eq("is_active", true)
+        .maybeSingle();
+      setLinked(data ?? null);
+    } catch {
+      setLinked(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { refresh(); }, []);

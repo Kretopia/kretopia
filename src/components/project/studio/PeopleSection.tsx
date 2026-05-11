@@ -69,7 +69,7 @@ export const PeopleSection = ({
       let profileMap = new Map<string, { full_name: string; avatar_url: string | null }>();
       if (userIds.length) {
         const { data: profiles } = await supabase
-          .from("profiles")
+          .from("public_profiles_safe")
           .select("user_id, full_name, avatar_url")
           .in("user_id", userIds);
         profileMap = new Map(

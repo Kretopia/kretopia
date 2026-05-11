@@ -196,14 +196,70 @@ const AcceptInvite = () => {
     }
   }, [user, loading, projectId, email, navigate, toast]);
 
+  const ogImage = projectId
+    ? `${SUPABASE_URL}/functions/v1/project-og-image?project_id=${projectId}`
+    : undefined;
+  const seoTitle = preview
+    ? `${preview.inviter_name ? preview.inviter_name + " invited you to " : "You're invited to "}${preview.title} · ThriveDesk`
+    : "You're invited to collaborate · ThriveDesk";
+  const seoDesc = preview
+    ? `Join ${preview.title} on ThriveIN — collaborate on briefs, tasks, files, and payments in one creative workspace.`
+    : "Open your invite to join the project workspace on ThriveIN.";
+
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-        <h2 className="text-2xl font-bold mb-2">Processing invitation...</h2>
-        <p className="text-muted-foreground">Please wait while we set up your access</p>
+    <>
+      <SEO title={seoTitle} description={seoDesc} image={ogImage} type="website" />
+      <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="w-full max-w-md">
+          {/* Share-card preview */}
+          {preview ? (
+            <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xl mb-6">
+              <div className="aspect-[1200/630] bg-gradient-to-br from-primary/30 via-primary/15 to-accent/20 relative flex flex-col justify-between p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-foreground">ThriveIN</p>
+                    <p className="text-[10px] font-semibold text-primary">
+                      ThriveDesk · {preview.workspace_type ? preview.workspace_type.replace("_", " ") : "Project"}
+                    </p>
+                  </div>
+                  <div className="rounded-full bg-primary/90 text-primary-foreground text-[10px] font-bold px-3 py-1.5">
+                    Join Desk →
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] tracking-widest font-semibold text-muted-foreground mb-1">
+                    YOU'RE INVITED TO COLLABORATE
+                  </p>
+                  <h2 className="text-xl font-extrabold text-foreground leading-tight line-clamp-3">
+                    {preview.title}
+                  </h2>
+                </div>
+              </div>
+              <div className="p-4 space-y-1.5">
+                {preview.inviter_name && (
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    Invited by <span className="font-semibold">{preview.inviter_name}</span>
+                  </p>
+                )}
+                {preview.collaborator_count > 0 && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-2">
+                    <Users className="h-3 w-3" />
+                    {preview.collaborator_count} {preview.collaborator_count === 1 ? "collaborator" : "collaborators"} on the project
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-primary" />
+            <h2 className="text-lg font-bold mb-1">Setting up your access…</h2>
+            <p className="text-sm text-muted-foreground">Hang tight, we're opening the workspace.</p>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

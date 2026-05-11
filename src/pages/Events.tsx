@@ -222,6 +222,10 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
   }, [searchParams]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [whenFilter, setWhenFilter] = useState<"any" | "week" | "weekend" | "month">("any");
+  const [priceFilter, setPriceFilter] = useState<"any" | "free" | "paid">("any");
+  const [modeFilter, setModeFilter] = useState<"any" | "irl" | "online">("any");
+  const [filterOpen, setFilterOpen] = useState(false);
   const [hostingTime, setHostingTime] = useState<"upcoming" | "past">("upcoming");
   const [joinedTime, setJoinedTime] = useState<"upcoming" | "past">("upcoming");
 

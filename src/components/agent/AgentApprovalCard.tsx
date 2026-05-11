@@ -3,6 +3,7 @@ import { Check, X, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { decideAgentAction, type OrchAction } from "@/lib/agentOrchestrator";
 import { personaFor } from "@/lib/agentPersonas";

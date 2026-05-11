@@ -61,6 +61,22 @@ serve(async (req) => {
       );
     }
 
+    // Guard against hallucinated recipient ids: validate that to_user_id
+    // actually exists in auth.users before insert (messages.receiver_id has FK).
+    try {
+      const SERVICE_KEY_PRECHECK = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const adminCheck = createClient(SUPABASE_URL, SERVICE_KEY_PRECHECK);
+      const { data: rec, error: recErr } = await adminCheck.auth.admin.getUserById(to_user_id);
+      if (recErr || !rec?.user) {
+        return new Response(
+          JSON.stringify({ error: "That user account doesn't exist. Look them up by name first." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    } catch (e) {
+      console.warn("recipient validation failed", e);
+    }
+
     const { data: inserted, error } = await userClient
       .from("messages")
       .insert({

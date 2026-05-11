@@ -25,7 +25,7 @@ const EventConfirmed = () => {
     (async () => {
       const { data } = await supabase
         .from("creative_jams")
-        .select("id, title, start_time, end_time, venue_name, venue_address, cover_image_url, category")
+        .select("id, title, start_time, end_time, venue_name, venue_address, cover_image_url, category, created_by")
         .eq("id", eventId)
         .maybeSingle();
       setEvent(data);

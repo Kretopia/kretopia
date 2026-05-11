@@ -309,8 +309,13 @@ async function addCollaborator(userId: string, body: any) {
   return json({
     ok: true,
     collaborator_id: row.id,
+    project_id: projectId,
     project_title: project.title,
     invitee_name: inviteeName,
+    invitee_user_id: resolvedUserId,
+    invitee_avatar_url: (invitee as any)?.avatar_url ?? null,
+    invitee_username: (invitee as any)?.username ?? null,
+    invitee_role: (invitee as any)?.role ?? null,
     role: row.role,
   });
 }

@@ -447,20 +447,31 @@ export function ScoutedGigsSection() {
                 <div className="space-y-2 pt-2">
                   <div className="grid grid-cols-2 gap-2">
                     {openGig.contact_email ? (
-                      <Button asChild variant="default">
+                      <Button asChild variant="default" onClick={trackApplyClick}>
                         <a href={`mailto:${openGig.contact_email}?subject=${encodeURIComponent(`RE: ${openGig.title}`)}&body=${encodeURIComponent(coverLetter)}`}>
                           <Mail className="h-4 w-4 mr-1.5" />Email apply
                         </a>
                       </Button>
                     ) : (
-                      <Button asChild variant="default">
+                      <Button asChild variant="default" onClick={trackApplyClick}>
                         <a href={openGig.apply_url || openGig.source_url} target="_blank" rel="noopener noreferrer">
                           <Send className="h-4 w-4 mr-1.5" />Apply on site
                         </a>
                       </Button>
                     )}
-                    <Button onClick={markApplied} disabled={!coverLetter} variant="outline">
+                    <Button onClick={markApplied} variant="outline">
                       <ShieldCheck className="h-4 w-4 mr-1.5" />I applied
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button size="sm" variant="ghost" className="text-xs" onClick={() => setOutcome("won")}>
+                      🎉 Won
+                    </Button>
+                    <Button size="sm" variant="ghost" className="text-xs" onClick={() => setOutcome("lost")}>
+                      Lost
+                    </Button>
+                    <Button size="sm" variant="ghost" className="text-xs" onClick={() => setOutcome("ghosted")}>
+                      Ghosted
                     </Button>
                   </div>
                   <a

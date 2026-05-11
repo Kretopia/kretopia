@@ -158,11 +158,8 @@ export const EventHostToolsDialog = ({
           <DialogDescription className="truncate">{eventTitle}</DialogDescription>
         </DialogHeader>
 
-        <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+        <Tabs value={tab === "questions" ? "matchmaker" : tab} onValueChange={(v) => setTab(v as any)}>
           <TabsList className="w-full">
-            <TabsTrigger value="questions" className="flex-1 gap-1.5">
-              <MessageSquare className="h-3.5 w-3.5" /> Questions
-            </TabsTrigger>
             <TabsTrigger value="matchmaker" className="flex-1 gap-1.5">
               <Users className="h-3.5 w-3.5" /> Matchmaker
             </TabsTrigger>
@@ -171,54 +168,9 @@ export const EventHostToolsDialog = ({
             </TabsTrigger>
           </TabsList>
 
-          {/* Custom RSVP questions */}
-          <TabsContent value="questions" className="space-y-4 mt-4">
-            <p className="text-xs text-muted-foreground">
-              Ask guests up to 5 personal questions when they RSVP — useful for dietary needs,
-              creative roles, or "what would make this event a win for you?".
-            </p>
-
-            <div className="space-y-2">
-              {questions.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-border/60 p-4 text-center text-xs text-muted-foreground">
-                  No custom questions yet.
-                </div>
-              ) : (
-                questions.map((q) => (
-                  <div key={q.id} className="flex items-start gap-2 rounded-lg border border-border/60 bg-card/40 p-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm">{q.question}</p>
-                      {q.required && <Badge variant="secondary" className="mt-1 text-[10px]">Required</Badge>}
-                    </div>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => deleteQuestion(q.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {questions.length < 5 && (
-              <div className="space-y-2 rounded-lg border border-border/60 p-3">
-                <Label className="text-xs">Add a question</Label>
-                <Input
-                  placeholder="e.g., What do you create?"
-                  value={newQ}
-                  onChange={(e) => setNewQ(e.target.value)}
-                />
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Switch id="req" checked={newRequired} onCheckedChange={setNewRequired} />
-                    <Label htmlFor="req" className="text-xs">Required</Label>
-                  </div>
-                  <Button size="sm" variant="gradient" onClick={addQuestion} disabled={!newQ.trim() || savingQ}>
-                    {savingQ ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Plus className="h-3.5 w-3.5 mr-1.5" />}
-                    Add
-                  </Button>
-                </div>
-              </div>
-            )}
-          </TabsContent>
+          <p className="text-[11px] text-muted-foreground mt-3">
+            RSVP questions are set when you create the event. Need to edit them? Open the event and tap <strong>Edit</strong>.
+          </p>
 
           {/* Smart Matchmaker */}
           <TabsContent value="matchmaker" className="space-y-4 mt-4">

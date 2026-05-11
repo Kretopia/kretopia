@@ -57,15 +57,20 @@ export const ScanFlyerDialog = ({ open, onOpenChange, onExtracted }: ScanFlyerDi
       const { data, error } = await supabase.functions.invoke("extract-event-details", {
         body: { image_base64 },
       });
-      if (error) throw error;
-      if (!data?.extracted) throw new Error("No details extracted");
+      if (error) throw new Error(error.message || "Edge function error");
+      if (data?.error) throw new Error(data.error);
+      if (!data?.extracted) throw new Error("We couldn't read enough details from this flyer");
       const preview = URL.createObjectURL(file);
       onExtracted(data.extracted as ScannedEventDetails, file, preview);
       onOpenChange(false);
       toast({ title: "Flyer scanned", description: "We filled in what we could find. Review and tweak." });
     } catch (err: any) {
       const msg = err?.message || "Could not read the flyer";
-      toast({ title: "Scan failed", description: msg, variant: "destructive" });
+      toast({
+        title: "Scan failed",
+        description: `${msg}. Try a clearer photo with the title, date and venue visible.`,
+        variant: "destructive",
+      });
     } finally {
       setScanning(false);
       if (inputRef.current) inputRef.current.value = "";

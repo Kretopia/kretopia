@@ -62,7 +62,7 @@ export const CreateSessionDialog = ({
   const [time, setTime] = useState("14:00");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [userCircles, setUserCircles] = useState<{ id: string; title: string; icon_emoji: string }[]>([]);
+  // userCircles removed
   const [scanOpen, setScanOpen] = useState(false);
   const [createMode, setCreateMode] = useState<"quick" | "workspace">("quick");
   const [archetype, setArchetype] = useState<EventArchetypeId | null>(null);
@@ -92,25 +92,7 @@ export const CreateSessionDialog = ({
     recording_enabled: false,
   });
 
-  // Fetch user's circles for the dropdown
-  useEffect(() => {
-    if (!user || !open) return;
-    const fetchCircles = async () => {
-      const { data: memberships } = await supabase
-        .from("spark_room_members")
-        .select("room_id")
-        .eq("user_id", user.id);
-      if (!memberships?.length) return;
-      const roomIds = memberships.map(m => m.room_id);
-      const { data: rooms } = await supabase
-        .from("spark_rooms")
-        .select("id, title, icon_emoji")
-        .in("id", roomIds)
-        .eq("is_active", true);
-      setUserCircles(rooms || []);
-    };
-    fetchCircles();
-  }, [user, open]);
+  // (Circle linking removed — Circles are not part of the active product surface.)
 
   const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -510,24 +492,7 @@ export const CreateSessionDialog = ({
             )}
           </div>
 
-          {/* Link to Circle */}
-          {userCircles.length > 0 && (
-            <div className="space-y-2">
-              <Label>Link to Circle (optional)</Label>
-              <Select value={formData.circle_id} onValueChange={(v) => setFormData(prev => ({ ...prev, circle_id: v === 'none' ? '' : v }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a circle..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No circle</SelectItem>
-                  {userCircles.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.icon_emoji} {c.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-[10px] text-muted-foreground">Event will appear in the circle's events section</p>
-            </div>
-          )}
+          {/* Circle linking removed */}
 
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">Cancel</Button>

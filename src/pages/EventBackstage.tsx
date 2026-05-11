@@ -40,6 +40,7 @@ import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";
 import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
 import { EventShareKit } from "@/components/sessions/EventShareKit";
+import { EventHostToolsDialog } from "@/components/sessions/EventHostToolsDialog";
 import { EventGuestRoster } from "@/components/sessions/EventGuestRoster";
 import { ScoutEventDialog } from "@/components/sessions/ScoutEventDialog";
 import { InviteByEmailDialog } from "@/components/sessions/InviteByEmailDialog";
@@ -110,6 +111,7 @@ const EventBackstage = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [emailBlastFor, setEmailBlastFor] = useState<BackstageEvent | null>(null);
   const [inviteFor, setInviteFor] = useState<BackstageEvent | null>(null);
+  const [hostToolsFor, setHostToolsFor] = useState<BackstageEvent | null>(null);
   const [convertingId, setConvertingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -503,6 +505,11 @@ const EventBackstage = () => {
                         <MessageSquare className="h-4 w-4 mr-2" /> In-app notification
                       </DropdownMenuItem>
                     )}
+                    {!isDraft && (
+                      <DropdownMenuItem onClick={() => setHostToolsFor(ev)}>
+                        <Sparkles className="h-4 w-4 mr-2" /> Host tools (Q&amp;A · Match · Seating)
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleDuplicate(ev)}>
                       <Copy className="h-4 w-4 mr-2" /> Duplicate
@@ -824,7 +831,15 @@ const EventBackstage = () => {
         />
       )}
 
-      {/* Share kit */}
+      {/* Host tools (RSVP questions, Matchmaker, Seating) */}
+      {hostToolsFor && (
+        <EventHostToolsDialog
+          eventId={hostToolsFor.id}
+          eventTitle={hostToolsFor.title}
+          open={!!hostToolsFor}
+          onOpenChange={(o) => !o && setHostToolsFor(null)}
+        />
+      )}
       {shareFor && (
         <EventShareKit
           event={shareFor as any}

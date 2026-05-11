@@ -18,6 +18,8 @@ import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { SessionDetailDialog } from "@/components/sessions/SessionDetailDialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EventItem {
   id: string;
@@ -220,6 +222,10 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
   }, [searchParams]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [whenFilter, setWhenFilter] = useState<"any" | "week" | "weekend" | "month">("any");
+  const [priceFilter, setPriceFilter] = useState<"any" | "free" | "paid">("any");
+  const [modeFilter, setModeFilter] = useState<"any" | "irl" | "online">("any");
+  const [filterOpen, setFilterOpen] = useState(false);
   const [hostingTime, setHostingTime] = useState<"upcoming" | "past">("upcoming");
   const [joinedTime, setJoinedTime] = useState<"upcoming" | "past">("upcoming");
 
@@ -359,13 +365,38 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
 
   const filteredEvents = events.filter(e => {
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.venue_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.creator_name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || e.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const matchesPrice =
+      priceFilter === 'any' ||
+      (priceFilter === 'free' && !(e.is_ticketed && (e.ticket_price || 0) > 0)) ||
+      (priceFilter === 'paid' && e.is_ticketed && (e.ticket_price || 0) > 0);
+    const evMode = (e as any).event_mode || 'irl';
+    const matchesMode = modeFilter === 'any' || evMode === modeFilter;
+    let matchesWhen = true;
+    if (whenFilter !== 'any') {
+      const t = new Date(e.start_time).getTime();
+      const now = Date.now();
+      const day = 24 * 60 * 60 * 1000;
+      if (whenFilter === 'week') matchesWhen = t <= now + 7 * day;
+      else if (whenFilter === 'month') matchesWhen = t <= now + 30 * day;
+      else if (whenFilter === 'weekend') {
+        const d = new Date(e.start_time);
+        const wd = d.getDay();
+        matchesWhen = (wd === 5 || wd === 6 || wd === 0) && t <= now + 7 * day;
+      }
+    }
+    return matchesSearch && matchesCategory && matchesPrice && matchesMode && matchesWhen;
   });
+
+  const activeFilterCount =
+    (categoryFilter !== 'all' ? 1 : 0) +
+    (whenFilter !== 'any' ? 1 : 0) +
+    (priceFilter !== 'any' ? 1 : 0) +
+    (modeFilter !== 'any' ? 1 : 0);
 
   const upcomingCount = events.length;
 
@@ -400,30 +431,29 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
             </Button>
           </div>
 
-          {/* Search */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search what's on, venues, hosts..." 
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="pl-10 bg-muted/50"
-            />
-          </div>
-
-          {/* Category Filter Chips */}
-          <div className="flex gap-1.5 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide">
-            {CATEGORY_FILTERS.map(cat => (
-              <Button
-                key={cat.value}
-                variant={categoryFilter === cat.value ? "default" : "outline"}
-                size="sm"
-                className="shrink-0 text-xs h-7 rounded-full"
-                onClick={() => setCategoryFilter(cat.value)}
-              >
-                {cat.label}
-              </Button>
-            ))}
+          {/* Search + Filter button */}
+          <div className="flex gap-2 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search what's on, venues, hosts..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-10 bg-muted/50"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="default"
+              onClick={() => setFilterOpen(true)}
+              className="shrink-0 gap-1.5 relative"
+            >
+              <Filter className="h-4 w-4" />
+              Filter
+              {activeFilterCount > 0 && (
+                <Badge className="ml-1 h-5 min-w-5 px-1 text-[10px] rounded-full">{activeFilterCount}</Badge>
+              )}
+            </Button>
           </div>
 
           {/* Tabs */}
@@ -566,6 +596,86 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
       </div>
 
       <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={fetchEvents} />
+
+      <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
+        <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto">
+          <SheetHeader className="text-left">
+            <SheetTitle>Filter events</SheetTitle>
+            <SheetDescription>Narrow down what's on by category, time, price and mode.</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-5 py-4">
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Category</label>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORY_FILTERS.map(c => (
+                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">When</label>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { v: 'any', l: 'Anytime' },
+                  { v: 'week', l: 'Next 7 days' },
+                  { v: 'weekend', l: 'This weekend' },
+                  { v: 'month', l: 'Next 30 days' },
+                ] as const).map(o => (
+                  <Button key={o.v} type="button" variant={whenFilter === o.v ? 'default' : 'outline'}
+                    size="sm" className="rounded-full" onClick={() => setWhenFilter(o.v)}>{o.l}</Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Price</label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { v: 'any', l: 'Any' },
+                  { v: 'free', l: 'Free' },
+                  { v: 'paid', l: 'Paid' },
+                ] as const).map(o => (
+                  <Button key={o.v} type="button" variant={priceFilter === o.v ? 'default' : 'outline'}
+                    size="sm" className="rounded-full" onClick={() => setPriceFilter(o.v)}>{o.l}</Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Mode</label>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { v: 'any', l: 'Any' },
+                  { v: 'irl', l: 'In person' },
+                  { v: 'online', l: 'Online' },
+                ] as const).map(o => (
+                  <Button key={o.v} type="button" variant={modeFilter === o.v ? 'default' : 'outline'}
+                    size="sm" className="rounded-full" onClick={() => setModeFilter(o.v)}>{o.l}</Button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <SheetFooter className="flex-row gap-2 sm:justify-between">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setCategoryFilter('all');
+                setWhenFilter('any');
+                setPriceFilter('any');
+                setModeFilter('any');
+              }}
+            >Clear all</Button>
+            <Button variant="gradient" onClick={() => setFilterOpen(false)}>
+              Show {filteredEvents.length} events
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
       <SessionDetailDialog 
         session={selectedEvent} 
         open={!!selectedEvent} 

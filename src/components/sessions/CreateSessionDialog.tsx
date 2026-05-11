@@ -62,7 +62,7 @@ export const CreateSessionDialog = ({
   const [time, setTime] = useState("14:00");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [userCircles, setUserCircles] = useState<{ id: string; title: string; icon_emoji: string }[]>([]);
+  // userCircles removed
   const [scanOpen, setScanOpen] = useState(false);
   const [createMode, setCreateMode] = useState<"quick" | "workspace">("quick");
   const [archetype, setArchetype] = useState<EventArchetypeId | null>(null);

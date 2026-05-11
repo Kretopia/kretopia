@@ -296,6 +296,9 @@ export const CreateSessionDialog = ({
         watch_party_video_url: '',
         recording_enabled: false,
       });
+      setRsvpQuestions([]);
+      setNewRsvpQ("");
+      setNewRsvpReq(false);
     } catch (error: any) {
       toast({
         title: "Error",

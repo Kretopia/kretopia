@@ -2,8 +2,19 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Users, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { SEO } from "@/components/SEO";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+interface ProjectPreview {
+  title: string;
+  workspace_type: string | null;
+  mood: string | null;
+  inviter_name: string | null;
+  collaborator_count: number;
+}
 
 const AcceptInvite = () => {
   const { projectId } = useParams();
@@ -12,7 +23,46 @@ const AcceptInvite = () => {
   const { toast } = useToast();
   const { user, loading } = useAuth();
   const [processing, setProcessing] = useState(true);
+  const [preview, setPreview] = useState<ProjectPreview | null>(null);
   const email = searchParams.get("email");
+
+  // Fetch lightweight project preview for OG tags + on-screen share card
+  useEffect(() => {
+    if (!projectId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: project } = await supabase
+          .from("projects")
+          .select("title, workspace_type, mood, created_by")
+          .eq("id", projectId)
+          .maybeSingle();
+        if (!project || cancelled) return;
+
+        const [inviterRes, countRes] = await Promise.all([
+          project.created_by
+            ? supabase.from("public_profiles_safe").select("full_name").eq("user_id", project.created_by).maybeSingle()
+            : Promise.resolve({ data: null } as any),
+          supabase
+            .from("project_collaborators")
+            .select("id", { count: "exact", head: true })
+            .eq("project_id", projectId)
+            .eq("status", "accepted"),
+        ]);
+        if (cancelled) return;
+        setPreview({
+          title: project.title || "Untitled project",
+          workspace_type: project.workspace_type,
+          mood: project.mood,
+          inviter_name: (inviterRes as any)?.data?.full_name || null,
+          collaborator_count: (countRes as any)?.count || 0,
+        });
+      } catch (err) {
+        console.warn("preview fetch failed", err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [projectId]);
 
   useEffect(() => {
     // Wait for auth to load

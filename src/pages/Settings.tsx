@@ -9,14 +9,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Lock, Mail, Bell, Shield, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft, CreditCard, Globe, Brain, ChevronRight } from "lucide-react";
+import { Lock, Mail, Bell, Trash2, Download, Eye, EyeOff, Loader2, Settings as SettingsIcon, Smartphone, ExternalLink, Info, ArrowLeft, X, RotateCcw, Share, Plus, CheckCircle2, ArrowRightLeft, CreditCard, Globe, Brain, ChevronRight } from "lucide-react";
 import { AccountSwitcher } from "@/components/AccountSwitcher";
 import { ManualMergeAccountPanel } from "@/components/account/ManualMergeAccountPanel";
 import { Link } from "react-router-dom";
 import { NotificationSettings } from "@/components/profile/NotificationSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { CreatorSiteSettings } from "@/components/settings/CreatorSiteSettings";
 import { BlockedUsersCard } from "@/components/settings/BlockedUsersCard";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTrinidadVoice } from "@/hooks/useTrinidadVoice";

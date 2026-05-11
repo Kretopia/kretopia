@@ -25,7 +25,7 @@ const EventConfirmed = () => {
     (async () => {
       const { data } = await supabase
         .from("creative_jams")
-        .select("id, title, start_time, end_time, venue_name, venue_address, cover_image_url, category")
+        .select("id, title, start_time, end_time, venue_name, venue_address, cover_image_url, category, created_by")
         .eq("id", eventId)
         .maybeSingle();
       setEvent(data);
@@ -124,6 +124,13 @@ const EventConfirmed = () => {
           <Button onClick={handleShare} variant="gradient" className="w-full py-6">
             <Share2 className="h-4 w-4 mr-2" /> Invite friends
           </Button>
+          {user && event.created_by === user.id && (
+            <Link to="/events/backstage" className="block">
+              <Button variant="secondary" className="w-full py-6">
+                Manage event (Backstage)
+              </Button>
+            </Link>
+          )}
           <Link to={`/event/${event.id}`} className="block">
             <Button variant="outline" className="w-full py-6">
               View event details <ArrowRight className="h-4 w-4 ml-2" />

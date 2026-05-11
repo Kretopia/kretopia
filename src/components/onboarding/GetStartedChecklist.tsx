@@ -95,11 +95,11 @@ export function GetStartedChecklist() {
       },
       {
         id: "portfolio",
-        title: "Add a credit or portfolio piece",
-        description: "Showcase your best work",
+        title: "Claim your first production credit",
+        description: "Search any film, song, or campaign you worked on",
         icon: Briefcase,
         completed: portfolioCount >= 1,
-        action: () => navigate("/profile"),
+        action: () => navigate("/credits"),
         xp: 15,
       },
       {

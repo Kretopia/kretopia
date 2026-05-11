@@ -217,6 +217,20 @@ export const CreateSessionDialog = ({
 
       if (error) throw error;
 
+      // Persist custom RSVP questions if the host added any
+      if (inserted?.id && rsvpQuestions.length > 0) {
+        const rows = rsvpQuestions.map((q, idx) => ({
+          event_id: inserted.id as string,
+          question: q.question,
+          question_type: "text",
+          required: q.required,
+          position: idx,
+          created_by: user.id,
+        }));
+        const { error: qErr } = await supabase.from("event_rsvp_questions").insert(rows as any);
+        if (qErr) console.warn("[create-event] RSVP questions failed", qErr);
+      }
+
       // If full Production Workspace was selected, create the linked Studio.
       if (isWorkspace && inserted?.id && archetype) {
         try {

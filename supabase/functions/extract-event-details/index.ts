@@ -227,6 +227,11 @@ If a field truly has no signal, use null. Never invent prices or venues.`;
     const coverPrompt = extracted.cover_image_prompt;
     delete extracted.cover_image_prompt;
 
+    // Early return for the host create-flow flyer scanner: extraction only, no DB writes / no AI cover.
+    if (extract_only) {
+      return json({ success: true, extracted, has_cover_image: false });
+    }
+
     // 3. Generate cover image (best-effort)
     let coverImageUrl: string | null = null;
     try {

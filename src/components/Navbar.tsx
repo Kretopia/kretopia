@@ -231,6 +231,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                     <>
                       <MenuButton icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
                       <MenuButton icon={Search} label="Find Talent" onClick={() => handleNavigation("/talent-finder")} path="/talent-finder" />
+                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
@@ -251,6 +252,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       {/* FIND — discovery surfaces */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Find</p>
                       <MenuButton icon={Briefcase} label="Gigs" onClick={() => handleNavigation("/opportunities")} path="/opportunities" />
+                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
 
                       <Separator className="my-3" />
 

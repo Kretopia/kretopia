@@ -349,7 +349,7 @@ const AppContent = () => {
             {/* Public Browsable Routes */}
             <Route path="/nearby" element={<NearbyCreators />} />
             <Route path="/events/backstage" element={<EventBackstage />} />
-            <Route path="/events" element={<Navigate to="/nearby" replace />} />
+            <Route path="/events" element={<Navigate to="/meetup" replace />} />
             <Route path="/desk/:projectId/crew" element={<EventCrewMode />} />
             <Route path="/scene" element={<Scene />} />
             <Route path="/explore" element={<Navigate to="/nearby" replace />} />

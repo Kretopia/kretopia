@@ -10,9 +10,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { event_id, layout_id, seats_per_table } = await req.json();
-    if (!event_id || !layout_id) {
-      return new Response(JSON.stringify({ error: "event_id and layout_id required" }), {
+    const { event_id, layout_id, table_count, seats_per_table } = await req.json();
+    if (!event_id) {
+      return new Response(JSON.stringify({ error: "event_id required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -33,27 +33,70 @@ serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Authorize: must be host/collaborator on the event's project
-    const { data: project } = await admin
-      .from("projects").select("id, created_by").eq("event_id", event_id).maybeSingle();
-    if (!project) {
+    // Authorize: event creator OR project host/collaborator
+    const { data: jam } = await admin
+      .from("creative_jams").select("id, created_by").eq("id", event_id).maybeSingle();
+    if (!jam) {
       return new Response(JSON.stringify({ error: "Event not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    let isHost = project.created_by === user.id;
+    let isHost = jam.created_by === user.id;
     if (!isHost) {
-      const { data: c } = await admin.from("project_collaborators")
-        .select("id").eq("project_id", project.id).eq("user_id", user.id).eq("status", "accepted").maybeSingle();
-      isHost = !!c;
+      const { data: project } = await admin
+        .from("projects").select("id, created_by").eq("event_id", event_id).maybeSingle();
+      if (project) {
+        isHost = project.created_by === user.id;
+        if (!isHost) {
+          const { data: c } = await admin.from("project_collaborators")
+            .select("id").eq("project_id", project.id).eq("user_id", user.id).eq("status", "accepted").maybeSingle();
+          isHost = !!c;
+        }
+      }
     }
     if (!isHost) {
       return new Response(JSON.stringify({ error: "Forbidden" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Resolve / auto-create the layout. Hosts in our UI just pick "N tables of M seats" — we
+    // materialize that into an event_seating_layouts row so the rest of the platform (per-guest
+    // seat lookups, runsheets, check-in) keeps working.
+    const desiredTableCount = Math.max(1, Math.min(50, Number(table_count) || 0));
+    let resolvedLayoutId: string | null = layout_id || null;
+
+    if (!resolvedLayoutId) {
+      // Reuse the most recent layout for this event if it exists; otherwise create one.
+      const { data: existing } = await admin.from("event_seating_layouts")
+        .select("id, tables").eq("event_id", event_id)
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (existing?.id) {
+        resolvedLayoutId = existing.id;
+        // If caller asked for a different table count, regenerate the table list.
+        if (desiredTableCount > 0) {
+          const newTables = Array.from({ length: desiredTableCount }, (_, i) => ({
+            id: crypto.randomUUID(), name: `Table ${i + 1}`,
+          }));
+          await admin.from("event_seating_layouts").update({ tables: newTables }).eq("id", existing.id);
+        }
+      } else {
+        const count = desiredTableCount || 8;
+        const newTables = Array.from({ length: count }, (_, i) => ({
+          id: crypto.randomUUID(), name: `Table ${i + 1}`,
+        }));
+        const { data: created, error: createErr } = await admin.from("event_seating_layouts")
+          .insert({ event_id, name: "Main Layout", tables: newTables, created_by: user.id })
+          .select("id").single();
+        if (createErr || !created) {
+          return new Response(JSON.stringify({ error: `Couldn't create layout: ${createErr?.message || "unknown"}` }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        resolvedLayoutId = created.id;
+      }
+    }
+
     // Load layout (table list)
     const { data: layout } = await admin.from("event_seating_layouts")
-      .select("tables").eq("id", layout_id).maybeSingle();
+      .select("tables").eq("id", resolvedLayoutId).maybeSingle();
     const tables: any[] = Array.isArray(layout?.tables) ? layout!.tables : [];
     if (tables.length === 0) {
       return new Response(JSON.stringify({ error: "Add tables to the layout first." }),

@@ -431,30 +431,29 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
             </Button>
           </div>
 
-          {/* Search */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search what's on, venues, hosts..." 
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="pl-10 bg-muted/50"
-            />
-          </div>
-
-          {/* Category Filter Chips */}
-          <div className="flex gap-1.5 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide">
-            {CATEGORY_FILTERS.map(cat => (
-              <Button
-                key={cat.value}
-                variant={categoryFilter === cat.value ? "default" : "outline"}
-                size="sm"
-                className="shrink-0 text-xs h-7 rounded-full"
-                onClick={() => setCategoryFilter(cat.value)}
-              >
-                {cat.label}
-              </Button>
-            ))}
+          {/* Search + Filter button */}
+          <div className="flex gap-2 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search what's on, venues, hosts..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-10 bg-muted/50"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="default"
+              onClick={() => setFilterOpen(true)}
+              className="shrink-0 gap-1.5 relative"
+            >
+              <Filter className="h-4 w-4" />
+              Filter
+              {activeFilterCount > 0 && (
+                <Badge className="ml-1 h-5 min-w-5 px-1 text-[10px] rounded-full">{activeFilterCount}</Badge>
+              )}
+            </Button>
           </div>
 
           {/* Tabs */}

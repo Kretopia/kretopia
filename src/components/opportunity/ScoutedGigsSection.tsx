@@ -271,8 +271,9 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
           No scouted gigs yet. Tap <span className="font-semibold text-foreground">Scan now</span> to find real jobs across the web matched to your skills.
         </Card>
       ) : (
+        <>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {gigs.map((g) => {
+          {(limit ? gigs.slice(0, limit) : gigs).map((g) => {
             const Icon = SOURCE_ICON[g.source] || Globe;
             return (
               <div
@@ -353,6 +354,16 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
             );
           })}
         </div>
+        {limit && gigs.length > limit && (
+          <a
+            href="/opportunities"
+            className="mt-1 inline-flex items-center justify-center w-full rounded-xl border border-border bg-card hover:border-energy/40 hover:bg-energy/[0.04] transition-colors px-4 py-3 text-sm font-semibold text-foreground gap-2"
+          >
+            See all {gigs.length} scouted gigs
+            <ExternalLink className="h-3.5 w-3.5 text-energy" />
+          </a>
+        )}
+        </>
       )}
 
       {/* In-app detail sheet */}

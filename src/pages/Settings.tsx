@@ -771,7 +771,7 @@ const Settings = () => {
 
           {/* Telegram bot */}
           <TelegramConnectCard />
-          <TelegramStatusCard />
+          {/* Status card hidden from users — admin/debug only */}
 
           {/* Blocked Users */}
           <BlockedUsersCard />

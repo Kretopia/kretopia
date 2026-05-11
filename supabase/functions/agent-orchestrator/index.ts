@@ -122,8 +122,22 @@ async function planTools(
 ): Promise<Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string; auto_result?: unknown; already_executed?: boolean }>> {
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
+  // Always-available toolkit: ask_clarification + person/project resolution +
+  // collaborator actions. The intent classifier is fuzzy ("add Dezii to X" can
+  // land in talent OR project_manager), so we expose these regardless of kind
+  // to prevent dead ends.
+  const ALWAYS_AVAILABLE = new Set([
+    "ask_clarification",
+    "find_user",
+    "list_my_projects",
+    "add_collaborator",
+    "remove_collaborator",
+  ]);
   const toolsForAgent = tools.filter(
-    (t) => t.agent_kind === agentKind || t.agent_kind === "orchestrator",
+    (t) =>
+      t.agent_kind === agentKind ||
+      t.agent_kind === "orchestrator" ||
+      ALWAYS_AVAILABLE.has(t.tool_name),
   );
 
   const toolDefs = toolsForAgent.map((t) => ({

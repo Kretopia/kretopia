@@ -92,6 +92,21 @@ export const CreateSessionDialog = ({
     recording_enabled: false,
   });
 
+  // Custom RSVP questions captured at creation time (saved after event insert)
+  const [rsvpQuestions, setRsvpQuestions] = useState<Array<{ question: string; required: boolean }>>([]);
+  const [newRsvpQ, setNewRsvpQ] = useState("");
+  const [newRsvpReq, setNewRsvpReq] = useState(false);
+
+  const addRsvpQuestion = () => {
+    const q = newRsvpQ.trim();
+    if (!q || rsvpQuestions.length >= 5) return;
+    setRsvpQuestions(prev => [...prev, { question: q, required: newRsvpReq }]);
+    setNewRsvpQ("");
+    setNewRsvpReq(false);
+  };
+  const removeRsvpQuestion = (idx: number) =>
+    setRsvpQuestions(prev => prev.filter((_, i) => i !== idx));
+
   // (Circle linking removed — Circles are not part of the active product surface.)
 
   const handleCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -75,9 +75,17 @@ async function classifyIntent(
           {
             role: "system",
             content:
-              "You are an intent router for a creative-economy platform. Given a user request, pick the single best sub-agent from this list:\n\n" +
+              "You are an intent router for a creative-economy platform. Pick the SINGLE best sub-agent.\n\n" +
+              "Sub-agents:\n" +
               kinds.join(", ") +
-              "\n\nReturn JSON only: {\"agent_kind\":\"<one_of_the_above>\",\"reasoning\":\"<one short sentence>\"}",
+              "\n\nDISAMBIGUATION RULES:\n" +
+              "- 'add <person> to <project>', 'invite <person> to my project', 'put X on the team', 'remove X from project' → project_manager (this is a collaborator action on an EXISTING project, NOT talent search).\n" +
+              "- 'find me a <role>', 'search for photographers', 'who can shoot in Bali' → talent (discovering new people).\n" +
+              "- 'create task', 'mark done', 'project status' → project_manager.\n" +
+              "- 'apply to <gig>', 'find gigs', 'draft cover letter' → gig.\n" +
+              "- 'send DM to <person>', 'message X' → talent.\n" +
+              "- 'remember that...', 'forget...' → memory.\n\n" +
+              "Return JSON only: {\"agent_kind\":\"<one_of_the_above>\",\"reasoning\":\"<one short sentence>\"}",
           },
           { role: "user", content: intent },
         ],
@@ -114,8 +122,22 @@ async function planTools(
 ): Promise<Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string; auto_result?: unknown; already_executed?: boolean }>> {
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
+  // Always-available toolkit: ask_clarification + person/project resolution +
+  // collaborator actions. The intent classifier is fuzzy ("add Dezii to X" can
+  // land in talent OR project_manager), so we expose these regardless of kind
+  // to prevent dead ends.
+  const ALWAYS_AVAILABLE = new Set([
+    "ask_clarification",
+    "find_user",
+    "list_my_projects",
+    "add_collaborator",
+    "remove_collaborator",
+  ]);
   const toolsForAgent = tools.filter(
-    (t) => t.agent_kind === agentKind || t.agent_kind === "orchestrator",
+    (t) =>
+      t.agent_kind === agentKind ||
+      t.agent_kind === "orchestrator" ||
+      ALWAYS_AVAILABLE.has(t.tool_name),
   );
 
   const toolDefs = toolsForAgent.map((t) => ({
@@ -137,14 +159,27 @@ async function planTools(
         `- Tools tagged [safe_auto] (find_user, list_my_projects, etc.) run automatically — call them first to RESOLVE names/IDs before proposing destructive actions.\n` +
         `- Tools tagged [requires_approval] need user approval — only call them with REAL UUIDs you obtained from safe_auto results or context.\n` +
         `- NEVER invent UUIDs. If you don't have an ID, look it up first.\n` +
+        `\nPERSON RESOLUTION (CRITICAL — read carefully):\n` +
+        `- When the user mentions a person by name/handle (e.g. "add Dezii", "DM @marc"), you MUST call find_user FIRST.\n` +
+        `- find_user returns { match_count, matches[], needs_clarification }.\n` +
+        `- If match_count === 0 → call ask_clarification with a question like "I couldn't find anyone matching '<name>'. Do you have their @username or full name?". DO NOT call any other tool.\n` +
+        `- If match_count > 1 → call ask_clarification listing the candidates by name + @username + role (e.g. "I see 2 people: DEZii (@dezii, Singer) and Dez Marshall (@dezm, Photographer) — which one?"). DO NOT pick one yourself.\n` +
+        `- Only when match_count === 1 may you proceed to the destructive action with that exact user_id.\n` +
         `\nPROJECT RESOLUTION (CRITICAL):\n` +
         `- When the user mentions a project by name (e.g. "the X project", "add to Y"), you MUST call list_my_projects FIRST and pick the project whose title best matches the words the user used (case-insensitive substring or fuzzy).\n` +
         `- DO NOT default to active_project from caller context unless the user explicitly says "this project", "here", or gives no project name at all.\n` +
         `- If list_my_projects returns 0 matches for the spoken name → call ask_clarification with the candidate list. NEVER pick a random project.\n` +
         `- If 2+ projects match the spoken name → call ask_clarification listing both. NEVER guess.\n` +
         `- Only after you have the EXACT project_id whose title matches the user's words may you call add_collaborator / remove_collaborator.\n` +
-        `\n- For each [requires_approval] call, include "_preview": { "title": "...", "body": "..." } in the args so the user sees a clear approval card. The preview title MUST include the resolved project title verbatim (e.g. "Add Rene Auguste to ThriveIN Content").\n` +
-        `- If after lookups the request is still ambiguous (e.g., 2+ matching users), call ask_clarification.\n` +
+        `\nAPPROVAL CARD PREVIEW (every [requires_approval] call):\n` +
+        `- Include "_preview" in the args. Required keys:\n` +
+        `    title         — short verb phrase, MUST include person's name AND project title verbatim (e.g. "Add DEZii to ThriveIN Content").\n` +
+        `    body          — one short sentence describing what will happen.\n` +
+        `- Strongly recommended keys (lift them from find_user matches):\n` +
+        `    avatar_url    — the matched person's avatar so the user can visually confirm.\n` +
+        `    subtitle      — "@username · Role" (e.g. "@dezii · Singer").\n` +
+        `    context_line  — "Project: <project title>".\n` +
+        `\n- If after lookups the request is still ambiguous, call ask_clarification.\n` +
         `- The current user's ID is ${userId}.\n` +
         `- Caller context: ${JSON.stringify(context).slice(0, 1500)}`,
     },
@@ -228,27 +263,46 @@ async function planTools(
         // requires_approval / locked / inline → record as a proposal and tell the model it's queued
         let pTitle = preview.title ?? "";
         let pBody = preview.body ?? "";
-        // Fallback enrichment so the approval card is never generic
-        if ((toolName === "add_collaborator" || toolName === "remove_collaborator") && (!pTitle || !pBody)) {
+        // Always fetch person+project metadata for collaborator actions so the
+        // approval card can render an avatar + role line, even when the LLM
+        // forgot to include them in _preview.
+        if (toolName === "add_collaborator" || toolName === "remove_collaborator") {
           try {
             const targetUserId = (args.user_id_to_add || args.user_id_to_remove || args.user_id) as string | undefined;
             const targetProjectId = (args.target_project_id || args.project_id) as string | undefined;
-            let personName: string | null = null;
+            let personRow: any = null;
             let projectTitle: string | null = null;
             if (targetUserId) {
-              const { data: p } = await admin.from("profiles").select("full_name, username").eq("user_id", targetUserId).maybeSingle();
-              personName = (p as any)?.full_name || (p as any)?.username || null;
+              const { data: p } = await admin
+                .from("public_profiles_safe")
+                .select("full_name, username, role, avatar_url")
+                .eq("user_id", targetUserId)
+                .maybeSingle();
+              personRow = p;
             }
             if (targetProjectId) {
               const { data: pr } = await admin.from("projects").select("title").eq("id", targetProjectId).maybeSingle();
               projectTitle = (pr as any)?.title || null;
             }
+            const personName = personRow?.full_name || personRow?.username || null;
             const verb = toolName === "add_collaborator" ? "Add" : "Remove";
             const prep = toolName === "add_collaborator" ? "to" : "from";
-            if (personName || projectTitle) {
-              pTitle = pTitle || `${verb} ${personName ?? "collaborator"} ${prep} ${projectTitle ?? "this project"}`;
-              pBody = pBody || `${personName ?? "They"} will ${toolName === "add_collaborator" ? "get full access to chat, tasks, files and calls in" : "lose access to"} ${projectTitle ?? "the project"}.`;
+            if (!pTitle && (personName || projectTitle)) {
+              pTitle = `${verb} ${personName ?? "collaborator"} ${prep} ${projectTitle ?? "this project"}`;
             }
+            if (!pBody && (personName || projectTitle)) {
+              pBody = `${personName ?? "They"} will ${toolName === "add_collaborator" ? "get full access to chat, tasks, files and calls in" : "lose access to"} ${projectTitle ?? "the project"}.`;
+            }
+            // Persist enriched preview metadata into tool_args so the client card can render avatar + subtitle.
+            const subtitleParts: string[] = [];
+            if (personRow?.username) subtitleParts.push(`@${personRow.username}`);
+            if (personRow?.role) subtitleParts.push(personRow.role);
+            args._preview = {
+              ...(preview ?? {}),
+              avatar_url: preview.avatar_url ?? personRow?.avatar_url ?? null,
+              subtitle: preview.subtitle ?? (subtitleParts.length ? subtitleParts.join(" · ") : null),
+              context_line: preview.context_line ?? (projectTitle ? `Project: ${projectTitle}` : null),
+            };
           } catch (_) { /* fallback to defaults below */ }
         }
         if (!pTitle) pTitle = toolName.replace(/_/g, " ");

@@ -92,23 +92,30 @@ async function findUser(userId: string, body: any) {
     .map((c: any) => (c.user_id === userId ? c.connected_user_id : c.user_id))
     .filter(Boolean);
 
+  // Widen SELECT so the planner has enough to disambiguate AND to build a rich
+  // approval-card preview (avatar + role + username + location).
+  // Only columns actually exposed by public_profiles_safe — adding unknown
+  // columns silently returns 0 rows.
+  const SELECT_COLS = "user_id, full_name, username, role, avatar_url, location";
+
   let connMatches: any[] = [];
   if (peerIds.length) {
-    const { data } = await admin
+    // Match on full_name OR username so "@dezii" works the same as "Dezii".
+    const { data: byName } = await admin
       .from("public_profiles_safe")
-      .select("user_id, full_name, avatar_url")
+      .select(SELECT_COLS)
       .in("user_id", peerIds)
-      .ilike("full_name", like)
+      .or(`full_name.ilike.${like},username.ilike.${like}`)
       .limit(5);
-    connMatches = (data ?? []).map((p: any) => ({ ...p, source: "connection" }));
+    connMatches = (byName ?? []).map((p: any) => ({ ...p, source: "connection" }));
   }
 
   let publicMatches: any[] = [];
   if (connMatches.length < 3) {
     const { data } = await admin
       .from("public_profiles_safe")
-      .select("user_id, full_name, avatar_url")
-      .ilike("full_name", like)
+      .select(SELECT_COLS)
+      .or(`full_name.ilike.${like},username.ilike.${like}`)
       .neq("user_id", userId)
       .limit(5);
     publicMatches = (data ?? [])
@@ -202,27 +209,35 @@ async function addCollaborator(userId: string, body: any) {
   }
 
   // Validate the target actually has an auth.users row (FK target).
-  // Falls back to a name lookup if the LLM passed something invalid.
+  // Falls back to a name lookup if the LLM passed something invalid — but
+  // refuses if the fallback is ambiguous (2+ matches), so we never silently
+  // add the wrong person.
   let resolvedUserId = newUserId;
   try {
     const { data: authLookup, error: authErr } = await admin.auth.admin.getUserById(newUserId);
     if (authErr || !authLookup?.user) {
-      // Try resolving by name/username from body.invitee_name (LLM often includes it)
       const hint = String(body.invitee_name ?? body.name_query ?? body.name ?? "").trim();
       if (hint.length >= 2) {
         const like = `%${hint}%`;
-        const { data: prof } = await admin
+        const { data: candidates } = await admin
           .from("profiles")
           .select("user_id, full_name, username, is_claimed")
           .or(`full_name.ilike.${like},username.ilike.${like}`)
           .eq("is_claimed", true)
-          .limit(1)
-          .maybeSingle();
-        if (prof?.user_id) {
-          resolvedUserId = prof.user_id;
-        } else {
+          .limit(3);
+        const list = candidates ?? [];
+        if (list.length === 0) {
           return json({ ok: false, error: `I couldn't find a claimed account for "${hint}". They may need to sign up first.` }, 400);
         }
+        if (list.length > 1) {
+          return json({
+            ok: false,
+            needs_clarification: true,
+            error: `Multiple people match "${hint}" — ask the user which one (${list.map((c: any) => c.full_name ?? c.username).join(", ")}).`,
+            candidates: list,
+          }, 409);
+        }
+        resolvedUserId = list[0].user_id;
       } else {
         return json({ ok: false, error: "That user account doesn't exist yet. Ask them to sign up, then try again." }, 400);
       }
@@ -246,10 +261,10 @@ async function addCollaborator(userId: string, body: any) {
     });
   }
 
-  // Resolve invitee name for the chat message
+  // Resolve invitee name + avatar for the chat message and any downstream UI
   const { data: invitee } = await admin
     .from("public_profiles_safe")
-    .select("full_name")
+    .select("full_name, avatar_url, username, role")
     .eq("user_id", resolvedUserId)
     .maybeSingle();
   const inviteeName = invitee?.full_name ?? "New collaborator";
@@ -296,8 +311,13 @@ async function addCollaborator(userId: string, body: any) {
   return json({
     ok: true,
     collaborator_id: row.id,
+    project_id: projectId,
     project_title: project.title,
     invitee_name: inviteeName,
+    invitee_user_id: resolvedUserId,
+    invitee_avatar_url: (invitee as any)?.avatar_url ?? null,
+    invitee_username: (invitee as any)?.username ?? null,
+    invitee_role: (invitee as any)?.role ?? null,
     role: row.role,
   });
 }

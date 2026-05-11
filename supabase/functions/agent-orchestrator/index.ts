@@ -137,14 +137,27 @@ async function planTools(
         `- Tools tagged [safe_auto] (find_user, list_my_projects, etc.) run automatically — call them first to RESOLVE names/IDs before proposing destructive actions.\n` +
         `- Tools tagged [requires_approval] need user approval — only call them with REAL UUIDs you obtained from safe_auto results or context.\n` +
         `- NEVER invent UUIDs. If you don't have an ID, look it up first.\n` +
+        `\nPERSON RESOLUTION (CRITICAL — read carefully):\n` +
+        `- When the user mentions a person by name/handle (e.g. "add Dezii", "DM @marc"), you MUST call find_user FIRST.\n` +
+        `- find_user returns { match_count, matches[], needs_clarification }.\n` +
+        `- If match_count === 0 → call ask_clarification with a question like "I couldn't find anyone matching '<name>'. Do you have their @username or full name?". DO NOT call any other tool.\n` +
+        `- If match_count > 1 → call ask_clarification listing the candidates by name + @username + role (e.g. "I see 2 people: DEZii (@dezii, Singer) and Dez Marshall (@dezm, Photographer) — which one?"). DO NOT pick one yourself.\n` +
+        `- Only when match_count === 1 may you proceed to the destructive action with that exact user_id.\n` +
         `\nPROJECT RESOLUTION (CRITICAL):\n` +
         `- When the user mentions a project by name (e.g. "the X project", "add to Y"), you MUST call list_my_projects FIRST and pick the project whose title best matches the words the user used (case-insensitive substring or fuzzy).\n` +
         `- DO NOT default to active_project from caller context unless the user explicitly says "this project", "here", or gives no project name at all.\n` +
         `- If list_my_projects returns 0 matches for the spoken name → call ask_clarification with the candidate list. NEVER pick a random project.\n` +
         `- If 2+ projects match the spoken name → call ask_clarification listing both. NEVER guess.\n` +
         `- Only after you have the EXACT project_id whose title matches the user's words may you call add_collaborator / remove_collaborator.\n` +
-        `\n- For each [requires_approval] call, include "_preview": { "title": "...", "body": "..." } in the args so the user sees a clear approval card. The preview title MUST include the resolved project title verbatim (e.g. "Add Rene Auguste to ThriveIN Content").\n` +
-        `- If after lookups the request is still ambiguous (e.g., 2+ matching users), call ask_clarification.\n` +
+        `\nAPPROVAL CARD PREVIEW (every [requires_approval] call):\n` +
+        `- Include "_preview" in the args. Required keys:\n` +
+        `    title         — short verb phrase, MUST include person's name AND project title verbatim (e.g. "Add DEZii to ThriveIN Content").\n` +
+        `    body          — one short sentence describing what will happen.\n` +
+        `- Strongly recommended keys (lift them from find_user matches):\n` +
+        `    avatar_url    — the matched person's avatar so the user can visually confirm.\n` +
+        `    subtitle      — "@username · Role" (e.g. "@dezii · Singer").\n` +
+        `    context_line  — "Project: <project title>".\n` +
+        `\n- If after lookups the request is still ambiguous, call ask_clarification.\n` +
         `- The current user's ID is ${userId}.\n` +
         `- Caller context: ${JSON.stringify(context).slice(0, 1500)}`,
     },

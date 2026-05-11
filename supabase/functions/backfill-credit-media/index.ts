@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireAdminOrCron } from "../_shared/admin-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -128,6 +129,8 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const _guard = await requireAdminOrCron(req);
+    if (!_guard.ok) return _guard.response;
     const { user_id, batch_size = 50, dry_run = false } = await req.json().catch(() => ({}));
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { requireAdminOrCron } from "../_shared/admin-guard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,6 +47,8 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const _guard = await requireAdminOrCron(req);
+    if (!_guard.ok) return _guard.response;
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
     const lovableKey = Deno.env.get('LOVABLE_API_KEY');
 

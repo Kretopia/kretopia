@@ -59,29 +59,33 @@ serve(async (req) => {
       surface_context,
       conversation_id: clientConvId,
       persist = false,
+      stream = true,
     } = body as {
       messages: Array<{ role: "user" | "assistant"; content: string }>;
       surface?: string;
       surface_context?: Record<string, unknown>;
       conversation_id?: string;
       persist?: boolean;
+      stream?: boolean;
     };
 
     // ---- Auth + context ----
     const authHeader = req.headers.get("Authorization") ?? "";
+    const internalUserId = req.headers.get("x-internal-user-id");
     let userId: string | null = null;
     let contextPreamble = "";
     let conversationId: string | null = clientConvId ?? null;
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    if (authHeader.startsWith("Bearer ")) {
+    // Internal trusted call (e.g. Telegram webhook) — service role + explicit user id.
+    const isInternal =
+      !!internalUserId &&
+      authHeader === `Bearer ${SERVICE_KEY}`;
+
+    if (isInternal) {
       try {
-        const userClient = createClient(SUPABASE_URL, ANON_KEY, {
-          global: { headers: { Authorization: authHeader } },
-        });
-        const { data: { user } } = await userClient.auth.getUser();
-        if (user) {
-          userId = user.id;
+        const user = { id: internalUserId! };
+        userId = user.id;
 
           // ---- Per-tier daily message cap ----
           // Bundled with Thrive Voice into a single "Thrive Talk" budget surfaced as minutes.

@@ -429,6 +429,9 @@ const EventPage = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate("/events/backstage")}>
+                    <Sparkles className="h-4 w-4 mr-2" /> Open Backstage
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setShowShareKit(true)}>
                     <Share2 className="h-4 w-4 mr-2" /> Share / QR Code
                   </DropdownMenuItem>

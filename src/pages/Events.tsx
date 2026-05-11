@@ -365,13 +365,38 @@ const Events = ({ embedded }: { embedded?: boolean }) => {
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
 
   const filteredEvents = events.filter(e => {
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.venue_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.creator_name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || e.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const matchesPrice =
+      priceFilter === 'any' ||
+      (priceFilter === 'free' && !(e.is_ticketed && (e.ticket_price || 0) > 0)) ||
+      (priceFilter === 'paid' && e.is_ticketed && (e.ticket_price || 0) > 0);
+    const evMode = (e as any).event_mode || 'irl';
+    const matchesMode = modeFilter === 'any' || evMode === modeFilter;
+    let matchesWhen = true;
+    if (whenFilter !== 'any') {
+      const t = new Date(e.start_time).getTime();
+      const now = Date.now();
+      const day = 24 * 60 * 60 * 1000;
+      if (whenFilter === 'week') matchesWhen = t <= now + 7 * day;
+      else if (whenFilter === 'month') matchesWhen = t <= now + 30 * day;
+      else if (whenFilter === 'weekend') {
+        const d = new Date(e.start_time);
+        const wd = d.getDay();
+        matchesWhen = (wd === 5 || wd === 6 || wd === 0) && t <= now + 7 * day;
+      }
+    }
+    return matchesSearch && matchesCategory && matchesPrice && matchesMode && matchesWhen;
   });
+
+  const activeFilterCount =
+    (categoryFilter !== 'all' ? 1 : 0) +
+    (whenFilter !== 'any' ? 1 : 0) +
+    (priceFilter !== 'any' ? 1 : 0) +
+    (modeFilter !== 'any' ? 1 : 0);
 
   const upcomingCount = events.length;
 

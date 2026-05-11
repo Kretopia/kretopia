@@ -831,7 +831,15 @@ const EventBackstage = () => {
         />
       )}
 
-      {/* Share kit */}
+      {/* Host tools (RSVP questions, Matchmaker, Seating) */}
+      {hostToolsFor && (
+        <EventHostToolsDialog
+          eventId={hostToolsFor.id}
+          eventTitle={hostToolsFor.title}
+          open={!!hostToolsFor}
+          onOpenChange={(o) => !o && setHostToolsFor(null)}
+        />
+      )}
       {shareFor && (
         <EventShareKit
           event={shareFor as any}

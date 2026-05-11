@@ -8335,6 +8335,42 @@ export type Database = {
           },
         ]
       }
+      messaging_channels: {
+        Row: {
+          channel: string
+          external_chat_id: string
+          external_display_name: string | null
+          external_username: string | null
+          id: string
+          is_active: boolean
+          last_seen_at: string | null
+          linked_at: string
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          external_chat_id: string
+          external_display_name?: string | null
+          external_username?: string | null
+          id?: string
+          is_active?: boolean
+          last_seen_at?: string | null
+          linked_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          external_chat_id?: string
+          external_display_name?: string | null
+          external_username?: string | null
+          id?: string
+          is_active?: boolean
+          last_seen_at?: string | null
+          linked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       milestones: {
         Row: {
           amount: number
@@ -14868,6 +14904,60 @@ export type Database = {
           name?: string
           owner_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      telegram_link_tokens: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      telegram_messages: {
+        Row: {
+          chat_id: number
+          created_at: string
+          raw_update: Json
+          telegram_user_id: number | null
+          text: string | null
+          update_id: number
+          user_id: string | null
+        }
+        Insert: {
+          chat_id: number
+          created_at?: string
+          raw_update: Json
+          telegram_user_id?: number | null
+          text?: string | null
+          update_id: number
+          user_id?: string | null
+        }
+        Update: {
+          chat_id?: number
+          created_at?: string
+          raw_update?: Json
+          telegram_user_id?: number | null
+          text?: string | null
+          update_id?: number
+          user_id?: string | null
         }
         Relationships: []
       }

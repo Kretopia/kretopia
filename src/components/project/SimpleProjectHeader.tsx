@@ -60,6 +60,7 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
   const [removing, setRemoving] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
   const [startSheetOpen, setStartSheetOpen] = useState(false);
+  const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
   const [startingCall, setStartingCall] = useState(false);
   const [callRoomUrl, setCallRoomUrl] = useState<string | null>(null);
   const [callToken, setCallToken] = useState<string | null>(null);

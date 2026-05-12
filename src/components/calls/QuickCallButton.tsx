@@ -161,6 +161,26 @@ export const QuickCallButton = ({
         meetingShareUrl={guestLink}
         lobbyCta="Start call"
       />
+
+      {/* Invite from contacts — available before joining */}
+      {session && (
+        <CallInviteSheet
+          open={contactsOpen}
+          onOpenChange={setContactsOpen}
+          callContext={{
+            kind: "direct",
+            projectId: null,
+            projectName: "Quick call",
+            directCallId: session.callId,
+            roomUrl: session.roomUrl,
+            roomName: session.roomName,
+            callId: session.callId,
+            callerName: myName,
+            callerAvatar: null,
+            meetingShareUrl: guestLink,
+          }}
+        />
+      )}
     </>
   );
 };

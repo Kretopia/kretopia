@@ -857,9 +857,9 @@ const EventPage = () => {
               ) : !isTicketed ? (
                 <Button variant="gradient" className="w-full py-6 text-lg" onClick={handleJoinOrSignup} disabled={joining || isFull}>
                   {joining ? <Loader2 className="h-5 w-5 animate-spin" /> : !isAuthenticated ? (
-                    <><Sparkles className="h-5 w-5 mr-2" /> Save my spot <ArrowRight className="h-5 w-5 ml-2" /></>
+                    <>Save my spot <ArrowRight className="h-5 w-5 ml-2" /></>
                   ) : isFull ? "All spots taken" : (
-                    <><Sparkles className="h-5 w-5 mr-2" /> Save my spot</>
+                    <>Save my spot</>
                   )}
                 </Button>
               ) : null}

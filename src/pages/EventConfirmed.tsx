@@ -166,7 +166,17 @@ const EventConfirmed = () => {
               </Button>
             )}
           </div>
-          <Button onClick={handleShare} variant="gradient" className="w-full py-6">
+          {guestToken && eventId && (
+            <Link
+              to={`/event/${eventId}/pass?token=${encodeURIComponent(guestToken)}${guestName ? `&name=${encodeURIComponent(guestName)}` : ""}`}
+              className="block"
+            >
+              <Button variant="gradient" className="w-full py-6">
+                <Ticket className="h-4 w-4 mr-2" /> Show my pass
+              </Button>
+            </Link>
+          )}
+          <Button onClick={handleShare} variant={guestToken ? "secondary" : "gradient"} className="w-full py-6">
             <Share2 className="h-4 w-4 mr-2" /> Invite friends
           </Button>
           {user && event.created_by === user.id && (

@@ -17,12 +17,13 @@ export const PayoutsConnectWarning = ({ visible }: { visible: boolean }) => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase
+      const res = await (supabase
         .from("profiles")
         .select("stripe_account_id, stripe_account_status")
         .eq("user_id", user.id)
-        .maybeSingle()
-        .catch(() => ({ data: null } as any));
+        .maybeSingle() as unknown as Promise<any>)
+        .catch(() => ({ data: null }));
+      const data = res?.data;
       if (cancelled) return;
       const ok = !!data?.stripe_account_id && data?.stripe_account_status === "active";
       setNeedsConnect(!ok);

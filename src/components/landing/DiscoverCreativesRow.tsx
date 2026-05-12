@@ -4,6 +4,7 @@ import { Verified, Sparkles } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Creator {
   user_id: string;
@@ -16,6 +17,15 @@ interface Creator {
 const PAGE_SIZE = 8;
 const ROTATE_MS = 6000;
 
+const uniqueCreators = (creators: Creator[]) => {
+  const seen = new Set<string>();
+  return creators.filter((creator) => {
+    if (!creator.user_id || seen.has(creator.user_id)) return false;
+    seen.add(creator.user_id);
+    return true;
+  });
+};
+
 /**
  * Horizontal scroll of REAL creator profiles for the landing page.
  * Guests see avatars but any tap routes to /auth?tab=signup (sign-in required to view profiles/explore).
@@ -24,25 +34,35 @@ export const DiscoverCreativesRow = () => {
   const [pool, setPool] = useState<Creator[]>([]);
   const [page, setPage] = useState(0);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await supabase
-          .from("public_profiles_safe")
-          .select("user_id, full_name, avatar_url, role, verification_tier")
-          .not("avatar_url", "is", null)
-          .not("full_name", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(60);
-        if (data && data.length > 0) {
-          setPool([...data].sort(() => Math.random() - 0.5) as Creator[]);
-        }
+        const { data, error } = await (supabase as any).rpc("get_public_creator_showcase", {
+          _viewer_id: user?.id ?? null,
+          _limit: 80,
+        });
+        if (error) throw error;
+        setPool(uniqueCreators(data || []));
       } catch {
-        /* silent */
+        try {
+          let fallbackQuery = supabase
+            .from("public_profiles_safe")
+            .select("user_id, full_name, avatar_url, role, verification_tier")
+            .not("avatar_url", "is", null)
+            .not("full_name", "is", null)
+            .eq("onboarding_completed", true)
+            .limit(80);
+          if (user?.id) fallbackQuery = fallbackQuery.neq("user_id", user.id);
+          const { data } = await fallbackQuery;
+          setPool(uniqueCreators(data || []));
+        } catch {
+          setPool([]);
+        }
       }
     })();
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     if (pool.length <= PAGE_SIZE) return;

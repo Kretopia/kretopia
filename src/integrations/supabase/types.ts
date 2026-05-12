@@ -17534,6 +17534,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_public_creator_showcase: {
+        Args: { _limit?: number; _viewer_id?: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          full_name: string
+          role: string
+          user_id: string
+          verification_tier: string
+        }[]
+      }
       get_review_request_by_token: {
         Args: { token_param: string }
         Returns: {

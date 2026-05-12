@@ -401,7 +401,7 @@ const EventBackstage = () => {
     try {
       const { data: parts, error } = await supabase
         .from("jam_participants")
-        .select("user_id, status, checked_in_at, created_at, guest_name, guest_email")
+        .select("user_id, status, checked_in_at, joined_at")
         .eq("jam_id", ev.id);
       if (error) throw error;
       if (!parts || parts.length === 0) {

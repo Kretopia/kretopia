@@ -145,6 +145,54 @@ export const MeetingReadySheet = ({
             </Button>
           )}
 
+          {calendarEvent && (
+            <div className="space-y-2">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+                Add to your calendar
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  asChild
+                  className="h-12 gap-2"
+                >
+                  <a
+                    href={buildGoogleCalendarUrl({
+                      ...calendarEvent,
+                      location: calendarEvent.location ?? shareUrl ?? undefined,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Google
+                  </a>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    downloadIcs(
+                      {
+                        ...calendarEvent,
+                        location: calendarEvent.location ?? shareUrl ?? undefined,
+                      },
+                      `${calendarEvent.title.replace(/[^\w-]+/g, "_")}.ics`,
+                    )
+                  }
+                  className="h-12 gap-2"
+                >
+                  <Apple className="h-4 w-4" />
+                  Apple / .ics
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Apple Calendar, Outlook & Yahoo all open the .ics file.
+              </p>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"

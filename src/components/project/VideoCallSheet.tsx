@@ -78,6 +78,16 @@ export const VideoCallSheet = ({
     setJoining(true);
     startedAtRef.current = Date.now();
 
+    // Daily only allows one DailyIframe instance at a time. Destroy any
+    // lingering instance (HMR / fast remount) before creating a new one.
+    try {
+      const existing = (DailyIframe as any).getCallInstance?.();
+      if (existing) {
+        try { existing.leave(); } catch {}
+        try { existing.destroy(); } catch {}
+      }
+    } catch {}
+
     const frame = DailyIframe.createFrame(containerRef.current, {
       iframeStyle: { width: "100%", height: "100%", border: "0", borderRadius: "0" },
       showLeaveButton: false,

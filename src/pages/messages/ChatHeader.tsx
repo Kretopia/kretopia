@@ -12,6 +12,7 @@ import { OnlineDot } from "@/components/messages/OnlinePresence";
 import { InviteToProjectDialog } from "@/components/project/InviteToProjectDialog";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { StartMeetingDialog } from "@/components/calls/StartMeetingDialog";
+import { CallStartChooser } from "@/components/calls/CallStartChooser";
 import { useStartDirectCall } from "@/hooks/useStartDirectCall";
 import type { OtherUser } from "./types";
 

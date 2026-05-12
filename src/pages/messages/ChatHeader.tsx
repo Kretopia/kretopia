@@ -25,6 +25,7 @@ interface Props {
 
 export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStartProject }: Props) => {
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [groupCallOpen, setGroupCallOpen] = useState(false);
   const recipientId = (otherUser as any).id || (otherUser as any).user_id;
   const { starting, session, open, setOpen, start, myName } = useStartDirectCall();
 

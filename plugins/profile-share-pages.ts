@@ -82,7 +82,10 @@ function buildEpkShareHtml(profile: ProfileRow, siteUrl: string) {
   const description = profile.bio
     ? truncate(profile.bio, 155)
     : `${name}'s verified Electronic Press Kit on ThriveIN — credits, portfolio, rates, contact. Verified by the platform.`;
-  const image = profile.avatar_url || FALLBACK_OG_IMAGE;
+  // Dynamic branded OG image (avatar + name + role + verified credits + ThriveIN mark).
+  // Falls back to avatar if the function is unreachable.
+  const projectRef = "kwmcocsitwssrtzkdojh";
+  const image = `https://${projectRef}.supabase.co/functions/v1/epk-og-image?user_id=${profile.user_id}`;
 
   return `<!doctype html>
 <html lang="en">

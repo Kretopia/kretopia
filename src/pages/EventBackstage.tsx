@@ -114,6 +114,7 @@ const EventBackstage = () => {
   const [emailBlastFor, setEmailBlastFor] = useState<BackstageEvent | null>(null);
   const [inviteFor, setInviteFor] = useState<BackstageEvent | null>(null);
   const [hostToolsFor, setHostToolsFor] = useState<BackstageEvent | null>(null);
+  const [analyticsFor, setAnalyticsFor] = useState<BackstageEvent | null>(null);
   const [convertingId, setConvertingId] = useState<string | null>(null);
 
   useEffect(() => {

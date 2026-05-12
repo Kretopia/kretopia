@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import DailyIframe, { type DailyCall } from "@daily-co/daily-js";
+import { type DailyCall } from "@daily-co/daily-js";
+import { createDailyFrame } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,7 @@ export default function GuestCall() {
       await new Promise((r) => setTimeout(r, 0));
       if (!containerRef.current) throw new Error("Call container missing");
 
-      const frame = DailyIframe.createFrame(containerRef.current, {
+      const frame = createDailyFrame(containerRef.current, {
         iframeStyle: { width: "100%", height: "100%", border: "0" },
         showLeaveButton: false,
         showFullscreenButton: true,

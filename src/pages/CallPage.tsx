@@ -2,7 +2,8 @@
 // Guests must include ?t=<share_token>.
 import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import DailyIframe, { type DailyCall } from "@daily-co/daily-js";
+import { type DailyCall } from "@daily-co/daily-js";
+import { createDailyFrame } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -95,7 +96,7 @@ export default function CallPage() {
   // Spin up Daily once we're "live"
   useEffect(() => {
     if (phase !== "live" || !tokenInfo || !containerRef.current) return;
-    const frame = DailyIframe.createFrame(containerRef.current, {
+    const frame = createDailyFrame(containerRef.current, {
       iframeStyle: { width: "100%", height: "100%", border: "0" },
       showLeaveButton: false,
       showFullscreenButton: true,

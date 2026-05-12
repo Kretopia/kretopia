@@ -9,7 +9,8 @@ import {
   ScreenShare,
   X,
 } from "lucide-react";
-import DailyIframe, { type DailyCall } from "@daily-co/daily-js";
+import { type DailyCall } from "@daily-co/daily-js";
+import { createDailyFrame } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PreCallLobby } from "./PreCallLobby";
@@ -79,17 +80,7 @@ export const VideoCallSheet = ({
     setJoining(true);
     startedAtRef.current = Date.now();
 
-    // Daily only allows one DailyIframe instance at a time. Destroy any
-    // lingering instance (HMR / fast remount) before creating a new one.
-    try {
-      const existing = (DailyIframe as any).getCallInstance?.();
-      if (existing) {
-        try { existing.leave(); } catch {}
-        try { existing.destroy(); } catch {}
-      }
-    } catch {}
-
-    const frame = DailyIframe.createFrame(containerRef.current, {
+    const frame = createDailyFrame(containerRef.current, {
       iframeStyle: { width: "100%", height: "100%", border: "0", borderRadius: "0" },
       showLeaveButton: false,
       showFullscreenButton: true,

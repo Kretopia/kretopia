@@ -1,19 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Video, Copy, Check, Loader2, Share2 } from "lucide-react";
+import { Video, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
+import { MeetingReadySheet } from "@/components/calls/MeetingReadySheet";
 import { APP_URL } from "@/lib/constants";
 
 interface Props {

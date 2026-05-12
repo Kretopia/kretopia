@@ -121,6 +121,15 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
         directCallId={session?.callId ?? null}
         roomName={session?.roomName ?? null}
       />
+      {recipientId && (
+        <StartMeetingDialog
+          open={groupCallOpen}
+          onOpenChange={setGroupCallOpen}
+          source="dm"
+          title={`Call with ${otherUser.name || "guest"}`}
+          people={[{ id: recipientId, name: otherUser.name || "Friend", avatar: otherUser.avatar, preselected: true }]}
+        />
+      )}
     </div>
   );
 };

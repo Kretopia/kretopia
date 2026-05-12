@@ -35,6 +35,7 @@ import {
   Loader2,
   ImageIcon,
   MapPin,
+  Download,
 } from "lucide-react";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";
@@ -396,6 +397,73 @@ const EventBackstage = () => {
     }
   };
 
+  const handleExportCsv = async (ev: BackstageEvent) => {
+    try {
+      const { data: parts, error } = await supabase
+        .from("jam_participants")
+        .select("user_id, status, checked_in_at, joined_at")
+        .eq("jam_id", ev.id);
+      if (error) throw error;
+      if (!parts || parts.length === 0) {
+        toast({ title: "No guests yet", description: "Once people RSVP you can export the list." });
+        return;
+      }
+
+      const userIds = Array.from(new Set(parts.map((p: any) => p.user_id).filter(Boolean)));
+      const profileMap: Record<string, { name: string; email: string; username: string }> = {};
+      if (userIds.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, email, username")
+          .in("user_id", userIds);
+        (profs || []).forEach((p: any) => {
+          profileMap[p.user_id] = {
+            name: p.full_name || "",
+            email: p.email || "",
+            username: p.username || "",
+          };
+        });
+      }
+
+      const escape = (v: any) => {
+        const s = (v ?? "").toString().replace(/"/g, '""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      };
+      const header = ["Name", "Email", "Username", "Status", "RSVP'd at", "Checked in at"];
+      const rows = parts.map((p: any) => {
+        const prof = p.user_id ? profileMap[p.user_id] : null;
+        return [
+          prof?.name || "Guest",
+          prof?.email || "",
+          prof?.username || "",
+          p.status || "",
+          p.joined_at ? new Date(p.joined_at).toISOString() : "",
+          p.checked_in_at ? new Date(p.checked_in_at).toISOString() : "",
+        ].map(escape).join(",");
+      });
+      const csv = [header.join(","), ...rows].join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const safeTitle = ev.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase().slice(0, 40);
+      a.href = url;
+      a.download = `${safeTitle}-guests-${format(new Date(), "yyyy-MM-dd")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: `Exported ${parts.length} guest${parts.length === 1 ? "" : "s"}`,
+        description: "CSV downloaded — open it in Sheets or Excel.",
+      });
+    } catch (e: any) {
+      console.error("[backstage] export failed", e);
+      toast({ title: "Couldn't export", description: e.message, variant: "destructive" });
+    }
+  };
+
   const renderRow = (ev: BackstageEvent, kind: "upcoming" | "past" | "drafts") => {
     const isDraft = kind === "drafts";
     const isPast = kind === "past";
@@ -510,6 +578,9 @@ const EventBackstage = () => {
                         <Sparkles className="h-4 w-4 mr-2" /> Host tools (Q&amp;A · Match · Seating)
                       </DropdownMenuItem>
                     )}
+                    <DropdownMenuItem onClick={() => handleExportCsv(ev)}>
+                      <Download className="h-4 w-4 mr-2" /> Export guest list (CSV)
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleDuplicate(ev)}>
                       <Copy className="h-4 w-4 mr-2" /> Duplicate

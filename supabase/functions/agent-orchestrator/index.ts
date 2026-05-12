@@ -132,6 +132,8 @@ async function planTools(
     "list_my_projects",
     "add_collaborator",
     "remove_collaborator",
+    "archive_project",
+    "delete_project",
   ]);
   const toolsForAgent = tools.filter(
     (t) =>

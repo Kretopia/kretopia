@@ -35,6 +35,7 @@ export const QuickCallButton = ({
   const [guestLink, setGuestLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
+  const [contactsOpen, setContactsOpen] = useState(false);
   const [session, setSession] = useState<{
     roomUrl: string;
     roomName: string;

@@ -9,6 +9,8 @@ import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { EPKShareToolbar } from "@/components/epk/EPKShareToolbar";
 import { EPKReviews } from "@/components/epk/EPKReviews";
 import { EPKFooterCTA } from "@/components/epk/EPKFooterCTA";
+import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
+import { RateCardSection } from "@/components/profile/RateCardSection";
 import { getMediaThumbnail } from "@/lib/mediaUtils";
 import {
   MapPin, 

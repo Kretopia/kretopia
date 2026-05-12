@@ -27,12 +27,24 @@ interface Props {
 export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStartProject }: Props) => {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [groupCallOpen, setGroupCallOpen] = useState(false);
+  const [chooserOpen, setChooserOpen] = useState(false);
   const recipientId = (otherUser as any).id || (otherUser as any).user_id;
   const { starting, session, open, setOpen, start, myName } = useStartDirectCall();
 
-  const handleStartCall = () => {
+  const handleVideoTap = () => {
     if (!recipientId) return;
+    setChooserOpen(true);
+  };
+
+  const handleInstantCall = () => {
+    if (!recipientId) return;
+    setChooserOpen(false);
     void start(recipientId, otherUser.name || "guest", { context: "chat-header" });
+  };
+
+  const handleGroupLink = () => {
+    setChooserOpen(false);
+    setGroupCallOpen(true);
   };
 
   return (

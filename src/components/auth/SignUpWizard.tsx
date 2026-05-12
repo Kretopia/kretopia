@@ -34,19 +34,14 @@ export const SignUpWizard = ({
   loading, onSubmit,
   onGoogleSignIn, onAppleSignIn, googleLoading, appleLoading,
 }: SignUpWizardProps) => {
-  // Wave 1: dropped account-type fork. Everyone defaults to "individual".
-  // Brands/companies can upgrade later from settings.
+  // Creator vs Brand toggle drives onboarding fork (individual → /onboarding,
+  // company → /company-onboarding). Default to individual.
   const [step, setStep] = useState(1);
   const totalSteps = 2;
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  // Force individual on mount (was previously a user choice)
-  useEffect(() => {
-    if (accountType !== "individual") setAccountType("individual");
-  }, []);
 
   const handleNextStep = async () => {
     if (step === 1) {

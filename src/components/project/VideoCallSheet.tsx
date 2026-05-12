@@ -199,11 +199,30 @@ export const VideoCallSheet = ({
           });
       }
 
+      // Post-call recap nudge — only meaningful for calls > 30s
+      if (duration > 30) {
+        if (didRecordRef.current) {
+          sonnerToast.success("Recap is being prepared", {
+            description: "Find it in Messages › Calls in ~2 min. We'll pull action items + decisions.",
+            duration: 10_000,
+            action: {
+              label: "Open Calls",
+              onClick: () => navigate("/messages?tab=calls"),
+            },
+          });
+        } else {
+          sonnerToast("Want a recap next time?", {
+            description: "Tap Record during a call and we'll auto-summarize action items + decisions.",
+            duration: 7_000,
+          });
+        }
+      }
+
       try { frame.leave(); } catch {}
       try { frame.destroy(); } catch {}
       callRef.current = null;
     };
-  }, [phase, roomUrl, token, callId, userName, directCallId, onOpenChange, joinPrefs, toast]);
+  }, [phase, roomUrl, token, callId, userName, directCallId, onOpenChange, joinPrefs, toast, navigate]);
 
   const handleEnd = async () => {
     try { await callRef.current?.leave(); } catch {}

@@ -365,3 +365,63 @@ async function removeCollaborator(userId: string, body: any) {
     removed_name: invitee?.full_name ?? "Collaborator",
   });
 }
+
+// ---- Tool: archive_project ----
+// Soft hide: sets projects.status = 'archived'. Owner-only. Reversible.
+async function archiveProject(userId: string, body: any) {
+  const projectId = String(body.project_id ?? body.target_project_id ?? "");
+  if (!projectId) return json({ ok: false, error: "project_id is required" }, 400);
+
+  const { data: project } = await admin
+    .from("projects")
+    .select("id, title, created_by, status")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (!project) return json({ ok: false, error: "Project not found" }, 404);
+  if (project.created_by !== userId) {
+    return json({ ok: false, error: "Only the project owner can archive this project." }, 403);
+  }
+  if (project.status === "archived") {
+    return json({ ok: true, already_archived: true, project_title: project.title });
+  }
+
+  const { error } = await admin
+    .from("projects")
+    .update({ status: "archived" })
+    .eq("id", projectId);
+  if (error) return json({ ok: false, error: error.message }, 500);
+
+  return json({ ok: true, project_id: projectId, project_title: project.title, status: "archived" });
+}
+
+// ---- Tool: delete_project ----
+// Hard delete. Owner-only. Destructive — agent must surface this as
+// requires_approval and the orchestrator preview must spell out the project title.
+async function deleteProject(userId: string, body: any) {
+  const projectId = String(body.project_id ?? body.target_project_id ?? "");
+  if (!projectId) return json({ ok: false, error: "project_id is required" }, 400);
+
+  const { data: project } = await admin
+    .from("projects")
+    .select("id, title, created_by")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (!project) return json({ ok: false, error: "Project not found" }, 404);
+  if (project.created_by !== userId) {
+    return json({ ok: false, error: "Only the project owner can delete this project." }, 403);
+  }
+
+  const { error } = await admin
+    .from("projects")
+    .delete()
+    .eq("id", projectId)
+    .eq("created_by", userId);
+  if (error) {
+    return json({
+      ok: false,
+      error: `Couldn't delete "${project.title}": ${error.message}. Try archiving instead.`,
+    }, 500);
+  }
+
+  return json({ ok: true, project_id: projectId, project_title: project.title, deleted: true });
+}

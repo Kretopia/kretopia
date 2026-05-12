@@ -17589,6 +17589,17 @@ export type Database = {
         Args: { _content: string; _kind?: string; _token: string }
         Returns: string
       }
+      guest_rsvp_upsert: {
+        Args: {
+          p_event_id: string
+          p_guest_email: string
+          p_guest_name: string
+        }
+        Returns: {
+          check_in_token: string
+          status: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

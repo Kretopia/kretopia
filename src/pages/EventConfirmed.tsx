@@ -4,7 +4,7 @@ import { useParams, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Calendar, MapPin, Clock, ArrowRight, Share2, Loader2 } from "lucide-react";
+import { CheckCircle2, Calendar, MapPin, Clock, ArrowRight, Share2, Loader2, CalendarPlus, Navigation } from "lucide-react";
 import { format } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { APP_URL } from "@/lib/constants";
@@ -64,6 +64,34 @@ const EventConfirmed = () => {
     }
   };
 
+  const buildIcs = () => {
+    const dt = (s: string) => new Date(s).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    const end = event.end_time || new Date(new Date(event.start_time).getTime() + 2 * 60 * 60 * 1000).toISOString();
+    const loc = [event.venue_name, event.venue_address].filter(Boolean).join(", ");
+    const ics = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ThriveIN//Event//EN",
+      "BEGIN:VEVENT",
+      `UID:${event.id}@thrivein.io`,
+      `DTSTAMP:${dt(new Date().toISOString())}`,
+      `DTSTART:${dt(event.start_time)}`,
+      `DTEND:${dt(end)}`,
+      `SUMMARY:${(event.title || "").replace(/\n/g, " ")}`,
+      loc ? `LOCATION:${loc.replace(/\n/g, " ")}` : "",
+      `URL:${shareUrl}`,
+      "END:VEVENT", "END:VCALENDAR",
+    ].filter(Boolean).join("\r\n");
+    const blob = new Blob([ics], { type: "text/calendar" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `${(event.title || "event").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const directionsHref = event.venue_address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue_address)}`
+    : null;
+
   return (
     <div className="min-h-screen bg-background">
       <SEO title={`You're in! ${event.title}`} description="RSVP confirmed" />
@@ -121,6 +149,22 @@ const EventConfirmed = () => {
 
         {/* Actions */}
         <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Button onClick={buildIcs} variant="secondary" className="py-6">
+              <CalendarPlus className="h-4 w-4 mr-2" /> Add to calendar
+            </Button>
+            {directionsHref ? (
+              <a href={directionsHref} target="_blank" rel="noopener noreferrer" className="block">
+                <Button variant="secondary" className="w-full py-6">
+                  <Navigation className="h-4 w-4 mr-2" /> Get directions
+                </Button>
+              </a>
+            ) : (
+              <Button variant="secondary" className="py-6" disabled>
+                <Navigation className="h-4 w-4 mr-2" /> Directions
+              </Button>
+            )}
+          </div>
           <Button onClick={handleShare} variant="gradient" className="w-full py-6">
             <Share2 className="h-4 w-4 mr-2" /> Invite friends
           </Button>

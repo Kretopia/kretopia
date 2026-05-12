@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -87,13 +87,15 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
           { onConflict: "jam_id,user_id" }
         );
       } else {
-        const { error } = await supabase
-          .from("guest_rsvps")
-          .upsert(
-            { event_id: eventId, guest_name: parsed.data.guest_name, guest_email: parsed.data.guest_email, status: "going" },
-            { onConflict: "event_id,guest_email" }
-          );
+        const { data, error } = await (supabase as any).rpc("guest_rsvp_upsert", {
+          p_event_id: eventId,
+          p_guest_name: parsed.data.guest_name,
+          p_guest_email: parsed.data.guest_email,
+        });
         if (error) throw error;
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+          throw new Error("RSVP failed");
+        }
       }
 
       // Save answers (best-effort)
@@ -244,9 +246,7 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
           ))}
 
           <Button type="submit" variant="gradient" className="w-full py-6 text-base" disabled={loading}>
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (
-              <><Sparkles className="h-4 w-4 mr-2" /> Confirm RSVP</>
-            )}
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Confirm RSVP"}
           </Button>
         </form>
       </DialogContent>

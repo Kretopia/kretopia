@@ -1,31 +1,46 @@
 // Daily.co only allows ONE DailyIframe instance globally. React StrictMode,
-// HMR, and route transitions can all leave a stale instance behind that
-// then throws "Duplicate DailyIframe instances are not allowed".
+// HMR, and route transitions can leave a stale instance behind that then
+// throws "Duplicate DailyIframe instances are not allowed".
 //
-// This helper safely tears down any existing instance and clears the
-// container before creating a fresh frame.
+// This helper aggressively tears down any existing instance (sync + async)
+// and falls back to a retry if Daily's internal singleton hasn't cleared yet.
 import DailyIframe, { type DailyCall } from "@daily-co/daily-js";
 
-export function destroyExistingDailyFrame(): void {
+export async function destroyExistingDailyFrame(): Promise<void> {
   try {
     const existing =
       (DailyIframe as any).getCallInstance?.() ??
       (DailyIframe as any).instances?.()?.[0];
     if (existing) {
-      try { existing.leave?.(); } catch {}
-      try { existing.destroy?.(); } catch {}
+      try { await existing.leave?.(); } catch {}
+      try { await existing.destroy?.(); } catch {}
     }
   } catch {
     /* non-fatal */
   }
 }
 
-export function createDailyFrame(
+export async function createDailyFrame(
   container: HTMLElement,
   props: Record<string, any>,
-): DailyCall {
-  destroyExistingDailyFrame();
-  // Clear any leftover <iframe> children from a previous mount.
+): Promise<DailyCall> {
+  await destroyExistingDailyFrame();
   while (container.firstChild) container.removeChild(container.firstChild);
-  return (DailyIframe as any).createFrame(container, props);
+  try {
+    return (DailyIframe as any).createFrame(container, props);
+  } catch (err: any) {
+    // Singleton check still sees a stale instance — destroy synchronously
+    // (no await) and retry once.
+    if (String(err?.message || "").includes("Duplicate")) {
+      try {
+        const stale =
+          (DailyIframe as any).getCallInstance?.() ??
+          (DailyIframe as any).instances?.()?.[0];
+        stale?.destroy?.();
+      } catch {}
+      while (container.firstChild) container.removeChild(container.firstChild);
+      return (DailyIframe as any).createFrame(container, props);
+    }
+    throw err;
+  }
 }

@@ -67,13 +67,14 @@ export const EventsNearYouSection = ({ limit = 8 }: { limit?: number }) => {
       const ids = (data || []).map((e: any) => e.id);
       let counts: Record<string, number> = {};
       if (ids.length) {
-        const { data: parts } = await supabase
+        const partsRes = await (supabase
           .from("jam_participants")
           .select("jam_id")
           .in("jam_id", ids)
-          .in("status", ["rsvp", "going", "checked_in"])
-          .catch(() => ({ data: [] } as any));
-        (parts || []).forEach((p: any) => {
+          .in("status", ["rsvp", "going", "checked_in"]) as unknown as Promise<any>)
+          .catch(() => ({ data: [] }));
+        const parts = partsRes?.data || [];
+        parts.forEach((p: any) => {
           counts[p.jam_id] = (counts[p.jam_id] || 0) + 1;
         });
       }

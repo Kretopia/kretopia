@@ -12,6 +12,7 @@ import { OnlineDot } from "@/components/messages/OnlinePresence";
 import { InviteToProjectDialog } from "@/components/project/InviteToProjectDialog";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { StartMeetingDialog } from "@/components/calls/StartMeetingDialog";
+import { CallStartChooser } from "@/components/calls/CallStartChooser";
 import { useStartDirectCall } from "@/hooks/useStartDirectCall";
 import type { OtherUser } from "./types";
 
@@ -26,12 +27,24 @@ interface Props {
 export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStartProject }: Props) => {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [groupCallOpen, setGroupCallOpen] = useState(false);
+  const [chooserOpen, setChooserOpen] = useState(false);
   const recipientId = (otherUser as any).id || (otherUser as any).user_id;
   const { starting, session, open, setOpen, start, myName } = useStartDirectCall();
 
-  const handleStartCall = () => {
+  const handleVideoTap = () => {
     if (!recipientId) return;
+    setChooserOpen(true);
+  };
+
+  const handleInstantCall = () => {
+    if (!recipientId) return;
+    setChooserOpen(false);
     void start(recipientId, otherUser.name || "guest", { context: "chat-header" });
+  };
+
+  const handleGroupLink = () => {
+    setChooserOpen(false);
+    setGroupCallOpen(true);
   };
 
   return (
@@ -60,7 +73,7 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
           size="icon"
           variant="default"
           className="h-9 w-9 rounded-full"
-          onClick={handleStartCall}
+          onClick={handleVideoTap}
           disabled={starting}
           aria-label={`Video call ${otherUser.name || 'user'}`}
           title="Start video call"
@@ -130,6 +143,17 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
           people={[{ id: recipientId, name: otherUser.name || "Friend", avatar: otherUser.avatar, preselected: true }]}
         />
       )}
+      <CallStartChooser
+        open={chooserOpen}
+        onOpenChange={setChooserOpen}
+        instantLabel={`Ring ${otherUser.name || "them"} now`}
+        instantHint="Calls them on ThriveIN with a ringtone."
+        linkLabel="Get a meeting link to share"
+        linkHint="Open a room with a link — perfect for guests on WhatsApp or email."
+        onPickInstant={handleInstantCall}
+        onPickLink={handleGroupLink}
+        starting={starting}
+      />
     </div>
   );
 };

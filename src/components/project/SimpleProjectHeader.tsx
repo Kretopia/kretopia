@@ -8,6 +8,7 @@ import { InviteCollaboratorDialog } from "./InviteCollaboratorDialog";
 import { VideoCallSheet } from "./VideoCallSheet";
 import { StartCallSheet, type StartCallPerson } from "./StartCallSheet";
 import { StartMeetingDialog } from "@/components/calls/StartMeetingDialog";
+import { CallStartChooser } from "@/components/calls/CallStartChooser";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +62,7 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
   const [callOpen, setCallOpen] = useState(false);
   const [startSheetOpen, setStartSheetOpen] = useState(false);
   const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
+  const [chooserOpen, setChooserOpen] = useState(false);
   const [startingCall, setStartingCall] = useState(false);
   const [callRoomUrl, setCallRoomUrl] = useState<string | null>(null);
   const [callToken, setCallToken] = useState<string | null>(null);
@@ -85,10 +87,10 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
       source: "project" as const,
     }));
 
-  // Step 1: Camera tap → just open the "who's joining?" sheet.
+  // Step 1: Camera tap → open the Meet-style chooser (link to share vs. ring members).
   const openStartSheet = () => {
     if (startingCall || callOpen) return;
-    setStartSheetOpen(true);
+    setChooserOpen(true);
   };
 
   // Step 2: Sheet "Start call" → mint room, ring selected, drop into lobby.
@@ -426,6 +428,24 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
             avatar: p.avatar_url,
             preselected: true,
           }))}
+        />
+
+        <CallStartChooser
+          open={chooserOpen}
+          onOpenChange={setChooserOpen}
+          instantLabel="Ring project members now"
+          instantHint="Calls everyone on this project with a ringtone."
+          linkLabel="Get a meeting link to share"
+          linkHint="Open a room with a link — perfect for clients or guests."
+          onPickInstant={() => {
+            setChooserOpen(false);
+            setStartSheetOpen(true);
+          }}
+          onPickLink={() => {
+            setChooserOpen(false);
+            setMeetingDialogOpen(true);
+          }}
+          starting={startingCall}
         />
       </>
     );

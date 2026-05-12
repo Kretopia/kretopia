@@ -8,8 +8,13 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Check, Share2, Video, Clock, Users } from "lucide-react";
+import { Copy, Check, Share2, Video, Clock, Users, Calendar, Apple } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  buildGoogleCalendarUrl,
+  downloadIcs,
+  type CalendarEventInput,
+} from "@/lib/calendarLinks";
 
 interface Props {
   open: boolean;
@@ -23,6 +28,12 @@ interface Props {
   /** Hint shown under the title, e.g. "Link works for 4 hours." */
   hint?: string;
   joinLabel?: string;
+  /**
+   * Optional — when provided, renders Add to Google / Apple Calendar buttons.
+   * Pass for scheduled meetings. The shareUrl is auto-injected as the location
+   * if not already set.
+   */
+  calendarEvent?: Omit<CalendarEventInput, "location"> & { location?: string };
 }
 
 /**

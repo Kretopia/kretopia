@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PreCallLobby } from "./PreCallLobby";
 import { CallInviteSheet } from "./CallInviteSheet";
+import { CallPreflightGate } from "@/components/calls/CallPreflightGate";
 
 interface VideoCallSheetProps {
   open: boolean;
@@ -245,16 +246,21 @@ export const VideoCallSheet = ({
           {/* Phase 1: Pre-call lobby */}
           {phase === "lobby" ? (
             <div className="relative h-full">
-              <PreCallLobby
-                projectName={projectName}
-                joining={joining}
-                ctaLabel={lobbyCta}
+              <CallPreflightGate
+                shareUrl={meetingShareUrl ?? roomUrl ?? null}
                 onCancel={() => onOpenChange(false)}
-                onJoin={(opts) => {
-                  setJoinPrefs(opts);
-                  setPhase("live");
-                }}
-              />
+              >
+                <PreCallLobby
+                  projectName={projectName}
+                  joining={joining}
+                  ctaLabel={lobbyCta}
+                  onCancel={() => onOpenChange(false)}
+                  onJoin={(opts) => {
+                    setJoinPrefs(opts);
+                    setPhase("live");
+                  }}
+                />
+              </CallPreflightGate>
               {meetingShareUrl && (
                 <button
                   type="button"

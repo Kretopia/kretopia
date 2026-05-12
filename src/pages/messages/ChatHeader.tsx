@@ -143,6 +143,17 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
           people={[{ id: recipientId, name: otherUser.name || "Friend", avatar: otherUser.avatar, preselected: true }]}
         />
       )}
+      <CallStartChooser
+        open={chooserOpen}
+        onOpenChange={setChooserOpen}
+        instantLabel={`Ring ${otherUser.name || "them"} now`}
+        instantHint="Calls them on ThriveIN with a ringtone."
+        linkLabel="Get a meeting link to share"
+        linkHint="Open a room with a link — perfect for guests on WhatsApp or email."
+        onPickInstant={handleInstantCall}
+        onPickLink={handleGroupLink}
+        starting={starting}
+      />
     </div>
   );
 };

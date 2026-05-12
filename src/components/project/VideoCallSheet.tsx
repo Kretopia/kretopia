@@ -78,6 +78,16 @@ export const VideoCallSheet = ({
     setJoining(true);
     startedAtRef.current = Date.now();
 
+    // Daily only allows one DailyIframe instance at a time. Destroy any
+    // lingering instance (HMR / fast remount) before creating a new one.
+    try {
+      const existing = (DailyIframe as any).getCallInstance?.();
+      if (existing) {
+        try { existing.leave(); } catch {}
+        try { existing.destroy(); } catch {}
+      }
+    } catch {}
+
     const frame = DailyIframe.createFrame(containerRef.current, {
       iframeStyle: { width: "100%", height: "100%", border: "0", borderRadius: "0" },
       showLeaveButton: false,
@@ -301,9 +311,9 @@ export const VideoCallSheet = ({
               <div className="relative flex-1 min-h-0 bg-black">
                 <div ref={containerRef} className="absolute inset-0" />
                 {joining && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white gap-3">
-                    <Loader2 className="h-7 w-7 animate-spin text-primary" />
-                    <p className="text-sm text-white/80">Connecting to the room…</p>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0b0b0f] text-white gap-3 z-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-sm font-medium text-white">Connecting to the room…</p>
                   </div>
                 )}
               </div>

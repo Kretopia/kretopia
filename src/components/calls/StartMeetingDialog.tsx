@@ -128,15 +128,14 @@ export const StartMeetingDialog = ({
     }
   };
 
-  const copyLink = async () => {
-    if (!created) return;
-    await navigator.clipboard.writeText(created.shareUrl);
-    toast({ title: "Link copied" });
+  const handleJoin = () => {
+    setReadyOpen(false);
+    setCallOpen(true);
   };
 
   return (
     <>
-      <Dialog open={open && !callOpen} onOpenChange={onOpenChange}>
+      <Dialog open={open && !readyOpen && !callOpen} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -237,21 +236,32 @@ export const StartMeetingDialog = ({
               ) : (
                 <>
                   <Video className="h-4 w-4" />
-                  Start now {selected.size > 0 && `(${selected.size} invited)`}
+                  Get my link {selected.size > 0 && `(${selected.size} invited)`}
                 </>
               )}
             </Button>
-
-            {created && (
-              <Button onClick={copyLink} variant="outline" className="w-full">
-                <Copy className="h-4 w-4" />
-                Copy invite link
-              </Button>
-            )}
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Step 2: ready sheet — link FIRST so host can copy/share */}
+      <MeetingReadySheet
+        open={readyOpen}
+        onOpenChange={(o) => {
+          setReadyOpen(o);
+          if (!o && !callOpen) {
+            // Dismissed without joining — close the whole flow
+            onOpenChange(false);
+            setCreated(null);
+          }
+        }}
+        shareUrl={created?.shareUrl ?? null}
+        onJoin={handleJoin}
+        title="Your meeting room is ready"
+        joinLabel="Join now"
+      />
+
+      {/* Step 3: live call lobby */}
       {created && (
         <VideoCallSheet
           open={callOpen}

@@ -41,6 +41,8 @@ interface Props {
     callId?: string | null;
     callerName: string;
     callerAvatar?: string | null;
+    /** Pre-baked share URL for ad-hoc meetings (skips guest-link edge fn). */
+    meetingShareUrl?: string | null;
   };
 }
 
@@ -215,20 +217,25 @@ export const CallInviteSheet = ({ open, onOpenChange, callContext }: Props) => {
   const handleCopyGuestLink = async () => {
     setGeneratingLink(true);
     try {
-      const { data, error } = await supabase.functions.invoke(
-        "create-video-guest-link",
-        {
-          body: {
-            project_id: callContext.projectId ?? null,
-            direct_call_id: callContext.directCallId ?? null,
-            room_name: callContext.roomName,
-            room_url: callContext.roomUrl,
-            guest_label: callContext.projectName,
+      let url: string;
+      if (callContext.meetingShareUrl) {
+        url = callContext.meetingShareUrl;
+      } else {
+        const { data, error } = await supabase.functions.invoke(
+          "create-video-guest-link",
+          {
+            body: {
+              project_id: callContext.projectId ?? null,
+              direct_call_id: callContext.directCallId ?? null,
+              room_name: callContext.roomName,
+              room_url: callContext.roomUrl,
+              guest_label: callContext.projectName,
+            },
           },
-        },
-      );
-      if (error) throw error;
-      const url = `${APP_URL}/call/${data.token}`;
+        );
+        if (error) throw error;
+        url = `${APP_URL}/call/${data.token}`;
+      }
       // Try native share first, fall back to clipboard
       if (navigator.share) {
         try {
@@ -245,8 +252,10 @@ export const CallInviteSheet = ({ open, onOpenChange, callContext }: Props) => {
       }
       await navigator.clipboard.writeText(url);
       toast({
-        title: "Guest link copied",
-        description: "Valid for 4 hours — paste it anywhere.",
+        title: "Invite link copied",
+        description: callContext.meetingShareUrl
+          ? "Anyone with this link can join."
+          : "Valid for 4 hours — paste it anywhere.",
       });
     } catch (e: any) {
       toast({

@@ -30,6 +30,8 @@ interface VideoCallSheetProps {
   roomName?: string | null;
   /** CTA shown in the pre-call lobby. Defaults to "Start call" (host flow). */
   lobbyCta?: string;
+  /** Pre-baked share URL for ad-hoc meetings (shown as Copy Link in lobby + invite). */
+  meetingShareUrl?: string | null;
 }
 
 type Phase = "lobby" | "live";
@@ -47,6 +49,7 @@ export const VideoCallSheet = ({
   directCallId,
   roomName,
   lobbyCta = "Start call",
+  meetingShareUrl = null,
 }: VideoCallSheetProps) => {
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -231,16 +234,33 @@ export const VideoCallSheet = ({
         >
           {/* Phase 1: Pre-call lobby */}
           {phase === "lobby" ? (
-            <PreCallLobby
-              projectName={projectName}
-              joining={joining}
-              ctaLabel={lobbyCta}
-              onCancel={() => onOpenChange(false)}
-              onJoin={(opts) => {
-                setJoinPrefs(opts);
-                setPhase("live");
-              }}
-            />
+            <div className="relative h-full">
+              <PreCallLobby
+                projectName={projectName}
+                joining={joining}
+                ctaLabel={lobbyCta}
+                onCancel={() => onOpenChange(false)}
+                onJoin={(opts) => {
+                  setJoinPrefs(opts);
+                  setPhase("live");
+                }}
+              />
+              {meetingShareUrl && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(meetingShareUrl);
+                      toast({ title: "Invite link copied", description: "Share it with anyone." });
+                    } catch {}
+                  }}
+                  className="absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-xs font-medium flex items-center gap-1.5 backdrop-blur-sm"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Copy invite link
+                </button>
+              )}
+            </div>
           ) : (
             <>
               {/* Header */}
@@ -365,6 +385,7 @@ export const VideoCallSheet = ({
             callId: callId ?? null,
             callerName: userName,
             callerAvatar: userAvatar ?? null,
+            meetingShareUrl: meetingShareUrl ?? null,
           }}
         />
       )}

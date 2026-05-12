@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, MapPin, Clock, Users, Loader2, Ticket, X, ScanLine, Sparkles, Zap, MessageSquare, Plus, Trash2 } from "lucide-react";
+import { PayoutsConnectWarning } from "./PayoutsConnectWarning";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -520,6 +521,7 @@ export const CreateSessionDialog = ({
                   />
                   <p className="text-[10px] text-muted-foreground">Paste a Nomeo, Eventbrite, or other ticket link. Users will be redirected there to purchase.</p>
                 </div>
+                <PayoutsConnectWarning visible={formData.is_ticketed && !formData.external_ticket_url && (formData.ticket_price || 0) > 0} />
               </div>
             )}
           </div>

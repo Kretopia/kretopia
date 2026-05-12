@@ -160,35 +160,60 @@ export const EventCheckInDialog = ({ eventId, eventTitle, open, onOpenChange }: 
     setScannerReady(false);
   };
 
-  const checkInByToken = async (token: string) => {
+  const checkInByToken = async (rawToken: string) => {
+    const token = (rawToken || "").trim();
+    if (!token) return;
     setCheckingIn(token);
     try {
+      // 1) Registered participant fast-path
       const participant = participants.find(p => p.check_in_token === token);
-      if (!participant) {
-        toast({ title: "Invalid QR Code", description: "No matching registration found for this event.", variant: "destructive" });
+      if (participant) {
+        if (participant.checked_in_at) {
+          toast({ title: "Already checked in", description: `${participant.profile?.full_name || 'This attendee'} was already checked in.` });
+          return;
+        }
+        const { error } = await supabase
+          .from('jam_participants')
+          .update({ checked_in_at: new Date().toISOString() })
+          .eq('id', participant.id);
+        if (error) throw error;
+        setParticipants(prev =>
+          prev.map(p =>
+            p.id === participant.id ? { ...p, checked_in_at: new Date().toISOString() } : p
+          )
+        );
+        toast({ title: "Checked in", description: `${participant.profile?.full_name || 'Attendee'} is now checked in.` });
         return;
       }
-      if (participant.checked_in_at) {
-        toast({ title: "Already checked in", description: `${participant.profile?.full_name || 'This attendee'} was already checked in.` });
+
+      // 2) Guest pass fallback — host-only RPC redeems guest_rsvps token
+      const { data, error } = await (supabase as any).rpc('check_in_guest_by_token', {
+        p_event_id: eventId,
+        p_token: token,
+      });
+      if (error) {
+        const msg = (error.message || "").toLowerCase();
+        if (msg.includes("no matching")) {
+          toast({ title: "Invalid pass", description: "This QR doesn't match anyone for this event.", variant: "destructive" });
+        } else if (msg.includes("only the event host")) {
+          toast({ title: "Host only", description: "Only the event host can check in guests.", variant: "destructive" });
+        } else {
+          toast({ title: "Couldn't check in", description: error.message || "Try again.", variant: "destructive" });
+        }
         return;
       }
-
-      const { error } = await supabase
-        .from('jam_participants')
-        .update({ checked_in_at: new Date().toISOString() })
-        .eq('id', participant.id);
-
-      if (error) throw error;
-
-      setParticipants(prev =>
-        prev.map(p =>
-          p.id === participant.id ? { ...p, checked_in_at: new Date().toISOString() } : p
-        )
-      );
-
-      toast({ title: "✅ Checked in!", description: `${participant.profile?.full_name || 'Attendee'} is now checked in.` });
-    } catch (err) {
-      toast({ title: "Error", description: "Failed to check in. Please try again.", variant: "destructive" });
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) {
+        toast({ title: "Invalid pass", description: "No matching guest pass for this event.", variant: "destructive" });
+        return;
+      }
+      if (row.was_already_checked_in) {
+        toast({ title: "Already checked in", description: `${row.guest_name || 'Guest'} was already in.` });
+      } else {
+        toast({ title: "Guest checked in", description: `${row.guest_name || 'Guest'} (${row.guest_email}) is in.` });
+      }
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Failed to check in. Please try again.", variant: "destructive" });
     } finally {
       setCheckingIn(null);
       setManualToken("");

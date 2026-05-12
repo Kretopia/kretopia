@@ -34,19 +34,14 @@ export const SignUpWizard = ({
   loading, onSubmit,
   onGoogleSignIn, onAppleSignIn, googleLoading, appleLoading,
 }: SignUpWizardProps) => {
-  // Wave 1: dropped account-type fork. Everyone defaults to "individual".
-  // Brands/companies can upgrade later from settings.
+  // Creator vs Brand toggle drives onboarding fork (individual → /onboarding,
+  // company → /company-onboarding). Default to individual.
   const [step, setStep] = useState(1);
   const totalSteps = 2;
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  // Force individual on mount (was previously a user choice)
-  useEffect(() => {
-    if (accountType !== "individual") setAccountType("individual");
-  }, []);
 
   const handleNextStep = async () => {
     if (step === 1) {
@@ -86,6 +81,41 @@ export const SignUpWizard = ({
       {/* Step 1: Email (with social login on top) */}
       {step === 1 && (
         <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-300">
+          {/* Creator vs Brand toggle */}
+          <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-muted/50 border">
+            <button
+              type="button"
+              onClick={() => setAccountType("individual")}
+              className={`flex flex-col items-center gap-1 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+                accountType === "individual"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              aria-pressed={accountType === "individual"}
+            >
+              <User className="h-4 w-4" />
+              I'm a Creator
+            </button>
+            <button
+              type="button"
+              onClick={() => setAccountType("company")}
+              className={`flex flex-col items-center gap-1 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
+                accountType === "company"
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              aria-pressed={accountType === "company"}
+            >
+              <Briefcase className="h-4 w-4" />
+              I'm a Brand
+            </button>
+          </div>
+          <p className="text-[11px] text-muted-foreground text-center -mt-2">
+            {accountType === "individual"
+              ? "Build your verified profile, get matched, find gigs."
+              : "Hire creators, run campaigns, manage briefs."}
+          </p>
+
           <SocialLoginButtons onGoogleSignIn={onGoogleSignIn} onAppleSignIn={onAppleSignIn} googleLoading={googleLoading} appleLoading={appleLoading} />
           <OrDivider text="or sign up with email" />
 

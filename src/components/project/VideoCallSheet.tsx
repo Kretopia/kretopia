@@ -372,8 +372,8 @@ export const VideoCallSheet = ({
         </SheetContent>
       </Sheet>
 
-      {/* Invite sheet (rendered over the call sheet) */}
-      {phase === "live" && roomUrl && (
+      {/* Invite sheet — available from both lobby & live so callers can add contacts before joining */}
+      {roomUrl && (
         <CallInviteSheet
           open={inviteOpen}
           onOpenChange={setInviteOpen}

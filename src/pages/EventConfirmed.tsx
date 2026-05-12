@@ -64,6 +64,34 @@ const EventConfirmed = () => {
     }
   };
 
+  const buildIcs = () => {
+    const dt = (s: string) => new Date(s).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    const end = event.end_time || new Date(new Date(event.start_time).getTime() + 2 * 60 * 60 * 1000).toISOString();
+    const loc = [event.venue_name, event.venue_address].filter(Boolean).join(", ");
+    const ics = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ThriveIN//Event//EN",
+      "BEGIN:VEVENT",
+      `UID:${event.id}@thrivein.io`,
+      `DTSTAMP:${dt(new Date().toISOString())}`,
+      `DTSTART:${dt(event.start_time)}`,
+      `DTEND:${dt(end)}`,
+      `SUMMARY:${(event.title || "").replace(/\n/g, " ")}`,
+      loc ? `LOCATION:${loc.replace(/\n/g, " ")}` : "",
+      `URL:${shareUrl}`,
+      "END:VEVENT", "END:VCALENDAR",
+    ].filter(Boolean).join("\r\n");
+    const blob = new Blob([ics], { type: "text/calendar" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `${(event.title || "event").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const directionsHref = event.venue_address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.venue_address)}`
+    : null;
+
   return (
     <div className="min-h-screen bg-background">
       <SEO title={`You're in! ${event.title}`} description="RSVP confirmed" />

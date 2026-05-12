@@ -17,6 +17,15 @@ interface Creator {
 const PAGE_SIZE = 8;
 const ROTATE_MS = 6000;
 
+const uniqueCreators = (creators: Creator[]) => {
+  const seen = new Set<string>();
+  return creators.filter((creator) => {
+    if (!creator.user_id || seen.has(creator.user_id)) return false;
+    seen.add(creator.user_id);
+    return true;
+  });
+};
+
 /**
  * Horizontal scroll of REAL creator profiles for the landing page.
  * Guests see avatars but any tap routes to /auth?tab=signup (sign-in required to view profiles/explore).
@@ -37,17 +46,20 @@ export const DiscoverCreativesRow = () => {
         if (error) throw error;
         setPool(uniqueCreators(data || []));
       } catch {
-        let fallbackQuery = supabase
-          .from("public_profiles_safe")
-          .select("user_id, full_name, avatar_url, role, verification_tier")
-          .not("avatar_url", "is", null)
-          .not("full_name", "is", null)
-          .eq("onboarding_completed", true)
-          .limit(80);
-        if (user?.id) fallbackQuery = fallbackQuery.neq("user_id", user.id);
-        fallbackQuery
-          .then(({ data }) => setPool(uniqueCreators(data || [])))
-          .catch(() => setPool([]));
+        try {
+          let fallbackQuery = supabase
+            .from("public_profiles_safe")
+            .select("user_id, full_name, avatar_url, role, verification_tier")
+            .not("avatar_url", "is", null)
+            .not("full_name", "is", null)
+            .eq("onboarding_completed", true)
+            .limit(80);
+          if (user?.id) fallbackQuery = fallbackQuery.neq("user_id", user.id);
+          const { data } = await fallbackQuery;
+          setPool(uniqueCreators(data || []));
+        } catch {
+          setPool([]);
+        }
       }
     })();
   }, [user?.id]);

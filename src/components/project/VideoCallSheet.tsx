@@ -252,19 +252,14 @@ export const VideoCallSheet = ({
                   }}
                 />
               </CallPreflightGate>
-              {meetingShareUrl && (
+              {roomUrl && (
                 <button
                   type="button"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(meetingShareUrl);
-                      toast({ title: "Invite link copied", description: "Share it with anyone." });
-                    } catch {}
-                  }}
-                  className="absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-xs font-medium flex items-center gap-1.5 backdrop-blur-sm"
+                  onClick={() => setInviteOpen(true)}
+                  className="absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white text-xs font-medium flex items-center gap-1.5 backdrop-blur-sm border border-white/10"
                 >
                   <UserPlus className="h-3.5 w-3.5" />
-                  Copy invite link
+                  Invite people
                 </button>
               )}
             </div>

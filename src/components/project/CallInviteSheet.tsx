@@ -41,6 +41,8 @@ interface Props {
     callId?: string | null;
     callerName: string;
     callerAvatar?: string | null;
+    /** Pre-baked share URL for ad-hoc meetings (skips guest-link edge fn). */
+    meetingShareUrl?: string | null;
   };
 }
 

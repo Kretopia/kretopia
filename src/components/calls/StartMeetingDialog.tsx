@@ -272,6 +272,7 @@ export const StartMeetingDialog = ({
           userName={userName}
           projectId={projectId ?? null}
           roomName={null}
+          meetingShareUrl={created.shareUrl}
         />
       )}
     </>

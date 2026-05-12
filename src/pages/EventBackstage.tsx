@@ -433,11 +433,11 @@ const EventBackstage = () => {
       const rows = parts.map((p: any) => {
         const prof = p.user_id ? profileMap[p.user_id] : null;
         return [
-          prof?.name || p.guest_name || "Guest",
-          prof?.email || p.guest_email || "",
+          prof?.name || "Guest",
+          prof?.email || "",
           prof?.username || "",
           p.status || "",
-          p.created_at ? new Date(p.created_at).toISOString() : "",
+          p.joined_at ? new Date(p.joined_at).toISOString() : "",
           p.checked_in_at ? new Date(p.checked_in_at).toISOString() : "",
         ].map(escape).join(",");
       });

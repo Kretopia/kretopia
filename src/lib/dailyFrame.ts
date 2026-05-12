@@ -22,10 +22,10 @@ export function destroyExistingDailyFrame(): void {
 
 export function createDailyFrame(
   container: HTMLElement,
-  props: Parameters<typeof DailyIframe.createFrame>[1],
+  props: Record<string, any>,
 ): DailyCall {
   destroyExistingDailyFrame();
   // Clear any leftover <iframe> children from a previous mount.
   while (container.firstChild) container.removeChild(container.firstChild);
-  return DailyIframe.createFrame(container, props);
+  return (DailyIframe as any).createFrame(container, props);
 }

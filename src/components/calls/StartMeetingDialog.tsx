@@ -439,40 +439,143 @@ function PeoplePicker({
   people,
   selected,
   onToggle,
+  projectId,
 }: {
   people: PersonOption[];
   selected: Set<string>;
   onToggle: (id: string) => void;
+  projectId?: string | null;
 }) {
+  const { user } = useAuth();
+  const [contacts, setContacts] = useState<PersonOption[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      try {
+        const ids = new Set<string>();
+        if (projectId) {
+          const { data: collabs } = await supabase
+            .from("project_collaborators")
+            .select("user_id")
+            .eq("project_id", projectId)
+            .eq("status", "accepted");
+          (collabs || []).forEach((c: any) => c.user_id && ids.add(c.user_id));
+        }
+        const { data: conns } = await supabase
+          .from("connections")
+          .select("user_id, connected_user_id")
+          .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
+          .eq("status", "accepted");
+        (conns || []).forEach((c: any) => {
+          ids.add(c.user_id === user.id ? c.connected_user_id : c.user_id);
+        });
+        ids.delete(user.id);
+        people.forEach((p) => ids.delete(p.id));
+        if (!ids.size) {
+          if (!cancelled) setContacts([]);
+          return;
+        }
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, avatar_url")
+          .in("user_id", Array.from(ids))
+          .limit(200);
+        if (!cancelled) {
+          setContacts(
+            (profiles || [])
+              .map((p: any) => ({
+                id: p.user_id,
+                name: p.full_name || "Unnamed",
+                avatar: p.avatar_url,
+              }))
+              .sort((a, b) => a.name.localeCompare(b.name)),
+          );
+        }
+      } catch (e) {
+        console.warn("[StartMeetingDialog] contacts", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })().catch(() => setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, projectId, people]);
+
+  const merged = useMemo(() => {
+    const seen = new Set<string>();
+    const out: PersonOption[] = [];
+    [...people, ...contacts].forEach((p) => {
+      if (seen.has(p.id)) return;
+      seen.add(p.id);
+      out.push(p);
+    });
+    return out;
+  }, [people, contacts]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return merged;
+    return merged.filter((p) => (p.name || "").toLowerCase().includes(q));
+  }, [merged, query]);
+
   return (
     <Field label="Add people">
-      <div className="space-y-1 max-h-44 overflow-y-auto rounded-md border border-border">
-        {people.map((p) => {
-          const on = selected.has(p.id);
-          return (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => onToggle(p.id)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                on ? "bg-primary/10" : "hover:bg-muted"
-              }`}
-            >
-              <Avatar className="h-7 w-7">
-                <AvatarImage src={p.avatar || undefined} />
-                <AvatarFallback className="text-[10px]">
-                  {(p.name || "?")
-                    .split(" ")
-                    .map((s) => s[0])
-                    .slice(0, 2)
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm flex-1 truncate">{p.name}</span>
-              {on && <Check className="h-4 w-4 text-primary" />}
-            </button>
-          );
-        })}
+      <div className="space-y-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search your contacts…"
+            className="pl-9 h-10 rounded-full"
+          />
+        </div>
+        <div className="space-y-1 max-h-56 overflow-y-auto rounded-md border border-border">
+          {loading && merged.length === 0 ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="px-3 py-6 text-center text-xs text-muted-foreground">
+              {merged.length === 0
+                ? "No contacts yet — share the link instead."
+                : "No matches."}
+            </div>
+          ) : (
+            filtered.map((p) => {
+              const on = selected.has(p.id);
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => onToggle(p.id)}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                    on ? "bg-primary/10" : "hover:bg-muted"
+                  }`}
+                >
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={p.avatar || undefined} />
+                    <AvatarFallback className="text-[10px]">
+                      {(p.name || "?")
+                        .split(" ")
+                        .map((s) => s[0])
+                        .slice(0, 2)
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm flex-1 truncate">{p.name}</span>
+                  {on && <Check className="h-4 w-4 text-primary" />}
+                </button>
+              );
+            })
+          )}
+        </div>
       </div>
     </Field>
   );

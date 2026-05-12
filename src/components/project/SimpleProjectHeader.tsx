@@ -8,6 +8,7 @@ import { InviteCollaboratorDialog } from "./InviteCollaboratorDialog";
 import { VideoCallSheet } from "./VideoCallSheet";
 import { StartCallSheet, type StartCallPerson } from "./StartCallSheet";
 import { StartMeetingDialog } from "@/components/calls/StartMeetingDialog";
+import { CallStartChooser } from "@/components/calls/CallStartChooser";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";

@@ -114,13 +114,8 @@ export const StartMeetingDialog = ({
         token: data.host_token,
         shareUrl,
       });
-      // Open the call right away
-      setCallOpen(true);
-      // Copy link in background for convenience
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        toast({ title: "Invite link copied", description: "Share it with anyone you want to join." });
-      } catch {}
+      // Show the "ready" sheet first so host can copy/share before joining.
+      setReadyOpen(true);
     } catch (e: any) {
       console.error("[StartMeetingDialog]", e);
       toast({

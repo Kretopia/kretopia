@@ -35,6 +35,7 @@ export const MeetingReadySheet = ({
   onOpenChange,
   shareUrl,
   onJoin,
+  onInviteContacts,
   title = "Your call is ready",
   hint = "Share this link — guests can join without an account. Link works for 4 hours.",
   joinLabel = "Join now",

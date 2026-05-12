@@ -4,6 +4,7 @@ import { Verified, Sparkles } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Creator {
   user_id: string;
@@ -24,25 +25,32 @@ export const DiscoverCreativesRow = () => {
   const [pool, setPool] = useState<Creator[]>([]);
   const [page, setPage] = useState(0);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await supabase
+        const { data, error } = await (supabase as any).rpc("get_public_creator_showcase", {
+          _viewer_id: user?.id ?? null,
+          _limit: 80,
+        });
+        if (error) throw error;
+        setPool(uniqueCreators(data || []));
+      } catch {
+        let fallbackQuery = supabase
           .from("public_profiles_safe")
           .select("user_id, full_name, avatar_url, role, verification_tier")
           .not("avatar_url", "is", null)
           .not("full_name", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(60);
-        if (data && data.length > 0) {
-          setPool([...data].sort(() => Math.random() - 0.5) as Creator[]);
-        }
-      } catch {
-        /* silent */
+          .eq("onboarding_completed", true)
+          .limit(80);
+        if (user?.id) fallbackQuery = fallbackQuery.neq("user_id", user.id);
+        fallbackQuery
+          .then(({ data }) => setPool(uniqueCreators(data || [])))
+          .catch(() => setPool([]));
       }
     })();
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     if (pool.length <= PAGE_SIZE) return;

@@ -322,6 +322,61 @@ async function planTools(
             };
           } catch (_) { /* fallback to defaults below */ }
         }
+        // Project-only actions: enrich preview with project title so the user sees WHICH project.
+        if (toolName === "archive_project" || toolName === "delete_project") {
+          try {
+            const targetProjectId = (args.target_project_id || args.project_id) as string | undefined;
+            if (!targetProjectId) {
+              messages.push({
+                role: "tool",
+                tool_call_id: c.id,
+                content: JSON.stringify({
+                  ok: false,
+                  error: "MISSING_PROJECT_ID",
+                  message: "You MUST call list_my_projects first and pass the exact project_id. Never guess.",
+                }),
+              });
+              didAutoExecute = true;
+              continue;
+            }
+            const { data: pr } = await admin
+              .from("projects")
+              .select("title, created_by, status")
+              .eq("id", targetProjectId)
+              .maybeSingle();
+            if (!pr) {
+              messages.push({
+                role: "tool",
+                tool_call_id: c.id,
+                content: JSON.stringify({ ok: false, error: "PROJECT_NOT_FOUND", project_id: targetProjectId }),
+              });
+              didAutoExecute = true;
+              continue;
+            }
+            if ((pr as any).created_by !== userId) {
+              messages.push({
+                role: "tool",
+                tool_call_id: c.id,
+                content: JSON.stringify({ ok: false, error: "NOT_OWNER", message: "Only the project owner can archive or delete it." }),
+              });
+              didAutoExecute = true;
+              continue;
+            }
+            const projTitle = (pr as any).title;
+            const verb = toolName === "archive_project" ? "Archive" : "Delete";
+            if (!pTitle) pTitle = `${verb} "${projTitle}"`;
+            if (!pBody) {
+              pBody = toolName === "archive_project"
+                ? `"${projTitle}" will be hidden from your active list. You can restore it later from project settings.`
+                : `"${projTitle}" will be permanently deleted along with its tasks, files and chat. This cannot be undone.`;
+            }
+            args._preview = {
+              ...(preview ?? {}),
+              context_line: preview.context_line ?? `Project: ${projTitle}`,
+              destructive: toolName === "delete_project",
+            };
+          } catch (_) { /* fallback below */ }
+        }
         if (!pTitle) pTitle = toolName.replace(/_/g, " ");
         proposals.push({
           tool_name: toolName,

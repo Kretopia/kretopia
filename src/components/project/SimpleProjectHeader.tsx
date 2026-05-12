@@ -413,6 +413,20 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
           projectId={project.id}
           roomName={callRoomUrl?.split("/").pop() ?? null}
         />
+
+        <StartMeetingDialog
+          open={meetingDialogOpen}
+          onOpenChange={setMeetingDialogOpen}
+          source="studio"
+          title={project.title}
+          projectId={project.id}
+          people={projectMembersForPicker.map((p) => ({
+            id: p.user_id,
+            name: p.full_name,
+            avatar: p.avatar_url,
+            preselected: true,
+          }))}
+        />
       </>
     );
   }

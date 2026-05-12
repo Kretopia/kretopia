@@ -11,11 +11,12 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Copy, Video, UserPlus, Check, Mic, Circle } from "lucide-react";
+import { Loader2, Video, UserPlus, Check, Mic, Circle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
+import { MeetingReadySheet } from "@/components/calls/MeetingReadySheet";
 
 export type MeetingSource = "studio" | "dm" | "profile" | "event" | "adhoc" | "circle";
 

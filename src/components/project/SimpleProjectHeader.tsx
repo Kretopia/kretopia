@@ -329,18 +329,44 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
               </div>
             )}
           </div>
-          <Button
-            type="button"
-            size="icon"
-            variant="default"
-            className="h-8 w-8 rounded-full"
-            onClick={openStartSheet}
-            disabled={startingCall}
-            aria-label="Start video call"
-            title="Start video call"
-          >
-            {startingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
-          </Button>
+          <div className="flex items-center">
+            <Button
+              type="button"
+              size="icon"
+              variant="default"
+              className="h-8 w-8 rounded-l-full rounded-r-none"
+              onClick={openStartSheet}
+              disabled={startingCall}
+              aria-label="Start video call"
+              title="Start video call"
+            >
+              {startingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="default"
+                  className="h-8 w-5 rounded-l-none rounded-r-full border-l border-primary-foreground/20 px-0"
+                  aria-label="More call options"
+                >
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuItem onSelect={openStartSheet}>
+                  <Video className="h-4 w-4 mr-2" />
+                  Quick call (ring members)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => setMeetingDialogOpen(true)}>
+                  <LinkIcon className="h-4 w-4 mr-2" />
+                  Group meeting (with link)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           {isOwner && (
             <div className="hidden sm:block">
               <InviteCollaboratorDialog projectId={project.id} onInvite={() => onCollaboratorsChanged?.()} />

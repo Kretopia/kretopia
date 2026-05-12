@@ -2,7 +2,8 @@
 // Guests must include ?t=<share_token>.
 import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import DailyIframe, { type DailyCall } from "@daily-co/daily-js";
+import { type DailyCall } from "@daily-co/daily-js";
+import { createDailyFrame } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";

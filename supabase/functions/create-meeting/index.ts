@@ -83,7 +83,7 @@ serve(async (req) => {
           enable_chat: true,
           enable_screenshare: true,
           enable_knocking: knocking,
-          enable_prejoin_ui: true,
+          enable_prejoin_ui: false,
           enable_recording: recording ? "cloud" : undefined,
           enable_transcription_storage: transcription,
           start_video_off: false,

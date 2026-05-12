@@ -93,6 +93,7 @@ const FoundingMember = lazy(() => import("./pages/FoundingMember"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const JoinGuestStudio = lazy(() => import("./pages/JoinGuestStudio"));
+const CallPage = lazy(() => import("./pages/CallPage"));
 
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));
@@ -366,6 +367,7 @@ const AppContent = () => {
 
             {/* Public guest video call join */}
             <Route path="/call/:token" element={<GuestCall />} />
+            <Route path="/meet/:meetingId" element={<CallPage />} />
             <Route path="/guest/:token" element={<GuestStudio />} />
             <Route path="/review/:token" element={<ProjectReview />} />
             

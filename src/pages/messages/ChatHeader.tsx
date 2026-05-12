@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MoreVertical, Trash2, Briefcase, FolderPlus, Video, Loader2 } from "lucide-react";
+import { ArrowLeft, MoreVertical, Trash2, Briefcase, FolderPlus, Video, Loader2, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
 import { OnlineDot } from "@/components/messages/OnlinePresence";
 import { InviteToProjectDialog } from "@/components/project/InviteToProjectDialog";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
+import { StartMeetingDialog } from "@/components/calls/StartMeetingDialog";
 import { useStartDirectCall } from "@/hooks/useStartDirectCall";
 import type { OtherUser } from "./types";
 
@@ -24,6 +25,7 @@ interface Props {
 
 export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStartProject }: Props) => {
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [groupCallOpen, setGroupCallOpen] = useState(false);
   const recipientId = (otherUser as any).id || (otherUser as any).user_id;
   const { starting, session, open, setOpen, start, myName } = useStartDirectCall();
 
@@ -83,6 +85,12 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
             Start Project Together
           </DropdownMenuItem>
           {recipientId && (
+            <DropdownMenuItem onClick={() => setGroupCallOpen(true)}>
+              <Users className="h-4 w-4 mr-2" />
+              Group call with link…
+            </DropdownMenuItem>
+          )}
+          {recipientId && (
             <DropdownMenuItem onClick={() => setInviteOpen(true)}>
               <FolderPlus className="h-4 w-4 mr-2" />
               Add to existing project
@@ -113,6 +121,15 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
         directCallId={session?.callId ?? null}
         roomName={session?.roomName ?? null}
       />
+      {recipientId && (
+        <StartMeetingDialog
+          open={groupCallOpen}
+          onOpenChange={setGroupCallOpen}
+          source="dm"
+          title={`Call with ${otherUser.name || "guest"}`}
+          people={[{ id: recipientId, name: otherUser.name || "Friend", avatar: otherUser.avatar, preselected: true }]}
+        />
+      )}
     </div>
   );
 };

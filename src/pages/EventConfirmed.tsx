@@ -149,6 +149,22 @@ const EventConfirmed = () => {
 
         {/* Actions */}
         <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <Button onClick={buildIcs} variant="secondary" className="py-6">
+              <CalendarPlus className="h-4 w-4 mr-2" /> Add to calendar
+            </Button>
+            {directionsHref ? (
+              <a href={directionsHref} target="_blank" rel="noopener noreferrer" className="block">
+                <Button variant="secondary" className="w-full py-6">
+                  <Navigation className="h-4 w-4 mr-2" /> Get directions
+                </Button>
+              </a>
+            ) : (
+              <Button variant="secondary" className="py-6" disabled>
+                <Navigation className="h-4 w-4 mr-2" /> Directions
+              </Button>
+            )}
+          </div>
           <Button onClick={handleShare} variant="gradient" className="w-full py-6">
             <Share2 className="h-4 w-4 mr-2" /> Invite friends
           </Button>

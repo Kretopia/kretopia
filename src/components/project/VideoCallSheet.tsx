@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast as sonnerToast } from "sonner";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,9 +56,11 @@ export const VideoCallSheet = ({
   meetingShareUrl = null,
 }: VideoCallSheetProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const callRef = useRef<DailyCall | null>(null);
   const startedAtRef = useRef<number | null>(null);
+  const didRecordRef = useRef<boolean>(false);
   const [phase, setPhase] = useState<Phase>("lobby");
   const [joining, setJoining] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -111,6 +115,7 @@ export const VideoCallSheet = ({
     frame.on("left-meeting", () => onOpenChange(false));
     frame.on("recording-started", (ev: any) => {
       setRecording(true);
+      didRecordRef.current = true;
       // Notify everyone in the room that recording is on (besides the
       // person who started it). Daily already shows a small system badge,
       // but we add an explicit toast so non-hosts see it clearly.
@@ -194,11 +199,30 @@ export const VideoCallSheet = ({
           });
       }
 
+      // Post-call recap nudge — only meaningful for calls > 30s
+      if (duration > 30) {
+        if (didRecordRef.current) {
+          sonnerToast.success("Recap is being prepared", {
+            description: "Find it in Messages › Calls in ~2 min. We'll pull action items + decisions.",
+            duration: 10_000,
+            action: {
+              label: "Open Calls",
+              onClick: () => navigate("/messages?tab=calls"),
+            },
+          });
+        } else {
+          sonnerToast("Want a recap next time?", {
+            description: "Tap Record during a call and we'll auto-summarize action items + decisions.",
+            duration: 7_000,
+          });
+        }
+      }
+
       try { frame.leave(); } catch {}
       try { frame.destroy(); } catch {}
       callRef.current = null;
     };
-  }, [phase, roomUrl, token, callId, userName, directCallId, onOpenChange, joinPrefs, toast]);
+  }, [phase, roomUrl, token, callId, userName, directCallId, onOpenChange, joinPrefs, toast, navigate]);
 
   const handleEnd = async () => {
     try { await callRef.current?.leave(); } catch {}

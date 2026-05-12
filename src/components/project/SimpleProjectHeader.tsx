@@ -87,10 +87,10 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
       source: "project" as const,
     }));
 
-  // Step 1: Camera tap → just open the "who's joining?" sheet.
+  // Step 1: Camera tap → open the Meet-style chooser (link to share vs. ring members).
   const openStartSheet = () => {
     if (startingCall || callOpen) return;
-    setStartSheetOpen(true);
+    setChooserOpen(true);
   };
 
   // Step 2: Sheet "Start call" → mint room, ring selected, drop into lobby.

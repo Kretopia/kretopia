@@ -46,6 +46,7 @@ import { OpportunityIntelCard } from "@/components/home/OpportunityIntelCard";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
 import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
+import { EventsNearYouSection } from "@/components/home/EventsNearYouSection";
 import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
@@ -753,6 +754,9 @@ export const UnifiedHome = () => {
             <ScoutedGigsSection limit={3} />
           </section>
         )}
+
+        {/* What's on — upcoming events with free/ticketed filters */}
+        {user && <EventsNearYouSection limit={8} />}
 
         {/* Pass B.1: Quiet streak row — single line of utility. */}
         {user && (

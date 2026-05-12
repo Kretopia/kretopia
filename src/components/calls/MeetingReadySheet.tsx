@@ -121,6 +121,18 @@ export const MeetingReadySheet = ({
             Link works for 4 hours.
           </div>
 
+          {onInviteContacts && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onInviteContacts}
+              className="w-full h-12 gap-2 rounded-full"
+            >
+              <Users className="h-4 w-4" />
+              Invite from contacts
+            </Button>
+          )}
+
           <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"

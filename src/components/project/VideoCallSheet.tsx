@@ -30,6 +30,8 @@ interface VideoCallSheetProps {
   roomName?: string | null;
   /** CTA shown in the pre-call lobby. Defaults to "Start call" (host flow). */
   lobbyCta?: string;
+  /** Pre-baked share URL for ad-hoc meetings (shown as Copy Link in lobby + invite). */
+  meetingShareUrl?: string | null;
 }
 
 type Phase = "lobby" | "live";

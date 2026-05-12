@@ -321,10 +321,10 @@ export const VideoCallSheet = ({
                     variant="ghost"
                     size="sm"
                     onClick={toggleScreenShare}
-                    className={`rounded-full gap-2 h-10 px-4 border border-white/10 ${
+                    className={`rounded-full gap-2 h-10 px-4 border ${
                       sharing
                         ? "bg-primary text-primary-foreground hover:bg-primary/90 border-transparent"
-                        : "bg-white/5 text-white hover:bg-white/10"
+                        : "bg-white/15 text-white border-white/30 hover:bg-white/25"
                     }`}
                   >
                     <ScreenShare className="h-4 w-4" />
@@ -336,10 +336,10 @@ export const VideoCallSheet = ({
                     variant="ghost"
                     size="sm"
                     onClick={toggleRecording}
-                    className={`rounded-full gap-2 h-10 px-4 border border-white/10 ${
+                    className={`rounded-full gap-2 h-10 px-4 border ${
                       recording
                         ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 border-transparent"
-                        : "bg-white/5 text-white hover:bg-white/10"
+                        : "bg-white/15 text-white border-white/30 hover:bg-white/25"
                     }`}
                   >
                     <Circle className={`h-3 w-3 ${recording ? "fill-current" : ""}`} />
@@ -351,7 +351,7 @@ export const VideoCallSheet = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => setInviteOpen(true)}
-                    className="rounded-full gap-2 h-10 px-4 border border-white/10 bg-white/5 text-white hover:bg-white/10"
+                    className="rounded-full gap-2 h-10 px-4 border bg-white/15 text-white border-white/30 hover:bg-white/25"
                   >
                     <UserPlus className="h-4 w-4" />
                     <span className="text-sm font-medium">Invite</span>

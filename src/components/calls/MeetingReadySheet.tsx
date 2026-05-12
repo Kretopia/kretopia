@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Check, Share2, Video, Clock } from "lucide-react";
+import { Copy, Check, Share2, Video, Clock, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Props {
@@ -17,6 +17,8 @@ interface Props {
   shareUrl: string | null;
   /** Called when the user taps "Join now". Should open the call lobby. */
   onJoin: () => void;
+  /** Optional — renders a "From contacts" button that calls this. */
+  onInviteContacts?: () => void;
   title?: string;
   /** Hint shown under the title, e.g. "Link works for 4 hours." */
   hint?: string;

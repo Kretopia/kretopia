@@ -96,7 +96,7 @@ export default function CallPage() {
   // Spin up Daily once we're "live"
   useEffect(() => {
     if (phase !== "live" || !tokenInfo || !containerRef.current) return;
-    const frame = DailyIframe.createFrame(containerRef.current, {
+    const frame = createDailyFrame(containerRef.current, {
       iframeStyle: { width: "100%", height: "100%", border: "0" },
       showLeaveButton: false,
       showFullscreenButton: true,

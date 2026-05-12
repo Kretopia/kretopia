@@ -493,6 +493,29 @@ const CreatorEPK = () => {
           </div>
         )}
 
+        {/* Video Intro — pinned high so the EPK feels alive */}
+        {(profile.video_intro_url || isOwner) && (
+          <div className="mb-6">
+            <VideoIntroSection
+              videoUrl={profile.video_intro_url || null}
+              isOwnProfile={isOwner}
+              onRefresh={() => window.location.reload()}
+            />
+          </div>
+        )}
+
+        {/* Why work with me — pulled from headline/bio so the press kit leads with positioning */}
+        {(profile.headline || profile.bio) && (
+          <div className="mb-6 p-5 rounded-xl border-l-4 border-primary bg-primary/5">
+            <h3 className="text-[11px] font-semibold text-primary uppercase tracking-wider mb-2">
+              Why work with me
+            </h3>
+            <p className="text-base leading-relaxed text-foreground">
+              {profile.headline || (profile.bio?.length > 280 ? profile.bio.slice(0, 277) + '…' : profile.bio)}
+            </p>
+          </div>
+        )}
+
         {/* Unclaimed Profile Banner */}
         {profile.is_claimed === false && (
           <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">

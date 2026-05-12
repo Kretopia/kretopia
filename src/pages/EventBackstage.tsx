@@ -578,6 +578,9 @@ const EventBackstage = () => {
                         <Sparkles className="h-4 w-4 mr-2" /> Host tools (Q&amp;A · Match · Seating)
                       </DropdownMenuItem>
                     )}
+                    <DropdownMenuItem onClick={() => handleExportCsv(ev)}>
+                      <Download className="h-4 w-4 mr-2" /> Export guest list (CSV)
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleDuplicate(ev)}>
                       <Copy className="h-4 w-4 mr-2" /> Duplicate

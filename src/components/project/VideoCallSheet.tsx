@@ -368,6 +368,7 @@ export const VideoCallSheet = ({
             callId: callId ?? null,
             callerName: userName,
             callerAvatar: userAvatar ?? null,
+            meetingShareUrl: meetingShareUrl ?? null,
           }}
         />
       )}

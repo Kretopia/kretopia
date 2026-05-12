@@ -107,6 +107,7 @@ const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const ClaimEvent = lazy(() => import("./pages/ClaimEvent"));
 const EventConfirmed = lazy(() => import("./pages/EventConfirmed"));
+const GuestPass = lazy(() => import("./pages/GuestPass"));
 const Meetup = lazy(() => import("./pages/Meetup"));
 const MeetupManage = lazy(() => import("./pages/MeetupManage"));
 

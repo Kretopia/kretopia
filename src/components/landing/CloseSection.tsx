@@ -50,7 +50,7 @@ export const CloseSection = () => (
         </Link>
         <Link
           to="/founding-member"
-          className="group rounded-2xl border border-energy/30 bg-gradient-to-br from-energy/[0.06] to-primary/[0.04] hover:border-energy/60 transition-all p-4 text-left flex items-start gap-3"
+          className="group rounded-2xl border border-energy/30 bg-card hover:border-energy/60 hover:bg-card/80 transition-colors p-4 text-left flex items-start gap-3"
         >
           <div className="h-10 w-10 rounded-xl bg-energy/15 flex items-center justify-center shrink-0">
             <Crown className="h-5 w-5 text-energy" />

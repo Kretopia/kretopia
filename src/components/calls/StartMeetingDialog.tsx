@@ -105,7 +105,7 @@ export const StartMeetingDialog = ({
       if (error) throw error;
       if (!data?.room_url || !data?.host_token) throw new Error("No room");
 
-      const shareUrl = `${APP_URL}/call/${data.meeting_id}?t=${data.share_token}`;
+      const shareUrl = `${APP_URL}/meet/${data.meeting_id}?t=${data.share_token}`;
       setCreated({
         meetingId: data.meeting_id,
         roomUrl: data.room_url,

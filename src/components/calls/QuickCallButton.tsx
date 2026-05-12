@@ -83,8 +83,8 @@ export const QuickCallButton = ({
       const url = `${APP_URL}/call/${linkData.token}`;
       setGuestLink(url);
 
-      // 3) Open the call lobby + show the share dialog so the host can copy.
-      setCallOpen(true);
+      // 3) Show the "ready" sheet FIRST so host can copy/share before joining.
+      //    The lobby only opens when they tap "Join now".
       setLinkOpen(true);
     } catch (e: any) {
       console.error("[QuickCallButton]", e);
@@ -96,33 +96,9 @@ export const QuickCallButton = ({
     }
   };
 
-  const copyLink = async () => {
-    if (!guestLink) return;
-    try {
-      await navigator.clipboard.writeText(guestLink);
-      setCopied(true);
-      toast.success("Link copied");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Couldn't copy — long-press to select");
-    }
-  };
-
-  const nativeShare = async () => {
-    if (!guestLink) return;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Join my ThriveIN call",
-          text: "Tap to join — no signup needed:",
-          url: guestLink,
-        });
-      } catch {
-        /* user cancelled */
-      }
-    } else {
-      void copyLink();
-    }
+  const handleJoin = () => {
+    setLinkOpen(false);
+    setCallOpen(true);
   };
 
   return (
@@ -145,51 +121,24 @@ export const QuickCallButton = ({
         {!iconOnly && <span className="text-sm font-medium">{label}</span>}
       </Button>
 
-      {/* Guest-link share dialog */}
-      <Dialog open={linkOpen} onOpenChange={setLinkOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Invite anyone to your call</DialogTitle>
-            <DialogDescription>
-              Share this link — guests can join without an account. Link works
-              for 4 hours.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex items-center gap-2">
-            <Input
-              readOnly
-              value={guestLink ?? ""}
-              onClick={(e) => (e.target as HTMLInputElement).select()}
-              className="font-mono text-xs"
-            />
-            <Button
-              type="button"
-              size="icon"
-              variant="outline"
-              onClick={copyLink}
-              aria-label="Copy link"
-            >
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={nativeShare}
-              className="gap-2"
-            >
-              <Share2 className="h-4 w-4" />
-              Share
-            </Button>
-            <Button type="button" onClick={() => setLinkOpen(false)}>
-              Done
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Step 1: ready sheet with link + copy + share + join */}
+      <MeetingReadySheet
+        open={linkOpen}
+        onOpenChange={(o) => {
+          setLinkOpen(o);
+          // If they dismiss without joining, drop the session.
+          if (!o && !callOpen) {
+            setSession(null);
+            setGuestLink(null);
+          }
+        }}
+        shareUrl={guestLink}
+        onJoin={handleJoin}
+        title="Your call is ready"
+        joinLabel="Join now"
+      />
 
-      {/* Live call sheet */}
+      {/* Step 2: live call sheet */}
       <VideoCallSheet
         open={callOpen}
         onOpenChange={(o) => {
@@ -206,6 +155,7 @@ export const QuickCallButton = ({
         userName={myName}
         directCallId={session?.callId ?? null}
         roomName={session?.roomName ?? null}
+        meetingShareUrl={guestLink}
         lobbyCta="Start call"
       />
     </>

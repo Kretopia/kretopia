@@ -311,9 +311,9 @@ export const VideoCallSheet = ({
               <div className="relative flex-1 min-h-0 bg-black">
                 <div ref={containerRef} className="absolute inset-0" />
                 {joining && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white gap-3">
-                    <Loader2 className="h-7 w-7 animate-spin text-primary" />
-                    <p className="text-sm text-white/80">Connecting to the room…</p>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0b0b0f] text-white gap-3 z-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-sm font-medium text-white">Connecting to the room…</p>
                   </div>
                 )}
               </div>

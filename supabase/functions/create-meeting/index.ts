@@ -59,7 +59,7 @@ serve(async (req) => {
       return json({ error: "Invalid source" }, 400);
     }
 
-    const max = Math.min(Math.max(body.max_participants ?? 25, 2), 50);
+    const max = Math.min(Math.max(body.max_participants ?? 25, 2), 500);
     const recording = body.recording_enabled !== false;
     const transcription = body.transcript_enabled !== false;
     const knocking = body.knocking_enabled !== false;

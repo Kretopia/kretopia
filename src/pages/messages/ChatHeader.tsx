@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MoreVertical, Trash2, Briefcase, FolderPlus, Video, Loader2 } from "lucide-react";
+import { ArrowLeft, MoreVertical, Trash2, Briefcase, FolderPlus, Video, Loader2, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
 import { OnlineDot } from "@/components/messages/OnlinePresence";
 import { InviteToProjectDialog } from "@/components/project/InviteToProjectDialog";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
+import { StartMeetingDialog } from "@/components/calls/StartMeetingDialog";
 import { useStartDirectCall } from "@/hooks/useStartDirectCall";
 import type { OtherUser } from "./types";
 

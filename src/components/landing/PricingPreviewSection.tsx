@@ -84,10 +84,10 @@ export const PricingPreviewSection = () => {
           {TIERS.map((tier) => (
             <div
               key={tier.name}
-              className={`relative rounded-2xl border p-6 backdrop-blur-sm transition-all ${
+              className={`relative rounded-2xl border p-6 transition-colors ${
                 tier.popular
-                  ? "border-energy/60 bg-card/70 shadow-glow-lime hover:scale-[1.02]"
-                  : "border-border/60 bg-card/50 hover:border-primary/40"
+                  ? "border-energy/60 bg-card shadow-glow-lime"
+                  : "border-border/60 bg-card hover:border-primary/40"
               }`}
             >
               {tier.popular && (

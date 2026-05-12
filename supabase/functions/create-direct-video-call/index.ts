@@ -66,7 +66,7 @@ serve(async (req) => {
           max_participants: 4,
           enable_chat: true,
           enable_screenshare: true,
-          enable_knocking: false,
+          enable_knocking: true,
           enable_prejoin_ui: false,
           enable_recording: "cloud",
         },

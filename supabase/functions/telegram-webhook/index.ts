@@ -27,7 +27,7 @@ async function tg(
   payload: Record<string, unknown>,
   lovableKey: string,
   tgKey: string,
-) {
+): Promise<any> {
   const r = await fetch(`${TELEGRAM_GATEWAY}/${method}`, {
     method: "POST",
     headers: {
@@ -37,8 +37,79 @@ async function tg(
     },
     body: JSON.stringify(payload),
   });
-  if (!r.ok) console.error(`tg ${method} failed`, r.status, await r.text());
-  return r;
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) console.error(`tg ${method} failed`, r.status, JSON.stringify(j));
+  return j;
+}
+
+// Send a "working on it" placeholder and return its message_id for later edits.
+async function sendPlaceholder(
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  tgKey: string,
+): Promise<number | null> {
+  const j = await tg("sendMessage", {
+    chat_id: chatId, parse_mode: "HTML", text,
+  }, lovableKey, tgKey);
+  return j?.result?.message_id ?? null;
+}
+
+// Edit a placeholder in place. Pass reply_markup to attach buttons.
+async function editPlaceholder(
+  chatId: number,
+  messageId: number,
+  text: string,
+  lovableKey: string,
+  tgKey: string,
+  replyMarkup?: Record<string, unknown>,
+): Promise<void> {
+  await tg("editMessageText", {
+    chat_id: chatId,
+    message_id: messageId,
+    parse_mode: "HTML",
+    text,
+    ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+  }, lovableKey, tgKey);
+}
+
+// Heartbeat: keep "typing…" visible + cycle the placeholder text every few seconds
+// so the user knows we're still working on long tool calls.
+function startProgressHeartbeat(
+  chatId: number,
+  messageId: number | null,
+  baseTitle: string,
+  lovableKey: string,
+  tgKey: string,
+): { stop: () => void } {
+  const frames = ["⏳", "⌛", "🔄", "✨"];
+  const dots = ["·", "··", "···"];
+  let i = 0;
+  let stopped = false;
+
+  const tick = async () => {
+    if (stopped) return;
+    // Keep typing indicator alive (Telegram clears it after ~5s)
+    tg("sendChatAction", { chat_id: chatId, action: "typing" }, lovableKey, tgKey)
+      .catch(() => {});
+    if (messageId != null) {
+      const frame = frames[i % frames.length];
+      const dot = dots[i % dots.length];
+      await editPlaceholder(
+        chatId, messageId,
+        `${frame} <b>${escapeHtml(baseTitle)}</b>${dot}`,
+        lovableKey, tgKey,
+      ).catch(() => {});
+    }
+    i++;
+  };
+
+  // First tick immediately, then every 4s
+  tick();
+  const interval = setInterval(tick, 4000);
+  return {
+    stop: () => { stopped = true; clearInterval(interval); },
+  };
 }
 
 // ---------- helpers ----------

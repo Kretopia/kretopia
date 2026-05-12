@@ -26,16 +26,18 @@ const GuestPass = () => {
 
   useEffect(() => {
     if (!eventId) return;
-    supabase
-      .from("creative_jams")
-      .select("id, title, start_time, end_time, venue_name, venue_address, cover_image_url")
-      .eq("id", eventId)
-      .maybeSingle()
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("creative_jams")
+          .select("id, title, start_time, end_time, venue_name, venue_address, cover_image_url")
+          .eq("id", eventId)
+          .maybeSingle();
         setEvent(data);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }
+    })().catch(() => setLoading(false));
   }, [eventId]);
 
   useEffect(() => {

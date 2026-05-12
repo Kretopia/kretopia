@@ -366,7 +366,7 @@ async function executeAction(
         "Content-Type": "application/json",
         Authorization: authHeader, // pass through the user's JWT
       },
-      body: JSON.stringify({ ...args, _agent_action_id: actionId }),
+      body: JSON.stringify({ ...args, _tool: tool.tool_name, _agent_action_id: actionId }),
     });
     const text = await resp.text();
     let parsed: unknown = text;

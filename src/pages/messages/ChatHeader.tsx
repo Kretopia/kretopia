@@ -85,6 +85,12 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
             Start Project Together
           </DropdownMenuItem>
           {recipientId && (
+            <DropdownMenuItem onClick={() => setGroupCallOpen(true)}>
+              <Users className="h-4 w-4 mr-2" />
+              Group call with link…
+            </DropdownMenuItem>
+          )}
+          {recipientId && (
             <DropdownMenuItem onClick={() => setInviteOpen(true)}>
               <FolderPlus className="h-4 w-4 mr-2" />
               Add to existing project

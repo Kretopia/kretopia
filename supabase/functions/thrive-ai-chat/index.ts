@@ -367,7 +367,9 @@ Short replies like "yes", "no", "ok", "sure", "do it", "go ahead", "nope", "let'
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        // Telegram / messaging channels (non-stream) need stronger continuity & instruction following.
+        // In-app streaming stays on the fast flash model.
+        model: stream ? "google/gemini-3-flash-preview" : "google/gemini-2.5-pro",
         messages: modelMessages,
         stream: stream,
       }),

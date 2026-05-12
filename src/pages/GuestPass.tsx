@@ -41,7 +41,7 @@ const GuestPass = () => {
   }, [eventId]);
 
   useEffect(() => {
-    if (!token || !qrRef.current) return;
+    if (loading || !event || !token || !qrRef.current) return;
     qrRef.current.innerHTML = "";
     const qr = new QRCodeStyling({
       width: 240,
@@ -52,7 +52,7 @@ const GuestPass = () => {
       backgroundOptions: { color: "#ffffff" },
     });
     qr.append(qrRef.current);
-  }, [token]);
+  }, [token, loading, event]);
 
   const buildIcs = () => {
     if (!event) return;

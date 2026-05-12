@@ -81,7 +81,7 @@ export const EventCheckInDialog = ({ eventId, eventTitle, open, onOpenChange }: 
             .in('user_id', userIds)
         : { data: [] as any[] };
 
-      const profileMap = new Map(profiles?.map((p: any) => [p.user_id, p]) || []);
+      const profileMap = new Map<string, any>((profiles || []).map((p: any) => [p.user_id, p] as [string, any]));
 
       const participants: Attendee[] = (pData || []).map((p: any) => {
         const prof: any = profileMap.get(p.user_id);

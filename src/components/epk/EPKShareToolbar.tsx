@@ -20,9 +20,11 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId, epkPdfData }
   const navigate = useNavigate();
   const isPro = hasProAccess((subscriptionInfo?.tier || 'free') as any);
 
-  const epkUrl = `https://thrivein.io/epk/${userId}`;
-  const shareText = `Check out my verified creative portfolio on ThriveIN \n\n${profileName} — ${profileRole}\n\n`;
-  const shortShareText = `Check out my verified creative portfolio on ThriveIN ${profileName} — ${profileRole}`;
+  // Use the static OG-tagged share path so previews show avatar + name + role.
+  // The page redirects instantly to /epk/:userId after the crawler reads meta.
+  const epkUrl = `https://www.thrivein.io/share/epk/${userId}/`;
+  const shareText = `${profileName} — ${profileRole}\nVerified Creative EPK on ThriveIN\n\n`;
+  const shortShareText = `${profileName} — ${profileRole} · Verified EPK on ThriveIN`;
 
   const handleNativeShare = async () => {
     if (navigator.share) {

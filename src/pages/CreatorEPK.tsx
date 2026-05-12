@@ -632,6 +632,12 @@ const CreatorEPK = () => {
           </div>
         )}
 
+        {/* Rate Cards — turns the EPK into a sales page. RateCardSection has its own
+            inquiry CTA + owner-side editor so we get inquiry capture for free. */}
+        <div className="mb-8">
+          <RateCardSection userId={userId || ''} isOwner={isOwner} />
+        </div>
+
         {/* ThriveCredits — Verified Work History */}
         {credits.length > 0 && (
           <div className="mb-8">

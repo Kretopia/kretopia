@@ -128,14 +128,15 @@ export const QuickCallButton = ({
         open={linkOpen}
         onOpenChange={(o) => {
           setLinkOpen(o);
-          // If they dismiss without joining, drop the session.
-          if (!o && !callOpen) {
+          // If they dismiss without joining or inviting, drop the session.
+          if (!o && !callOpen && !contactsOpen) {
             setSession(null);
             setGuestLink(null);
           }
         }}
         shareUrl={guestLink}
         onJoin={handleJoin}
+        onInviteContacts={() => setContactsOpen(true)}
         title="Your call is ready"
         joinLabel="Join now"
       />

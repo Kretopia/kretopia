@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { MeetingReadySheet } from "@/components/calls/MeetingReadySheet";
+import { CallInviteSheet } from "@/components/project/CallInviteSheet";
 import { APP_URL } from "@/lib/constants";
 
 interface Props {

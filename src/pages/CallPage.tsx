@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CallPreflightGate } from "@/components/calls/CallPreflightGate";
 
 type Phase = "loading" | "lobby" | "live" | "ended" | "error";
 
@@ -200,41 +201,48 @@ export default function CallPage() {
   return (
     <div className="min-h-[100dvh] bg-[#0b0b0f] text-white flex flex-col">
       {phase === "lobby" && (
-        <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6">
-          <div className="flex items-center gap-2 text-primary">
-            <Video className="h-6 w-6" />
-            <span className="text-sm uppercase tracking-wider opacity-80">Greenroom</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-center">{title}</h1>
-          <p className="text-sm text-white/60 text-center max-w-sm">
-            Set your name and join when you're ready. Camera and mic permissions are asked once you join.
-          </p>
-          {!user && (
-            <div className="w-full max-w-xs">
-              <Input
-                placeholder="Your name"
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
-              />
+        <div className="relative flex-1">
+          <CallPreflightGate
+            shareUrl={typeof window !== "undefined" ? window.location.href : null}
+            onCancel={() => navigate("/")}
+          >
+            <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 min-h-[100dvh]">
+              <div className="flex items-center gap-2 text-primary">
+                <Video className="h-6 w-6" />
+                <span className="text-sm uppercase tracking-wider opacity-80">Greenroom</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-center">{title}</h1>
+              <p className="text-sm text-white/60 text-center max-w-sm">
+                Set your name and join when you're ready. Camera and mic permissions are asked once you join.
+              </p>
+              {!user && (
+                <div className="w-full max-w-xs">
+                  <Input
+                    placeholder="Your name"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                  />
+                </div>
+              )}
+              <div className="flex flex-col w-full max-w-xs gap-2">
+                <Button
+                  variant="hero"
+                  size="lg"
+                  onClick={() => setPhase("live")}
+                  disabled={!user && !guestName.trim()}
+                  className="h-12"
+                >
+                  <Video className="h-4 w-4" />
+                  Join now
+                </Button>
+                <Button variant="ghost" onClick={copyLink} className="text-white/80 hover:text-white hover:bg-white/10">
+                  <Copy className="h-4 w-4" />
+                  Copy invite link
+                </Button>
+              </div>
             </div>
-          )}
-          <div className="flex flex-col w-full max-w-xs gap-2">
-            <Button
-              variant="hero"
-              size="lg"
-              onClick={() => setPhase("live")}
-              disabled={!user && !guestName.trim()}
-              className="h-12"
-            >
-              <Video className="h-4 w-4" />
-              Join now
-            </Button>
-            <Button variant="ghost" onClick={copyLink} className="text-white/80 hover:text-white hover:bg-white/10">
-              <Copy className="h-4 w-4" />
-              Copy invite link
-            </Button>
-          </div>
+          </CallPreflightGate>
         </div>
       )}
 

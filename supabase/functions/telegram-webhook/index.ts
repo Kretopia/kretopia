@@ -272,30 +272,40 @@ Deno.serve(async (req) => {
 
     if (kind === "app") {
       await ack("Working on it…");
-      // Show in-progress state immediately
-      await tg("editMessageText", {
-        chat_id: chatId, message_id: messageId, parse_mode: "HTML",
-        text: `⏳ <b>${escapeHtml(action.preview_title ?? action.tool_name ?? "Running")}</b>\n<i>Approving…</i>`,
-      }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+      const title = action.preview_title ?? action.tool_name ?? "Running";
+      // Heartbeat the same message while the orchestrator runs the tool
+      const hb = startProgressHeartbeat(
+        chatId, messageId, `Running: ${title}`, LOVABLE_API_KEY, TELEGRAM_API_KEY,
+      );
 
-      const orchResp = await fetch(`${SUPABASE_URL}/functions/v1/agent-orchestrator`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${SERVICE}`,
-          "x-internal-user-id": userId,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action_id: actionId, decision: "approved" }),
-      });
-      const result = await orchResp.json().catch(() => ({}));
-      const ok = orchResp.ok && result?.ok !== false;
+      let ok = false;
+      let errText = "";
+      try {
+        const orchResp = await fetch(`${SUPABASE_URL}/functions/v1/agent-orchestrator`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${SERVICE}`,
+            "x-internal-user-id": userId,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action_id: actionId, decision: "approved" }),
+        });
+        const result = await orchResp.json().catch(() => ({}));
+        ok = orchResp.ok && result?.ok !== false;
+        errText = result?.error ?? "";
+      } catch (e) {
+        errText = (e as Error).message;
+      } finally {
+        hb.stop();
+      }
 
-      await tg("editMessageText", {
-        chat_id: chatId, message_id: messageId, parse_mode: "HTML",
-        text: ok
-          ? `✅ <b>${escapeHtml(action.preview_title ?? action.tool_name ?? "Done")}</b>\n<i>Approved & executed.</i>`
-          : `❌ <b>${escapeHtml(action.preview_title ?? action.tool_name ?? "Failed")}</b>\n<i>${escapeHtml(result?.error ?? "Couldn't run that.")}</i>`,
-      }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+      await editPlaceholder(
+        chatId, messageId,
+        ok
+          ? `✅ <b>${escapeHtml(title)}</b>\n<i>Approved &amp; executed.</i>`
+          : `❌ <b>${escapeHtml(title)}</b>\n<i>${escapeHtml(errText || "Couldn't run that.")}</i>`,
+        LOVABLE_API_KEY, TELEGRAM_API_KEY,
+      );
       return new Response(JSON.stringify({ ok: true }));
     }
 

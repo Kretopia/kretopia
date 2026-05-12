@@ -1,22 +1,36 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, Video, UserPlus, Check, Mic, Circle } from "lucide-react";
+import {
+  Loader2,
+  Video,
+  UserPlus,
+  Check,
+  Mic,
+  Circle,
+  Calendar as CalendarIcon,
+  Sparkles,
+  Users,
+  Copy,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { MeetingReadySheet } from "@/components/calls/MeetingReadySheet";
+import { APP_URL } from "@/lib/constants";
 
 export type MeetingSource = "studio" | "dm" | "profile" | "event" | "adhoc" | "circle";
 
@@ -38,12 +52,18 @@ interface Props {
   conversationId?: string | null;
   eventId?: string | null;
   circleId?: string | null;
-  /** Max participants (workshop = 50). */
-  maxParticipants?: number;
+  /** Default tab to show. */
+  defaultTab?: "instant" | "schedule" | "workshop";
 }
 
-const APP_URL = "https://www.thrivein.io";
+type Mode = "instant" | "schedule" | "workshop";
 
+const WORKSHOP_CAPS = [50, 100, 250, 500] as const;
+
+/**
+ * Unified "Start a video call" surface — Instant · Schedule · Workshop.
+ * Mobile-first bottom sheet. Reuses MeetingReadySheet (link-first) → VideoCallSheet (lobby).
+ */
 export const StartMeetingDialog = ({
   open,
   onOpenChange,
@@ -54,11 +74,18 @@ export const StartMeetingDialog = ({
   conversationId,
   eventId,
   circleId,
-  maxParticipants = 25,
+  defaultTab = "instant",
 }: Props) => {
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const [mode, setMode] = useState<Mode>(defaultTab);
   const [meetingTitle, setMeetingTitle] = useState(title || "");
+  const [description, setDescription] = useState("");
+  const [scheduledAt, setScheduledAt] = useState<string>(
+    () => defaultDateTimeLocal(),
+  );
+  const [capacity, setCapacity] = useState<number>(50);
   const [recording, setRecording] = useState(true);
   const [transcript, setTranscript] = useState(true);
   const [knock, setKnock] = useState(true);
@@ -71,9 +98,13 @@ export const StartMeetingDialog = ({
     roomUrl: string;
     token: string;
     shareUrl: string;
+    scheduled: boolean;
   } | null>(null);
   const [readyOpen, setReadyOpen] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
+
+  const userName =
+    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Host";
 
   const toggle = (id: string) =>
     setSelected((prev) => {
@@ -82,17 +113,25 @@ export const StartMeetingDialog = ({
       return n;
     });
 
-  const userName =
-    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Host";
+  const maxParticipants = useMemo(() => {
+    if (mode === "workshop") return capacity;
+    if (mode === "instant") return 25;
+    return 25;
+  }, [mode, capacity]);
 
-  const handleStart = async () => {
+  const create = async () => {
     if (!user) return;
     setCreating(true);
     try {
+      const scheduledIso =
+        mode === "schedule" && scheduledAt
+          ? new Date(scheduledAt).toISOString()
+          : null;
+
       const { data, error } = await supabase.functions.invoke("create-meeting", {
         body: {
           source,
-          title: meetingTitle || title || "Meeting",
+          title: meetingTitle || title || (mode === "workshop" ? "Workshop" : "Meeting"),
           project_id: projectId ?? null,
           conversation_id: conversationId ?? null,
           event_id: eventId ?? null,
@@ -102,6 +141,7 @@ export const StartMeetingDialog = ({
           transcript_enabled: transcript,
           knocking_enabled: knock,
           max_participants: maxParticipants,
+          scheduled_for: scheduledIso,
         },
       });
       if (error) throw error;
@@ -113,8 +153,8 @@ export const StartMeetingDialog = ({
         roomUrl: data.room_url,
         token: data.host_token,
         shareUrl,
+        scheduled: !!scheduledIso,
       });
-      // Show the "ready" sheet first so host can copy/share before joining.
       setReadyOpen(true);
     } catch (e: any) {
       console.error("[StartMeetingDialog]", e);
@@ -133,135 +173,215 @@ export const StartMeetingDialog = ({
     setCallOpen(true);
   };
 
+  const ctaLabel =
+    mode === "instant"
+      ? `Get my link${selected.size > 0 ? ` (${selected.size} invited)` : ""}`
+      : mode === "schedule"
+      ? "Schedule & copy link"
+      : `Create workshop (${capacity} cap)`;
+
   return (
     <>
-      <Dialog open={open && !readyOpen && !callOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Video className="h-5 w-5 text-primary" />
+      <Sheet
+        open={open && !readyOpen && !callOpen}
+        onOpenChange={onOpenChange}
+      >
+        <SheetContent
+          side="bottom"
+          className="rounded-t-2xl p-0 max-h-[92vh] sm:max-w-lg sm:mx-auto overflow-hidden flex flex-col"
+        >
+          <SheetHeader className="px-5 pt-5 pb-3 text-left shrink-0">
+            <SheetTitle className="flex items-center gap-2">
+              <span className="h-8 w-8 rounded-full bg-primary/15 text-primary flex items-center justify-center">
+                <Video className="h-4 w-4" />
+              </span>
               Start a video call
-            </DialogTitle>
-            <DialogDescription>
-              Up to {maxParticipants} people. Camera + mic check happens before you join.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetTitle>
+            <SheetDescription>
+              Pick a mode. Your link appears before you join.
+            </SheetDescription>
+          </SheetHeader>
 
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="title" className="text-xs uppercase tracking-wide text-muted-foreground">
-                What's this call about?
-              </Label>
-              <Input
-                id="title"
-                value={meetingTitle}
-                onChange={(e) => setMeetingTitle(e.target.value)}
-                placeholder={title || "Quick sync"}
-                className="mt-1"
-              />
+          <Tabs
+            value={mode}
+            onValueChange={(v) => setMode(v as Mode)}
+            className="flex-1 min-h-0 flex flex-col"
+          >
+            <div className="px-5 shrink-0">
+              <TabsList className="grid w-full grid-cols-3 h-10">
+                <TabsTrigger value="instant" className="text-xs gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5" /> Instant
+                </TabsTrigger>
+                <TabsTrigger value="schedule" className="text-xs gap-1.5">
+                  <CalendarIcon className="h-3.5 w-3.5" /> Schedule
+                </TabsTrigger>
+                <TabsTrigger value="workshop" className="text-xs gap-1.5">
+                  <Users className="h-3.5 w-3.5" /> Workshop
+                </TabsTrigger>
+              </TabsList>
             </div>
 
-            {people.length > 0 && (
-              <div>
-                <Label className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
-                  <UserPlus className="h-3.5 w-3.5" />
-                  Add people
-                </Label>
-                <div className="mt-2 space-y-1 max-h-48 overflow-y-auto rounded-md border border-border">
-                  {people.map((p) => {
-                    const on = selected.has(p.id);
-                    return (
+            <div
+              className="flex-1 min-h-0 overflow-y-auto px-5 pt-4 pb-5 space-y-4"
+              style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
+            >
+              {/* Shared: title */}
+              <Field label="What's this call about?">
+                <Input
+                  value={meetingTitle}
+                  onChange={(e) => setMeetingTitle(e.target.value)}
+                  placeholder={title || (mode === "workshop" ? "My workshop" : "Quick sync")}
+                  className="h-11"
+                />
+              </Field>
+
+              <TabsContent value="instant" className="m-0 space-y-4">
+                {people.length > 0 && (
+                  <PeoplePicker people={people} selected={selected} onToggle={toggle} />
+                )}
+                <SettingsBlock
+                  recording={recording}
+                  setRecording={setRecording}
+                  transcript={transcript}
+                  setTranscript={setTranscript}
+                  knock={knock}
+                  setKnock={setKnock}
+                />
+              </TabsContent>
+
+              <TabsContent value="schedule" className="m-0 space-y-4">
+                <Field label="When?">
+                  <Input
+                    type="datetime-local"
+                    value={scheduledAt}
+                    min={defaultDateTimeLocal()}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                    className="h-11"
+                  />
+                </Field>
+                <Field label="Description (optional)">
+                  <Textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="What you'll cover, links, anything attendees should know."
+                    rows={3}
+                  />
+                </Field>
+                {people.length > 0 && (
+                  <PeoplePicker people={people} selected={selected} onToggle={toggle} />
+                )}
+                <SettingsBlock
+                  recording={recording}
+                  setRecording={setRecording}
+                  transcript={transcript}
+                  setTranscript={setTranscript}
+                  knock={knock}
+                  setKnock={setKnock}
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  We'll generate a link you can drop into a calendar invite, WhatsApp,
+                  or anywhere else.
+                </p>
+              </TabsContent>
+
+              <TabsContent value="workshop" className="m-0 space-y-4">
+                <Field label="Capacity">
+                  <div className="grid grid-cols-4 gap-2">
+                    {WORKSHOP_CAPS.map((c) => (
                       <button
-                        key={p.id}
+                        key={c}
                         type="button"
-                        onClick={() => toggle(p.id)}
-                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                          on ? "bg-primary/10" : "hover:bg-muted"
+                        onClick={() => setCapacity(c)}
+                        className={`h-11 rounded-lg border text-sm font-semibold transition-colors ${
+                          capacity === c
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border hover:bg-muted"
                         }`}
                       >
-                        <Avatar className="h-7 w-7">
-                          <AvatarImage src={p.avatar || undefined} />
-                          <AvatarFallback className="text-[10px]">
-                            {(p.name || "?")
-                              .split(" ")
-                              .map((s) => s[0])
-                              .slice(0, 2)
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm flex-1 truncate">{p.name}</span>
-                        {on && <Check className="h-4 w-4 text-primary" />}
+                        {c}
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2.5 rounded-lg border border-border p-3">
-              <ToggleRow
-                icon={<Circle className="h-3.5 w-3.5" />}
-                label="Record this call"
-                hint="Saved for the host. Everyone sees a recording badge."
-                checked={recording}
-                onChange={setRecording}
-              />
-              <ToggleRow
-                icon={<Mic className="h-3.5 w-3.5" />}
-                label="Live captions + transcript"
-                hint="Searchable transcript after the call."
-                checked={transcript}
-                onChange={setTranscript}
-              />
-              <ToggleRow
-                icon={<UserPlus className="h-3.5 w-3.5" />}
-                label="Greenroom for guests"
-                hint="People with the link wait until you let them in."
-                checked={knock}
-                onChange={setKnock}
-              />
+                    ))}
+                  </div>
+                </Field>
+                <Field label="Description / agenda">
+                  <Textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Welcome, intro, main session, Q&A…"
+                    rows={3}
+                  />
+                </Field>
+                <SettingsBlock
+                  recording={recording}
+                  setRecording={setRecording}
+                  transcript={transcript}
+                  setTranscript={setTranscript}
+                  knock={knock}
+                  setKnock={setKnock}
+                  workshop
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Attendees join with cameras off by default. Breakout rooms & polls
+                  are coming soon.
+                </p>
+              </TabsContent>
             </div>
 
-            <Button
-              onClick={handleStart}
-              disabled={creating}
-              variant="hero"
-              className="w-full h-12"
+            <div
+              className="px-5 py-3 border-t border-border bg-background shrink-0"
+              style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
             >
-              {creating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Starting…
-                </>
-              ) : (
-                <>
-                  <Video className="h-4 w-4" />
-                  Get my link {selected.size > 0 && `(${selected.size} invited)`}
-                </>
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+              <Button
+                onClick={create}
+                disabled={creating || (mode === "schedule" && !scheduledAt)}
+                variant="hero"
+                className="w-full h-12"
+              >
+                {creating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Working…
+                  </>
+                ) : (
+                  <>
+                    <Video className="h-4 w-4" />
+                    {ctaLabel}
+                  </>
+                )}
+              </Button>
+            </div>
+          </Tabs>
+        </SheetContent>
+      </Sheet>
 
-      {/* Step 2: ready sheet — link FIRST so host can copy/share */}
+      {/* Step 2: ready sheet */}
       <MeetingReadySheet
         open={readyOpen}
         onOpenChange={(o) => {
           setReadyOpen(o);
           if (!o && !callOpen) {
-            // Dismissed without joining — close the whole flow
             onOpenChange(false);
             setCreated(null);
           }
         }}
         shareUrl={created?.shareUrl ?? null}
         onJoin={handleJoin}
-        title="Your meeting room is ready"
-        joinLabel="Join now"
+        title={
+          created?.scheduled
+            ? "Your scheduled room is ready"
+            : mode === "workshop"
+            ? "Your workshop room is ready"
+            : "Your call is ready"
+        }
+        hint={
+          created?.scheduled
+            ? "Share this link in your calendar invite. The room opens at the scheduled time — but you can join now to test."
+            : "Share this link — guests can join without an account. Link works for 4 hours."
+        }
+        joinLabel={created?.scheduled ? "Join early" : "Join now"}
       />
 
-      {/* Step 3: live call lobby */}
+      {/* Step 3: live call */}
       {created && (
         <VideoCallSheet
           open={callOpen}
@@ -285,6 +405,117 @@ export const StartMeetingDialog = ({
     </>
   );
 };
+
+// ---------- helpers ----------
+
+function defaultDateTimeLocal() {
+  const d = new Date(Date.now() + 30 * 60 * 1000);
+  d.setSeconds(0, 0);
+  const off = d.getTimezoneOffset() * 60_000;
+  return new Date(d.getTime() - off).toISOString().slice(0, 16);
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+        {label}
+      </Label>
+      <div className="mt-1.5">{children}</div>
+    </div>
+  );
+}
+
+function PeoplePicker({
+  people,
+  selected,
+  onToggle,
+}: {
+  people: PersonOption[];
+  selected: Set<string>;
+  onToggle: (id: string) => void;
+}) {
+  return (
+    <Field label="Add people">
+      <div className="space-y-1 max-h-44 overflow-y-auto rounded-md border border-border">
+        {people.map((p) => {
+          const on = selected.has(p.id);
+          return (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => onToggle(p.id)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                on ? "bg-primary/10" : "hover:bg-muted"
+              }`}
+            >
+              <Avatar className="h-7 w-7">
+                <AvatarImage src={p.avatar || undefined} />
+                <AvatarFallback className="text-[10px]">
+                  {(p.name || "?")
+                    .split(" ")
+                    .map((s) => s[0])
+                    .slice(0, 2)
+                    .join("")}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm flex-1 truncate">{p.name}</span>
+              {on && <Check className="h-4 w-4 text-primary" />}
+            </button>
+          );
+        })}
+      </div>
+    </Field>
+  );
+}
+
+function SettingsBlock({
+  recording,
+  setRecording,
+  transcript,
+  setTranscript,
+  knock,
+  setKnock,
+  workshop,
+}: {
+  recording: boolean;
+  setRecording: (v: boolean) => void;
+  transcript: boolean;
+  setTranscript: (v: boolean) => void;
+  knock: boolean;
+  setKnock: (v: boolean) => void;
+  workshop?: boolean;
+}) {
+  return (
+    <div className="space-y-2.5 rounded-lg border border-border p-3">
+      <ToggleRow
+        icon={<Circle className="h-3.5 w-3.5" />}
+        label="Record this call"
+        hint="Saved for the host. Everyone sees a recording badge."
+        checked={recording}
+        onChange={setRecording}
+      />
+      <ToggleRow
+        icon={<Mic className="h-3.5 w-3.5" />}
+        label="Live captions + transcript"
+        hint="Searchable transcript after the call."
+        checked={transcript}
+        onChange={setTranscript}
+      />
+      <ToggleRow
+        icon={<UserPlus className="h-3.5 w-3.5" />}
+        label={workshop ? "Approve attendees from greenroom" : "Greenroom for guests"}
+        hint={
+          workshop
+            ? "You'll see who's waiting and admit them when ready."
+            : "People with the link wait until you let them in."
+        }
+        checked={knock}
+        onChange={setKnock}
+      />
+    </div>
+  );
+}
 
 function ToggleRow({
   icon,

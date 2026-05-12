@@ -580,6 +580,11 @@ const EventBackstage = () => {
                         <Sparkles className="h-4 w-4 mr-2" /> Host tools (Q&amp;A · Match · Seating)
                       </DropdownMenuItem>
                     )}
+                    {!isDraft && (
+                      <DropdownMenuItem onClick={() => setAnalyticsFor(ev)}>
+                        <BarChart3 className="h-4 w-4 mr-2" /> Analytics
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => handleExportCsv(ev)}>
                       <Download className="h-4 w-4 mr-2" /> Export guest list (CSV)
                     </DropdownMenuItem>

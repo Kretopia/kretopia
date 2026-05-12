@@ -21,7 +21,9 @@ type ToolName =
   | "find_user"
   | "list_my_projects"
   | "add_collaborator"
-  | "remove_collaborator";
+  | "remove_collaborator"
+  | "archive_project"
+  | "delete_project";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

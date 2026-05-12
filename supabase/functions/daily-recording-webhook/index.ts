@@ -113,13 +113,31 @@ serve(async (req) => {
 });
 
 async function findCall(admin: any, roomName: string): Promise<{
-  kind: "project" | "direct" | "circle";
+  kind: "project" | "direct" | "circle" | "meeting" | "event";
   id: string;
   host_id: string;
   project_id?: string;
   circle_id?: string;
   participants?: any[];
 } | null> {
+  // Multi-party meetings (the new /meet/:id flow). Match by exact room_name.
+  const { data: mtg } = await admin
+    .from("meetings")
+    .select("id, host_id, project_id, circle_id, source, room_name")
+    .eq("room_name", roomName)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (mtg) {
+    return {
+      kind: mtg.source === "event" ? "event" : "meeting",
+      id: mtg.id,
+      host_id: mtg.host_id,
+      project_id: mtg.project_id ?? undefined,
+      circle_id: mtg.circle_id ?? undefined,
+    };
+  }
+
   // Project rooms are named `td-<projectIdNoDash>`. The video_room_url on the
   // project ends with the room_name, so we can search by URL suffix.
   const { data: pCall } = await admin

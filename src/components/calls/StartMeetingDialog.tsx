@@ -72,6 +72,7 @@ export const StartMeetingDialog = ({
     token: string;
     shareUrl: string;
   } | null>(null);
+  const [readyOpen, setReadyOpen] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
 
   const toggle = (id: string) =>

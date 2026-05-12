@@ -189,13 +189,15 @@ export const UnifiedHome = () => {
         .order("created_at", { ascending: false })
         .limit(12);
 
+      // Use the public-readable view so signed-in users see OTHER real creators,
+      // not just themselves (profiles table RLS hides non-connected rows).
       let creatorsQuery = supabase
-        .from("profiles")
+        .from("public_profiles_safe")
         .select("user_id, full_name, avatar_url, role, verification_tier, location, professional_skills, primary_intent, primary_intents")
-        .eq("onboarding_completed", true)
         .not("avatar_url", "is", null)
+        .not("full_name", "is", null)
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(40);
       if (user) {
         creatorsQuery = creatorsQuery.neq("user_id", user.id);
       }

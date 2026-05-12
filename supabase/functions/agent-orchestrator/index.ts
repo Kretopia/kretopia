@@ -562,18 +562,32 @@ serve(async (req) => {
       });
     }
 
-    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: userErr } = await userClient.auth.getClaims(token);
-    const userId = claimsData?.claims?.sub as string | undefined;
-    if (userErr || !userId) {
-      console.error("[orchestrator] auth failed:", userErr?.message);
-      return new Response(JSON.stringify({ error: "Invalid session", detail: userErr?.message }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Internal call path: trusted callers (e.g. telegram-webhook) pass the
+    // service-role key + x-internal-user-id header to act on a user's behalf
+    // without holding their session JWT.
+    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const internalUserId = req.headers.get("x-internal-user-id");
+    const isInternal =
+      internalUserId &&
+      authHeader === `Bearer ${SERVICE_KEY}`;
+
+    let userId: string | undefined;
+    if (isInternal) {
+      userId = internalUserId!;
+    } else {
+      const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+        global: { headers: { Authorization: authHeader } },
       });
+      const token = authHeader.replace("Bearer ", "");
+      const { data: claimsData, error: userErr } = await userClient.auth.getClaims(token);
+      userId = claimsData?.claims?.sub as string | undefined;
+      if (userErr || !userId) {
+        console.error("[orchestrator] auth failed:", userErr?.message);
+        return new Response(JSON.stringify({ error: "Invalid session", detail: userErr?.message }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const body = await req.json().catch(() => ({}));

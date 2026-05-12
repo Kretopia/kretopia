@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     body: JSON.stringify({
       url,
       secret_token: secret,
-      allowed_updates: ["message", "edited_message"],
+      allowed_updates: ["message", "edited_message", "callback_query"],
       drop_pending_updates: false,
     }),
   });

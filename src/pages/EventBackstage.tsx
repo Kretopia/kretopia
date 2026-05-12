@@ -46,7 +46,8 @@ import { EventGuestRoster } from "@/components/sessions/EventGuestRoster";
 import { ScoutEventDialog } from "@/components/sessions/ScoutEventDialog";
 import { InviteByEmailDialog } from "@/components/sessions/InviteByEmailDialog";
 import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
-import { Mail, UserPlus, MessageCircle, Scan } from "lucide-react";
+import { EventAnalyticsDialog } from "@/components/sessions/EventAnalyticsDialog";
+import { Mail, UserPlus, MessageCircle, Scan, BarChart3 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -113,6 +114,7 @@ const EventBackstage = () => {
   const [emailBlastFor, setEmailBlastFor] = useState<BackstageEvent | null>(null);
   const [inviteFor, setInviteFor] = useState<BackstageEvent | null>(null);
   const [hostToolsFor, setHostToolsFor] = useState<BackstageEvent | null>(null);
+  const [analyticsFor, setAnalyticsFor] = useState<BackstageEvent | null>(null);
   const [convertingId, setConvertingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -578,6 +580,11 @@ const EventBackstage = () => {
                         <Sparkles className="h-4 w-4 mr-2" /> Host tools (Q&amp;A · Match · Seating)
                       </DropdownMenuItem>
                     )}
+                    {!isDraft && (
+                      <DropdownMenuItem onClick={() => setAnalyticsFor(ev)}>
+                        <BarChart3 className="h-4 w-4 mr-2" /> Analytics
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => handleExportCsv(ev)}>
                       <Download className="h-4 w-4 mr-2" /> Export guest list (CSV)
                     </DropdownMenuItem>
@@ -1005,6 +1012,18 @@ const EventBackstage = () => {
           onOpenChange={(o) => !o && setEmailBlastFor(null)}
           eventId={emailBlastFor.id}
           eventTitle={emailBlastFor.title}
+        />
+      )}
+
+      {/* Analytics dashboard */}
+      {analyticsFor && (
+        <EventAnalyticsDialog
+          open={!!analyticsFor}
+          onOpenChange={(o) => !o && setAnalyticsFor(null)}
+          eventId={analyticsFor.id}
+          eventTitle={analyticsFor.title}
+          capacity={(analyticsFor as any).capacity ?? (analyticsFor as any).max_attendees ?? null}
+          currency={(analyticsFor as any).ticket_currency ?? "USD"}
         />
       )}
 

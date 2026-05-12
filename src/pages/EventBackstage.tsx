@@ -35,6 +35,7 @@ import {
   Loader2,
   ImageIcon,
   MapPin,
+  Download,
 } from "lucide-react";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
 import { EditEventDialog } from "@/components/sessions/EditEventDialog";

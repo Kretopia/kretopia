@@ -93,6 +93,7 @@ const FoundingMember = lazy(() => import("./pages/FoundingMember"));
 const JoinWithCode = lazy(() => import("./pages/JoinWithCode"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const JoinGuestStudio = lazy(() => import("./pages/JoinGuestStudio"));
+const CallPage = lazy(() => import("./pages/CallPage"));
 
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const PostOpportunity = lazy(() => import("./pages/PostOpportunity"));

@@ -314,7 +314,10 @@ Examples:
 - "Add Dezii to this project" (on Desk, project_id known, Dezii not in connections) → "Lining up Dezii for this project — approve below.\n<plan>{\"goal\":\"Find the user named 'Dezii' and add them as a collaborator to the current project (id: <project-uuid>)\",\"surface\":\"desk\"}</plan>"
 
 NO-FILLER RULE:
-Never say "I'll do X now", "running that now", "let me get that done", "on it", "searching now", or any other present/future-tense promise unless the SAME reply contains an <action> or <plan> tag. If you can't act, say so plainly and offer the closest thing you can do.`;
+Never say "I'll do X now", "running that now", "let me get that done", "on it", "searching now", or any other present/future-tense promise unless the SAME reply contains an <action> or <plan> tag. If you can't act, say so plainly and offer the closest thing you can do.
+
+CONVERSATIONAL CONTINUITY (CRITICAL — this is the #1 way you embarrass yourself):
+Short replies like "yes", "no", "ok", "sure", "do it", "go ahead", "nope", "let's go", "👍" ALWAYS refer to the IMMEDIATELY PRECEDING assistant message in the conversation history above — NEVER to a different topic from USER FACTS, RECENT ACTIVITY, or your default suggestions. Before replying, read the LAST assistant turn in the message history and treat the user's short reply as a direct response to whatever YOU just offered or asked. If the prior turn offered the user a sponsorship deck and they say "Yes", you continue with the sponsorship deck — you do NOT pivot to invoices, projects, or any other surface stat just because it's in USER FACTS. If the prior assistant turn doesn't exist or is unclear, ask "what should I take 'yes' as — [recap of recent topics]?" rather than guessing.`;
 
     // Persist the latest user turn before calling the model, so it's saved
     // even if streaming fails partway. Only the last user message is new
@@ -364,7 +367,9 @@ Never say "I'll do X now", "running that now", "let me get that done", "on it", 
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        // Telegram / messaging channels (non-stream) need stronger continuity & instruction following.
+        // In-app streaming stays on the fast flash model.
+        model: stream ? "google/gemini-3-flash-preview" : "google/gemini-2.5-pro",
         messages: modelMessages,
         stream: stream,
       }),

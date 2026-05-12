@@ -1015,6 +1015,18 @@ const EventBackstage = () => {
         />
       )}
 
+      {/* Analytics dashboard */}
+      {analyticsFor && (
+        <EventAnalyticsDialog
+          open={!!analyticsFor}
+          onOpenChange={(o) => !o && setAnalyticsFor(null)}
+          eventId={analyticsFor.id}
+          eventTitle={analyticsFor.title}
+          capacity={(analyticsFor as any).capacity ?? (analyticsFor as any).max_attendees ?? null}
+          currency={(analyticsFor as any).ticket_currency ?? "USD"}
+        />
+      )}
+
       {/* Invite by email (CSV / paste) */}
       {inviteFor && (
         <InviteByEmailDialog

@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.telegram-status]
 verify_jwt = false
+
+[functions.mint-meeting-token]
+verify_jwt = false

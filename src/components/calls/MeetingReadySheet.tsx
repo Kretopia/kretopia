@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Check, Share2, Video, Clock } from "lucide-react";
+import { Copy, Check, Share2, Video, Clock, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Props {
@@ -17,6 +17,8 @@ interface Props {
   shareUrl: string | null;
   /** Called when the user taps "Join now". Should open the call lobby. */
   onJoin: () => void;
+  /** Optional — renders a "From contacts" button that calls this. */
+  onInviteContacts?: () => void;
   title?: string;
   /** Hint shown under the title, e.g. "Link works for 4 hours." */
   hint?: string;
@@ -33,6 +35,7 @@ export const MeetingReadySheet = ({
   onOpenChange,
   shareUrl,
   onJoin,
+  onInviteContacts,
   title = "Your call is ready",
   hint = "Share this link — guests can join without an account. Link works for 4 hours.",
   joinLabel = "Join now",
@@ -117,6 +120,18 @@ export const MeetingReadySheet = ({
             <Clock className="h-3 w-3" />
             Link works for 4 hours.
           </div>
+
+          {onInviteContacts && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onInviteContacts}
+              className="w-full h-12 gap-2 rounded-full"
+            >
+              <Users className="h-4 w-4" />
+              Invite from contacts
+            </Button>
+          )}
 
           <div className="grid grid-cols-2 gap-2">
             <Button

@@ -6541,6 +6541,7 @@ export type Database = {
       guest_rsvps: {
         Row: {
           check_in_token: string
+          checked_in_at: string | null
           claimed_at: string | null
           claimed_by_user_id: string | null
           created_at: string
@@ -6553,6 +6554,7 @@ export type Database = {
         }
         Insert: {
           check_in_token?: string
+          checked_in_at?: string | null
           claimed_at?: string | null
           claimed_by_user_id?: string | null
           created_at?: string
@@ -6565,6 +6567,7 @@ export type Database = {
         }
         Update: {
           check_in_token?: string
+          checked_in_at?: string | null
           claimed_at?: string | null
           claimed_by_user_id?: string | null
           created_at?: string
@@ -17068,6 +17071,16 @@ export type Database = {
       can_join_event_online: {
         Args: { _event_id: string; _user_id: string }
         Returns: boolean
+      }
+      check_in_guest_by_token: {
+        Args: { p_event_id: string; p_token: string }
+        Returns: {
+          checked_in_at: string
+          guest_email: string
+          guest_name: string
+          id: string
+          was_already_checked_in: boolean
+        }[]
       }
       check_storage_available: {
         Args: { file_size_param: number; user_id_param: string }

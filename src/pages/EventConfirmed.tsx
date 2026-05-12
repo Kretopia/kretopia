@@ -4,7 +4,7 @@ import { useParams, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Calendar, MapPin, Clock, ArrowRight, Share2, Loader2, CalendarPlus, Navigation } from "lucide-react";
+import { CheckCircle2, Calendar, MapPin, Clock, ArrowRight, Share2, Loader2, CalendarPlus, Navigation, Ticket } from "lucide-react";
 import { format } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { APP_URL } from "@/lib/constants";
@@ -17,6 +17,7 @@ const EventConfirmed = () => {
   const [params] = useSearchParams();
   const guestName = params.get("name");
   const guestEmail = params.get("email");
+  const guestToken = params.get("token");
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -165,7 +166,17 @@ const EventConfirmed = () => {
               </Button>
             )}
           </div>
-          <Button onClick={handleShare} variant="gradient" className="w-full py-6">
+          {guestToken && eventId && (
+            <Link
+              to={`/event/${eventId}/pass?token=${encodeURIComponent(guestToken)}${guestName ? `&name=${encodeURIComponent(guestName)}` : ""}`}
+              className="block"
+            >
+              <Button variant="gradient" className="w-full py-6">
+                <Ticket className="h-4 w-4 mr-2" /> Show my pass
+              </Button>
+            </Link>
+          )}
+          <Button onClick={handleShare} variant={guestToken ? "secondary" : "gradient"} className="w-full py-6">
             <Share2 className="h-4 w-4 mr-2" /> Invite friends
           </Button>
           {user && event.created_by === user.id && (

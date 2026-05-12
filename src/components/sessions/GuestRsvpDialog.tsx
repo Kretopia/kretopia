@@ -80,6 +80,7 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
     }
 
     setLoading(true);
+    let guestToken: string | null = null;
     try {
       if (user) {
         await supabase.from("jam_participants").upsert(
@@ -93,9 +94,9 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
           p_guest_email: parsed.data.guest_email,
         });
         if (error) throw error;
-        if (!data || (Array.isArray(data) && data.length === 0)) {
-          throw new Error("RSVP failed");
-        }
+        const row = Array.isArray(data) ? data[0] : data;
+        if (!row) throw new Error("RSVP failed");
+        guestToken = row.check_in_token ?? null;
       }
 
       // Save answers (best-effort)
@@ -122,6 +123,10 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
             attendeeEmail: parsed.data.guest_email,
             eventTitle,
             eventUrl: `${window.location.origin}/event/${eventId}`,
+            passUrl: guestToken
+              ? `${window.location.origin}/event/${eventId}/pass?token=${encodeURIComponent(guestToken)}&name=${encodeURIComponent(parsed.data.guest_name)}`
+              : undefined,
+            checkInToken: guestToken ?? undefined,
             isGuest: !user,
           },
         },
@@ -136,7 +141,12 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
 
       onOpenChange(false);
       onRsvpComplete?.();
-      navigate(`/event/${eventId}/confirmed?name=${encodeURIComponent(parsed.data.guest_name)}&email=${encodeURIComponent(parsed.data.guest_email)}`);
+      const qs = new URLSearchParams({
+        name: parsed.data.guest_name,
+        email: parsed.data.guest_email,
+      });
+      if (guestToken) qs.set("token", guestToken);
+      navigate(`/event/${eventId}/confirmed?${qs.toString()}`);
     } catch (err: any) {
       toast({ title: "Couldn't RSVP", description: err?.message || "Try again", variant: "destructive" });
     } finally {

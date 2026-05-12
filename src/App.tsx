@@ -107,6 +107,7 @@ const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));
 const EventPage = lazy(() => import("./pages/EventPage"));
 const ClaimEvent = lazy(() => import("./pages/ClaimEvent"));
 const EventConfirmed = lazy(() => import("./pages/EventConfirmed"));
+const GuestPass = lazy(() => import("./pages/GuestPass"));
 const Meetup = lazy(() => import("./pages/Meetup"));
 const MeetupManage = lazy(() => import("./pages/MeetupManage"));
 
@@ -430,6 +431,7 @@ const AppContent = () => {
             {/* Public Event Page */}
             <Route path="/event/:eventId" element={<EventPage />} />
             <Route path="/event/:eventId/confirmed" element={<EventConfirmed />} />
+            <Route path="/event/:eventId/pass" element={<GuestPass />} />
 
             {/* Meetup Hub — dedicated events discovery */}
             <Route path="/meetup" element={<Meetup />} />

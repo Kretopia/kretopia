@@ -9,7 +9,8 @@ import {
   ScreenShare,
   X,
 } from "lucide-react";
-import DailyIframe, { type DailyCall } from "@daily-co/daily-js";
+import { type DailyCall } from "@daily-co/daily-js";
+import { createDailyFrame } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PreCallLobby } from "./PreCallLobby";

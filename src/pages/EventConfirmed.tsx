@@ -4,7 +4,7 @@ import { useParams, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Calendar, MapPin, Clock, ArrowRight, Share2, Loader2 } from "lucide-react";
+import { CheckCircle2, Calendar, MapPin, Clock, ArrowRight, Share2, Loader2, CalendarPlus, Navigation } from "lucide-react";
 import { format } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { APP_URL } from "@/lib/constants";

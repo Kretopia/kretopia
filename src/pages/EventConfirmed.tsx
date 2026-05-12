@@ -17,6 +17,7 @@ const EventConfirmed = () => {
   const [params] = useSearchParams();
   const guestName = params.get("name");
   const guestEmail = params.get("email");
+  const guestToken = params.get("token");
   const [event, setEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 

@@ -6,10 +6,8 @@ import DailyIframe, { type DailyCall } from "@daily-co/daily-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Loader2,
-  Video,
   PhoneOff,
   ScreenShare,
   Circle,
@@ -18,8 +16,18 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CallPreflightGate } from "@/components/calls/CallPreflightGate";
+import { Greenroom } from "@/components/calls/Greenroom";
+import { AdmitQueue } from "@/components/calls/AdmitQueue";
 
 type Phase = "loading" | "lobby" | "live" | "ended" | "error";
+
+interface JoinPrefs {
+  mic: boolean;
+  cam: boolean;
+  micDeviceId?: string;
+  camDeviceId?: string;
+  speakerDeviceId?: string;
+}
 
 export default function CallPage() {
   const { meetingId = "" } = useParams();
@@ -38,10 +46,14 @@ export default function CallPage() {
   const [recording, setRecording] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [guestName, setGuestName] = useState("");
+  const [role, setRole] = useState<string | null>(null);
+  const [joinPrefs, setJoinPrefs] = useState<JoinPrefs | null>(null);
   const [tokenInfo, setTokenInfo] = useState<{
     token: string;
     roomUrl: string;
   } | null>(null);
+
+  const isHost = role === "host";
 
   // Initial fetch — verifies the meeting exists and we're allowed.
   useEffect(() => {
@@ -68,10 +80,8 @@ export default function CallPage() {
         }
         setTokenInfo({ token: data.token, roomUrl: data.room_url });
         setTitle(data.title || "Meeting");
-        // Auth users with name go straight to lobby (Daily's prejoin shows preview).
-        // Guests without a name pause on a name-entry screen.
-        if (user || userName) setPhase("lobby");
-        else setPhase("lobby");
+        setRole(data.role || null);
+        setPhase("lobby");
       } catch (e: any) {
         setError(e?.message || "Couldn't load meeting");
         setPhase("error");
@@ -98,11 +108,33 @@ export default function CallPage() {
       user?.email?.split("@")[0] ||
       "Guest";
 
+    const prefs = joinPrefs ?? { mic: false, cam: false };
+
     frame
       .join({
         url: tokenInfo.roomUrl,
         token: tokenInfo.token,
         userName,
+        startVideoOff: !prefs.cam,
+        startAudioOff: !prefs.mic,
+      })
+      .then(async () => {
+        // Apply selected devices once joined
+        try {
+          if (prefs.micDeviceId || prefs.camDeviceId || prefs.speakerDeviceId) {
+            await (frame as any).setInputDevicesAsync?.({
+              audioDeviceId: prefs.micDeviceId,
+              videoDeviceId: prefs.camDeviceId,
+            });
+            if (prefs.speakerDeviceId) {
+              await (frame as any).setOutputDeviceAsync?.({
+                outputDeviceId: prefs.speakerDeviceId,
+              });
+            }
+          }
+        } catch (e) {
+          console.warn("[CallPage] device apply", e);
+        }
       })
       .catch((err) => {
         console.error("[CallPage] join failed", err);
@@ -126,7 +158,7 @@ export default function CallPage() {
       try { frame.destroy(); } catch {}
       callRef.current = null;
     };
-  }, [phase, tokenInfo, user, guestName, toast]);
+  }, [phase, tokenInfo, user, guestName, joinPrefs, toast]);
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(window.location.href);
@@ -197,140 +229,128 @@ export default function CallPage() {
     );
   }
 
-  // LOBBY
-  return (
-    <div className="min-h-[100dvh] bg-[#0b0b0f] text-white flex flex-col">
-      {phase === "lobby" && (
-        <div className="relative flex-1">
+  // LOBBY (Greenroom)
+  if (phase === "lobby") {
+    const ctaLabel = isHost ? "Start call" : "Knock to join";
+    return (
+      <div className="min-h-[100dvh] bg-[#0b0b0f] text-white">
+        <div className="relative min-h-[100dvh]">
           <CallPreflightGate
             shareUrl={typeof window !== "undefined" ? window.location.href : null}
             onCancel={() => navigate("/")}
           >
-            <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 min-h-[100dvh]">
-              <div className="flex items-center gap-2 text-primary">
-                <Video className="h-6 w-6" />
-                <span className="text-sm uppercase tracking-wider opacity-80">Greenroom</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-center">{title}</h1>
-              <p className="text-sm text-white/60 text-center max-w-sm">
-                Set your name and join when you're ready. Camera and mic permissions are asked once you join.
-              </p>
-              {!user && (
-                <div className="w-full max-w-xs">
-                  <Input
-                    placeholder="Your name"
-                    value={guestName}
-                    onChange={(e) => setGuestName(e.target.value)}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
-                  />
-                </div>
-              )}
-              <div className="flex flex-col w-full max-w-xs gap-2">
+            <Greenroom
+              title={title}
+              needsName={!user}
+              guestName={guestName}
+              onGuestNameChange={setGuestName}
+              ctaLabel={ctaLabel}
+              onJoin={(prefs) => {
+                setJoinPrefs(prefs);
+                setPhase("live");
+              }}
+              secondary={
                 <Button
-                  variant="hero"
-                  size="lg"
-                  onClick={() => setPhase("live")}
-                  disabled={!user && !guestName.trim()}
-                  className="h-12"
+                  variant="ghost"
+                  onClick={copyLink}
+                  className="w-full text-white/80 hover:text-white hover:bg-white/10"
                 >
-                  <Video className="h-4 w-4" />
-                  Join now
-                </Button>
-                <Button variant="ghost" onClick={copyLink} className="text-white/80 hover:text-white hover:bg-white/10">
                   <Copy className="h-4 w-4" />
                   Copy invite link
                 </Button>
-              </div>
-            </div>
+              }
+            />
           </CallPreflightGate>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {phase === "live" && (
-        <>
-          <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-[#0b0b0f]">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold truncate">{title}</p>
-              <p className="text-[11px] text-white/50 flex items-center gap-1.5">
-                {recording ? (
-                  <>
-                    <Circle className="h-2 w-2 fill-destructive text-destructive" />
-                    <span className="text-destructive font-medium">Recording</span>
-                  </>
-                ) : (
-                  "Live"
-                )}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={leave}
-              className="h-9 w-9 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10"
-              aria-label="Close"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </header>
+  // LIVE
+  return (
+    <div className="min-h-[100dvh] bg-[#0b0b0f] text-white flex flex-col">
+      <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-[#0b0b0f]">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold truncate">{title}</p>
+          <p className="text-[11px] text-white/50 flex items-center gap-1.5">
+            {recording ? (
+              <>
+                <Circle className="h-2 w-2 fill-destructive text-destructive" />
+                <span className="text-destructive font-medium">Recording</span>
+              </>
+            ) : (
+              "Live"
+            )}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={leave}
+          className="h-9 w-9 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10"
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </header>
 
-          <div className="relative flex-1 min-h-0 bg-black">
-            <div ref={containerRef} className="absolute inset-0" />
-          </div>
+      <div className="relative flex-1 min-h-0 bg-black">
+        <div ref={containerRef} className="absolute inset-0" />
+        <AdmitQueue call={callRef.current} isHost={isHost} />
+      </div>
 
-          <div
-            className="px-3 pt-3 border-t border-white/5"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+      <div
+        className="px-3 pt-3 border-t border-white/5"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+      >
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={toggleShare}
+            className={`rounded-full gap-2 h-10 px-4 border border-white/10 ${
+              sharing
+                ? "bg-primary text-primary-foreground border-transparent"
+                : "bg-white/5 text-white hover:bg-white/10"
+            }`}
           >
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={toggleShare}
-                className={`rounded-full gap-2 h-10 px-4 border border-white/10 ${
-                  sharing
-                    ? "bg-primary text-primary-foreground border-transparent"
-                    : "bg-white/5 text-white hover:bg-white/10"
-                }`}
-              >
-                <ScreenShare className="h-4 w-4" />
-                {sharing ? "Stop" : "Share"}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={toggleRecord}
-                className={`rounded-full gap-2 h-10 px-4 border border-white/10 ${
-                  recording
-                    ? "bg-destructive text-destructive-foreground border-transparent"
-                    : "bg-white/5 text-white hover:bg-white/10"
-                }`}
-              >
-                <Circle className={`h-3 w-3 ${recording ? "fill-current" : ""}`} />
-                {recording ? "Stop" : "Record"}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={copyLink}
-                className="rounded-full gap-2 h-10 px-4 border border-white/10 bg-white/5 text-white hover:bg-white/10"
-              >
-                <Copy className="h-4 w-4" />
-                Invite
-              </Button>
-              <Button
-                type="button"
-                onClick={leave}
-                className="rounded-full gap-2 h-11 px-6 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-              >
-                <PhoneOff className="h-4 w-4" />
-                <span className="font-semibold">Leave</span>
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
+            <ScreenShare className="h-4 w-4" />
+            {sharing ? "Stop" : "Share"}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={toggleRecord}
+            className={`rounded-full gap-2 h-10 px-4 border border-white/10 ${
+              recording
+                ? "bg-destructive text-destructive-foreground border-transparent"
+                : "bg-white/5 text-white hover:bg-white/10"
+            }`}
+          >
+            <Circle className={`h-3 w-3 ${recording ? "fill-current" : ""}`} />
+            {recording ? "Stop" : "Record"}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={copyLink}
+            className="rounded-full gap-2 h-10 px-4 border border-white/10 bg-white/5 text-white hover:bg-white/10"
+          >
+            <Copy className="h-4 w-4" />
+            Invite
+          </Button>
+          <Button
+            type="button"
+            onClick={leave}
+            className="rounded-full gap-2 h-11 px-6 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+          >
+            <PhoneOff className="h-4 w-4" />
+            <span className="font-semibold">Leave</span>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

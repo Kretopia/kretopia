@@ -8,8 +8,13 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Check, Share2, Video, Clock, Users } from "lucide-react";
+import { Copy, Check, Share2, Video, Clock, Users, Calendar, Apple } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  buildGoogleCalendarUrl,
+  downloadIcs,
+  type CalendarEventInput,
+} from "@/lib/calendarLinks";
 
 interface Props {
   open: boolean;
@@ -23,6 +28,12 @@ interface Props {
   /** Hint shown under the title, e.g. "Link works for 4 hours." */
   hint?: string;
   joinLabel?: string;
+  /**
+   * Optional — when provided, renders Add to Google / Apple Calendar buttons.
+   * Pass for scheduled meetings. The shareUrl is auto-injected as the location
+   * if not already set.
+   */
+  calendarEvent?: Omit<CalendarEventInput, "location"> & { location?: string };
 }
 
 /**
@@ -39,6 +50,7 @@ export const MeetingReadySheet = ({
   title = "Your call is ready",
   hint = "Share this link — guests can join without an account. Link works for 4 hours.",
   joinLabel = "Join now",
+  calendarEvent,
 }: Props) => {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -131,6 +143,54 @@ export const MeetingReadySheet = ({
               <Users className="h-4 w-4" />
               Invite from contacts
             </Button>
+          )}
+
+          {calendarEvent && (
+            <div className="space-y-2">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
+                Add to your calendar
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  asChild
+                  className="h-12 gap-2"
+                >
+                  <a
+                    href={buildGoogleCalendarUrl({
+                      ...calendarEvent,
+                      location: calendarEvent.location ?? shareUrl ?? undefined,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Google
+                  </a>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    downloadIcs(
+                      {
+                        ...calendarEvent,
+                        location: calendarEvent.location ?? shareUrl ?? undefined,
+                      },
+                      `${calendarEvent.title.replace(/[^\w-]+/g, "_")}.ics`,
+                    )
+                  }
+                  className="h-12 gap-2"
+                >
+                  <Apple className="h-4 w-4" />
+                  Apple / .ics
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Apple Calendar, Outlook & Yahoo all open the .ics file.
+              </p>
+            </div>
           )}
 
           <div className="grid grid-cols-2 gap-2">

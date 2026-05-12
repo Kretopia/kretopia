@@ -386,6 +386,19 @@ export const StartMeetingDialog = ({
             : "Share this link — guests can join without an account. Link works for 4 hours."
         }
         joinLabel={created?.scheduled ? "Join early" : "Join now"}
+        calendarEvent={
+          created?.scheduled && scheduledAt
+            ? {
+                title: meetingTitle || title || "ThriveIN meeting",
+                description: description
+                  ? `${description}\n\nJoin: ${created.shareUrl}`
+                  : `Join: ${created.shareUrl}`,
+                location: created.shareUrl,
+                startISO: new Date(scheduledAt).toISOString(),
+                durationMinutes: 60,
+              }
+            : undefined
+        }
       />
 
       {/* Step 3: live call */}

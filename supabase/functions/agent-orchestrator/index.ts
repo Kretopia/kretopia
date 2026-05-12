@@ -236,7 +236,7 @@ async function planTools(
           const execResp = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: authHeader },
-            body: JSON.stringify(args),
+            body: JSON.stringify({ ...args, _tool: toolName }),
           });
           const execText = await execResp.text();
           messages.push({ role: "tool", tool_call_id: c.id, content: execText.slice(0, 4000) });

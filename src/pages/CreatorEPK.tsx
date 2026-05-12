@@ -68,6 +68,8 @@ interface Profile {
   is_claimed?: boolean;
   cover_image_url?: string;
   job_title?: string;
+  video_intro_url?: string | null;
+  headline?: string | null;
 }
 
 interface PortfolioItem {

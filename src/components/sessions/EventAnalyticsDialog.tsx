@@ -83,12 +83,12 @@ export function EventAnalyticsDialog({
             .from("event_waitlist")
             .select("id")
             .eq("event_id", eventId)
-            .catch(() => ({ data: [] as any[], error: null })),
+            .then((r) => r, () => ({ data: [] as any[], error: null })),
           supabase
             .from("event_orders")
             .select("total_amount, status, currency")
             .eq("event_id", eventId)
-            .catch(() => ({ data: [] as any[], error: null })),
+            .then((r) => r, () => ({ data: [] as any[], error: null })),
         ]);
 
         const analyticsRows = analyticsRes.data || [];

@@ -10,8 +10,8 @@ import {
   Check,
   Phone,
   Users,
-  UserCircle2,
-  Globe,
+  Share2,
+  Copy,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,13 +24,11 @@ interface Person {
   full_name: string | null;
   avatar_url: string | null;
   role?: string | null;
-  source: "project" | "connection" | "search";
 }
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Required so we can ring the right people with the right context. */
   callContext: {
     kind: "project" | "direct";
     projectId?: string | null;
@@ -41,7 +39,6 @@ interface Props {
     callId?: string | null;
     callerName: string;
     callerAvatar?: string | null;
-    /** Pre-baked share URL for ad-hoc meetings (skips guest-link edge fn). */
     meetingShareUrl?: string | null;
   };
 }
@@ -56,122 +53,94 @@ const initials = (name: string | null | undefined) =>
     .toUpperCase();
 
 /**
- * Unified invite flow for an active video call.
- * Tabs: Project · Network · Search
- * Plus a one-tap Guest Link button (for clients/non-users).
+ * Simplified invite flow:
+ *  1. Send link  — share/copy the meeting URL (works for anyone)
+ *  2. From contacts — pick from project members + connections, then ring
  */
 export const CallInviteSheet = ({ open, onOpenChange, callContext }: Props) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [tab, setTab] = useState<"project" | "network" | "search">(
-    callContext.projectId ? "project" : "network",
-  );
-  const [projectMembers, setProjectMembers] = useState<Person[]>([]);
-  const [connections, setConnections] = useState<Person[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Person[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [contacts, setContacts] = useState<Person[]>([]);
+  const [loadingContacts, setLoadingContacts] = useState(false);
+  const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Map<string, Person>>(new Map());
   const [ringing, setRinging] = useState(false);
   const [generatingLink, setGeneratingLink] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
-  // Reset state when reopening
+  // Reset when reopening
   useEffect(() => {
     if (!open) {
       setSelected(new Map());
-      setSearchQuery("");
-      setSearchResults([]);
+      setQuery("");
+      setLinkCopied(false);
     }
   }, [open]);
 
-  // Load project members
-  useEffect(() => {
-    if (!open || !callContext.projectId) return;
-    (async () => {
-      const { data: collabs } = await supabase
-        .from("project_collaborators")
-        .select("user_id")
-        .eq("project_id", callContext.projectId)
-        .eq("status", "accepted");
-      const ids = (collabs || []).map((c) => c.user_id).filter(Boolean) as string[];
-      if (!ids.length) {
-        setProjectMembers([]);
-        return;
-      }
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, avatar_url, role")
-        .in("user_id", ids);
-      setProjectMembers(
-        (profiles || [])
-          .filter((p) => p.user_id !== user?.id)
-          .map((p) => ({ ...p, source: "project" as const })),
-      );
-    })().catch((e) => console.warn("[CallInviteSheet] members", e));
-  }, [open, callContext.projectId, user?.id]);
-
-  // Load connections
+  // Load combined contacts: project members + connections
   useEffect(() => {
     if (!open || !user?.id) return;
+    let cancelled = false;
+    setLoadingContacts(true);
     (async () => {
-      const { data } = await supabase
-        .from("connections")
-        .select("user_id, connected_user_id")
-        .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
-        .eq("status", "accepted");
-      const otherIds = new Set<string>();
-      (data || []).forEach((c) => {
-        otherIds.add(c.user_id === user.id ? c.connected_user_id : c.user_id);
-      });
-      if (!otherIds.size) {
-        setConnections([]);
-        return;
-      }
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, avatar_url, role")
-        .in("user_id", Array.from(otherIds))
-        .limit(200);
-      setConnections(
-        (profiles || []).map((p) => ({ ...p, source: "connection" as const })),
-      );
-    })().catch((e) => console.warn("[CallInviteSheet] connections", e));
-  }, [open, user?.id]);
-
-  // Search platform users (debounced)
-  useEffect(() => {
-    if (tab !== "search") return;
-    const q = searchQuery.trim();
-    if (q.length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    setSearching(true);
-    const t = setTimeout(async () => {
       try {
-        const { data } = await supabase
+        const ids = new Set<string>();
+
+        if (callContext.projectId) {
+          const { data: collabs } = await supabase
+            .from("project_collaborators")
+            .select("user_id")
+            .eq("project_id", callContext.projectId)
+            .eq("status", "accepted");
+          (collabs || []).forEach((c) => c.user_id && ids.add(c.user_id));
+        }
+
+        const { data: conns } = await supabase
+          .from("connections")
+          .select("user_id, connected_user_id")
+          .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
+          .eq("status", "accepted");
+        (conns || []).forEach((c) => {
+          ids.add(c.user_id === user.id ? c.connected_user_id : c.user_id);
+        });
+        ids.delete(user.id);
+
+        if (!ids.size) {
+          if (!cancelled) setContacts([]);
+          return;
+        }
+
+        const { data: profiles } = await supabase
           .from("profiles")
           .select("user_id, full_name, avatar_url, role")
-          .ilike("full_name", `%${q}%`)
-          .neq("user_id", user?.id ?? "")
-          .limit(20);
-        setSearchResults(
-          (data || []).map((p) => ({ ...p, source: "search" as const })),
-        );
-      } catch (e) {
-        console.warn("[CallInviteSheet] search", e);
-      } finally {
-        setSearching(false);
-      }
-    }, 300);
-    return () => clearTimeout(t);
-  }, [searchQuery, tab, user?.id]);
+          .in("user_id", Array.from(ids))
+          .limit(200);
 
-  const visible = useMemo(() => {
-    if (tab === "project") return projectMembers;
-    if (tab === "network") return connections;
-    return searchResults;
-  }, [tab, projectMembers, connections, searchResults]);
+        if (!cancelled) {
+          setContacts(
+            (profiles || []).sort((a, b) =>
+              (a.full_name || "").localeCompare(b.full_name || ""),
+            ),
+          );
+        }
+      } catch (e) {
+        console.warn("[CallInviteSheet] contacts", e);
+      } finally {
+        if (!cancelled) setLoadingContacts(false);
+      }
+    })().catch(() => setLoadingContacts(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [open, user?.id, callContext.projectId]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return contacts;
+    return contacts.filter((p) =>
+      (p.full_name || "").toLowerCase().includes(q),
+    );
+  }, [contacts, query]);
 
   const toggleSelect = (p: Person) => {
     setSelected((prev) => {
@@ -186,8 +155,7 @@ export const CallInviteSheet = ({ open, onOpenChange, callContext }: Props) => {
     if (selected.size === 0 || !user?.id) return;
     setRinging(true);
     try {
-      const ids = Array.from(selected.keys());
-      await ringUsers(ids, {
+      await ringUsers(Array.from(selected.keys()), {
         kind: callContext.kind,
         projectId: callContext.projectId ?? undefined,
         projectName: callContext.projectName,
@@ -214,29 +182,28 @@ export const CallInviteSheet = ({ open, onOpenChange, callContext }: Props) => {
     }
   };
 
-  const handleCopyGuestLink = async () => {
+  const buildShareUrl = async (): Promise<string> => {
+    if (callContext.meetingShareUrl) return callContext.meetingShareUrl;
+    const { data, error } = await supabase.functions.invoke(
+      "create-video-guest-link",
+      {
+        body: {
+          project_id: callContext.projectId ?? null,
+          direct_call_id: callContext.directCallId ?? null,
+          room_name: callContext.roomName,
+          room_url: callContext.roomUrl,
+          guest_label: callContext.projectName,
+        },
+      },
+    );
+    if (error) throw error;
+    return `${APP_URL}/call/${data.token}`;
+  };
+
+  const handleShareLink = async () => {
     setGeneratingLink(true);
     try {
-      let url: string;
-      if (callContext.meetingShareUrl) {
-        url = callContext.meetingShareUrl;
-      } else {
-        const { data, error } = await supabase.functions.invoke(
-          "create-video-guest-link",
-          {
-            body: {
-              project_id: callContext.projectId ?? null,
-              direct_call_id: callContext.directCallId ?? null,
-              room_name: callContext.roomName,
-              room_url: callContext.roomUrl,
-              guest_label: callContext.projectName,
-            },
-          },
-        );
-        if (error) throw error;
-        url = `${APP_URL}/call/${data.token}`;
-      }
-      // Try native share first, fall back to clipboard
+      const url = await buildShareUrl();
       if (navigator.share) {
         try {
           await navigator.share({
@@ -247,16 +214,18 @@ export const CallInviteSheet = ({ open, onOpenChange, callContext }: Props) => {
           toast({ title: "Invite shared" });
           return;
         } catch {
-          // user cancelled share — fall through to clipboard
+          /* user cancelled — fall through to clipboard */
         }
       }
       await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
       toast({
         title: "Invite link copied",
         description: callContext.meetingShareUrl
           ? "Anyone with this link can join."
           : "Valid for 4 hours — paste it anywhere.",
       });
+      setTimeout(() => setLinkCopied(false), 2500);
     } catch (e: any) {
       toast({
         title: "Couldn't create link",
@@ -268,11 +237,26 @@ export const CallInviteSheet = ({ open, onOpenChange, callContext }: Props) => {
     }
   };
 
-  const tabs: { id: typeof tab; label: string; icon: typeof Users; show: boolean }[] = [
-    { id: "project", label: "Project", icon: Users, show: !!callContext.projectId },
-    { id: "network", label: "Network", icon: UserCircle2, show: true },
-    { id: "search", label: "Search", icon: Globe, show: true },
-  ];
+  const handleCopyLink = async () => {
+    setGeneratingLink(true);
+    try {
+      const url = await buildShareUrl();
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      toast({ title: "Invite link copied" });
+      setTimeout(() => setLinkCopied(false), 2500);
+    } catch (e: any) {
+      toast({
+        title: "Couldn't copy link",
+        description: e?.message,
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingLink(false);
+    }
+  };
+
+  const canShare = typeof navigator !== "undefined" && !!(navigator as any).share;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -282,96 +266,101 @@ export const CallInviteSheet = ({ open, onOpenChange, callContext }: Props) => {
       >
         <SheetHeader className="px-4 py-3 border-b border-border shrink-0 text-left">
           <SheetTitle className="text-base font-semibold">Invite to call</SheetTitle>
-          <p className="text-xs text-muted-foreground">{callContext.projectName}</p>
+          <p className="text-xs text-muted-foreground truncate">
+            {callContext.projectName}
+          </p>
         </SheetHeader>
 
-        {/* Guest link CTA */}
-        <div className="px-4 py-3 border-b border-border shrink-0">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleCopyGuestLink}
-            disabled={generatingLink}
-            className="w-full h-11 rounded-full gap-2 justify-center"
-          >
-            {generatingLink ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Link2 className="h-4 w-4" />
+        {/* OPTION 1 — Send a link */}
+        <div className="px-4 py-4 border-b border-border shrink-0 space-y-2">
+          <p className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
+            Send a link
+          </p>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={handleShareLink}
+              disabled={generatingLink}
+              className="flex-1 h-11 rounded-full gap-2"
+            >
+              {generatingLink ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : canShare ? (
+                <Share2 className="h-4 w-4" />
+              ) : (
+                <Link2 className="h-4 w-4" />
+              )}
+              <span className="font-medium">
+                {canShare ? "Share invite link" : "Copy invite link"}
+              </span>
+            </Button>
+            {canShare && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCopyLink}
+                disabled={generatingLink}
+                className="h-11 px-4 rounded-full"
+                aria-label="Copy link"
+              >
+                {linkCopied ? (
+                  <Check className="h-4 w-4 text-primary" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
             )}
-            <span className="font-medium">Share guest link (4 hours)</span>
-          </Button>
-          <p className="text-[11px] text-muted-foreground text-center mt-2">
-            Anyone with the link can join — perfect for clients
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Anyone with the link can join — perfect for clients, friends, or guests.
           </p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex items-center gap-1 px-3 py-2 border-b border-border shrink-0 overflow-x-auto">
-          {tabs
-            .filter((t) => t.show)
-            .map((t) => {
-              const Icon = t.icon;
-              const active = tab === t.id;
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTab(t.id)}
-                  className={`shrink-0 inline-flex items-center gap-1.5 px-3 h-9 rounded-full text-sm font-medium transition-colors ${
-                    active
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {t.label}
-                </button>
-              );
-            })}
+        {/* OPTION 2 — From contacts */}
+        <div className="px-4 pt-4 pb-2 shrink-0 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
+              From contacts
+            </p>
+            {selected.size > 0 && (
+              <button
+                type="button"
+                onClick={() => setSelected(new Map())}
+                className="text-[11px] text-muted-foreground hover:text-foreground"
+              >
+                Clear ({selected.size})
+              </button>
+            )}
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search your contacts…"
+              className="pl-9 rounded-full h-10"
+            />
+          </div>
         </div>
 
-        {/* Search input (only shown on search tab) */}
-        {tab === "search" && (
-          <div className="px-4 py-3 border-b border-border shrink-0">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search people on ThriveIN…"
-                className="pl-9 rounded-full h-10"
-                autoFocus
-              />
-            </div>
-          </div>
-        )}
-
-        {/* People list */}
+        {/* Contacts list */}
         <div className="flex-1 min-h-0 overflow-y-auto">
-          {tab === "search" && searchQuery.trim().length < 2 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center px-8 text-muted-foreground gap-2">
-              <Search className="h-8 w-8 opacity-40" />
-              <p className="text-sm">Type a name to search ThriveIN</p>
-            </div>
-          ) : searching ? (
+          {loadingContacts ? (
             <div className="flex items-center justify-center py-10">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
-          ) : visible.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center px-8 text-muted-foreground gap-2">
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center px-8 text-muted-foreground gap-2 py-10">
               <Users className="h-8 w-8 opacity-40" />
               <p className="text-sm">
-                {tab === "project"
-                  ? "No other project members yet."
-                  : tab === "network"
-                    ? "You haven't connected with anyone yet."
-                    : "No matches."}
+                {contacts.length === 0
+                  ? "No contacts yet — use the link above to invite anyone."
+                  : "No matches for that name."}
               </p>
             </div>
           ) : (
             <ul className="divide-y divide-border">
-              {visible.map((p) => {
+              {filtered.map((p) => {
                 const isSelected = selected.has(p.user_id);
                 return (
                   <li key={p.user_id}>

@@ -1,23 +1,25 @@
 // Daily.co only allows ONE DailyIframe instance globally. React StrictMode,
-// HMR, and route transitions can all leave a stale instance behind that
-// then throws "Duplicate DailyIframe instances are not allowed".
-//
-// This helper safely tears down any existing instance and clears the
-// container before creating a fresh frame.
+// HMR, and route transitions can leave a stale instance behind that then
+// throws "Duplicate DailyIframe instances are not allowed".
 import DailyIframe, { type DailyCall } from "@daily-co/daily-js";
 
-export function destroyExistingDailyFrame(): void {
+function getStaleInstance(): any {
   try {
-    const existing =
+    return (
       (DailyIframe as any).getCallInstance?.() ??
-      (DailyIframe as any).instances?.()?.[0];
-    if (existing) {
-      try { existing.leave?.(); } catch {}
-      try { existing.destroy?.(); } catch {}
-    }
+      (DailyIframe as any).instances?.()?.[0] ??
+      null
+    );
   } catch {
-    /* non-fatal */
+    return null;
   }
+}
+
+export function destroyExistingDailyFrame(): void {
+  const stale = getStaleInstance();
+  if (!stale) return;
+  try { stale.leave?.(); } catch {}
+  try { stale.destroy?.(); } catch {}
 }
 
 export function createDailyFrame(
@@ -25,7 +27,17 @@ export function createDailyFrame(
   props: Record<string, any>,
 ): DailyCall {
   destroyExistingDailyFrame();
-  // Clear any leftover <iframe> children from a previous mount.
   while (container.firstChild) container.removeChild(container.firstChild);
-  return (DailyIframe as any).createFrame(container, props);
+  try {
+    return (DailyIframe as any).createFrame(container, props);
+  } catch (err: any) {
+    if (String(err?.message || "").includes("Duplicate")) {
+      // Daily's singleton check still sees a stale instance — force destroy
+      // synchronously and retry once.
+      try { getStaleInstance()?.destroy?.(); } catch {}
+      while (container.firstChild) container.removeChild(container.firstChild);
+      return (DailyIframe as any).createFrame(container, props);
+    }
+    throw err;
+  }
 }

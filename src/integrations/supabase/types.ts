@@ -8209,6 +8209,207 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_participants: {
+        Row: {
+          created_at: string
+          guest_name: string | null
+          guest_token: string | null
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          meeting_id: string
+          role: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          guest_name?: string | null
+          guest_token?: string | null
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          meeting_id: string
+          role?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          guest_name?: string | null
+          guest_token?: string | null
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          meeting_id?: string
+          role?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_participants_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_recordings: {
+        Row: {
+          created_at: string
+          daily_recording_id: string | null
+          duration_seconds: number | null
+          id: string
+          meeting_id: string
+          size_bytes: number | null
+          status: string
+          storage_path: string | null
+        }
+        Insert: {
+          created_at?: string
+          daily_recording_id?: string | null
+          duration_seconds?: number | null
+          id?: string
+          meeting_id: string
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string | null
+        }
+        Update: {
+          created_at?: string
+          daily_recording_id?: string | null
+          duration_seconds?: number | null
+          id?: string
+          meeting_id?: string
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_recordings_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_transcripts: {
+        Row: {
+          created_at: string
+          daily_transcript_id: string | null
+          full_text: string | null
+          id: string
+          meeting_id: string
+          segments: Json | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          daily_transcript_id?: string | null
+          full_text?: string | null
+          id?: string
+          meeting_id: string
+          segments?: Json | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          daily_transcript_id?: string | null
+          full_text?: string | null
+          id?: string
+          meeting_id?: string
+          segments?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_transcripts_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetings: {
+        Row: {
+          circle_id: string | null
+          conversation_id: string | null
+          created_at: string
+          ended_at: string | null
+          event_id: string | null
+          host_id: string
+          id: string
+          knocking_enabled: boolean
+          max_participants: number
+          profile_booking_id: string | null
+          project_id: string | null
+          recording_enabled: boolean
+          room_name: string
+          room_url: string
+          scheduled_for: string | null
+          settings: Json
+          share_token: string
+          source: string
+          started_at: string | null
+          title: string | null
+          transcript_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          circle_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          ended_at?: string | null
+          event_id?: string | null
+          host_id: string
+          id?: string
+          knocking_enabled?: boolean
+          max_participants?: number
+          profile_booking_id?: string | null
+          project_id?: string | null
+          recording_enabled?: boolean
+          room_name: string
+          room_url: string
+          scheduled_for?: string | null
+          settings?: Json
+          share_token?: string
+          source: string
+          started_at?: string | null
+          title?: string | null
+          transcript_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          circle_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          ended_at?: string | null
+          event_id?: string | null
+          host_id?: string
+          id?: string
+          knocking_enabled?: boolean
+          max_participants?: number
+          profile_booking_id?: string | null
+          project_id?: string | null
+          recording_enabled?: boolean
+          room_name?: string
+          room_url?: string
+          scheduled_for?: string | null
+          settings?: Json
+          share_token?: string
+          source?: string
+          started_at?: string | null
+          title?: string | null
+          transcript_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       message_reactions: {
         Row: {
           created_at: string
@@ -17639,6 +17840,14 @@ export type Database = {
       }
       is_event_project_member: {
         Args: { _event_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_meeting_host: {
+        Args: { _meeting_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_meeting_member: {
+        Args: { _meeting_id: string; _user_id: string }
         Returns: boolean
       }
       is_profile_owner: { Args: { _profile_user_id: string }; Returns: boolean }

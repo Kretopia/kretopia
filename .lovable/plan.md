@@ -1,59 +1,145 @@
-## Goal
 
-Make Thrive's "add a person to a project" flow bulletproof — Search → Confirm → Add — and tighten the rest of the agent surface in the same pass.
+# Video Calls v2 — Multi-party, Familiar, Recorded
 
-## What's already working (verified just now)
+Goal: ship a confident, multi-party (up to ~25) video call flow that feels like Google Meet / Zoom across **Studio · Messages · Profile · Events**, with a real **Greenroom (lobby)**, **invite-link guests**, **recording + transcripts**, **chat + screen share**, and a **Thrive post-call recap**. Ready for your call tomorrow + a workshop test.
 
-- `agent-orchestrator` already runs a 2-stage flow: `find_user` (auto) + `list_my_projects` (auto) → `add_collaborator` (requires_approval).
-- Approval card already shows "Add DEZii to ThriveIN Content" with body copy (yesterday's enrichment fix).
-- LLM gets explicit instructions to call `find_user` first, never invent UUIDs, and use `ask_clarification` when ambiguous.
+## What we have today
+- Daily.co rooms via `create-video-room` (project), `create-direct-video-call` (1:1), `create-circle-room` (group), `mint-video-token`, `create-video-guest-link`, `redeem-video-guest-link`.
+- `VideoCallSheet`, `PreCallLobby`, `StartCallSheet`, `CallInviteSheet`, `IncomingCallModal`, ringer via `useIncomingCall` / `ringUsers`.
+- Direct calls today are 1:1 only (`max_participants: 4` but UX is 1:1, no add-people).
 
-## What's broken / weak
+## What changes
 
-1. **Confirmation is text-only.** When the user says "add Dezii", the approval card shows the name in text but no avatar/role — easy to approve the wrong person if there are duplicate names. The `_preview` payload only carries `title` + `body`.
-2. **Single-match still proposes silently.** Even with one match, the user has not seen *which* "Dezii" the agent picked until the approval card appears. If 0 matches, today the LLM may still propose `add_collaborator` with a hallucinated id (we caught that yesterday with FK validation, but it should never get that far).
-3. **`ask_clarification` is rarely fired.** The system prompt mentions it but the flow doesn't reliably invoke it on `match_count !== 1`.
-4. **Other agent tools (audit pass):**
-   - `assign_task`, `mark_task_done`, `create_task`, `remove_collaborator` have the same UUID-resolution risk — they trust LLM-supplied ids.
-   - `send_dm`, `send_message`, `send_triage_reply` don't validate recipient ids before drafting.
-   - `apply_to_gig`, `draft_gig_application` don't validate `gig_id` exists before drafting.
+### 1) One unified "Start a Call" flow (Studio + Messages + Profile)
+Single `StartCallSheet` (we already have one — promote it to the canonical entry) with three sources:
+- **Studio** → "Start call" in `StudioRoom` header — pre-fills project members, has "Add guest link", optional "Schedule for later".
+- **Messages/Inbox** → "Start call" in `ChatHeader` — pre-fills the other person, "+ Add connected users", "Add guest link".
+- **Profile → Book a Call** → opens scheduling variant (calendar pick + email/SMS confirm).
 
-## Scope (this loop)
+Everything routes to a new edge fn **`create-meeting`** that:
+- Creates a Daily room (`max_participants: 25`, `enable_chat`, `enable_screenshare`, `enable_knocking: true` for guests, `enable_recording: "cloud"`, `enable_transcription: true`).
+- Inserts a `meetings` row (host, source: studio|dm|profile|event, project_id|conversation_id|event_id, scheduled_for, settings).
+- Inserts `meeting_participants` for invited users (status: invited|knocking|joined|left).
+- Returns `{ room_url, host_token, share_url }`. Share URL is `/call/:meetingId` (shorter than guest token URLs).
 
-### Phase 1 — Add-Collaborator hardening (the user's main complaint)
+### 2) Greenroom (lobby) — before joining
+New `<Greenroom />` step in `VideoCallSheet`, modeled after Meet/Zoom:
+- Local mic + cam preview, device pickers, blur/background toggle (Daily supports), display name, "Join now".
+- For guests: "Ask to join" (knock); host sees a knock list and admits.
+- Shows who's already in the call + "X waiting in lobby".
+- "Copy invite link" + "Add people" buttons inline.
 
-1. Extend `find_user` to return `username`, `role`, `avatar_url`, and a `disambiguator` (city or username). Already-public fields, just widen the SELECT.
-2. Update orchestrator system prompt to:
-   - REQUIRE `ask_clarification` when `find_user` returns 0 matches OR >1 matches.
-   - Pass the chosen person's `full_name`, `avatar_url`, `role`, `username`, plus `project_title` into `_preview` so the approval card shows a face.
-3. Extend `AgentApprovalCard` to render the person's avatar + role line when `tool_args._preview.avatar_url` is set, so confirmation is visual not textual.
-4. Server-side guard in `copilot-collaborator-tools` `add_collaborator`: if the resolved name fallback finds 2+ candidates, refuse and return `needs_clarification: true` (already half-built — finish it).
+### 3) In-call UX — Meet/Zoom familiar
+Built on Daily Prebuilt (we already use it) but with our control bar overlay where needed:
+- **Speaker / Grid toggle**, pin, raise hand.
+- **Screen share** (already enabled — surface clearly).
+- **In-call chat** (Daily chat on; we mirror to `meeting_chat` table for transcript export).
+- **Add people** mid-call → opens StartCallSheet's "Add" tab; sends ring + copies link.
+- **Recording toggle** (host only) with red dot indicator + auto-toast to all participants.
+- **Live captions** toggle.
+- **Leave / End for all** (host).
 
-### Phase 2 — Same-shape hardening for sibling tools
+### 4) Recording + Transcripts + Thrive recap
+- Daily cloud recording → webhook `daily-webhook` (new) catches `recording.ready` + `transcript.ready`, writes to `meeting_recordings` and `meeting_transcripts`, uploads MP4 to `meeting-recordings` bucket (host-owned, charged to host's storage quota via existing trigger).
+- After call ends, `<CallRecapSheet>` (we have a stub) opens with: duration, attendees, recording link, transcript, and a **Thrive prompt**: "Want me to: ① Summarize action items into tasks · ② Draft follow-up email · ③ Add credits for collaborators · ④ Just save the recap?". Routes through existing `agent-orchestrator` so it shows as approval cards.
 
-1. `remove_collaborator` — confirm by avatar in preview (same `_preview` extension).
-2. `assign_task` / `mark_task_done` — server-side check that the assignee is actually a collaborator on the project.
-3. `send_dm` / `send_message` — server-side guard that recipient exists in `auth.users` (mirror the FK validation we added yesterday).
+### 5) Scheduling + Google Calendar
+- `meetings.scheduled_for` + simple "Schedule" tab in StartCallSheet (date/time, invitees, note).
+- Edge fn `create-meeting` returns `.ics` download + share link.
+- Optional Google Calendar connector: if host has it linked, auto-create event with the meeting link. (Per-user OAuth deferred — start with developer-account connector for hosts who opt in; doc the limitation.)
+- Email invites via existing Resend setup.
 
-### Phase 3 — Live end-to-end smoke tests
+### 6) Events workshop mode
+For `creative_jams` (events) with `format` workshop/session:
+- New "Go live" button on event detail page (host) → calls `create-meeting` with `source: "event"`, `event_id`, `max_participants: 50`, `enable_knocking: true`.
+- Stores room on `creative_jams.video_room_url` (already exists for some types — extend).
+- Public event page shows **"Join live session"** when room is open; guests land in Greenroom and knock.
+- Recording auto-saved + linked on event recap page after end.
 
-After deploying, call `agent-orchestrator` with `intent="Add Dezii to <real project>"` for the user's account and verify:
-- `find_user` returns DEZii with avatar.
-- One `add_collaborator` proposal with rich preview.
-- Tap-to-approve actually inserts the row + posts the system message + creates the notification.
+### 7) Profile → Book a Call
+- Replace/wire existing "Book a Call" CTA on profile to scheduling variant of StartCallSheet.
+- Generates a meeting + sends both parties calendar invite + reminder push 10min before.
 
-Rollback safety: every change is additive. If anything misbehaves the previous behaviour (text-only preview, FK validation safety net) still catches it.
+## Database
 
-## What is NOT in this loop
+```sql
+-- meetings: one row per scheduled or instant call
+create table meetings (
+  id uuid pk default gen_random_uuid(),
+  host_id uuid not null references auth.users,
+  source text check (source in ('studio','dm','profile','event','adhoc')),
+  project_id uuid null, conversation_id uuid null,
+  event_id uuid null, profile_booking_id uuid null,
+  room_name text not null, room_url text not null,
+  scheduled_for timestamptz null, started_at timestamptz, ended_at timestamptz,
+  max_participants int default 25,
+  recording_enabled bool default true,
+  transcript_enabled bool default true,
+  settings jsonb default '{}'::jsonb,
+  created_at timestamptz default now()
+);
 
-- A from-scratch rewrite of the orchestrator. The pattern is sound; we are tightening it.
-- Deep audit of `desk-agent`'s 9 internal tools (invoice/quote/credit/video) — those don't take name-based inputs from the LLM, they take ids the agent watches generate. Defer unless you want it.
-- Voice-mode (`thrive-voice-turn`) flow — same orchestrator under the hood, will inherit the fix.
+create table meeting_participants (
+  meeting_id uuid references meetings on delete cascade,
+  user_id uuid null,            -- null for guests
+  guest_name text null, guest_token text null,
+  status text default 'invited', -- invited|knocking|joined|left|denied
+  joined_at timestamptz, left_at timestamptz,
+  primary key (meeting_id, coalesce(user_id::text, guest_token))
+);
 
-## Technical notes
+create table meeting_recordings (
+  id uuid pk default gen_random_uuid(),
+  meeting_id uuid references meetings on delete cascade,
+  storage_path text, duration_seconds int,
+  daily_recording_id text, created_at timestamptz default now()
+);
 
-- `_preview` is already passed through and stripped by the planner — adding `avatar_url`, `role`, `subtitle` requires no schema migration; just widen the type used in `AgentApprovalCard`.
-- All edge-function changes need `deploy_edge_functions`. I'll batch them.
-- Smoke test will be a single `supabase--curl_edge_functions` call against `/agent-orchestrator` as your logged-in session.
+create table meeting_transcripts (
+  id uuid pk default gen_random_uuid(),
+  meeting_id uuid references meetings on delete cascade,
+  segments jsonb,        -- [{speaker, ts, text}]
+  full_text text,
+  daily_transcript_id text, created_at timestamptz default now()
+);
+```
+RLS: host + invited participants can read; only host can update settings or end. Storage bucket `meeting-recordings` (private, host-only read; signed URLs for participants).
 
-Approve to proceed with Phase 1+2+3, or tell me to slim it down (e.g. "Phase 1 only, ship today").
+## Edge functions
+- **NEW** `create-meeting` — replaces ad-hoc calls to `create-video-room` / `create-direct-video-call` over time (keep old fns alive for back-compat).
+- **NEW** `daily-webhook` — `recording.ready`, `transcript.ready`, `meeting.ended`. `verify_jwt=false`, validates Daily HMAC.
+- **NEW** `meeting-knock-decision` — host approves/denies a knocker.
+- **NEW** `meeting-end` — finalizes row, triggers Thrive recap.
+- **EXTEND** `mint-video-token` — accept `meeting_id` (in addition to room_name) and check `meeting_participants`.
+- **EXTEND** existing `create-direct-video-call` — set `max_participants: 10`, return shareable `/call/:id`.
+
+## Frontend
+
+- **NEW** `src/components/calls/StartMeetingSheet.tsx` — unified sheet (Now / Schedule / Add people / Copy link).
+- **NEW** `src/components/calls/Greenroom.tsx` — lobby preview; reuses Daily prejoin.
+- **NEW** `src/components/calls/InCallControls.tsx` — overlay row (Add people · Record · Captions · Chat · Share · Leave/End).
+- **NEW** `src/components/calls/KnockingList.tsx` — host-side approve/deny for guests.
+- **NEW** `src/pages/CallPage.tsx` at route `/call/:meetingId` — handles auth user + guest path, shows Greenroom → call.
+- **EXTEND** `VideoCallSheet` — wrap with Greenroom, surface controls, hook end-of-call recap.
+- **EXTEND** `CallRecapSheet` — Thrive prompt buttons that call `agent-orchestrator`.
+- **WIRE** Studio header (`StudioRoom`) "Call" button → `StartMeetingSheet` (source=studio).
+- **WIRE** `ChatHeader` Video button → `StartMeetingSheet` (source=dm), keep direct-ring fast-path for true 1:1.
+- **WIRE** Profile "Book a call" → `StartMeetingSheet` (mode=schedule).
+- **WIRE** Event detail page "Go live / Join live" (source=event).
+
+## Rollout (in order)
+1. DB migration + buckets + RLS.
+2. `create-meeting` + `daily-webhook` + extend `mint-video-token`.
+3. `/call/:meetingId` page + `Greenroom` + extended `VideoCallSheet` controls.
+4. `StartMeetingSheet` + wire Studio + Messages entry points (multi-party + guest links).
+5. Recording + transcript pipeline + `CallRecapSheet` Thrive actions.
+6. Scheduling tab + `.ics` + optional Google Calendar.
+7. Event "Go live" button + workshop max_participants=50.
+8. Profile "Book a call" wiring.
+
+## Out of scope for this pass
+- Per-user Google Calendar OAuth (start with connector + .ics; do per-user OAuth in a follow-up).
+- Live streaming to YouTube/Twitch (Daily supports it; gate behind a future toggle).
+- Breakout rooms (Daily supports; v3).
+
+Ready to proceed in this order? I'll start with steps 1–4 so the **Studio + Messages multi-party flow with Greenroom and guest links** is solid for tomorrow's call, then layer recording/transcripts/Thrive recap and the event Go-live for the workshop.

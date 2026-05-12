@@ -27,7 +27,7 @@ async function tg(
   payload: Record<string, unknown>,
   lovableKey: string,
   tgKey: string,
-) {
+): Promise<any> {
   const r = await fetch(`${TELEGRAM_GATEWAY}/${method}`, {
     method: "POST",
     headers: {
@@ -37,8 +37,79 @@ async function tg(
     },
     body: JSON.stringify(payload),
   });
-  if (!r.ok) console.error(`tg ${method} failed`, r.status, await r.text());
-  return r;
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) console.error(`tg ${method} failed`, r.status, JSON.stringify(j));
+  return j;
+}
+
+// Send a "working on it" placeholder and return its message_id for later edits.
+async function sendPlaceholder(
+  chatId: number,
+  text: string,
+  lovableKey: string,
+  tgKey: string,
+): Promise<number | null> {
+  const j = await tg("sendMessage", {
+    chat_id: chatId, parse_mode: "HTML", text,
+  }, lovableKey, tgKey);
+  return j?.result?.message_id ?? null;
+}
+
+// Edit a placeholder in place. Pass reply_markup to attach buttons.
+async function editPlaceholder(
+  chatId: number,
+  messageId: number,
+  text: string,
+  lovableKey: string,
+  tgKey: string,
+  replyMarkup?: Record<string, unknown>,
+): Promise<void> {
+  await tg("editMessageText", {
+    chat_id: chatId,
+    message_id: messageId,
+    parse_mode: "HTML",
+    text,
+    ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+  }, lovableKey, tgKey);
+}
+
+// Heartbeat: keep "typing…" visible + cycle the placeholder text every few seconds
+// so the user knows we're still working on long tool calls.
+function startProgressHeartbeat(
+  chatId: number,
+  messageId: number | null,
+  baseTitle: string,
+  lovableKey: string,
+  tgKey: string,
+): { stop: () => void } {
+  const frames = ["⏳", "⌛", "🔄", "✨"];
+  const dots = ["·", "··", "···"];
+  let i = 0;
+  let stopped = false;
+
+  const tick = async () => {
+    if (stopped) return;
+    // Keep typing indicator alive (Telegram clears it after ~5s)
+    tg("sendChatAction", { chat_id: chatId, action: "typing" }, lovableKey, tgKey)
+      .catch(() => {});
+    if (messageId != null) {
+      const frame = frames[i % frames.length];
+      const dot = dots[i % dots.length];
+      await editPlaceholder(
+        chatId, messageId,
+        `${frame} <b>${escapeHtml(baseTitle)}</b>${dot}`,
+        lovableKey, tgKey,
+      ).catch(() => {});
+    }
+    i++;
+  };
+
+  // First tick immediately, then every 4s
+  tick();
+  const interval = setInterval(tick, 4000);
+  return {
+    stop: () => { stopped = true; clearInterval(interval); },
+  };
 }
 
 // ---------- helpers ----------
@@ -201,30 +272,40 @@ Deno.serve(async (req) => {
 
     if (kind === "app") {
       await ack("Working on it…");
-      // Show in-progress state immediately
-      await tg("editMessageText", {
-        chat_id: chatId, message_id: messageId, parse_mode: "HTML",
-        text: `⏳ <b>${escapeHtml(action.preview_title ?? action.tool_name ?? "Running")}</b>\n<i>Approving…</i>`,
-      }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+      const title = action.preview_title ?? action.tool_name ?? "Running";
+      // Heartbeat the same message while the orchestrator runs the tool
+      const hb = startProgressHeartbeat(
+        chatId, messageId, `Running: ${title}`, LOVABLE_API_KEY, TELEGRAM_API_KEY,
+      );
 
-      const orchResp = await fetch(`${SUPABASE_URL}/functions/v1/agent-orchestrator`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${SERVICE}`,
-          "x-internal-user-id": userId,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action_id: actionId, decision: "approved" }),
-      });
-      const result = await orchResp.json().catch(() => ({}));
-      const ok = orchResp.ok && result?.ok !== false;
+      let ok = false;
+      let errText = "";
+      try {
+        const orchResp = await fetch(`${SUPABASE_URL}/functions/v1/agent-orchestrator`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${SERVICE}`,
+            "x-internal-user-id": userId,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action_id: actionId, decision: "approved" }),
+        });
+        const result = await orchResp.json().catch(() => ({}));
+        ok = orchResp.ok && result?.ok !== false;
+        errText = result?.error ?? "";
+      } catch (e) {
+        errText = (e as Error).message;
+      } finally {
+        hb.stop();
+      }
 
-      await tg("editMessageText", {
-        chat_id: chatId, message_id: messageId, parse_mode: "HTML",
-        text: ok
-          ? `✅ <b>${escapeHtml(action.preview_title ?? action.tool_name ?? "Done")}</b>\n<i>Approved & executed.</i>`
-          : `❌ <b>${escapeHtml(action.preview_title ?? action.tool_name ?? "Failed")}</b>\n<i>${escapeHtml(result?.error ?? "Couldn't run that.")}</i>`,
-      }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+      await editPlaceholder(
+        chatId, messageId,
+        ok
+          ? `✅ <b>${escapeHtml(title)}</b>\n<i>Approved &amp; executed.</i>`
+          : `❌ <b>${escapeHtml(title)}</b>\n<i>${escapeHtml(errText || "Couldn't run that.")}</i>`,
+        LOVABLE_API_KEY, TELEGRAM_API_KEY,
+      );
       return new Response(JSON.stringify({ ok: true }));
     }
 
@@ -354,7 +435,13 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ ok: true }));
   }
 
-  await tg("sendChatAction", { chat_id: chatId, action: "typing" }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+  // ----- Send a "Thinking…" placeholder + heartbeat while we call the AI -----
+  const thinkingMsgId = await sendPlaceholder(
+    chatId, `🤔 <b>Thinking…</b>`, LOVABLE_API_KEY, TELEGRAM_API_KEY,
+  );
+  const thinkingHb = startProgressHeartbeat(
+    chatId, thinkingMsgId, "Thinking", LOVABLE_API_KEY, TELEGRAM_API_KEY,
+  );
 
   // ----- Call Thrive Copilot -----
   let raw = "";
@@ -382,13 +469,22 @@ Deno.serve(async (req) => {
     }
   } catch (e) {
     console.error("thrive-ai-chat call threw", e);
+  } finally {
+    thinkingHb.stop();
   }
 
   const { visible, actions, planCount } = extractActions(raw);
   const reply = visible || "Got it — I'll get back to you shortly.";
 
-  // Send the conversational reply first
-  await tg("sendMessage", { chat_id: chatId, text: reply }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+  // Edit the placeholder into the conversational reply (no HTML so we don't
+  // accidentally break on AI markdown).
+  if (thinkingMsgId != null) {
+    await tg("editMessageText", {
+      chat_id: chatId, message_id: thinkingMsgId, text: reply,
+    }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+  } else {
+    await tg("sendMessage", { chat_id: chatId, text: reply }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+  }
 
   // Plans aren't approvable inline yet — nudge the user to the app
   if (planCount > 0) {
@@ -399,8 +495,22 @@ Deno.serve(async (req) => {
     }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
   }
 
-  // For each <action> tag → propose via orchestrator → post inline keyboard
+  // For each <action> tag: post a per-action placeholder, propose via orchestrator,
+  // then edit the placeholder into either an approval card (with buttons) or a done badge.
   for (const intentObj of actions) {
+    const intentLabel = intentObj.intent.length > 60
+      ? intentObj.intent.slice(0, 57) + "…"
+      : intentObj.intent;
+
+    const actionMsgId = await sendPlaceholder(
+      chatId, `⚙️ <b>Setting up</b>\n<i>${escapeHtml(intentLabel)}</i>`,
+      LOVABLE_API_KEY, TELEGRAM_API_KEY,
+    );
+    const actionHb = startProgressHeartbeat(
+      chatId, actionMsgId, `Preparing: ${intentLabel}`,
+      LOVABLE_API_KEY, TELEGRAM_API_KEY,
+    );
+
     try {
       const orchResp = await fetch(`${SUPABASE_URL}/functions/v1/agent-orchestrator`, {
         method: "POST",
@@ -415,33 +525,66 @@ Deno.serve(async (req) => {
         }),
       });
       const run = await orchResp.json().catch(() => ({}));
+      actionHb.stop();
+
       const proposed = (run?.actions ?? []).filter(
         (a: any) => a.status === "proposed",
       );
-      for (const a of proposed) {
-        await tg("sendMessage", {
-          chat_id: chatId,
-          parse_mode: "HTML",
-          text: approvalCardText(a),
-          reply_markup: approvalKeyboard(a.id),
-        }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
-      }
-      // Auto-executed actions: confirm them inline so the user knows it ran.
       const autoRan = (run?.actions ?? []).filter(
         (a: any) => a.status === "auto_executed" || a.status === "executed",
       );
-      for (const a of autoRan) {
-        await tg("sendMessage", {
-          chat_id: chatId, parse_mode: "HTML",
-          text: `✅ <b>${escapeHtml(a.preview_title ?? a.tool_name ?? "Done")}</b>`,
-        }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+
+      // Edit the placeholder into the FIRST proposed/auto-ran action's card so
+      // the user sees one continuous "spinner → result" lifecycle per intent.
+      const first = proposed[0] ?? autoRan[0];
+      if (first && actionMsgId != null) {
+        if (first.status === "proposed") {
+          await editPlaceholder(
+            chatId, actionMsgId, approvalCardText(first),
+            LOVABLE_API_KEY, TELEGRAM_API_KEY, approvalKeyboard(first.id),
+          );
+        } else {
+          await editPlaceholder(
+            chatId, actionMsgId,
+            `✅ <b>${escapeHtml(first.preview_title ?? first.tool_name ?? "Done")}</b>`,
+            LOVABLE_API_KEY, TELEGRAM_API_KEY,
+          );
+        }
+      } else if (actionMsgId != null) {
+        await editPlaceholder(
+          chatId, actionMsgId,
+          `<i>No action needed.</i>`,
+          LOVABLE_API_KEY, TELEGRAM_API_KEY,
+        );
+      }
+
+      // Any additional proposed/auto-ran actions get their own message.
+      const rest = [...proposed.slice(first?.status === "proposed" ? 1 : 0),
+                    ...autoRan.slice(first?.status !== "proposed" && first ? 1 : 0)];
+      for (const a of rest) {
+        if (a.status === "proposed") {
+          await tg("sendMessage", {
+            chat_id: chatId, parse_mode: "HTML",
+            text: approvalCardText(a),
+            reply_markup: approvalKeyboard(a.id),
+          }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+        } else {
+          await tg("sendMessage", {
+            chat_id: chatId, parse_mode: "HTML",
+            text: `✅ <b>${escapeHtml(a.preview_title ?? a.tool_name ?? "Done")}</b>`,
+          }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+        }
       }
     } catch (err) {
+      actionHb.stop();
       console.error("orchestrator propose failed", err);
-      await tg("sendMessage", {
-        chat_id: chatId,
-        text: "⚠️ I couldn't queue that action. Try again, or open ThriveIN.",
-      }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
+      if (actionMsgId != null) {
+        await editPlaceholder(
+          chatId, actionMsgId,
+          `⚠️ <i>I couldn't queue that action. Try again, or open ThriveIN.</i>`,
+          LOVABLE_API_KEY, TELEGRAM_API_KEY,
+        );
+      }
     }
   }
 

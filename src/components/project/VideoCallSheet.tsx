@@ -115,6 +115,7 @@ export const VideoCallSheet = ({
     frame.on("left-meeting", () => onOpenChange(false));
     frame.on("recording-started", (ev: any) => {
       setRecording(true);
+      didRecordRef.current = true;
       // Notify everyone in the room that recording is on (besides the
       // person who started it). Daily already shows a small system badge,
       // but we add an explicit toast so non-hosts see it clearly.

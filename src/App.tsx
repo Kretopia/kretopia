@@ -431,6 +431,7 @@ const AppContent = () => {
             {/* Public Event Page */}
             <Route path="/event/:eventId" element={<EventPage />} />
             <Route path="/event/:eventId/confirmed" element={<EventConfirmed />} />
+            <Route path="/event/:eventId/pass" element={<GuestPass />} />
 
             {/* Meetup Hub — dedicated events discovery */}
             <Route path="/meetup" element={<Meetup />} />

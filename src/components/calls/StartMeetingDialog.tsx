@@ -237,9 +237,12 @@ export const StartMeetingDialog = ({
               </Field>
 
               <TabsContent value="instant" className="m-0 space-y-4">
-                {people.length > 0 && (
-                  <PeoplePicker people={people} selected={selected} onToggle={toggle} />
-                )}
+                <PeoplePicker
+                  people={people}
+                  selected={selected}
+                  onToggle={toggle}
+                  projectId={projectId ?? null}
+                />
                 <SettingsBlock
                   recording={recording}
                   setRecording={setRecording}

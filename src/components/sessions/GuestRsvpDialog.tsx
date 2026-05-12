@@ -246,9 +246,7 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
           ))}
 
           <Button type="submit" variant="gradient" className="w-full py-6 text-base" disabled={loading}>
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : (
-              <><Sparkles className="h-4 w-4 mr-2" /> Confirm RSVP</>
-            )}
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Confirm RSVP"}
           </Button>
         </form>
       </DialogContent>

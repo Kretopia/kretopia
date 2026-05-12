@@ -429,6 +429,24 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
             preselected: true,
           }))}
         />
+
+        <CallStartChooser
+          open={chooserOpen}
+          onOpenChange={setChooserOpen}
+          instantLabel="Ring project members now"
+          instantHint="Calls everyone on this project with a ringtone."
+          linkLabel="Get a meeting link to share"
+          linkHint="Open a room with a link — perfect for clients or guests."
+          onPickInstant={() => {
+            setChooserOpen(false);
+            setStartSheetOpen(true);
+          }}
+          onPickLink={() => {
+            setChooserOpen(false);
+            setMeetingDialogOpen(true);
+          }}
+          starting={startingCall}
+        />
       </>
     );
   }

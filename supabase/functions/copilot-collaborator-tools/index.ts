@@ -63,6 +63,10 @@ Deno.serve(async (req) => {
         return await addCollaborator(user.id, body);
       case "remove_collaborator":
         return await removeCollaborator(user.id, body);
+      case "archive_project":
+        return await archiveProject(user.id, body);
+      case "delete_project":
+        return await deleteProject(user.id, body);
       default:
         return json({ error: `Unknown tool: ${tool}` }, 400);
     }

@@ -37,6 +37,32 @@
     <priority>0.7</priority>
   </url>
   
+  <url>
+    <loc>https://www.thrivein.io/landing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.thrivein.io/claim</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.thrivein.io/onboarding</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.thrivein.io/company-onboarding</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.thrivein.io/founding-member</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- Creator EPK Profiles -->
   <url>
     <loc>https://www.thrivein.io/epk/56f9c509-6d9f-4f36-bcf0-b60b7807a893</loc>

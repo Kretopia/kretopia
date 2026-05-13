@@ -430,6 +430,7 @@ const AppContent = () => {
             <Route path="/directory" element={<Navigate to="/search" replace />} />
             <Route path="/discover" element={<Navigate to="/search" replace />} />
             <Route path="/opportunities" element={<Opportunities />} />
+            <Route path="/scout" element={<Scout />} />
 
             {/* Public Event Page */}
             <Route path="/event/:eventId" element={<EventPage />} />

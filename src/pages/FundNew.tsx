@@ -101,7 +101,7 @@ const FundNew = () => {
             max_backers: t.max_backers ? String(t.max_backers) : "",
           }))
         );
-        toast.success(`AI suggested ${data.tiers.length} tiers`);
+        toast.success(`Smart suggested ${data.tiers.length} tiers`);
       }
       if (action === "image" && data.imageDataUrl) {
         await uploadDataUrl(data.imageDataUrl);
@@ -390,7 +390,7 @@ const FundNew = () => {
                   onClick={() => callAI("tagline")}
                 >
                   {aiBusy === "tagline" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
-                  AI write
+                  Smart write
                 </Button>
               </div>
               <Input
@@ -451,7 +451,7 @@ const FundNew = () => {
                       disabled={aiBusy === "image" || !title.trim()}
                     >
                       {aiBusy === "image" ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImagePlus className="h-3 w-3" />}
-                      AI generate
+                      Smart generate
                     </Button>
                   </div>
                 </div>
@@ -461,7 +461,7 @@ const FundNew = () => {
                   </div>
                 ) : (
                   <div className="rounded-lg border border-dashed border-border aspect-video bg-muted/30 flex items-center justify-center">
-                    <p className="text-xs text-muted-foreground">Upload an image or let AI generate one</p>
+                    <p className="text-xs text-muted-foreground">Upload an image or let Smart generate one</p>
                   </div>
                 )}
               </div>
@@ -478,7 +478,7 @@ const FundNew = () => {
                     disabled={aiBusy === "story" || !title.trim()}
                   >
                     {aiBusy === "story" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
-                    AI write
+                    Smart write
                   </Button>
                 </div>
                 <Textarea
@@ -488,7 +488,7 @@ const FundNew = () => {
                   rows={10}
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  Markdown supported. AI uses your title, tagline & goal as context.
+                  Markdown supported. Thrive uses your title, tagline & goal as context.
                 </p>
               </div>
             </Card>
@@ -512,7 +512,7 @@ const FundNew = () => {
                   disabled={aiBusy === "tiers" || !title.trim()}
                 >
                   {aiBusy === "tiers" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
-                  AI suggest
+                  Smart suggest
                 </Button>
                 <Button variant="outline" size="sm" onClick={addTier} className="gap-1">
                   <Plus className="h-4 w-4" /> Add
@@ -651,7 +651,7 @@ const FundNew = () => {
 
             <p className="text-[11px] text-muted-foreground">
               Platform fee 5% on funded campaigns. Stripe processing fees apply. All campaigns are
-              screened by our AI moderator for fraud, prohibited content, and policy compliance —
+              screened by our smart moderator for fraud, prohibited content, and policy compliance —
               flagged campaigns go to human review before going live.
             </p>
           </Card>

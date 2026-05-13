@@ -1,4 +1,4 @@
-// Organizer Command Center — /meetup/manage
+// Organizer Command Center — /meetup/manage  (mobile-first)
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -11,31 +11,43 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Calendar, Users, Mail, MessageSquare, Ticket, Megaphone,
   Settings as SettingsIcon, BarChart3, Plus, ArrowLeft, ExternalLink,
+  QrCode, Share2, Pencil, UserPlus, ChevronDown,
 } from "lucide-react";
 import { format } from "date-fns";
 import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
 import { CreateSessionDialog } from "@/components/sessions/CreateSessionDialog";
+import { EditEventDialog } from "@/components/sessions/EditEventDialog";
+import { EventAnalyticsDialog } from "@/components/sessions/EventAnalyticsDialog";
+import { EventShareKit } from "@/components/sessions/EventShareKit";
+import { EventCheckInDialog } from "@/components/sessions/EventCheckInDialog";
+import { InviteByEmailDialog } from "@/components/sessions/InviteByEmailDialog";
+import { EventHostToolsDialog } from "@/components/sessions/EventHostToolsDialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface EventRow {
   id: string;
   title: string;
+  description: string | null;
+  category: string | null;
   start_time: string;
   venue_name: string | null;
   cover_image_url: string | null;
   is_ticketed: boolean | null;
   ticket_price: number | null;
+  ticket_currency: string | null;
   status: string | null;
   total_views: number | null;
   max_participants: number | null;
+  created_by: string | null;
 }
 
 const TABS = [
   { v: "overview", l: "Overview", icon: BarChart3 },
   { v: "attendees", l: "Attendees", icon: Users },
   { v: "blasts", l: "Blasts", icon: Megaphone },
-  { v: "messages", l: "Messages", icon: MessageSquare },
   { v: "tickets", l: "Tickets", icon: Ticket },
-  { v: "promotion", l: "Promotion", icon: Mail },
+  { v: "promotion", l: "Promotion", icon: Share2 },
+  { v: "messages", l: "Messages", icon: MessageSquare },
   { v: "settings", l: "Settings", icon: SettingsIcon },
 ] as const;
 
@@ -55,13 +67,19 @@ const MeetupManage = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ rsvps: 0, tickets: 0, revenue: 0, views: 0 });
   const [showCreate, setShowCreate] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showCheckIn, setShowCheckIn] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [showHostTools, setShowHostTools] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const reload = async () => {
     if (!user) return;
     setLoading(true);
     const { data } = await supabase
       .from("creative_jams")
-      .select("id, title, start_time, venue_name, cover_image_url, is_ticketed, ticket_price, status, total_views, max_participants")
+      .select("id, title, description, category, start_time, venue_name, cover_image_url, is_ticketed, ticket_price, ticket_currency, status, total_views, max_participants, created_by")
       .eq("created_by", user.id)
       .order("start_time", { ascending: false })
       .limit(50);
@@ -94,7 +112,7 @@ const MeetupManage = () => {
   const selected = events.find(e => e.id === selectedId);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-[calc(env(safe-area-inset-bottom)+6rem)]">
       <Helmet>
         <title>Organizer Command Center | ThriveIN Events</title>
         <meta name="description" content="Manage your events, attendees, blasts, tickets and analytics in one place." />
@@ -103,32 +121,32 @@ const MeetupManage = () => {
       {/* Cinematic header */}
       <div className="relative border-b border-border/50 bg-cinematic overflow-hidden pt-[env(safe-area-inset-top)]">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/40 to-transparent" />
-        <div className="relative container mx-auto max-w-6xl px-4 pt-5 pb-6 sm:pt-7 sm:pb-8">
+        <div className="relative container mx-auto max-w-6xl px-4 pt-4 pb-5 sm:pt-7 sm:pb-8">
           <button
             onClick={() => navigate("/meetup")}
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-energy transition mb-3 uppercase tracking-wider font-bold"
           >
             <ArrowLeft className="h-3 w-3" /> Back to Events
           </button>
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-3 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-2 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
                 <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
                 Organizer mode
               </p>
-              <h1 className="text-2xl sm:text-4xl font-black tracking-[-0.035em] text-foreground leading-[0.95]">
+              <h1 className="text-xl sm:text-4xl font-black tracking-[-0.035em] text-foreground leading-[0.95]">
                 Command Center.<br />
                 <span className="text-energy-glow">Run your event like a pro.</span>
               </h1>
             </div>
-            <Button onClick={() => setShowCreate(true)} variant="gradient" size="sm" className="rounded-full">
-              <Plus className="h-4 w-4 mr-1.5" /> New Event
+            <Button onClick={() => setShowCreate(true)} variant="gradient" size="sm" className="rounded-full shrink-0">
+              <Plus className="h-4 w-4 sm:mr-1.5" /> <span className="hidden sm:inline">New Event</span>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto max-w-6xl px-4 py-6">
+      <div className="container mx-auto max-w-6xl px-3 sm:px-4 py-4 sm:py-6">
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -136,7 +154,7 @@ const MeetupManage = () => {
             ))}
           </div>
         ) : events.length === 0 ? (
-          <Card className="p-10 text-center border-dashed bg-card/40">
+          <Card className="p-8 sm:p-10 text-center border-dashed bg-card/40">
             <Calendar className="h-12 w-12 mx-auto text-energy/40 mb-3" />
             <h3 className="font-black text-lg mb-1 tracking-tight">No events yet</h3>
             <p className="text-sm text-muted-foreground mb-4">Host your first event to unlock the Command Center.</p>
@@ -145,9 +163,48 @@ const MeetupManage = () => {
             </Button>
           </Card>
         ) : (
-          <div className="grid lg:grid-cols-[280px_1fr] gap-6">
-            {/* Event picker */}
-            <aside className="space-y-2">
+          <div className="grid lg:grid-cols-[280px_1fr] gap-4 lg:gap-6">
+            {/* Mobile: event switcher sheet */}
+            <div className="lg:hidden">
+              <Sheet open={pickerOpen} onOpenChange={setPickerOpen}>
+                <SheetTrigger asChild>
+                  <button className="w-full flex items-center gap-3 p-3 rounded-lg border border-energy/40 bg-energy/[0.04]">
+                    <div className="shrink-0 w-10 h-10 rounded bg-gradient-to-br from-primary/20 to-energy/10 overflow-hidden flex items-center justify-center">
+                      {selected?.cover_image_url ? (
+                        <img src={selected.cover_image_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <Calendar className="h-4 w-4 text-energy" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1 text-left">
+                      <p className="text-[10px] uppercase tracking-wider font-bold text-energy">Managing</p>
+                      <p className="font-bold text-sm line-clamp-1 leading-tight">{selected?.title || "Pick an event"}</p>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
+                  <SheetHeader><SheetTitle>Your Events</SheetTitle></SheetHeader>
+                  <div className="space-y-2 mt-3">
+                    {events.map(e => (
+                      <button
+                        key={e.id}
+                        onClick={() => { setSelectedId(e.id); setPickerOpen(false); }}
+                        className={`w-full text-left p-3 rounded-lg border transition-all ${
+                          selectedId === e.id ? "border-energy bg-energy/5" : "border-border/50 bg-card/40"
+                        }`}
+                      >
+                        <p className="font-bold text-sm line-clamp-1">{e.title}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{format(new Date(e.start_time), "MMM d, yyyy · h:mm a")}</p>
+                      </button>
+                    ))}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            {/* Desktop sidebar */}
+            <aside className="hidden lg:block space-y-2">
               <p className="brand-eyebrow mb-2">Your Events</p>
               {events.map(e => (
                 <button
@@ -177,52 +234,87 @@ const MeetupManage = () => {
             </aside>
 
             {/* Detail */}
-            <div>
+            <div className="min-w-0">
               {selected && (
                 <>
-                  <Card className="p-4 mb-4 bg-card/60 border-border/50">
+                  <Card className="p-3 sm:p-4 mb-3 sm:mb-4 bg-card/60 border-border/50">
                     <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div>
-                        <h2 className="font-black text-lg tracking-tight">{selected.title}</h2>
+                      <div className="min-w-0">
+                        <h2 className="font-black text-base sm:text-lg tracking-tight line-clamp-2">{selected.title}</h2>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(new Date(selected.start_time), "EEE, MMM d, yyyy · h:mm a")}
+                          {format(new Date(selected.start_time), "EEE, MMM d · h:mm a")}
                           {selected.venue_name && ` · ${selected.venue_name}`}
                         </p>
                       </div>
-                      <Button asChild variant="outline" size="sm">
+                      <Button asChild variant="outline" size="sm" className="shrink-0">
                         <Link to={`/event/${selected.id}`}>
-                          <ExternalLink className="h-3 w-3 mr-1.5" /> View Page
+                          <ExternalLink className="h-3 w-3 sm:mr-1.5" /> <span className="hidden sm:inline">View Page</span>
                         </Link>
                       </Button>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-3 sm:mt-4">
                       <Stat label="RSVPs" value={stats.rsvps} />
-                      <Stat label="Tickets Sold" value={stats.tickets} />
+                      <Stat label="Tickets" value={stats.tickets} />
                       <Stat label="Revenue" value={`$${stats.revenue.toFixed(0)}`} />
-                      <Stat label="Page Views" value={stats.views} />
+                      <Stat label="Views" value={stats.views} />
+                    </div>
+                    {/* Quick action bar */}
+                    <div className="flex items-center gap-1.5 mt-3 -mx-1 px-1 overflow-x-auto scrollbar-hide">
+                      <QuickAction icon={QrCode} label="Check-In" onClick={() => setShowCheckIn(true)} />
+                      <QuickAction icon={Share2} label="Share" onClick={() => setTab("promotion")} />
+                      <QuickAction icon={UserPlus} label="Invite" onClick={() => setShowInvite(true)} />
+                      <QuickAction icon={Megaphone} label="Blast" onClick={() => setTab("blasts")} />
+                      <QuickAction icon={BarChart3} label="Analytics" onClick={() => setShowAnalytics(true)} />
+                      <QuickAction icon={Pencil} label="Edit" onClick={() => setShowEdit(true)} />
                     </div>
                   </Card>
 
                   <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-                    <TabsList className="w-full justify-start overflow-x-auto bg-transparent p-0 h-auto gap-2 mb-4">
+                    <TabsList className="w-full justify-start overflow-x-auto bg-transparent p-0 h-auto gap-1.5 sm:gap-2 mb-4 scrollbar-hide">
                       {TABS.map(({ v, l, icon: Icon }) => (
                         <TabsTrigger
                           key={v}
                           value={v}
-                          className="data-[state=active]:bg-energy data-[state=active]:text-energy-foreground data-[state=active]:shadow-glow-lime rounded-full px-3 text-[11px] font-bold uppercase tracking-wider"
+                          className="data-[state=active]:bg-energy data-[state=active]:text-energy-foreground data-[state=active]:shadow-glow-lime rounded-full px-2.5 sm:px-3 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider shrink-0"
                         >
                           <Icon className="h-3.5 w-3.5 mr-1" /> {l}
                         </TabsTrigger>
                       ))}
                     </TabsList>
 
-                    <TabsContent value="overview"><OverviewTab eventId={selected.id} stats={stats} /></TabsContent>
-                    <TabsContent value="attendees"><AttendeesTab eventId={selected.id} /></TabsContent>
+                    <TabsContent value="overview">
+                      <OverviewTab
+                        eventId={selected.id}
+                        onCheckIn={() => setShowCheckIn(true)}
+                        onInvite={() => setShowInvite(true)}
+                        onAnalytics={() => setShowAnalytics(true)}
+                        onHostTools={() => setShowHostTools(true)}
+                      />
+                    </TabsContent>
+                    <TabsContent value="attendees">
+                      <AttendeesTab eventId={selected.id} onInvite={() => setShowInvite(true)} />
+                    </TabsContent>
                     <TabsContent value="blasts"><BlastsTab eventId={selected.id} eventTitle={selected.title} /></TabsContent>
-                    <TabsContent value="messages"><Placeholder title="Group Messages" body="Broadcast in-app messages to attendees. Coming next." /></TabsContent>
-                    <TabsContent value="tickets"><TicketsTab eventId={selected.id} /></TabsContent>
-                    <TabsContent value="promotion"><Placeholder title="Promotion" body="Promo codes, share kit, embed widget. Coming next." /></TabsContent>
-                    <TabsContent value="settings"><Placeholder title="Event Settings" body="Edit event details, refund policy, waitlist." actionLabel="Edit Event" actionTo={`/event/${selected.id}/edit`} /></TabsContent>
+                    <TabsContent value="tickets">
+                      <TicketsTab eventId={selected.id} onEdit={() => setShowEdit(true)} />
+                    </TabsContent>
+                    <TabsContent value="promotion">
+                      <PromotionTab event={selected} />
+                    </TabsContent>
+                    <TabsContent value="messages">
+                      <Placeholder
+                        title="Group Chat"
+                        body="Open the event page to broadcast in the attendee chat room."
+                        actionLabel="Open Event Chat"
+                        actionTo={`/event/${selected.id}#chat`}
+                      />
+                    </TabsContent>
+                    <TabsContent value="settings">
+                      <SettingsTab
+                        onEdit={() => setShowEdit(true)}
+                        onHostTools={() => setShowHostTools(true)}
+                      />
+                    </TabsContent>
                   </Tabs>
                 </>
               )}
@@ -231,43 +323,99 @@ const MeetupManage = () => {
         )}
       </div>
 
+      {/* Dialogs */}
       <CreateSessionDialog open={showCreate} onOpenChange={setShowCreate} onCreated={reload} />
+      {selected && (
+        <>
+          <EditEventDialog open={showEdit} onOpenChange={setShowEdit} eventId={selected.id} onUpdated={reload} />
+          <EventAnalyticsDialog
+            open={showAnalytics}
+            onOpenChange={setShowAnalytics}
+            eventId={selected.id}
+            eventTitle={selected.title}
+            capacity={selected.max_participants}
+            currency={selected.ticket_currency || "USD"}
+          />
+          <EventCheckInDialog
+            open={showCheckIn}
+            onOpenChange={setShowCheckIn}
+            eventId={selected.id}
+            eventTitle={selected.title}
+          />
+          <InviteByEmailDialog
+            open={showInvite}
+            onOpenChange={setShowInvite}
+            eventId={selected.id}
+            eventTitle={selected.title}
+          />
+          <EventHostToolsDialog
+            open={showHostTools}
+            onOpenChange={setShowHostTools}
+            eventId={selected.id}
+            eventTitle={selected.title}
+          />
+        </>
+      )}
     </div>
   );
 };
 
 const Stat = ({ label, value }: { label: string; value: number | string }) => (
-  <div className="rounded-lg border border-border/50 bg-card/40 p-3">
-    <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">{label}</p>
-    <p className="text-2xl font-black tracking-tight text-energy">{value}</p>
+  <div className="rounded-lg border border-border/50 bg-card/40 p-2.5 sm:p-3">
+    <p className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-1">{label}</p>
+    <p className="text-xl sm:text-2xl font-black tracking-tight text-energy">{value}</p>
   </div>
 );
 
-const Placeholder = ({ title, body, actionLabel, actionTo }: { title: string; body: string; actionLabel?: string; actionTo?: string }) => (
-  <Card className="p-8 text-center border-dashed bg-card/40">
+const QuickAction = ({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/60 bg-card/60 hover:border-energy/50 hover:bg-energy/5 transition text-[11px] font-bold"
+  >
+    <Icon className="h-3.5 w-3.5 text-energy" /> {label}
+  </button>
+);
+
+const Placeholder = ({ title, body, actionLabel, actionTo, onAction }: { title: string; body: string; actionLabel?: string; actionTo?: string; onAction?: () => void }) => (
+  <Card className="p-6 sm:p-8 text-center border-dashed bg-card/40">
     <h3 className="font-black text-lg tracking-tight mb-1">{title}</h3>
     <p className="text-sm text-muted-foreground mb-4">{body}</p>
-    {actionLabel && actionTo && (
-      <Button asChild variant="outline" size="sm">
-        <Link to={actionTo}>{actionLabel}</Link>
-      </Button>
-    )}
+    {actionLabel && (actionTo ? (
+      <Button asChild variant="outline" size="sm"><Link to={actionTo}>{actionLabel}</Link></Button>
+    ) : onAction ? (
+      <Button onClick={onAction} variant="outline" size="sm">{actionLabel}</Button>
+    ) : null)}
   </Card>
 );
 
-const OverviewTab = ({ eventId, stats }: { eventId: string; stats: any }) => (
+const OverviewTab = ({ eventId, onCheckIn, onInvite, onAnalytics, onHostTools }: {
+  eventId: string; onCheckIn: () => void; onInvite: () => void; onAnalytics: () => void; onHostTools: () => void;
+}) => (
   <div className="space-y-3">
     <Card className="p-4 bg-card/60 border-border/50">
-      <p className="brand-eyebrow mb-2">Quick Actions</p>
-      <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm" variant="outline"><Link to={`/event/${eventId}/check-in`}>Open Check-In</Link></Button>
-        <Button asChild size="sm" variant="outline"><Link to={`/event/${eventId}`}>Share Page</Link></Button>
+      <p className="brand-eyebrow mb-3">Quick Actions</p>
+      <div className="grid grid-cols-2 gap-2">
+        <Button onClick={onCheckIn} variant="outline" size="sm" className="justify-start">
+          <QrCode className="h-4 w-4 mr-2 text-energy" /> Check-In
+        </Button>
+        <Button onClick={onInvite} variant="outline" size="sm" className="justify-start">
+          <UserPlus className="h-4 w-4 mr-2 text-energy" /> Invite Guests
+        </Button>
+        <Button onClick={onAnalytics} variant="outline" size="sm" className="justify-start">
+          <BarChart3 className="h-4 w-4 mr-2 text-energy" /> Analytics
+        </Button>
+        <Button onClick={onHostTools} variant="outline" size="sm" className="justify-start">
+          <SettingsIcon className="h-4 w-4 mr-2 text-energy" /> Host Tools
+        </Button>
+        <Button asChild variant="outline" size="sm" className="justify-start col-span-2">
+          <Link to={`/event/${eventId}`}><ExternalLink className="h-4 w-4 mr-2 text-energy" /> View Public Page</Link>
+        </Button>
       </div>
     </Card>
   </div>
 );
 
-const AttendeesTab = ({ eventId }: { eventId: string }) => {
+const AttendeesTab = ({ eventId, onInvite }: { eventId: string; onInvite: () => void }) => {
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -283,24 +431,35 @@ const AttendeesTab = ({ eventId }: { eventId: string }) => {
     })();
   }, [eventId]);
 
-  if (loading) return <div className="h-32 rounded bg-muted/40 animate-pulse" />;
-  if (list.length === 0) return <Placeholder title="No attendees yet" body="Share your event to get the first RSVPs." />;
-
   return (
-    <Card className="bg-card/60 border-border/50 divide-y divide-border/50">
-      {list.map((p: any) => (
-        <div key={p.id} className="flex items-center gap-3 p-3">
-          <div className="w-9 h-9 rounded-full bg-muted overflow-hidden shrink-0">
-            {p.profiles?.avatar_url && <img src={p.profiles.avatar_url} alt="" className="w-full h-full object-cover" />}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm line-clamp-1">{p.profiles?.full_name || "Member"}</p>
-            <p className="text-[10px] text-muted-foreground">{format(new Date(p.created_at), "MMM d")}</p>
-          </div>
-          <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{p.status || "going"}</Badge>
-        </div>
-      ))}
-    </Card>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="brand-eyebrow">{list.length} Attendees</p>
+        <Button onClick={onInvite} variant="lime" size="sm">
+          <UserPlus className="h-4 w-4 mr-1.5" /> Invite
+        </Button>
+      </div>
+      {loading ? (
+        <div className="h-32 rounded bg-muted/40 animate-pulse" />
+      ) : list.length === 0 ? (
+        <Placeholder title="No attendees yet" body="Invite by email or share your event page to get the first RSVPs." actionLabel="Invite by Email" onAction={onInvite} />
+      ) : (
+        <Card className="bg-card/60 border-border/50 divide-y divide-border/50">
+          {list.map((p: any) => (
+            <div key={p.id} className="flex items-center gap-3 p-3">
+              <div className="w-9 h-9 rounded-full bg-muted overflow-hidden shrink-0">
+                {p.profiles?.avatar_url && <img src={p.profiles.avatar_url} alt="" className="w-full h-full object-cover" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm line-clamp-1">{p.profiles?.full_name || "Member"}</p>
+                <p className="text-[10px] text-muted-foreground">{format(new Date(p.created_at), "MMM d")}</p>
+              </div>
+              <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{p.status || "going"}</Badge>
+            </div>
+          ))}
+        </Card>
+      )}
+    </div>
   );
 };
 
@@ -327,7 +486,7 @@ const BlastsTab = ({ eventId, eventTitle }: { eventId: string; eventTitle: strin
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <p className="brand-eyebrow mb-1">Email Blasts</p>
-            <p className="text-sm text-muted-foreground">Send announcements, reminders, and thank-you notes to attendees.</p>
+            <p className="text-sm text-muted-foreground">Announcements, reminders, and thank-you notes.</p>
           </div>
           <Button variant="lime" size="sm" onClick={() => setComposerOpen(true)}>
             <Plus className="h-4 w-4 mr-1.5" /> New Blast
@@ -337,7 +496,7 @@ const BlastsTab = ({ eventId, eventTitle }: { eventId: string; eventTitle: strin
       {loading ? (
         <div className="h-20 rounded bg-muted/40 animate-pulse" />
       ) : blasts.length === 0 ? (
-        <Placeholder title="No blasts sent" body="Send your first email blast — announcement, reminder, or thank-you." />
+        <Placeholder title="No blasts sent" body="Send your first email blast — announcement, reminder, or thank-you." actionLabel="Compose Blast" onAction={() => setComposerOpen(true)} />
       ) : (
         <Card className="bg-card/60 border-border/50 divide-y divide-border/50">
           {blasts.map(b => (
@@ -364,7 +523,7 @@ const BlastsTab = ({ eventId, eventTitle }: { eventId: string; eventTitle: strin
   );
 };
 
-const TicketsTab = ({ eventId }: { eventId: string }) => {
+const TicketsTab = ({ eventId, onEdit }: { eventId: string; onEdit: () => void }) => {
   const [tiers, setTiers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -379,23 +538,79 @@ const TicketsTab = ({ eventId }: { eventId: string }) => {
     })();
   }, [eventId]);
 
-  if (loading) return <div className="h-32 rounded bg-muted/40 animate-pulse" />;
-  if (tiers.length === 0)
-    return <Placeholder title="No ticket tiers" body="Create tiered tickets — Early Bird, GA, VIP — with custom pricing and limits." />;
-
   return (
-    <Card className="bg-card/60 border-border/50 divide-y divide-border/50">
-      {tiers.map(t => (
-        <div key={t.id} className="p-3 flex items-center justify-between gap-3">
-          <div>
-            <p className="font-bold text-sm">{t.name}</p>
-            <p className="text-[10px] text-muted-foreground">{t.sold_count || 0} / {t.quantity || "∞"} sold</p>
-          </div>
-          <p className="font-black text-energy">${t.price}</p>
-        </div>
-      ))}
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="brand-eyebrow">{tiers.length} Tier{tiers.length === 1 ? "" : "s"}</p>
+        <Button onClick={onEdit} variant="lime" size="sm">
+          <Pencil className="h-4 w-4 mr-1.5" /> Manage Tiers
+        </Button>
+      </div>
+      {loading ? (
+        <div className="h-32 rounded bg-muted/40 animate-pulse" />
+      ) : tiers.length === 0 ? (
+        <Placeholder title="No ticket tiers" body="Create tiered tickets — Early Bird, GA, VIP — with custom pricing and limits." actionLabel="Add Tickets" onAction={onEdit} />
+      ) : (
+        <Card className="bg-card/60 border-border/50 divide-y divide-border/50">
+          {tiers.map(t => (
+            <div key={t.id} className="p-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-bold text-sm">{t.name}</p>
+                <p className="text-[10px] text-muted-foreground">{t.sold_count || 0} / {t.quantity || "∞"} sold</p>
+              </div>
+              <p className="font-black text-energy">${t.price}</p>
+            </div>
+          ))}
+        </Card>
+      )}
+    </div>
+  );
+};
+
+const PromotionTab = ({ event }: { event: EventRow }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <Card className="p-4 bg-card/60 border-border/50 space-y-3">
+      <p className="brand-eyebrow">Share Kit</p>
+      <p className="text-sm text-muted-foreground">
+        Copy link, generate QR, share to WhatsApp/Twitter, or grab an embed snippet.
+      </p>
+      <Button onClick={() => setOpen(true)} variant="lime" size="sm" className="w-full sm:w-auto">
+        <Share2 className="h-4 w-4 mr-1.5" /> Open Share Kit
+      </Button>
+      <Button asChild variant="outline" size="sm" className="w-full sm:w-auto sm:ml-2">
+        <Link to={`/event/${event.id}`}><ExternalLink className="h-4 w-4 mr-1.5" /> Preview Public Page</Link>
+      </Button>
+      <EventShareKit
+        open={open}
+        onOpenChange={setOpen}
+        event={{
+          id: event.id,
+          title: event.title,
+          description: event.description || undefined,
+          start_time: event.start_time,
+          venue_name: event.venue_name || undefined,
+          category: event.category || "general",
+          is_ticketed: event.is_ticketed,
+          ticket_price: event.ticket_price,
+          ticket_currency: event.ticket_currency,
+          created_by: event.created_by || undefined,
+        }}
+      />
     </Card>
   );
 };
+
+const SettingsTab = ({ onEdit, onHostTools }: { onEdit: () => void; onHostTools: () => void }) => (
+  <Card className="p-4 bg-card/60 border-border/50 space-y-2">
+    <p className="brand-eyebrow mb-2">Event Settings</p>
+    <Button onClick={onEdit} variant="outline" size="sm" className="w-full justify-start">
+      <Pencil className="h-4 w-4 mr-2 text-energy" /> Edit Event Details
+    </Button>
+    <Button onClick={onHostTools} variant="outline" size="sm" className="w-full justify-start">
+      <SettingsIcon className="h-4 w-4 mr-2 text-energy" /> Host Tools (RSVP questions, co-hosts, seating)
+    </Button>
+  </Card>
+);
 
 export default MeetupManage;

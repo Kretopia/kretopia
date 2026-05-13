@@ -1,20 +1,24 @@
 import { Link, useLocation } from "react-router-dom";
-import { Sparkles, Briefcase, LayoutDashboard, Home, UserSearch, Wallet } from "lucide-react";
+import { Radar, LayoutDashboard, Home, UserCircle2, Wallet, Briefcase, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
 
-// MVP Calm Nav: Home · Match · Desk. Gigs + Pay live in the hamburger.
-// Hint = tooltip/long-press helper for first-timers.
+// ThriveIN 2.0 — Creative OS nav.
+// Home · Studios · Scout · Pay · Profile.
+// Match (swipe), Gigs marketplace, Scouted gigs all live INSIDE Scout.
+// Fund/Manage/Events/Spotlight live in the hamburger.
 const NAV_ITEMS = [
-  { path: "/", icon: Home, label: "Home", hint: "Your daily Home — what's new, what to do" },
-  { path: "/circle", icon: Sparkles, label: "Match", hint: "Find people to collaborate with" },
-  { path: "/desk", icon: LayoutDashboard, label: "Desk", hint: "Your workspaces & projects" },
+  { path: "/", icon: Home, label: "Home", hint: "Your daily Pulse — what's new, what to do" },
+  { path: "/desk", icon: LayoutDashboard, label: "Studios", hint: "Your projects & workspaces" },
+  { path: "/scout", icon: Radar, label: "Scout", hint: "Gigs & people, scouted for you" },
+  { path: "/thrivepay", icon: Wallet, label: "Pay", hint: "Invoices, expenses, money flow" },
+  { path: "/profile", icon: UserCircle2, label: "Profile", hint: "Your identity & credits" },
 ];
 
-// Company accounts get a B2B-focused nav
+// Company accounts get a B2B-focused nav (unchanged).
 const COMPANY_ITEMS = [
-  { path: "/desk", icon: LayoutDashboard, label: "Desk", hint: "Your briefs & active projects" },
+  { path: "/desk", icon: LayoutDashboard, label: "Studios", hint: "Your briefs & active projects" },
   { path: "/opportunities", icon: Briefcase, label: "Gigs", hint: "Roles you've posted & talent pool" },
   { path: "/talent-finder", icon: UserSearch, label: "Talent", hint: "Find creators to hire" },
   { path: "/thrivepay", icon: Wallet, label: "Pay", hint: "Pay creators & manage invoices" },
@@ -30,19 +34,30 @@ const BottomNav = memo(() => {
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
-    if (path === "/circle") return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
-    if (path === "/opportunities") return location.pathname === "/opportunities" || location.pathname === "/opportunity-dashboard";
+    if (path === "/scout") {
+      // Scout absorbs the old /opportunities + /circle entry points
+      return (
+        location.pathname.startsWith("/scout") ||
+        location.pathname === "/opportunities" ||
+        location.pathname === "/opportunity-dashboard" ||
+        (location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"))
+      );
+    }
     if (path === "/desk") return location.pathname.startsWith("/desk");
-    if (path === "/thrivepay") return location.pathname.startsWith("/thrivepay") || location.pathname.startsWith("/accounting");
+    if (path === "/profile") return location.pathname === "/profile";
+    if (path === "/thrivepay")
+      return location.pathname.startsWith("/thrivepay") || location.pathname.startsWith("/accounting");
+    if (path === "/opportunities")
+      return location.pathname === "/opportunities" || location.pathname === "/opportunity-dashboard";
     return location.pathname === path;
   };
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border/50 glass-strong"
+      className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-border/60 bg-background"
       role="navigation"
       aria-label="Mobile navigation"
-      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 12px)" }}
+      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 10px)" }}
     >
       <div className="flex items-center justify-around px-1 py-1">
         {items.map((item) => {
@@ -57,16 +72,16 @@ const BottomNav = memo(() => {
               className={cn(
                 "relative flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-xl transition-all duration-200 flex-1 min-h-[48px]",
                 "touch-manipulation select-none active:scale-95",
-                active
-                  ? "text-energy"
-                  : "text-muted-foreground hover:text-foreground"
+                active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
               style={{ WebkitTapHighlightColor: "transparent" }}
             >
-              <item.icon className={cn("h-5 w-5 transition-all duration-200", active && "scale-110 drop-shadow-[0_0_8px_hsl(var(--energy)/0.6)]")} />
-              <span className={cn("text-[10px] font-medium leading-tight", active && "font-semibold")}>{item.label}</span>
+              <item.icon className={cn("h-5 w-5 transition-all duration-200", active && "scale-105")} />
+              <span className={cn("text-[10px] leading-tight", active ? "font-semibold" : "font-medium")}>
+                {item.label}
+              </span>
               {active && (
-                <span className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-energy shadow-[0_0_8px_hsl(var(--energy)/0.8)]" />
+                <span className="absolute -top-px left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-foreground" />
               )}
             </Link>
           );

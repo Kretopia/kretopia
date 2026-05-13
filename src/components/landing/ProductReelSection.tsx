@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Users, FolderKanban, MessageSquare, DollarSign, ArrowRight, type LucideIcon } from "lucide-react";
+import shotMatch from "@/assets/mockup-circle-swipe.png";
+import shotDesk from "@/assets/mockup-projects.png";
+import shotCopilot from "@/assets/mockup-messages.png";
+import shotPay from "@/assets/mockup-wallet.png";
 
 interface Tile {
   icon: LucideIcon;
@@ -10,6 +14,7 @@ interface Tile {
   chip: string;
   href: string;
   accent: string;
+  image: string;
 }
 
 const TILES: Tile[] = [

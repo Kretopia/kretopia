@@ -127,7 +127,7 @@ export function VerificationReportCard({
             <div className={cn("p-1.5 rounded-lg bg-primary/10", tierStyles.accent)}>
               <Shield className="h-4 w-4" />
             </div>
-            AI Verification Report
+            Smart Verification Report
           </CardTitle>
           <Badge className={cn("text-xs px-2.5 py-0.5", tierStyles.badge)}>
             {verificationTier === 'verified' ? 'VERIFIED' : verificationTier.toUpperCase()}
@@ -237,7 +237,7 @@ export function VerificationReportCard({
             <div className="space-y-2">
               <p className="text-sm font-medium flex items-center gap-1.5">
                 <Database className="h-4 w-4 text-muted-foreground" />
-                Sources Checked by AI
+                Sources Checked
               </p>
               <div className="grid grid-cols-2 gap-1.5">
                 {SOURCES_CHECKED.map((source, idx) => (
@@ -309,7 +309,7 @@ export function VerificationReportCard({
               <ul className="text-xs text-muted-foreground space-y-1.5">
                 <li className="flex items-start gap-2">
                   <span className="text-primary">•</span>
-                  AI searches industry databases (IMDB, Discogs, Grammy)
+                  Thrive searches industry databases (IMDB, Discogs, Grammy)
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary">•</span>

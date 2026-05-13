@@ -148,7 +148,7 @@ export async function seedAfterClaimNudges(userId: string, opts: {
           priority: "high",
           title: "🗂️ Set up your workspace",
           message: "Spin up your first project workspace — invoices, files, and tasks in one place.",
-          action_text: "Open Desk",
+          action_text: "Open Studios",
           action_url: "/projects",
           read: false,
         });

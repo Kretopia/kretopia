@@ -204,7 +204,7 @@ export function VerificationProgressModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
-            AI Credential Verification
+            Smart Credential Verification
           </DialogTitle>
         </DialogHeader>
 

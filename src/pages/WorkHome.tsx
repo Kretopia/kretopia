@@ -388,8 +388,8 @@ const CreatorWorkHome = () => {
   return (
     <PageTransition>
       <Helmet>
-        <title>ThriveDesk | ThriveIN</title>
-        <meta name="description" content="ThriveDesk — your studio rooms. Voice-first project management for creatives." />
+        <title>Studios | ThriveIN</title>
+        <meta name="description" content="Studios — your project rooms. Voice-first project management for creatives." />
       </Helmet>
 
       {/* Wider on desktop, capped for readability */}
@@ -399,7 +399,7 @@ const CreatorWorkHome = () => {
           <p className="brand-eyebrow mb-2">Projects & Workspaces</p>
           <div className="flex items-center gap-3 flex-wrap">
             <FolderKanban className="h-9 w-9 md:h-10 md:w-10 text-primary shrink-0" strokeWidth={2.5} />
-            <h1 className="text-3xl md:text-5xl font-black tracking-[-0.04em] leading-none">ThriveDesk</h1>
+            <h1 className="text-3xl md:text-5xl font-black tracking-[-0.04em] leading-none">Studios</h1>
             {activeProjects.length > 0 && (
               <Badge className="bg-energy text-energy-foreground hover:bg-energy gap-1 font-bold border-0">
                 {activeProjects.length} Active

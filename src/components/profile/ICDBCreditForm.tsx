@@ -507,7 +507,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
         }
       }
 
-      toast.success("Credit added — AI verification in progress");
+      toast.success("Credit added — verification in progress");
       resetForm();
       onOpenChange(false);
       onSuccess();
@@ -558,7 +558,7 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
           </DialogTitle>
           <DialogDescription className="text-xs">
             {step === "search"
-              ? "Upload, paste a link, or search — AI fills in the rest"
+              ? "Upload, paste a link, or search — Thrive fills in the rest"
               : "Confirm your role and details"
             }
           </DialogDescription>

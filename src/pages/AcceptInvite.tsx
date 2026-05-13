@@ -200,8 +200,8 @@ const AcceptInvite = () => {
     ? `${SUPABASE_URL}/functions/v1/project-og-image?project_id=${projectId}`
     : undefined;
   const seoTitle = preview
-    ? `${preview.inviter_name ? preview.inviter_name + " invited you to " : "You're invited to "}${preview.title} · ThriveDesk`
-    : "You're invited to collaborate · ThriveDesk";
+    ? `${preview.inviter_name ? preview.inviter_name + " invited you to " : "You're invited to "}${preview.title} · Studios`
+    : "You're invited to collaborate · Studios";
   const seoDesc = preview
     ? `Join ${preview.title} on ThriveIN — collaborate on briefs, tasks, files, and payments in one creative workspace.`
     : "Open your invite to join the project workspace on ThriveIN.";
@@ -219,7 +219,7 @@ const AcceptInvite = () => {
                   <div>
                     <p className="text-xs font-bold text-foreground">ThriveIN</p>
                     <p className="text-[10px] font-semibold text-primary">
-                      ThriveDesk · {preview.workspace_type ? preview.workspace_type.replace("_", " ") : "Project"}
+                      Studios · {preview.workspace_type ? preview.workspace_type.replace("_", " ") : "Project"}
                     </p>
                   </div>
                   <div className="rounded-full bg-primary/90 text-primary-foreground text-[10px] font-bold px-3 py-1.5">

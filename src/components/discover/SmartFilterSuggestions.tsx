@@ -96,7 +96,7 @@ export const SmartFilterSuggestions = ({
               <h4 className="text-sm font-semibold">Smart Suggestions</h4>
               <Badge variant="secondary" className="text-xs gap-1">
                 <TrendingUp className="h-3 w-3" />
-                AI
+                Smart
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">

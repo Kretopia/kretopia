@@ -242,7 +242,7 @@ export const EditOpportunityDialog = ({
                 className="flex-1 gap-2 text-xs"
               >
                 {enhancingText ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
-                AI Enhance Copy
+                Smart Enhance
               </Button>
               <Button
                 type="button"
@@ -253,7 +253,7 @@ export const EditOpportunityDialog = ({
                 className="flex-1 gap-2 text-xs"
               >
                 {generatingImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
-                AI Cover Image
+                Smart Cover
               </Button>
             </div>
 

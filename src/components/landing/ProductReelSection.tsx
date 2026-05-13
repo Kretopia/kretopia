@@ -127,13 +127,14 @@ export const ProductReelSection = () => {
                     </Link>
                   </div>
 
-                  {/* Visual placeholder — geometric mock that respects the tile's accent */}
-                  <div className="relative aspect-[4/3] sm:aspect-auto sm:min-h-[220px] rounded-2xl border border-border/60 bg-background/40 backdrop-blur-sm overflow-hidden flex items-center justify-center">
-                    <div className="absolute inset-4 rounded-xl border border-border/40 bg-card/50" />
-                    <Icon className="relative h-16 w-16 text-primary/30" />
-                    <div className="absolute bottom-3 left-3 right-3 h-2 rounded-full bg-border/40 overflow-hidden">
-                      <div className="h-full w-2/3 bg-primary/40 rounded-full" />
-                    </div>
+                  {/* Real product screenshot */}
+                  <div className="relative aspect-[4/3] sm:aspect-auto sm:min-h-[260px] rounded-2xl border border-border/60 bg-background overflow-hidden flex items-center justify-center p-4">
+                    <img
+                      src={tile.image}
+                      alt={`${tile.eyebrow} product screenshot`}
+                      loading="lazy"
+                      className="max-h-full max-w-full object-contain drop-shadow-xl"
+                    />
                   </div>
                 </div>
               </motion.article>

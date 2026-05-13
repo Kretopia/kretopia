@@ -284,9 +284,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                   {/* Account section */}
                   <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
-                  {!isCompany && (
-                    <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-                  )}
+                  {/* My Profile lives at the top of the menu — no duplicate here */}
                   <Button
                     variant="ghost"
                     className="justify-start gap-3 h-auto w-full py-3"

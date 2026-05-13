@@ -38,7 +38,7 @@ export const ArtistShowcaseTemplate = ({ data }: { data: CreatorSiteData }) => {
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
       {/* Floating nav */}
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#111]/70 border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#111] border-b border-white/5">
         <div className="flex justify-between items-center px-6 md:px-12 py-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
           <div className="text-sm font-medium tracking-wider">{profile.full_name}</div>
           <div className="flex items-center gap-6">

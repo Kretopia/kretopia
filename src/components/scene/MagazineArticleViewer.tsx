@@ -85,7 +85,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
       transition={{ duration: 0.3 }}
       className="max-w-3xl mx-auto"
     >
-      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/50">
+      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background z-10 border-b border-border/50">
         <Button variant="ghost" size="sm" onClick={onBack} className="gap-1.5 -ml-2">
           <ArrowLeft className="h-4 w-4" />
           Back

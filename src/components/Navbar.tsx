@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
-  DollarSign, FolderKanban, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
-  MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, Building2, Inbox
+  DollarSign, FolderKanban, LayoutDashboard, Radar, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
+  MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, UserCircle2, Building2, Inbox
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
@@ -97,20 +97,20 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   const isCompany = accountType === "company";
 
-  // Single, focused desktop nav — mirrors mobile bottom nav
+  // ThriveIN 2.0 Creative OS — desktop nav mirrors mobile bottom nav
   const desktopNavItems = isCompany
     ? [
-        { path: "/desk", icon: FolderKanban, label: "Desk" },
+        { path: "/desk", icon: LayoutDashboard, label: "Studios" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
         { path: "/talent-finder", icon: Search, label: "Talent" },
-        { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
+        { path: "/thrivepay", icon: Wallet, label: "Pay" },
       ]
     : [
         { path: "/", icon: Home, label: "Home" },
-        { path: "/desk", icon: FolderKanban, label: "Desk" },
-        { path: "/circle", icon: Sparkles, label: "Match" },
-        { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+        { path: "/desk", icon: LayoutDashboard, label: "Studios" },
+        { path: "/scout", icon: Radar, label: "Scout" },
         { path: "/thrivepay", icon: Wallet, label: "Pay" },
+        { path: "/profile", icon: UserCircle2, label: "Profile" },
       ];
 
   const [searchOpen, setSearchOpen] = useState(false);
@@ -124,7 +124,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
   const [guestMenuOpen, setGuestMenuOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border/50 glass-strong" role="navigation" aria-label="Main navigation">
+    <nav className="sticky top-0 z-50 border-b border-border/60 bg-background" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex items-center justify-between gap-1 px-2 sm:px-4 py-2.5">
         <div className="shrink-0">
           <BrandLogo size="md" showBeta linkToHome />
@@ -162,10 +162,16 @@ const Navbar = memo(({ user }: NavbarProps) => {
             {/* Mode toggle removed — single unified nav */}
 
             {desktopNavItems.map(({ path, icon: Icon, label }) => {
-              const isActive = location.pathname === path || 
+              const isActive = location.pathname === path ||
                 (path === "/desk" && location.pathname.startsWith("/desk")) ||
                 (path === "/thrivepay" && (location.pathname.startsWith("/thrivepay") || location.pathname.startsWith("/accounting"))) ||
-                (path === "/circle" && location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"));
+                (path === "/scout" && (
+                  location.pathname.startsWith("/scout") ||
+                  location.pathname === "/opportunities" ||
+                  location.pathname === "/opportunity-dashboard" ||
+                  (location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"))
+                )) ||
+                (path === "/profile" && location.pathname.startsWith("/profile"));
               return (
                 <Link
                   key={path}
@@ -237,29 +243,17 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       )}
                     </>
                   ) : (
-                    /* ====== UNIFIED MENU — Dashboard · Find · Money (MVP) ====== */
+                    /* ====== CREATIVE OS MENU — Studios · Scout · Pay · Profile ====== */
                     <>
-                      {/* DASHBOARD — daily-driver surfaces */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Dashboard</p>
-                      <MenuButton icon={FolderKanban} label="Desk" onClick={() => handleNavigation("/desk")} path="/desk" />
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
+                      <MenuButton icon={LayoutDashboard} label="Studios" onClick={() => handleNavigation("/desk")} path="/desk" />
+                      <MenuButton icon={Radar} label="Scout" onClick={() => handleNavigation("/scout")} path="/scout" />
+                      <MenuButton icon={Wallet} label="Pay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
+                      <MenuButton icon={UserCircle2} label="Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} path="/credits" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
-
-                      <Separator className="my-3" />
-
-                      {/* FIND — discovery surfaces */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Find</p>
-                      <MenuButton icon={Briefcase} label="Gigs" onClick={() => handleNavigation("/opportunities")} path="/opportunities" />
-                      <MenuButton icon={Users} label="My Network" onClick={() => handleNavigation("/circle?tab=network")} path="/circle" />
-                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-
-                      <Separator className="my-3" />
-
-                      {/* MONEY — earning */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Money</p>
-                      <MenuButton icon={Wallet} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
                     </>
                   )}
 
@@ -290,9 +284,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                   {/* Account section */}
                   <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
-                  {!isCompany && (
-                    <MenuButton icon={User} label="My Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} />
-                  )}
+                  {/* My Profile lives at the top of the menu — no duplicate here */}
                   <Button
                     variant="ghost"
                     className="justify-start gap-3 h-auto w-full py-3"

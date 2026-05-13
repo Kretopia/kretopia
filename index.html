@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark" style="color-scheme: dark; background-color: hsl(250 35% 6%);">
+<html lang="en" data-vibe="daylight" style="color-scheme: light; background-color: hsl(40 30% 97%);">
   <head>
     <meta charset="UTF-8" />
     <meta name="google-site-verification" content="Q9BsvA9vwgxyOg6XZDaZ-g9T-WyRjbSbIvBuGBZ8VLY" />
@@ -7,9 +7,9 @@
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0F0B1F" />
+    <meta name="theme-color" content="#FAF7F2" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="ThriveIN" />
     <title>ThriveIN — Search Your Name. Claim Your Credits. Get Paid.</title>
     <meta name="description" content="Search your name, claim your verified credits, and get discovered. ThriveIN is the creative platform to build your career record and get paid." />
@@ -52,6 +52,27 @@
     <meta name="twitter:title" content="ThriveIN — Search Your Name. Claim Your Credits." />
     <meta name="twitter:description" content="Search your name, claim your verified creative history, and get discovered. The professional platform for creatives who mean business." />
     <meta name="twitter:image" content="https://www.thrivein.io/og-image.png" />
+    <script>
+      // Boot vibe — honor stored choice before paint to avoid theme flash.
+      // Default = daylight. Midnight/Neon also toggle .dark for shadcn dark variants.
+      (function () {
+        try {
+          var v = localStorage.getItem("ui_vibe");
+          if (v !== "daylight" && v !== "midnight" && v !== "neon") v = "daylight";
+          var html = document.documentElement;
+          html.setAttribute("data-vibe", v);
+          if (v === "daylight") {
+            html.classList.remove("dark");
+            html.style.colorScheme = "light";
+            html.style.backgroundColor = "hsl(40 30% 97%)";
+          } else {
+            html.classList.add("dark");
+            html.style.colorScheme = "dark";
+            html.style.backgroundColor = "hsl(250 35% 6%)";
+          }
+        } catch (_) {}
+      })();
+    </script>
   </head>
 
   <body class="bg-background text-foreground">

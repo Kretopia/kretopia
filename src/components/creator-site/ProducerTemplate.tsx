@@ -34,7 +34,7 @@ export const ProducerTemplate = ({ data }: { data: CreatorSiteData }) => {
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
 
       {/* Sticky nav */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-[#eee]">
+      <header className="sticky top-0 z-50 bg-white border-b border-[#eee]">
         <div className="flex justify-between items-center px-6 md:px-16 py-4 max-w-7xl mx-auto">
           <div className="text-sm font-semibold tracking-tight">{profile.full_name}</div>
           <nav className="hidden md:flex gap-8 text-xs font-medium text-[#888]">

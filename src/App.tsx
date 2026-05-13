@@ -437,7 +437,7 @@ const AppContent = () => {
 
             {/* Meetup Hub — dedicated events discovery */}
             <Route path="/meetup" element={<Meetup />} />
-            <Route path="/meetup/manage" element={<AuthGate><MeetupManage /></AuthGate>} />
+            <Route path="/meetup/manage" element={<MeetupManage />} />
             <Route path="/meetups" element={<Navigate to="/meetup" replace />} />
 
             {/* Public Access Pages (No Auth Required) */}

@@ -40,8 +40,15 @@ const TABS = [
 ] as const;
 
 const MeetupManage = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth?redirect=/meetup/manage", { replace: true });
+    }
+  }, [authLoading, user, navigate]);
+
   const [events, setEvents] = useState<EventRow[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tab, setTab] = useState<typeof TABS[number]["v"]>("overview");

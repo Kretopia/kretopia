@@ -568,6 +568,9 @@ export const UnifiedHome = () => {
             <ThrivePromptHero />
           </div>
 
+          {/* The Pulse — Morning Brief + Today + Active Studios */}
+          <MorningPulse firstName={firstName} greeting={greeting} />
+
           {/* Pass B.1: MagicHomeHero hidden — ThrivePromptHero is the single hero. */}
           {false && (() => {
             const created = profileFull?.created_at ? new Date(profileFull.created_at).getTime() : 0;

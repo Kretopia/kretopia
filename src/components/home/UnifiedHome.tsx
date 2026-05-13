@@ -649,15 +649,17 @@ export const UnifiedHome = () => {
 
 
 
-        {/* ═══════════ GUEST LANDING — Product-led narrative ═══════════
-            Hero (above) → 4 Product sections → Social proof → Pricing → Close */}
-        {!user && <ProductSectionMatch />}
-        {!user && <ProductSectionDesk />}
-        {!user && <ProductSectionPay />}
-        {!user && <ProductSectionThrive />}
+        {/* ═══════════ GUEST LANDING — 8-section narrative ═══════════
+            1. Hero (above)  2. Claim Your Credits  3. Product Reel (real screenshots)
+            4. Comparison    5. Social Proof        6. Pricing
+            7. ThriveFund teaser   8. Bottom CTA */}
+        {!user && <ClaimYourCreditsSection onSearchSubmit={handleHeroClaimSearch} />}
+        {!user && <ProductReelSection />}
+        {!user && <ComparisonTableSection />}
         {!user && <SocialProofSection />}
         {!user && <PricingPreviewSection />}
-        {!user && <CloseSection />}
+        {!user && <ThriveFundTeaserCard />}
+        {!user && <BottomCTASection />}
 
 
         {/* ── 1. CREATORS FOR YOU (auth only) ── */}

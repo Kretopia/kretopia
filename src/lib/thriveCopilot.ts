@@ -183,7 +183,7 @@ export function inferSurface(pathname: string): CopilotSurface {
 }
 
 export const SURFACE_LABEL: Record<CopilotSurface, string> = {
-  desk: "ThriveDesk",
+  desk: "Studios",
   pay: "ThrivePay",
   match: "Match",
   gigs: "Gigs",

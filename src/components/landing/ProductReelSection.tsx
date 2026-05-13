@@ -30,7 +30,7 @@ const TILES: Tile[] = [
   },
   {
     icon: FolderKanban,
-    eyebrow: "ThriveDesk",
+    eyebrow: "Studios",
     title: "Brief → tasks → invoice. One workspace per project.",
     body: "Every shoot, drop, or campaign in its own studio room. Files, chat, and money in one place.",
     chip: "Free",

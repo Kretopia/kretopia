@@ -85,7 +85,7 @@ export const StudioCardsGrid = ({
     return (
       <div className="rounded-3xl border border-border bg-card p-10 text-center">
         <p className="text-[10px] font-bold tracking-[0.22em] text-primary uppercase mb-4">
-          ThriveDesk · Studio
+          Studios
         </p>
         <div
           className="mx-auto h-20 w-20 rounded-2xl flex items-center justify-center mb-5 border border-border"

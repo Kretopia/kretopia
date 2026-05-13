@@ -148,7 +148,7 @@ const ProjectsList = () => {
       <header className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <FolderKanban className="h-4 w-4 text-primary shrink-0" />
-          <h1 className="text-xl font-black tracking-[-0.03em] truncate">Desk</h1>
+          <h1 className="text-xl font-black tracking-[-0.03em] truncate">Studios</h1>
           {projects.length > 0 && (
             <span className="text-[11px] text-muted-foreground font-medium shrink-0">
               · {activeCount} active

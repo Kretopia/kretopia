@@ -105,7 +105,7 @@ export const VibeHeader = ({
         {/* Eyebrow + Status row */}
         <div className="flex items-center justify-between gap-2">
           <p className="text-[10px] font-bold tracking-[0.22em] text-[hsl(var(--energy))] uppercase">
-            ThriveDesk · Studio Room
+            Studio Room
           </p>
           <span
             className={cn(

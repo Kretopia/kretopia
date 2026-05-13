@@ -44,7 +44,7 @@ export const ProjectFlowTimeline = memo(({ flow, onStageClick, onPinStage }: Pro
               </TooltipTrigger>
               <TooltipContent side="left">
                 {flow.isPinned
-                  ? "Let ThriveDesk auto-detect your stage"
+                  ? "Let Studios auto-detect your stage"
                   : "Pin this stage so it doesn't auto-advance"}
               </TooltipContent>
             </Tooltip>

@@ -102,7 +102,7 @@ const Notifications = () => {
                 className="gap-2 rounded-full text-muted-foreground hover:text-foreground"
                 onClick={() => navigate(isBusiness ? "/gigs/new" : "/desk")}
               >
-                {pick("Open Desk", "Post a gig")}
+                {pick("Open Studios", "Post a gig")}
               </Button>
             </div>
           </div>

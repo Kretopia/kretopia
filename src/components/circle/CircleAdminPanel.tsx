@@ -192,7 +192,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
               const steps: Array<{ done: boolean; label: string; cta: string; onClick: () => void }> = [
                 { done: circle.member_count >= 10, label: "Invite 10 members", cta: "Invite", onClick: () => setActiveView('invite') },
                 { done: eventCount > 0, label: "Host your first event", cta: "Create", onClick: () => setActiveView('events') },
-                { done: projectCount > 0, label: "Start a collaboration", cta: "Open Desk", onClick: () => window.location.assign('/desk?new=project') },
+                { done: projectCount > 0, label: "Start a collaboration", cta: "Open Studios", onClick: () => window.location.assign('/desk?new=project') },
                 { done: stats.messagesThisWeek >= 5, label: "Get the chat moving (5 msgs/week)", cta: "Post", onClick: () => onClose() },
               ];
               const next = steps.find(s => !s.done);

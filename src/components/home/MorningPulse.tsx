@@ -4,7 +4,7 @@ import { ArrowRight, FolderKanban, CheckCircle2, MessageSquare, DollarSign } fro
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { moodGradient } from "@/lib/projectFiles";
+import { moodGradient } from "@/components/project/studio/moodGradient";
 
 interface Stats {
   dueToday: number;

@@ -567,24 +567,39 @@ const TicketsTab = ({ eventId, onEdit }: { eventId: string; onEdit: () => void }
   );
 };
 
-const PromotionTab = ({ event }: { event: EventRow }) => (
-  <Card className="p-3 sm:p-4 bg-card/60 border-border/50">
-    <EventShareKit
-      event={{
-        id: event.id,
-        title: event.title,
-        description: event.description || undefined,
-        start_time: event.start_time,
-        venue_name: event.venue_name || undefined,
-        category: event.category || "general",
-        is_ticketed: event.is_ticketed,
-        ticket_price: event.ticket_price,
-        ticket_currency: event.ticket_currency,
-        created_by: event.created_by || undefined,
-      }}
-    />
-  </Card>
-);
+const PromotionTab = ({ event }: { event: EventRow }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <Card className="p-4 bg-card/60 border-border/50 space-y-3">
+      <p className="brand-eyebrow">Share Kit</p>
+      <p className="text-sm text-muted-foreground">
+        Copy link, generate QR, share to WhatsApp/Twitter, or grab an embed snippet.
+      </p>
+      <Button onClick={() => setOpen(true)} variant="lime" size="sm" className="w-full sm:w-auto">
+        <Share2 className="h-4 w-4 mr-1.5" /> Open Share Kit
+      </Button>
+      <Button asChild variant="outline" size="sm" className="w-full sm:w-auto sm:ml-2">
+        <Link to={`/event/${event.id}`}><ExternalLink className="h-4 w-4 mr-1.5" /> Preview Public Page</Link>
+      </Button>
+      <EventShareKit
+        open={open}
+        onOpenChange={setOpen}
+        event={{
+          id: event.id,
+          title: event.title,
+          description: event.description || undefined,
+          start_time: event.start_time,
+          venue_name: event.venue_name || undefined,
+          category: event.category || "general",
+          is_ticketed: event.is_ticketed,
+          ticket_price: event.ticket_price,
+          ticket_currency: event.ticket_currency,
+          created_by: event.created_by || undefined,
+        }}
+      />
+    </Card>
+  );
+};
 
 const SettingsTab = ({ onEdit, onHostTools }: { onEdit: () => void; onHostTools: () => void }) => (
   <Card className="p-4 bg-card/60 border-border/50 space-y-2">

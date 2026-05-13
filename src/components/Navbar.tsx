@@ -243,29 +243,17 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       )}
                     </>
                   ) : (
-                    /* ====== UNIFIED MENU — Dashboard · Find · Money (MVP) ====== */
+                    /* ====== CREATIVE OS MENU — Studios · Scout · Pay · Profile ====== */
                     <>
-                      {/* DASHBOARD — daily-driver surfaces */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Dashboard</p>
-                      <MenuButton icon={FolderKanban} label="Desk" onClick={() => handleNavigation("/desk")} path="/desk" />
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
+                      <MenuButton icon={LayoutDashboard} label="Studios" onClick={() => handleNavigation("/desk")} path="/desk" />
+                      <MenuButton icon={Radar} label="Scout" onClick={() => handleNavigation("/scout")} path="/scout" />
+                      <MenuButton icon={Wallet} label="Pay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
+                      <MenuButton icon={UserCircle2} label="Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} path="/credits" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
-
-                      <Separator className="my-3" />
-
-                      {/* FIND — discovery surfaces */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Find</p>
-                      <MenuButton icon={Briefcase} label="Gigs" onClick={() => handleNavigation("/opportunities")} path="/opportunities" />
-                      <MenuButton icon={Users} label="My Network" onClick={() => handleNavigation("/circle?tab=network")} path="/circle" />
-                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-
-                      <Separator className="my-3" />
-
-                      {/* MONEY — earning */}
-                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Money</p>
-                      <MenuButton icon={Wallet} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
                     </>
                   )}
 

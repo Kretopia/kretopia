@@ -7,7 +7,8 @@ import { SwipeFeature } from "@/components/swipe";
 import { GuestSwipePreview } from "@/components/swipe/GuestSwipePreview";
 import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
 import { useAuth } from "@/hooks/useAuth";
-import { Radar, Store, Sparkles } from "lucide-react";
+import { Radar, Store, Sparkles, UserSearch, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 type Tab = "match" | "scouted" | "marketplace";
@@ -92,6 +93,17 @@ const Scout = () => {
               );
             })}
           </div>
+
+          {/* Hire-side entry — Talent Scout (the AI talent finder) */}
+          <Link
+            to="/talent-finder"
+            className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Open Talent Scout — find creators to hire"
+          >
+            <UserSearch className="h-3.5 w-3.5" />
+            Hiring? Open Talent Scout
+            <ArrowRight className="h-3 w-3" />
+          </Link>
         </div>
       </header>
 

@@ -40,7 +40,7 @@ const tourSteps: TourStep[] = [
   },
   {
     title: "Message & Collaborate",
-    description: "When you match, start a conversation. Use The Desk for project management, file sharing, and team coordination.",
+    description: "When you match, start a conversation. Use Studios for project management, file sharing, and team coordination.",
     icon: <MessageSquare className="h-8 w-8 text-primary" />,
     action: "Next",
   },

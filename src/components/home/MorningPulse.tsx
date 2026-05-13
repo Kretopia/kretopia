@@ -49,7 +49,7 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
       const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
       const dayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
 
-      const safe = async <T,>(p: Promise<any>, fallback: T): Promise<T> => {
+      const safe = async <T,>(p: any, fallback: T): Promise<T> => {
         try {
           const r = await p;
           return (r?.data ?? fallback) as T;

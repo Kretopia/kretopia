@@ -166,27 +166,38 @@ export default function Circle() {
     setFilters(newFilters);
   };
 
+  const networkOnly = tabParam === 'network';
+
   return (
     <PageTransition>
     <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
-      <SEO title="Match - Find Your Creative Collaborators" description="Tap to connect with creators who fit your craft" />
-      
+      <SEO
+        title={networkOnly ? "My Network — Your Creative Universe" : "Match - Find Your Creative Collaborators"}
+        description={networkOnly ? "See your connections and how far your creative network reaches." : "Tap to connect with creators who fit your craft"}
+      />
+
       {/* Header — lite, single line */}
       <div className="sticky top-0 z-10 border-b border-border/50 bg-background">
         <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-2.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <Sparkles className="h-4 w-4 text-energy shrink-0" />
-              <h1 className="text-xl font-black tracking-[-0.03em] text-foreground truncate">Match</h1>
-              {activeTab === 'network' && connections.length > 0 && (
+              {networkOnly ? (
+                <Users className="h-4 w-4 text-primary shrink-0" />
+              ) : (
+                <Sparkles className="h-4 w-4 text-energy shrink-0" />
+              )}
+              <h1 className="text-xl font-black tracking-[-0.03em] text-foreground truncate">
+                {networkOnly ? "My Network" : "Match"}
+              </h1>
+              {(networkOnly || activeTab === 'network') && connections.length > 0 && (
                 <span className="text-[11px] text-muted-foreground font-medium">· {connections.length}</span>
               )}
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              {activeTab === 'foryou' && (
+              {!networkOnly && activeTab === 'foryou' && (
                 <SwipeFilters filters={filters} onFiltersChange={handleFiltersChange} isPro={isPro} profilesCount={profilesCount} />
               )}
-              {user && (
+              {!networkOnly && user && (
                 <Button
                   variant={activeTab === 'find' ? 'default' : 'ghost'}
                   size="icon"
@@ -195,6 +206,17 @@ export default function Circle() {
                   aria-label="Search talent"
                 >
                   <Search className="h-4 w-4" />
+                </Button>
+              )}
+              {networkOnly && user && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  onClick={() => setShowInvite(true)}
+                  aria-label="Invite creators"
+                >
+                  <UserPlus className="h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -206,11 +228,11 @@ export default function Circle() {
         <ProfileActivationGate
           isVisible={profileVisibility.isVisible}
           missingFields={profileVisibility.missingFields}
-          surfaceLabel="Match"
+          surfaceLabel={networkOnly ? "Network" : "Match"}
         >
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          {/* Compact 2-tab pill — Find lives in header icon */}
-          {activeTab !== 'find' && (
+        <Tabs value={networkOnly ? 'network' : activeTab} onValueChange={handleTabChange} className="w-full">
+          {/* Tab pill — hidden in network-only mode */}
+          {!networkOnly && activeTab !== 'find' && (
             <TabsList className="grid w-full grid-cols-2 mb-2 sm:mb-3 h-9">
               <TabsTrigger value="foryou" className="gap-1.5 text-xs">
                 <Sparkles className="h-3.5 w-3.5" />

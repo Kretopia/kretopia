@@ -7,7 +7,8 @@ import { SwipeFeature } from "@/components/swipe";
 import { GuestSwipePreview } from "@/components/swipe/GuestSwipePreview";
 import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
 import { useAuth } from "@/hooks/useAuth";
-import { Radar, Store, Sparkles } from "lucide-react";
+import { Radar, Store, Sparkles, UserSearch, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 type Tab = "match" | "scouted" | "marketplace";

@@ -1,6 +1,10 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Users, FolderKanban, MessageSquare, DollarSign, ArrowRight, type LucideIcon } from "lucide-react";
+import shotMatch from "@/assets/mockup-circle-swipe.png";
+import shotDesk from "@/assets/mockup-projects.png";
+import shotCopilot from "@/assets/mockup-messages.png";
+import shotPay from "@/assets/mockup-wallet.png";
 
 interface Tile {
   icon: LucideIcon;
@@ -10,6 +14,7 @@ interface Tile {
   chip: string;
   href: string;
   accent: string;
+  image: string;
 }
 
 const TILES: Tile[] = [
@@ -21,6 +26,7 @@ const TILES: Tile[] = [
     chip: "Free",
     href: "/auth?tab=signup&intent=match",
     accent: "from-primary/30 via-primary/10 to-transparent",
+    image: shotMatch,
   },
   {
     icon: FolderKanban,
@@ -30,6 +36,7 @@ const TILES: Tile[] = [
     chip: "Free",
     href: "/auth?tab=signup&intent=desk",
     accent: "from-accent/30 via-accent/10 to-transparent",
+    image: shotDesk,
   },
   {
     icon: MessageSquare,
@@ -39,6 +46,7 @@ const TILES: Tile[] = [
     chip: "Pro",
     href: "/auth?tab=signup&intent=copilot",
     accent: "from-energy/30 via-energy/10 to-transparent",
+    image: shotCopilot,
   },
   {
     icon: DollarSign,
@@ -48,6 +56,7 @@ const TILES: Tile[] = [
     chip: "Free + Pro",
     href: "/auth?tab=signup&intent=pay",
     accent: "from-success/30 via-success/10 to-transparent",
+    image: shotPay,
   },
 ];
 
@@ -118,13 +127,14 @@ export const ProductReelSection = () => {
                     </Link>
                   </div>
 
-                  {/* Visual placeholder — geometric mock that respects the tile's accent */}
-                  <div className="relative aspect-[4/3] sm:aspect-auto sm:min-h-[220px] rounded-2xl border border-border/60 bg-background/40 backdrop-blur-sm overflow-hidden flex items-center justify-center">
-                    <div className="absolute inset-4 rounded-xl border border-border/40 bg-card/50" />
-                    <Icon className="relative h-16 w-16 text-primary/30" />
-                    <div className="absolute bottom-3 left-3 right-3 h-2 rounded-full bg-border/40 overflow-hidden">
-                      <div className="h-full w-2/3 bg-primary/40 rounded-full" />
-                    </div>
+                  {/* Real product screenshot */}
+                  <div className="relative aspect-[4/3] sm:aspect-auto sm:min-h-[260px] rounded-2xl border border-border/60 bg-background overflow-hidden flex items-center justify-center p-4">
+                    <img
+                      src={tile.image}
+                      alt={`${tile.eyebrow} product screenshot`}
+                      loading="lazy"
+                      className="max-h-full max-w-full object-contain drop-shadow-xl"
+                    />
                   </div>
                 </div>
               </motion.article>

@@ -223,7 +223,7 @@ const AcceptInvite = () => {
                     </p>
                   </div>
                   <div className="rounded-full bg-primary/90 text-primary-foreground text-[10px] font-bold px-3 py-1.5">
-                    Join Desk →
+                    Join Studio →
                   </div>
                 </div>
                 <div>

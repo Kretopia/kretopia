@@ -185,7 +185,7 @@ const QuickActionFab = () => {
     {
       id: "manage-projects",
       label: "Manage projects",
-      sub: "Open the Desk",
+      sub: "Open Studios",
       icon: LayoutDashboard,
       tone: "muted",
       onSelect: () => go("/desk"),

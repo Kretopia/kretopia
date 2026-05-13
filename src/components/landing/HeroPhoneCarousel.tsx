@@ -13,7 +13,7 @@ type Screen = typeof SCREENS[number];
 
 const LABELS: Record<Screen, { eyebrow: string; tag: string }> = {
   match: { eyebrow: "Smart Match", tag: "Matchmaker" },
-  desk: { eyebrow: "ThriveDesk", tag: "Project OS" },
+  desk: { eyebrow: "Studios", tag: "Project OS" },
   pay: { eyebrow: "ThrivePay", tag: "Get paid" },
   thrive: { eyebrow: "Thrive", tag: "Does the work" },
 };

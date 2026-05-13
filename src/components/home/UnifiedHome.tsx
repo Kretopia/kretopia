@@ -38,6 +38,7 @@ import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist
 import { DuplicateAccountBanner } from "@/components/account/DuplicateAccountBanner";
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { MagicHomeHero } from "@/components/home/MagicHomeHero";
+import { MorningPulse } from "@/components/home/MorningPulse";
 import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
 import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";

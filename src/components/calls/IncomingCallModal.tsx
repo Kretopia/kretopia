@@ -29,7 +29,8 @@ interface Props {
 export const IncomingCallModal = ({ call, onClose }: Props) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const ringIntervalRef = useRef<number | null>(null);
   const [accepting, setAccepting] = useState(false);
   const [joinUrl, setJoinUrl] = useState<string | null>(null);
   const [joinToken, setJoinToken] = useState<string | null>(null);

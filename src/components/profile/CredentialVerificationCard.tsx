@@ -115,10 +115,10 @@ export function CredentialVerificationCard({
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
               <Shield className="w-5 h-5 text-primary" />
-              AI Credential Verification
+              Smart Credential Verification
             </CardTitle>
             <CardDescription>
-              Our AI verifies your credentials across industry databases
+              Thrive verifies your credentials across industry databases
             </CardDescription>
           </div>
         </CardHeader>
@@ -142,7 +142,7 @@ export function CredentialVerificationCard({
               <div className="text-sm">
                 <p className="font-medium">Get Verified by AI</p>
                 <p className="text-muted-foreground mt-1">
-                  Watch as our AI scans IMDB, Grammy, Spotify, and 7 other databases to verify your professional credentials in real-time.
+                  Watch as Thrive scans IMDB, Grammy, Spotify, and 7 other databases to verify your professional credentials in real-time.
                 </p>
               </div>
             </div>

@@ -39,7 +39,7 @@ export function SeedLocationsDialog({ open, onOpenChange, userLocation, onSeeded
       if (data?.error) throw new Error(data.error);
 
       setResult({ count: data.count, locations: data.locations || [] });
-      toast({ title: `${data.count} spots discovered!`, description: `AI found creative locations in ${city}` });
+      toast({ title: `${data.count} spots discovered!`, description: `Found creative locations in ${city}` });
       onSeeded();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -54,10 +54,10 @@ export function SeedLocationsDialog({ open, onOpenChange, userLocation, onSeeded
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            AI Spot Discovery
+            Smart Spot Discovery
           </DialogTitle>
           <DialogDescription>
-            Let AI discover studios, creative spaces, and industry spots near you — like Google Maps for creatives.
+            Let Thrive discover studios, creative spaces, and industry spots near you — like Google Maps for creatives.
           </DialogDescription>
         </DialogHeader>
 

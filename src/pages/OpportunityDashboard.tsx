@@ -279,10 +279,10 @@ Return ONLY valid JSON array:
       scoredApplicants.sort((a, b) => (b.ai_match_score || 0) - (a.ai_match_score || 0));
       setApplicants(scoredApplicants);
       setSortBy('score');
-      toast.success('AI ranking complete!');
+      toast.success('Smart ranking complete!');
     } catch (error) {
       console.error('AI analysis error:', error);
-      toast.error('AI analysis failed');
+      toast.error('Smart Match analysis failed');
     } finally {
       setAnalyzingAI(false);
     }
@@ -663,7 +663,7 @@ Return ONLY valid JSON array:
                 className="w-full sm:w-auto"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                {analyzingAI ? 'Ranking...' : isPro ? 'Re-rank with AI' : 'AI Match Score'}
+                {analyzingAI ? 'Ranking...' : isPro ? 'Re-rank Smart Match' : 'Smart Match Score'}
               </Button>
             </div>
           </div>

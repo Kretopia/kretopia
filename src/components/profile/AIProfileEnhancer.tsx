@@ -144,10 +144,10 @@ Return as JSON array of strings only: ["skill1", "skill2", ...]`
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          AI Profile Enhancer
+          Smart Profile Enhancer
         </CardTitle>
         <CardDescription>
-          Let AI help you create a standout profile
+          Let Thrive help you create a standout profile
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -227,7 +227,7 @@ Return as JSON array of strings only: ["skill1", "skill2", ...]`
         <div className="flex items-start gap-2 p-3 bg-background/50 rounded-lg border">
           <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
           <p className="text-xs text-muted-foreground">
-            AI-generated content is a starting point. Edit and personalize it to make it truly yours!
+            Smart suggestions is a starting point. Edit and personalize it to make it truly yours!
           </p>
         </div>
       </CardContent>

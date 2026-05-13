@@ -97,20 +97,20 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   const isCompany = accountType === "company";
 
-  // Single, focused desktop nav — mirrors mobile bottom nav
+  // ThriveIN 2.0 Creative OS — desktop nav mirrors mobile bottom nav
   const desktopNavItems = isCompany
     ? [
-        { path: "/desk", icon: FolderKanban, label: "Desk" },
+        { path: "/desk", icon: LayoutDashboard, label: "Studios" },
         { path: "/opportunities", icon: Briefcase, label: "Gigs" },
         { path: "/talent-finder", icon: Search, label: "Talent" },
-        { path: "/thrivepay", icon: DollarSign, label: "ThrivePay" },
+        { path: "/thrivepay", icon: Wallet, label: "Pay" },
       ]
     : [
         { path: "/", icon: Home, label: "Home" },
-        { path: "/desk", icon: FolderKanban, label: "Desk" },
-        { path: "/circle", icon: Sparkles, label: "Match" },
-        { path: "/opportunities", icon: Briefcase, label: "Gigs" },
+        { path: "/desk", icon: LayoutDashboard, label: "Studios" },
+        { path: "/scout", icon: Radar, label: "Scout" },
         { path: "/thrivepay", icon: Wallet, label: "Pay" },
+        { path: "/profile", icon: UserCircle2, label: "Profile" },
       ];
 
   const [searchOpen, setSearchOpen] = useState(false);

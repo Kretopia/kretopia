@@ -26,6 +26,7 @@ const TILES: Tile[] = [
     chip: "Free",
     href: "/auth?tab=signup&intent=match",
     accent: "from-primary/30 via-primary/10 to-transparent",
+    image: shotMatch,
   },
   {
     icon: FolderKanban,
@@ -35,6 +36,7 @@ const TILES: Tile[] = [
     chip: "Free",
     href: "/auth?tab=signup&intent=desk",
     accent: "from-accent/30 via-accent/10 to-transparent",
+    image: shotDesk,
   },
   {
     icon: MessageSquare,
@@ -44,6 +46,7 @@ const TILES: Tile[] = [
     chip: "Pro",
     href: "/auth?tab=signup&intent=copilot",
     accent: "from-energy/30 via-energy/10 to-transparent",
+    image: shotCopilot,
   },
   {
     icon: DollarSign,
@@ -53,6 +56,7 @@ const TILES: Tile[] = [
     chip: "Free + Pro",
     href: "/auth?tab=signup&intent=pay",
     accent: "from-success/30 via-success/10 to-transparent",
+    image: shotPay,
   },
 ];
 

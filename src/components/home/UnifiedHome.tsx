@@ -38,6 +38,7 @@ import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist
 import { DuplicateAccountBanner } from "@/components/account/DuplicateAccountBanner";
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { MagicHomeHero } from "@/components/home/MagicHomeHero";
+import { MorningPulse } from "@/components/home/MorningPulse";
 import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
 import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";
@@ -567,6 +568,9 @@ export const UnifiedHome = () => {
             <ThrivePromptHero />
           </div>
 
+          {/* The Pulse — Morning Brief + Today + Active Studios */}
+          <MorningPulse firstName={firstName} greeting={greeting} />
+
           {/* Pass B.1: MagicHomeHero hidden — ThrivePromptHero is the single hero. */}
           {false && (() => {
             const created = profileFull?.created_at ? new Date(profileFull.created_at).getTime() : 0;
@@ -752,6 +756,13 @@ export const UnifiedHome = () => {
         {user && (
           <section className="mb-8 scroll-mt-14">
             <ScoutedGigsSection limit={3} />
+          </section>
+        )}
+
+        {/* Money — compact pulse of invoicing + expenses */}
+        {user && (
+          <section className="mb-8">
+            <MoneyBrief variant="compact" />
           </section>
         )}
 

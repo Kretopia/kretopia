@@ -79,7 +79,7 @@ export const ProductSectionDesk = () => (
         {/* Copy */}
         <div className="order-1 lg:order-2">
           <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-primary mb-4 px-3 py-1 rounded-full border border-primary/30 bg-primary/5">
-            <FileText className="h-3 w-3" /> ThriveDesk · Project OS
+            <FileText className="h-3 w-3" /> Studios · Project OS
           </p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-[-0.03em] leading-[1.05] text-foreground mb-4">
             Talk it out.<br />

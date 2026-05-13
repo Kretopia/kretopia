@@ -49,44 +49,57 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
       const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
       const dayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
 
-      const [tasksRes, msgRes, invRes, projRes] = await Promise.all([
-        supabase
-          .from("project_tasks")
-          .select("id, due_date, status")
-          .eq("assignee_id", user.id)
-          .neq("status", "done")
-          .lte("due_date", dayEnd)
-          .catch(() => ({ data: [] as any[] })),
-        supabase.rpc("get_unread_message_count" as any).catch(() => ({ data: 0 })),
-        supabase
-          .from("invoices")
-          .select("total_amount, status")
-          .eq("user_id", user.id)
-          .in("status", ["sent", "overdue"])
-          .catch(() => ({ data: [] as any[] })),
-        supabase
-          .from("projects")
-          .select("id, title, status, updated_at, cover_color, workspace_type")
-          .neq("status", "completed")
-          .neq("status", "archived")
-          .order("updated_at", { ascending: false })
-          .limit(3)
-          .catch(() => ({ data: [] as any[] })),
+      const safe = async <T,>(p: Promise<any>, fallback: T): Promise<T> => {
+        try {
+          const r = await p;
+          return (r?.data ?? fallback) as T;
+        } catch {
+          return fallback;
+        }
+      };
+
+      const [tasks, unreadCount, invoices, projectsData] = await Promise.all([
+        safe<any[]>(
+          (supabase.from("project_tasks") as any)
+            .select("id, due_date, status")
+            .eq("assignee_id", user.id)
+            .neq("status", "done")
+            .lte("due_date", dayEnd),
+          [],
+        ),
+        safe<number>(supabase.rpc("get_unread_message_count" as any), 0),
+        safe<any[]>(
+          (supabase.from("invoices") as any)
+            .select("total_amount, status")
+            .eq("user_id", user.id)
+            .in("status", ["sent", "overdue"]),
+          [],
+        ),
+        safe<any[]>(
+          (supabase.from("projects") as any)
+            .select("id, title, status, updated_at, cover_color, workspace_type")
+            .neq("status", "completed")
+            .neq("status", "archived")
+            .order("updated_at", { ascending: false })
+            .limit(3),
+          [],
+        ),
       ]);
 
       if (cancelled) return;
 
-      const tasks = (tasksRes as any).data || [];
-      const dueToday = tasks.filter((t: any) => t.due_date && t.due_date.slice(0, 10) === dayStart.slice(0, 10)).length;
+      const dueToday = tasks.filter(
+        (t: any) => t.due_date && t.due_date.slice(0, 10) === dayStart.slice(0, 10),
+      ).length;
       const overdue = tasks.filter((t: any) => t.due_date && t.due_date < dayStart).length;
-      const unreadMessages = Number((msgRes as any).data) || 0;
-      const pendingInvoiceAmount = ((invRes as any).data || []).reduce(
+      const unreadMessages = Number(unreadCount) || 0;
+      const pendingInvoiceAmount = invoices.reduce(
         (sum: number, inv: any) => sum + (Number(inv.total_amount) || 0),
         0,
       );
 
       setStats({ dueToday, overdue, unreadMessages, pendingInvoiceAmount });
-      setProjects(((projRes as any).data || []) as ProjectRow[]);
+      setProjects(projectsData as ProjectRow[]);
       setLoaded(true);
     };
 

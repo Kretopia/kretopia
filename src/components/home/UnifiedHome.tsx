@@ -759,6 +759,13 @@ export const UnifiedHome = () => {
           </section>
         )}
 
+        {/* Money — compact pulse of invoicing + expenses */}
+        {user && (
+          <section className="mb-8">
+            <MoneyBrief variant="compact" />
+          </section>
+        )}
+
         {/* What's on — upcoming events with free/ticketed filters */}
         {user && <EventsNearYouSection limit={8} />}
 

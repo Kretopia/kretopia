@@ -44,7 +44,7 @@ export const BottomCTASection = () => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,hsl(0_0%_100%/0.12),transparent_50%)]" />
           
           <div className="relative text-primary-foreground">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur-sm">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium">
               {isTrinidad ? <MapPin className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
               <span>{content.badge}</span>
             </div>
@@ -62,7 +62,7 @@ export const BottomCTASection = () => {
                 <Button
                   variant="outline" 
                   size="xl"
-                  className="w-full sm:w-auto border-2 border-white/70 bg-white hover:bg-white/90 text-primary backdrop-blur-sm font-semibold group"
+                  className="w-full sm:w-auto border-2 border-white/70 bg-white hover:bg-white/90 text-primary font-semibold group"
                 >
                   <Sparkles className="mr-2 h-5 w-5" />
                   Get Started Free

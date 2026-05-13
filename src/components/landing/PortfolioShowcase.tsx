@@ -105,7 +105,7 @@ export const PortfolioShowcase = () => {
                   }}
                 />
                 {item.media_type === "video" && (
-                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-foreground/60 text-background text-[10px] font-bold uppercase px-2 py-0.5 rounded-full backdrop-blur-sm">
+                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-foreground/60 text-background text-[10px] font-bold uppercase px-2 py-0.5 rounded-full">
                     <Play className="h-2.5 w-2.5 fill-current" />
                     Video
                   </div>

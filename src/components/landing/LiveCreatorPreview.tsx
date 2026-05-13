@@ -48,7 +48,7 @@ export const LiveCreatorPreview = () => {
           {creators.map((creator, i) => (
             <div
               key={i}
-              className="group relative rounded-2xl border border-border/60 bg-card/80 p-4 text-center backdrop-blur-sm transition-all hover:border-primary/40 hover:shadow-card"
+              className="group relative rounded-2xl border border-border/60 bg-card/80 p-4 text-center transition-all hover:border-primary/40 hover:shadow-card"
             >
               <Avatar className="mx-auto h-14 w-14 sm:h-16 sm:w-16 ring-2 ring-primary/20 mb-3">
                 <AvatarImage src={creator.avatar_url || ""} alt={creator.full_name} />

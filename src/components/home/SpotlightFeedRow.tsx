@@ -77,11 +77,11 @@ export const SpotlightFeedRow = () => {
           >
             <div className="aspect-[16/10] relative flex items-center justify-center overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.4),transparent_70%)]" />
-              <div className="h-14 w-14 rounded-full bg-primary/30 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform border border-primary/50 relative z-10">
+              <div className="h-14 w-14 rounded-full bg-primary/30 flex items-center justify-center group-hover:scale-110 transition-transform border border-primary/50 relative z-10">
                 <Headphones className="h-7 w-7 text-primary-foreground" />
               </div>
               <div className="absolute top-2 left-2">
-                <Badge className="bg-background/90 backdrop-blur-sm text-foreground border-0 text-[10px] font-semibold gap-1">
+                <Badge className="bg-background/90 text-foreground border-0 text-[10px] font-semibold gap-1">
                   <Headphones className="h-2.5 w-2.5" />
                   Podcast
                 </Badge>
@@ -127,7 +127,7 @@ export const SpotlightFeedRow = () => {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                 <div className="absolute top-2 left-2 flex items-center gap-1.5">
-                  <Badge className="bg-background/90 backdrop-blur-sm text-foreground border-0 text-[10px] font-semibold gap-1">
+                  <Badge className="bg-background/90 text-foreground border-0 text-[10px] font-semibold gap-1">
                     <BookOpen className="h-2.5 w-2.5" />
                     Magazine
                   </Badge>

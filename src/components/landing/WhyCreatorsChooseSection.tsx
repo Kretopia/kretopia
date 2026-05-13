@@ -39,7 +39,7 @@ export const WhyCreatorsChooseSection = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="group relative flex flex-col p-5 sm:p-6 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm hover:border-primary/50 hover:bg-card transition-all overflow-hidden"
+              className="group relative flex flex-col p-5 sm:p-6 rounded-2xl border border-border/60 bg-card/60 hover:border-primary/50 hover:bg-card transition-all overflow-hidden"
             >
               {/* lime corner glow on hover */}
               <div className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-energy/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -58,7 +58,7 @@ export const WhyCreatorsChooseSection = () => {
 
         {/* Verification tiers */}
         <div className="mt-16 sm:mt-20">
-          <div className="relative p-7 sm:p-10 rounded-3xl bg-card/50 backdrop-blur-sm border border-border/60 overflow-hidden">
+          <div className="relative p-7 sm:p-10 rounded-3xl bg-card/50 border border-border/60 overflow-hidden">
             <div className="absolute -top-20 left-1/2 -translate-x-1/2 h-40 w-[60%] rounded-full bg-primary/15 blur-3xl" />
             <div className="relative">
               <h3 className="mb-2 text-2xl sm:text-3xl font-black tracking-tight text-center text-foreground">Creator Verification</h3>

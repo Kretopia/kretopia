@@ -78,7 +78,7 @@ export function MagicHomeHero({ profile, creditsCount, connectionsCount, classNa
           {action.eyebrow} · One clear next move
         </p>
         <div className="flex items-start gap-3">
-          <div className="h-11 w-11 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center shrink-0">
+          <div className="h-11 w-11 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
             <Icon className="h-5.5 w-5.5 text-white" />
           </div>
           <div className="min-w-0">

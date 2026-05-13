@@ -35,7 +35,7 @@ export const AIMatchingShowcase = () => {
             <Card className="relative overflow-hidden border-2 border-primary/30 shadow-glow bg-card">
               {/* Signature MATCH Badge — lime, glowing, brand asset */}
               <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
-                <div className="flex items-center gap-1.5 sm:gap-2 rounded-full border-2 border-energy/60 bg-background/80 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 shadow-glow-lime">
+                <div className="flex items-center gap-1.5 sm:gap-2 rounded-full border-2 border-energy/60 bg-background/80 px-3 py-1.5 sm:px-4 sm:py-2 shadow-glow-lime">
                   <span className="text-xs sm:text-sm font-black text-energy-glow tracking-wider">98% MATCH</span>
                 </div>
               </div>

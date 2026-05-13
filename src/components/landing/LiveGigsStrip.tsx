@@ -121,7 +121,7 @@ export const LiveGigsStrip = () => {
               key={g.id}
               data-gig-card
               to={`/auth?tab=signup&intent=gigs&next=${encodeURIComponent(`/opportunities/${g.id}`)}`}
-              className="group relative shrink-0 snap-start w-[85%] sm:w-[340px] rounded-2xl border border-border/60 bg-card/60 backdrop-blur p-4 hover:border-primary/40 hover:bg-card transition-all"
+              className="group relative shrink-0 snap-start w-[85%] sm:w-[340px] rounded-2xl border border-border/60 bg-card/60 p-4 hover:border-primary/40 hover:bg-card transition-all"
             >
               <div className="flex items-start justify-between gap-2 mb-3">
                 <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-wider border-primary/30 text-primary bg-primary/5">

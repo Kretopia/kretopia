@@ -252,6 +252,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       {/* FIND — discovery surfaces */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Find</p>
                       <MenuButton icon={Briefcase} label="Gigs" onClick={() => handleNavigation("/opportunities")} path="/opportunities" />
+                      <MenuButton icon={Users} label="My Network" onClick={() => handleNavigation("/circles")} path="/circles" />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
 
                       <Separator className="my-3" />

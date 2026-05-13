@@ -29,26 +29,54 @@ interface Props {
 export const IncomingCallModal = ({ call, onClose }: Props) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const ringIntervalRef = useRef<number | null>(null);
   const [accepting, setAccepting] = useState(false);
   const [joinUrl, setJoinUrl] = useState<string | null>(null);
   const [joinToken, setJoinToken] = useState<string | null>(null);
   const [callId, setCallId] = useState<string | null>(null);
 
-  // Play a soft ringtone loop while the modal is open.
+  // Play an audible ringtone (two-tone WebAudio chime, looped) while the modal is open.
   useEffect(() => {
     if (!call) return;
-    const audio = new Audio(
-      // 1.6s royalty-free ringtone (data URI of a short sine ping)
-      "https://cdn.jsdelivr.net/gh/anars/blank-audio@master/1-second-of-silence.mp3",
-    );
-    audio.loop = true;
-    audio.volume = 0.5;
-    audioRef.current = audio;
-    audio.play().catch(() => {});
+    let stopped = false;
+    const Ctx: typeof AudioContext | undefined =
+      (window as any).AudioContext || (window as any).webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    audioCtxRef.current = ctx;
+
+    const playPing = () => {
+      if (stopped || ctx.state === "closed") return;
+      const now = ctx.currentTime;
+      [0, 0.18].forEach((offset, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = i === 0 ? 880 : 660;
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.25, now + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.16);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.18);
+      });
+    };
+
+    // Some browsers require a user gesture; resume() will succeed if the modal
+    // mounts in response to a notification interaction, otherwise stays silent.
+    void ctx.resume().catch(() => {});
+    playPing();
+    ringIntervalRef.current = window.setInterval(playPing, 1800);
+
     return () => {
-      audio.pause();
-      audioRef.current = null;
+      stopped = true;
+      if (ringIntervalRef.current !== null) {
+        clearInterval(ringIntervalRef.current);
+        ringIntervalRef.current = null;
+      }
+      try { void ctx.close(); } catch {}
+      audioCtxRef.current = null;
     };
   }, [call]);
 

@@ -101,6 +101,7 @@ const VerifyOpportunity = lazy(() => import("./pages/VerifyOpportunity"));
 const ProductionPage = lazy(() => import("./pages/ProductionPage"));
 const CreditVerify = lazy(() => import("./pages/CreditVerify"));
 const Opportunities = lazy(() => import("./pages/Opportunities"));
+const Scout = lazy(() => import("./pages/Scout"));
 const ClaimGig = lazy(() => import("./pages/ClaimGig"));
 const ManageOpportunities = lazy(() => import("./pages/ManageOpportunities"));
 const OpportunityDashboard = lazy(() => import("./pages/OpportunityDashboard"));

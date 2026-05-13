@@ -266,7 +266,7 @@ export const HeroSection = () => {
               <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-8 py-4 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
                 {pickVoice("Find Your People", "Link Up Now")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
-              <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-6 py-4 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
+              <Link to="/gigs" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 px-6 py-4 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
                 <Briefcase className="h-4 w-4 text-primary" /> {pickVoice("Browse Gigs", "See Wha' Goin' On")}
               </Link>
             </div>
@@ -293,7 +293,7 @@ export const HeroSection = () => {
 
               {/* Signature Smart Match card — compact on mobile so it doesn't cover faces */}
               <div className="absolute top-2 right-2 sm:top-6 sm:right-6 animate-fade-in">
-                <div className="rounded-xl sm:rounded-2xl border-2 border-energy/60 bg-background/85 backdrop-blur-md px-2.5 py-2 sm:p-4 shadow-glow-lime sm:min-w-[150px]">
+                <div className="rounded-xl sm:rounded-2xl border-2 border-energy/60 bg-background/85 px-2.5 py-2 sm:p-4 shadow-glow-lime sm:min-w-[150px]">
                   <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-0.5 sm:mb-1">Smart Match</p>
                   <p className="text-xl sm:text-4xl font-black text-energy-glow tracking-tighter leading-none">94%</p>
                   <p className="hidden sm:block text-[10px] text-foreground/80 mt-1.5 leading-tight">Photographer × Producer<br/>2.3km away</p>
@@ -302,7 +302,7 @@ export const HeroSection = () => {
 
               {/* Verified credit chip — top-left */}
               <div className="absolute top-4 left-4 sm:top-6 sm:left-6 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                <div className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-background/85 backdrop-blur-md px-3 py-1.5">
+                <div className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-background/85 px-3 py-1.5">
                   <Verified className="h-3 w-3 text-primary" />
                   <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Verified</span>
                 </div>
@@ -310,7 +310,7 @@ export const HeroSection = () => {
 
               {/* Chat bubble — bottom-left */}
               <div className="absolute bottom-5 left-4 sm:bottom-6 sm:left-6 max-w-[230px] animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <div className="rounded-2xl rounded-bl-sm border border-primary/40 bg-card/95 backdrop-blur-md p-3 shadow-xl">
+                <div className="rounded-2xl rounded-bl-sm border border-primary/40 bg-card/95 p-3 shadow-xl">
                   <div className="flex items-center gap-2 mb-1.5">
                     <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
                       <MessageCircle className="h-3 w-3 text-primary" />

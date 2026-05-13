@@ -78,7 +78,7 @@ export const ThriveFundShowcase = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 + i * 0.08 }}
-                className="rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm p-4 hover:border-primary/40 transition-all"
+                className="rounded-2xl border border-border/60 bg-card/60 p-4 hover:border-primary/40 transition-all"
               >
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 text-primary ring-1 ring-primary/20 mb-3">
                   <Icon className="h-4 w-4" />
@@ -105,7 +105,7 @@ export const ThriveFundShowcase = () => {
           </Link>
           <Link
             to="/fund/new"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 backdrop-blur px-5 py-3 text-sm font-semibold text-foreground hover:border-primary/50 transition-all"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 px-5 py-3 text-sm font-semibold text-foreground hover:border-primary/50 transition-all"
           >
             {tt("landing.fundCtaLaunch", "Launch a Campaign")}
           </Link>

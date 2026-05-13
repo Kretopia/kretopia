@@ -69,7 +69,7 @@ export const VisualProofCard = () => {
         onClick={() => navigate(`/profile/${featured.user_id}`)}
         className="w-full text-left group"
       >
-        <div className="rounded-2xl border border-primary/20 bg-card/90 backdrop-blur-md shadow-xl overflow-hidden hover:border-primary/40 transition-all">
+        <div className="rounded-2xl border border-primary/20 bg-card/90 shadow-xl overflow-hidden hover:border-primary/40 transition-all">
           <div className="h-10 bg-gradient-to-r from-primary/30 via-accent/20 to-primary/10 relative">
             <div className="absolute -bottom-5 left-4">
               <Avatar className="h-10 w-10 border-2 border-card shadow-lg">

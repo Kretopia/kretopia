@@ -103,7 +103,7 @@ export const PartnerBenefitsSection = () => {
               <Link to="/membership">
                 <Button 
                   variant="outline" 
-                  className="border-white/30 bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm"
+                  className="border-white/30 bg-white/10 hover:bg-white/20 text-white"
                 >
                   View All Partners
                 </Button>

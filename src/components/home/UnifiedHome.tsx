@@ -901,7 +901,7 @@ export const UnifiedHome = () => {
                         {ev.cover_image_url ? (
                           <div className="aspect-[16/9] overflow-hidden relative">
                             <img src={ev.cover_image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                            <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
+                            <div className="absolute top-2 left-2 bg-card/90 rounded-lg px-2 py-1 text-center">
                               <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
                               <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
                             </div>
@@ -909,7 +909,7 @@ export const UnifiedHome = () => {
                         ) : (
                           <div className="aspect-[16/9] bg-gradient-to-br from-warning/10 to-primary/10 flex items-center justify-center relative">
                             <CalendarDays className="h-6 w-6 text-warning/30" />
-                            <div className="absolute top-2 left-2 bg-card/90 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
+                            <div className="absolute top-2 left-2 bg-card/90 rounded-lg px-2 py-1 text-center">
                               <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
                               <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
                             </div>
@@ -1049,7 +1049,7 @@ export const UnifiedHome = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-accent/80" />
           <div className="relative p-6 sm:p-8 text-center">
-            <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center mx-auto mb-3">
+            <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center mx-auto mb-3">
               <Zap className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-white mb-1">

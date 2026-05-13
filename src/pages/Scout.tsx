@@ -113,6 +113,7 @@ const Scout = () => {
           open={showMatchDialog}
           onOpenChange={setShowMatchDialog}
           matchedUser={matchedUser}
+          onSendMessage={() => navigate(`/messages?user=${matchedUser.userId}`)}
         />
       )}
     </div>

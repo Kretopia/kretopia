@@ -27,7 +27,7 @@ interface SEOProps {
 
 export const SEO = ({
   title = "ThriveIN — Search Your Name. Claim Your Credits. Get Paid.",
-  description = "Search your name, claim your verified credits, and get discovered by brands. ThriveIN is the professional platform where creatives build their career record and get paid.",
+  description = "Search your name, claim your verified credits, and get discovered. ThriveIN is the creative platform to build your career record and get paid.",
   type = "website",
   image = "https://www.thrivein.io/og-image.png",
   url,

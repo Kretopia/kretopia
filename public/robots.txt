@@ -34,4 +34,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://thrivein.io/sitemap.xml
+Sitemap: https://www.thrivein.io/sitemap.xml

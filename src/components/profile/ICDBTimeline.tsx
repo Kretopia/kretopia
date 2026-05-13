@@ -280,7 +280,7 @@ function CategoryRow({
       return (
         <Badge variant="outline" className="text-[9px] gap-0.5 border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/5 h-4 px-1">
           <ShieldCheck className="h-2.5 w-2.5" />
-          AI
+          Verified
         </Badge>
       );
     }

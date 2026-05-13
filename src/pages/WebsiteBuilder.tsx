@@ -321,7 +321,7 @@ const WebsiteBuilder = () => {
           </Button>
           <Button variant="outline" size="sm" className="h-8 gap-1.5 hidden sm:flex" onClick={() => setShowAIGenerator(true)}>
             <Wand2 className="h-3.5 w-3.5" />
-            AI
+            Smart Build
           </Button>
           <Button size="sm" className="h-8 gap-1.5" onClick={handleSave} disabled={saving || !hasChanges}>
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}

@@ -103,7 +103,7 @@ const Scout = () => {
           user ? (
             <SwipeFeature onMatch={handleMatch} />
           ) : (
-            <GuestSwipePreview onSignUp={() => navigate("/auth")} />
+            <GuestSwipePreview />
           )
         )}
       </div>

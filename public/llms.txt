@@ -1,0 +1,25 @@
+# ThriveIN
+
+> ThriveIN is the Creative OS — a professional platform where creatives, content creators, and crews search their name, claim verified credits, get matched to gigs, manage projects, and get paid.
+
+ThriveIN combines the best of LinkedIn, IMDb, Behance, Upwork, Fiverr, Slack, Notion, and Trello — purpose-built for the creator economy. Members build a verified career record (ThriveCredits), match with collaborators (Smart Match), discover real gigs (Smart Gig Scout), run projects in collaborative workspaces (ThriveDesk), and invoice clients (ThrivePay).
+
+## Pages
+
+- [Home](/): For-You feed, Smart Match, daily creative tools.
+- [Magazine](/magazine): Editorial stories on the creative industry.
+- [Podcast](/podcast): Conversations with working creatives.
+- [Spotlight](/spotlight): Featured creators, articles, and episodes.
+- [Match](/match): Swipe-style discovery of creative collaborators.
+- [Gigs](/gigs): Marketplace plus AI-scouted opportunities from across the web.
+- [Fund](/fund): ThriveFund — back creative projects, only charged if funded.
+- [Founding Member](/founding-member): Lifetime founding member program.
+- [Pricing](/subscription): Spark, Creator, Creator+, and Founder tiers.
+- [About](/about): Mission and team behind ThriveIN.
+- [Auth](/auth): Sign in or create an account.
+
+## Optional
+
+- [Terms](/terms): Terms of service.
+- [Privacy](/privacy): Privacy policy.
+- [Community Guidelines](/community-guidelines): Community standards.

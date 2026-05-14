@@ -18,7 +18,9 @@ export interface WebCreditResult {
   year?: number;
   role_suggestion?: string;
   description?: string;
+  /** Cover/thumbnail image. Backend may also send as `image_url` — normalize on intake. */
   thumbnail?: string;
+  image_url?: string;
   platform?: string;
   client_brand?: string;
   location?: string;

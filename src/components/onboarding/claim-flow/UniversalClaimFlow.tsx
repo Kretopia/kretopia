@@ -44,7 +44,11 @@ export const UniversalClaimFlow = ({
       if (parsed.ts && Date.now() - parsed.ts > 10 * 60 * 1000) return;
       setQuery(intentQuery);
       if (Array.isArray(parsed.results)) {
-        setResults(parsed.results);
+        const normalized: WebCreditResult[] = parsed.results.map((r: any) => ({
+          ...r,
+          thumbnail: r.thumbnail || r.image_url || undefined,
+        }));
+        setResults(normalized);
         setStep("disambiguate");
       }
     } catch {}

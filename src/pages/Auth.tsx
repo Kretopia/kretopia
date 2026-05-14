@@ -21,6 +21,7 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/BrandLogo";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { FunnelStepper } from "@/components/onboarding/FunnelStepper";
+import { computePostAuthRedirect } from "@/lib/eventAuthRedirect";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<string>("signin");
@@ -50,11 +51,12 @@ const Auth = () => {
   const stashedRedirect = typeof window !== "undefined"
     ? sessionStorage.getItem("thrivein_post_auth_redirect")
     : null;
-  const redirectTo = claimProfileId 
-    ? `/profile/${claimProfileId}?showClaim=true` 
-    : eventId 
-      ? `/event/${eventId}` 
-      : (searchParams.get("redirect") || stashedRedirect || "/circle");
+  const redirectTo = computePostAuthRedirect({
+    eventId,
+    claimProfileId,
+    redirectParam: searchParams.get("redirect"),
+    stashedRedirect,
+  });
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 

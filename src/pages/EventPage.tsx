@@ -39,6 +39,7 @@ import { EventPhotoWall } from "@/components/sessions/EventPhotoWall";
 import { JoinOnlineCard } from "@/components/sessions/JoinOnlineCard";
 import { APP_URL } from "@/lib/constants";
 import { downloadIcs, openDirections, captureRefFromUrl, buildWarmShareMessage, buildEventShareUrl } from "@/lib/eventActions";
+import { buildEventAuthUrl } from "@/lib/eventAuthRedirect";
 
 const CATEGORY_LABELS: Record<string, string> = {
   music: 'Music', film: 'Film', photo: 'Photo', art: 'Art',

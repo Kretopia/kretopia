@@ -21,6 +21,7 @@ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 import { BrandLogo } from "@/components/BrandLogo";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { FunnelStepper } from "@/components/onboarding/FunnelStepper";
+import { computePostAuthRedirect } from "@/lib/eventAuthRedirect";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<string>("signin");

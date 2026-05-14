@@ -135,6 +135,8 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
       watch_party_video_url: (data as any).watch_party_video_url || '',
       recording_enabled: (data as any).recording_enabled || false,
     });
+    setRequireAccount(!!(data as any).require_account_for_rsvp);
+    setGuestMatching((data as any).guest_matching_enabled !== false);
     setFetching(false);
   };
 

@@ -443,7 +443,7 @@ export const UnifiedHome = () => {
                 <h1 className="text-[2rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-tight text-foreground leading-[1.02] mb-4">
                   Every credit.<br />
                   Every collab.<br />
-                  <span className="text-energy-glow italic font-black">Every payout.</span>
+                  <span className="text-primary italic font-black">Every payout.</span>
                 </h1>
 
                 {/* Wedge subhead — IMDb for every creative industry + OS that runs the work */}

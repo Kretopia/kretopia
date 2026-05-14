@@ -16,7 +16,7 @@ export const WhyCreatorsChooseSection = () => {
   ];
 
   return (
-    <section className="relative px-4 sm:px-6 py-20 sm:py-28 bg-cinematic dark -mx-4 sm:-mx-6">
+    <section className="relative px-4 sm:px-6 py-20 sm:py-28 bg-card -mx-4 sm:-mx-6">
       {/* Top divider hairline */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 

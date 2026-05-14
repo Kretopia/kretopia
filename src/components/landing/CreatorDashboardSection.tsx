@@ -33,7 +33,7 @@ export const CreatorDashboardSection = () => {
   };
 
   return (
-    <section className="relative my-10 sm:my-14 overflow-hidden rounded-3xl border border-primary/25 bg-cinematic dark p-6 sm:p-10">
+    <section className="relative my-10 sm:my-14 overflow-hidden rounded-3xl border border-primary/25 bg-card p-6 sm:p-10">
       {/* Ambient glows — same recipe as ThriveFundShowcase for cohesion */}
       <div className="pointer-events-none absolute -top-32 -left-20 h-[420px] w-[420px] rounded-full bg-primary/25 blur-[140px]" />
       <div className="pointer-events-none absolute -bottom-32 -right-20 h-[380px] w-[380px] rounded-full bg-energy/15 blur-[120px]" />

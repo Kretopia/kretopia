@@ -421,12 +421,11 @@ export const UnifiedHome = () => {
 
       {/* ═══════════ GUEST HERO — CINEMATIC STAGE ═══════════ */}
       {!user && (
-        <div className="relative overflow-hidden bg-cinematic dark">
+        <div className="relative overflow-hidden bg-background">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute inset-0 bg-background/60" />
-            <div className="absolute -top-40 -left-20 h-[600px] w-[600px] rounded-full bg-primary/25 blur-[160px]" />
-            <div className="absolute top-20 -right-20 h-[500px] w-[500px] rounded-full bg-[hsl(282_95%_60%/0.18)] blur-[140px]" />
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+            <div className="absolute -top-40 -left-20 h-[520px] w-[520px] rounded-full bg-primary/15 blur-[160px]" />
+            <div className="absolute top-20 -right-20 h-[420px] w-[420px] rounded-full bg-primary/10 blur-[140px]" />
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
           </div>
 
           <div className="relative container mx-auto max-w-6xl px-4 sm:px-6 pt-6 sm:pt-12 pb-8">
@@ -444,7 +443,7 @@ export const UnifiedHome = () => {
                 <h1 className="text-[2rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-tight text-foreground leading-[1.02] mb-4">
                   Every credit.<br />
                   Every collab.<br />
-                  <span className="text-energy-glow italic font-black">Every payout.</span>
+                  <span className="text-primary italic font-black">Every payout.</span>
                 </h1>
 
                 {/* Wedge subhead — IMDb for every creative industry + OS that runs the work */}

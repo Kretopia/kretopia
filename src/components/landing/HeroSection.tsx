@@ -199,7 +199,7 @@ export const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative bg-cinematic dark overflow-hidden">
+    <section className="relative bg-card overflow-hidden">
       {/* Layered cinematic glows */}
       <div className="pointer-events-none absolute -top-40 -left-20 h-[600px] w-[600px] rounded-full bg-primary/25 blur-[160px]" />
       <div className="pointer-events-none absolute top-20 -right-20 h-[500px] w-[500px] rounded-full bg-[hsl(282_95%_60%/0.18)] blur-[140px]" />

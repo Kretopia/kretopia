@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Users, FolderKanban, MessageSquare, DollarSign, ArrowRight, type LucideIcon } from "lucide-react";
-import shotMatch from "@/assets/mockup-circle-swipe.png";
-import shotDesk from "@/assets/mockup-projects.png";
-import shotCopilot from "@/assets/mockup-messages.png";
-import shotPay from "@/assets/mockup-wallet.png";
+import {
+  MatchScreen,
+  DeskScreen,
+  PayScreen,
+  ThriveScreen,
+} from "./HeroPhoneCarousel";
 
 interface Tile {
   icon: LucideIcon;
@@ -14,7 +16,7 @@ interface Tile {
   chip: string;
   href: string;
   accent: string;
-  image: string;
+  Screen: React.ComponentType;
 }
 
 const TILES: Tile[] = [
@@ -25,8 +27,8 @@ const TILES: Tile[] = [
     body: "Swipe through real creators ranked by skills, location, and the work you've done together.",
     chip: "Free",
     href: "/auth?tab=signup&intent=match",
-    accent: "from-primary/30 via-primary/10 to-transparent",
-    image: shotMatch,
+    accent: "from-primary/20 via-primary/5 to-transparent",
+    Screen: MatchScreen,
   },
   {
     icon: FolderKanban,
@@ -35,8 +37,8 @@ const TILES: Tile[] = [
     body: "Every shoot, drop, or campaign in its own studio room. Files, chat, and money in one place.",
     chip: "Free",
     href: "/auth?tab=signup&intent=desk",
-    accent: "from-accent/30 via-accent/10 to-transparent",
-    image: shotDesk,
+    accent: "from-accent/20 via-accent/5 to-transparent",
+    Screen: DeskScreen,
   },
   {
     icon: MessageSquare,
@@ -45,8 +47,8 @@ const TILES: Tile[] = [
     body: "Tell Thrive what you want to make. It plans the project, finds the people, and writes the first draft.",
     chip: "Pro",
     href: "/auth?tab=signup&intent=copilot",
-    accent: "from-energy/30 via-energy/10 to-transparent",
-    image: shotCopilot,
+    accent: "from-energy/20 via-energy/5 to-transparent",
+    Screen: ThriveScreen,
   },
   {
     icon: DollarSign,
@@ -55,15 +57,15 @@ const TILES: Tile[] = [
     body: "Send a quote in two taps. Track expenses with a photo. Get paid in USD, TTD, or your local currency.",
     chip: "Free + Pro",
     href: "/auth?tab=signup&intent=pay",
-    accent: "from-success/30 via-success/10 to-transparent",
-    image: shotPay,
+    accent: "from-success/20 via-success/5 to-transparent",
+    Screen: PayScreen,
   },
 ];
 
 /**
- * THE PRODUCT REEL — replaces WhyCreatorsChooseSection + CreatorDashboardSection.
- * Four stacked tiles, one per pillar, alternating layout on desktop.
- * Each tile: eyebrow + headline + body + chip + CTA + visual placeholder.
+ * THE PRODUCT REEL — four tiles, one per pillar, alternating layout on desktop.
+ * Each tile renders a LIVE React mini-mockup (same components used in the hero
+ * carousel) inside a soft daylight phone frame — no fake AI-generated PNGs.
  */
 export const ProductReelSection = () => {
   return (
@@ -82,6 +84,7 @@ export const ProductReelSection = () => {
         <div className="space-y-4 sm:space-y-6">
           {TILES.map((tile, i) => {
             const Icon = tile.icon;
+            const Screen = tile.Screen;
             const reverse = i % 2 === 1;
             return (
               <motion.article
@@ -127,14 +130,19 @@ export const ProductReelSection = () => {
                     </Link>
                   </div>
 
-                  {/* Real product screenshot — frameless, lets the device mockup breathe */}
-                  <div className="relative flex items-end sm:items-center justify-center min-h-[280px] sm:min-h-[340px]">
-                    <img
-                      src={tile.image}
-                      alt={`${tile.eyebrow} product screenshot`}
-                      loading="lazy"
-                      className="max-h-[340px] sm:max-h-[400px] w-auto object-contain drop-shadow-2xl"
-                    />
+                  {/* Live React mini-mockup inside a daylight phone frame */}
+                  <div className="relative flex items-center justify-center py-2">
+                    <div className="relative w-full max-w-[240px] sm:max-w-[260px]">
+                      {/* soft glow */}
+                      <div className="absolute -inset-4 -z-10 rounded-[2.5rem] bg-gradient-to-br from-primary/15 via-transparent to-primary/5 blur-2xl" />
+                      <div className="relative aspect-[9/16] rounded-[2rem] border-[7px] border-foreground/85 bg-background shadow-[0_25px_60px_-20px_hsl(var(--primary)/0.35)] overflow-hidden">
+                        {/* notch */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-4 w-24 rounded-b-2xl bg-foreground/85 z-30" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-background to-card">
+                          <Screen />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.article>

@@ -86,7 +86,7 @@ export const HeroPhoneCarousel = () => {
 };
 
 /* ────────────── MATCH SCREEN ────────────── */
-const MatchScreen = () => (
+export const MatchScreen = () => (
   <div className="h-full w-full px-3 pt-8 pb-3 flex flex-col gap-2">
     <div className="flex items-center gap-2 px-1">
       <Search className="h-3 w-3 text-muted-foreground" />
@@ -143,7 +143,7 @@ const MatchScreen = () => (
 );
 
 /* ────────────── DESK SCREEN ────────────── */
-const DeskScreen = () => (
+export const DeskScreen = () => (
   <div className="h-full w-full px-3 pt-8 pb-3 flex flex-col gap-2">
     <div className="flex items-center justify-between px-1">
       <p className="text-[11px] font-black text-foreground">Aurora SS26 Shoot</p>
@@ -187,7 +187,7 @@ const DeskScreen = () => (
 );
 
 /* ────────────── PAY SCREEN ────────────── */
-const PayScreen = () => (
+export const PayScreen = () => (
   <div className="h-full w-full px-3 pt-8 pb-3 flex flex-col gap-2">
     <div className="flex items-center justify-between px-1">
       <p className="text-[11px] font-black text-foreground">Invoice #1042</p>
@@ -225,7 +225,7 @@ const PayScreen = () => (
 );
 
 /* ────────────── THRIVE SCREEN ────────────── */
-const ThriveScreen = () => (
+export const ThriveScreen = () => (
   <div className="h-full w-full px-3 pt-8 pb-3 flex flex-col gap-2">
     <div className="flex items-center gap-2 px-1">
       <div className="h-5 w-5 rounded-md bg-gradient-to-br from-primary to-energy flex items-center justify-center"><Sparkles className="h-3 w-3 text-primary-foreground" /></div>

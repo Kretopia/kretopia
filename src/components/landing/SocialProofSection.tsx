@@ -59,11 +59,11 @@ export const SocialProofSection = () => {
             <Sparkles className="w-3 h-3" />
             {showTestimonials ? "Creator stories" : "Live network signal"}
           </Badge>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.95] text-foreground mb-5">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[1] text-foreground mb-5">
             {showTestimonials ? (
-              <>Built by creators.<br /><span className="text-energy-glow">Booking real work.</span></>
+              <>Built by creators.<br /><span className="text-primary">Booking real work.</span></>
             ) : (
-              <>Built by creators.<br /><span className="text-energy-glow">Proven by data.</span></>
+              <>Built by creators.<br /><span className="text-primary">Proven by data.</span></>
             )}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">

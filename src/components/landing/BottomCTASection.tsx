@@ -38,31 +38,32 @@ export const BottomCTASection = () => {
   };
 
   return (
-    <section className="px-4 sm:px-6 py-16 sm:py-20 md:py-24 bg-muted/30">
-      <div className="container mx-auto max-w-4xl">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary/90 to-accent p-8 sm:p-12 text-center shadow-lg">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,hsl(0_0%_100%/0.12),transparent_50%)]" />
-          
-          <div className="relative text-primary-foreground">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium">
-              {isTrinidad ? <MapPin className="h-4 w-4" /> : <Globe className="h-4 w-4" />}
+    <section className="px-4 sm:px-6 py-16 sm:py-20 md:py-24">
+      <div className="container mx-auto max-w-3xl">
+        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-card p-8 sm:p-12 text-center shadow-sm">
+          {/* Soft indigo wash — accent, not full bleed */}
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+          <div className="absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+
+          <div className="relative">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-xs font-semibold text-primary">
+              {isTrinidad ? <MapPin className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
               <span>{content.badge}</span>
             </div>
-            
-            <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold">
+
+            <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-black tracking-[-0.03em] text-foreground">
               {content.heading}
             </h2>
-            
-            <p className="mb-8 text-base sm:text-lg opacity-90 max-w-2xl mx-auto">
+
+            <p className="mb-8 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               {content.subheading}
             </p>
-            
+
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/auth" onClick={handleCtaClick}>
+              <Link to="/auth" onClick={handleCtaClick} className="w-full sm:w-auto">
                 <Button
-                  variant="outline" 
                   size="xl"
-                  className="w-full sm:w-auto border-2 border-white/70 bg-white hover:bg-white/90 text-primary font-semibold group"
+                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold group shadow-md"
                 >
                   <Sparkles className="mr-2 h-5 w-5" />
                   Get Started Free
@@ -71,7 +72,7 @@ export const BottomCTASection = () => {
               </Link>
             </div>
 
-            <p className="mt-6 text-sm opacity-80">
+            <p className="mt-6 text-xs text-muted-foreground/80">
               {content.tagline}
             </p>
           </div>

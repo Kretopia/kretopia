@@ -771,16 +771,18 @@ const EventPage = () => {
             </Card>
           )}
 
-          {/* Guest Roster — Match/Circle-style discovery before the event */}
-          <EventGuestRoster
-            eventId={event.id}
-            eventTitle={event.title}
-            hostId={event.created_by}
-            currentUserId={user?.id || null}
-            isParticipant={!!participation}
-            isHost={isCreator}
-            participantCount={participantCount}
-          />
+          {/* Guest Roster — Match/Circle-style discovery before the event (host-controlled) */}
+          {event.guest_matching_enabled !== false && (
+            <EventGuestRoster
+              eventId={event.id}
+              eventTitle={event.title}
+              hostId={event.created_by}
+              currentUserId={user?.id || null}
+              isParticipant={!!participation}
+              isHost={isCreator}
+              participantCount={participantCount}
+            />
+          )}
 
           {/* Group Chat — host toggle + opt-in for RSVPs */}
           {isAuthenticated && (

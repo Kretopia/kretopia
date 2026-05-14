@@ -218,6 +218,8 @@ export const CreateSessionDialog = ({
         online_max_attendees: formatValue.online_max_attendees,
         watch_party_video_url: formatValue.watch_party_video_url || null,
         recording_enabled: formatValue.recording_enabled,
+        require_account_for_rsvp: requireAccount,
+        guest_matching_enabled: guestMatching,
       } as any).select('id').single();
 
       if (error) throw error;

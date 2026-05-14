@@ -87,6 +87,9 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
     recording_enabled: false,
   });
 
+  const [requireAccount, setRequireAccount] = useState(false);
+  const [guestMatching, setGuestMatching] = useState(true);
+
   useEffect(() => {
     if (open && eventId) fetchEvent();
   }, [open, eventId]);
@@ -132,6 +135,8 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
       watch_party_video_url: (data as any).watch_party_video_url || '',
       recording_enabled: (data as any).recording_enabled || false,
     });
+    setRequireAccount(!!(data as any).require_account_for_rsvp);
+    setGuestMatching((data as any).guest_matching_enabled !== false);
     setFetching(false);
   };
 
@@ -195,6 +200,8 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
           online_max_attendees: formatValue.online_max_attendees,
           watch_party_video_url: formatValue.watch_party_video_url || null,
           recording_enabled: formatValue.recording_enabled,
+          require_account_for_rsvp: requireAccount,
+          guest_matching_enabled: guestMatching,
         } as any)
         .eq('id', eventId)
         .eq('created_by', user.id);
@@ -326,6 +333,28 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
               <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input type="number" min={2} max={1000} value={formData.max_participants}
                 onChange={e => setFormData(prev => ({ ...prev, max_participants: parseInt(e.target.value) || 10 }))} className="pl-10" />
+            </div>
+          </div>
+
+          {/* Guest experience */}
+          <div className="space-y-3 rounded-lg border p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium">Require account to RSVP</Label>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                  Guests must sign up or sign in before they can RSVP.
+                </p>
+              </div>
+              <Switch checked={requireAccount} onCheckedChange={setRequireAccount} />
+            </div>
+            <div className="flex items-start justify-between gap-3 pt-1 border-t border-border/40">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium">Smart Guest Matching</Label>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                  Show the guest roster + Smart Match intros across attendees.
+                </p>
+              </div>
+              <Switch checked={guestMatching} onCheckedChange={setGuestMatching} />
             </div>
           </div>
 

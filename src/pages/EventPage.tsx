@@ -182,6 +182,11 @@ const EventPage = () => {
       setShowTicketDialog(true);
       return;
     }
+    // Host requires an account: send guest to /auth and bring them back here
+    if (event?.require_account_for_rsvp && !user) {
+      navigate(`/auth?event=${event.id}&tab=signup`);
+      return;
+    }
     // Free event: frictionless inline RSVP (works for guests AND logged-in users)
     setShowGuestRsvp(true);
   };
@@ -766,16 +771,18 @@ const EventPage = () => {
             </Card>
           )}
 
-          {/* Guest Roster — Match/Circle-style discovery before the event */}
-          <EventGuestRoster
-            eventId={event.id}
-            eventTitle={event.title}
-            hostId={event.created_by}
-            currentUserId={user?.id || null}
-            isParticipant={!!participation}
-            isHost={isCreator}
-            participantCount={participantCount}
-          />
+          {/* Guest Roster — Match/Circle-style discovery before the event (host-controlled) */}
+          {event.guest_matching_enabled !== false && (
+            <EventGuestRoster
+              eventId={event.id}
+              eventTitle={event.title}
+              hostId={event.created_by}
+              currentUserId={user?.id || null}
+              isParticipant={!!participation}
+              isHost={isCreator}
+              participantCount={participantCount}
+            />
+          )}
 
           {/* Group Chat — host toggle + opt-in for RSVPs */}
           {isAuthenticated && (

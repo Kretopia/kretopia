@@ -93,6 +93,10 @@ export const CreateSessionDialog = ({
     recording_enabled: false,
   });
 
+  // Guest experience: account-required RSVP + Smart Guest Matching
+  const [requireAccount, setRequireAccount] = useState(false);
+  const [guestMatching, setGuestMatching] = useState(true);
+
   // Custom RSVP questions captured at creation time (saved after event insert)
   const [rsvpQuestions, setRsvpQuestions] = useState<Array<{ question: string; required: boolean }>>([]);
   const [newRsvpQ, setNewRsvpQ] = useState("");
@@ -214,6 +218,8 @@ export const CreateSessionDialog = ({
         online_max_attendees: formatValue.online_max_attendees,
         watch_party_video_url: formatValue.watch_party_video_url || null,
         recording_enabled: formatValue.recording_enabled,
+        require_account_for_rsvp: requireAccount,
+        guest_matching_enabled: guestMatching,
       } as any).select('id').single();
 
       if (error) throw error;
@@ -300,6 +306,8 @@ export const CreateSessionDialog = ({
       setRsvpQuestions([]);
       setNewRsvpQ("");
       setNewRsvpReq(false);
+      setRequireAccount(false);
+      setGuestMatching(true);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -524,6 +532,33 @@ export const CreateSessionDialog = ({
                 <PayoutsConnectWarning visible={formData.is_ticketed && !formData.external_ticket_url && (formData.ticket_price || 0) > 0} />
               </div>
             )}
+          </div>
+
+          {/* Guest experience — account requirement + Smart Guest Matching */}
+          <div className="space-y-3 rounded-lg border p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium flex items-center gap-1.5">
+                  <Users className="h-4 w-4 text-muted-foreground" /> Require account to RSVP
+                </Label>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                  Off (default): guests can RSVP with just name + email. On: they have to sign up or sign in first.
+                </p>
+              </div>
+              <Switch checked={requireAccount} onCheckedChange={setRequireAccount} />
+            </div>
+
+            <div className="flex items-start justify-between gap-3 pt-1 border-t border-border/40">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-primary" /> Smart Guest Matching
+                </Label>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                  Surface a guest roster and Smart Match intros across attendees. {requireAccount ? "Recommended — your guests have profiles." : "Tip: turn on \u201CRequire account\u201D so matches actually have profiles."}
+                </p>
+              </div>
+              <Switch checked={guestMatching} onCheckedChange={setGuestMatching} />
+            </div>
           </div>
 
           {/* Custom RSVP Questions (optional) — captured at creation, editable later in Backstage */}

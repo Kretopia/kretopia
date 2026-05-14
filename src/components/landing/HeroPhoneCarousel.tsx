@@ -86,7 +86,7 @@ export const HeroPhoneCarousel = () => {
 };
 
 /* ────────────── MATCH SCREEN ────────────── */
-const MatchScreen = () => (
+export const MatchScreen = () => (
   <div className="h-full w-full px-3 pt-8 pb-3 flex flex-col gap-2">
     <div className="flex items-center gap-2 px-1">
       <Search className="h-3 w-3 text-muted-foreground" />

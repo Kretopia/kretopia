@@ -168,7 +168,7 @@ export const UniversalClaimFlow = ({
         <EmailSaveStep
           profile={draft}
           credits={selected}
-          onBack={() => setStep("face")}
+          onBack={() => setStep("reveal")}
           redirectAfter={finalRedirect}
           faceMatchScore={faceMatchScore}
         />

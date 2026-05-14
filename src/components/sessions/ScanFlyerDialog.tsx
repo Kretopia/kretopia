@@ -20,19 +20,35 @@ export interface ScannedEventDetails {
   external_ticket_url?: string | null;
 }
 
+interface PreparedFlyerImage {
+  base64: string;
+  mimeType: string;
+}
+
 interface ScanFlyerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onExtracted: (details: ScannedEventDetails, flyerFile: File, flyerPreview: string) => void;
 }
 
+const blobToBase64 = async (blob: Blob): Promise<string> => {
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+};
+
 // Compress + resize image client-side to keep payloads small and fast.
-// Returns base64 (no data: prefix).
-const compressImage = (f: File, maxWidth = 1600, quality = 0.85): Promise<string> =>
+// Returns base64 (no data: prefix) and MIME type.
+const compressImage = (f: File, maxWidth = 1600, quality = 0.85): Promise<PreparedFlyerImage> =>
   new Promise((resolve, reject) => {
     const objectUrl = URL.createObjectURL(f);
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       try {
         const canvas = document.createElement("canvas");
         const scale = Math.min(1, maxWidth / img.width);
@@ -41,9 +57,10 @@ const compressImage = (f: File, maxWidth = 1600, quality = 0.85): Promise<string
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("Canvas not supported on this device"));
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", quality));
+        if (!blob) return reject(new Error("Could not prepare this image."));
         URL.revokeObjectURL(objectUrl);
-        resolve(dataUrl.split(",")[1] || "");
+        resolve({ base64: await blobToBase64(blob), mimeType: "image/jpeg" });
       } catch (err) {
         URL.revokeObjectURL(objectUrl);
         reject(err);
@@ -55,6 +72,20 @@ const compressImage = (f: File, maxWidth = 1600, quality = 0.85): Promise<string
     };
     img.src = objectUrl;
   });
+
+const prepareImageForScan = async (file: File): Promise<PreparedFlyerImage> => {
+  try {
+    return await compressImage(file);
+  } catch (err) {
+    // Mobile WebViews sometimes fail to decode camera/gallery files for canvas/FileReader.
+    // Raw byte reading is more reliable and still lets the scanner inspect supported formats.
+    console.warn("compressImage failed, sending raw file bytes:", err);
+    return {
+      base64: await blobToBase64(file),
+      mimeType: file.type || "image/jpeg",
+    };
+  }
+};
 
 // Try hard to surface the real error from a Supabase Functions invoke failure.
 const extractInvokeError = async (error: any): Promise<string> => {

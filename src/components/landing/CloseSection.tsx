@@ -14,9 +14,9 @@ export const CloseSection = () => (
         <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" /> ThriveIN · The Creative OS
       </p>
 
-      <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.04em] leading-[0.98] text-foreground mb-5">
+      <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.04em] leading-[1] text-foreground mb-5">
         Built for the work<br />
-        <span className="text-energy-glow italic">you actually make.</span>
+        <span className="text-primary italic">you actually make.</span>
       </h2>
       <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8">
         Find your people. Run the project. Get paid. Let Thrive handle the busywork — so you can stay in the creative seat.

@@ -127,13 +127,13 @@ export const ProductReelSection = () => {
                     </Link>
                   </div>
 
-                  {/* Real product screenshot */}
-                  <div className="relative aspect-[4/3] sm:aspect-auto sm:min-h-[260px] rounded-2xl border border-border/60 bg-background overflow-hidden flex items-center justify-center p-4">
+                  {/* Real product screenshot — frameless, lets the device mockup breathe */}
+                  <div className="relative flex items-end sm:items-center justify-center min-h-[280px] sm:min-h-[340px]">
                     <img
                       src={tile.image}
                       alt={`${tile.eyebrow} product screenshot`}
                       loading="lazy"
-                      className="max-h-full max-w-full object-contain drop-shadow-xl"
+                      className="max-h-[340px] sm:max-h-[400px] w-auto object-contain drop-shadow-2xl"
                     />
                   </div>
                 </div>

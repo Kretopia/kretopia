@@ -62,7 +62,7 @@ export const PricingPreviewSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative px-4 sm:px-6 py-16 sm:py-24 bg-cinematic dark -mx-4 sm:-mx-6">
+    <section className="relative px-4 sm:px-6 py-16 sm:py-24 bg-card -mx-4 sm:-mx-6">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-energy/30 to-transparent" />
 
       <div className="relative container mx-auto max-w-5xl">

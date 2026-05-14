@@ -26,16 +26,57 @@ interface ScanFlyerDialogProps {
   onExtracted: (details: ScannedEventDetails, flyerFile: File, flyerPreview: string) => void;
 }
 
-const fileToBase64 = (file: File): Promise<string> =>
+// Compress + resize image client-side to keep payloads small and fast.
+// Returns base64 (no data: prefix).
+const compressImage = (f: File, maxWidth = 1600, quality = 0.85): Promise<string> =>
   new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      resolve(result.split(",")[1] || "");
+    const objectUrl = URL.createObjectURL(f);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(1, maxWidth / img.width);
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas not supported on this device"));
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        URL.revokeObjectURL(objectUrl);
+        resolve(dataUrl.split(",")[1] || "");
+      } catch (err) {
+        URL.revokeObjectURL(objectUrl);
+        reject(err);
+      }
     };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Could not read this image file. Try a JPG or PNG."));
+    };
+    img.src = objectUrl;
   });
+
+// Try hard to surface the real error from a Supabase Functions invoke failure.
+const extractInvokeError = async (error: any): Promise<string> => {
+  if (!error) return "";
+  // FunctionsHttpError exposes the original Response on .context
+  const ctx: Response | undefined = error.context;
+  if (ctx && typeof ctx.json === "function") {
+    try {
+      const cloned = ctx.clone();
+      const body = await cloned.json();
+      if (body?.error) return String(body.error);
+      if (body?.message) return String(body.message);
+    } catch {
+      try {
+        const cloned = ctx.clone();
+        const text = await cloned.text();
+        if (text) return text.slice(0, 240);
+      } catch { /* ignore */ }
+    }
+  }
+  return error.message || "";
+};
 
 export const ScanFlyerDialog = ({ open, onOpenChange, onExtracted }: ScanFlyerDialogProps) => {
   const { toast } = useToast();
@@ -47,28 +88,49 @@ export const ScanFlyerDialog = ({ open, onOpenChange, onExtracted }: ScanFlyerDi
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 8 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Max 8MB", variant: "destructive" });
+    if (file.size > 12 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 12MB", variant: "destructive" });
       return;
     }
     setScanning(true);
     try {
-      const image_base64 = await fileToBase64(file);
+      const image_base64 = await compressImage(file).catch(async (err) => {
+        // Fallback to raw base64 if canvas fails (e.g. HEIC on some browsers)
+        console.warn("compressImage failed, falling back to raw base64:", err);
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result.split(",")[1] || "");
+          };
+          reader.onerror = () => reject(new Error("Could not read this image file."));
+          reader.readAsDataURL(file);
+        });
+      });
+
       const { data, error } = await supabase.functions.invoke("extract-event-details", {
         body: { image_base64, extract_only: true },
       });
-      if (error) throw new Error(error.message || "Edge function error");
-      if (data?.error) throw new Error(data.error);
-      if (!data?.extracted) throw new Error("We couldn't read enough details from this flyer");
+
+      if (error) {
+        const realMsg = await extractInvokeError(error);
+        throw new Error(realMsg || "We couldn't reach the flyer scanner. Try again in a moment.");
+      }
+      if (data?.error) throw new Error(String(data.error));
+      if (!data?.extracted) {
+        throw new Error("We couldn't read enough details from this flyer. Try a clearer photo with the title, date and venue visible.");
+      }
+
       const preview = URL.createObjectURL(file);
       onExtracted(data.extracted as ScannedEventDetails, file, preview);
       onOpenChange(false);
       toast({ title: "Flyer scanned", description: "We filled in what we could find. Review and tweak." });
     } catch (err: any) {
       const msg = err?.message || "Could not read the flyer";
+      console.error("ScanFlyerDialog error:", err);
       toast({
         title: "Scan failed",
-        description: `${msg}. Try a clearer photo with the title, date and venue visible.`,
+        description: msg,
         variant: "destructive",
       });
     } finally {
@@ -109,7 +171,7 @@ export const ScanFlyerDialog = ({ open, onOpenChange, onExtracted }: ScanFlyerDi
           )}
         </Button>
         <p className="text-[11px] text-muted-foreground text-center">
-          JPG, PNG, screenshots up to 8MB. The flyer is also used as your cover image.
+          JPG, PNG, screenshots up to 12MB. The flyer is also used as your cover image.
         </p>
       </DialogContent>
     </Dialog>

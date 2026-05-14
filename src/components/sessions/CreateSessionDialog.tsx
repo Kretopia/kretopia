@@ -93,6 +93,10 @@ export const CreateSessionDialog = ({
     recording_enabled: false,
   });
 
+  // Guest experience: account-required RSVP + Smart Guest Matching
+  const [requireAccount, setRequireAccount] = useState(false);
+  const [guestMatching, setGuestMatching] = useState(true);
+
   // Custom RSVP questions captured at creation time (saved after event insert)
   const [rsvpQuestions, setRsvpQuestions] = useState<Array<{ question: string; required: boolean }>>([]);
   const [newRsvpQ, setNewRsvpQ] = useState("");

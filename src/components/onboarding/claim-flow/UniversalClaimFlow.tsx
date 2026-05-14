@@ -5,6 +5,7 @@ import { VerifyMatchesStep } from "./VerifyMatchesStep";
 import { ProfilePreviewStep } from "./ProfilePreviewStep";
 import { OptionalFaceVerifyStep } from "./OptionalFaceVerifyStep";
 import { EmailSaveStep } from "./EmailSaveStep";
+import { ProfileRevealStep } from "./ProfileRevealStep";
 import type { ClaimContext, ClaimedCredit, DraftProfile, FlowStep, WebCreditResult } from "./types";
 
 interface Props extends ClaimContext {}
@@ -148,18 +149,26 @@ export const UniversalClaimFlow = ({
           profile={draft}
           credits={selected}
           onBack={() => setStep("preview")}
-          onSkip={() => setStep("email")}
+          onSkip={() => setStep("reveal")}
           onVerified={(score) => {
             setFaceMatchScore(score);
-            setStep("email");
+            setStep("reveal");
           }}
+        />
+      )}
+      {step === "reveal" && (
+        <ProfileRevealStep
+          profile={draft}
+          credits={selected}
+          onBack={() => setStep("preview")}
+          onConfirm={() => setStep("email")}
         />
       )}
       {step === "email" && (
         <EmailSaveStep
           profile={draft}
           credits={selected}
-          onBack={() => setStep("face")}
+          onBack={() => setStep("reveal")}
           redirectAfter={finalRedirect}
           faceMatchScore={faceMatchScore}
         />

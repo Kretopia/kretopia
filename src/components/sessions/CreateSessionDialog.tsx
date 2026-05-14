@@ -306,6 +306,8 @@ export const CreateSessionDialog = ({
       setRsvpQuestions([]);
       setNewRsvpQ("");
       setNewRsvpReq(false);
+      setRequireAccount(false);
+      setGuestMatching(true);
     } catch (error: any) {
       toast({
         title: "Error",

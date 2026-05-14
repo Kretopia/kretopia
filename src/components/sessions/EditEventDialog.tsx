@@ -87,6 +87,9 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
     recording_enabled: false,
   });
 
+  const [requireAccount, setRequireAccount] = useState(false);
+  const [guestMatching, setGuestMatching] = useState(true);
+
   useEffect(() => {
     if (open && eventId) fetchEvent();
   }, [open, eventId]);

@@ -2755,6 +2755,7 @@ export type Database = {
           external_ticket_url: string | null
           group_chat_enabled: boolean
           group_chat_room_id: string | null
+          guest_matching_enabled: boolean
           host_response_hours: number | null
           id: string
           is_public: boolean | null
@@ -2771,6 +2772,7 @@ export type Database = {
           project_id: string | null
           recording_enabled: boolean
           refund_policy: string | null
+          require_account_for_rsvp: boolean
           scouted_by: string | null
           source_platform: string | null
           source_url: string | null
@@ -2811,6 +2813,7 @@ export type Database = {
           external_ticket_url?: string | null
           group_chat_enabled?: boolean
           group_chat_room_id?: string | null
+          guest_matching_enabled?: boolean
           host_response_hours?: number | null
           id?: string
           is_public?: boolean | null
@@ -2827,6 +2830,7 @@ export type Database = {
           project_id?: string | null
           recording_enabled?: boolean
           refund_policy?: string | null
+          require_account_for_rsvp?: boolean
           scouted_by?: string | null
           source_platform?: string | null
           source_url?: string | null
@@ -2867,6 +2871,7 @@ export type Database = {
           external_ticket_url?: string | null
           group_chat_enabled?: boolean
           group_chat_room_id?: string | null
+          guest_matching_enabled?: boolean
           host_response_hours?: number | null
           id?: string
           is_public?: boolean | null
@@ -2883,6 +2888,7 @@ export type Database = {
           project_id?: string | null
           recording_enabled?: boolean
           refund_policy?: string | null
+          require_account_for_rsvp?: boolean
           scouted_by?: string | null
           source_platform?: string | null
           source_url?: string | null

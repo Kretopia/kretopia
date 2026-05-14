@@ -336,6 +336,28 @@ export const EditEventDialog = ({ open, onOpenChange, onUpdated, eventId }: Edit
             </div>
           </div>
 
+          {/* Guest experience */}
+          <div className="space-y-3 rounded-lg border p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium">Require account to RSVP</Label>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                  Guests must sign up or sign in before they can RSVP.
+                </p>
+              </div>
+              <Switch checked={requireAccount} onCheckedChange={setRequireAccount} />
+            </div>
+            <div className="flex items-start justify-between gap-3 pt-1 border-t border-border/40">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium">Smart Guest Matching</Label>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                  Show the guest roster + Smart Match intros across attendees.
+                </p>
+              </div>
+              <Switch checked={guestMatching} onCheckedChange={setGuestMatching} />
+            </div>
+          </div>
+
           {/* Ticketing */}
           <div className="space-y-3 rounded-lg border p-3">
             <div className="flex items-center justify-between">

@@ -534,6 +534,33 @@ export const CreateSessionDialog = ({
             )}
           </div>
 
+          {/* Guest experience — account requirement + Smart Guest Matching */}
+          <div className="space-y-3 rounded-lg border p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium flex items-center gap-1.5">
+                  <Users className="h-4 w-4 text-muted-foreground" /> Require account to RSVP
+                </Label>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                  Off (default): guests can RSVP with just name + email. On: they have to sign up or sign in first.
+                </p>
+              </div>
+              <Switch checked={requireAccount} onCheckedChange={setRequireAccount} />
+            </div>
+
+            <div className="flex items-start justify-between gap-3 pt-1 border-t border-border/40">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-primary" /> Smart Guest Matching
+                </Label>
+                <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                  Surface a guest roster and Smart Match intros across attendees. {requireAccount ? "Recommended — your guests have profiles." : "Tip: turn on \u201CRequire account\u201D so matches actually have profiles."}
+                </p>
+              </div>
+              <Switch checked={guestMatching} onCheckedChange={setGuestMatching} />
+            </div>
+          </div>
+
           {/* Custom RSVP Questions (optional) — captured at creation, editable later in Backstage */}
           <div className="space-y-3 rounded-lg border p-3">
             <div className="flex items-start gap-2">

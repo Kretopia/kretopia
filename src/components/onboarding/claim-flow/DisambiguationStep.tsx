@@ -76,12 +76,66 @@ export const DisambiguationStep = ({ results, query, onBack, onConfirm, onPasteL
     }
   };
 
+  // Build a "we found you" hero from the results so signup feels like the public name-search
+  const heroAvatar = items.find((i) => i.thumbnail)?.thumbnail;
+  const platformSet = Array.from(
+    new Set(
+      items
+        .map((i) => (i.platform || i.source_name || "").trim())
+        .filter(Boolean)
+    )
+  ).slice(0, 6);
+  const topSnippet = items.find((i) => i.description)?.description;
+
   return (
     <div className="space-y-4">
+      {/* Wow hero — mirrors the public "search your name" card */}
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-accent/10 p-4">
+        <div className="flex items-start gap-3">
+          <div className="relative h-16 w-16 shrink-0 rounded-xl overflow-hidden ring-2 ring-primary/30">
+            <CreditThumb
+              src={heroAvatar}
+              title={query}
+              platform={items[0]?.platform || items[0]?.source_name}
+              className="absolute inset-0 w-full h-full"
+              iconClassName="h-7 w-7"
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-primary mb-0.5">
+              Found across the web
+            </p>
+            <h2 className="text-lg font-bold leading-tight truncate">{query}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {items.length} mention{items.length === 1 ? "" : "s"}
+              {platformSet.length > 0 && ` · ${platformSet.length} platform${platformSet.length === 1 ? "" : "s"}`}
+            </p>
+            {topSnippet && (
+              <p className="text-[11px] text-muted-foreground/90 mt-1.5 line-clamp-2 leading-snug italic">
+                "{topSnippet}"
+              </p>
+            )}
+          </div>
+        </div>
+        {platformSet.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-3">
+            {platformSet.map((p) => (
+              <Badge
+                key={p}
+                variant="secondary"
+                className="text-[9px] py-0 h-4 px-1.5 uppercase tracking-wide"
+              >
+                {p}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="space-y-1">
-        <h2 className="text-xl font-bold">Which of these are yours?</h2>
+        <h2 className="text-lg font-bold">Which of these are yours?</h2>
         <p className="text-sm text-muted-foreground">
-          Tap to verify each one is really you — open the source link if unsure. We only add what you confirm.
+          Tap to select. Open the source link if unsure — we only add what you confirm.
         </p>
       </div>
 

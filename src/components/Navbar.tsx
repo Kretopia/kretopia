@@ -248,6 +248,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
                       <MenuButton icon={LayoutDashboard} label="Studios" onClick={() => handleNavigation("/desk")} path="/desk" />
                       <MenuButton icon={Radar} label="Scout" onClick={() => handleNavigation("/scout")} path="/scout" />
+                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
                       <MenuButton icon={Wallet} label="Pay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
                       <MenuButton icon={UserCircle2} label="Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
                       <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} path="/credits" />

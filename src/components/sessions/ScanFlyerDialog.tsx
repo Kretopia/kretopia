@@ -125,22 +125,11 @@ export const ScanFlyerDialog = ({ open, onOpenChange, onExtracted }: ScanFlyerDi
     }
     setScanning(true);
     try {
-      const image_base64 = await compressImage(file).catch(async (err) => {
-        // Fallback to raw base64 if canvas fails (e.g. HEIC on some browsers)
-        console.warn("compressImage failed, falling back to raw base64:", err);
-        return await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            resolve(result.split(",")[1] || "");
-          };
-          reader.onerror = () => reject(new Error("Could not read this image file."));
-          reader.readAsDataURL(file);
-        });
-      });
+      const { base64: image_base64, mimeType: image_mime_type } = await prepareImageForScan(file);
+      if (!image_base64) throw new Error("Could not prepare this image file.");
 
       const { data, error } = await supabase.functions.invoke("extract-event-details", {
-        body: { image_base64, extract_only: true },
+        body: { image_base64, image_mime_type, extract_only: true },
       });
 
       if (error) {

@@ -56,7 +56,11 @@ export const SearchOrPasteStep = ({ initialQuery = "", onResults }: Props) => {
         console.error("[ClaimFlow] invoke error", error);
         throw error;
       }
-      const results: WebCreditResult[] = data?.results || [];
+      const rawResults: any[] = data?.results || [];
+      const results: WebCreditResult[] = rawResults.map((r) => ({
+        ...r,
+        thumbnail: r.thumbnail || r.image_url || undefined,
+      }));
       console.info("[ClaimFlow] received", results.length, "results");
       try {
         sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), query: q, results }));

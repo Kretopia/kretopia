@@ -30,9 +30,10 @@ serve(async (req) => {
     if (authError || !user) return json({ error: "Unauthorized" }, 401);
 
     const body = await req.json().catch(() => ({}));
-    const { text, image_base64, source_platform, source_url, extract_only } = body as {
+    const { text, image_base64, image_mime_type, source_platform, source_url, extract_only } = body as {
       text?: string;
       image_base64?: string;
+      image_mime_type?: string;
       source_platform?: string;
       source_url?: string;
       /** When true, only return extracted JSON — do NOT create an unclaimed event row or generate a cover. Used by the host create-flow flyer scanner. */
@@ -149,6 +150,9 @@ If a field truly has no signal, use null. Never invent prices or venues.`;
     const messages: any[] = [{ role: "system", content: systemPrompt }];
 
     if (image_base64) {
+      const safeMimeType = typeof image_mime_type === "string" && /^image\/[a-z0-9.+-]+$/i.test(image_mime_type)
+        ? image_mime_type
+        : "image/jpeg";
       messages.push({
         role: "user",
         content: [
@@ -158,7 +162,7 @@ If a field truly has no signal, use null. Never invent prices or venues.`;
               ? `Extract event details from this image and the text below.\n\n${combinedText}`
               : "Extract event details from this image.",
           },
-          { type: "image_url", image_url: { url: `data:image/jpeg;base64,${image_base64}` } },
+          { type: "image_url", image_url: { url: `data:${safeMimeType};base64,${image_base64}` } },
         ],
       });
     } else {

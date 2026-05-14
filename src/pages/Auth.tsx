@@ -50,11 +50,12 @@ const Auth = () => {
   const stashedRedirect = typeof window !== "undefined"
     ? sessionStorage.getItem("thrivein_post_auth_redirect")
     : null;
-  const redirectTo = claimProfileId 
-    ? `/profile/${claimProfileId}?showClaim=true` 
-    : eventId 
-      ? `/event/${eventId}` 
-      : (searchParams.get("redirect") || stashedRedirect || "/circle");
+  const redirectTo = computePostAuthRedirect({
+    eventId,
+    claimProfileId,
+    redirectParam: searchParams.get("redirect"),
+    stashedRedirect,
+  });
   const isPasswordReset = searchParams.get("reset") === "true";
   const connectUserId = searchParams.get("connect");
 

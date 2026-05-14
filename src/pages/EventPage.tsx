@@ -184,7 +184,7 @@ const EventPage = () => {
     }
     // Host requires an account: send guest to /auth and bring them back here
     if (event?.require_account_for_rsvp && !user) {
-      navigate(`/auth?event=${event.id}&tab=signup`);
+      navigate(buildEventAuthUrl(event.id));
       return;
     }
     // Free event: frictionless inline RSVP (works for guests AND logged-in users)

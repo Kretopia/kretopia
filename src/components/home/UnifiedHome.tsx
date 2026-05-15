@@ -658,13 +658,14 @@ export const UnifiedHome = () => {
             1. Hero (above)  2. Claim Your Credits  3. Product Reel (real screenshots)
             4. Comparison    5. Social Proof        6. Pricing
             7. ThriveFund teaser   8. Bottom CTA */}
-        {!user && <ClaimYourCreditsSection onSearchSubmit={handleHeroClaimSearch} />}
-        {!user && <ProductReelSection />}
-        {!user && <ComparisonTableSection />}
-        {!user && <SocialProofSection />}
-        {!user && <PricingPreviewSection />}
-        {!user && <ThriveFundTeaserCard />}
-        {!user && <BottomCTASection />}
+        {isWedge && <OneWedgeLanding onSearchSubmit={handleHeroClaimSearch} />}
+        {!user && !isWedge && <ClaimYourCreditsSection onSearchSubmit={handleHeroClaimSearch} />}
+        {!user && !isWedge && <ProductReelSection />}
+        {!user && !isWedge && <ComparisonTableSection />}
+        {!user && !isWedge && <SocialProofSection />}
+        {!user && !isWedge && <PricingPreviewSection />}
+        {!user && !isWedge && <ThriveFundTeaserCard />}
+        {!user && !isWedge && <BottomCTASection />}
 
 
         {/* ── 1. CREATORS FOR YOU (auth only) ── */}

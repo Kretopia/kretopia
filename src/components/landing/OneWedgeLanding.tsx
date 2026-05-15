@@ -51,14 +51,15 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
       };
 
   return (
-    <section className="relative overflow-hidden bg-background">
-      {/* Cinematic glow */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -left-20 h-[520px] w-[520px] rounded-full bg-primary/15 blur-[160px]" />
-        <div className="absolute top-20 -right-20 h-[420px] w-[420px] rounded-full bg-energy/10 blur-[140px]" />
-      </div>
+    <section className="bg-background">
+      {/* Hero block — glow scoped here only so it can't bleed behind stat cards (Android tearing) */}
+      <div className="relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 hidden sm:block" aria-hidden>
+          <div className="absolute -top-40 -left-20 h-[420px] w-[420px] rounded-full bg-primary/10 blur-[120px]" />
+          <div className="absolute top-20 -right-20 h-[360px] w-[360px] rounded-full bg-energy/[0.08] blur-[110px]" />
+        </div>
 
-      <div className="relative container mx-auto max-w-5xl px-4 sm:px-6 pt-8 sm:pt-14 pb-14">
+        <div className="relative container mx-auto max-w-5xl px-4 sm:px-6 pt-8 sm:pt-14 pb-14">
         {/* Eyebrow */}
         <motion.p
           initial={{ opacity: 0, y: 8 }}
@@ -157,6 +158,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-energy" /> Verified identity</span>
         </div>
         <p className="mt-3 text-xs font-medium text-foreground/70">{copy.proofLabel}</p>
+        </div>
       </div>
 
       {/* Social proof carries over from control */}

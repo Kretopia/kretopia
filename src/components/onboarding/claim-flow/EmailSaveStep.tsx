@@ -23,6 +23,23 @@ export const EmailSaveStep = ({ profile, credits, onBack, redirectAfter = "/prof
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [existing, setExisting] = useState<{ providers: string[] } | null>(null);
+
+  // Debounced lookup: when the user enters an email already on file,
+  // prompt them to sign in instead of creating a duplicate.
+  useEffect(() => {
+    const e = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+      setExisting(null);
+      return;
+    }
+    const t = setTimeout(async () => {
+      const res = await lookupAuthProviders(e);
+      if (res?.exists) setExisting({ providers: res.providers || [] });
+      else setExisting(null);
+    }, 450);
+    return () => clearTimeout(t);
+  }, [email]);
 
   const handleGoogle = async () => {
     setGoogleLoading(true);

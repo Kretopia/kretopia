@@ -158,6 +158,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-energy" /> Verified identity</span>
         </div>
         <p className="mt-3 text-xs font-medium text-foreground/70">{copy.proofLabel}</p>
+        </div>
       </div>
 
       {/* Social proof carries over from control */}

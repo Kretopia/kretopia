@@ -25,6 +25,12 @@ interface PreparedFlyerImage {
   mimeType: string;
 }
 
+interface CapturedFlyerFile {
+  dataUrl: string;
+  file: File;
+  mimeType: string;
+}
+
 interface ScanFlyerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,11 +48,38 @@ const blobToBase64 = async (blob: Blob): Promise<string> => {
   return btoa(binary);
 };
 
+const readFileAsDataUrl = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error || new Error("This image could not be read."));
+    reader.readAsDataURL(file);
+  });
+
+const dataUrlToFile = (dataUrl: string, filename: string, fallbackType: string): File => {
+  const [header, payload = ""] = dataUrl.split(",");
+  const mimeType = header.match(/data:([^;]+)/)?.[1] || fallbackType || "image/jpeg";
+  const binary = atob(payload);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return new File([bytes], filename || "event-flyer.jpg", { type: mimeType });
+};
+
+const captureFlyerFile = async (file: File): Promise<CapturedFlyerFile> => {
+  // Android WebViews/photo pickers can revoke file handles after the picker closes.
+  // Copy the bytes into memory immediately, then only use this safe in-memory File.
+  const dataUrl = await readFileAsDataUrl(file);
+  if (!dataUrl.startsWith("data:image/")) {
+    throw new Error("Choose a JPG, PNG, or screenshot image.");
+  }
+  const safeFile = dataUrlToFile(dataUrl, file.name, file.type || "image/jpeg");
+  return { dataUrl, file: safeFile, mimeType: safeFile.type || file.type || "image/jpeg" };
+};
+
 // Compress + resize image client-side to keep payloads small and fast.
 // Returns base64 (no data: prefix) and MIME type.
-const compressImage = (f: File, maxWidth = 1600, quality = 0.85): Promise<PreparedFlyerImage> =>
+const compressImage = (sourceDataUrl: string, maxWidth = 1600, quality = 0.85): Promise<PreparedFlyerImage> =>
   new Promise((resolve, reject) => {
-    const objectUrl = URL.createObjectURL(f);
     const img = new Image();
     img.onload = async () => {
       try {
@@ -59,30 +92,27 @@ const compressImage = (f: File, maxWidth = 1600, quality = 0.85): Promise<Prepar
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", quality));
         if (!blob) return reject(new Error("Could not prepare this image."));
-        URL.revokeObjectURL(objectUrl);
         resolve({ base64: await blobToBase64(blob), mimeType: "image/jpeg" });
       } catch (err) {
-        URL.revokeObjectURL(objectUrl);
         reject(err);
       }
     };
     img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
       reject(new Error("Could not read this image file. Try a JPG or PNG."));
     };
-    img.src = objectUrl;
+    img.src = sourceDataUrl;
   });
 
-const prepareImageForScan = async (file: File): Promise<PreparedFlyerImage> => {
+const prepareImageForScan = async (captured: CapturedFlyerFile): Promise<PreparedFlyerImage> => {
   try {
-    return await compressImage(file);
+    return await compressImage(captured.dataUrl);
   } catch (err) {
     // Mobile WebViews sometimes fail to decode camera/gallery files for canvas/FileReader.
     // Raw byte reading is more reliable and still lets the scanner inspect supported formats.
     console.warn("compressImage failed, sending raw file bytes:", err);
     return {
-      base64: await blobToBase64(file),
-      mimeType: file.type || "image/jpeg",
+      base64: captured.dataUrl.split(",")[1] || await blobToBase64(captured.file),
+      mimeType: captured.mimeType,
     };
   }
 };
@@ -125,7 +155,8 @@ export const ScanFlyerDialog = ({ open, onOpenChange, onExtracted }: ScanFlyerDi
     }
     setScanning(true);
     try {
-      const { base64: image_base64, mimeType: image_mime_type } = await prepareImageForScan(file);
+      const captured = await captureFlyerFile(file);
+      const { base64: image_base64, mimeType: image_mime_type } = await prepareImageForScan(captured);
       if (!image_base64) throw new Error("Could not prepare this image file.");
 
       const { data, error } = await supabase.functions.invoke("extract-event-details", {
@@ -141,8 +172,7 @@ export const ScanFlyerDialog = ({ open, onOpenChange, onExtracted }: ScanFlyerDi
         throw new Error("We couldn't read enough details from this flyer. Try a clearer photo with the title, date and venue visible.");
       }
 
-      const preview = URL.createObjectURL(file);
-      onExtracted(data.extracted as ScannedEventDetails, file, preview);
+      onExtracted(data.extracted as ScannedEventDetails, captured.file, captured.dataUrl);
       onOpenChange(false);
       toast({ title: "Flyer scanned", description: "We filled in what we could find. Review and tweak." });
     } catch (err: any) {

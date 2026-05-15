@@ -179,25 +179,32 @@ export const EventCoverPicker = ({
           <DialogHeader className="sr-only">
             <DialogTitle>Crop Image</DialogTitle>
           </DialogHeader>
-          <div className="relative h-[40vh] sm:h-[60vh] bg-black">
+          <div className="relative h-[55vh] sm:h-[60vh] bg-black">
             {cropSource && (
               <Cropper
                 image={cropSource}
                 crop={crop}
                 zoom={zoom}
-                aspect={16 / 9}
+                aspect={4 / 5}
+                objectFit="contain"
+                restrictPosition={false}
+                minZoom={0.4}
+                maxZoom={3}
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={onCropComplete}
               />
             )}
           </div>
-          <div className="p-4 space-y-3">
+          <div className="p-4 space-y-3 bg-background">
+            <p className="text-[11px] text-muted-foreground text-center">
+              Pinch or drag to position. Use zoom to fit your full flyer.
+            </p>
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground shrink-0">Zoom</span>
               <input
                 type="range"
-                min={1}
+                min={0.4}
                 max={3}
                 step={0.05}
                 value={zoom}

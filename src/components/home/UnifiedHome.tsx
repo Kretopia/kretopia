@@ -29,6 +29,8 @@ import { ProductReelSection } from "@/components/landing/ProductReelSection";
 import { ComparisonTableSection } from "@/components/landing/ComparisonTableSection";
 import { ThriveFundTeaserCard } from "@/components/landing/ThriveFundTeaserCard";
 import { BottomCTASection } from "@/components/landing/BottomCTASection";
+import { OneWedgeLanding } from "@/components/landing/OneWedgeLanding";
+import { useLandingVariant } from "@/hooks/useLandingVariant";
 // StickyMobileCTA removed — dismissible popup handles guest CTA
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A

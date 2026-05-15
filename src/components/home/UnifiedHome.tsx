@@ -81,6 +81,8 @@ export const UnifiedHome = () => {
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
   const [heroRoleIdx, setHeroRoleIdx] = useState(0);
   const { geo: currentGeo } = useCurrentGeoCountry();
+  const landingVariant = useLandingVariant();
+  const isWedge = !user && landingVariant === "wedge";
 
   // Dashboard data
   const [trendingCredits, setTrendingCredits] = useState<any[]>([]);

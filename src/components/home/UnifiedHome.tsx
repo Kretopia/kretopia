@@ -29,6 +29,8 @@ import { ProductReelSection } from "@/components/landing/ProductReelSection";
 import { ComparisonTableSection } from "@/components/landing/ComparisonTableSection";
 import { ThriveFundTeaserCard } from "@/components/landing/ThriveFundTeaserCard";
 import { BottomCTASection } from "@/components/landing/BottomCTASection";
+import { OneWedgeLanding } from "@/components/landing/OneWedgeLanding";
+import { useLandingVariant } from "@/hooks/useLandingVariant";
 // StickyMobileCTA removed — dismissible popup handles guest CTA
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A
@@ -79,6 +81,8 @@ export const UnifiedHome = () => {
   const [quickPostType, setQuickPostType] = useState<"gig" | "event" | null>(null);
   const [heroRoleIdx, setHeroRoleIdx] = useState(0);
   const { geo: currentGeo } = useCurrentGeoCountry();
+  const landingVariant = useLandingVariant();
+  const isWedge = !user && landingVariant === "wedge";
 
   // Dashboard data
   const [trendingCredits, setTrendingCredits] = useState<any[]>([]);
@@ -419,8 +423,8 @@ export const UnifiedHome = () => {
         url="https://thrivein.io"
       />
 
-      {/* ═══════════ GUEST HERO — CINEMATIC STAGE ═══════════ */}
-      {!user && (
+      {/* ═══════════ GUEST HERO — CINEMATIC STAGE (control variant) ═══════════ */}
+      {!user && !isWedge && (
         <div className="relative overflow-hidden bg-background">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -top-40 -left-20 h-[520px] w-[520px] rounded-full bg-primary/15 blur-[160px]" />
@@ -654,13 +658,14 @@ export const UnifiedHome = () => {
             1. Hero (above)  2. Claim Your Credits  3. Product Reel (real screenshots)
             4. Comparison    5. Social Proof        6. Pricing
             7. ThriveFund teaser   8. Bottom CTA */}
-        {!user && <ClaimYourCreditsSection onSearchSubmit={handleHeroClaimSearch} />}
-        {!user && <ProductReelSection />}
-        {!user && <ComparisonTableSection />}
-        {!user && <SocialProofSection />}
-        {!user && <PricingPreviewSection />}
-        {!user && <ThriveFundTeaserCard />}
-        {!user && <BottomCTASection />}
+        {isWedge && <OneWedgeLanding onSearchSubmit={handleHeroClaimSearch} />}
+        {!user && !isWedge && <ClaimYourCreditsSection onSearchSubmit={handleHeroClaimSearch} />}
+        {!user && !isWedge && <ProductReelSection />}
+        {!user && !isWedge && <ComparisonTableSection />}
+        {!user && !isWedge && <SocialProofSection />}
+        {!user && !isWedge && <PricingPreviewSection />}
+        {!user && !isWedge && <ThriveFundTeaserCard />}
+        {!user && !isWedge && <BottomCTASection />}
 
 
         {/* ── 1. CREATORS FOR YOU (auth only) ── */}

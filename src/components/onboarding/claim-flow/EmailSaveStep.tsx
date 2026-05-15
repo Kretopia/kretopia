@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, CheckCircle2, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { lookupAuthProviders, providerLabel } from "@/lib/authProviderHints";
 import { toast } from "sonner";
 import type { ClaimedCredit, DraftProfile } from "./types";
 
@@ -22,6 +23,23 @@ export const EmailSaveStep = ({ profile, credits, onBack, redirectAfter = "/prof
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [existing, setExisting] = useState<{ providers: string[] } | null>(null);
+
+  // Debounced lookup: when the user enters an email already on file,
+  // prompt them to sign in instead of creating a duplicate.
+  useEffect(() => {
+    const e = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+      setExisting(null);
+      return;
+    }
+    const t = setTimeout(async () => {
+      const res = await lookupAuthProviders(e);
+      if (res?.exists) setExisting({ providers: res.providers || [] });
+      else setExisting(null);
+    }, 450);
+    return () => clearTimeout(t);
+  }, [email]);
 
   const handleGoogle = async () => {
     setGoogleLoading(true);
@@ -148,6 +166,38 @@ export const EmailSaveStep = ({ profile, credits, onBack, redirectAfter = "/prof
           />
         </div>
       </div>
+
+      {existing && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+          <div className="flex items-start gap-2">
+            <LogIn className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <div className="text-xs text-foreground/90 leading-relaxed">
+              <span className="font-semibold">You already have a ThriveIN profile.</span>{" "}
+              {existing.providers.length > 0 && (
+                <span className="text-muted-foreground">
+                  Sign in with {existing.providers.map(providerLabel).join(" or ")}.
+                </span>
+              )}
+            </div>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            className="w-full h-9"
+            onClick={() => {
+              try {
+                sessionStorage.setItem(
+                  "thrivein_pending_claim_full",
+                  JSON.stringify({ profile, credits, redirectAfter }),
+                );
+              } catch {}
+              window.location.href = `/auth?tab=signin&email=${encodeURIComponent(email.trim())}`;
+            }}
+          >
+            Sign in instead
+          </Button>
+        </div>
+      )}
 
       <div className="flex gap-2 pt-1">
         <Button variant="outline" onClick={onBack} size="lg" disabled={sending || googleLoading}>

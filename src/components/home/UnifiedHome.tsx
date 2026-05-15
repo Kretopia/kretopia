@@ -423,8 +423,8 @@ export const UnifiedHome = () => {
         url="https://thrivein.io"
       />
 
-      {/* ═══════════ GUEST HERO — CINEMATIC STAGE ═══════════ */}
-      {!user && (
+      {/* ═══════════ GUEST HERO — CINEMATIC STAGE (control variant) ═══════════ */}
+      {!user && !isWedge && (
         <div className="relative overflow-hidden bg-background">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -top-40 -left-20 h-[520px] w-[520px] rounded-full bg-primary/15 blur-[160px]" />

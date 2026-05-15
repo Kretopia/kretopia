@@ -488,6 +488,35 @@ const Auth = () => {
               <TabsContent value="signup">
                 {signupMode === "claim" ? (
                   <>
+                    {/* Creator vs Brand toggle */}
+                    <div className="mb-4 grid grid-cols-2 gap-2 p-1 rounded-lg bg-muted/50 border border-border/60">
+                      <button
+                        type="button"
+                        onClick={() => setAccountType("individual")}
+                        className={`h-9 rounded-md text-xs font-semibold transition-all ${
+                          accountType === "individual"
+                            ? "bg-background shadow-sm text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        🎨 I'm a Creator
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAccountType("company");
+                          setSignupMode("classic");
+                        }}
+                        className={`h-9 rounded-md text-xs font-semibold transition-all ${
+                          accountType === "company"
+                            ? "bg-background shadow-sm text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        🏢 I'm a Brand
+                      </button>
+                    </div>
+
                     <UniversalClaimFlow source="auth" initialQuery={searchParams.get("q") || undefined} />
                     <div className="my-5 flex items-center gap-2">
                       <div className="flex-1 h-px bg-border" />

@@ -167,6 +167,38 @@ export const EmailSaveStep = ({ profile, credits, onBack, redirectAfter = "/prof
         </div>
       </div>
 
+      {existing && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+          <div className="flex items-start gap-2">
+            <LogIn className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <div className="text-xs text-foreground/90 leading-relaxed">
+              <span className="font-semibold">You already have a ThriveIN profile.</span>{" "}
+              {existing.providers.length > 0 && (
+                <span className="text-muted-foreground">
+                  Sign in with {existing.providers.map(providerLabel).join(" or ")}.
+                </span>
+              )}
+            </div>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            className="w-full h-9"
+            onClick={() => {
+              try {
+                sessionStorage.setItem(
+                  "thrivein_pending_claim_full",
+                  JSON.stringify({ profile, credits, redirectAfter }),
+                );
+              } catch {}
+              window.location.href = `/auth?tab=signin&email=${encodeURIComponent(email.trim())}`;
+            }}
+          >
+            Sign in instead
+          </Button>
+        </div>
+      )}
+
       <div className="flex gap-2 pt-1">
         <Button variant="outline" onClick={onBack} size="lg" disabled={sending || googleLoading}>
           <ArrowLeft className="h-4 w-4" />

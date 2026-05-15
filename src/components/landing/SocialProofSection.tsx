@@ -78,7 +78,7 @@ export const SocialProofSection = () => {
             {testimonials.slice(0, 3).map((t) => (
               <article
                 key={t.name}
-                className="rounded-2xl border border-border/60 bg-card/50 p-6 hover:border-energy/40 transition-colors"
+                className="rounded-2xl border border-border/60 bg-card p-6 hover:border-energy/40 transition-colors"
               >
                 <Quote className="h-5 w-5 text-energy/60 mb-3" />
                 <p className="text-sm text-foreground leading-relaxed mb-5">"{t.quote}"</p>

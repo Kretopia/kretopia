@@ -196,14 +196,14 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
               All studios <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="flex sm:grid sm:grid-cols-3 gap-2.5 overflow-x-auto sm:overflow-visible -mx-1 px-1 pb-1 scrollbar-hide snap-x snap-mandatory">
             {projects.map((p) => {
               const grad = moodGradient ? moodGradient(p.cover_color || p.workspace_type || "general") : null;
               return (
                 <button
                   key={p.id}
                   onClick={() => navigate(`/desk/${p.id}`)}
-                  className="group relative rounded-2xl border border-border/60 bg-card hover:border-primary/40 transition-all overflow-hidden text-left"
+                  className="group relative shrink-0 w-[220px] sm:w-auto snap-start rounded-2xl border border-border/60 bg-card hover:border-primary/40 transition-all overflow-hidden text-left"
                 >
                   <div
                     className="h-14 w-full"

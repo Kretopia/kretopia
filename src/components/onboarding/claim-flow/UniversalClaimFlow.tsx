@@ -112,6 +112,15 @@ export const UniversalClaimFlow = ({
 
   return (
     <div className="w-full max-w-md mx-auto px-4 py-6">
+      <div className="mb-4 flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs">
+        <span className="text-muted-foreground">Already have a profile?</span>
+        <a
+          href="/auth?tab=signin"
+          className="font-semibold text-primary hover:underline"
+        >
+          Sign in instead →
+        </a>
+      </div>
       {step === "search" && (
         <SearchOrPasteStep initialQuery={query} onResults={handleResults} />
       )}

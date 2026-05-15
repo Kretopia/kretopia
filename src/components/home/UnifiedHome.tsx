@@ -552,8 +552,9 @@ export const UnifiedHome = () => {
       {/* ═══════════ AUTH HUB ═══════════ */}
       {user && profile && (
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
-          {/* Compact greeting + messages shortcut */}
-          <div className="flex items-center justify-between mb-3">
+          {/* Compact greeting + messages shortcut — desktop only.
+              On mobile, the canvas hero + MorningPulse greeting carry this. */}
+          <div className="hidden lg:flex items-center justify-between mb-3">
             <p className="text-sm text-muted-foreground">
               <span className="font-bold text-foreground">{greeting}</span>, {firstName}
             </p>
@@ -562,7 +563,8 @@ export const UnifiedHome = () => {
             </Link>
           </div>
 
-          {/* Conversational entry — Tell Thrive what you want to create. THE hero of Home. */}
+          {/* Conversational entry — Tell Thrive what you want to create. THE hero of Home.
+              On mobile this opens expanded so it owns the top half of the screen. */}
           <div className="mb-4">
             <ThrivePromptHero />
           </div>

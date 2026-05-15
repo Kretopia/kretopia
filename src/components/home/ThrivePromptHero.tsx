@@ -39,7 +39,10 @@ export function ThrivePromptHero() {
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
   const [planMode, setPlanMode] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  // Default expanded on mobile so Home feels like a canvas (hero dominates top half).
+  const [expanded, setExpanded] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 768 : true,
+  );
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 

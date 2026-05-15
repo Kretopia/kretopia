@@ -78,7 +78,7 @@ export const SocialProofSection = () => {
             {testimonials.slice(0, 3).map((t) => (
               <article
                 key={t.name}
-                className="rounded-2xl border border-border/60 bg-card/50 p-6 hover:border-energy/40 transition-colors"
+                className="rounded-2xl border border-border/60 bg-card p-6 hover:border-energy/40 transition-colors"
               >
                 <Quote className="h-5 w-5 text-energy/60 mb-3" />
                 <p className="text-sm text-foreground leading-relaxed mb-5">"{t.quote}"</p>
@@ -102,7 +102,7 @@ export const SocialProofSection = () => {
             {headlineStats.map((s) => (
               <div
                 key={s.label}
-                className="rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6 text-center hover:border-energy/40 transition-colors"
+                className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6 text-center hover:border-energy/40 transition-colors"
               >
                 <s.icon className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 text-energy" />
                 <p className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">{s.value}</p>

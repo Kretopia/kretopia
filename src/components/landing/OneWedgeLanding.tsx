@@ -163,23 +163,33 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
       <SocialProofSection />
 
       {/* Final CTA band */}
-      <div className="container mx-auto max-w-3xl px-4 sm:px-6 pb-20">
-        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-card p-8 sm:p-12 text-center">
+      <div
+        className="container mx-auto max-w-3xl px-4 sm:px-6"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 9rem)" }}
+      >
+        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-card p-6 sm:p-12 text-center">
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
           <div className="relative">
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground mb-3">
+            <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground mb-3 text-balance">
               {isCaribbean ? "Join the Caribbean creative network." : "Start with your credits. Let Scout do the chasing."}
             </h2>
-            <p className="text-base text-muted-foreground mb-6 max-w-xl mx-auto">
+            <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-xl mx-auto">
               {isCaribbean
                 ? "Free to claim. Pro when yuh ready. No credit card."
                 : "Free to claim. Pro when you're ready. No credit card."}
             </p>
-            <Link to="/auth?tab=signup" onClick={() => trackLandingCta("wedge", "bottom_cta")}>
-              <Button size="xl" className="font-semibold">
-                <Zap className="mr-2 h-5 w-5" />
-                {copy.ctaPrimary}
-                <ArrowRight className="ml-2 h-4 w-4" />
+            <Link
+              to="/auth?tab=signup"
+              onClick={() => trackLandingCta("wedge", "bottom_cta")}
+              className="block w-full sm:inline-block sm:w-auto"
+            >
+              <Button
+                size="lg"
+                className="w-full sm:w-auto font-semibold whitespace-normal h-auto min-h-12 py-3 px-5"
+              >
+                <Zap className="mr-2 h-5 w-5 shrink-0" />
+                <span className="truncate">{copy.ctaPrimary}</span>
+                <ArrowRight className="ml-2 h-4 w-4 shrink-0" />
               </Button>
             </Link>
           </div>

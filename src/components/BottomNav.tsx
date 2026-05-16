@@ -1,24 +1,23 @@
 import { Link, useLocation } from "react-router-dom";
-import { Radar, LayoutDashboard, Home, UserCircle2, Wallet, Briefcase, UserSearch } from "lucide-react";
+import { Compass, LayoutGrid, Sun, BadgeCheck, MessageCircle, Briefcase, UserSearch, Wallet, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
 
-// ThriveIN 2.0 — Creative OS nav.
-// Home · Studios · Scout · Pay · Profile.
-// Match (swipe), Gigs marketplace, Scouted gigs all live INSIDE Scout.
-// Fund/Manage/Events/Spotlight live in the hamburger.
+// ThriveIN 2.0 — Daily Driver IA.
+// Today · Desk · Scout · Messages · Passport. Daily actions only.
+// Pay absorbed into Passport (#wallet). Hamburger = system/account only.
 const NAV_ITEMS = [
-  { path: "/", icon: Home, label: "Home", hint: "Your daily Pulse — what's new, what to do" },
-  { path: "/desk", icon: LayoutDashboard, label: "Studios", hint: "Your projects & workspaces" },
-  { path: "/scout", icon: Radar, label: "Scout", hint: "Gigs & people, scouted for you" },
-  { path: "/thrivepay", icon: Wallet, label: "Pay", hint: "Invoices, expenses, money flow" },
-  { path: "/profile", icon: UserCircle2, label: "Profile", hint: "Your identity & credits" },
+  { path: "/", icon: Sun, label: "Today", hint: "Today — what to move forward" },
+  { path: "/desk", icon: LayoutGrid, label: "Desk", hint: "Projects, rooms, files, tasks" },
+  { path: "/scout", icon: Compass, label: "Scout", hint: "Opportunities, people, sponsors" },
+  { path: "/messages", icon: MessageCircle, label: "Messages", hint: "Chats, calls, approvals" },
+  { path: "/profile", icon: BadgeCheck, label: "Passport", hint: "Standing, Stamps, Wallet" },
 ];
 
 // Company accounts get a B2B-focused nav (unchanged).
 const COMPANY_ITEMS = [
-  { path: "/desk", icon: LayoutDashboard, label: "Studios", hint: "Your briefs & active projects" },
+  { path: "/desk", icon: LayoutGrid, label: "Studios", hint: "Your briefs & active projects" },
   { path: "/opportunities", icon: Briefcase, label: "Gigs", hint: "Roles you've posted & talent pool" },
   { path: "/talent-finder", icon: UserSearch, label: "Talent", hint: "Find creators to hire" },
   { path: "/thrivepay", icon: Wallet, label: "Pay", hint: "Pay creators & manage invoices" },
@@ -35,7 +34,6 @@ const BottomNav = memo(() => {
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
     if (path === "/scout") {
-      // Scout absorbs the old /opportunities + /circle entry points
       return (
         location.pathname.startsWith("/scout") ||
         location.pathname === "/opportunities" ||
@@ -44,7 +42,15 @@ const BottomNav = memo(() => {
       );
     }
     if (path === "/desk") return location.pathname.startsWith("/desk");
-    if (path === "/profile") return location.pathname === "/profile";
+    if (path === "/messages")
+      return location.pathname.startsWith("/messages") || location.pathname.startsWith("/inbox");
+    if (path === "/profile")
+      return (
+        location.pathname.startsWith("/profile") ||
+        location.pathname.startsWith("/thrivepay") ||
+        location.pathname.startsWith("/accounting") ||
+        location.pathname.startsWith("/credits")
+      );
     if (path === "/thrivepay")
       return location.pathname.startsWith("/thrivepay") || location.pathname.startsWith("/accounting");
     if (path === "/opportunities")

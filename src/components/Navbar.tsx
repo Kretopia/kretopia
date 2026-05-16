@@ -4,10 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, LayoutDashboard, Radar, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
-  MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, UserCircle2, Building2, Inbox
+  MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, UserCircle2, Building2, Inbox,
+  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
-import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
+// UnifiedSearchDropdown removed from top nav — Thrive bar owns search
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,7 +98,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
   const isCompany = accountType === "company";
 
-  // ThriveIN 2.0 Creative OS — desktop nav mirrors mobile bottom nav
+  // ThriveIN 2.0 Daily Driver — desktop nav mirrors mobile bottom nav
   const desktopNavItems = isCompany
     ? [
         { path: "/desk", icon: LayoutDashboard, label: "Studios" },
@@ -106,14 +107,14 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/thrivepay", icon: Wallet, label: "Pay" },
       ]
     : [
-        { path: "/", icon: Home, label: "Home" },
-        { path: "/desk", icon: LayoutDashboard, label: "Studios" },
-        { path: "/scout", icon: Radar, label: "Scout" },
-        { path: "/thrivepay", icon: Wallet, label: "Pay" },
-        { path: "/profile", icon: UserCircle2, label: "Profile" },
+        { path: "/", icon: Sun, label: "Today" },
+        { path: "/desk", icon: LayoutGrid, label: "Desk" },
+        { path: "/scout", icon: Compass, label: "Scout" },
+        { path: "/messages", icon: MessageCircle, label: "Messages" },
+        { path: "/profile", icon: BadgeCheck, label: "Passport" },
       ];
 
-  const [searchOpen, setSearchOpen] = useState(false);
+  // search moved to Thrive bar — keep state stub removed
 
   // Guest navigation items
   const guestNavItems = [
@@ -130,13 +131,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <BrandLogo size="md" showBeta linkToHome />
         </div>
 
-        {/* ═══ PERSISTENT SEARCH BAR ═══ */}
-        {!isLandingPage && (
-          <UnifiedSearchDropdown
-            variant="navbar"
-            className="hidden sm:block flex-1 max-w-sm mx-4"
-          />
-        )}
+        {/* Search lives in Thrive bar — top nav is bell + menu only */}
 
         {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
         {!user && (
@@ -164,14 +159,19 @@ const Navbar = memo(({ user }: NavbarProps) => {
             {desktopNavItems.map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path ||
                 (path === "/desk" && location.pathname.startsWith("/desk")) ||
-                (path === "/thrivepay" && (location.pathname.startsWith("/thrivepay") || location.pathname.startsWith("/accounting"))) ||
+                (path === "/messages" && (location.pathname.startsWith("/messages") || location.pathname.startsWith("/inbox"))) ||
                 (path === "/scout" && (
                   location.pathname.startsWith("/scout") ||
                   location.pathname === "/opportunities" ||
                   location.pathname === "/opportunity-dashboard" ||
                   (location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"))
                 )) ||
-                (path === "/profile" && location.pathname.startsWith("/profile"));
+                (path === "/profile" && (
+                  location.pathname.startsWith("/profile") ||
+                  location.pathname.startsWith("/thrivepay") ||
+                  location.pathname.startsWith("/accounting") ||
+                  location.pathname.startsWith("/credits")
+                ));
               return (
                 <Link
                   key={path}
@@ -190,29 +190,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
         )}
 
         <div className="flex items-center gap-0.5 sm:gap-2 ml-auto shrink-0">
-          {!isLandingPage && (
-            <div className="flex items-center">
-              {/* Mobile search toggle - only show for signed-in users */}
-              {user && (
-                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 sm:hidden shrink-0" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
-                  <Search className="h-[18px] w-[18px]" />
-                </Button>
-              )}
-              {user && (
-                <>
-                  {/* Top-nav Thrive ✨ removed — Home prompt + hamburger are the entry points */}
-                  <Link to="/messages" aria-label="Messages">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
-                      <MessageCircle className="h-[18px] w-[18px]" />
-                    </Button>
-                  </Link>
-                  <NotificationCenter />
-                </>
-              )}
-            </div>
-          )}
-          
-           <ThemeToggle />
+          {/* Top nav target: Logo · · · 🔔 ☰  — Search/Messages/Theme moved (Thrive bar / bottom nav / Settings) */}
+          {!isLandingPage && user && <NotificationCenter />}
+          {!user && !isLandingPage && <ThemeToggle />}
           
           {user && !isLandingPage ? (
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -228,117 +208,101 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                 <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
 
-                  {/* Inbox — unified Notifications + Thrive approvals */}
-                  <MenuButton icon={Inbox} label="Inbox" onClick={() => handleNavigation("/inbox")} path="/inbox" badge={inboxBadge} />
-                  <Separator className="my-3" />
-
                   {isCompany ? (
-                    /* ====== COMPANY MENU ====== */
+                    /* ====== COMPANY MENU (unchanged) ====== */
                     <>
+                      <MenuButton icon={Inbox} label="Inbox" onClick={() => handleNavigation("/inbox")} path="/inbox" badge={inboxBadge} />
+                      <Separator className="my-3" />
                       <MenuButton icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
                       <MenuButton icon={Search} label="Find Talent" onClick={() => handleNavigation("/talent-finder")} path="/talent-finder" />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
+                      <Separator className="my-3" />
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
+                      <Button variant="ghost" className="justify-start gap-3 h-auto w-full py-3" onClick={() => handleNavigation("/subscription")}>
+                        {isPro ? <Crown className="h-5 w-5 text-accent" /> : <Sparkles className="h-5 w-5 text-primary" />}
+                        <div className="flex flex-col items-start gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Subscription</span>
+                            <Badge variant="secondary" className={cn("text-[10px] uppercase tracking-wider", isPro ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground")}>{tierName}</Badge>
+                          </div>
+                          {!isPro && <span className="text-xs text-primary font-medium">Upgrade →</span>}
+                        </div>
+                      </Button>
+                      <AccountSwitcher currentAccountType={accountType} onSwitch={() => setIsOpen(false)} onManagerModeChange={(enabled) => setIsManagerMode(enabled)} />
+                      <MenuButton icon={Settings} label="Settings" onClick={() => handleNavigation("/settings")} />
                     </>
                   ) : (
-                    /* ====== CREATIVE OS MENU — Studios · Scout · Pay · Profile ====== */
+                    /* ====== DAILY DRIVER MENU — System + Account only ====== */
                     <>
+                      {/* ACCOUNT */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
+                      <Button variant="ghost" className="justify-start gap-3 h-auto w-full py-3" onClick={() => handleNavigation("/subscription")}>
+                        {isPro ? <Crown className="h-5 w-5 text-accent" /> : <Sparkles className="h-5 w-5 text-primary" />}
+                        <div className="flex flex-col items-start gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Subscription</span>
+                            <Badge variant="secondary" className={cn("text-[10px] uppercase tracking-wider", isPro ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground")}>{tierName}</Badge>
+                          </div>
+                          {!isPro && <span className="text-xs text-primary font-medium">Upgrade →</span>}
+                        </div>
+                      </Button>
+                      <MenuButton icon={Star} label="Standing" onClick={() => handleNavigation("/profile#standing")} />
+                      <div className="px-1 py-1">
+                        <StorageMeter variant="compact" />
+                      </div>
+                      <AccountSwitcher currentAccountType={accountType} onSwitch={() => setIsOpen(false)} onManagerModeChange={(enabled) => setIsManagerMode(enabled)} />
+
+                      <Separator className="my-3" />
+
+                      {/* WORKSPACE */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
-                      <MenuButton icon={LayoutDashboard} label="Studios" onClick={() => handleNavigation("/desk")} path="/desk" />
-                      <MenuButton icon={Radar} label="Scout" onClick={() => handleNavigation("/scout")} path="/scout" />
-                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-                      <MenuButton icon={Wallet} label="Pay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
-                      <MenuButton icon={UserCircle2} label="Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
-                      <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} path="/credits" />
+                      <MenuButton icon={Crown} label="Founding Circle" onClick={() => handleNavigation("/founding-member")} path="/founding-member" />
+                      <MenuButton icon={UserPlus} label="Creative Circle" onClick={() => handleNavigation("/creative-circle")} path="/creative-circle" />
                       {isManagerMode && (
-                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
+                        <MenuButton icon={Users} label="Manager Mode" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
+                      )}
+                      <MenuButton icon={Gift} label="Referral Program" onClick={() => handleNavigation("/ambassador")} path="/ambassador" />
+
+                      <Separator className="my-3" />
+
+                      {/* SETTINGS */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Settings</p>
+                      <MenuButton icon={Settings} label="Settings" onClick={() => handleNavigation("/settings")} />
+                      <MenuButton icon={Bell} label="Notifications" onClick={() => handleNavigation("/settings?tab=notifications")} />
+                      <MenuButton icon={Brain} label="Memory & Agent" onClick={() => handleNavigation("/settings?tab=agent")} />
+                      <MenuButton icon={Languages} label="Language" onClick={() => handleNavigation("/settings?tab=language")} />
+                      <MenuButton icon={Lock} label="Privacy" onClick={() => handleNavigation("/settings?tab=privacy")} />
+                      <div className="flex items-center justify-between px-3 py-2">
+                        <span className="text-sm flex items-center gap-3"><Palette className="h-5 w-5" /> Appearance</span>
+                        <ThemeToggle />
+                      </div>
+
+                      <Separator className="my-3" />
+
+                      {/* SUPPORT */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Support</p>
+                      <MenuButton icon={MessageSquarePlus} label="Feedback" onClick={() => {
+                        setIsOpen(false);
+                        sessionStorage.removeItem("feedback-dismissed");
+                        window.dispatchEvent(new CustomEvent("open-feedback"));
+                      }} />
+                      <MenuButton icon={LifeBuoy} label="Help Centre" onClick={() => handleNavigation("/help")} />
+                      <MenuButton icon={Globe} label="About" onClick={() => handleNavigation("/about")} />
+
+                      {/* ADMIN */}
+                      {user?.id === 'ef429714-ea32-4f08-a4f9-ef0226f1804b' && (
+                        <>
+                          <Separator className="my-3" />
+                          <MenuButton icon={Shield} label="Admin Panel" onClick={() => handleNavigation("/admin")} />
+                        </>
                       )}
                     </>
                   )}
 
                   <Separator className="my-3" />
-
-                  {/* Creative Circle CTA */}
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "justify-start gap-3 h-12 w-full border border-border/40 hover:bg-accent/30",
-                      location.pathname === "/creative-circle" && "bg-energy/10 text-energy border-energy/30"
-                    )}
-                    onClick={() => handleNavigation("/creative-circle")}
-                    aria-current={location.pathname === "/creative-circle" ? "page" : undefined}
-                  >
-                    <UserPlus className="h-5 w-5 text-primary" />
-                    <div className="flex flex-col items-start">
-                      <span className="font-semibold text-sm">Creative Circle</span>
-                      <span className="text-[10px] text-muted-foreground">Invite creatives, earn rewards</span>
-                    </div>
-                  </Button>
-
-                  <Separator className="my-3" />
-
-                  <MenuButton icon={Globe} label="About Us" onClick={() => handleNavigation("/about")} />
-
-                  <Separator className="my-3" />
-
-                  {/* Account section */}
-                  <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
-                  {/* My Profile lives at the top of the menu — no duplicate here */}
-                  <Button
-                    variant="ghost"
-                    className="justify-start gap-3 h-auto w-full py-3"
-                    onClick={() => handleNavigation("/subscription")}
-                  >
-                    {isPro ? <Crown className="h-5 w-5 text-accent" /> : <Sparkles className="h-5 w-5 text-primary" />}
-                    <div className="flex flex-col items-start gap-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">Subscription</span>
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            "text-[10px] uppercase tracking-wider",
-                            isPro ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
-                          )}
-                        >
-                          {tierName}
-                        </Badge>
-                      </div>
-                      {!isPro && <span className="text-xs text-primary font-medium">Upgrade to Pro →</span>}
-                    </div>
-                  </Button>
-
-                  <AccountSwitcher
-                    currentAccountType={accountType}
-                    onSwitch={() => setIsOpen(false)}
-                    onManagerModeChange={(enabled) => setIsManagerMode(enabled)}
-                  />
-
-                  <MenuButton icon={Settings} label="Settings" onClick={() => handleNavigation("/settings")} />
-                  <MenuButton icon={MessageSquarePlus} label="Send Feedback" onClick={() => {
-                    setIsOpen(false);
-                    // Re-enable feedback widget if dismissed
-                    sessionStorage.removeItem("feedback-dismissed");
-                    // Trigger feedback widget open
-                    window.dispatchEvent(new CustomEvent("open-feedback"));
-                  }} />
-
-                  {/* Admin Section */}
-                  {user?.id === 'ef429714-ea32-4f08-a4f9-ef0226f1804b' && (
-                    <>
-                      <Separator className="my-3" />
-                      <MenuButton icon={Shield} label="Admin Panel" onClick={() => handleNavigation("/admin")} />
-                    </>
-                  )}
-
-                  <Separator className="my-3" />
-
-                  <div className="px-1 pb-2">
-                    <StorageMeter variant="compact" />
-                  </div>
-
-                  <Separator className="my-1" />
 
                   <Button
                     variant="outline"
@@ -411,20 +375,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           ) : null}
         </div>
       </div>
-      
-      {/* Mobile search bar — slides open */}
-      {searchOpen && !isLandingPage && (
-        <div className="sm:hidden border-t border-border/50 px-3 py-2 bg-background">
-          <UnifiedSearchDropdown
-            variant="inline"
-            autoFocus
-            onQuerySubmit={(q) => {
-              setSearchOpen(false);
-              navigate(`/search?q=${encodeURIComponent(q)}`);
-            }}
-          />
-        </div>
-      )}
+      {/* Mobile search removed — Thrive bar handles search & intent */}
     </nav>
   );
 });

@@ -264,7 +264,7 @@ export const HeroSection = () => {
 
             <div className="flex items-center justify-center lg:justify-start gap-3 mb-8 flex-wrap">
               <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-8 py-4 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
-                {pickVoice("Find Your People", "Link Up Now")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                {pickVoice("Get Started", "Link Up Now")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link to="/scout" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 px-6 py-4 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
                 <Briefcase className="h-4 w-4 text-primary" /> {pickVoice("Browse Gigs", "See Wha' Goin' On")}

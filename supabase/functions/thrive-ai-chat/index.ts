@@ -463,7 +463,34 @@ Short replies like "yes", "no", "ok", "sure", "do it", "go ahead", "nope", "let'
           }
         }
       },
-      async flush() {
+      async flush(controller) {
+        // ---- Guardrail: catch "I'll do X" promises with no <action>/<plan> tag ----
+        // Flash + occasional pro misses drop tags under load. If the assistant
+        // promised to do something but didn't emit a structured tag, synthesize
+        // a <plan> from the user's last message so the Planner either runs it
+        // or honestly replies "I can't do that yet — closest I can do is…".
+        const hasTag =
+          /<action>[\s\S]*?<\/action>/.test(assistantBuffer) ||
+          /<plan>[\s\S]*?<\/plan>/.test(assistantBuffer);
+        const promiseRe =
+          /\b(i'll|i will|i'm (?:going to|on it|gonna)|let me|on it|running (?:that|it) now|searching now|pulling|scanning|drafting|generating|getting that done|i can pull|i can scan|i can find|i can draft|i can generate)\b/i;
+        if (!hasTag && promiseRe.test(assistantBuffer) && latestUser?.content) {
+          try {
+            const synth = `\n<plan>${JSON.stringify({
+              goal: latestUser.content.slice(0, 500),
+              surface: surface ?? "home",
+            })}</plan>`;
+            assistantBuffer += synth;
+            // Stream the synthetic tag to the client as one SSE delta so the
+            // FAB's extractActions picks it up after onDone.
+            const sseChunk =
+              `data: ${JSON.stringify({ choices: [{ delta: { content: synth } }] })}\n\n`;
+            controller.enqueue(new TextEncoder().encode(sseChunk));
+          } catch (e) {
+            console.warn("guardrail synth failed", e);
+          }
+        }
+
         if (assistantBuffer.trim() && conversationId) {
           try {
             await admin.from("ai_messages").insert({

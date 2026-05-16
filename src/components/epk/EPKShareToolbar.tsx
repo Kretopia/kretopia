@@ -23,8 +23,8 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId, epkPdfData }
   // Use the static OG-tagged share path so previews show avatar + name + role.
   // The page redirects instantly to /epk/:userId after the crawler reads meta.
   const epkUrl = `https://www.thrivein.io/share/epk/${userId}/`;
-  const shareText = `${profileName} — ${profileRole}\nVerified Creative EPK on ThriveIN\n\n`;
-  const shortShareText = `${profileName} — ${profileRole} · Verified EPK on ThriveIN`;
+  const shareText = `${profileName} — ${profileRole}\nCreative Passport · Verified on ThriveIN\n\n`;
+  const shortShareText = `${profileName} — ${profileRole} · Creative Passport on ThriveIN`;
 
   const handleNativeShare = async () => {
     if (navigator.share) {
@@ -98,7 +98,7 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId, epkPdfData }
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Share2 className="h-4 w-4 text-primary" />
-          <span className="text-sm font-semibold">Share your EPK</span>
+          <span className="text-sm font-semibold">Share your Creative Passport</span>
         </div>
         <div className="flex items-center gap-2">
           {/* Download PDF Button */}

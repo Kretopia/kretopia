@@ -84,6 +84,7 @@ async function classifyIntent(
               "- 'create task', 'mark done', 'project status' → project_manager.\n" +
               "- 'apply to <gig>', 'find gigs', 'draft cover letter' → gig.\n" +
               "- 'send DM to <person>', 'message X' → talent.\n" +
+              "- 'find sponsors', 'brand partners', 'who could sponsor my event', 'sponsorship leads for X' → opportunity.\n" +
               "- 'remember that...', 'forget...' → memory.\n\n" +
               "Return JSON only: {\"agent_kind\":\"<one_of_the_above>\",\"reasoning\":\"<one short sentence>\"}",
           },

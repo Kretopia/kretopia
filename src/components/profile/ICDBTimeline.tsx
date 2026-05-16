@@ -708,7 +708,10 @@ export function ICDBTimeline({ userId, isOwnProfile, onRefresh }: ICDBTimelinePr
       {/* Header */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="text-lg font-semibold">Credits</h3>
+          <div className="flex flex-col">
+            <h3 className="text-lg font-semibold leading-tight">Stamps</h3>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Verified credits · Creative Passport</p>
+          </div>
           <Badge variant="secondary" className="text-xs gap-1">
             {credits.length}
           </Badge>

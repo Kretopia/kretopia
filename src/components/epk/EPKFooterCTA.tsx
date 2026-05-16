@@ -25,7 +25,7 @@ export const EPKFooterCTA = ({ isOwner, isUnclaimed, profileName, onClaimClick, 
             size="lg"
           >
             <Share2 className="h-5 w-5 mr-2" />
-            Share Your EPK
+            Share Your Creative Passport
           </Button>
         ) : isUnclaimed ? (
           <>
@@ -35,7 +35,7 @@ export const EPKFooterCTA = ({ isOwner, isUnclaimed, profileName, onClaimClick, 
               size="lg"
             >
               <UserCheck className="h-5 w-5 mr-2" />
-              Claim This Profile
+              Claim Your Creative Passport
             </Button>
             <Button
               onClick={() => navigate('/auth')}

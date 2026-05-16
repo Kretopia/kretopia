@@ -28,7 +28,7 @@ interface ProfileContentSectionsProps {
 
 // MVP: removed "More" tab (Press/Awards/Industry Stats/Collab History) — non-MVP enrichment.
 const PROFILE_TABS = [
-  { id: "work", label: "Credits", icon: Briefcase },
+  { id: "work", label: "Stamps", icon: Briefcase },
   { id: "hire", label: "Work With Me", icon: DollarSign },
   { id: "skills", label: "Skills", icon: Zap },
   { id: "reviews", label: "Reviews", icon: Star },

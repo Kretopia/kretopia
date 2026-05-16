@@ -81,6 +81,9 @@ export default function Onboarding() {
   // Primary intents — what the user is here to do (multi-select max 2)
   const [primaryIntents, setPrimaryIntents] = useState<import("@/lib/intents").PrimaryIntent[]>([]);
 
+  // First-Stamp reveal moment (shown between discover → review when ≥1 credit found)
+  const [showFirstStamp, setShowFirstStamp] = useState(false);
+
   useEffect(() => {
     if (user) checkOnboardingStatus();
   }, [user]);

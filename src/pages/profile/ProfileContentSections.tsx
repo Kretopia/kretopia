@@ -26,9 +26,8 @@ interface ProfileContentSectionsProps {
   onRefresh: () => void;
 }
 
-// MVP: removed "More" tab (Press/Awards/Industry Stats/Collab History) — non-MVP enrichment.
+// Batch 2.5: removed "Stamps" tab — redundant with Passport anchor strip → /credits.
 const PROFILE_TABS = [
-  { id: "work", label: "Stamps", icon: Briefcase },
   { id: "hire", label: "Work With Me", icon: DollarSign },
   { id: "skills", label: "Skills", icon: Zap },
   { id: "reviews", label: "Reviews", icon: Star },
@@ -47,7 +46,7 @@ export const ProfileContentSections = ({
   onRefresh,
 }: ProfileContentSectionsProps) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabId>("work");
+  const [activeTab, setActiveTab] = useState<TabId>("hire");
   const tabsRef = useRef<HTMLDivElement>(null);
   const [isTabBarSticky, setIsTabBarSticky] = useState(false);
   const tabBarSentinelRef = useRef<HTMLDivElement>(null);
@@ -76,11 +75,6 @@ export const ProfileContentSections = ({
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "work":
-        return (
-          <ICDBTimeline userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-        );
-
       case "hire":
         return (
           <>

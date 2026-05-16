@@ -165,14 +165,19 @@ const Navbar = memo(({ user }: NavbarProps) => {
             {desktopNavItems.map(({ path, icon: Icon, label }) => {
               const isActive = location.pathname === path ||
                 (path === "/desk" && location.pathname.startsWith("/desk")) ||
-                (path === "/thrivepay" && (location.pathname.startsWith("/thrivepay") || location.pathname.startsWith("/accounting"))) ||
+                (path === "/messages" && (location.pathname.startsWith("/messages") || location.pathname.startsWith("/inbox"))) ||
                 (path === "/scout" && (
                   location.pathname.startsWith("/scout") ||
                   location.pathname === "/opportunities" ||
                   location.pathname === "/opportunity-dashboard" ||
                   (location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"))
                 )) ||
-                (path === "/profile" && location.pathname.startsWith("/profile"));
+                (path === "/profile" && (
+                  location.pathname.startsWith("/profile") ||
+                  location.pathname.startsWith("/thrivepay") ||
+                  location.pathname.startsWith("/accounting") ||
+                  location.pathname.startsWith("/credits")
+                ));
               return (
                 <Link
                   key={path}

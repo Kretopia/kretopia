@@ -57,7 +57,7 @@ export function FirstStampReveal({ open, onContinue, credit, total }: FirstStamp
           {/* Eyebrow */}
           <div className="space-y-1">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-energy">
-              First {BRAND.stamp} earned
+              First {BRAND.stampSingular} earned
             </p>
             <h2 className="font-serif text-3xl leading-tight">
               Your {BRAND.passport} just came alive.
@@ -80,7 +80,7 @@ export function FirstStampReveal({ open, onContinue, credit, total }: FirstStamp
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    {BRAND.stamp}
+                    {BRAND.stampSingular}
                   </p>
                   <p className="font-semibold text-sm truncate">
                     {credit.project_name || "Untitled project"}

@@ -19,8 +19,10 @@ const SURFACE_TONE: Record<string, string> = {
     "(tasks, milestones, kickoff messages, video calls). When they reference 'this project', " +
     "use the surface_context.project_id.",
   pay:
-    "You are speaking from inside ThrivePay. Bias toward money: invoices, expenses, payment " +
-    "reminders, weekly money summaries, fees. Quote currency explicitly.",
+    "You are speaking from inside ThrivePay. Money tools (invoices, expenses, payment links, " +
+    "weekly summaries) are easy to reach here, but FOLLOW THE USER'S TOPIC — if they ask about " +
+    "sponsors, gigs, collaborators or anything non-money, answer THAT, do not pivot to invoices. " +
+    "Quote currency explicitly when money is on-topic.",
   match:
     "You are speaking from the Match hub. Bias toward finding collaborators, drafting outreach, " +
     "and explaining match scores. Be warm — this is human-to-human stuff.",
@@ -476,8 +478,21 @@ Short replies like "yes", "no", "ok", "sure", "do it", "go ahead", "nope", "let'
           /\b(i'll|i will|i'm (?:going to|on it|gonna)|let me|on it|running (?:that|it) now|searching now|pulling|scanning|drafting|generating|getting that done|i can pull|i can scan|i can find|i can draft|i can generate)\b/i;
         if (!hasTag && promiseRe.test(assistantBuffer) && latestUser?.content) {
           try {
+            // If user reply is a short affirmation ("ok", "yes", "do it", "sure", "go ahead", "👍"),
+            // the real goal is what the PRIOR assistant turn offered — NOT the word "ok".
+            // Without this, the Planner pivots to whatever's loudest in USER FACTS
+            // (e.g. unpaid invoices) and we get the classic "I asked about sponsors,
+            // got invoices" bug.
+            const AFFIRM_RE = /^\s*(ok(ay)?|yes|yep|yeah|sure|do it|go ahead|let'?s go|sounds good|please|👍|👌|✅|y)\s*[.!]?\s*$/i;
+            const isAffirm = AFFIRM_RE.test(latestUser.content);
+            const priorAssistant = isAffirm
+              ? [...messages].reverse().find((m) => m.role === "assistant")
+              : null;
+            const goalSource = priorAssistant?.content?.trim()
+              ? `User confirmed the prior offer. Execute exactly what was offered: ${priorAssistant.content.slice(0, 800)}`
+              : latestUser.content.slice(0, 500);
             const synth = `\n<plan>${JSON.stringify({
-              goal: latestUser.content.slice(0, 500),
+              goal: goalSource,
               surface: surface ?? "home",
             })}</plan>`;
             assistantBuffer += synth;

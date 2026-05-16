@@ -605,9 +605,14 @@ export default function Onboarding() {
             <div className="p-6 sm:p-8 space-y-6 animate-fade-in">
               {/* Header */}
               <div className="text-center space-y-2">
-                <h1 className="text-2xl font-bold tracking-tight">We're building your creative identity</h1>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                  Step 1 · Building your {BRAND.passport}
+                </p>
+                <h1 className="font-serif text-3xl leading-tight tracking-tight">
+                  Let's find your first {BRAND.stampSingular}.
+                </h1>
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                  Drop your name (and a portfolio link if you have one) — we'll search the web for your work.
+                  Drop your name (and a portfolio link if you have one) — Thrive will search the web and turn your work into verified {BRAND.stamps.toLowerCase()} on your {BRAND.passport}.
                 </p>
               </div>
 

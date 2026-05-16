@@ -4,7 +4,7 @@ import { Sparkles, ArrowRight, Globe, MapPin } from "lucide-react";
 
 const TRINIDAD_CONTENT = {
   badge: "Made for T&T Creatives",
-  heading: "Link Up. Create. Get Paid.",
+  heading: "Make it. Own it. Get paid.",
   subheading:
     "Whether yuh in Carnival, Soca, Film, Fashion, or Design — find verified creatives right here in T&T. Manage projects, send invoices, and grow your ting — all in one spot.",
   tagline: "Free to start · Pro when you ready · No credit card needed",
@@ -13,7 +13,7 @@ const TRINIDAD_CONTENT = {
 
 const DEFAULT_CONTENT = {
   badge: "Free Forever · Pro from $29/mo",
-  heading: "Stop juggling tools. Start booking work.",
+  heading: "Make it. Own it. Get paid.",
   subheading:
     "Claim your credits. Match with collaborators. Send invoices. Get paid. One platform replaces nine apps — and Thrive does the busywork.",
   tagline: "Free forever · 60-second setup · 7-day Pro trial",

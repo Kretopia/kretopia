@@ -220,17 +220,17 @@ export const HeroSection = () => {
             <h1 className="text-[2.75rem] sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[-0.04em] text-foreground leading-[0.92] mb-6">
               {ttVoice ? (
                 <>
-                  Link Up.<br />
-                  Create.<br />
+                  Make it.<br />
+                  Own it.<br />
                   Get{" "}
-                  <span className="text-energy-glow">Paid.</span>
+                  <span className="text-energy-glow">paid.</span>
                 </>
               ) : (
                 <>
-                  Find Your<br />
-                  People.<br />
-                  Build Something{" "}
-                  <span className="text-energy-glow">Real.</span>
+                  Make it.<br />
+                  Own it.<br />
+                  Get{" "}
+                  <span className="text-energy-glow">paid.</span>
                 </>
               )}
             </h1>
@@ -264,7 +264,7 @@ export const HeroSection = () => {
 
             <div className="flex items-center justify-center lg:justify-start gap-3 mb-8 flex-wrap">
               <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-8 py-4 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
-                {pickVoice("Find Your People", "Link Up Now")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                {pickVoice("Get Started", "Link Up Now")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link to="/scout" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 px-6 py-4 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
                 <Briefcase className="h-4 w-4 text-primary" /> {pickVoice("Browse Gigs", "See Wha' Goin' On")}
@@ -349,8 +349,8 @@ export const HeroSection = () => {
           {/* Headline */}
           <div className="text-center max-w-xl mx-auto mb-5">
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground leading-tight">
-              Turn your work into proof.<br className="hidden sm:block" />
-              <span className="text-primary"> Get discovered. Get paid.</span>
+              Make it. Own it. Get paid.<br className="hidden sm:block" />
+              <span className="text-primary"> The creative operating system.</span>
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-2">
               Search your name, claim your credits, and build your creative identity.

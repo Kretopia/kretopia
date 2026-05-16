@@ -29,9 +29,9 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
   const copy = isCaribbean
     ? {
         eyebrow: `Built for ${geo?.country || "the Caribbean"} creatives`,
-        headline1: "Yuh credits.",
-        headline2: "Yuh next gig.",
-        headline3: "All in one place.",
+        headline1: "Make it.",
+        headline2: "Own it.",
+        headline3: "Get paid.",
         subhead:
           "ThriveIN is the verified record for T&T, Jamaica & the wider Caribbean creative scene — and we scout real paid gigs from across the web so you don't have to chase.",
         ctaPrimary: "Claim my profile — free",
@@ -40,9 +40,9 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
       }
     : {
         eyebrow: "The verified record + your gig scout",
-        headline1: "Every credit you earned.",
-        headline2: "Every gig worth chasing.",
-        headline3: "One place.",
+        headline1: "Make it.",
+        headline2: "Own it.",
+        headline3: "Get paid.",
         subhead:
           "ThriveIN builds your verified creative résumé (think IMDb for every craft) and quietly scouts real paid gigs from across the web — matched to your skills, in your inbox.",
         ctaPrimary: "Claim my profile — free",

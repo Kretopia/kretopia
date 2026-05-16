@@ -72,8 +72,8 @@ export const PricingPreviewSection = () => {
             Simple Pricing
           </p>
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.95] text-foreground mb-4">
-            Free forever.<br />
-            <span className="text-energy-glow">Pro</span> when you're booking.
+            Make it.<br />
+            Own it. <span className="text-energy-glow">Get paid.</span>
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto">
             Spark $0 · Creator $29 · Creator+ $59 — save 17% annually. Founding Member: $499 lifetime, capped at 135.

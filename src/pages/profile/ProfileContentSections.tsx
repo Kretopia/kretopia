@@ -46,7 +46,7 @@ export const ProfileContentSections = ({
   onRefresh,
 }: ProfileContentSectionsProps) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabId>("work");
+  const [activeTab, setActiveTab] = useState<TabId>("hire");
   const tabsRef = useRef<HTMLDivElement>(null);
   const [isTabBarSticky, setIsTabBarSticky] = useState(false);
   const tabBarSentinelRef = useRef<HTMLDivElement>(null);

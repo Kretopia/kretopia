@@ -34,7 +34,6 @@ const BottomNav = memo(() => {
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
     if (path === "/scout") {
-      // Scout absorbs the old /opportunities + /circle entry points
       return (
         location.pathname.startsWith("/scout") ||
         location.pathname === "/opportunities" ||
@@ -43,7 +42,15 @@ const BottomNav = memo(() => {
       );
     }
     if (path === "/desk") return location.pathname.startsWith("/desk");
-    if (path === "/profile") return location.pathname === "/profile";
+    if (path === "/messages")
+      return location.pathname.startsWith("/messages") || location.pathname.startsWith("/inbox");
+    if (path === "/profile")
+      return (
+        location.pathname.startsWith("/profile") ||
+        location.pathname.startsWith("/thrivepay") ||
+        location.pathname.startsWith("/accounting") ||
+        location.pathname.startsWith("/credits")
+      );
     if (path === "/thrivepay")
       return location.pathname.startsWith("/thrivepay") || location.pathname.startsWith("/accounting");
     if (path === "/opportunities")

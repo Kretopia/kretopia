@@ -48,7 +48,7 @@ serve(async (req) => {
       method: "POST",
       headers: { Authorization: `Bearer ${aiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: "You write short, warm, confident cover letters for creatives. 120-180 words. No fluff. End with the EPK link. First-person, no emojis, no clichés." },
           { role: "user", content: `GIG: ${gig.title} at ${gig.company || "the company"}.

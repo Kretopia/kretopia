@@ -62,7 +62,7 @@ async function processUser(supabase: any, userId: string) {
     method: "POST",
     headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: "google/gemini-3-flash-preview",
       messages: [
         { role: "system", content: "You are a creator's PR manager. Suggest concise, high-impact EPK updates based on new credits. Be specific. Never invent facts beyond what's provided." },
         {

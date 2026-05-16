@@ -119,7 +119,7 @@ Return ONLY valid JSON array of top 6 matches, sorted by score:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { 
             role: "system", 

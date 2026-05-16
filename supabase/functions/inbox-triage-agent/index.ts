@@ -205,7 +205,7 @@ Be decisive. confidence = 0.5 means truly uncertain.`;
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: "google/gemini-3-flash-preview",
       messages: [
         { role: "system", content: sysPrompt },
         { role: "user", content: `Inbound message:\n"""\n${content.slice(0, 2000)}\n"""` },

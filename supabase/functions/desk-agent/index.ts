@@ -474,7 +474,7 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
           ...historyMsgs,

@@ -17,24 +17,21 @@ type Anchor = {
   label: string;
   to: string;
   icon: React.ComponentType<{ className?: string }>;
-  match: (pathname: string) => boolean;
+  match: (pathname: string, search: string) => boolean;
 };
-
-type AnchorMatch = (pathname: string, search: string) => boolean;
-type AnchorWithSearch = Omit<Anchor, "match"> & { match: AnchorMatch };
 
 // /accounting is a redirect → /thrivepay?tab=earnings, so Receipts must match the
 // query string, not the original path. Wallet only wins when no tab is selected.
-const ANCHORS: AnchorWithSearch[] = [
-  { id: "standing", label: "Standing", to: "/profile",                    icon: Star,    match: (p) => p === "/profile" },
-  { id: "stamps",   label: "Stamps",   to: "/credits",                    icon: Stamp,   match: (p) => p.startsWith("/credits") },
-  { id: "receipts", label: "Receipts", to: "/thrivepay?tab=earnings",     icon: Receipt, match: (p, s) => p.startsWith("/thrivepay") && new URLSearchParams(s).get("tab") === "earnings" },
-  { id: "wallet",   label: "Wallet",   to: "/thrivepay",                  icon: Wallet,  match: (p, s) => p.startsWith("/thrivepay") && new URLSearchParams(s).get("tab") !== "earnings" },
+const ANCHORS: Anchor[] = [
+  { id: "standing", label: "Standing", to: "/profile",                icon: Star,    match: (p) => p === "/profile" },
+  { id: "stamps",   label: "Stamps",   to: "/credits",                icon: Stamp,   match: (p) => p.startsWith("/credits") },
+  { id: "receipts", label: "Receipts", to: "/thrivepay?tab=earnings", icon: Receipt, match: (p, s) => p.startsWith("/thrivepay") && new URLSearchParams(s).get("tab") === "earnings" },
+  { id: "wallet",   label: "Wallet",   to: "/thrivepay",              icon: Wallet,  match: (p, s) => p.startsWith("/thrivepay") && new URLSearchParams(s).get("tab") !== "earnings" },
 ];
 
 export function PassportAnchorStrip({ className }: { className?: string }) {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
 
   const handleClick = (a: Anchor) => {
     if (a.id === "standing" && pathname === "/profile") {
@@ -51,7 +48,7 @@ export function PassportAnchorStrip({ className }: { className?: string }) {
           Passport
         </span>
         {ANCHORS.map((a) => {
-          const active = a.match(pathname);
+          const active = a.match(pathname, search);
           const Icon = a.icon;
           return (
             <button

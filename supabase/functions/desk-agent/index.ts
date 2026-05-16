@@ -656,13 +656,14 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
             .single();
           if (error) throw error;
           actions.push({ tool: name, args, result: data, ok: true });
+        } else if (name === "start_video_call") {
           // Reuse existing create-video-room edge fn (handles Daily.co + chat post)
-          const { data, error } = await admin.functions.invoke("create-video-room", {
+          const { data: vcData, error: vcError } = await admin.functions.invoke("create-video-room", {
             body: { project_id, user_name: user.email?.split("@")[0] || "Member" },
             headers: { Authorization: authHeader },
           });
-          if (error) throw error;
-          actions.push({ tool: name, args, result: { url: (data as any)?.url }, ok: true });
+          if (vcError) throw vcError;
+          actions.push({ tool: name, args, result: { url: (vcData as any)?.url }, ok: true });
         } else if (name === "add_credit") {
           const { data, error } = await admin
             .from("credits")

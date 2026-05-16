@@ -17,7 +17,7 @@ const NAV_ITEMS = [
 
 // Company accounts get a B2B-focused nav (unchanged).
 const COMPANY_ITEMS = [
-  { path: "/desk", icon: LayoutDashboard, label: "Studios", hint: "Your briefs & active projects" },
+  { path: "/desk", icon: LayoutGrid, label: "Studios", hint: "Your briefs & active projects" },
   { path: "/opportunities", icon: Briefcase, label: "Gigs", hint: "Roles you've posted & talent pool" },
   { path: "/talent-finder", icon: UserSearch, label: "Talent", hint: "Find creators to hire" },
   { path: "/thrivepay", icon: Wallet, label: "Pay", hint: "Pay creators & manage invoices" },

@@ -52,7 +52,7 @@ export const SocialProofSection = () => {
   const showTestimonials = testimonials.length >= 3;
 
   return (
-    <section className="py-16 sm:py-24 px-4 border-y border-border/40">
+    <section className="relative isolate overflow-hidden py-16 sm:py-24 px-4 border-y border-border/40 bg-background [contain:paint]">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10 sm:mb-14">
           <Badge variant="outline" className="mb-4 gap-1.5 border-energy/40 text-energy bg-energy/5">
@@ -98,11 +98,11 @@ export const SocialProofSection = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {headlineStats.map((s) => (
               <div
                 key={s.label}
-                className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6 text-center hover:border-energy/40 transition-colors"
+                className="relative rounded-2xl border border-border/60 bg-card p-5 sm:p-6 text-center hover:border-energy/40 transition-colors"
               >
                 <s.icon className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 text-energy" />
                 <p className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">{s.value}</p>

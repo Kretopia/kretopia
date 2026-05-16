@@ -190,29 +190,9 @@ const Navbar = memo(({ user }: NavbarProps) => {
         )}
 
         <div className="flex items-center gap-0.5 sm:gap-2 ml-auto shrink-0">
-          {!isLandingPage && (
-            <div className="flex items-center">
-              {/* Mobile search toggle - only show for signed-in users */}
-              {user && (
-                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 sm:hidden shrink-0" onClick={() => setSearchOpen(!searchOpen)} aria-label="Search">
-                  <Search className="h-[18px] w-[18px]" />
-                </Button>
-              )}
-              {user && (
-                <>
-                  {/* Top-nav Thrive ✨ removed — Home prompt + hamburger are the entry points */}
-                  <Link to="/messages" aria-label="Messages">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 relative">
-                      <MessageCircle className="h-[18px] w-[18px]" />
-                    </Button>
-                  </Link>
-                  <NotificationCenter />
-                </>
-              )}
-            </div>
-          )}
-          
-           <ThemeToggle />
+          {/* Top nav target: Logo · · · 🔔 ☰  — Search/Messages/Theme moved (Thrive bar / bottom nav / Settings) */}
+          {!isLandingPage && user && <NotificationCenter />}
+          {!user && !isLandingPage && <ThemeToggle />}
           
           {user && !isLandingPage ? (
             <Sheet open={isOpen} onOpenChange={setIsOpen}>

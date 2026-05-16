@@ -524,7 +524,12 @@ const Auth = () => {
                       </button>
                     </div>
 
-                    <UniversalClaimFlow source="auth" initialQuery={searchParams.get("q") || undefined} />
+                    <UniversalClaimFlow
+                      source={eventId ? "event" : "auth"}
+                      contextId={eventId || undefined}
+                      redirectAfter={eventId ? `/event/${eventId}` : undefined}
+                      initialQuery={searchParams.get("q") || undefined}
+                    />
                     <div className="my-5 flex items-center gap-2">
                       <div className="flex-1 h-px bg-border" />
                       <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">

@@ -46,6 +46,13 @@ const Auth = () => {
   const claimParam = searchParams.get("claim");
   const claimProfileId = claimParam && claimParam !== "1" ? claimParam : null;
   const eventId = searchParams.get("event");
+  // If user arrived via event RSVP gate, stash the return target so post-onboarding
+  // and post-email-confirmation flows route them back to the event page.
+  useEffect(() => {
+    if (eventId && typeof window !== "undefined") {
+      sessionStorage.setItem("thrivein_post_auth_redirect", `/event/${eventId}`);
+    }
+  }, [eventId]);
   // Honor a sessionStorage post-auth redirect set by soft-gates (AuthPrompt, etc.)
   // Falls back to ?redirect= query param, then /circle.
   const stashedRedirect = typeof window !== "undefined"

@@ -1,104 +1,171 @@
-# ThriveIN 2.0 — Creative OS: Evaluation & Execution Plan
+# IA Lock — Daily Driver Redesign
 
-## My honest read of the brief
-
-The brief is directionally right and most of it is already **partially built** in this codebase — but scattered. The real work is **subtraction, consolidation, and a single visual/UX language**, not new features. We have ~80% of the surface area; we have ~30% of the calm.
-
-If we try to ship "all 5 phases" in one swing we will break the moat we already have (Credits, Match, Scout, Desk, Pay). I recommend a **ruthless Phase 1 first** that delivers the *feel* (calm, operational, premium), then layer intelligence on top.
+Goal: ThriveIN feels like Apple + Linear + Notion + Stripe. Fewer choices. One destination per intent. Ship IA scaffolding first, copy/visual sweeps after.
 
 ---
 
-## What we already have (KEEP & elevate)
+## 1. Bottom Nav (Daily Actions Only)
 
-| Brief concept | What exists today | Verdict |
-|---|---|---|
-| **The Studio** = single operational object | `StudioRoom` + workspace_type slices (event/photo/music/podcast/content/campaign) | ✅ Core moat. Keep. Already matches the vision. |
-| **Thrive Agent** (invisible EP) | `agent-orchestrator` + `thrive-ai-chat` + `thrive_memory` + `desk-agent-watch` + tool registry + memory tools | ✅ Architecturally there. Needs UX restraint, not more code. |
-| **Scout** | `scout-gigs` edge fn + ScoutedGigsSection + funnel instrumentation | ✅ Working. Just needs to absorb Match into one surface. |
-| **Pay** | ThrivePay suite (Stripe + PowerTranz, invoices, escrow, receipts, MoneyBrief) | ✅ Strong. Keep. |
-| **ThriveCredits** | Full credit system, vouching, Production detail pages, embeddable widget | ✅ Already "Creative Passport". Mostly a positioning fix. |
-| **Voice** | `thrive-voice-turn` + push-to-talk FAB + voice-to-task | ✅ Keep. Promote on mobile. |
-| **Memory** | `thrive_memory` table + remember/recall/forget tools | ✅ Keep. Surface it more (so users *feel* it). |
-| **MVP nav (single-mode)** | Home · Desk · Match · Gigs · Fund | ⚠️ Close but wrong shape for OS vision. |
-| **Vibe system** | Daylight / Midnight / Neon | ⚠️ Keep tokens, default to one calm vibe. |
+```text
+Today    Desk    Scout    Messages    Passport
+```
 
-## What to KILL or HIDE (subtraction is the product)
+| Tab | Route | Absorbs | Icon |
+|---|---|---|---|
+| Today | `/` | Home, MorningPulse, Approvals digest | Sun |
+| Desk | `/desk` | Studios, Projects, Rooms, Files, Tasks | LayoutGrid |
+| Scout | `/scout` | Match swipe + Gigs marketplace + Scouted | Compass |
+| Messages | `/messages` | Chat, Calls, Video, Approvals inbox | MessageCircle |
+| Passport | `/profile` | Profile + Pay + ThriveCredits + Wallet | BadgeCheck |
 
-- **Match as a separate tab** → fold into Scout (people + gigs + sponsors = one intelligent feed).
-- **Gigs as a separate tab** → into Scout.
-- **Fund in bottom nav** → move to hamburger (it's a campaign tool, not daily driver).
-- **Spotlight / Magazine / Podcast pages** as nav items → keep routes, hide from nav (already partially done).
-- **Discover map empty-state**, **Communities**, **Challenges/Rewards**, **Events as separate hub** → already hidden or sunset, finish the job.
-- **Neon vibe** as default → demote to opt-in only.
-- **"AI" word everywhere** → already a memory rule, enforce it in landing + onboarding copy.
-- **Multiple dashboards** (Home + Desk Today + Money Brief + ManageHub) → one Pulse on Home.
+**Removed from bottom**: Home (renamed Today), Studios (renamed Desk), Pay (absorbed by Passport).
 
-## What I disagree with (or want to scope down)
-
-1. **"Voice as primary input on mobile"** — voice is a power feature, not the default. The mic FAB stays, but a thumb-tap-first nav wins. I'd push back on making voice the hero of mobile.
-2. **"Events into Studio templates" right now** — Events Studios exist; ripping out the standalone /events surface mid-flight will break IRL guest flows we just shipped (warm copy, .ics, GuestPass QR, host roster). Phase it.
-3. **Removing "Match"** — agreed conceptually, but the swipe deck *converts*. Keep the mechanic, just rehome it inside Scout as a tab.
-4. **"NO empty states, AI pre-generates value"** — agreed in spirit, but the seeded first-run RPC already handles this. Don't over-build.
-5. **One landing page rewrite + nav rewrite + design token rewrite simultaneously** — that's 3 weeks of regressions. Sequence them.
+**Company mode** keeps its own 4-tab B2B nav unchanged.
 
 ---
 
-## Recommended phased execution
+## 2. Persistent Thrive Bar (global, floating)
 
-### Phase 1 — The Calm Pass (this is the unlock)
-Goal: make the existing product *feel* like the brief without adding features.
-
-1. **Nav consolidation (mobile + desktop)**
-   - Bottom nav becomes: **Home · Studios · Scout · Pay · Profile** (5 tabs).
-   - "Studios" replaces "Desk" label everywhere user-facing (route stays `/desk` for now).
-   - "Scout" absorbs Match swipe deck + Gigs marketplace + Scouted gigs as 3 sub-tabs.
-   - Fund, Manage, Events, Spotlight → hamburger only.
-2. **Home = The Pulse**
-   - Replace current Home grid with: **Morning Brief** (one paragraph, AI-written) → **Today** (next step across all studios) → **Active Studios** (3 cards) → **Money** (compact MoneyBrief) → **Scout** (3 matches). Nothing else above the fold.
-3. **Design token tightening**
-   - Default vibe = Daylight, lock it. Neon hidden behind settings.
-   - Remove all backdrop-blur on sticky/scroll surfaces (already a rule, audit & fix).
-   - One typographic scale, editorial hierarchy. Inter only.
-   - Lime accent ONLY for success/live/approval states (audit usage).
-4. **Copy purge**
-   - Strip "AI" from user-facing copy site-wide (use Smart/Copilot/Thrive per memory rule).
-   - Strip emoji from product surfaces.
-5. **Landing rewrite** (8 sections per brief, real product UI screenshots, no illustrations).
-
-**Estimate:** 4–6 focused work sessions. Zero new backend.
-
-### Phase 2 — Studio as the Spine
-- Collapse Desk tab bar from 5 tabs to a **single scrolling canvas** (Today strip → Tasks feed → Files → Notes → Chat) on mobile. Desktop keeps tabs.
-- Embed Pay actions (draft invoice, log expense) as inline chips inside Studio chat composer.
-- Move all messaging into Studios; keep `/inbox` only for cross-studio approvals + DMs without a project.
-
-### Phase 3 — Scout as Intelligent Agent
-- Unified Scout feed: people + gigs + sponsors, ranked by Thrive with one-line *"why this matched"*.
-- Each card has 3 actions: **Pitch · Save · Spin into Studio**.
-- Sponsor Radar (already built) gets promoted to first-class Scout tab.
-
-### Phase 4 — Thrive Agent restraint pass
-- Audit every agent surface: kill duplicate proposals, cap proactive cards to 1 per surface per day.
-- Memory chips on Studio header ("I remembered: Zara pays NET-30") so users *see* memory working.
-- Voice FAB persistent on mobile, hidden on desktop unless invoked.
-
-### Phase 5 — Events OS + growth (later)
-Defer until Phases 1–3 stick. Events already works for IRL launches.
+- Component: `<ThrivePromptBar />` (rename + extract from existing `ThrivePromptHero`)
+- Position: `fixed bottom-[calc(env(safe-area-inset-bottom)+72px)]` (above bottom nav)
+- Slots: voice mic · text input "What are we moving forward today?" · upload · send
+- Hidden on: `/onboarding`, `/auth/*`, full-screen video call, mobile chat thread
+- Wired to existing `route-thrive-intent` edge fn
+- **No Thrive tab in nav.** Agent = presence, not destination.
 
 ---
 
-## Technical scope (for the engineering side)
+## 3. Top Nav Cleanup
 
-- **Files touched in Phase 1:** `BottomNav.tsx`, `App.tsx` routes, `pages/Index.tsx` (Home), `pages/Landing.tsx` flow, `index.css` (token lockdown), `Scout` page (new wrapper around existing Match + Gigs + Scouted), copy passes across ~30 component files.
-- **No new tables.** No new edge functions in Phase 1.
-- **Memory updates:** add Phase-1 nav rule, "Daylight default locked", "Scout absorbs Match+Gigs" once approved.
+Current: Search · Messages · Notifications · Theme · Hamburger → **5 items**
+Target: Inbox · Menu → **2 items**
+
+```text
+[Logo]  ················  🔔  ☰
+```
+
+- Remove: top-nav Search (Thrive handles), top-nav Messages (bottom tab), Theme toggle (move to Settings → Appearance)
+- Keep: Inbox bell (approvals + notifications merged), Hamburger
+- Phase 2 (post-IA): swap ☰ for avatar dropdown
 
 ---
 
-## What I need from you before I touch code
+## 4. Hamburger Rebuild — System + Account ONLY
 
-Three decisions gate the whole Phase 1:
+Rule: **Hamburger ≠ navigation.** Anything reachable from bottom nav is removed from hamburger.
 
-1. **Nav shape** — do we go to `Home · Studios · Scout · Pay · Profile` (5 tabs, OS feel) OR keep MVP `Home · Desk · Match · Gigs · Fund` and just rebrand? The brief says option A; the moat memory says option B. I lean A.
-2. **Match's fate** — fold the swipe deck into Scout as a tab (my rec) or kill it entirely (purer brief)?
-3. **Scope of Phase 1** — ship all 5 sub-items above as one push, or just nav + Home + copy first and design tokens after?
+```text
+ACCOUNT
+  Subscription
+  Standing
+  Storage
+  Switch to Company Mode
+
+WORKSPACE
+  Founding Circle
+  Creative Circle
+  Manager Mode
+  Referral Program
+
+SETTINGS
+  Settings
+  Notifications
+  Memory & Agent Preferences
+  Language
+  Privacy
+  Appearance (was Theme toggle)
+
+SUPPORT
+  Feedback
+  Help Centre
+  About
+
+ADMIN (conditional)
+  Admin Panel
+
+———
+Sign Out
+```
+
+**Deleted from hamburger**: Inbox, Studios, Scout, Pay, Profile, Events, ThriveCredits, Discover, Spotlight, Fund, Intel, Ambassador, Founding (the page — Circle stays), Website Builder.
+
+---
+
+## 5. Passport (absorbs Profile + Pay + Credits)
+
+Route: `/profile` keeps URL, header rebrands to "Your Creative Passport".
+
+Anchor sections (in order):
+1. **Standing** — tier chip, verification score
+2. **Stamps** — credits grid (was ThriveCredits)
+3. **Co-signs** — vouches
+4. **Press Kit** — portfolio + EPK
+5. **Receipts** — ThrivePay history
+6. **Wallet** — invoices/quotes/payout (absorbs old `/thrivepay`)
+7. **Recent work** — active productions feed
+8. **Verification** — ID, socials, badges
+
+`/thrivepay` and `/credits` redirect into Passport anchors (`/profile#wallet`, `/profile#stamps`).
+
+---
+
+## 6. Today Dashboard
+
+Route: `/` (renamed from "Home" in nav label). Order:
+
+```text
+Good evening, Ethan
+Working Creative · 12 Stamps · 4 Co-signs
+─────────────────────────────────────
+Thrive noticed…           (proactive cards)
+Active productions        (StudioCardsGrid, max 3)
+Recent receipts           (MoneyBrief compact)
+Open opportunities        (ScoutedGigsSection, max 3)
+Upcoming sessions         (EventsNearYou, max 2)
+```
+
+Strip from Today: Magazine, Spotlight, Streak chips, ProfileStrengthBar (move to Passport).
+
+---
+
+## Build Order (3 batches)
+
+### Batch 1 — IA scaffolding (this sprint, ~3 hrs)
+- Rename bottom nav labels + icons + routes per table above
+- Wire `/desk`, `/scout`, `/messages`, `/profile` to existing pages (Messages currently `/messages` — confirm)
+- Build `<ThrivePromptBar />` global wrapper, mount in `AppShell`, hide on excluded routes
+- Top nav: remove Search/Messages/Theme; keep Bell + Hamburger
+- Hamburger: delete duplicate nav items, regroup into ACCOUNT/WORKSPACE/SETTINGS/SUPPORT/ADMIN
+- Update `mvp-single-mode-nav` and `creative-os-nav` memories
+
+### Batch 2 — Passport merge (~4 hrs)
+- Refactor `/profile` into 8 anchor sections above
+- Redirect `/thrivepay` → `/profile#wallet`, `/credits` → `/profile#stamps`
+- Header: "Your Creative Passport" + Standing chip
+
+### Batch 3 — Today rebuild (~2 hrs)
+- Reorder `UnifiedHome` authed view to the 5-section list above
+- Strip Magazine/Spotlight/Streak from Today (still reachable via hamburger Spotlight if kept)
+
+---
+
+## Out of scope this lock
+- Visual redesign / motion polish
+- Copy sweep (Brand Bible Batch 2)
+- Onboarding rebuild
+- B2B "Hiring creators?" landing strip
+- Avatar-dropdown replacing ☰
+
+---
+
+## Open question (1 only — rest is decided)
+
+**Messages tab** — currently `/messages` exists as basic inbox. Bottom-nav Messages should absorb Chat + Calls + Video + Approvals. Do we:
+- **(a) Ship Batch 1 with Messages pointing to existing `/messages`** (approvals stay in `/inbox` for now, merge in Batch 4)
+- **(b) Block Batch 1 until Messages merge is designed**
+
+Recommend (a) — unblocks IA, Messages merge is its own sprint (the "moat" from earlier convo).
+
+---
+
+Approve this plan and I'll start Batch 1.

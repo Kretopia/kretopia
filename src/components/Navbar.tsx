@@ -114,7 +114,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/profile", icon: BadgeCheck, label: "Passport" },
       ];
 
-  const [searchOpen, setSearchOpen] = useState(false);
+  // search moved to Thrive bar — keep state stub removed
 
   // Guest navigation items
   const guestNavItems = [

@@ -32,6 +32,7 @@ import { ClaimedProfileGlow } from "@/components/onboarding/claim-flow/ClaimedPr
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
 import { ProfileStrengthBar } from "@/components/profile/ProfileStrengthBar";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
+import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
@@ -366,6 +367,10 @@ const ProfileContent = () => {
       />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
+        {/* Passport surface header — single anchor strip across /profile, /thrivepay, /credits */}
+        <PassportAnchorStrip className="mb-2" />
+        <p className="brand-eyebrow mt-1 mb-3">Your Creative Passport</p>
+
         {/* Claim success banner */}
         <ClaimContinueBanner onRefresh={fetchData} />
 

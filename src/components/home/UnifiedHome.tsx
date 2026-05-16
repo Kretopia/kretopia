@@ -777,16 +777,8 @@ export const UnifiedHome = () => {
         {/* What's on — upcoming events with free/ticketed filters */}
         {user && <EventsNearYouSection limit={8} />}
 
-        {/* Pass B.1: Quiet streak row — single line of utility. */}
-        {user && (
-          <section className="mb-8">
-            <StreakChipsRow />
-          </section>
-        )}
-
-        {/* Spotlight back on Home — share-worthy content (Magazine + Podcast). */}
-        {user && <SpotlightFeedRow />}
-        {false && user && <ThriveFundFeedRow />}
+        {/* Daily Driver IA: Streak + Spotlight stripped from Today — Home stays a focused brief.
+            Spotlight (Magazine + Podcast) lives at /spotlight; streak chips moved to Passport. */}
 
         {/* Pass B.1: Legacy "Gigs For You" hidden — ScoutedGigsSection above is the moat. */}
         {false && user && (

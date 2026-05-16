@@ -26,9 +26,8 @@ interface ProfileContentSectionsProps {
   onRefresh: () => void;
 }
 
-// MVP: removed "More" tab (Press/Awards/Industry Stats/Collab History) — non-MVP enrichment.
+// Batch 2.5: removed "Stamps" tab — redundant with Passport anchor strip → /credits.
 const PROFILE_TABS = [
-  { id: "work", label: "Stamps", icon: Briefcase },
   { id: "hire", label: "Work With Me", icon: DollarSign },
   { id: "skills", label: "Skills", icon: Zap },
   { id: "reviews", label: "Reviews", icon: Star },

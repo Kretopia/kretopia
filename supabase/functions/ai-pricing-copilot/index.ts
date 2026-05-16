@@ -205,7 +205,7 @@ REMINDER: You can make mistakes. When you're not sure (rate, currency, unit, sco
       body: JSON.stringify({
         // Vision/extraction needs a stronger model when the user scans a brief —
         // 2.5-pro is far less prone to hallucinating units/rates than flash.
-        model: hasScan ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview",
+        model: hasScan ? "google/gemini-3.1-pro-preview" : "google/gemini-3-flash-preview",
         messages: aiMessages,
         tools: [
           {

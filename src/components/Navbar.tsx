@@ -131,13 +131,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           <BrandLogo size="md" showBeta linkToHome />
         </div>
 
-        {/* ═══ PERSISTENT SEARCH BAR ═══ */}
-        {!isLandingPage && (
-          <UnifiedSearchDropdown
-            variant="navbar"
-            className="hidden sm:block flex-1 max-w-sm mx-4"
-          />
-        )}
+        {/* Search lives in Thrive bar — top nav is bell + menu only */}
 
         {/* ═══ GUEST INLINE NAV (desktop/tablet) ═══ */}
         {!user && (

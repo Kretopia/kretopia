@@ -44,11 +44,10 @@ import { MorningPulse } from "@/components/home/MorningPulse";
 import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
 import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";
-import { StreakChipsRow } from "@/components/home/StreakChipsRow";
+// StreakChipsRow + SpotlightFeedRow removed from Today (Daily Driver IA).
 import { OpportunityIntelCard } from "@/components/home/OpportunityIntelCard";
 import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
 import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
-import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { EventsNearYouSection } from "@/components/home/EventsNearYouSection";
 import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
@@ -777,16 +776,8 @@ export const UnifiedHome = () => {
         {/* What's on — upcoming events with free/ticketed filters */}
         {user && <EventsNearYouSection limit={8} />}
 
-        {/* Pass B.1: Quiet streak row — single line of utility. */}
-        {user && (
-          <section className="mb-8">
-            <StreakChipsRow />
-          </section>
-        )}
-
-        {/* Spotlight back on Home — share-worthy content (Magazine + Podcast). */}
-        {user && <SpotlightFeedRow />}
-        {false && user && <ThriveFundFeedRow />}
+        {/* Daily Driver IA: Streak + Spotlight stripped from Today — Home stays a focused brief.
+            Spotlight (Magazine + Podcast) lives at /spotlight; streak chips moved to Passport. */}
 
         {/* Pass B.1: Legacy "Gigs For You" hidden — ScoutedGigsSection above is the moat. */}
         {false && user && (

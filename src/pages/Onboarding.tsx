@@ -969,9 +969,9 @@ export default function Onboarding() {
                 {/* Launch profile (Step 3) */}
                 <Button onClick={handleSaveProfile} disabled={loading} className="w-full h-12 text-base gap-2" size="lg">
                   {loading ? (
-                    <><Loader2 className="h-5 w-5 animate-spin" /> Launching your profile...</>
+                    <><Loader2 className="h-5 w-5 animate-spin" /> Launching your {BRAND.passport}...</>
                   ) : (
-                    <>🚀 Launch my profile <ArrowRight className="h-4 w-4" /></>
+                    <>Launch my {BRAND.passport} <ArrowRight className="h-4 w-4" /></>
                   )}
                 </Button>
 

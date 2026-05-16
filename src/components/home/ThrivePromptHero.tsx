@@ -118,10 +118,11 @@ export function ThrivePromptHero() {
           break;
         }
         case "find_people":
-          navigate(`/match?q=${encodeURIComponent(data.target_query || prompt)}`);
+          // Scout absorbs Match — there is no standalone /match route.
+          navigate(`/scout?tab=match&q=${encodeURIComponent(data.target_query || prompt)}`);
           break;
         case "find_gigs":
-          navigate(`/opportunities?q=${encodeURIComponent(data.target_query || prompt)}`);
+          navigate(`/scout?tab=gigs&q=${encodeURIComponent(data.target_query || prompt)}`);
           break;
         case "outreach":
         case "summarize":
@@ -130,7 +131,10 @@ export function ThrivePromptHero() {
           window.dispatchEvent(new CustomEvent("thrive-copilot:open", { detail: { prompt } }));
           break;
         case "profile_epk":
-          navigate("/profile/edit?focus=epk");
+          // /profile/edit isn't a real route — open the Passport surface where
+          // the EPK editor lives as a modal.
+          toast({ title: data.preview || "Opening your Press Kit…" });
+          navigate("/profile");
           break;
       }
       setText("");

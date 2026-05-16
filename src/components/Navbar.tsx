@@ -8,7 +8,7 @@ import {
   Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
-import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
+// UnifiedSearchDropdown removed from top nav — Thrive bar owns search
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";

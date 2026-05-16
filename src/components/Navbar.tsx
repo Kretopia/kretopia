@@ -208,117 +208,101 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                 <div className="flex flex-col gap-1 mt-6 overflow-y-auto max-h-[calc(100vh-8rem)]">
 
-                  {/* Inbox — unified Notifications + Thrive approvals */}
-                  <MenuButton icon={Inbox} label="Inbox" onClick={() => handleNavigation("/inbox")} path="/inbox" badge={inboxBadge} />
-                  <Separator className="my-3" />
-
                   {isCompany ? (
-                    /* ====== COMPANY MENU ====== */
+                    /* ====== COMPANY MENU (unchanged) ====== */
                     <>
+                      <MenuButton icon={Inbox} label="Inbox" onClick={() => handleNavigation("/inbox")} path="/inbox" badge={inboxBadge} />
+                      <Separator className="my-3" />
                       <MenuButton icon={User} label="Company Page" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
                       <MenuButton icon={Search} label="Find Talent" onClick={() => handleNavigation("/talent-finder")} path="/talent-finder" />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
+                      <Separator className="my-3" />
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
+                      <Button variant="ghost" className="justify-start gap-3 h-auto w-full py-3" onClick={() => handleNavigation("/subscription")}>
+                        {isPro ? <Crown className="h-5 w-5 text-accent" /> : <Sparkles className="h-5 w-5 text-primary" />}
+                        <div className="flex flex-col items-start gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Subscription</span>
+                            <Badge variant="secondary" className={cn("text-[10px] uppercase tracking-wider", isPro ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground")}>{tierName}</Badge>
+                          </div>
+                          {!isPro && <span className="text-xs text-primary font-medium">Upgrade →</span>}
+                        </div>
+                      </Button>
+                      <AccountSwitcher currentAccountType={accountType} onSwitch={() => setIsOpen(false)} onManagerModeChange={(enabled) => setIsManagerMode(enabled)} />
+                      <MenuButton icon={Settings} label="Settings" onClick={() => handleNavigation("/settings")} />
                     </>
                   ) : (
-                    /* ====== CREATIVE OS MENU — Studios · Scout · Pay · Profile ====== */
+                    /* ====== DAILY DRIVER MENU — System + Account only ====== */
                     <>
+                      {/* ACCOUNT */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
+                      <Button variant="ghost" className="justify-start gap-3 h-auto w-full py-3" onClick={() => handleNavigation("/subscription")}>
+                        {isPro ? <Crown className="h-5 w-5 text-accent" /> : <Sparkles className="h-5 w-5 text-primary" />}
+                        <div className="flex flex-col items-start gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Subscription</span>
+                            <Badge variant="secondary" className={cn("text-[10px] uppercase tracking-wider", isPro ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground")}>{tierName}</Badge>
+                          </div>
+                          {!isPro && <span className="text-xs text-primary font-medium">Upgrade →</span>}
+                        </div>
+                      </Button>
+                      <MenuButton icon={Star} label="Standing" onClick={() => handleNavigation("/profile#standing")} />
+                      <div className="px-1 py-1">
+                        <StorageMeter variant="compact" />
+                      </div>
+                      <AccountSwitcher currentAccountType={accountType} onSwitch={() => setIsOpen(false)} onManagerModeChange={(enabled) => setIsManagerMode(enabled)} />
+
+                      <Separator className="my-3" />
+
+                      {/* WORKSPACE */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
-                      <MenuButton icon={LayoutDashboard} label="Studios" onClick={() => handleNavigation("/desk")} path="/desk" />
-                      <MenuButton icon={Radar} label="Scout" onClick={() => handleNavigation("/scout")} path="/scout" />
-                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-                      <MenuButton icon={Wallet} label="Pay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
-                      <MenuButton icon={UserCircle2} label="Profile" onClick={() => handleNavigation(`/profile/${user?.id}`)} path={`/profile/${user?.id}`} />
-                      <MenuButton icon={Trophy} label="ThriveCredits" onClick={() => handleNavigation("/credits")} path="/credits" />
+                      <MenuButton icon={Crown} label="Founding Circle" onClick={() => handleNavigation("/founding-member")} path="/founding-member" />
+                      <MenuButton icon={UserPlus} label="Creative Circle" onClick={() => handleNavigation("/creative-circle")} path="/creative-circle" />
                       {isManagerMode && (
-                        <MenuButton icon={Users} label="Talent Manager" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
+                        <MenuButton icon={Users} label="Manager Mode" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
+                      )}
+                      <MenuButton icon={Gift} label="Referral Program" onClick={() => handleNavigation("/ambassador")} path="/ambassador" />
+
+                      <Separator className="my-3" />
+
+                      {/* SETTINGS */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Settings</p>
+                      <MenuButton icon={Settings} label="Settings" onClick={() => handleNavigation("/settings")} />
+                      <MenuButton icon={Bell} label="Notifications" onClick={() => handleNavigation("/settings?tab=notifications")} />
+                      <MenuButton icon={Brain} label="Memory & Agent" onClick={() => handleNavigation("/settings?tab=agent")} />
+                      <MenuButton icon={Languages} label="Language" onClick={() => handleNavigation("/settings?tab=language")} />
+                      <MenuButton icon={Lock} label="Privacy" onClick={() => handleNavigation("/settings?tab=privacy")} />
+                      <div className="flex items-center justify-between px-3 py-2">
+                        <span className="text-sm flex items-center gap-3"><Palette className="h-5 w-5" /> Appearance</span>
+                        <ThemeToggle />
+                      </div>
+
+                      <Separator className="my-3" />
+
+                      {/* SUPPORT */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Support</p>
+                      <MenuButton icon={MessageSquarePlus} label="Feedback" onClick={() => {
+                        setIsOpen(false);
+                        sessionStorage.removeItem("feedback-dismissed");
+                        window.dispatchEvent(new CustomEvent("open-feedback"));
+                      }} />
+                      <MenuButton icon={LifeBuoy} label="Help Centre" onClick={() => handleNavigation("/help")} />
+                      <MenuButton icon={Globe} label="About" onClick={() => handleNavigation("/about")} />
+
+                      {/* ADMIN */}
+                      {user?.id === 'ef429714-ea32-4f08-a4f9-ef0226f1804b' && (
+                        <>
+                          <Separator className="my-3" />
+                          <MenuButton icon={Shield} label="Admin Panel" onClick={() => handleNavigation("/admin")} />
+                        </>
                       )}
                     </>
                   )}
 
                   <Separator className="my-3" />
-
-                  {/* Creative Circle CTA */}
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "justify-start gap-3 h-12 w-full border border-border/40 hover:bg-accent/30",
-                      location.pathname === "/creative-circle" && "bg-energy/10 text-energy border-energy/30"
-                    )}
-                    onClick={() => handleNavigation("/creative-circle")}
-                    aria-current={location.pathname === "/creative-circle" ? "page" : undefined}
-                  >
-                    <UserPlus className="h-5 w-5 text-primary" />
-                    <div className="flex flex-col items-start">
-                      <span className="font-semibold text-sm">Creative Circle</span>
-                      <span className="text-[10px] text-muted-foreground">Invite creatives, earn rewards</span>
-                    </div>
-                  </Button>
-
-                  <Separator className="my-3" />
-
-                  <MenuButton icon={Globe} label="About Us" onClick={() => handleNavigation("/about")} />
-
-                  <Separator className="my-3" />
-
-                  {/* Account section */}
-                  <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
-                  {/* My Profile lives at the top of the menu — no duplicate here */}
-                  <Button
-                    variant="ghost"
-                    className="justify-start gap-3 h-auto w-full py-3"
-                    onClick={() => handleNavigation("/subscription")}
-                  >
-                    {isPro ? <Crown className="h-5 w-5 text-accent" /> : <Sparkles className="h-5 w-5 text-primary" />}
-                    <div className="flex flex-col items-start gap-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">Subscription</span>
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            "text-[10px] uppercase tracking-wider",
-                            isPro ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
-                          )}
-                        >
-                          {tierName}
-                        </Badge>
-                      </div>
-                      {!isPro && <span className="text-xs text-primary font-medium">Upgrade to Pro →</span>}
-                    </div>
-                  </Button>
-
-                  <AccountSwitcher
-                    currentAccountType={accountType}
-                    onSwitch={() => setIsOpen(false)}
-                    onManagerModeChange={(enabled) => setIsManagerMode(enabled)}
-                  />
-
-                  <MenuButton icon={Settings} label="Settings" onClick={() => handleNavigation("/settings")} />
-                  <MenuButton icon={MessageSquarePlus} label="Send Feedback" onClick={() => {
-                    setIsOpen(false);
-                    // Re-enable feedback widget if dismissed
-                    sessionStorage.removeItem("feedback-dismissed");
-                    // Trigger feedback widget open
-                    window.dispatchEvent(new CustomEvent("open-feedback"));
-                  }} />
-
-                  {/* Admin Section */}
-                  {user?.id === 'ef429714-ea32-4f08-a4f9-ef0226f1804b' && (
-                    <>
-                      <Separator className="my-3" />
-                      <MenuButton icon={Shield} label="Admin Panel" onClick={() => handleNavigation("/admin")} />
-                    </>
-                  )}
-
-                  <Separator className="my-3" />
-
-                  <div className="px-1 pb-2">
-                    <StorageMeter variant="compact" />
-                  </div>
-
-                  <Separator className="my-1" />
 
                   <Button
                     variant="outline"

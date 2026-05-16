@@ -32,7 +32,7 @@ export function GuestBanner() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold">Claim your credits, land real gigs</p>
-            <p className="text-[11px] text-muted-foreground">Free to start · 7-day Pro trial when you upgrade</p>
+            <p className="text-[11px] text-muted-foreground">Free to start · Creator from $29/mo</p>
           </div>
           <Button
             size="sm"

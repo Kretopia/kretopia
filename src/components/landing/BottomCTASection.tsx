@@ -12,11 +12,11 @@ const TRINIDAD_CONTENT = {
 };
 
 const DEFAULT_CONTENT = {
-  badge: "Free Forever · Pro from $29/mo",
+  badge: "Free Forever · Creator from $29/mo",
   heading: "Make it. Own it. Get paid.",
   subheading:
     "Claim your credits. Match with collaborators. Send invoices. Get paid. One platform replaces nine apps — and Thrive does the busywork.",
-  tagline: "Free forever · 60-second setup · 7-day Pro trial",
+  tagline: "Free forever · 60-second setup · No credit card",
   isTT: false,
 };
 

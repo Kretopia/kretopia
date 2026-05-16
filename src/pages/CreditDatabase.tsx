@@ -312,6 +312,9 @@ const CreditDatabase = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background pb-20">
+        <div className="container mx-auto px-4 pt-3">
+          <PassportAnchorStrip />
+        </div>
         {/* Search Hero */}
         <div className={cn(
           "transition-all duration-300",

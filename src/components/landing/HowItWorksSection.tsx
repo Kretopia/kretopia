@@ -55,7 +55,7 @@ export const HowItWorksSection = () => {
               </div>
               <h3 className="mb-2 text-xl font-bold">Get Verified & Discovered</h3>
               <p className="text-muted-foreground">
-                Peers endorse your work. Brands verify you directly. Peers endorse your work. Brands verify you directly. Your ThriveCredits profile becomes your verified creative résumé — searchable by anyone hiring. — searchable by anyone hiring.
+                Peers Co-sign your work. Brands verify you directly. Your Creative Passport becomes your verified creative résumé — searchable by anyone hiring.
               </p>
               <div className="mt-4 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-secondary" />
@@ -76,7 +76,7 @@ export const HowItWorksSection = () => {
               </div>
               <h3 className="mb-2 text-xl font-bold">Work & Get Paid</h3>
               <p className="text-muted-foreground">
-                Land gigs, manage projects with milestones, send invoices — and every completed project Land gigs, manage projects with milestones, send invoices — and every completed project auto-adds to your ThriveCredits history..
+                Land gigs, manage projects with milestones, send invoices — and every completed project auto-adds a new Stamp to your Creative Passport.
               </p>
               <div className="mt-4 flex items-center gap-2">
                 <DollarSign className="h-4 w-4 text-accent" />

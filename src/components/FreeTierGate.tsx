@@ -57,7 +57,7 @@ export function FreeTierGate({ feature, featureLabel, description, children }: F
               {isPro ? "Upgrade to Creator+" : "Upgrade to Creator"}
             </Button>
             <p className="text-[11px] text-muted-foreground mt-3">
-              {isPro ? "$59/month · Creator+" : "$29/month · 7-day free trial"}
+              {isPro ? "$59/month · Creator+" : "$29/month · Cancel anytime"}
             </p>
           </div>
         </div>

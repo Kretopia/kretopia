@@ -115,7 +115,7 @@ const ICDBHub = () => {
                 creditCount={creditCount}
               />
               <div className="p-4 rounded-xl bg-muted/30 border space-y-2">
-                <h3 className="text-sm font-semibold"><h3 className="text-sm font-semibold">What is your ThriveCredits ID?</h3></h3>
+                <h3 className="text-sm font-semibold">What is your Creative Passport ID?</h3>
                 <p className="text-xs text-muted-foreground">
                   Your unique, portable identity across the creative industry. Use it in contracts, 
                   bios, and platforms to link back to your verified creative history. Think of it as 

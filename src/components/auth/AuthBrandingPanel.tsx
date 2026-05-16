@@ -55,7 +55,7 @@ export const AuthBrandingPanel = () => (
       <div className="mt-6">
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Zap className="h-3 w-3 text-energy" />
-          60-second setup · No credit card · 7-day Pro trial included
+          60-second setup · No credit card · Free forever to start
         </p>
       </div>
     </div>

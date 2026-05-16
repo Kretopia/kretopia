@@ -88,7 +88,7 @@ export const ComparisonTableSection = () => {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </Link>
-          <p className="mt-3 text-xs text-muted-foreground/70">No credit card · 7-day Pro trial · Save 17% annually</p>
+          <p className="mt-3 text-xs text-muted-foreground/70">No credit card · Free forever to start · Save 17% annually</p>
         </div>
       </div>
     </section>

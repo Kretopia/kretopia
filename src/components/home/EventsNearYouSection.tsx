@@ -67,16 +67,18 @@ export const EventsNearYouSection = ({ limit = 8 }: { limit?: number }) => {
       const ids = (data || []).map((e: any) => e.id);
       let counts: Record<string, number> = {};
       if (ids.length) {
-        const partsRes = await (supabase
-          .from("jam_participants")
-          .select("jam_id")
-          .in("jam_id", ids)
-          .in("status", ["rsvp", "going", "checked_in"]) as unknown as Promise<any>)
-          .catch(() => ({ data: [] }));
-        const parts = partsRes?.data || [];
-        parts.forEach((p: any) => {
-          counts[p.jam_id] = (counts[p.jam_id] || 0) + 1;
-        });
+        try {
+          const { data: parts } = await supabase
+            .from("jam_participants")
+            .select("jam_id")
+            .in("jam_id", ids)
+            .in("status", ["rsvp", "going", "checked_in"]);
+          (parts || []).forEach((p: any) => {
+            counts[p.jam_id] = (counts[p.jam_id] || 0) + 1;
+          });
+        } catch (err) {
+          console.warn("[EventsNearYouSection] participant count failed", err);
+        }
       }
 
       const enriched = (data || []).map((e: any) => ({

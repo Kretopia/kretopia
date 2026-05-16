@@ -75,11 +75,6 @@ export const ProfileContentSections = ({
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "work":
-        return (
-          <ICDBTimeline userId={profile.user_id} isOwnProfile={true} onRefresh={onRefresh} />
-        );
-
       case "hire":
         return (
           <>

@@ -375,20 +375,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           ) : null}
         </div>
       </div>
-      
-      {/* Mobile search bar — slides open */}
-      {searchOpen && !isLandingPage && (
-        <div className="sm:hidden border-t border-border/50 px-3 py-2 bg-background">
-          <UnifiedSearchDropdown
-            variant="inline"
-            autoFocus
-            onQuerySubmit={(q) => {
-              setSearchOpen(false);
-              navigate(`/search?q=${encodeURIComponent(q)}`);
-            }}
-          />
-        </div>
-      )}
+      {/* Mobile search removed — Thrive bar handles search & intent */}
     </nav>
   );
 });

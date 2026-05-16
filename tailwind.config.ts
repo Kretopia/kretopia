@@ -21,6 +21,9 @@ export default {
       '2xl': '1536px',
     },
     extend: {
+      fontFamily: {
+        serif: ['"Instrument Serif"', 'ui-serif', 'Georgia', 'serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

@@ -19,14 +19,14 @@ export const ComparisonTableSection = () => {
     <section className="px-4 sm:px-6 py-16 sm:py-20 md:py-24">
       <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-10 sm:mb-12">
-          <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-            You're Using{" "}
+        <h2 className="mb-4 text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
+            Make it. Own it.{" "}
             <span className="text-primary">
-              9 Different Apps
+              Get paid.
             </span>
           </h2>
           <p className="mx-auto max-w-xl text-base sm:text-lg text-muted-foreground">
-            ThriveIN replaces them all — one platform, one login, zero fragmentation.
+            ThriveIN replaces nine apps with one creative operating system — credits, gigs, collabs, and payments in one place.
           </p>
         </div>
 

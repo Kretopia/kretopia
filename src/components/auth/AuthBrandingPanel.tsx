@@ -26,11 +26,11 @@ export const AuthBrandingPanel = () => (
       </p>
       
       <h2 className="text-3xl xl:text-5xl font-black tracking-[-0.03em] leading-[1.02] mb-4">
-        Find Your People.{" "}
-        <span className="text-energy-glow">Build Real.</span>
+        Make it. Own it.{" "}
+        <span className="text-energy-glow">Get paid.</span>
       </h2>
       <p className="text-muted-foreground mb-10 max-w-md leading-relaxed">
-        Where creatives build verified credits, land real gigs, and run their business — all in one place.
+        The verified record for everything you make. Credits, gigs, payments — one creative operating system.
       </p>
       
       <div className="space-y-3">

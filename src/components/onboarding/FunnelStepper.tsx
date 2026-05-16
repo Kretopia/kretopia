@@ -3,8 +3,8 @@ import { cn } from "@/lib/utils";
 
 const STEPS = [
   { key: "signup", label: "Sign up" },
-  { key: "discover", label: "Find your work" },
-  { key: "review", label: "Confirm & launch" },
+  { key: "discover", label: "First Stamp" },
+  { key: "review", label: "Launch Passport" },
 ] as const;
 
 type StepKey = (typeof STEPS)[number]["key"];

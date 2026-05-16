@@ -14,12 +14,14 @@ import { SEO } from "@/components/SEO";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { OnboardingCelebration } from "@/components/onboarding/OnboardingCelebration";
 import { ProfileLaunchScreen } from "@/components/onboarding/ProfileLaunchScreen";
+import { FirstStampReveal } from "@/components/onboarding/FirstStampReveal";
 import { useAuth } from "@/hooks/useAuth";
 import { ROLE_OPTIONS } from "@/components/profile/ProfileEditDialog";
 import { LOCATION_HIERARCHY } from "@/lib/locationGroups";
 import { IntentPicker } from "@/components/intent/IntentPicker";
 import { FunnelStepper, type StepKey } from "@/components/onboarding/FunnelStepper";
 import { OnboardingXPCounter } from "@/components/onboarding/OnboardingXPCounter";
+import { BRAND } from "@/lib/brandLexicon";
 
 // Wave 1 reframe: Find your work → Confirm credits → Launch profile
 // (internal phase ids unchanged for analytics continuity)
@@ -78,6 +80,9 @@ export default function Onboarding() {
 
   // Primary intents — what the user is here to do (multi-select max 2)
   const [primaryIntents, setPrimaryIntents] = useState<import("@/lib/intents").PrimaryIntent[]>([]);
+
+  // First-Stamp reveal moment (shown between discover → review when ≥1 credit found)
+  const [showFirstStamp, setShowFirstStamp] = useState(false);
 
   useEffect(() => {
     if (user) checkOnboardingStatus();
@@ -268,12 +273,23 @@ export default function Onboarding() {
       }
 
       if (foundAnything) {
-        toast({ title: "Profile discovered!", description: "Review your details below and make any changes." });
-        setPhase("review");
-        try {
-          const { analytics } = await import("@/lib/analytics");
-          analytics.onboardingStep(3, "review_phase_entered_via_ai");
-        } catch {}
+        const stampCount =
+          (importData?.credits?.length || 0) || discoveredCredits.length;
+        if (stampCount > 0) {
+          // Cinematic First-Stamp moment before showing the review form
+          setShowFirstStamp(true);
+          try {
+            const { analytics } = await import("@/lib/analytics");
+            analytics.onboardingStep(3, "first_stamp_revealed");
+          } catch {}
+        } else {
+          toast({ title: `Your ${BRAND.passport} is taking shape`, description: "Review your details below and make any changes." });
+          setPhase("review");
+          try {
+            const { analytics } = await import("@/lib/analytics");
+            analytics.onboardingStep(3, "review_phase_entered_via_ai");
+          } catch {}
+        }
       } else {
         setEnteredEmpty(true);
         setPhase("review");
@@ -589,9 +605,14 @@ export default function Onboarding() {
             <div className="p-6 sm:p-8 space-y-6 animate-fade-in">
               {/* Header */}
               <div className="text-center space-y-2">
-                <h1 className="text-2xl font-bold tracking-tight">We're building your creative identity</h1>
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                  Step 1 · Building your {BRAND.passport}
+                </p>
+                <h1 className="font-serif text-3xl leading-tight tracking-tight">
+                  Let's find your first {BRAND.stampSingular}.
+                </h1>
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                  Drop your name (and a portfolio link if you have one) — we'll search the web for your work.
+                  Drop your name (and a portfolio link if you have one) — Thrive will search the web and turn your work into verified {BRAND.stamps.toLowerCase()} on your {BRAND.passport}.
                 </p>
               </div>
 
@@ -746,9 +767,9 @@ export default function Onboarding() {
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-0.5">Confirm your credits</p>
-                    <h2 className="text-lg font-bold">Make it yours</h2>
-                    <p className="text-xs text-muted-foreground">Confirm what's yours — edit anything, then launch your profile.</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-0.5">Step 2 · Confirm your {BRAND.stamps}</p>
+                    <h2 className="font-serif text-2xl leading-tight">Make your {BRAND.passport} yours</h2>
+                    <p className="text-xs text-muted-foreground">Confirm what's yours, fill in the gaps — then launch your {BRAND.passport}.</p>
                   </div>
                 </div>
               </div>
@@ -904,7 +925,7 @@ export default function Onboarding() {
                 {/* Discovered Credits */}
                 {discoveredCredits.length > 0 && (
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">We found these — tap to select yours ({selectedCredits.size} selected)</Label>
+                    <Label className="text-xs text-muted-foreground">Thrive found these {BRAND.stamps.toLowerCase()} — tap to claim yours ({selectedCredits.size} selected)</Label>
                     <div className="space-y-1.5 max-h-40 overflow-y-auto">
                       {discoveredCredits.map((credit, i) => (
                         <button
@@ -948,9 +969,9 @@ export default function Onboarding() {
                 {/* Launch profile (Step 3) */}
                 <Button onClick={handleSaveProfile} disabled={loading} className="w-full h-12 text-base gap-2" size="lg">
                   {loading ? (
-                    <><Loader2 className="h-5 w-5 animate-spin" /> Launching your profile...</>
+                    <><Loader2 className="h-5 w-5 animate-spin" /> Launching your {BRAND.passport}...</>
                   ) : (
-                    <>🚀 Launch my profile <ArrowRight className="h-4 w-4" /></>
+                    <>Launch my {BRAND.passport} <ArrowRight className="h-4 w-4" /></>
                   )}
                 </Button>
 
@@ -1014,6 +1035,20 @@ export default function Onboarding() {
           }
           creditsCount={selectedCredits.size}
           pendingConnect={pendingConnectForCelebration}
+        />
+
+        {/* First-Stamp reveal — between Discover and Review when Thrive finds work */}
+        <FirstStampReveal
+          open={showFirstStamp}
+          credit={discoveredCredits[0] || null}
+          total={discoveredCredits.length}
+          onContinue={() => {
+            setShowFirstStamp(false);
+            setPhase("review");
+            import("@/lib/analytics").then(({ analytics }) =>
+              analytics.onboardingStep(3, "review_phase_entered_via_ai")
+            ).catch(() => {});
+          }}
         />
       </div>
     </>

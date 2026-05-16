@@ -368,9 +368,10 @@ Short replies like "yes", "no", "ok", "sure", "do it", "go ahead", "nope", "let'
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // Telegram / messaging channels (non-stream) need stronger continuity & instruction following.
-        // In-app streaming stays on the fast flash model.
-        model: stream ? "google/gemini-3-flash-preview" : "google/gemini-3.1-pro-preview",
+        // Use the pro-preview model everywhere — flash drops <action>/<plan> tags
+        // under load, which surfaces as Thrive saying "I'll do X" with no card
+        // appearing. Pro-preview reliably follows the tag protocol.
+        model: "google/gemini-3.1-pro-preview",
         messages: modelMessages,
         stream: stream,
       }),

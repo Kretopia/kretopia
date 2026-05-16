@@ -925,7 +925,7 @@ export default function Onboarding() {
                 {/* Discovered Credits */}
                 {discoveredCredits.length > 0 && (
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">We found these — tap to select yours ({selectedCredits.size} selected)</Label>
+                    <Label className="text-xs text-muted-foreground">Thrive found these {BRAND.stamps.toLowerCase()} — tap to claim yours ({selectedCredits.size} selected)</Label>
                     <div className="space-y-1.5 max-h-40 overflow-y-auto">
                       {discoveredCredits.map((credit, i) => (
                         <button

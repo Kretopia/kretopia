@@ -296,7 +296,7 @@ export default function Subscription() {
         </div>
 
         <p className="text-sm text-primary font-medium mt-3">
-          Start with a 7-day free trial — no commitment
+          Start free — upgrade when you're ready
         </p>
         
         {hasPaidSub && (
@@ -505,7 +505,7 @@ export default function Subscription() {
                     ) : tier.tier === "free" ? (
                       "Current Plan"
                     ) : (
-                      billingInterval === 'yearly' ? "Start Annual Plan" : "Start 7-Day Free Trial"
+                      billingInterval === 'yearly' ? "Start Annual Plan" : "Upgrade Now"
                     )}
                   </Button>
                 )}
@@ -527,8 +527,8 @@ export default function Subscription() {
       )}
 
       <div className="mt-12 text-center text-sm text-muted-foreground">
-        <p>All plans include a 7-day free trial, secure payments, and 24/7 support</p>
-        <p className="mt-2">Cancel anytime during trial • No charge until day 8 • No hidden fees</p>
+        <p>Free forever to start · Cancel anytime · Secure payments · 24/7 support</p>
+        <p className="mt-2">Save 17% with annual billing · No hidden fees</p>
       </div>
     </div>
   );

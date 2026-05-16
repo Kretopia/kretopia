@@ -52,7 +52,7 @@ export const SocialProofSection = () => {
   const showTestimonials = testimonials.length >= 3;
 
   return (
-    <section className="relative isolate overflow-hidden py-16 sm:py-24 px-4 border-y border-border/40 bg-background [contain:paint]">
+    <section className="relative py-16 sm:py-24 px-4 border-y border-border/40 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10 sm:mb-14">
           <Badge variant="outline" className="mb-4 gap-1.5 border-energy/40 text-energy bg-energy/5">

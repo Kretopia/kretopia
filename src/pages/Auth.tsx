@@ -390,7 +390,10 @@ const Auth = () => {
       }
 
       toast({ title: "Welcome to ThriveIN!", description: "Let's set up your profile." });
-      navigate(accountType === "company" ? "/company-onboarding" : "/onboarding");
+      const postSignupTarget = eventId
+        ? `/event/${eventId}`
+        : accountType === "company" ? "/company-onboarding" : "/onboarding";
+      navigate(postSignupTarget);
     }
     setLoading(false);
   };

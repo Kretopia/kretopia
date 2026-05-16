@@ -1036,6 +1036,20 @@ export default function Onboarding() {
           creditsCount={selectedCredits.size}
           pendingConnect={pendingConnectForCelebration}
         />
+
+        {/* First-Stamp reveal — between Discover and Review when Thrive finds work */}
+        <FirstStampReveal
+          open={showFirstStamp}
+          credit={discoveredCredits[0] || null}
+          total={discoveredCredits.length}
+          onContinue={() => {
+            setShowFirstStamp(false);
+            setPhase("review");
+            import("@/lib/analytics").then(({ analytics }) =>
+              analytics.onboardingStep(3, "review_phase_entered_via_ai")
+            ).catch(() => {});
+          }}
+        />
       </div>
     </>
   );

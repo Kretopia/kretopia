@@ -46,6 +46,13 @@ const Auth = () => {
   const claimParam = searchParams.get("claim");
   const claimProfileId = claimParam && claimParam !== "1" ? claimParam : null;
   const eventId = searchParams.get("event");
+  // If user arrived via event RSVP gate, stash the return target so post-onboarding
+  // and post-email-confirmation flows route them back to the event page.
+  useEffect(() => {
+    if (eventId && typeof window !== "undefined") {
+      sessionStorage.setItem("thrivein_post_auth_redirect", `/event/${eventId}`);
+    }
+  }, [eventId]);
   // Honor a sessionStorage post-auth redirect set by soft-gates (AuthPrompt, etc.)
   // Falls back to ?redirect= query param, then /circle.
   const stashedRedirect = typeof window !== "undefined"
@@ -383,7 +390,10 @@ const Auth = () => {
       }
 
       toast({ title: "Welcome to ThriveIN!", description: "Let's set up your profile." });
-      navigate(accountType === "company" ? "/company-onboarding" : "/onboarding");
+      const postSignupTarget = eventId
+        ? `/event/${eventId}`
+        : accountType === "company" ? "/company-onboarding" : "/onboarding";
+      navigate(postSignupTarget);
     }
     setLoading(false);
   };
@@ -517,7 +527,12 @@ const Auth = () => {
                       </button>
                     </div>
 
-                    <UniversalClaimFlow source="auth" initialQuery={searchParams.get("q") || undefined} />
+                    <UniversalClaimFlow
+                      source={eventId ? "event" : "auth"}
+                      contextId={eventId || undefined}
+                      redirectAfter={eventId ? `/event/${eventId}` : undefined}
+                      initialQuery={searchParams.get("q") || undefined}
+                    />
                     <div className="my-5 flex items-center gap-2">
                       <div className="flex-1 h-px bg-border" />
                       <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold">

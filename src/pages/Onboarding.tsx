@@ -273,12 +273,23 @@ export default function Onboarding() {
       }
 
       if (foundAnything) {
-        toast({ title: "Profile discovered!", description: "Review your details below and make any changes." });
-        setPhase("review");
-        try {
-          const { analytics } = await import("@/lib/analytics");
-          analytics.onboardingStep(3, "review_phase_entered_via_ai");
-        } catch {}
+        const stampCount =
+          (importData?.credits?.length || 0) || discoveredCredits.length;
+        if (stampCount > 0) {
+          // Cinematic First-Stamp moment before showing the review form
+          setShowFirstStamp(true);
+          try {
+            const { analytics } = await import("@/lib/analytics");
+            analytics.onboardingStep(3, "first_stamp_revealed");
+          } catch {}
+        } else {
+          toast({ title: `Your ${BRAND.passport} is taking shape`, description: "Review your details below and make any changes." });
+          setPhase("review");
+          try {
+            const { analytics } = await import("@/lib/analytics");
+            analytics.onboardingStep(3, "review_phase_entered_via_ai");
+          } catch {}
+        }
       } else {
         setEnteredEmpty(true);
         setPhase("review");

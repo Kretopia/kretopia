@@ -32,6 +32,7 @@ import { ClaimedProfileGlow } from "@/components/onboarding/claim-flow/ClaimedPr
 import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletionProgress";
 import { ProfileStrengthBar } from "@/components/profile/ProfileStrengthBar";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
+import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";

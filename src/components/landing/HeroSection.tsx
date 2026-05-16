@@ -214,43 +214,22 @@ export const HeroSection = () => {
           <div className="relative z-10 text-center lg:text-left order-2 lg:order-1">
             <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-6 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
               <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
-              {pickVoice("The Creative OS", "Built for T&T Creatives")}
+              {pickVoice("ThriveIN", "Built for T&T Creatives")}
             </p>
 
-            <h1 className="text-[2.75rem] sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[-0.04em] text-foreground leading-[0.92] mb-6">
-              {ttVoice ? (
-                <>
-                  Make it.<br />
-                  Own it.<br />
-                  Get{" "}
-                  <span className="text-energy-glow">paid.</span>
-                </>
-              ) : (
-                <>
-                  Make it.<br />
-                  Own it.<br />
-                  Get{" "}
-                  <span className="text-energy-glow">paid.</span>
-                </>
-              )}
+            <h1 className="font-serif text-[2.5rem] sm:text-5xl lg:text-6xl xl:text-7xl font-normal tracking-[-0.03em] text-foreground leading-[1.02] mb-6">
+              The Operating System for{" "}
+              <span className="italic text-primary">Creative Careers.</span>
             </h1>
 
             <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mb-3">
               {ttVoice ? (
                 <>
-                  Whether yuh in Carnival, Soca, Film, Fashion or Design — find verified{" "}
-                  <span className="text-primary font-semibold inline-block min-w-[90px] sm:min-w-[130px] transition-all duration-500">
-                    {roles[roleIdx].toLowerCase()}s
-                  </span>{" "}
-                  right here in T&T. Build credits, link collabs, get paid.
+                  Build your <span className="text-foreground font-semibold">Creative Passport</span>. Collect verified <span className="text-foreground font-semibold">Stamps</span>. Run productions. Get paid — with Thrive handling the busy work.
                 </>
               ) : (
                 <>
-                  Where{" "}
-                  <span className="text-primary font-semibold inline-block min-w-[90px] sm:min-w-[130px] transition-all duration-500">
-                    {roles[roleIdx]}s
-                  </span>{" "}
-                  build verified credits, connect with collaborators, and get paid.
+                  Build your <span className="text-foreground font-semibold">Creative Passport</span>. Collect verified <span className="text-foreground font-semibold">Stamps</span>. Run productions. Get paid — with Thrive handling the busy work.
                 </>
               )}
             </p>
@@ -263,8 +242,8 @@ export const HeroSection = () => {
             </p>
 
             <div className="flex items-center justify-center lg:justify-start gap-3 mb-8 flex-wrap">
-              <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-8 py-4 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
-                {pickVoice("Get Started", "Link Up Now")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <Link to="/auth" className="group inline-flex items-center justify-center gap-2 rounded-2xl bg-energy text-energy-foreground px-8 py-4 text-sm font-black shadow-glow-lime hover:scale-[1.03] transition-all uppercase tracking-wider">
+                {pickVoice("Start your Passport", "Start My Passport")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link to="/scout" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-card/60 px-6 py-4 text-sm font-semibold text-foreground hover:border-primary/50 transition-all">
                 <Briefcase className="h-4 w-4 text-primary" /> {pickVoice("Browse Gigs", "See Wha' Goin' On")}
@@ -330,9 +309,9 @@ export const HeroSection = () => {
         {/* ═══════ HOW IT WORKS — 3-step value prop ═══════ */}
         <div className="grid grid-cols-3 gap-3 my-6">
         {[
-            { step: "1", icon: Database, title: "Claim Credits", desc: "Add your work to the verified creative ledger — like IMDb, but for every industry" },
-            { step: "2", icon: Users, title: "Get Discovered", desc: "Brands and collaborators find you by your verified track record, not just a portfolio" },
-            { step: "3", icon: DollarSign, title: "Get Paid", desc: "Land gigs, send invoices, and manage projects — all from one creative HQ" },
+            { step: "1", icon: Database, title: "Get Stamped", desc: "Every credit becomes a verified Stamp on your Creative Passport — proof of the work you actually made" },
+            { step: "2", icon: Users, title: "Get Discovered", desc: "Brands and collaborators find you by your track record and Co-signs, not just a portfolio" },
+            { step: "3", icon: DollarSign, title: "Show Receipts", desc: "Land Calls, run productions, send invoices and get paid — all from one Creative OS" },
           ].map((s) => (
             <div key={s.step} className="text-center p-3 sm:p-4 rounded-2xl border border-border bg-card">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2.5">
@@ -348,12 +327,11 @@ export const HeroSection = () => {
         <div className="mb-6">
           {/* Headline */}
           <div className="text-center max-w-xl mx-auto mb-5">
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-foreground leading-tight">
-              Make it. Own it. Get paid.<br className="hidden sm:block" />
-              <span className="text-primary"> The creative operating system.</span>
+            <h2 className="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-foreground leading-tight">
+              Start your <span className="italic text-primary">Creative Passport</span>.
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-              Search your name, claim your credits, and build your creative identity.
+              Search your name, claim your Stamps, and step into the record.
             </p>
           </div>
 

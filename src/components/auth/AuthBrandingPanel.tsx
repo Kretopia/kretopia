@@ -3,10 +3,10 @@ import { ShieldCheck, Briefcase, DollarSign, Store, Zap } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 
 const FEATURES = [
-  { icon: ShieldCheck, label: "Verified Credits", desc: "Build an IMDb-style record for your entire career" },
-  { icon: Briefcase, label: "Real Gigs & Collabs", desc: "Get matched with paid opportunities & collaborators" },
-  { icon: DollarSign, label: "Invoicing & Milestone Payments", desc: "Send invoices, set milestones, and get paid securely" },
-  { icon: Store, label: "Creator Websites", desc: "Launch your own landing page + project management tools" },
+  { icon: ShieldCheck, label: "Creative Passport", desc: "Your verified creative identity — every Stamp is proof of work" },
+  { icon: Briefcase, label: "Calls & Co-signs", desc: "Get put forward for real Calls, backed by people you've worked with" },
+  { icon: DollarSign, label: "Productions & Receipts", desc: "Run projects, send invoices, show receipts — one Creative OS" },
+  { icon: Store, label: "Your Press Kit, public", desc: "A site that shows up when someone Googles your name" },
 ];
 
 export const AuthBrandingPanel = () => (
@@ -25,12 +25,12 @@ export const AuthBrandingPanel = () => (
         The Creative OS
       </p>
       
-      <h2 className="text-3xl xl:text-5xl font-black tracking-[-0.03em] leading-[1.02] mb-4">
-        Make it. Own it.{" "}
-        <span className="text-energy-glow">Get paid.</span>
+      <h2 className="font-serif text-3xl xl:text-5xl font-normal tracking-[-0.03em] leading-[1.02] mb-4">
+        The Operating System for{" "}
+        <span className="italic text-energy-glow">Creative Careers.</span>
       </h2>
       <p className="text-muted-foreground mb-10 max-w-md leading-relaxed">
-        The verified record for everything you make. Credits, gigs, payments — one creative operating system.
+        Build your Creative Passport. Collect verified Stamps. Run productions. Get paid — with Thrive handling the busy work.
       </p>
       
       <div className="space-y-3">

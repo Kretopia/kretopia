@@ -466,9 +466,11 @@ const ProfileContent = () => {
         <div className="mt-4">
           <InviteCircleCard variant="profile" />
         </div>
+        </section>
+        {/* /Identity */}
 
-        {/* Content Sections — immediately after hero, Instagram-style */}
-        <div className="mt-4">
+        {/* Hire Me section — rates, availability, work-with-me */}
+        <section id="hire" className="scroll-mt-20 mt-4">
           <ProfileContentSections
             profile={profile}
             portfolioItems={portfolioItems}
@@ -479,7 +481,7 @@ const ProfileContent = () => {
             hasAdvancedProfile={hasAdvancedProfile}
             onRefresh={fetchData}
           />
-        </div>
+        </section>
       </div>
 
       {/* All Dialogs */}

@@ -168,7 +168,14 @@ function ApplicantRow({
         <AvatarFallback>{(app.profile?.full_name ?? "?").slice(0, 1)}</AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-sm leading-tight">{app.profile?.full_name ?? "Applicant"}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="font-bold text-sm leading-tight">{app.profile?.full_name ?? "Applicant"}</p>
+          {typeof app.match_score === "number" && app.match_score >= 0.6 && (
+            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4">
+              {Math.round(app.match_score * 100)}% match
+            </Badge>
+          )}
+        </div>
         {app.profile?.primary_role && <p className="text-[11px] text-muted-foreground">{app.profile.primary_role}</p>}
         {app.pitch && <p className="text-xs mt-1.5 line-clamp-3">{app.pitch}</p>}
         {app.voice_url && (

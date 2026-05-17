@@ -133,6 +133,8 @@ export const ChatHeader = ({ otherUser, isOnline, onBack, onViewProfile, onStart
         userName={myName}
         directCallId={session?.callId ?? null}
         roomName={session?.roomName ?? null}
+        peerUserId={recipientId ?? null}
+        peerName={otherUser.name || null}
       />
       {recipientId && (
         <StartMeetingDialog

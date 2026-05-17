@@ -1,54 +1,28 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShieldCheck, Search, Zap, ArrowRight, Sparkles, MapPin, CheckCircle2, Briefcase } from "lucide-react";
+import { ShieldCheck, Search, Zap, ArrowRight, Sparkles, CheckCircle2, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCurrentGeoCountry } from "@/hooks/useCurrentGeoCountry";
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { trackLandingCta } from "@/hooks/useLandingVariant";
-
-const CARIBBEAN_COUNTRIES = new Set([
-  "Trinidad and Tobago", "Trinidad", "Tobago",
-  "Jamaica", "Barbados", "Bahamas", "Guyana", "Suriname",
-  "Saint Lucia", "Grenada", "Dominica", "Antigua and Barbuda",
-  "Saint Vincent and the Grenadines", "Saint Kitts and Nevis",
-  "Haiti", "Dominican Republic", "Cuba", "Puerto Rico",
-  "Cayman Islands", "Curaçao", "Curacao", "Aruba", "Martinique", "Guadeloupe",
-  "Belize",
-]);
 
 interface Props {
   onSearchSubmit: (q: string) => void;
 }
 
 export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
-  const { geo } = useCurrentGeoCountry();
-  const isCaribbean = !!geo?.country && CARIBBEAN_COUNTRIES.has(geo.country);
-
-  const copy = isCaribbean
-    ? {
-        eyebrow: `Built for ${geo?.country || "the Caribbean"} creatives`,
-        headline1: "Make it.",
-        headline2: "Own it.",
-        headline3: "Get paid.",
-        subhead:
-          "ThriveIN is the verified record for T&T, Jamaica & the wider Caribbean creative scene — and we scout real paid gigs from across the web so you don't have to chase.",
-        ctaPrimary: "Claim my profile — free",
-        ctaSecondary: "See gigs near me",
-        proofLabel: "Made for the region. Trusted by Caribbean creatives.",
-      }
-    : {
-        eyebrow: "The verified record + your gig scout",
-        headline1: "Make it.",
-        headline2: "Own it.",
-        headline3: "Get paid.",
-        subhead:
-          "ThriveIN builds your verified creative résumé (think IMDb for every craft) and quietly scouts real paid gigs from across the web — matched to your skills, in your inbox.",
-        ctaPrimary: "Claim my profile — free",
-        ctaSecondary: "Browse scouted gigs",
-        proofLabel: "Trusted by working creatives across film, music, design & events.",
-      };
+  const copy = {
+    eyebrow: "The Operating System for Creative Careers",
+    headline1: "Meet people. Build work.",
+    headline2: "Own your record.",
+    headline3: "Get paid.",
+    subhead:
+      "ThriveIN helps creators find collaborators, run real projects, build a verified Creative Passport, and get paid — with Thrive handling the busy work.",
+    ctaPrimary: "Claim my Passport — free",
+    ctaSecondary: "Browse scouted gigs",
+    proofLabel: "Trusted by working creatives across film, music, design & events.",
+  };
 
   return (
     <section className="bg-background">
@@ -66,7 +40,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.22em] text-energy mb-5 px-3 py-1 rounded-full border border-energy/30 bg-energy/[0.04]"
         >
-          {isCaribbean ? <MapPin className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
+          <Sparkles className="h-3 w-3" />
           <span className="truncate">{copy.eyebrow}</span>
         </motion.p>
 
@@ -79,9 +53,9 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
         >
           {copy.headline1}
           <br />
-          {copy.headline2}
+          <span className="text-primary italic">{copy.headline2}</span>
           <br />
-          <span className="text-primary italic">{copy.headline3}</span>
+          {copy.headline3}
         </motion.h1>
 
         <motion.p
@@ -173,12 +147,10 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
           <div className="relative">
             <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-foreground mb-3 text-balance">
-              {isCaribbean ? "Join the Caribbean creative network." : "Start with your credits. Let Scout do the chasing."}
+              Start with your credits. Let Scout do the chasing.
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-xl mx-auto">
-              {isCaribbean
-                ? "Free to claim. Pro when yuh ready. No credit card."
-                : "Free to claim. Pro when you're ready. No credit card."}
+              Free to claim. Pro when you're ready. No credit card.
             </p>
             <Link
               to="/auth?tab=signup"

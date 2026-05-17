@@ -56,6 +56,23 @@ Deno.serve(async (req) => {
       supabase.from("user_session_pings").select("user_id").eq("ping_date", today),
     ]);
 
+    // Featured creators: latest onboarded, prefer those with avatars + names.
+    // Run separately so a slow query doesn't block stats.
+    const { data: featuredRows } = await supabase
+      .from("profiles")
+      .select("user_id, full_name, avatar_url")
+      .eq("onboarding_completed", true)
+      .not("full_name", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(40);
+    const featured = (featuredRows || [])
+      .sort((a: any, b: any) => {
+        const aHas = a.avatar_url ? 1 : 0;
+        const bHas = b.avatar_url ? 1 : 0;
+        return bHas - aHas;
+      })
+      .slice(0, 12);
+
     // Aggregate locations (top 6)
     const locCounts = new Map<string, number>();
     (locationsRes.data || []).forEach((row: any) => {
@@ -102,6 +119,7 @@ Deno.serve(async (req) => {
       },
       topLocations,
       topRoles,
+      featured,
       generatedAt: new Date().toISOString(),
     };
 

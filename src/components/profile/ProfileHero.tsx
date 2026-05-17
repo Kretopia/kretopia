@@ -163,13 +163,12 @@ export const ProfileHero = ({
 
         {/* Row 1: Avatar + inline stats (IG-style) */}
         <div className="flex items-center gap-4">
-          {/* Avatar */}
+          {/* Avatar — clean, no frame ring */}
           <div className="relative group flex-shrink-0">
             <FramedAvatar
               src={displayAvatar || "/avatar-silhouette.svg"}
               fallback={displayName?.split(' ').map((n: string) => n[0]).join('') || '?'}
-              frame={profile.profile_frame}
-              className="h-[72px] w-[72px] sm:h-20 sm:w-20 rounded-full border-2 border-border shadow-sm"
+              className="h-[72px] w-[72px] sm:h-20 sm:w-20 rounded-full border border-border shadow-sm"
             />
             {isOwnProfile && (
               <Button

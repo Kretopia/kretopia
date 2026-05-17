@@ -247,6 +247,8 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
             <Input
               id="guest-email"
               type="email"
+              inputMode="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
@@ -254,6 +256,25 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
               maxLength={255}
             />
             {errors.guest_email && <p className="text-xs text-destructive">{errors.guest_email}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="guest-email-confirm">Confirm email</Label>
+            <Input
+              id="guest-email-confirm"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={emailConfirm}
+              onChange={(e) => setEmailConfirm(e.target.value)}
+              onPaste={(e) => e.preventDefault()}
+              placeholder="Re-type your email"
+              error={!!errors.guest_email_confirm}
+              maxLength={255}
+            />
+            {errors.guest_email_confirm && (
+              <p className="text-xs text-destructive">{errors.guest_email_confirm}</p>
+            )}
           </div>
 
           {questions.map((q) => (

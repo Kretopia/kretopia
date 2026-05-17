@@ -429,11 +429,11 @@ export const ProfileHero = ({
           </div>
         )}
 
-        {/* Verified credits chip — surface verification quality if any */}
+        {/* Stamps chip — verified credits surfaced as Passport stamps */}
         {verifiedCreditsCount > 0 && (
-          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-energy">
+          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-[hsl(var(--signal-teal))]">
             <Shield className="h-3 w-3" />
-            {verifiedCreditsCount} verified credit{verifiedCreditsCount === 1 ? '' : 's'}
+            {verifiedCreditsCount} stamp{verifiedCreditsCount === 1 ? '' : 's'}
             {stats.responseRate > 0 && (
               <span className="ml-2 text-muted-foreground font-medium normal-case tracking-normal">
                 · {stats.responseRate}% response

@@ -52,6 +52,7 @@ const DisputeCredit = lazy(() => import("./pages/DisputeCredit"));
 const DisputeManage = lazy(() => import("./pages/DisputeManage"));
 
 const Circle = lazy(() => import("./pages/Circle"));
+const SpeedSession = lazy(() => import("./pages/SpeedSession"));
 const CircleDetailPage = lazy(() => import("./pages/CircleDetail"));
 const CircleChatView = lazy(() => import("./pages/CircleChatView"));
 const Circles = lazy(() => import("./pages/Circles"));
@@ -286,6 +287,7 @@ const AppContent = () => {
             
             {/* Core Feature Pages - Public browsable, actions gated */}
             <Route path="/circle" element={<Circle />} />
+            <Route path="/circle/speed/:id" element={<ProtectedRoute><SpeedSession /></ProtectedRoute>} />
             <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
             <Route path="/circle/:circleId/chat" element={<ProtectedRoute><CircleChatView /></ProtectedRoute>} />
             <Route path="/circles" element={<Circles />} />

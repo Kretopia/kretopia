@@ -14395,6 +14395,57 @@ export type Database = {
           },
         ]
       }
+      sound_stages: {
+        Row: {
+          circle_id: string | null
+          created_at: string
+          ended_at: string | null
+          format: string
+          host_user_id: string
+          id: string
+          is_live: boolean
+          mode: string
+          participant_count: number
+          room_name: string
+          room_url: string
+          started_at: string
+          title: string
+          vibe_tag: string | null
+        }
+        Insert: {
+          circle_id?: string | null
+          created_at?: string
+          ended_at?: string | null
+          format?: string
+          host_user_id: string
+          id?: string
+          is_live?: boolean
+          mode?: string
+          participant_count?: number
+          room_name: string
+          room_url: string
+          started_at?: string
+          title: string
+          vibe_tag?: string | null
+        }
+        Update: {
+          circle_id?: string | null
+          created_at?: string
+          ended_at?: string | null
+          format?: string
+          host_user_id?: string
+          id?: string
+          is_live?: boolean
+          mode?: string
+          participant_count?: number
+          room_name?: string
+          room_url?: string
+          started_at?: string
+          title?: string
+          vibe_tag?: string | null
+        }
+        Relationships: []
+      }
       spark_message_reactions: {
         Row: {
           created_at: string
@@ -14649,6 +14700,151 @@ export type Database = {
           title?: string
           updated_at?: string
           welcome_message?: string | null
+        }
+        Relationships: []
+      }
+      speed_session_pairings: {
+        Row: {
+          a_cosigned: boolean
+          b_cosigned: boolean
+          created_at: string
+          ended_at: string | null
+          id: string
+          room_name: string
+          room_url: string
+          round: number
+          session_id: string
+          started_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          a_cosigned?: boolean
+          b_cosigned?: boolean
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          room_name: string
+          room_url: string
+          round: number
+          session_id: string
+          started_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          a_cosigned?: boolean
+          b_cosigned?: boolean
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          room_name?: string
+          room_url?: string
+          round?: number
+          session_id?: string
+          started_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "speed_session_pairings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "speed_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      speed_session_rsvps: {
+        Row: {
+          created_at: string
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          session_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          session_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          session_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "speed_session_rsvps_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "speed_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      speed_sessions: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          duration_min: number
+          host_user_id: string
+          id: string
+          match_filters: Json
+          max_participants: number | null
+          mode: string
+          slot_seconds: number
+          starts_at: string
+          status: string
+          theme: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_min?: number
+          host_user_id: string
+          id?: string
+          match_filters?: Json
+          max_participants?: number | null
+          mode?: string
+          slot_seconds?: number
+          starts_at: string
+          status?: string
+          theme?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_min?: number
+          host_user_id?: string
+          id?: string
+          match_filters?: Json
+          max_participants?: number | null
+          mode?: string
+          slot_seconds?: number
+          starts_at?: string
+          status?: string
+          theme?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

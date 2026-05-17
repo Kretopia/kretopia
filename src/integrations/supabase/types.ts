@@ -14654,57 +14654,86 @@ export type Database = {
       }
       sponsor_leads: {
         Row: {
+          address: string | null
           brand_logo_url: string | null
           brand_name: string
           brand_url: string | null
+          contact_email: string | null
           contact_info: Json | null
+          contact_name: string | null
+          contact_phone: string | null
           created_at: string
           fit_score: number
           id: string
+          match_evidence: Json | null
           niche: string | null
           pitch_draft: string | null
+          project_id: string | null
           reason: string | null
           source: string | null
           source_url: string | null
           status: string
           updated_at: string
           user_id: string
+          website: string | null
         }
         Insert: {
+          address?: string | null
           brand_logo_url?: string | null
           brand_name: string
           brand_url?: string | null
+          contact_email?: string | null
           contact_info?: Json | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
           fit_score?: number
           id?: string
+          match_evidence?: Json | null
           niche?: string | null
           pitch_draft?: string | null
+          project_id?: string | null
           reason?: string | null
           source?: string | null
           source_url?: string | null
           status?: string
           updated_at?: string
           user_id: string
+          website?: string | null
         }
         Update: {
+          address?: string | null
           brand_logo_url?: string | null
           brand_name?: string
           brand_url?: string | null
+          contact_email?: string | null
           contact_info?: Json | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
           fit_score?: number
           id?: string
+          match_evidence?: Json | null
           niche?: string | null
           pitch_draft?: string | null
+          project_id?: string | null
           reason?: string | null
           source?: string | null
           source_url?: string | null
           status?: string
           updated_at?: string
           user_id?: string
+          website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sponsor_leads_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       studio_pulse_comments: {
         Row: {

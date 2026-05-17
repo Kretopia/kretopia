@@ -45,8 +45,8 @@ const Scout = () => {
             Scout
           </p>
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">
-            Your next gig &amp; collaborator,
-            <span className="text-muted-foreground"> in one feed.</span>
+            Gigs &amp; talent,
+            <span className="text-muted-foreground"> scouted for you.</span>
           </h1>
 
           {/* Segmented tabs */}

@@ -368,11 +368,18 @@ const ProfileContent = () => {
       />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
-        {/* Calm Passport eyebrow header */}
-        <header className="pt-5 sm:pt-7 pb-3">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))]">
-            Passport
-          </p>
+        {/* Calm Passport header — matches Scout/About pattern */}
+        <header className="pt-[env(safe-area-inset-top)]">
+          <div className="pt-5 sm:pt-7 pb-4 sm:pb-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-2">
+              Passport
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">
+              Your work,{" "}
+              <span className="italic text-[hsl(var(--signal-teal))]">verified</span>
+              <span className="text-foreground/60">.</span>
+            </h1>
+          </div>
         </header>
 
         {/* Identity section — who you are */}

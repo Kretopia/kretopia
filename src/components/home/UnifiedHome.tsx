@@ -1037,7 +1037,7 @@ export const UnifiedHome = () => {
               { icon: Star, label: t("landing.peerEndorsed") },
             ].map(b => (
               <div key={b.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <b.icon className="h-3.5 w-3.5 text-primary/60" />
+                <b.icon className="h-3.5 w-3.5 text-[hsl(var(--signal-teal))]" />
                 <span className="font-medium">{b.label}</span>
               </div>
             ))}
@@ -1054,25 +1054,25 @@ export const UnifiedHome = () => {
           transition={{ delay: 0.5 }}
           className="rounded-2xl overflow-hidden relative"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-accent/80" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--signal-teal))] via-[hsl(var(--signal-teal))]/90 to-primary" />
           <div className="relative p-6 sm:p-8 text-center">
-            <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center mx-auto mb-3">
+            <div className="h-12 w-12 rounded-2xl bg-white/20 ring-1 ring-white/30 flex items-center justify-center mx-auto mb-3">
               <Zap className="h-6 w-6 text-white" />
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-white mb-1">
               {user ? t("landing.goProTitle") : t("landing.foundingMemberTitle")}
             </h3>
-            <p className="text-xs sm:text-sm text-white/75 leading-relaxed mb-1 max-w-md mx-auto">
+            <p className="text-xs sm:text-sm text-white/90 leading-relaxed mb-1 max-w-md mx-auto">
               {user ? t("landing.goProDesc") : t("landing.foundingMemberDesc")}
             </p>
             {!user && (
-              <p className="text-[10px] text-white/50 mb-4">
+              <p className="text-[10px] text-white/70 mb-4">
                 {t("landing.pricingNote")}
               </p>
             )}
             <Link
               to={user ? "/subscription" : "/auth?tab=signup"}
-              className="inline-flex items-center gap-2 rounded-xl bg-white text-primary px-6 py-3 text-sm font-bold hover:bg-white/90 transition-colors shadow-md"
+              className="inline-flex items-center gap-2 rounded-xl bg-white text-[hsl(var(--signal-teal))] px-6 py-3 text-sm font-bold hover:bg-white/95 transition-colors shadow-md"
             >
               {user ? t("landing.startTrial") : t("landing.joinNow")} <ArrowRight className="h-4 w-4" />
             </Link>

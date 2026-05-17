@@ -35,20 +35,27 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
     let alive = true;
     (async () => {
       try {
-        // Avatars: query the anon-readable `public_profiles_safe` view (RLS-safe)
+        // Avatars: query the anon-readable `public_profiles_safe` view (RLS-safe).
+        // Don't require avatar_url — fall back to initials so the row never collapses to 1.
         const avatarsP = supabase
           .from("public_profiles_safe")
           .select("user_id, full_name, avatar_url")
           .eq("onboarding_completed", true)
-          .not("avatar_url", "is", null)
-          .limit(6);
+          .not("full_name", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(12);
 
         // Counts: use the service-role public-stats edge fn (anon SELECT is blocked by RLS)
         const statsP = supabase.functions.invoke("public-stats");
 
         const [{ data: rows }, { data: statsData }] = await Promise.all([avatarsP, statsP]);
         if (!alive) return;
-        if (rows) setCreators(rows as FoundingCreator[]);
+        if (rows) {
+          // Prefer avatars first, then fill the rest with initials-only rows up to 6.
+          const withAvatar = (rows as FoundingCreator[]).filter((r) => r.avatar_url);
+          const withoutAvatar = (rows as FoundingCreator[]).filter((r) => !r.avatar_url);
+          setCreators([...withAvatar, ...withoutAvatar].slice(0, 6));
+        }
         const c = (statsData as any)?.stats?.creators;
         if (typeof c === "number") setCreatorCount(c);
       } catch {
@@ -74,7 +81,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           >
             <span className="block">Meet people.</span>
             <span className="block">Build work.</span>
-            <span className="block italic">Own your record.</span>
+            <span className="block italic">Own your <span className="text-[hsl(var(--signal-teal))]">record</span>.</span>
             <span className="block">Get paid.</span>
           </motion.h1>
 
@@ -96,10 +103,9 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/scout" onClick={() => trackLandingCta("wedge", "scout_cta")}>
+            <Link to="/auth?tab=signin" onClick={() => trackLandingCta("wedge", "hero_signin")}>
               <Button size="lg" variant="ghost" className="font-semibold">
-                Hiring creators?
-                <ArrowRight className="ml-2 h-4 w-4" />
+                Already a member? Sign in
               </Button>
             </Link>
           </div>
@@ -107,22 +113,27 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           {/* Real creators + live count */}
           <div className="mt-7 flex items-center gap-3">
             <div className="flex -space-x-2">
-              {(creators.length ? creators.slice(0, 5) : Array.from({ length: 5 })).map((c: any, i) => (
-                <div
-                  key={c?.user_id ?? i}
-                  className="h-9 w-9 rounded-full ring-2 ring-background bg-muted overflow-hidden"
-                  title={c?.full_name ?? undefined}
-                >
-                  {c?.avatar_url ? (
-                    <img
-                      src={c.avatar_url}
-                      alt={c.full_name ?? "Creator"}
-                      loading="lazy"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : null}
-                </div>
-              ))}
+              {(creators.length ? creators.slice(0, 5) : Array.from({ length: 5 })).map((c: any, i) => {
+                const initial = (c?.full_name ?? "").trim().charAt(0).toUpperCase();
+                return (
+                  <div
+                    key={c?.user_id ?? i}
+                    className="h-9 w-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex items-center justify-center text-[11px] font-bold text-foreground/70"
+                    title={c?.full_name ?? undefined}
+                  >
+                    {c?.avatar_url ? (
+                      <img
+                        src={c.avatar_url}
+                        alt={c.full_name ?? "Creator"}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      initial || ""
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Join{" "}
@@ -167,13 +178,13 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
       <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-20">
         <div className="grid md:grid-cols-2 gap-10 items-start">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+            <p className="text-xs uppercase tracking-[0.18em] text-[hsl(var(--signal-teal))] font-semibold">
               Meet Thrive
             </p>
             <h2 className="mt-3 font-serif text-3xl sm:text-5xl tracking-tight text-foreground leading-[1.05]">
               Your Creative
               <br />
-              <span className="italic">Executive Producer.</span>
+              <span className="italic text-[hsl(var(--signal-teal))]">Executive Producer.</span>
             </h2>
             <p className="mt-5 text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed">
               Thrive helps move work forward. From the first hello to the final payment.
@@ -190,7 +201,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
               "Remembers context",
             ].map((item) => (
               <li key={item} className="flex items-center gap-3">
-                <span className="h-6 w-6 rounded-full bg-accent text-foreground flex items-center justify-center shrink-0">
+                <span className="h-6 w-6 rounded-full bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] flex items-center justify-center shrink-0">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                 </span>
                 <span className="text-sm sm:text-base text-foreground font-medium">{item}</span>
@@ -206,17 +217,17 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           <h2 className="font-serif text-3xl sm:text-5xl tracking-tight text-foreground leading-[1.05]">
             Online or in the room.
             <br />
-            You <span className="italic">belong</span> here.
+            You <span className="italic text-[hsl(var(--signal-teal))]">belong</span> here.
           </h2>
 
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <SurfaceChip icon={<AudioLines className="h-4 w-4" />} label="Soundstages" />
-            <SurfaceChip icon={<Users className="h-4 w-4" />} label="Events" />
-            <SurfaceChip icon={<FolderKanban className="h-4 w-4" />} label="Showcases" />
-            <SurfaceChip icon={<ShieldCheck className="h-4 w-4" />} label="Auditions" />
+            <SurfaceChip to="/events" icon={<AudioLines className="h-4 w-4" />} label="Soundstages" />
+            <SurfaceChip to="/events" icon={<Users className="h-4 w-4" />} label="Events" />
+            <SurfaceChip to="/events" icon={<FolderKanban className="h-4 w-4" />} label="Showcases" />
+            <SurfaceChip to="/events" icon={<ShieldCheck className="h-4 w-4" />} label="Auditions" />
           </div>
 
-          <Link to="/scout" className="inline-block mt-8" onClick={() => trackLandingCta("wedge", "explore_events")}>
+          <Link to="/events" className="inline-block mt-8" onClick={() => trackLandingCta("wedge", "explore_events")}>
             <Button size="lg" variant="outline" className="font-semibold">
               Explore events
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -289,9 +300,26 @@ const Pillar = ({
   </div>
 );
 
-const SurfaceChip = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
-  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-medium text-foreground">
-    <span className="text-foreground/70">{icon}</span>
-    {label}
-  </span>
-);
+const SurfaceChip = ({
+  icon,
+  label,
+  to,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  to?: string;
+}) => {
+  const inner = (
+    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:border-[hsl(var(--signal-teal))]/40 hover:text-[hsl(var(--signal-teal))] transition-colors w-full justify-center">
+      <span className="text-foreground/70">{icon}</span>
+      {label}
+    </span>
+  );
+  return to ? (
+    <Link to={to} className="block">
+      {inner}
+    </Link>
+  ) : (
+    inner
+  );
+};

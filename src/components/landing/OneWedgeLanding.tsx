@@ -178,13 +178,13 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
       <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-20">
         <div className="grid md:grid-cols-2 gap-10 items-start">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+            <p className="text-xs uppercase tracking-[0.18em] text-[hsl(var(--signal-teal))] font-semibold">
               Meet Thrive
             </p>
             <h2 className="mt-3 font-serif text-3xl sm:text-5xl tracking-tight text-foreground leading-[1.05]">
               Your Creative
               <br />
-              <span className="italic">Executive Producer.</span>
+              <span className="italic text-[hsl(var(--signal-teal))]">Executive Producer.</span>
             </h2>
             <p className="mt-5 text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed">
               Thrive helps move work forward. From the first hello to the final payment.
@@ -201,7 +201,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
               "Remembers context",
             ].map((item) => (
               <li key={item} className="flex items-center gap-3">
-                <span className="h-6 w-6 rounded-full bg-accent text-foreground flex items-center justify-center shrink-0">
+                <span className="h-6 w-6 rounded-full bg-[hsl(var(--signal-teal))]/15 text-[hsl(var(--signal-teal))] flex items-center justify-center shrink-0">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                 </span>
                 <span className="text-sm sm:text-base text-foreground font-medium">{item}</span>

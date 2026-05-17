@@ -133,8 +133,8 @@ export const ProfileHero = ({
 
       {/* Match Banner */}
       {isFromMatch && connectionStatus === 'accepted' && (
-        <div className="mb-4 p-3 rounded-xl bg-primary/5 border border-primary/15">
-          <div className="flex items-center gap-2 text-primary mb-0.5">
+        <div className="mb-4 p-3 rounded-xl bg-[hsl(var(--signal-teal))]/5 border border-[hsl(var(--signal-teal))]/20">
+          <div className="flex items-center gap-2 text-[hsl(var(--signal-teal))] mb-0.5">
             <Sparkles className="h-4 w-4" />
             <span className="text-sm font-semibold">You're matched!</span>
           </div>

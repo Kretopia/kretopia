@@ -81,6 +81,23 @@ const CuratedStage = () => {
     return () => { mounted = false; supabase.removeChannel(channel); };
   }, [id, user]);
 
+  // Listen for host promoting a raised hand → swap in speaker token
+  useEffect(() => {
+    if (!user || !stage || !room) return;
+    const ch = supabase.channel(`stage_speaker_${stage.id}_${user.id}`)
+      .on("broadcast", { event: "promoted" }, ({ payload }) => {
+        const newToken = (payload as any)?.token;
+        if (!newToken) return;
+        setRoom((prev) => prev ? { ...prev, token: newToken } : prev);
+        setCallOpen(false);
+        setTimeout(() => setCallOpen(true), 250);
+        setHandRaised(false);
+        toast({ title: "You're up", description: "Host pulled you on stage — mic/cam on." });
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [user, stage, room, toast]);
+
   // Post-checkout: verify Stripe session and confirm RSVP
   useEffect(() => {
     const ticket = searchParams.get("ticket");

@@ -362,22 +362,72 @@ export function DesktopCopilotRail() {
         {messages.map((m, i) => {
           const visible = m.role === "assistant" ? extractActions(m.content).visible : m.content;
           return (
-            <div
-              key={i}
-              className={cn(
-                "rounded-2xl px-3 py-2 text-[13px] leading-snug max-w-[92%]",
-                m.role === "user"
-                  ? "ml-auto bg-primary text-primary-foreground"
-                  : "bg-card border border-border text-foreground",
-              )}
-            >
-              {m.role === "assistant" ? (
-                <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-headings:my-1.5 prose-li:my-0">
-                  <ReactMarkdown>{visible || (streaming && i === messages.length - 1 ? "…" : "")}</ReactMarkdown>
+            <div key={i} className="space-y-2">
+              <div
+                className={cn(
+                  "rounded-2xl px-3 py-2 text-[13px] leading-snug max-w-[92%]",
+                  m.role === "user"
+                    ? "ml-auto bg-primary text-primary-foreground"
+                    : "bg-card border border-border text-foreground",
+                )}
+              >
+                {m.role === "assistant" ? (
+                  <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-headings:my-1.5 prose-li:my-0">
+                    <ReactMarkdown>{visible || (streaming && i === messages.length - 1 ? "…" : "")}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap">{visible}</p>
+                )}
+              </div>
+
+              {m.role === "assistant" && activityByMsg[i]?.length ? (
+                <div className="space-y-1.5 max-w-[95%]">
+                  {activityByMsg[i].map((item) => {
+                    const Icon = item.status === "running" ? Loader2 : item.status === "failed" ? AlertCircle : CheckCircle2;
+                    return (
+                      <div key={item.id} className="flex items-start gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs">
+                        <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                          <Icon className={cn("h-3.5 w-3.5", item.status === "running" && "animate-spin text-primary", item.status === "done" && "text-primary", item.status === "failed" && "text-destructive")} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold leading-snug text-foreground">{item.title}</p>
+                          {item.body && <p className="mt-0.5 line-clamp-2 text-muted-foreground">{item.body}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ) : (
-                <p className="whitespace-pre-wrap">{visible}</p>
-              )}
+              ) : null}
+
+              {m.role === "assistant" && actionsByMsg[i]?.length ? (
+                <div className="space-y-2 max-w-[95%]">
+                  {actionsByMsg[i].map((action) => (
+                    <AgentApprovalCard
+                      key={action.id}
+                      action={action}
+                      compact
+                      onResolved={(decision) => {
+                        setActionsByMsg((prev) => ({
+                          ...prev,
+                          [i]: (prev[i] ?? []).map((a) => a.id === action.id ? { ...a, status: decision === "approved" ? "executed" : "rejected" } : a),
+                        }));
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : null}
+
+              {m.role === "assistant" && resultCardsByMsg[i]?.length ? (
+                <div className="space-y-2 max-w-[95%]">
+                  {resultCardsByMsg[i].map((card) => <AgentResultCard key={card.id} card={card} compact />)}
+                </div>
+              ) : null}
+
+              {m.role === "assistant" && plansByMsg[i]?.length ? (
+                <div className="space-y-2 max-w-[95%]">
+                  {plansByMsg[i].map((plan) => <CopilotPlanCard key={plan.id} plan={plan} />)}
+                </div>
+              ) : null}
             </div>
           );
         })}

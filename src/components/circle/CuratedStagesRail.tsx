@@ -25,13 +25,14 @@ export interface CuratedStage {
 
 interface CuratedStagesRailProps {
   limit?: number;
+  hideWhenEmpty?: boolean;
 }
 
 /**
  * Horizontal rail of upcoming Scout & Showcase Stages.
  * Pulls scheduled or live stages starting within the next 14 days.
  */
-export function CuratedStagesRail({ limit = 8 }: CuratedStagesRailProps) {
+export function CuratedStagesRail({ limit = 8, hideWhenEmpty = false }: CuratedStagesRailProps) {
   const [stages, setStages] = useState<CuratedStage[] | null>(null);
 
   useEffect(() => {

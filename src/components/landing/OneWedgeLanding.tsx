@@ -16,18 +16,11 @@ import { Button } from "@/components/ui/button";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { trackLandingCta } from "@/hooks/useLandingVariant";
+import { BrandDots } from "@/components/brand/BrandDots";
 
 interface Props {
   onSearchSubmit: (q: string) => void;
 }
-
-const BrandDots = () => (
-  <div className="flex items-center gap-1.5" aria-hidden>
-    <span className="h-2 w-2 rounded-full bg-[#FF4DA6]" />
-    <span className="h-2 w-2 rounded-full bg-[#FFB020]" />
-    <span className="h-2 w-2 rounded-full bg-[#20D3C2]" />
-  </div>
-);
 
 export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
   return (

@@ -191,6 +191,10 @@ export default {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        "brand-dot": {
+          "0%, 60%, 100%": { transform: "translateY(0) scale(1)", opacity: "0.55" },
+          "30%": { transform: "translateY(-30%) scale(1.15)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -207,6 +211,7 @@ export default {
         "slide-up": "slide-up 0.4s ease-out",
         "bounce-subtle": "bounce-subtle 0.3s ease-in-out",
         "scroll-x": "scroll-x 15s linear infinite",
+        "brand-dot": "brand-dot 1.2s ease-in-out infinite",
       },
       transitionTimingFunction: {
         "bounce-in": "cubic-bezier(0.68, -0.55, 0.265, 1.55)",

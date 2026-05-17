@@ -13,6 +13,7 @@ import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import QuickActionFab from "./components/QuickActionFab";
+import { BrandLoader } from "./components/brand/BrandDots";
 
 import { ModeThemeSync } from "./components/ModeThemeSync";
 import { VibeThemeSync } from "./components/VibeThemeSync";
@@ -154,11 +155,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const LoadingFallback = () => (
-  <div className="flex min-h-screen items-center justify-center">
-    <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-  </div>
-);
+const LoadingFallback = () => <BrandLoader />;
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, session } = useAuth();

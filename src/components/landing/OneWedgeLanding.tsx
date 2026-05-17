@@ -35,26 +35,13 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
     let alive = true;
     (async () => {
       try {
-        // Avatars: query the anon-readable `public_profiles_safe` view (RLS-safe).
-        // Don't require avatar_url — fall back to initials so the row never collapses to 1.
-        const avatarsP = supabase
-          .from("public_profiles_safe")
-          .select("user_id, full_name, avatar_url")
-          .eq("onboarding_completed", true)
-          .not("full_name", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(12);
-
-        // Counts: use the service-role public-stats edge fn (anon SELECT is blocked by RLS)
-        const statsP = supabase.functions.invoke("public-stats");
-
-        const [{ data: rows }, { data: statsData }] = await Promise.all([avatarsP, statsP]);
+        // Counts + featured creators come from the public-stats edge fn (service-role,
+        // so it bypasses RLS on profiles). Anon SELECT on profiles only returns 1 row.
+        const { data: statsData } = await supabase.functions.invoke("public-stats");
         if (!alive) return;
-        if (rows) {
-          // Prefer avatars first, then fill the rest with initials-only rows up to 6.
-          const withAvatar = (rows as FoundingCreator[]).filter((r) => r.avatar_url);
-          const withoutAvatar = (rows as FoundingCreator[]).filter((r) => !r.avatar_url);
-          setCreators([...withAvatar, ...withoutAvatar].slice(0, 6));
+        const featured = (statsData as any)?.featured as FoundingCreator[] | undefined;
+        if (featured && featured.length) {
+          setCreators(featured.slice(0, 6));
         }
         const c = (statsData as any)?.stats?.creators;
         if (typeof c === "number") setCreatorCount(c);

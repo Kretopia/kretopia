@@ -163,13 +163,12 @@ export const ProfileHero = ({
 
         {/* Row 1: Avatar + inline stats (IG-style) */}
         <div className="flex items-center gap-4">
-          {/* Avatar */}
+          {/* Avatar — clean, no frame ring */}
           <div className="relative group flex-shrink-0">
             <FramedAvatar
               src={displayAvatar || "/avatar-silhouette.svg"}
               fallback={displayName?.split(' ').map((n: string) => n[0]).join('') || '?'}
-              frame={profile.profile_frame}
-              className="h-[72px] w-[72px] sm:h-20 sm:w-20 rounded-full border-2 border-border shadow-sm"
+              className="h-[72px] w-[72px] sm:h-20 sm:w-20 rounded-full border border-border shadow-sm"
             />
             {isOwnProfile && (
               <Button
@@ -387,47 +386,8 @@ export const ProfileHero = ({
         </div>
         )}
 
-        {/* Thrive Status Bar — only show if there's progress to display */}
-        {(hasProgress || profile.badge) && (
-          <div className="rounded-xl bg-muted/40 p-3 space-y-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className={cn("text-xs font-bold tracking-wide uppercase truncate", statusResult.color)}>{statusResult.label}</span>
-                {profile.badge && (
-                  <Badge variant="secondary" className="h-4 text-[9px] px-1.5 shrink-0">
-                    {badgeLabel(profile.badge)}
-                  </Badge>
-                )}
-              </div>
-              {statusResult.nextTier && hasProgress && (
-                <span className="text-[10px] text-muted-foreground text-right shrink-0">
-                  +{statusResult.progress[0]?.needed - statusResult.progress[0]?.current} to {nextTierLabel}
-                </span>
-              )}
-            </div>
-            {hasProgress && (
-              <div className="h-1.5 rounded-full bg-border overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r transition-all duration-500 from-primary to-primary/70"
-                  style={{ width: `${Math.min(100, (statusResult.progress[0].current / statusResult.progress[0].needed) * 100)}%` }}
-                />
-              </div>
-            )}
-          </div>
-        )}
+        {/* Thrive Status bar + redundant stamps chip removed — Standing retired, stamps shown in PassportOverview */}
 
-        {/* Stamps chip — verified credits surfaced as Passport stamps */}
-        {verifiedCreditsCount > 0 && (
-          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-[hsl(var(--signal-teal))]">
-            <Shield className="h-3 w-3" />
-            {verifiedCreditsCount} stamp{verifiedCreditsCount === 1 ? '' : 's'}
-            {stats.responseRate > 0 && (
-              <span className="ml-2 text-muted-foreground font-medium normal-case tracking-normal">
-                · {stats.responseRate}% response
-              </span>
-            )}
-          </div>
-        )}
 
         {/* Trust Signals + Achievements — only renders if any are active */}
         {(() => {

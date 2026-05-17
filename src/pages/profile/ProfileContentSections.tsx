@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Briefcase, Star, Zap, DollarSign } from "lucide-react";
+import { Briefcase, Star, Zap, DollarSign, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CreditVerificationPanel } from "@/components/profile/CreditVerificationPanel";
@@ -12,6 +12,7 @@ import { ICDBTimeline } from "@/components/profile/ICDBTimeline";
 import { WorkWithMeSection } from "@/components/profile/WorkWithMeSection";
 import { RateCardSection } from "@/components/profile/RateCardSection";
 import { AvailabilityCalendarSection } from "@/components/profile/AvailabilityCalendarSection";
+import { CreditsSection } from "@/components/profile/CreditsSection";
 
 import { SubscriptionTier } from "@/lib/subscriptionLimits";
 
@@ -26,8 +27,9 @@ interface ProfileContentSectionsProps {
   onRefresh: () => void;
 }
 
-// Batch 2.5: removed "Stamps" tab — redundant with Passport anchor strip → /credits.
+// Stamps surfaced first — proof of work is the primary signal on Passport.
 const PROFILE_TABS = [
+  { id: "stamps", label: "Stamps", icon: Shield },
   { id: "hire", label: "Book Me", icon: DollarSign },
   { id: "skills", label: "Skills", icon: Zap },
   { id: "reviews", label: "Co-signs", icon: Star },
@@ -46,7 +48,7 @@ export const ProfileContentSections = ({
   onRefresh,
 }: ProfileContentSectionsProps) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabId>("hire");
+  const [activeTab, setActiveTab] = useState<TabId>("stamps");
   const tabsRef = useRef<HTMLDivElement>(null);
   const [isTabBarSticky, setIsTabBarSticky] = useState(false);
   const tabBarSentinelRef = useRef<HTMLDivElement>(null);
@@ -75,6 +77,15 @@ export const ProfileContentSections = ({
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "stamps":
+        return (
+          <CreditsSection
+            userId={profile.user_id}
+            isOwnProfile={true}
+            onRefresh={onRefresh}
+          />
+        );
+
       case "hire":
         return (
           <>

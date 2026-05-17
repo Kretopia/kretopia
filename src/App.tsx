@@ -13,6 +13,7 @@ import { useOnboarding } from "./hooks/useOnboarding";
 import Navbar from "./components/Navbar";
 import BottomNav from "./components/BottomNav";
 import QuickActionFab from "./components/QuickActionFab";
+import { BrandLoader } from "./components/brand/BrandDots";
 
 import { ModeThemeSync } from "./components/ModeThemeSync";
 import { VibeThemeSync } from "./components/VibeThemeSync";

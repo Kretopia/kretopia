@@ -17864,6 +17864,13 @@ export type Database = {
         Args: { p_amount: number; p_currency?: string; p_user_id: string }
         Returns: Json
       }
+      claim_guest_rsvps: {
+        Args: { _email: string; _user_id: string }
+        Returns: {
+          claimed_count: number
+          participant_count: number
+        }[]
+      }
       claim_profile: {
         Args: { p_claim_token: string; p_user_id: string }
         Returns: boolean

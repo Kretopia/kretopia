@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserCheck } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -49,6 +50,25 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
   const [errors, setErrors] = useState<{ guest_name?: string; guest_email?: string; guest_email_confirm?: string }>({});
   const [questions, setQuestions] = useState<CustomQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [nameMatches, setNameMatches] = useState<Array<{ user_id: string; full_name: string | null; username: string | null; avatar_url: string | null; role: string | null; location: string | null }>>([]);
+  const [matchDismissed, setMatchDismissed] = useState(false);
+
+  // Debounced fuzzy name lookup against public profiles
+  useEffect(() => {
+    if (user || matchDismissed) { setNameMatches([]); return; }
+    const q = name.trim();
+    if (q.length < 3) { setNameMatches([]); return; }
+    const t = setTimeout(async () => {
+      const { data } = await (supabase as any)
+        .from("public_profiles_safe")
+        .select("user_id, full_name, username, avatar_url, role, location")
+        .ilike("full_name", `%${q}%`)
+        .eq("onboarding_completed", true)
+        .limit(3);
+      setNameMatches(data || []);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [name, user, matchDismissed]);
 
   useEffect(() => {
     if (!open || !eventId) return;
@@ -241,6 +261,52 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
             />
             {errors.guest_name && <p className="text-xs text-destructive">{errors.guest_name}</p>}
           </div>
+
+          {!user && nameMatches.length > 0 && !matchDismissed && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <UserCheck className="h-3.5 w-3.5 text-primary" />
+                  Is this you? Sign in — your RSVP will be saved.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setMatchDismissed(true)}
+                  className="text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  Not me
+                </button>
+              </div>
+              <div className="space-y-1.5">
+                {nameMatches.map((m) => (
+                  <button
+                    key={m.user_id}
+                    type="button"
+                    onClick={() => {
+                      const redirect = `/event/${eventId}`;
+                      try { sessionStorage.setItem("post_auth_redirect", redirect); } catch {}
+                      navigate(`/auth?tab=signin&redirect=${encodeURIComponent(redirect)}`);
+                    }}
+                    className="w-full flex items-center gap-2.5 rounded-md bg-background/80 hover:bg-background p-2 text-left transition"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={m.avatar_url ?? undefined} />
+                      <AvatarFallback className="text-xs">
+                        {(m.full_name || "?").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{m.full_name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {[m.role, m.location].filter(Boolean).join(" · ") || (m.username ? `@${m.username}` : "Sign in to claim")}
+                      </p>
+                    </div>
+                    <span className="text-[11px] text-primary font-medium shrink-0">Sign in →</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="guest-email">Email</Label>

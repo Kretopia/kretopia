@@ -445,10 +445,22 @@ export const ThriveAgentFab = () => {
                 ...surfaceContext,
               });
               if (assistantIdx >= 0 && run.actions?.length) {
-                setActionsByMsg((prev) => ({
-                  ...prev,
-                  [assistantIdx]: [...(prev[assistantIdx] ?? []), ...run.actions],
-                }));
+                const proposed = run.actions.filter((action) => action.status === "proposed");
+                const resultCards = run.actions
+                  .map(resultCardForAction)
+                  .filter(Boolean) as AgentResultCardData[];
+                if (proposed.length) {
+                  setActionsByMsg((prev) => ({
+                    ...prev,
+                    [assistantIdx]: [...(prev[assistantIdx] ?? []), ...proposed],
+                  }));
+                }
+                if (resultCards.length) {
+                  setResultCardsByMsg((prev) => ({
+                    ...prev,
+                    [assistantIdx]: [...(prev[assistantIdx] ?? []), ...resultCards],
+                  }));
+                }
               }
             } catch (err) {
               console.warn("Copilot action propose failed", err);

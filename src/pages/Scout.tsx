@@ -102,27 +102,6 @@ const Scout = () => {
       <div className="container mx-auto max-w-5xl px-4 py-6">
         {tab === "scouted" && <ScoutedGigsSection />}
         {tab === "marketplace" && <OpportunitiesFeed />}
-        {tab === "talent" && (
-          <div className="rounded-2xl border border-border/60 bg-card p-8 text-center space-y-4">
-            <div className="h-14 w-14 rounded-2xl bg-[hsl(var(--signal-teal))]/10 text-[hsl(var(--signal-teal))] flex items-center justify-center mx-auto ring-1 ring-[hsl(var(--signal-teal))]/20">
-              <UserSearch className="h-6 w-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold tracking-tight">Scout creators to hire</h2>
-              <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-                Describe the brief — Thrive surfaces the right creators, with proof,
-                rates, and a one-tap intro.
-              </p>
-            </div>
-            <Link
-              to="/talent-finder"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-opacity"
-            >
-              Open Talent Scout
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        )}
       </div>
     </div>
   );

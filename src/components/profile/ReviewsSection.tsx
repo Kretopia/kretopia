@@ -178,7 +178,7 @@ Thank you so much!`;
         <div className="rounded-xl md:rounded-2xl border border-accent bg-accent/5 p-3 md:p-4">
           <h4 className="font-semibold mb-2 md:mb-3 flex items-center gap-2 text-sm md:text-base">
             <Star className="h-4 w-4 md:h-5 md:w-5 text-accent" />
-            Pending Reviews ({pendingReviews.length})
+            Pending Co-signs ({pendingReviews.length})
           </h4>
           <div className="space-y-2 md:space-y-3">
             {pendingReviews.map((review) => (
@@ -209,9 +209,9 @@ Thank you so much!`;
       {approvedReviews.length === 0 ? (
         <EmptyState
           icon={Star}
-          eyebrow="Social proof"
-          title="No reviews yet"
-          description="After your next collab wraps, ask your client for a quick review — it dramatically boosts your match rate."
+          eyebrow="Trust"
+          title="No co-signs yet"
+          description="After your next collab wraps, ask a client or collaborator to co-sign — one strong co-sign beats a wall of followers."
         />
       ) : (
         <div className="space-y-3 md:space-y-4">

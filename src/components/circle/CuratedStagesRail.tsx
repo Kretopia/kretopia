@@ -70,6 +70,7 @@ export function CuratedStagesRail({ limit = 8, hideWhenEmpty = false }: CuratedS
   }
 
   if (stages.length === 0) {
+    if (hideWhenEmpty) return null;
     return (
       <Card className="p-5 border-dashed bg-card">
         <p className="text-sm font-semibold">No curated stages this week.</p>

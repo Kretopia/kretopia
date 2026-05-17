@@ -3672,6 +3672,35 @@ export type Database = {
           },
         ]
       }
+      curated_stage_reminders_sent: {
+        Row: {
+          id: string
+          kind: string
+          sent_at: string
+          stage_id: string
+        }
+        Insert: {
+          id?: string
+          kind: string
+          sent_at?: string
+          stage_id: string
+        }
+        Update: {
+          id?: string
+          kind?: string
+          sent_at?: string
+          stage_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curated_stage_reminders_sent_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "curated_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       curated_stage_rsvps: {
         Row: {
           created_at: string

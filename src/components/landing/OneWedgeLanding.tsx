@@ -217,17 +217,17 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           <h2 className="font-serif text-3xl sm:text-5xl tracking-tight text-foreground leading-[1.05]">
             Online or in the room.
             <br />
-            You <span className="italic">belong</span> here.
+            You <span className="italic text-[hsl(var(--signal-teal))]">belong</span> here.
           </h2>
 
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <SurfaceChip icon={<AudioLines className="h-4 w-4" />} label="Soundstages" />
-            <SurfaceChip icon={<Users className="h-4 w-4" />} label="Events" />
-            <SurfaceChip icon={<FolderKanban className="h-4 w-4" />} label="Showcases" />
-            <SurfaceChip icon={<ShieldCheck className="h-4 w-4" />} label="Auditions" />
+            <SurfaceChip to="/events" icon={<AudioLines className="h-4 w-4" />} label="Soundstages" />
+            <SurfaceChip to="/events" icon={<Users className="h-4 w-4" />} label="Events" />
+            <SurfaceChip to="/events" icon={<FolderKanban className="h-4 w-4" />} label="Showcases" />
+            <SurfaceChip to="/events" icon={<ShieldCheck className="h-4 w-4" />} label="Auditions" />
           </div>
 
-          <Link to="/scout" className="inline-block mt-8" onClick={() => trackLandingCta("wedge", "explore_events")}>
+          <Link to="/events" className="inline-block mt-8" onClick={() => trackLandingCta("wedge", "explore_events")}>
             <Button size="lg" variant="outline" className="font-semibold">
               Explore events
               <ArrowRight className="ml-2 h-4 w-4" />

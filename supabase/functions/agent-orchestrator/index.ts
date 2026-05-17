@@ -174,6 +174,7 @@ async function planTools(
         `- If list_my_projects returns 0 matches for the spoken name → call ask_clarification with the candidate list. NEVER pick a random project.\n` +
         `- If 2+ projects match the spoken name → call ask_clarification listing both. NEVER guess.\n` +
         `- Only after you have the EXACT project_id whose title matches the user's words may you call add_collaborator / remove_collaborator.\n` +
+        `- For sponsor requests tied to a named project/event (e.g. "sponsors for Bali Carnival"), call list_my_projects first. If a project title matches, call find_sponsors with project_id, project_title, niche, and count so the results land inside that Studio's Sponsors section.\n` +
         `\nAPPROVAL CARD PREVIEW (every [requires_approval] call):\n` +
         `- Include "_preview" in the args. Required keys:\n` +
         `    title         — short verb phrase, MUST include person's name AND project title verbatim (e.g. "Add DEZii to ThriveIN Content").\n` +

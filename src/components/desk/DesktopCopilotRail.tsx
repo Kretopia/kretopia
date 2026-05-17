@@ -67,6 +67,18 @@ const QUICK_PROMPTS: Record<string, string[]> = {
   event: ["Plan promo for my event", "Draft an invite message"],
 };
 
+const visibleAssistantText = (raw: string) => {
+  let visible = extractActions(raw).visible;
+  const openIdx = Math.min(
+    ...["<action", "<plan"].map((tag) => {
+      const idx = visible.indexOf(tag);
+      return idx === -1 ? Infinity : idx;
+    }),
+  );
+  if (openIdx !== Infinity) visible = visible.slice(0, openIdx);
+  return visible;
+};
+
 export function DesktopCopilotRail() {
   const { user } = useAuth();
   const { pathname } = useLocation();
@@ -167,7 +179,7 @@ export function DesktopCopilotRail() {
         signal: ctrl.signal,
         onDelta: (chunk) => {
           assistantSoFar += chunk;
-          const visible = extractActions(assistantSoFar).visible;
+          const visible = visibleAssistantText(assistantSoFar);
           setMessages((prev) => {
             const copy = [...prev];
             const last = copy[copy.length - 1];
@@ -360,7 +372,7 @@ export function DesktopCopilotRail() {
           </div>
         )}
         {messages.map((m, i) => {
-          const visible = m.role === "assistant" ? extractActions(m.content).visible : m.content;
+          const visible = m.role === "assistant" ? visibleAssistantText(m.content) : m.content;
           return (
             <div key={i} className="space-y-2">
               <div

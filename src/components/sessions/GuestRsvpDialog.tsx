@@ -11,10 +11,16 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
-const schema = z.object({
-  guest_name: z.string().trim().min(1, "Name required").max(100),
-  guest_email: z.string().trim().email("Invalid email").max(255),
-});
+const schema = z
+  .object({
+    guest_name: z.string().trim().min(1, "Name required").max(100),
+    guest_email: z.string().trim().email("Invalid email").max(255),
+    guest_email_confirm: z.string().trim().email("Invalid email").max(255),
+  })
+  .refine((d) => d.guest_email.toLowerCase() === d.guest_email_confirm.toLowerCase(), {
+    path: ["guest_email_confirm"],
+    message: "Emails don't match",
+  });
 
 interface CustomQuestion {
   id: string;
@@ -38,8 +44,9 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState(user?.email ?? "");
+  const [emailConfirm, setEmailConfirm] = useState(user?.email ?? "");
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ guest_name?: string; guest_email?: string }>({});
+  const [errors, setErrors] = useState<{ guest_name?: string; guest_email?: string; guest_email_confirm?: string }>({});
   const [questions, setQuestions] = useState<CustomQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, any>>({});
 
@@ -60,10 +67,14 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-    const parsed = schema.safeParse({ guest_name: name, guest_email: email });
+    const parsed = schema.safeParse({ guest_name: name, guest_email: email, guest_email_confirm: emailConfirm });
     if (!parsed.success) {
       const fe = parsed.error.flatten().fieldErrors;
-      setErrors({ guest_name: fe.guest_name?.[0], guest_email: fe.guest_email?.[0] });
+      setErrors({
+        guest_name: fe.guest_name?.[0],
+        guest_email: fe.guest_email?.[0],
+        guest_email_confirm: fe.guest_email_confirm?.[0],
+      });
       return;
     }
 

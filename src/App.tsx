@@ -53,6 +53,7 @@ const DisputeManage = lazy(() => import("./pages/DisputeManage"));
 
 const Circle = lazy(() => import("./pages/Circle"));
 const SpeedSession = lazy(() => import("./pages/SpeedSession"));
+const CuratedStage = lazy(() => import("./pages/CuratedStage"));
 const CircleDetailPage = lazy(() => import("./pages/CircleDetail"));
 const CircleChatView = lazy(() => import("./pages/CircleChatView"));
 const Circles = lazy(() => import("./pages/Circles"));

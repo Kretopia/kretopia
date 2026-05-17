@@ -1,4 +1,4 @@
-import { ChevronRight, FolderPlus, Users, FileText, Receipt, CalendarPlus, Sparkles, Mail, DollarSign } from "lucide-react";
+import { ChevronRight, FolderPlus, Users, FileText, Receipt, CalendarPlus, RadioTower, Mail, DollarSign, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -19,10 +19,10 @@ const iconFor = (kind: AgentResultCardData["icon"]) => {
     case "invoice": return Receipt;
     case "quote": return FileText;
     case "event": return CalendarPlus;
-    case "sponsor": return Sparkles;
+    case "sponsor": return RadioTower;
     case "outreach": return Mail;
     case "money": return DollarSign;
-    default: return Sparkles;
+    default: return CheckCircle2;
   }
 };
 

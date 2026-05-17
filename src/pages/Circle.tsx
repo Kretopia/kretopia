@@ -12,7 +12,7 @@ import { ConnectionList } from "@/components/circle/ConnectionList";
 import { SwipeFeature } from "@/components/swipe";
 import { GuestSwipePreview } from "@/components/swipe/GuestSwipePreview";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
-import { EventsNearYouSection } from "@/components/home/EventsNearYouSection";
+import { LiveCallsPanel } from "@/components/circle/LiveCallsPanel";
 import { SEO } from "@/components/SEO";
 import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { InviteDialog } from "@/components/InviteDialog";
@@ -126,7 +126,7 @@ export default function Circle() {
     setBrowseLoading(true);
     try {
       let q = supabase
-        .from("profiles")
+        .from("public_profiles_safe")
         .select("user_id, full_name, avatar_url, role, location")
         .neq("user_id", user.id)
         .not("avatar_url", "is", null)
@@ -274,18 +274,7 @@ export default function Circle() {
             ) : (
               <div className="space-y-3">
                 {user ? (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-lg font-bold tracking-tight">Live & upcoming</h2>
-                        <p className="text-xs text-muted-foreground">RSVP, get reminders, jump in.</p>
-                      </div>
-                      <Button asChild size="sm" variant="ghost" className="text-xs">
-                        <Link to="/events">View all →</Link>
-                      </Button>
-                    </div>
-                    <EventsNearYouSection limit={12} />
-                  </>
+                  <LiveCallsPanel />
                 ) : (
                   <AuthGate>
                     <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />

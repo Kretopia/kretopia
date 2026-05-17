@@ -35,22 +35,22 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
     let alive = true;
     (async () => {
       try {
-        const [{ data: rows }, { count }] = await Promise.all([
-          supabase
-            .from("profiles")
-            .select("user_id, full_name, avatar_url")
-            .eq("onboarding_completed", true)
-            .not("avatar_url", "is", null)
-            .order("verification_score", { ascending: false, nullsFirst: false })
-            .limit(6),
-          supabase
-            .from("profiles")
-            .select("*", { count: "exact", head: true })
-            .eq("onboarding_completed", true),
-        ]);
+        // Avatars: query the anon-readable `public_profiles_safe` view (RLS-safe)
+        const avatarsP = supabase
+          .from("public_profiles_safe")
+          .select("user_id, full_name, avatar_url")
+          .eq("onboarding_completed", true)
+          .not("avatar_url", "is", null)
+          .limit(6);
+
+        // Counts: use the service-role public-stats edge fn (anon SELECT is blocked by RLS)
+        const statsP = supabase.functions.invoke("public-stats");
+
+        const [{ data: rows }, { data: statsData }] = await Promise.all([avatarsP, statsP]);
         if (!alive) return;
         if (rows) setCreators(rows as FoundingCreator[]);
-        if (typeof count === "number") setCreatorCount(count);
+        const c = (statsData as any)?.stats?.creators;
+        if (typeof c === "number") setCreatorCount(c);
       } catch {
         /* silent — landing must never crash */
       }

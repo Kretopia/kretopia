@@ -26,17 +26,15 @@ export const SocialProofSection = () => {
     let alive = true;
     (async () => {
       try {
-        const [c, n, k] = await Promise.all([
-          supabase.from("profiles").select("*", { count: "exact", head: true }).eq("onboarding_completed", true),
-          supabase.from("connections").select("*", { count: "exact", head: true }).eq("status", "accepted"),
-          supabase.from("credits").select("*", { count: "exact", head: true }),
-        ]);
-        if (!alive) return;
+        // public-stats edge fn uses service role — only way to read real counts past RLS
+        const { data, error } = await supabase.functions.invoke("public-stats");
+        if (!alive || error || !data) return;
+        const s = (data as any).stats ?? {};
         setStats({
-          creators: c.count ?? 0,
-          connections: n.count ?? 0,
-          credits: k.count ?? 0,
-          countries: 23,
+          creators: s.creators ?? 0,
+          connections: s.connections ?? 0,
+          credits: s.credits ?? 0,
+          countries: s.countries ?? 23,
         });
       } catch {
         /* silent — keep landing resilient */

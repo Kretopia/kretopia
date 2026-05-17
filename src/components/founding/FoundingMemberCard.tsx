@@ -44,7 +44,7 @@ export const FoundingMemberCard = ({ className, compact }: Props) => {
 
   return (
     <Card
-      className={`relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/8 via-card to-accent/5 ${className ?? ""}`}
+      className={`relative overflow-hidden border-[hsl(var(--signal-teal))]/30 bg-card ${className ?? ""}`}
     >
       {allComplete && (
         <button
@@ -58,8 +58,8 @@ export const FoundingMemberCard = ({ className, compact }: Props) => {
 
       <Link to="/founding-member" className="block p-4">
         <div className="flex items-start gap-3">
-          <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-            <Star className="h-4 w-4 text-primary" fill="currentColor" />
+          <div className="h-9 w-9 rounded-lg bg-[hsl(var(--signal-teal))]/15 flex items-center justify-center shrink-0">
+            <Star className="h-4 w-4 text-[hsl(var(--signal-teal))]" fill="currentColor" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">

@@ -260,6 +260,16 @@ export default function SpeedSession() {
           callId={null}
           userName={myName}
           userAvatar={user?.user_metadata?.avatar_url ?? null}
+          peerUserId={
+            myPair && user?.id
+              ? (myPair.user_a === user.id ? myPair.user_b : myPair.user_a)
+              : null
+          }
+          peerName="your match"
+          onPeerBlocked={() => {
+            toast({ title: "Blocked", description: "You won't be paired with them again." });
+            setCallRoom(null);
+          }}
         />
       )}
     </div>

@@ -260,7 +260,7 @@ export const ProfileHero = ({
             </span>
           )}
           {profile.avg_response_hours != null && profile.avg_response_hours > 0 && (
-            <span className="flex items-center gap-1 text-primary font-medium">
+            <span className="flex items-center gap-1 text-[hsl(var(--signal-teal))] font-medium">
               <Clock className="h-3 w-3" />
               {profile.avg_response_hours < 1
                 ? '< 1hr'

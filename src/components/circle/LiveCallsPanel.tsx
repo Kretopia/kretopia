@@ -125,7 +125,7 @@ export function LiveCallsPanel() {
       <section className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black uppercase tracking-[0.14em] text-muted-foreground flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3 text-primary" /> Scout &amp; Showcase Stages
+            <Sparkles className="h-3 w-3 text-[hsl(var(--signal-teal))]" /> Scout &amp; Showcase Stages
           </h3>
         </div>
         <CuratedStagesRail />
@@ -155,7 +155,7 @@ export function LiveCallsPanel() {
       <Card>
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <LinkIcon className="h-4 w-4 text-primary" />
+            <LinkIcon className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
             <p className="font-semibold text-sm">Have an invite link?</p>
           </div>
           <div className="flex gap-2">

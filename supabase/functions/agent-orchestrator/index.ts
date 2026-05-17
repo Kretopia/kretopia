@@ -31,6 +31,17 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
+// Wrap a fetch with a hard timeout so we never hang the 150s edge budget.
+async function fetchWithTimeout(url: string, init: RequestInit, ms: number): Promise<Response> {
+  const ac = new AbortController();
+  const id = setTimeout(() => ac.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: ac.signal });
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 type Tool = {
   tool_name: string;
   agent_kind: string;
@@ -61,39 +72,45 @@ async function classifyIntent(
     "memory",
   ];
 
-  const resp = await fetch(
-    "https://ai.gateway.lovable.dev/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
+  let resp: Response;
+  try {
+    resp = await fetchWithTimeout(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-lite",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an intent router for a creative-economy platform. Pick the SINGLE best sub-agent.\n\n" +
+                "Sub-agents:\n" +
+                kinds.join(", ") +
+                "\n\nDISAMBIGUATION RULES:\n" +
+                "- 'add <person> to <project>', 'invite <person> to my project', 'put X on the team', 'remove X from project' → project_manager (this is a collaborator action on an EXISTING project, NOT talent search).\n" +
+                "- 'find me a <role>', 'search for photographers', 'who can shoot in Bali' → talent (discovering new people).\n" +
+                "- 'create task', 'mark done', 'project status' → project_manager.\n" +
+                "- 'apply to <gig>', 'find gigs', 'draft cover letter' → gig.\n" +
+                "- 'send DM to <person>', 'message X' → talent.\n" +
+                "- 'find sponsors', 'brand partners', 'who could sponsor my event', 'sponsorship leads for X' → opportunity.\n" +
+                "- 'remember that...', 'forget...' → memory.\n\n" +
+                "Return JSON only: {\"agent_kind\":\"<one_of_the_above>\",\"reasoning\":\"<one short sentence>\"}",
+            },
+            { role: "user", content: intent },
+          ],
+          response_format: { type: "json_object" },
+        }),
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an intent router for a creative-economy platform. Pick the SINGLE best sub-agent.\n\n" +
-              "Sub-agents:\n" +
-              kinds.join(", ") +
-              "\n\nDISAMBIGUATION RULES:\n" +
-              "- 'add <person> to <project>', 'invite <person> to my project', 'put X on the team', 'remove X from project' → project_manager (this is a collaborator action on an EXISTING project, NOT talent search).\n" +
-              "- 'find me a <role>', 'search for photographers', 'who can shoot in Bali' → talent (discovering new people).\n" +
-              "- 'create task', 'mark done', 'project status' → project_manager.\n" +
-              "- 'apply to <gig>', 'find gigs', 'draft cover letter' → gig.\n" +
-              "- 'send DM to <person>', 'message X' → talent.\n" +
-              "- 'find sponsors', 'brand partners', 'who could sponsor my event', 'sponsorship leads for X' → opportunity.\n" +
-              "- 'remember that...', 'forget...' → memory.\n\n" +
-              "Return JSON only: {\"agent_kind\":\"<one_of_the_above>\",\"reasoning\":\"<one short sentence>\"}",
-          },
-          { role: "user", content: intent },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    },
-  );
+      20000,
+    );
+  } catch (_e) {
+    return { agent_kind: "project_manager", reasoning: "classifier timed out" };
+  }
 
   if (!resp.ok) {
     // Fall back to project_manager so the run still completes
@@ -192,18 +209,31 @@ async function planTools(
 
   const proposals: Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string; auto_result?: unknown; already_executed?: boolean }> = [];
   const MAX_TURNS = 3;
+  const plannerStart = Date.now();
+  const PLANNER_BUDGET_MS = 110_000; // leave headroom under the 150s edge limit
 
   for (let turn = 0; turn < MAX_TURNS; turn++) {
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages,
-        tools: toolDefs,
-        tool_choice: turn === 0 ? "auto" : "auto",
-      }),
-    });
+    // If we're running out of time, stop adding turns and return whatever we have.
+    if (Date.now() - plannerStart > PLANNER_BUDGET_MS) {
+      console.warn("planTools: budget exceeded, breaking early");
+      break;
+    }
+    let resp: Response;
+    try {
+      resp = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages,
+          tools: toolDefs,
+          tool_choice: turn === 0 ? "auto" : "auto",
+        }),
+      }, 45_000);
+    } catch (_e) {
+      console.warn("planTools: gateway turn timed out");
+      break;
+    }
 
     if (!resp.ok) {
       if (resp.status === 429) throw new Error("Rate limited. Try again in a moment.");

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -7,48 +8,74 @@ import {
   AudioLines,
   FolderKanban,
   ShieldCheck,
-  DollarSign,
   CheckCircle2,
   Zap,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { trackLandingCta } from "@/hooks/useLandingVariant";
-import { BrandDots } from "@/components/brand/BrandDots";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   onSearchSubmit: (q: string) => void;
 }
 
+interface FoundingCreator {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
 export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
+  const [creators, setCreators] = useState<FoundingCreator[]>([]);
+  const [creatorCount, setCreatorCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const [{ data: rows }, { count }] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("user_id, full_name, avatar_url")
+            .eq("onboarding_completed", true)
+            .not("avatar_url", "is", null)
+            .order("verification_score", { ascending: false, nullsFirst: false })
+            .limit(6),
+          supabase
+            .from("profiles")
+            .select("*", { count: "exact", head: true })
+            .eq("onboarding_completed", true),
+        ]);
+        if (!alive) return;
+        if (rows) setCreators(rows as FoundingCreator[]);
+        if (typeof count === "number") setCreatorCount(count);
+      } catch {
+        /* silent — landing must never crash */
+      }
+    })().catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   return (
     <section className="bg-background">
       {/* ───────────── HERO ───────────── */}
       <div className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 hidden sm:block" aria-hidden>
-          <div className="absolute -top-40 -left-20 h-[420px] w-[420px] rounded-full bg-primary/10 blur-[120px]" />
-          <div className="absolute top-20 -right-20 h-[360px] w-[360px] rounded-full bg-energy/[0.08] blur-[110px]" />
-        </div>
-
-        <div className="relative container mx-auto max-w-6xl px-4 sm:px-6 pt-8 sm:pt-14 pb-12">
-          <BrandDots />
-
-          {/* Headline */}
+        <div className="relative container mx-auto max-w-6xl px-4 sm:px-6 pt-10 sm:pt-16 pb-14">
+          {/* Headline — all ink, no spectrum word-colors */}
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="mt-5 font-serif text-[2.4rem] sm:text-6xl lg:text-7xl tracking-tight text-foreground leading-[1.02]"
+            className="font-serif text-[2.5rem] sm:text-6xl lg:text-7xl tracking-tight text-foreground leading-[1.02]"
           >
             <span className="block">Meet people.</span>
             <span className="block">Build work.</span>
             <span className="block italic">Own your record.</span>
-            <span className="block">
-              <span className="text-[#FF4DA6]">Get </span>
-              <span className="text-[#FFB020]">paid.</span>
-            </span>
+            <span className="block">Get paid.</span>
           </motion.h1>
 
           <motion.p
@@ -77,82 +104,74 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
             </Link>
           </div>
 
-          {/* Founding row (truthful — replaces "25k creators" placeholder) */}
-          <div className="mt-6 flex items-center gap-3">
+          {/* Real creators + live count */}
+          <div className="mt-7 flex items-center gap-3">
             <div className="flex -space-x-2">
-              {[0, 1, 2, 3].map((i) => (
+              {(creators.length ? creators.slice(0, 5) : Array.from({ length: 5 })).map((c: any, i) => (
                 <div
-                  key={i}
-                  className="h-8 w-8 rounded-full ring-2 ring-background bg-gradient-to-br from-primary/40 to-energy/40"
-                />
+                  key={c?.user_id ?? i}
+                  className="h-9 w-9 rounded-full ring-2 ring-background bg-muted overflow-hidden"
+                  title={c?.full_name ?? undefined}
+                >
+                  {c?.avatar_url ? (
+                    <img
+                      src={c.avatar_url}
+                      alt={c.full_name ?? "Creator"}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
               ))}
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Join the <span className="font-bold text-foreground">founding 135</span> creators building on ThriveIN
+              Join{" "}
+              <span className="font-bold text-foreground">
+                {creatorCount !== null ? creatorCount.toLocaleString() : "…"}
+              </span>{" "}
+              creators building on ThriveIN
             </p>
-          </div>
-
-          {/* Thrive-noticed floating card */}
-          <div className="mt-8 max-w-sm rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
-            <BrandDots />
-            <p className="mt-2 text-sm font-bold text-foreground">Thrive noticed</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Sponsor proposal is overdue
-            </p>
-            <button className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-              Review <ArrowRight className="h-3 w-3" />
-            </button>
           </div>
         </div>
       </div>
 
-      {/* ───────────── 5-PILLAR STRIP ───────────── */}
+      {/* ───────────── 4-PILLAR STRIP (even grid: 2×2 mobile, 4×1 desktop) ───────────── */}
       <div className="bg-card border-y border-border/60">
-        <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-10">
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-6 sm:gap-4">
+        <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-12 sm:py-14">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
             <Pillar
               icon={<Search className="h-5 w-5" />}
               title="Discover"
               desc="Find people, opportunities, events and communities that fit your goals."
-              tone="from-primary/20 to-primary/5"
             />
             <Pillar
               icon={<AudioLines className="h-5 w-5" />}
               title="Connect"
               desc="Meet online in Soundstages or in real life at events, showcases and more."
-              tone="from-energy/20 to-energy/5"
             />
             <Pillar
               icon={<FolderKanban className="h-5 w-5" />}
               title="Build"
               desc="Turn conversations into Studios, tasks and projects. Thrive keeps it moving."
-              tone="from-[#FF4DA6]/20 to-[#FF4DA6]/5"
             />
             <Pillar
               icon={<ShieldCheck className="h-5 w-5" />}
-              title="Credit"
-              desc="Collect Stamps, co-signs and verified proof of work in your Passport."
-              tone="from-[#FFB020]/20 to-[#FFB020]/5"
-            />
-            <Pillar
-              icon={<DollarSign className="h-5 w-5" />}
-              title="Earn"
-              desc="Invoice, get paid and track receipts. The work paid off."
-              tone="from-[#20D3C2]/20 to-[#20D3C2]/5"
+              title="Credit & Earn"
+              desc="Collect Stamps, co-signs, invoice clients and track receipts in your Passport."
             />
           </div>
         </div>
       </div>
 
-      {/* ───────────── MEET THRIVE ───────────── */}
-      <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-14">
-        <div className="grid md:grid-cols-2 gap-8 items-start">
+      {/* ───────────── MEET THRIVE (even 6-item list) ───────────── */}
+      <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-20">
+        <div className="grid md:grid-cols-2 gap-10 items-start">
           <div>
-            <BrandDots />
-            <h2 className="mt-4 font-serif text-3xl sm:text-5xl tracking-tight text-foreground leading-[1.05]">
-              Meet Thrive.
-              <br />
-              <span className="italic">Your Creative</span>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+              Meet Thrive
+            </p>
+            <h2 className="mt-3 font-serif text-3xl sm:text-5xl tracking-tight text-foreground leading-[1.05]">
+              Your Creative
               <br />
               <span className="italic">Executive Producer.</span>
             </h2>
@@ -161,7 +180,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
             </p>
           </div>
 
-          <ul className="space-y-3 sm:pt-12">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:pt-2">
             {[
               "Creates Studios",
               "Organizes tasks",
@@ -171,7 +190,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
               "Remembers context",
             ].map((item) => (
               <li key={item} className="flex items-center gap-3">
-                <span className="h-6 w-6 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                <span className="h-6 w-6 rounded-full bg-accent text-foreground flex items-center justify-center shrink-0">
                   <CheckCircle2 className="h-3.5 w-3.5" />
                 </span>
                 <span className="text-sm sm:text-base text-foreground font-medium">{item}</span>
@@ -181,59 +200,32 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
         </div>
       </div>
 
-      {/* ───────────── REAL WORK / TESTIMONIALS ───────────── */}
+      {/* ───────────── ONLINE OR IN THE ROOM (even 4 chips) ───────────── */}
       <div className="bg-card border-y border-border/60">
-        <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-14">
+        <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-14 sm:py-16">
           <h2 className="font-serif text-3xl sm:text-5xl tracking-tight text-foreground leading-[1.05]">
-            Real work. Real people.
+            Online or in the room.
             <br />
-            <span className="text-[#FF4DA6] italic">Real impact.</span>
+            You <span className="italic">belong</span> here.
           </h2>
 
-          <div className="mt-8 grid md:grid-cols-3 gap-4">
-            <Quote
-              text="Met an editor in a Soundstage. Two weeks later we shipped a campaign."
-              name="Jada E."
-              role="Filmmaker"
-            />
-            <Quote
-              text="Thrive keeps my projects organized and my clients happy."
-              name="Nigel S."
-              role="Creative Director"
-            />
-            <Quote
-              text="My Passport finally shows everything I've built. It opened doors."
-              name="Sasha M."
-              role="Producer"
-            />
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <SurfaceChip icon={<AudioLines className="h-4 w-4" />} label="Soundstages" />
+            <SurfaceChip icon={<Users className="h-4 w-4" />} label="Events" />
+            <SurfaceChip icon={<FolderKanban className="h-4 w-4" />} label="Showcases" />
+            <SurfaceChip icon={<ShieldCheck className="h-4 w-4" />} label="Auditions" />
           </div>
+
+          <Link to="/scout" className="inline-block mt-8" onClick={() => trackLandingCta("wedge", "explore_events")}>
+            <Button size="lg" variant="outline" className="font-semibold">
+              Explore events
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* ───────────── ONLINE OR IN THE ROOM ───────────── */}
-      <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-14">
-        <h2 className="font-serif text-3xl sm:text-5xl tracking-tight text-foreground leading-[1.05]">
-          Online or in the room.
-          <br />
-          You <span className="italic text-[#FF4DA6]">belong</span> here.
-        </h2>
-
-        <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
-          <SurfaceChip icon={<AudioLines className="h-4 w-4" />} label="Soundstages" />
-          <SurfaceChip icon={<Users className="h-4 w-4" />} label="Events" />
-          <SurfaceChip icon={<Sparkles className="h-4 w-4" />} label="Showcases" />
-          <SurfaceChip icon={<FolderKanban className="h-4 w-4" />} label="Auditions" />
-        </div>
-
-        <Link to="/scout" className="inline-block mt-7" onClick={() => trackLandingCta("wedge", "explore_events")}>
-          <Button size="lg" variant="outline" className="font-semibold">
-            Explore events
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
-      </div>
-
-      {/* Social proof */}
+      {/* Live network signal — real numbers, fixed-glitch */}
       <SocialProofSection />
 
       {/* ───────────── FINAL CTA ───────────── */}
@@ -241,11 +233,12 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
         className="container mx-auto max-w-3xl px-4 sm:px-6"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 9rem)" }}
       >
-        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-card p-6 sm:p-12 text-center">
-          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 sm:p-12 text-center">
           <div className="relative">
-            <BrandDots />
-            <h2 className="mt-3 font-serif text-2xl sm:text-4xl tracking-tight text-foreground mb-3 text-balance">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-semibold mb-3">
+              Start your record
+            </p>
+            <h2 className="font-serif text-2xl sm:text-4xl tracking-tight text-foreground mb-3 text-balance">
               Meet people. Build work. Own your record. Get paid.
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-xl mx-auto">
@@ -282,39 +275,23 @@ const Pillar = ({
   icon,
   title,
   desc,
-  tone,
 }: {
   icon: React.ReactNode;
   title: string;
   desc: string;
-  tone: string;
 }) => (
   <div className="flex flex-col">
-    <div className="h-9 w-9 rounded-xl bg-background border border-border/60 flex items-center justify-center text-foreground/80">
+    <div className="h-10 w-10 rounded-xl bg-background border border-border flex items-center justify-center text-foreground">
       {icon}
     </div>
-    <p className="mt-3 text-sm font-bold text-foreground">{title}</p>
-    <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{desc}</p>
-    <div className={`mt-3 aspect-square rounded-xl bg-gradient-to-br ${tone} border border-border/40`} />
-  </div>
-);
-
-const Quote = ({ text, name, role }: { text: string; name: string; role: string }) => (
-  <div className="rounded-2xl border border-border/60 bg-background p-4">
-    <p className="text-sm text-foreground leading-relaxed">"{text}"</p>
-    <div className="mt-3 flex items-center gap-2">
-      <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary/40 to-energy/40" />
-      <div>
-        <p className="text-xs font-bold text-foreground">{name}</p>
-        <p className="text-[10px] text-muted-foreground">{role}</p>
-      </div>
-    </div>
+    <p className="mt-4 text-base font-bold text-foreground">{title}</p>
+    <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{desc}</p>
   </div>
 );
 
 const SurfaceChip = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
-  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground/80">
-    <span className="text-primary">{icon}</span>
+  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-medium text-foreground">
+    <span className="text-foreground/70">{icon}</span>
     {label}
   </span>
 );

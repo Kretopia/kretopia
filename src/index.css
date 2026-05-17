@@ -72,7 +72,7 @@ All colors MUST be HSL.
     --radius: 1rem;
 
     /* Quieter gradient system — single-hue indigo, no purple→magenta */
-    --gradient-primary: linear-gradient(135deg, hsl(232 87% 66%), hsl(232 87% 72%));
+    --gradient-primary: linear-gradient(135deg, hsl(240 11% 8%), hsl(240 11% 18%));
     --gradient-secondary: linear-gradient(135deg, hsl(232 87% 66% / 0.06), hsl(232 87% 66% / 0.02));
     --gradient-accent: linear-gradient(180deg, hsl(36 27% 97%), hsl(36 22% 95%));
     --gradient-subtle: linear-gradient(180deg, hsl(232 87% 66% / 0.03), transparent);
@@ -154,7 +154,7 @@ All colors MUST be HSL.
     --warning: 38 95% 60%;
     --warning-foreground: 240 17% 7%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(232 87% 66%), hsl(232 87% 72%));
+    --gradient-primary: linear-gradient(135deg, hsl(240 15% 96%), hsl(240 15% 86%));
     --gradient-secondary: linear-gradient(135deg, hsl(232 87% 66% / 0.18), hsl(232 87% 66% / 0.04));
     --gradient-accent: linear-gradient(180deg, hsl(240 17% 7%), hsl(240 12% 12%));
     --gradient-subtle: linear-gradient(180deg, hsl(232 87% 66% / 0.08), transparent);

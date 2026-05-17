@@ -214,6 +214,13 @@ serve(async (req) => {
       }
     }
 
+    // 7. Distribute the brief (best-effort — never fail the transcript on this).
+    try {
+      await distributeBrief(admin, transcript_id, parsed);
+    } catch (e) {
+      console.warn("[transcribe-call] distribute failed", e);
+    }
+
     return new Response(JSON.stringify({ ok: true, transcript_id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -241,3 +248,170 @@ function bufferToBase64(buf: ArrayBuffer): string {
   }
   return btoa(binary);
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Brief distribution: post to Circle chat, DM attendees their items,
+// suggest a Studio to the host, surface on the linked Event.
+// All steps are best-effort and isolated so one failure doesn't sink the rest.
+// ─────────────────────────────────────────────────────────────────────────
+type ParsedBrief = {
+  language?: string;
+  transcript: string;
+  summary: string;
+  action_items: Array<{
+    kind: string;
+    title: string;
+    detail?: string;
+    assignee_name?: string;
+    due_hint?: string;
+  }>;
+};
+
+async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedBrief) {
+  const { data: t } = await admin
+    .from("call_transcripts")
+    .select("id, call_kind, call_id, circle_id, project_id, created_by, participants, duration_seconds")
+    .eq("id", transcriptId)
+    .maybeSingle();
+  if (!t) return;
+
+  // Resolve linked event (if this came from a meeting tied to an event).
+  let eventId: string | null = null;
+  let eventTitle: string | null = null;
+  if (t.call_kind === "meeting" || t.call_kind === "event") {
+    const { data: mtg } = await admin
+      .from("meetings")
+      .select("event_id, circle_id, title")
+      .eq("id", t.call_id)
+      .maybeSingle();
+    if (mtg?.event_id) eventId = mtg.event_id;
+    if (mtg?.circle_id && !t.circle_id) {
+      // Inherit circle from meeting if the transcript row didn't capture it.
+      t.circle_id = mtg.circle_id;
+    }
+    if (mtg?.title) eventTitle = mtg.title;
+  }
+  if (eventId && !eventTitle) {
+    const { data: ev } = await admin
+      .from("creative_jams")
+      .select("title, group_chat_room_id")
+      .eq("id", eventId)
+      .maybeSingle();
+    eventTitle = ev?.title ?? null;
+    // Event with a host-toggled group chat → post the brief there too.
+    if (ev?.group_chat_room_id && !t.circle_id) t.circle_id = ev.group_chat_room_id;
+  }
+
+  // ── 1. Build the brief message body ──
+  const tasks = (parsed.action_items ?? []).filter((a) => a.kind === "task" || a.kind === "followup");
+  const decisions = (parsed.action_items ?? []).filter((a) => a.kind === "decision");
+  const notes = (parsed.action_items ?? []).filter((a) => a.kind === "note");
+
+  const lines: string[] = [];
+  lines.push(eventTitle ? `📓 Call brief — ${eventTitle}` : "📓 Call brief");
+  if (t.duration_seconds) lines.push(`Duration: ${Math.round(t.duration_seconds / 60)} min`);
+  lines.push("");
+  lines.push(parsed.summary);
+  if (decisions.length) {
+    lines.push("", "Decisions:");
+    decisions.forEach((d) => lines.push(`• ${d.title}`));
+  }
+  if (tasks.length) {
+    lines.push("", "Action items:");
+    tasks.forEach((a) => {
+      const who = a.assignee_name ? ` — ${a.assignee_name}` : "";
+      const when = a.due_hint ? ` (${a.due_hint})` : "";
+      lines.push(`• ${a.title}${who}${when}`);
+    });
+  }
+  if (notes.length) {
+    lines.push("", "Notes:");
+    notes.forEach((n) => lines.push(`• ${n.title}`));
+  }
+  const body = lines.join("\n");
+
+  // ── 2. Post into the Circle chat (spark_room_messages) if we have one ──
+  if (t.circle_id) {
+    const { error } = await admin.from("spark_room_messages").insert({
+      room_id: t.circle_id,
+      user_id: t.created_by,
+      content: body,
+      message_type: "text",
+    });
+    if (error) console.warn("[distribute] circle chat post failed", error);
+  }
+
+  // ── 3. Resolve attendee user_ids from participants jsonb ──
+  const attendeeIds = new Set<string>();
+  for (const p of (t.participants ?? []) as Array<{ user_id?: string }>) {
+    if (p?.user_id && typeof p.user_id === "string") attendeeIds.add(p.user_id);
+  }
+  attendeeIds.add(t.created_by);
+
+  // ── 4. Per-attendee notification (their own items if we can match by name) ──
+  const recapUrl = t.circle_id
+    ? `/circle/${t.circle_id}/chat`
+    : eventId
+      ? `/events/${eventId}`
+      : `/inbox`;
+
+  const notifRows: any[] = [];
+  for (const uid of attendeeIds) {
+    // Resolve name to match assignee_name (best-effort)
+    const { data: prof } = await admin
+      .from("profiles")
+      .select("full_name")
+      .eq("user_id", uid)
+      .maybeSingle();
+    const fullName = (prof?.full_name ?? "").trim().toLowerCase();
+
+    const mine = (parsed.action_items ?? []).filter(
+      (a) => a.assignee_name && fullName && a.assignee_name.toLowerCase().includes(fullName.split(" ")[0]),
+    );
+
+    const isHost = uid === t.created_by;
+    notifRows.push({
+      user_id: uid,
+      type: "call_brief_ready",
+      title: isHost ? "Your call brief is ready" : "Brief from your call is in",
+      message: mine.length
+        ? `You have ${mine.length} action item${mine.length > 1 ? "s" : ""} from "${eventTitle ?? "the call"}".`
+        : `Quick recap + decisions from "${eventTitle ?? "the call"}".`,
+      action_url: recapUrl,
+      action_text: "Open brief",
+      category: "calls",
+      priority: mine.length ? "high" : "normal",
+    });
+  }
+  if (notifRows.length) {
+    const { error } = await admin.from("notifications").insert(notifRows);
+    if (error) console.warn("[distribute] notifications failed", error);
+  }
+
+  // ── 5. Suggest a Studio (Desk project) to the host if collaborators were detected ──
+  const collaboratorNames = Array.from(
+    new Set(
+      (parsed.action_items ?? [])
+        .map((a) => a.assignee_name?.trim())
+        .filter((n): n is string => !!n && n.length > 1),
+    ),
+  );
+  if (collaboratorNames.length >= 2 && !t.project_id) {
+    const studioParams = new URLSearchParams({
+      from_transcript: transcriptId,
+      title: eventTitle ?? "From the call",
+      collaborators: collaboratorNames.slice(0, 8).join(","),
+    });
+    await admin.from("notifications").insert({
+      user_id: t.created_by,
+      type: "studio_suggestion",
+      title: "Spin up a Studio from this call?",
+      message: `Thrive detected ${collaboratorNames.length} collaborators: ${collaboratorNames.slice(0, 4).join(", ")}${collaboratorNames.length > 4 ? "…" : ""}`,
+      action_url: `/desk/new?${studioParams.toString()}`,
+      action_text: "Create Studio",
+      category: "agent",
+      priority: "high",
+    });
+  }
+}
+

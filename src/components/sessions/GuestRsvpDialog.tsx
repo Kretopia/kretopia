@@ -50,6 +50,25 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
   const [errors, setErrors] = useState<{ guest_name?: string; guest_email?: string; guest_email_confirm?: string }>({});
   const [questions, setQuestions] = useState<CustomQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [nameMatches, setNameMatches] = useState<Array<{ user_id: string; full_name: string | null; username: string | null; avatar_url: string | null; role: string | null; location: string | null }>>([]);
+  const [matchDismissed, setMatchDismissed] = useState(false);
+
+  // Debounced fuzzy name lookup against public profiles
+  useEffect(() => {
+    if (user || matchDismissed) { setNameMatches([]); return; }
+    const q = name.trim();
+    if (q.length < 3) { setNameMatches([]); return; }
+    const t = setTimeout(async () => {
+      const { data } = await (supabase as any)
+        .from("public_profiles_safe")
+        .select("user_id, full_name, username, avatar_url, role, location")
+        .ilike("full_name", `%${q}%`)
+        .eq("onboarding_completed", true)
+        .limit(3);
+      setNameMatches(data || []);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [name, user, matchDismissed]);
 
   useEffect(() => {
     if (!open || !eventId) return;

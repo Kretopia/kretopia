@@ -146,6 +146,7 @@ const CreditDatabase = () => {
   const [recentCredits, setRecentCredits] = useState<UserCredit[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
+  const [view, setView] = useState<"mine" | "explore">("mine");
 
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const isSearchActive = search.trim().length >= 2;

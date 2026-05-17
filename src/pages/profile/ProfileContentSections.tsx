@@ -77,6 +77,15 @@ export const ProfileContentSections = ({
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "stamps":
+        return (
+          <CreditsSection
+            userId={profile.user_id}
+            isOwnProfile={true}
+            onRefresh={onRefresh}
+          />
+        );
+
       case "hire":
         return (
           <>

@@ -40,7 +40,7 @@ export function TaskCalendar({ tasks, onTaskClick }: TaskCalendarProps) {
       case "backlog":
         return "bg-slate-500";
       case "todo":
-        return "bg-blue-500";
+        return "bg-primary";
       case "in_progress":
         return "bg-yellow-500";
       case "done":

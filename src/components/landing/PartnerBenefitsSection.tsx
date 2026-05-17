@@ -17,7 +17,7 @@ const partnerCategories = [
     name: "Co-working Spaces",
     discount: "25% off",
     locations: "8+ locations",
-    color: "from-blue-500 to-cyan-600",
+    color: "from-primary to-primary",
   },
   {
     icon: Store,

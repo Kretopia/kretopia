@@ -35,7 +35,7 @@ interface ListingCardProps {
 }
 
 const TYPE_CONFIG = {
-  digital: { icon: Download, color: "bg-blue-500/10 text-blue-500", label: "Digital" },
+  digital: { icon: Download, color: "bg-primary/10 text-primary", label: "Digital" },
   physical: { icon: Package, color: "bg-amber-500/10 text-amber-500", label: "Physical" },
   service: { icon: Wrench, color: "bg-emerald-500/10 text-emerald-500", label: "Service" },
 };

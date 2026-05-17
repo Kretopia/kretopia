@@ -31,8 +31,8 @@ export const SocialStatsInline = ({
     { icon: Instagram, label: "Instagram", value: instagramFollowers, color: "text-pink-500", bg: "bg-pink-500/10" },
     { icon: Music, label: "TikTok", value: tiktokFollowers, color: "text-foreground", bg: "bg-foreground/10" },
     { icon: Music, label: "Spotify", value: spotifyListeners, color: "text-green-500", bg: "bg-green-500/10" },
-    { icon: Twitter, label: "X", value: twitterFollowers, color: "text-blue-400", bg: "bg-blue-400/10" },
-    { icon: Linkedin, label: "LinkedIn", value: linkedinConnections, color: "text-blue-600", bg: "bg-blue-600/10" },
+    { icon: Twitter, label: "X", value: twitterFollowers, color: "text-primary", bg: "bg-primary/10" },
+    { icon: Linkedin, label: "LinkedIn", value: linkedinConnections, color: "text-primary", bg: "bg-primary/10" },
   ].filter((s) => s.value && s.value > 0);
 
   if (stats.length === 0) return null;

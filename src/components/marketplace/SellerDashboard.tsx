@@ -40,8 +40,8 @@ export function SellerDashboard() {
   const statCards = [
     { label: "Revenue", value: `$${stats.totalRevenue.toFixed(0)}`, icon: DollarSign, color: "text-green-500" },
     { label: "Orders", value: stats.totalOrders, icon: ShoppingCart, color: "text-primary" },
-    { label: "Active Listings", value: stats.activeListings, icon: Package, color: "text-blue-500" },
-    { label: "Downloads", value: stats.totalDownloads, icon: TrendingUp, color: "text-violet-500" },
+    { label: "Active Listings", value: stats.activeListings, icon: Package, color: "text-primary" },
+    { label: "Downloads", value: stats.totalDownloads, icon: TrendingUp, color: "text-primary" },
     { label: "Avg Rating", value: stats.avgRating > 0 ? stats.avgRating.toFixed(1) : "—", icon: Star, color: "text-yellow-500" },
     { label: "Avg Order", value: `$${stats.avgOrderValue.toFixed(0)}`, icon: Eye, color: "text-amber-500" },
   ];

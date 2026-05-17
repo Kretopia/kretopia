@@ -56,7 +56,7 @@ interface MatchFeedProps {
 const getBadgeColor = (badge: string) => {
   switch (badge) {
     case 'og': return 'bg-primary';
-    case 'beta': return 'bg-blue-500';
+    case 'beta': return 'bg-primary';
     case 'vip': return 'bg-yellow-500';
     default: return 'bg-gray-500';
   }
@@ -261,7 +261,7 @@ export const MatchFeed = ({
               <h3 className="text-3xl font-bold drop-shadow-lg flex items-center gap-2">
                 {maskCreatorName(currentCard.name, !!user)}
                 {currentCard.verification_status === 'verified' && (
-                  <Verified className="h-6 w-6 text-blue-400" />
+                  <Verified className="h-6 w-6 text-primary" />
                 )}
               </h3>
               <p className="text-lg font-medium text-white/90 drop-shadow-md">{currentCard.title}</p>

@@ -18,7 +18,7 @@ const DELIVERY_CONFIG: Record<string, { label: string; icon: typeof Clock }> = {
 };
 
 const TYPE_CONFIG: Record<string, { label: string; icon: typeof Download; className: string }> = {
-  digital: { label: "Digital", icon: Download, className: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  digital: { label: "Digital", icon: Download, className: "bg-primary/10 text-primary dark:text-primary" },
   physical: { label: "Physical", icon: Package, className: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
   service: { label: "Service", icon: Wrench, className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
 };

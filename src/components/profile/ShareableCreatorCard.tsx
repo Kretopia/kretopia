@@ -27,8 +27,8 @@ interface CreatorCardProps {
 const BADGE_LABELS: Record<string, { label: string; color: string }> = {
   og: { label: "OG Member", color: "from-yellow-400 to-amber-600" },
   beta: { label: "Beta Pioneer", color: "from-amber-400 to-orange-600" },
-  official: { label: "Official", color: "from-blue-400 to-blue-600" },
-  founder: { label: "Founder", color: "from-primary to-indigo-700" },
+  official: { label: "Official", color: "from-primary to-primary" },
+  founder: { label: "Founder", color: "from-primary to-primary" },
   odos: { label: "ODOS", color: "from-emerald-400 to-emerald-600" },
 };
 
@@ -229,7 +229,7 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
               </div>
 
               <h3 className="text-white font-bold text-lg leading-tight">{profile.full_name || "Creator"}</h3>
-              <p className="text-purple-300 text-sm mt-0.5">{profile.role || "Creative"}</p>
+              <p className="text-primary text-sm mt-0.5">{profile.role || "Creative"}</p>
               {profile.location && (
                 <p className="text-white/40 text-xs mt-1">{profile.location}</p>
               )}
@@ -294,8 +294,8 @@ export function ShareableCreatorCard({ open, onOpenChange, profile }: CreatorCar
               <span className="text-[10px] text-muted-foreground font-medium">Instagram</span>
             </button>
             <button onClick={shareToTwitter} className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-accent transition-colors">
-              <div className="w-10 h-10 rounded-full bg-sky-500/10 flex items-center justify-center">
-                <Twitter className="h-5 w-5 text-sky-500" />
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Twitter className="h-5 w-5 text-primary" />
               </div>
               <span className="text-[10px] text-muted-foreground font-medium">X / Twitter</span>
             </button>

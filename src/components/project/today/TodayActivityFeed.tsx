@@ -107,7 +107,7 @@ export const TodayActivityFeed = ({
   const colorFor = (type: ActivityItem["type"]) => {
     switch (type) {
       case "message": return "text-primary bg-primary/10";
-      case "file": return "text-blue-500 bg-blue-500/10";
+      case "file": return "text-primary bg-primary/10";
       case "task": return "text-emerald-500 bg-emerald-500/10";
       case "milestone": return "text-amber-500 bg-amber-500/10";
     }

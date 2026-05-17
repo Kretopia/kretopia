@@ -253,7 +253,7 @@ export const RateCardSection = ({ userId, isOwner }: Props) => {
                         className={cn(
                           "text-[10px] gap-1 px-1.5 py-0",
                           rate.visibility === "public" && "border-emerald-500/40 text-emerald-600",
-                          rate.visibility === "connections" && "border-blue-500/40 text-blue-600",
+                          rate.visibility === "connections" && "border-primary/40 text-primary",
                           rate.visibility === "on_request" && "border-amber-500/40 text-amber-600"
                         )}
                       >

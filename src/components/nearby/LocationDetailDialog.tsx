@@ -35,11 +35,11 @@ interface Review {
 }
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string; emoji: string }> = {
-  studio: { icon: Music, color: 'text-purple-500', label: 'Studio', emoji: '🎙' },
+  studio: { icon: Music, color: 'text-primary', label: 'Studio', emoji: '🎙' },
   creative_space: { icon: Palette, color: 'text-emerald-500', label: 'Creative Space', emoji: '' },
   shoot_spot: { icon: Camera, color: 'text-rose-500', label: 'Shoot Spot', emoji: '' },
-  venue: { icon: Building2, color: 'text-blue-500', label: 'Venue', emoji: '' },
-  music_store: { icon: Headphones, color: 'text-violet-500', label: 'Music Store', emoji: '' },
+  venue: { icon: Building2, color: 'text-primary', label: 'Venue', emoji: '' },
+  music_store: { icon: Headphones, color: 'text-primary', label: 'Music Store', emoji: '' },
   art_supply: { icon: ShoppingBag, color: 'text-orange-500', label: 'Art Supply', emoji: '' },
   rental_house: { icon: Building2, color: 'text-teal-500', label: 'Rental House', emoji: '' },
   photo_lab: { icon: Camera, color: 'text-pink-500', label: 'Photo Lab', emoji: '📷' },

@@ -7,10 +7,10 @@ import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRe
 
 const getCategoryGradient = (category?: string) => {
   switch (category?.toLowerCase()) {
-    case 'film & tv': return 'from-slate-800 to-blue-900';
-    case 'music': return 'from-purple-900 to-violet-800';
+    case 'film & tv': return 'from-slate-800 to-primary';
+    case 'music': return 'from-primary to-primary';
     case 'photography': return 'from-amber-900 to-orange-800';
-    case 'design': return 'from-teal-900 to-cyan-800';
+    case 'design': return 'from-teal-900 to-primary';
     case 'events': return 'from-rose-900 to-pink-800';
     default: return 'from-zinc-800 to-zinc-700';
   }

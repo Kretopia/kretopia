@@ -14,7 +14,7 @@ export function FeatureLockedBanner({ feature, tier, description }: FeatureLocke
 
   const Icon = Sparkles;
   const tierName = "Pro";
-  const color = "text-blue-600";
+  const color = "text-primary";
 
   return (
     <Alert className="border-primary/50 bg-primary/5">

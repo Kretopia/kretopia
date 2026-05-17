@@ -44,13 +44,13 @@ const TYPE_TO_CATEGORY: Record<string, string> = {
 
 // Cinematic placeholder gradients by category
 const CATEGORY_GRADIENTS: Record<string, string> = {
-  film_tv: "from-slate-900 via-blue-950 to-slate-800",
-  music: "from-purple-950 via-violet-900 to-indigo-950",
+  film_tv: "from-slate-900 via-primary to-slate-800",
+  music: "from-primary via-primary to-primary",
   performing: "from-rose-950 via-red-900 to-pink-950",
   events: "from-amber-950 via-orange-900 to-yellow-950",
-  digital: "from-cyan-950 via-teal-900 to-emerald-950",
+  digital: "from-primary via-teal-900 to-emerald-950",
   commercial: "from-zinc-900 via-neutral-800 to-stone-900",
-  art: "from-fuchsia-950 via-pink-900 to-purple-950",
+  art: "from-fuchsia-950 via-pink-900 to-primary",
   fashion: "from-rose-900 via-pink-800 to-fuchsia-900",
 };
 
@@ -712,7 +712,7 @@ function PosterCard({
         {/* Badges */}
         <div className="absolute top-2 left-2 flex gap-1">
           {isVerified && (
-            <span className="bg-blue-500/90 text-white rounded-full p-0.5">
+            <span className="bg-primary/90 text-white rounded-full p-0.5">
               <ShieldCheck className="h-2.5 w-2.5" />
             </span>
           )}

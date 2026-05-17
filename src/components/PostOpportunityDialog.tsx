@@ -463,8 +463,8 @@ export const PostOpportunityDialog = ({
 
               {/* Barter-specific: What You're Offering */}
               {isBarter && (
-                <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-purple-300 bg-primary/5">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-indigo-800 dark:text-purple-300">
+                <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-primary bg-primary/5">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary dark:text-primary">
                     <Gift className="h-4 w-4" />
                     The Exchange
                   </div>
@@ -619,8 +619,8 @@ export const PostOpportunityDialog = ({
 
               {/* Collab-specific */}
               {isCollab && (
-                <div className="space-y-2 p-3 rounded-xl border-2 border-dashed border-blue-300 bg-blue-500/5">
-                  <Label className="flex items-center gap-1.5 text-sm font-semibold text-blue-700 dark:text-blue-300">
+                <div className="space-y-2 p-3 rounded-xl border-2 border-dashed border-primary bg-primary/5">
+                  <Label className="flex items-center gap-1.5 text-sm font-semibold text-primary dark:text-primary">
                     Collaboration Details
                   </Label>
                   <Input

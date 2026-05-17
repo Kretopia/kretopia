@@ -26,14 +26,14 @@ export const PressActivityCard = ({ item }: PressActivityCardProps) => {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all">
       {item.thumbnail_url && (
-        <div className="relative aspect-video bg-gradient-to-br from-blue-500/10 to-blue-500/5">
+        <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-primary/5">
           <img 
             src={item.thumbnail_url} 
             alt={item.title}
             className="w-full h-full object-cover"
           />
           <Badge className="absolute top-2 right-2 bg-background/90 backdrop-blur">
-            <Newspaper className="h-3 w-3 mr-1 text-blue-500" />
+            <Newspaper className="h-3 w-3 mr-1 text-primary" />
             Press
           </Badge>
         </div>
@@ -55,8 +55,8 @@ export const PressActivityCard = ({ item }: PressActivityCardProps) => {
         {/* Content */}
         <div className="flex items-start gap-3">
           {!item.thumbnail_url && (
-            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-              <Newspaper className="h-6 w-6 text-blue-500" />
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Newspaper className="h-6 w-6 text-primary" />
             </div>
           )}
           <div className="flex-1">

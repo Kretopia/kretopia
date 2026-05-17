@@ -73,7 +73,7 @@ Return ONLY a number 0-100.`
 
   const getMatchColor = (score: number) => {
     if (score >= 85) return "text-green-600 dark:text-green-400 border-green-500";
-    if (score >= 70) return "text-blue-600 dark:text-blue-400 border-blue-500";
+    if (score >= 70) return "text-primary dark:text-primary border-primary";
     return "text-yellow-600 dark:text-yellow-400 border-yellow-500";
   };
 

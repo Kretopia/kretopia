@@ -17,7 +17,7 @@ export const SimpleProgressTracker = ({
 
   const getProgressColor = (pct: number) => {
     if (pct === 100) return 'bg-green-500';
-    if (pct >= 50) return 'bg-blue-500';
+    if (pct >= 50) return 'bg-primary';
     if (pct > 0) return 'bg-yellow-500';
     return 'bg-gray-300';
   };

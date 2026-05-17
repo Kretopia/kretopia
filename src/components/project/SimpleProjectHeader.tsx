@@ -250,7 +250,7 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
   const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'active': return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'completed': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+      case 'completed': return 'bg-primary/10 text-primary border-primary/20';
       case 'planning': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
       default: return 'bg-muted text-muted-foreground';
     }
@@ -306,7 +306,7 @@ export const SimpleProjectHeader = ({ project, collaborators, onCollaboratorsCha
               <span
                 className={cn(
                   "h-1.5 w-1.5 rounded-full shrink-0",
-                  project.status === "completed" && "bg-blue-500",
+                  project.status === "completed" && "bg-primary",
                   project.status === "planning" && "bg-yellow-500",
                   (!project.status || project.status === "active") && "bg-green-500",
                 )}

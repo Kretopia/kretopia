@@ -39,8 +39,8 @@ interface MilestoneBoardProps {
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', icon: Clock, color: 'bg-yellow-500/10 text-yellow-600' },
-  in_progress: { label: 'In Progress', icon: AlertCircle, color: 'bg-blue-500/10 text-blue-600' },
-  review: { label: 'In Review', icon: AlertCircle, color: 'bg-primary/10 text-indigo-700' },
+  in_progress: { label: 'In Progress', icon: AlertCircle, color: 'bg-primary/10 text-primary' },
+  review: { label: 'In Review', icon: AlertCircle, color: 'bg-primary/10 text-primary' },
   completed: { label: 'Completed', icon: CheckCircle2, color: 'bg-green-500/10 text-green-600' },
   paid: { label: 'Paid', icon: DollarSign, color: 'bg-emerald-500/10 text-emerald-600' },
 };
@@ -558,7 +558,7 @@ export function MilestoneBoard({ milestones, projectId, onUpdate, userRole, coll
                          {statusConfig.label}
                        </Badge>
                        {milestone.escrow_status === 'authorized' && (
-                         <Badge variant="secondary" className="bg-purple-100 text-indigo-800">
+                         <Badge variant="secondary" className="bg-primary text-primary">
                            Escrow Secured
                          </Badge>
                        )}

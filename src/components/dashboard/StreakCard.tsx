@@ -94,7 +94,7 @@ export function StreakCard({ streakCount, longestStreak, freezeCount, onUpdate }
         </div>
         
         <div className="flex items-center gap-2">
-          <Snowflake className="w-5 h-5 text-blue-500" />
+          <Snowflake className="w-5 h-5 text-primary" />
           <div>
             <p className="text-xs text-muted-foreground">Freezes</p>
             <p className="font-bold">{freezeCount} available</p>

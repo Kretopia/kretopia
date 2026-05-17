@@ -163,11 +163,11 @@ const EDIT_PROJECT_TYPES = [
 
 const POSTER_GRADIENTS = [
   "from-rose-950 via-rose-900/70 to-black",
-  "from-indigo-950 via-blue-900/70 to-black",
+  "from-primary via-primary/70 to-black",
   "from-amber-950 via-amber-900/70 to-black",
   "from-emerald-950 via-teal-900/70 to-black",
-  "from-purple-950 via-violet-900/70 to-black",
-  "from-cyan-950 via-sky-900/70 to-black",
+  "from-primary via-primary/70 to-black",
+  "from-primary via-primary/70 to-black",
   "from-pink-950 via-fuchsia-900/70 to-black",
   "from-slate-900 via-zinc-800/70 to-black",
 ];
@@ -194,9 +194,9 @@ const getPlatformIcon = (platform: string | null) => {
   const p = platform.toLowerCase();
   if (p.includes('youtube')) return <Youtube className="h-3 w-3 text-red-500" />;
   if (p.includes('spotify')) return <Headphones className="h-3 w-3 text-green-500" />;
-  if (p.includes('vimeo')) return <Video className="h-3 w-3 text-blue-400" />;
+  if (p.includes('vimeo')) return <Video className="h-3 w-3 text-primary" />;
   if (p.includes('soundcloud')) return <Music className="h-3 w-3 text-orange-500" />;
-  if (p.includes('behance')) return <ImageIcon className="h-3 w-3 text-blue-500" />;
+  if (p.includes('behance')) return <ImageIcon className="h-3 w-3 text-primary" />;
   if (p.includes('imdb')) return <Film className="h-3 w-3 text-amber-500" />;
   if (p.includes('tiktok')) return <Video className="h-3 w-3 text-foreground" />;
   if (p.includes('netflix')) return <Tv className="h-3 w-3 text-red-600" />;
@@ -278,7 +278,7 @@ function CategoryRow({
     }
     if ((credit.ai_confidence || 0) >= 0.7) {
       return (
-        <Badge variant="outline" className="text-[9px] gap-0.5 border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500/5 h-4 px-1">
+        <Badge variant="outline" className="text-[9px] gap-0.5 border-primary/30 text-primary dark:text-primary bg-primary/5 h-4 px-1">
           <ShieldCheck className="h-2.5 w-2.5" />
           Verified
         </Badge>

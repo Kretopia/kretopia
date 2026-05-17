@@ -37,7 +37,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     title: "Build Your Profile",
     subtitle: "This is your creative resume — make it count",
     icon: <User className="h-6 w-6" />,
-    color: "from-violet-500/20 to-primary/20",
+    color: "from-primary/20 to-primary/20",
     route: "/profile",
     steps: [
       {
@@ -74,7 +74,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
     title: "Find Your People",
     subtitle: "Discover and connect with creators who complement your skills",
     icon: <Users className="h-6 w-6" />,
-    color: "from-blue-500/20 to-cyan-500/20",
+    color: "from-primary/20 to-primary/20",
     route: "/circle",
     steps: [
       {

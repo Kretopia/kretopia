@@ -139,7 +139,7 @@ export const CircleAdminPanel = ({ circle, onClose }: CircleAdminPanelProps) => 
 
   const roleIcon = (role: string) => {
     if (role === 'admin') return <Crown className="h-3 w-3 text-amber-500" />;
-    if (role === 'moderator') return <Shield className="h-3 w-3 text-blue-500" />;
+    if (role === 'moderator') return <Shield className="h-3 w-3 text-primary" />;
     return <User className="h-3 w-3 text-muted-foreground" />;
   };
 

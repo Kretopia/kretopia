@@ -59,7 +59,7 @@ const CREDIT_TYPE_ICONS: Record<string, any> = {
 const SOURCE_COLORS: Record<string, string> = {
   spotify: 'bg-green-500',
   youtube: 'bg-red-500',
-  tmdb: 'bg-blue-500',
+  tmdb: 'bg-primary',
   imdb: 'bg-yellow-500',
   discogs: 'bg-orange-500',
 };

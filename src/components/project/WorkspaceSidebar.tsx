@@ -24,7 +24,7 @@ export function WorkspaceSidebar({ projects, activeProjectId, onClose }: Workspa
   const getStatusDot = (status: string | null) => {
     switch (status) {
       case 'active': return 'bg-green-500';
-      case 'completed': return 'bg-blue-500';
+      case 'completed': return 'bg-primary';
       default: return 'bg-muted-foreground/50';
     }
   };

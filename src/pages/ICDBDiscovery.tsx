@@ -67,7 +67,7 @@ const ICDBDiscovery = () => {
 
   const getTierBadge = (tier: string | null) => {
     if (tier === "elite") return { label: "Elite", className: "bg-amber-500/10 text-amber-600 border-amber-500/30" };
-    if (tier === "industry") return { label: "Industry", className: "bg-blue-500/10 text-blue-600 border-blue-500/30" };
+    if (tier === "industry") return { label: "Industry", className: "bg-primary/10 text-primary border-primary/30" };
     return null;
   };
 

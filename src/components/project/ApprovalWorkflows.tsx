@@ -52,7 +52,7 @@ interface ApprovalWorkflowsProps {
 
 const statusConfig: Record<string, { label: string; icon: typeof CheckCircle2; color: string }> = {
   pending: { label: "Pending Review", icon: Clock, color: "bg-muted text-muted-foreground" },
-  in_review: { label: "In Review", icon: Eye, color: "bg-blue-500/10 text-blue-500" },
+  in_review: { label: "In Review", icon: Eye, color: "bg-primary/10 text-primary" },
   approved: { label: "Approved", icon: CheckCircle2, color: "bg-green-500/10 text-green-500" },
   revision_requested: { label: "Revision Needed", icon: AlertCircle, color: "bg-amber-500/10 text-amber-500" },
   rejected: { label: "Rejected", icon: XCircle, color: "bg-destructive/10 text-destructive" },

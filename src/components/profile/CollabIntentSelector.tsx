@@ -7,7 +7,7 @@ export const COLLAB_INTENTS = [
     value: 'looking_to_hire', 
     label: 'Looking to Hire', 
     icon: Briefcase,
-    color: 'bg-blue-500',
+    color: 'bg-primary',
     description: 'I have projects and budget to hire creators'
   },
   { 

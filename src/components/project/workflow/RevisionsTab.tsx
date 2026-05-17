@@ -19,7 +19,7 @@ interface Revision {
 const STATUS: Record<Status, { label: string; cls: string }> = {
   open:        { label: "Requested",   cls: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
   in_progress: { label: "In progress", cls: "bg-primary/10 text-primary" },
-  delivered:   { label: "Delivered",   cls: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
+  delivered:   { label: "Delivered",   cls: "bg-primary/15 text-primary dark:text-primary" },
   approved:    { label: "Approved",    cls: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" },
 };
 

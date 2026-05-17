@@ -42,11 +42,11 @@ interface LocationListItemProps {
 }
 
 const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
-  studio: { icon: Music, color: 'text-purple-500', label: 'Studio' },
+  studio: { icon: Music, color: 'text-primary', label: 'Studio' },
   creative_space: { icon: Palette, color: 'text-emerald-500', label: 'Space' },
   shoot_spot: { icon: Camera, color: 'text-rose-500', label: 'Spot' },
-  venue: { icon: Building2, color: 'text-blue-500', label: 'Venue' },
-  music_store: { icon: Headphones, color: 'text-violet-500', label: 'Music Store' },
+  venue: { icon: Building2, color: 'text-primary', label: 'Venue' },
+  music_store: { icon: Headphones, color: 'text-primary', label: 'Music Store' },
   art_supply: { icon: ShoppingBag, color: 'text-orange-500', label: 'Art Supply' },
   rental_house: { icon: Building2, color: 'text-teal-500', label: 'Rental House' },
   photo_lab: { icon: Camera, color: 'text-pink-500', label: 'Photo Lab' },

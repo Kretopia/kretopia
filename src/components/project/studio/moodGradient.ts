@@ -1,7 +1,7 @@
 // Warm gradient backgrounds for projects without a cover image.
 // Uses fixed HSL stops (not opacity-on-tokens) so cards always render with
 // vivid color regardless of theme, secondary token, or surface.
-// On-brand: rooted in #5B6BF5 primary, but each mood has its own vibe.
+// On-brand: rooted in #20D3C2 primary, but each mood has its own vibe.
 
 import { MOODS } from "./MoodPicker";
 

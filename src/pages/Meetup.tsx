@@ -145,13 +145,12 @@ const Meetup = () => {
         <div className="relative container mx-auto max-w-5xl px-4 pt-6 pb-7 sm:pt-8 sm:pb-10">
           <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
             <div>
-              <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-energy mb-3 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
-                <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-3">
                 Live events
               </p>
-              <h1 className="text-3xl sm:text-5xl font-black tracking-[-0.035em] text-foreground leading-[0.95]">
-                Events.<br />
-                <span className="text-energy-glow">Where creators meet.</span>
+              <h1 className="text-3xl sm:text-5xl font-semibold tracking-[-0.035em] text-foreground leading-[0.95]">
+                Events,<br />
+                where creators <span className="italic text-[hsl(var(--signal-teal))]">meet</span>.
               </h1>
               <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-md">
                 Workshops, meetups, jams, screenings, premieres. Real-world moments built for the creative industry.

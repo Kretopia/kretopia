@@ -101,23 +101,29 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           <div className="mt-7 flex items-center gap-3">
             <div className="flex -space-x-2">
               {(creators.length ? creators.slice(0, 5) : Array.from({ length: 5 })).map((c: any, i) => {
-                const initial = (c?.full_name ?? "").trim().charAt(0).toUpperCase();
+                const initial = (c?.full_name ?? "?").trim().charAt(0).toUpperCase() || "?";
                 return (
                   <div
                     key={c?.user_id ?? i}
-                    className="h-9 w-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex items-center justify-center text-[11px] font-bold text-foreground/70"
+                    className="relative h-9 w-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex items-center justify-center text-[11px] font-bold text-foreground/70"
                     title={c?.full_name ?? undefined}
                   >
+                    <span aria-hidden className="absolute inset-0 flex items-center justify-center">
+                      {initial}
+                    </span>
                     {c?.avatar_url ? (
                       <img
                         src={c.avatar_url}
                         alt={c.full_name ?? "Creator"}
                         loading="lazy"
-                        className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
+                        className="relative h-full w-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = "none";
+                        }}
                       />
-                    ) : (
-                      initial || ""
-                    )}
+                    ) : null}
                   </div>
                 );
               })}

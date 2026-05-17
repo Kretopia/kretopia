@@ -58,6 +58,17 @@ All colors MUST be HSL.
     --success-foreground: 0 0% 100%;
     --warning: 38 90% 48%;
     --warning-foreground: 30 50% 12%;
+
+    /* ============================================================
+       SIGNAL SPECTRUM — the three brand dots (pink · amber · teal).
+       Used surgically: brand mark, loading states, accent on key
+       words ("Get paid."), category-coded surfaces.
+       Pink = people  ·  Amber = momentum  ·  Teal = work/verified
+       Do NOT use as structural color. Ink does the heavy lifting.
+       ============================================================ */
+    --signal-pink: 330 100% 65%;     /* #FF4DA6 */
+    --signal-amber: 36 100% 56%;     /* #FFB020 */
+    --signal-teal: 174 73% 47%;      /* #20D3C2 */
     --radius: 1rem;
 
     /* Quieter gradient system — single-hue indigo, no purple→magenta */
@@ -311,6 +322,22 @@ All colors MUST be HSL.
   /* Magazine drop cap — first letter of first paragraph in an article */
   .first-paragraph-dropcap > p:first-of-type::first-letter {
     @apply float-left text-6xl sm:text-7xl font-sans font-black leading-[0.85] mr-2 mt-1 text-primary;
+  }
+
+  /* Brand spectrum text gradient — pink → amber → teal.
+     Reserve for: wordmark "IN", landing hero accent words, brand moments.
+     Do NOT use on body copy, buttons, or anything functional. */
+  .text-spectrum {
+    background-image: linear-gradient(
+      90deg,
+      hsl(var(--signal-pink)) 0%,
+      hsl(var(--signal-amber)) 55%,
+      hsl(var(--signal-teal)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
   }
   .gradient-primary {
     background: var(--gradient-primary);

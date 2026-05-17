@@ -3607,6 +3607,234 @@ export type Database = {
         }
         Relationships: []
       }
+      curated_stage_app_usage: {
+        Row: {
+          application_count: number
+          updated_at: string
+          usage_month: string
+          user_id: string
+        }
+        Insert: {
+          application_count?: number
+          updated_at?: string
+          usage_month: string
+          user_id: string
+        }
+        Update: {
+          application_count?: number
+          updated_at?: string
+          usage_month?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      curated_stage_applications: {
+        Row: {
+          created_at: string
+          id: string
+          match_score: number | null
+          pitch: string | null
+          reviewed_at: string | null
+          stage_id: string
+          status: Database["public"]["Enums"]["curated_application_status"]
+          user_id: string
+          voice_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_score?: number | null
+          pitch?: string | null
+          reviewed_at?: string | null
+          stage_id: string
+          status?: Database["public"]["Enums"]["curated_application_status"]
+          user_id: string
+          voice_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_score?: number | null
+          pitch?: string | null
+          reviewed_at?: string | null
+          stage_id?: string
+          status?: Database["public"]["Enums"]["curated_application_status"]
+          user_id?: string
+          voice_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curated_stage_applications_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "curated_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curated_stage_rsvps: {
+        Row: {
+          created_at: string
+          id: string
+          joined_at: string | null
+          stage_id: string
+          status: Database["public"]["Enums"]["curated_rsvp_status"]
+          ticket_order_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          stage_id: string
+          status?: Database["public"]["Enums"]["curated_rsvp_status"]
+          ticket_order_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          stage_id?: string
+          status?: Database["public"]["Enums"]["curated_rsvp_status"]
+          ticket_order_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curated_stage_rsvps_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "curated_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curated_stage_turns: {
+        Row: {
+          applicant_user_id: string
+          created_at: string
+          ended_at: string | null
+          host_note: string | null
+          id: string
+          outcome: Database["public"]["Enums"]["curated_turn_outcome"] | null
+          stage_id: string
+          started_at: string
+        }
+        Insert: {
+          applicant_user_id: string
+          created_at?: string
+          ended_at?: string | null
+          host_note?: string | null
+          id?: string
+          outcome?: Database["public"]["Enums"]["curated_turn_outcome"] | null
+          stage_id: string
+          started_at?: string
+        }
+        Update: {
+          applicant_user_id?: string
+          created_at?: string
+          ended_at?: string | null
+          host_note?: string | null
+          id?: string
+          outcome?: Database["public"]["Enums"]["curated_turn_outcome"] | null
+          stage_id?: string
+          started_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curated_stage_turns_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "curated_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curated_stages: {
+        Row: {
+          application_prompt: string | null
+          application_required: boolean
+          attended_count: number
+          blurb: string | null
+          capacity: number
+          cover_url: string | null
+          created_at: string
+          currency: string | null
+          ends_at: string | null
+          host_user_id: string
+          id: string
+          is_paid: boolean
+          price_cents: number | null
+          recording_enabled: boolean
+          recording_url: string | null
+          room_name: string | null
+          room_url: string | null
+          rsvp_count: number
+          starts_at: string
+          status: Database["public"]["Enums"]["curated_stage_status"]
+          title: string
+          turn_seconds: number
+          type: Database["public"]["Enums"]["curated_stage_type"]
+          updated_at: string
+          vibe_tags: string[] | null
+        }
+        Insert: {
+          application_prompt?: string | null
+          application_required?: boolean
+          attended_count?: number
+          blurb?: string | null
+          capacity?: number
+          cover_url?: string | null
+          created_at?: string
+          currency?: string | null
+          ends_at?: string | null
+          host_user_id: string
+          id?: string
+          is_paid?: boolean
+          price_cents?: number | null
+          recording_enabled?: boolean
+          recording_url?: string | null
+          room_name?: string | null
+          room_url?: string | null
+          rsvp_count?: number
+          starts_at: string
+          status?: Database["public"]["Enums"]["curated_stage_status"]
+          title: string
+          turn_seconds?: number
+          type: Database["public"]["Enums"]["curated_stage_type"]
+          updated_at?: string
+          vibe_tags?: string[] | null
+        }
+        Update: {
+          application_prompt?: string | null
+          application_required?: boolean
+          attended_count?: number
+          blurb?: string | null
+          capacity?: number
+          cover_url?: string | null
+          created_at?: string
+          currency?: string | null
+          ends_at?: string | null
+          host_user_id?: string
+          id?: string
+          is_paid?: boolean
+          price_cents?: number | null
+          recording_enabled?: boolean
+          recording_url?: string | null
+          room_name?: string | null
+          room_url?: string | null
+          rsvp_count?: number
+          starts_at?: string
+          status?: Database["public"]["Enums"]["curated_stage_status"]
+          title?: string
+          turn_seconds?: number
+          type?: Database["public"]["Enums"]["curated_stage_type"]
+          updated_at?: string
+          vibe_tags?: string[] | null
+        }
+        Relationships: []
+      }
       custom_project_requests: {
         Row: {
           budget_range: string | null
@@ -17534,6 +17762,14 @@ export type Database = {
           used: number
         }[]
       }
+      consume_stage_application: {
+        Args: { _monthly_cap: number; _user_id: string }
+        Returns: {
+          allowed: boolean
+          cap: number
+          used: number
+        }[]
+      }
       consume_voice_seconds: { Args: { _seconds: number }; Returns: Json }
       create_bidirectional_connection: {
         Args: {
@@ -18293,6 +18529,31 @@ export type Database = {
         | "chase_invoice"
       agent_proposal_status: "pending" | "accepted" | "dismissed" | "expired"
       app_role: "admin" | "moderator" | "user" | "writer"
+      curated_application_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "waitlist"
+      curated_rsvp_status:
+        | "rsvp"
+        | "waitlist"
+        | "attended"
+        | "no_show"
+        | "cancelled"
+      curated_stage_status:
+        | "draft"
+        | "scheduled"
+        | "live"
+        | "ended"
+        | "cancelled"
+      curated_stage_type: "showcase" | "scout"
+      curated_turn_outcome:
+        | "co_sign"
+        | "credit"
+        | "rolodex"
+        | "followup"
+        | "pass"
+        | "timeout"
       inbox_triage_kind:
         | "lead"
         | "gig_inquiry"
@@ -18494,6 +18755,35 @@ export const Constants = {
       ],
       agent_proposal_status: ["pending", "accepted", "dismissed", "expired"],
       app_role: ["admin", "moderator", "user", "writer"],
+      curated_application_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "waitlist",
+      ],
+      curated_rsvp_status: [
+        "rsvp",
+        "waitlist",
+        "attended",
+        "no_show",
+        "cancelled",
+      ],
+      curated_stage_status: [
+        "draft",
+        "scheduled",
+        "live",
+        "ended",
+        "cancelled",
+      ],
+      curated_stage_type: ["showcase", "scout"],
+      curated_turn_outcome: [
+        "co_sign",
+        "credit",
+        "rolodex",
+        "followup",
+        "pass",
+        "timeout",
+      ],
       inbox_triage_kind: [
         "lead",
         "gig_inquiry",

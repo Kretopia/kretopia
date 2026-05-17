@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
-import { Theater, LinkIcon, Loader2, Plus, Radio, Calendar } from "lucide-react";
+import { Theater, LinkIcon, Loader2, Plus, Radio, Calendar, Sparkles, CalendarPlus } from "lucide-react";
 import { SoundStagesRail, type SoundStage } from "./SoundStagesRail";
 import { GoLiveSheet } from "./GoLiveSheet";
 import { CallSheetUpcoming } from "./CallSheetUpcoming";
+import { CuratedStagesRail } from "./CuratedStagesRail";
+import { CreateStageSheet } from "./CreateStageSheet";
 
 /**
  * Sound Stages — the live tab on /circle.
@@ -22,6 +24,7 @@ export function LiveCallsPanel() {
   const navigate = useNavigate();
 
   const [goLiveOpen, setGoLiveOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [joinUrl, setJoinUrl] = useState("");
   const [joining, setJoining] = useState(false);
 
@@ -107,17 +110,26 @@ export function LiveCallsPanel() {
               </p>
             </div>
           </div>
-          <Button
-            onClick={() => setGoLiveOpen(true)}
-            disabled={!user}
-            variant="lime"
-            size="lg"
-            className="w-full rounded-full"
-          >
-            <Plus className="h-4 w-4" /> Go live
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button onClick={() => setGoLiveOpen(true)} disabled={!user} variant="lime" size="lg" className="rounded-full">
+              <Plus className="h-4 w-4" /> Go live
+            </Button>
+            <Button onClick={() => setScheduleOpen(true)} disabled={!user} variant="outline" size="lg" className="rounded-full">
+              <CalendarPlus className="h-4 w-4" /> Schedule
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Curated Stages (Scout + Showcase) */}
+      <section className="space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-xs font-black uppercase tracking-[0.14em] text-muted-foreground flex items-center gap-1.5">
+            <Sparkles className="h-3 w-3 text-primary" /> Scout &amp; Showcase Stages
+          </h3>
+        </div>
+        <CuratedStagesRail />
+      </section>
 
       {/* On Air rail */}
       <section className="space-y-2">
@@ -167,6 +179,7 @@ export function LiveCallsPanel() {
       </p>
 
       <GoLiveSheet open={goLiveOpen} onOpenChange={setGoLiveOpen} onCreated={handleStageCreated} />
+      <CreateStageSheet open={scheduleOpen} onOpenChange={setScheduleOpen} onCreated={(id) => id && navigate(`/circle/stage/${id}`)} />
 
       {activeRoom && (
         <VideoCallSheet

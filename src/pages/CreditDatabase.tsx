@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlaceholder";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
+import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },
@@ -145,6 +146,7 @@ const CreditDatabase = () => {
   const [recentCredits, setRecentCredits] = useState<UserCredit[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
+  const [view, setView] = useState<"mine" | "explore">("mine");
 
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const isSearchActive = search.trim().length >= 2;
@@ -161,7 +163,10 @@ const CreditDatabase = () => {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      setCurrentUserId(data?.user?.id || null);
+      const uid = data?.user?.id || null;
+      setCurrentUserId(uid);
+      // Logged-out visitors land on Explore (no "My Work" to show)
+      if (!uid) setView("explore");
     });
   }, []);
 
@@ -314,7 +319,45 @@ const CreditDatabase = () => {
       <div className="min-h-screen bg-background pb-20">
         <div className="container mx-auto px-4 pt-3">
           <PassportAnchorStrip />
+
+          {/* My Work / Explore toggle */}
+          <div className="flex items-center gap-1.5 mt-3 p-1 rounded-full bg-muted/50 w-fit mx-auto">
+            <button
+              onClick={() => setView("mine")}
+              disabled={!currentUserId}
+              className={cn(
+                "px-4 h-8 rounded-full text-[12px] font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+                view === "mine"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              My Work
+            </button>
+            <button
+              onClick={() => setView("explore")}
+              className={cn(
+                "px-4 h-8 rounded-full text-[12px] font-semibold transition-colors",
+                view === "explore"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Explore
+            </button>
+          </div>
         </div>
+
+        {view === "mine" && currentUserId ? (
+          <div className="container mx-auto px-4 py-6 max-w-3xl">
+            <UnifiedWorkHistory
+              userId={currentUserId}
+              isOwnProfile={true}
+              onRefresh={() => { /* local refresh handled inside */ }}
+            />
+          </div>
+        ) : (
+        <>
         {/* Search Hero */}
         <div className={cn(
           "transition-all duration-300",
@@ -571,6 +614,8 @@ const CreditDatabase = () => {
             </div>
           )}
         </div>
+        </>
+        )}
       </div>
 
       {/* Claim Dialog */}

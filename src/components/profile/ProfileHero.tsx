@@ -239,18 +239,9 @@ export const ProfileHero = ({
               <p className="text-xs sm:text-sm text-muted-foreground font-medium leading-tight mt-0.5">{displayRole}</p>
             )}
           </div>
-          {isOwnProfile && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
-              onClick={onEdit}
-              aria-label="Edit profile"
-            >
-              <Edit className="h-3.5 w-3.5" />
-            </Button>
-          )}
+          {/* (Edit moved to the action bar below to reduce header clutter) */}
         </div>
+
 
         {/* Row 3: Meta — location · availability · rating · response */}
         <div className="flex items-center gap-x-2 gap-y-1 text-xs text-muted-foreground flex-wrap">

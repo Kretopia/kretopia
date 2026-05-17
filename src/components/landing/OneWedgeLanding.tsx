@@ -35,13 +35,15 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
     let alive = true;
     (async () => {
       try {
-        // Avatars: query the anon-readable `public_profiles_safe` view (RLS-safe)
+        // Avatars: query the anon-readable `public_profiles_safe` view (RLS-safe).
+        // Don't require avatar_url — fall back to initials so the row never collapses to 1.
         const avatarsP = supabase
           .from("public_profiles_safe")
           .select("user_id, full_name, avatar_url")
           .eq("onboarding_completed", true)
-          .not("avatar_url", "is", null)
-          .limit(6);
+          .not("full_name", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(12);
 
         // Counts: use the service-role public-stats edge fn (anon SELECT is blocked by RLS)
         const statsP = supabase.functions.invoke("public-stats");

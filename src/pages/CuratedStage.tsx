@@ -149,6 +149,8 @@ const CuratedStage = () => {
       toast({ title: "Couldn't raise hand", description: e?.message, variant: "destructive" });
     } finally { setRaising(false); }
   };
+
+  const handleJoinLive = async () => {
     if (!user || !stage) { navigate("/auth"); return; }
     setJoining(true);
     try {

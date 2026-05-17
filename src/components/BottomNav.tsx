@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { path: "/desk", icon: LayoutGrid, label: "Desk", hint: "Projects, rooms, files, tasks" },
   { path: "/scout", icon: Compass, label: "Scout", hint: "Opportunities, people, sponsors" },
   { path: "/circle", icon: Users, label: "Circle", hint: "Match, Live, Network" },
-  { path: "/profile", icon: BadgeCheck, label: "Passport", hint: "Standing, Stamps, Wallet" },
+  { path: "/profile", icon: BadgeCheck, label: "Passport", hint: "Stamps, Co-signs, Wallet" },
 ];
 
 // Company accounts get a B2B-focused nav (unchanged).

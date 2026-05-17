@@ -250,10 +250,18 @@ const CuratedStage = () => {
             </p>
           </div>
         ) : isLive ? (
-          <Button onClick={handleJoinLive} disabled={joining} size="lg" variant="lime" className="w-full">
-            {joining ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Radio className="h-4 w-4 mr-2" />}
-            Walk in
-          </Button>
+          <div className="space-y-2">
+            <Button onClick={handleJoinLive} disabled={joining} size="lg" variant="lime" className="w-full">
+              {joining ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Radio className="h-4 w-4 mr-2" />}
+              Walk in
+            </Button>
+            {!isHost && (
+              <Button onClick={handleRaiseHand} disabled={raising || handRaised} variant="outline" className="w-full">
+                <Hand className="h-4 w-4 mr-2" />
+                {handRaised ? "Hand raised — waiting for host" : "Raise hand to come on stage"}
+              </Button>
+            )}
+          </div>
         ) : isEnded ? (
           <Card className="p-6 text-center bg-muted/30">
             <p className="text-sm font-semibold">This stage has wrapped.</p>

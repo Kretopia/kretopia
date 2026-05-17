@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, Loader2, ChevronRight, Sparkles, Maximize2, Minimize2 } from "lucide-react";
+import { Send, Loader2, ChevronRight, Sparkles, Maximize2, Minimize2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { sendAgentIntent, type OrchAction } from "@/lib/agentOrchestrator";
+import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
+import { AgentResultCard, type AgentResultCardData } from "@/components/agent/AgentResultCard";
+import { CopilotPlanCard, type CopilotPlan } from "@/components/agent/CopilotPlanCard";
+import { resultCardForAction } from "@/lib/agentActionPresentation";
 import {
   streamCopilot,
   loadCopilotHistory,
@@ -43,6 +49,13 @@ const RAIL_DISABLED_PREFIXES = [
 const STORAGE_KEY = "thrive-rail-collapsed";
 const FULLSCREEN_KEY = "thrive-rail-fullscreen";
 
+type AgentActivity = {
+  id: string;
+  status: "running" | "done" | "failed";
+  title: string;
+  body?: string;
+};
+
 const QUICK_PROMPTS: Record<string, string[]> = {
   home: ["What's on for today?", "Draft an outreach DM", "Find paid gigs this week"],
   desk: ["What's blocking my project?", "Draft an invoice", "Summarize this brief"],
@@ -65,6 +78,10 @@ export function DesktopCopilotRail() {
     try { return localStorage.getItem(FULLSCREEN_KEY) === "1"; } catch { return false; }
   });
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
+  const [actionsByMsg, setActionsByMsg] = useState<Record<number, OrchAction[]>>({});
+  const [resultCardsByMsg, setResultCardsByMsg] = useState<Record<number, AgentResultCardData[]>>({});
+  const [activityByMsg, setActivityByMsg] = useState<Record<number, AgentActivity[]>>({});
+  const [plansByMsg, setPlansByMsg] = useState<Record<number, CopilotPlan[]>>({});
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);

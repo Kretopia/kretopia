@@ -334,14 +334,38 @@ export const VideoCallSheet = ({
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleEnd}
-                  aria-label="Close call"
-                  className="h-9 w-9 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/80 transition-colors shrink-0"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {peerUserId && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label="Safety options"
+                          className="h-9 w-9 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/80 transition-colors"
+                        >
+                          <ShieldAlert className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuItem onClick={() => setSafetyMode("report")} className="text-destructive focus:text-destructive">
+                          <Flag className="h-4 w-4 mr-2" /> Report {peerName || "this person"}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setSafetyMode("block")} className="text-destructive focus:text-destructive">
+                          <Ban className="h-4 w-4 mr-2" /> Block & don't reconnect
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleEnd}
+                    aria-label="Close call"
+                    className="h-9 w-9 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/80 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </header>
 
               {/* Video area */}

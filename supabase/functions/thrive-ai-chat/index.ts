@@ -43,6 +43,39 @@ const SURFACE_TONE: Record<string, string> = {
     "post-event recaps.",
 };
 
+const AFFIRM_RE = /^\s*(ok(ay)?|yes|yep|yeah|sure|do it|run it|yes run it|go ahead|let'?s go|sounds good|please|👍|👌|✅|y)\s*[.!]?\s*$/i;
+const ACTION_OR_PLAN_RE = /<(action|plan)>[\s\S]*?<\/\1>/i;
+
+function replayPriorActionForAffirmation(latestUserText: string, priorAssistantText?: string | null) {
+  if (!AFFIRM_RE.test(latestUserText) || !priorAssistantText || !ACTION_OR_PLAN_RE.test(priorAssistantText)) {
+    return null;
+  }
+  const tag = priorAssistantText.match(ACTION_OR_PLAN_RE)?.[0];
+  if (!tag) return null;
+  const visible = priorAssistantText.replace(/<action>[\s\S]*?<\/action>/g, "").replace(/<plan>[\s\S]*?<\/plan>/g, "").trim();
+  const topic = /sponsor|brand partner|partnership/i.test(priorAssistantText)
+    ? "the sponsor request"
+    : /invoice|payment|money/i.test(priorAssistantText)
+      ? "the money request"
+      : "the last request";
+  const confirmation = visible
+    ? `Keeping this on ${topic} — ${visible.replace(/^(hey\s+[^—]+—\s*)/i, "")}`
+    : `Keeping this on ${topic}.`;
+  return `${confirmation}\n${tag}`;
+}
+
+function streamTextResponse(content: string, conversationId: string | null) {
+  const sse =
+    `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n` +
+    `data: [DONE]\n\n`;
+  const headers: Record<string, string> = {
+    ...corsHeaders,
+    "Content-Type": "text/event-stream",
+  };
+  if (conversationId) headers["X-Copilot-Conversation-Id"] = conversationId;
+  return new Response(sse, { headers });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 

@@ -50,7 +50,12 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
 
         const [{ data: rows }, { data: statsData }] = await Promise.all([avatarsP, statsP]);
         if (!alive) return;
-        if (rows) setCreators(rows as FoundingCreator[]);
+        if (rows) {
+          // Prefer avatars first, then fill the rest with initials-only rows up to 6.
+          const withAvatar = (rows as FoundingCreator[]).filter((r) => r.avatar_url);
+          const withoutAvatar = (rows as FoundingCreator[]).filter((r) => !r.avatar_url);
+          setCreators([...withAvatar, ...withoutAvatar].slice(0, 6));
+        }
         const c = (statsData as any)?.stats?.creators;
         if (typeof c === "number") setCreatorCount(c);
       } catch {

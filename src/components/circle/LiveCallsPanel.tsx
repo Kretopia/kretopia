@@ -239,7 +239,7 @@ export function LiveCallsPanel() {
           projectName={activeRoom.label}
           roomUrl={activeRoom.url}
           roomName={activeRoom.name}
-          token={activeRoom.token ?? ""}
+          token={activeRoom.token}
           callId={activeRoom.callId}
           userName={myName}
           userAvatar={user?.user_metadata?.avatar_url ?? null}

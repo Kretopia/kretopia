@@ -383,6 +383,35 @@ Short replies like "yes", "no", "ok", "sure", "do it", "go ahead", "nope", "let'
       }
     }
 
+    const immediatePriorAssistant = [...priorMessages].reverse().find((m) => m.role === "assistant");
+    const affirmedReplay = latestUser
+      ? replayPriorActionForAffirmation(latestUser.content, immediatePriorAssistant?.content)
+      : null;
+    if (affirmedReplay) {
+      if (persist && conversationId) {
+        try {
+          await admin.from("ai_messages").insert({
+            conversation_id: conversationId,
+            role: "assistant",
+            content: affirmedReplay,
+          });
+          await admin
+            .from("ai_conversations")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", conversationId);
+        } catch (e) {
+          console.warn("Persist affirmed replay failed", e);
+        }
+      }
+      if (!stream) {
+        return new Response(
+          JSON.stringify({ content: affirmedReplay, conversation_id: conversationId }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      return streamTextResponse(affirmedReplay, conversationId);
+    }
+
     // Final messages array sent to the model
     const modelMessages = [
       { role: "system", content: systemPrompt },

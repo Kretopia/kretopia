@@ -5,16 +5,20 @@ export const resultCardForAction = (action: OrchAction): AgentResultCardData | n
   if (action.status !== "auto_executed" && action.status !== "executed") return null;
 
   const result = (action.result ?? {}) as any;
+  const payload = (result.result ?? result) as any;
 
   if (action.tool_name === "find_sponsors") {
-    const count = Array.isArray(result.leads) ? result.leads.length : result.count;
+    const count = Array.isArray(payload.leads) ? payload.leads.length : payload.count;
+    const href = payload.project_id ? `/desk/${payload.project_id}?section=sponsors` : "/intel?tab=sponsors";
     return {
       id: action.id,
       icon: "sponsor",
       title: count ? `${count} sponsor leads found` : "Sponsor leads ready",
-      subtitle: "Review fit scores and pitch drafts in Intel.",
-      href: "/intel",
-      cta: "Open Intel",
+      subtitle: payload.project_title
+        ? `Review names, contacts, and match reasons inside ${payload.project_title}.`
+        : "Review names, contacts, sources, and match reasons in Intel.",
+      href,
+      cta: payload.project_id ? "Open Sponsors" : "Open Intel",
     };
   }
 

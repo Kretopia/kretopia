@@ -172,21 +172,24 @@ export default function Circle() {
           description="Find collaborators, jump into live sessions, and grow your creative circle."
         />
 
-        {/* Sticky header */}
-        <div className="sticky top-0 z-10 border-b border-border/60 bg-background">
-          <div className="container mx-auto px-3 sm:px-4 pt-3 pb-3">
-            {/* Title row */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <Theater className="h-5 w-5 text-[hsl(var(--signal-teal))] shrink-0" />
-                <h1 className="text-2xl font-black tracking-[-0.03em] truncate">
-                  <span className="italic text-[hsl(var(--signal-teal))]">Stages</span>
+        {/* Calm header — matches Scout/About/Subscription pattern */}
+        <header className="border-b border-border/60 bg-background pt-[env(safe-area-inset-top)]">
+          <div className="container mx-auto max-w-5xl px-4 pt-7 pb-4 sm:pt-9 sm:pb-6">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-2">
+                  Stages
+                </p>
+                <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">
+                  Where creators{" "}
+                  <span className="italic text-[hsl(var(--signal-teal))]">meet</span>
+                  <span className="text-foreground/60">, live.</span>
                 </h1>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9"
+                className="h-9 w-9 shrink-0"
                 onClick={() => setShowInvite(true)}
                 aria-label="Invite creators"
               >
@@ -228,7 +231,7 @@ export default function Circle() {
               </Button>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Content — Sound Stages is the main page */}
         <div className="container mx-auto px-3 sm:px-4 py-3">

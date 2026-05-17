@@ -102,13 +102,11 @@ export function NetworkReachStats({ stats, loading, className, onDegreeClick }: 
                 <Icon className={cn("h-3.5 w-3.5", deg.color)} />
                 <span className={cn("text-xs font-medium", deg.color)}>{deg.label}</span>
               </div>
-              <p className="text-xl font-bold">{deg.count.toLocaleString()}</p>
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] text-muted-foreground">{deg.sublabel}</p>
-                {deg.count > 0 && (
-                  <span className="text-[10px] text-primary font-medium">View →</span>
-                )}
-              </div>
+              <p className="text-xl font-bold leading-none mb-1">{deg.count.toLocaleString()}</p>
+              <p className="text-[10px] text-muted-foreground leading-tight">{deg.sublabel}</p>
+              {deg.count > 0 && (
+                <span className="mt-1.5 inline-block text-[10px] text-primary font-medium">View →</span>
+              )}
             </button>
           );
         })}

@@ -28,9 +28,9 @@ interface ProfileContentSectionsProps {
 
 // Batch 2.5: removed "Stamps" tab — redundant with Passport anchor strip → /credits.
 const PROFILE_TABS = [
-  { id: "hire", label: "Work With Me", icon: DollarSign },
+  { id: "hire", label: "Book Me", icon: DollarSign },
   { id: "skills", label: "Skills", icon: Zap },
-  { id: "reviews", label: "Reviews", icon: Star },
+  { id: "reviews", label: "Co-signs", icon: Star },
 ] as const;
 
 type TabId = typeof PROFILE_TABS[number]["id"];

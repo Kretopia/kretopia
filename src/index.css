@@ -23,9 +23,10 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 11% 8%;
 
-    /* ThriveIN indigo #5B6BF5 — the ONE accent. Used sparingly. */
-    --primary: 232 87% 66%;
-    --primary-foreground: 0 0% 100%;
+    /* Phase 2 ink-as-primary: structural color does buttons + links + highlights.
+       Spectrum (pink/amber/teal) is RESERVED for the brand mark, loader and badges. */
+    --primary: 240 11% 8%;
+    --primary-foreground: 36 27% 97%;
 
     --secondary: 36 18% 93%;
     --secondary-foreground: 240 11% 12%;
@@ -37,14 +38,13 @@ All colors MUST be HSL.
     --cream: 36 30% 95%;
     --cream-foreground: 240 11% 12%;
 
-    /* Subtle indigo-tinted hover/selected — quiet, not loud */
-    --accent: 232 60% 96%;
-    --accent-foreground: 232 70% 35%;
+    /* Quiet ink-tinted hover/selected */
+    --accent: 36 22% 92%;
+    --accent-foreground: 240 11% 8%;
 
-    /* Energy = primary in light minimal mode (no magenta, no lime).
-       Dark mode restores electric lime below. */
-    --energy: 232 87% 66%;
-    --energy-foreground: 0 0% 100%;
+    /* Energy = teal signal (the one spectrum color promoted to a token). */
+    --energy: 174 73% 47%;
+    --energy-foreground: 240 17% 7%;
 
     --destructive: 0 70% 52%;
     --destructive-foreground: 0 0% 100%;
@@ -52,7 +52,7 @@ All colors MUST be HSL.
     /* Hairline borders — barely visible, more whitespace */
     --border: 36 15% 88%;
     --input: 36 15% 88%;
-    --ring: 232 87% 66%;
+    --ring: 240 11% 8%;
 
     --success: 152 55% 38%;
     --success-foreground: 0 0% 100%;
@@ -122,9 +122,9 @@ All colors MUST be HSL.
     --popover: 240 14% 9%;
     --popover-foreground: 240 15% 96%;
 
-    /* ThriveIN indigo #5B6BF5 — same accent as Daylight, just on dark */
-    --primary: 232 87% 66%;
-    --primary-foreground: 0 0% 100%;
+    /* Phase 2 ink-as-primary on dark = off-white ink on near-black */
+    --primary: 240 15% 96%;
+    --primary-foreground: 240 17% 7%;
 
     --secondary: 240 12% 16%;
     --secondary-foreground: 240 15% 92%;
@@ -132,22 +132,22 @@ All colors MUST be HSL.
     --muted: 240 10% 14%;
     --muted-foreground: 240 8% 62%;
 
-    --accent: 232 35% 20%;
+    --accent: 240 12% 18%;
     --accent-foreground: 240 15% 96%;
 
     --cream: 38 35% 92%;
     --cream-foreground: 240 17% 12%;
 
-    /* Energy = indigo in Midnight (no lime). Neon vibe restores lime below. */
-    --energy: 232 87% 66%;
-    --energy-foreground: 0 0% 100%;
+    /* Energy = teal signal on dark */
+    --energy: 174 73% 47%;
+    --energy-foreground: 240 17% 7%;
 
     --destructive: 0 75% 60%;
     --destructive-foreground: 240 15% 96%;
 
     --border: 240 12% 18%;
     --input: 240 10% 14%;
-    --ring: 232 87% 66%;
+    --ring: 240 15% 96%;
 
     --success: 152 65% 50%;
     --success-foreground: 240 17% 7%;
@@ -195,21 +195,21 @@ All colors MUST be HSL.
      ============================================================ */
   .dark[data-vibe="midnight"],
   [data-vibe="midnight"].dark {
-    --primary: 232 87% 66%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 232 35% 20%;
+    --primary: 240 15% 96%;
+    --primary-foreground: 240 17% 7%;
+    --accent: 240 12% 18%;
     --accent-foreground: 240 15% 96%;
-    --energy: 232 87% 66%;
-    --energy-foreground: 0 0% 100%;
-    --ring: 232 87% 66%;
-    --gradient-primary: linear-gradient(135deg, hsl(232 87% 66%), hsl(232 87% 72%));
-    --gradient-secondary: linear-gradient(135deg, hsl(232 87% 66% / 0.18), hsl(232 87% 66% / 0.04));
-    --gradient-subtle: linear-gradient(180deg, hsl(232 87% 66% / 0.08), transparent);
-    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(232 87% 66% / 0.14), transparent 70%);
-    --shadow-glow: 0 0 32px hsl(232 87% 66% / 0.35);
-    --mode-accent: 232 87% 66%;
-    --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 32px hsl(232 87% 66% / 0.35);
+    --energy: 174 73% 47%;
+    --energy-foreground: 240 17% 7%;
+    --ring: 240 15% 96%;
+    --gradient-primary: linear-gradient(135deg, hsl(240 15% 96%), hsl(240 15% 88%));
+    --gradient-secondary: linear-gradient(135deg, hsl(174 73% 47% / 0.18), hsl(174 73% 47% / 0.04));
+    --gradient-subtle: linear-gradient(180deg, hsl(174 73% 47% / 0.08), transparent);
+    --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, hsl(174 73% 47% / 0.12), transparent 70%);
+    --shadow-glow: 0 0 32px hsl(174 73% 47% / 0.30);
+    --mode-accent: 240 15% 96%;
+    --mode-accent-foreground: 240 17% 7%;
+    --mode-glow: 0 0 32px hsl(174 73% 47% / 0.30);
   }
 
   /* ============================================================

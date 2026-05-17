@@ -5,7 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, X, Clock, Users } from "lucide-react";
+import { CheckCircle2, X, Clock, Users, Award, ShieldCheck, BookmarkPlus, CalendarClock } from "lucide-react";
+
+type Outcome = "co_sign" | "credit" | "rolodex" | "followup";
 
 interface Stage {
   id: string;
@@ -161,50 +163,109 @@ function ApplicantRow({
     } finally { setTurnLoading(false); }
   };
 
+  const [outcomeLoading, setOutcomeLoading] = useState<Outcome | null>(null);
+  const [recordedOutcome, setRecordedOutcome] = useState<Outcome | null>(null);
+
+  const recordOutcome = async (outcome: Outcome) => {
+    if (!stageId) return;
+    setOutcomeLoading(outcome);
+    try {
+      const { error } = await supabase.functions.invoke("record-stage-outcome", {
+        body: { stage_id: stageId, applicant_user_id: app.user_id, outcome },
+      });
+      if (error) throw error;
+      setRecordedOutcome(outcome);
+      const label: Record<Outcome, string> = {
+        co_sign: "Co-sign sent",
+        credit: "Stamp added",
+        rolodex: "Saved to Rolodex",
+        followup: "Follow-up scheduled",
+      };
+      toast({ title: label[outcome] });
+    } catch (e: any) {
+      toast({ title: "Couldn't record", description: e?.message, variant: "destructive" });
+    } finally { setOutcomeLoading(null); }
+  };
+
   return (
-    <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={app.profile?.avatar_url ?? undefined} />
-        <AvatarFallback>{(app.profile?.full_name ?? "?").slice(0, 1)}</AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <p className="font-bold text-sm leading-tight">{app.profile?.full_name ?? "Applicant"}</p>
-          {typeof app.match_score === "number" && app.match_score >= 0.6 && (
-            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4">
-              {Math.round(app.match_score * 100)}% match
-            </Badge>
+    <div className="flex flex-col gap-2 p-3 rounded-lg bg-card border border-border">
+      <div className="flex items-start gap-3">
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={app.profile?.avatar_url ?? undefined} />
+          <AvatarFallback>{(app.profile?.full_name ?? "?").slice(0, 1)}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="font-bold text-sm leading-tight">{app.profile?.full_name ?? "Applicant"}</p>
+            {typeof app.match_score === "number" && app.match_score >= 0.6 && (
+              <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4">
+                {Math.round(app.match_score * 100)}% match
+              </Badge>
+            )}
+          </div>
+          {app.profile?.primary_role && <p className="text-[11px] text-muted-foreground">{app.profile.primary_role}</p>}
+          {app.pitch && <p className="text-xs mt-1.5 line-clamp-3">{app.pitch}</p>}
+          {app.voice_url && (
+            <a href={app.voice_url} target="_blank" rel="noopener noreferrer"
+              className="inline-block text-[11px] font-semibold text-primary hover:underline mt-1">
+              Open sample link →
+            </a>
           )}
         </div>
-        {app.profile?.primary_role && <p className="text-[11px] text-muted-foreground">{app.profile.primary_role}</p>}
-        {app.pitch && <p className="text-xs mt-1.5 line-clamp-3">{app.pitch}</p>}
-        {app.voice_url && (
-          <a href={app.voice_url} target="_blank" rel="noopener noreferrer"
-            className="inline-block text-[11px] font-semibold text-primary hover:underline mt-1">
-            Open sample link →
-          </a>
-        )}
-      </div>
-      <div className="shrink-0 flex flex-col gap-1.5">
-        {confirmed ? (
-          live ? (
-            <Button size="sm" variant="lime" onClick={startTurn} disabled={turnLoading}>
-              <Clock className="h-3 w-3 mr-1" /> Pull up
-            </Button>
+        <div className="shrink-0 flex flex-col gap-1.5">
+          {confirmed ? (
+            live ? (
+              <Button size="sm" variant="lime" onClick={startTurn} disabled={turnLoading}>
+                <Clock className="h-3 w-3 mr-1" /> Pull up
+              </Button>
+            ) : (
+              <Badge variant="outline" className="text-[10px]">Confirmed</Badge>
+            )
           ) : (
-            <Badge variant="outline" className="text-[10px]">Confirmed</Badge>
-          )
-        ) : (
-          <>
-            <Button size="sm" onClick={onAccept} disabled={reviewing}>
-              <CheckCircle2 className="h-3 w-3 mr-1" /> Accept
-            </Button>
-            <Button size="sm" variant="ghost" onClick={onDecline} disabled={reviewing}>
-              <X className="h-3 w-3 mr-1" /> Pass
-            </Button>
-          </>
-        )}
+            <>
+              <Button size="sm" onClick={onAccept} disabled={reviewing}>
+                <CheckCircle2 className="h-3 w-3 mr-1" /> Accept
+              </Button>
+              <Button size="sm" variant="ghost" onClick={onDecline} disabled={reviewing}>
+                <X className="h-3 w-3 mr-1" /> Pass
+              </Button>
+            </>
+          )}
+        </div>
       </div>
+
+      {confirmed && stageId && (
+        <div className="pt-2 border-t border-border/60">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+            One-tap outcome {recordedOutcome && <span className="text-[hsl(var(--energy))]">· last: {recordedOutcome.replace("_", "-")}</span>}
+          </p>
+          <div className="grid grid-cols-4 gap-1.5">
+            <OutcomeBtn icon={ShieldCheck} label="Co-sign" active={recordedOutcome === "co_sign"} loading={outcomeLoading === "co_sign"} onClick={() => recordOutcome("co_sign")} />
+            <OutcomeBtn icon={Award} label="Credit" active={recordedOutcome === "credit"} loading={outcomeLoading === "credit"} onClick={() => recordOutcome("credit")} />
+            <OutcomeBtn icon={BookmarkPlus} label="Rolodex" active={recordedOutcome === "rolodex"} loading={outcomeLoading === "rolodex"} onClick={() => recordOutcome("rolodex")} />
+            <OutcomeBtn icon={CalendarClock} label="Follow-up" active={recordedOutcome === "followup"} loading={outcomeLoading === "followup"} onClick={() => recordOutcome("followup")} />
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function OutcomeBtn({
+  icon: Icon, label, active, loading, onClick,
+}: {
+  icon: any; label: string; active?: boolean; loading?: boolean; onClick: () => void;
+}) {
+  return (
+    <Button
+      size="sm"
+      variant={active ? "lime" : "outline"}
+      onClick={onClick}
+      disabled={loading}
+      className="h-auto py-1.5 px-1 flex-col gap-0.5 text-[10px] font-bold"
+    >
+      <Icon className="h-3.5 w-3.5" />
+      <span>{label}</span>
+    </Button>
   );
 }

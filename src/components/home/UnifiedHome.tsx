@@ -41,6 +41,7 @@ import { DuplicateAccountBanner } from "@/components/account/DuplicateAccountBan
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { MagicHomeHero } from "@/components/home/MagicHomeHero";
 import { MorningPulse } from "@/components/home/MorningPulse";
+import { CuratedStagesRail } from "@/components/circle/CuratedStagesRail";
 import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
 import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";

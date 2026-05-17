@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { Radar, Store, UserSearch, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 type Tab = "scouted" | "marketplace" | "talent";
@@ -12,7 +11,7 @@ type Tab = "scouted" | "marketplace" | "talent";
 const TABS: { id: Tab; label: string; icon: typeof Radar; hint: string }[] = [
   { id: "scouted", label: "For You", icon: Radar, hint: "Real gigs scouted from across the web" },
   { id: "marketplace", label: "Open Gigs", icon: Store, hint: "All open gigs on ThriveIN" },
-  { id: "talent", label: "Talent", icon: UserSearch, hint: "Scout creators to hire" },
+  { id: "talent", label: "Hire Talent", icon: UserSearch, hint: "Open Talent Scout" },
 ];
 
 /**

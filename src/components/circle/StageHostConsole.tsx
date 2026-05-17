@@ -5,7 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, X, Clock, Users } from "lucide-react";
+import { CheckCircle2, X, Clock, Users, Award, ShieldCheck, BookmarkPlus, CalendarClock } from "lucide-react";
+
+type Outcome = "co_sign" | "credit" | "rolodex" | "followup";
 
 interface Stage {
   id: string;

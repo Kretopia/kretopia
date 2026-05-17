@@ -81,7 +81,7 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           >
             <span className="block">Meet people.</span>
             <span className="block">Build work.</span>
-            <span className="block italic">Own your record.</span>
+            <span className="block italic">Own your <span className="text-[hsl(var(--signal-teal))]">record</span>.</span>
             <span className="block">Get paid.</span>
           </motion.h1>
 

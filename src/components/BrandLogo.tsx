@@ -49,7 +49,7 @@ export function BrandLogo({
             "font-black tracking-tight text-foreground select-none"
           )}
         >
-          Thrive<span className="text-spectrum">IN</span>
+          Thrive<span style={{ color: "#20D3C2" }}>IN</span>
         </span>
       )}
       {showBeta && (

@@ -701,10 +701,10 @@ export const UnifiedHome = () => {
           <section className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Users className="h-4 w-4 text-accent" />
+                <Users className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
                 Creators For You
               </h2>
-              <Link to="/circle" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+              <Link to="/circle" className="text-xs text-[hsl(var(--signal-teal))] font-medium flex items-center gap-1 hover:underline">
                 See all <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
@@ -982,10 +982,10 @@ export const UnifiedHome = () => {
           <section id="section-credits" className="mb-8 scroll-mt-14">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
+                <TrendingUp className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
                 Credits In Your World
               </h2>
-              <Link to="/credits" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
+              <Link to="/credits" className="text-xs text-[hsl(var(--signal-teal))] font-medium flex items-center gap-1 hover:underline">
                 {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
               </Link>
             </div>

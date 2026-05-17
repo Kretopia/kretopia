@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Sparkles, Send, Loader2, Trash2, HelpCircle, Mic, Square, Volume2, VolumeX, Crown } from "lucide-react";
+import { Sparkles, Send, Loader2, Trash2, HelpCircle, Mic, Square, Volume2, VolumeX, Crown, CheckCircle2, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   startRecording,
@@ -37,6 +37,7 @@ import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
 import { AgentResultCard, type AgentResultCardData } from "@/components/agent/AgentResultCard";
 import { CopilotPlanCard, type CopilotPlan } from "@/components/agent/CopilotPlanCard";
 import { CopilotCapabilities } from "@/components/agent/CopilotCapabilities";
+import { resultCardForAction } from "@/lib/agentActionPresentation";
 
 /**
  * Thrive Copilot — the SINGLE assistant for the whole platform.
@@ -101,40 +102,11 @@ const QUICK_PROMPTS_BY_SURFACE: Partial<Record<CopilotSurface, string[]>> = {
   ],
 };
 
-const resultCardForAction = (action: OrchAction): AgentResultCardData | null => {
-  if (action.status !== "auto_executed" && action.status !== "executed") return null;
-  const result = (action.result ?? {}) as any;
-  if (action.tool_name === "find_sponsors") {
-    const count = Array.isArray(result.leads) ? result.leads.length : result.count;
-    return {
-      id: action.id,
-      icon: "sponsor",
-      title: count ? `${count} sponsor leads found` : "Sponsor leads ready",
-      subtitle: "Review fit scores and pitch drafts in Intel.",
-      href: "/intel",
-      cta: "Open Intel",
-    };
-  }
-  if (action.tool_name === "weekly_money_summary") {
-    return {
-      id: action.id,
-      icon: "money",
-      title: "Money summary ready",
-      subtitle: "Review invoices and payment next steps.",
-      href: "/thrivepay",
-      cta: "Open Pay",
-    };
-  }
-  if (action.tool_name === "draft_outreach_email") {
-    return {
-      id: action.id,
-      icon: "outreach",
-      title: "Sponsor outreach draft ready",
-      subtitle: "Review before sending.",
-      href: "/inbox",
-    };
-  }
-  return null;
+type AgentActivity = {
+  id: string;
+  status: "running" | "done" | "failed";
+  title: string;
+  body?: string;
 };
 
 export const ThriveAgentFab = () => {
@@ -149,6 +121,8 @@ export const ThriveAgentFab = () => {
   const [actionsByMsg, setActionsByMsg] = useState<Record<number, OrchAction[]>>({});
   // Map message index -> safe auto-executed result cards for that assistant turn.
   const [resultCardsByMsg, setResultCardsByMsg] = useState<Record<number, AgentResultCardData[]>>({});
+  // Map message index -> visible "what Thrive is doing" activity rows.
+  const [activityByMsg, setActivityByMsg] = useState<Record<number, AgentActivity[]>>({});
   // Map message index -> multi-step plans proposed for that assistant turn.
   const [plansByMsg, setPlansByMsg] = useState<Record<number, CopilotPlan[]>>({});
   const [conversationId, setConversationId] = useState<string | undefined>();
@@ -425,11 +399,10 @@ export const ThriveAgentFab = () => {
         // propose them as approval cards.
         const { visible, actions: parsed, plans: parsedPlans } = extractActions(assistantSoFar);
         if (parsed.length > 0 || parsedPlans.length > 0) {
-          let assistantIdx = -1;
+          const assistantIdx = messages.length + 1;
           setMessages((prev) => {
             const idx = prev.length - 1;
             if (prev[idx]?.role === "assistant") {
-              assistantIdx = idx;
               return prev.map((m, i) =>
                 i === idx ? { ...m, content: visible || "On it." } : m,
               );
@@ -439,6 +412,19 @@ export const ThriveAgentFab = () => {
 
           // Fan out: each parsed action becomes a queued orchestrator run.
           for (const intentObj of parsed) {
+            const activityId = `action-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            setActivityByMsg((prev) => ({
+              ...prev,
+              [assistantIdx]: [
+                ...(prev[assistantIdx] ?? []),
+                {
+                  id: activityId,
+                  status: "running",
+                  title: "Finding the right tool",
+                  body: intentObj.intent,
+                },
+              ],
+            }));
             try {
               const run = await sendAgentIntent(intentObj.intent, {
                 surface: intentObj.surface ?? surface,
@@ -461,15 +447,62 @@ export const ThriveAgentFab = () => {
                     [assistantIdx]: [...(prev[assistantIdx] ?? []), ...resultCards],
                   }));
                 }
+                setActivityByMsg((prev) => ({
+                  ...prev,
+                  [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                    item.id === activityId
+                      ? {
+                          ...item,
+                          status: "done",
+                          title: proposed.length
+                            ? "Ready for your approval"
+                            : resultCards.length
+                              ? "Done — result ready"
+                              : "Checked the available tools",
+                          body: proposed.length
+                            ? `${proposed.length} action${proposed.length === 1 ? "" : "s"} below need your approval.`
+                            : resultCards.length
+                              ? "Open the result card below to continue."
+                              : run.reasoning,
+                        }
+                      : item,
+                  ),
+                }));
               }
             } catch (err) {
               console.warn("Copilot action propose failed", err);
+              setActivityByMsg((prev) => ({
+                ...prev,
+                [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                  item.id === activityId
+                    ? {
+                        ...item,
+                        status: "failed",
+                        title: "Couldn't queue that action",
+                        body: err instanceof Error ? err.message : "Try again.",
+                      }
+                    : item,
+                ),
+              }));
               toast.error("Couldn't queue that action — try again.");
             }
           }
 
           // Fan out: each parsed plan calls the planner directly and renders a PlanCard.
           for (const planReq of parsedPlans) {
+            const activityId = `plan-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            setActivityByMsg((prev) => ({
+              ...prev,
+              [assistantIdx]: [
+                ...(prev[assistantIdx] ?? []),
+                {
+                  id: activityId,
+                  status: "running",
+                  title: "Building the plan",
+                  body: planReq.goal,
+                },
+              ],
+            }));
             try {
               const { data, error } = await supabase.functions.invoke("copilot-planner", {
                 body: {
@@ -490,15 +523,49 @@ export const ThriveAgentFab = () => {
                       summary: data.summary,
                       status: data.status ?? "proposed",
                       steps: data.steps ?? [],
-                      autoRun: true,
+                      autoRun: false,
                     },
                   ],
                 }));
+                setActivityByMsg((prev) => ({
+                  ...prev,
+                  [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                    item.id === activityId
+                      ? {
+                          ...item,
+                          status: "done",
+                          title: "Plan ready for approval",
+                          body: `${data.steps?.length ?? 0} step${(data.steps?.length ?? 0) === 1 ? "" : "s"} prepared below.`,
+                        }
+                      : item,
+                  ),
+                }));
               } else if (data?.summary) {
+                setActivityByMsg((prev) => ({
+                  ...prev,
+                  [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                    item.id === activityId
+                      ? { ...item, status: "done", title: "No plan needed", body: data.summary }
+                      : item,
+                  ),
+                }));
                 toast.message(data.summary);
               }
             } catch (err) {
               console.warn("Copilot plan propose failed", err);
+              setActivityByMsg((prev) => ({
+                ...prev,
+                [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                  item.id === activityId
+                    ? {
+                        ...item,
+                        status: "failed",
+                        title: "Couldn't build the plan",
+                        body: err instanceof Error ? err.message : "Try again.",
+                      }
+                    : item,
+                ),
+              }));
               toast.error("Couldn't draft that plan — try again.");
             }
           }
@@ -530,6 +597,7 @@ export const ThriveAgentFab = () => {
       setMessages([]);
       setActionsByMsg({});
       setResultCardsByMsg({});
+      setActivityByMsg({});
       setPlansByMsg({});
       toast.success("History cleared");
     } catch (e) {
@@ -772,12 +840,43 @@ export const ThriveAgentFab = () => {
                 >
                   {m.role === "assistant" ? (
                     <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_pre]:my-1 [&_pre]:text-xs">
-                      <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
+                      <ReactMarkdown>{extractActions(m.content).visible || "…"}</ReactMarkdown>
                     </div>
                   ) : (
                     <div className="whitespace-pre-wrap">{m.content}</div>
                   )}
                 </div>
+                {/* Visible activity rows so users can see what Thrive is doing before a card appears */}
+                {m.role === "assistant" && activityByMsg[i]?.length ? (
+                  <div className="space-y-1.5 max-w-[95%]">
+                    {activityByMsg[i].map((item) => {
+                      const Icon = item.status === "running" ? Loader2 : item.status === "failed" ? AlertCircle : CheckCircle2;
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-start gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs"
+                        >
+                          <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                            <Icon
+                              className={cn(
+                                "h-3.5 w-3.5",
+                                item.status === "running" && "animate-spin text-primary",
+                                item.status === "done" && "text-primary",
+                                item.status === "failed" && "text-destructive",
+                              )}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold leading-snug text-foreground">{item.title}</p>
+                            {item.body && (
+                              <p className="mt-0.5 line-clamp-2 text-muted-foreground">{item.body}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
                 {/* Approval cards for any actions this assistant turn proposed */}
                 {m.role === "assistant" && actionsByMsg[i]?.length ? (
                   <div className="space-y-2 max-w-[95%]">

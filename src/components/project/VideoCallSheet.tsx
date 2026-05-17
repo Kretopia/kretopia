@@ -10,7 +10,19 @@ import {
   Circle,
   ScreenShare,
   X,
+  MoreVertical,
+  Flag,
+  Ban,
+  ShieldAlert,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ReportBlockDialog } from "@/components/user/ReportBlockDialog";
 import { type DailyCall } from "@daily-co/daily-js";
 import { createDailyFrame } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";

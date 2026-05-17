@@ -231,7 +231,7 @@ export default function Circle() {
               </Button>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Content — Sound Stages is the main page */}
         <div className="container mx-auto px-3 sm:px-4 py-3">

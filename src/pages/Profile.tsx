@@ -368,18 +368,15 @@ const ProfileContent = () => {
       />
 
       <div className="container mx-auto px-3 sm:px-4 md:px-6 max-w-3xl">
-        {/* Passport surface header — single anchor strip across /profile, /credits */}
-        <PassportAnchorStrip className="mb-3" />
+        {/* Calm Passport eyebrow header */}
+        <header className="pt-5 sm:pt-7 pb-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))]">
+            Passport
+          </p>
+        </header>
 
         {/* Identity section — who you are */}
         <section id="identity" className="scroll-mt-20">
-        {/* Claim success banner */}
-        <ClaimContinueBanner onRefresh={fetchData} />
-
-        {/* Discoveries Inbox — review credits surfaced by scans */}
-        {profile?.user_id && (
-          <DiscoveriesInbox userId={profile.user_id} onApproved={fetchData} />
-        )}
 
         {/* Profile Hero — compact, Instagram-style */}
         <ProfileHero
@@ -409,7 +406,6 @@ const ProfileContent = () => {
           isUploadingAvatar={isUploadingAvatar}
           onShowQR={() => setIsQRDialogOpen(true)}
           onCreatorCard={() => setIsCreatorCardOpen(true)}
-          onEPKEditor={() => setIsEPKEditorOpen(true)}
         />
 
         {/* Passport Overview — 4 trust cards (Stamps · Connections · Projects · Co-signs) */}
@@ -422,55 +418,19 @@ const ProfileContent = () => {
           />
         </div>
 
-        {/* Slim Duolingo-style profile strength bar — own profile only */}
-        <div className="mt-3">
-          <ProfileStrengthBar
-            profile={profile}
-            portfolioCount={portfolioItems?.length || 0}
-            creditsCount={credits?.length || 0}
-            awardsCount={awards?.length || 0}
-            pressCount={pressLinks?.length || 0}
-          />
-        </div>
-
-        {/* My Website quick-access */}
-        {profile?.site_enabled && (
-          <button
-            onClick={() => navigate('/website-builder')}
-            className="w-full mt-3 flex items-center gap-3 p-3 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
-          >
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">My Website</p>
-              <p className="text-xs text-muted-foreground truncate">
-                {profile?.username ? `thrivein.io/${profile.username}` : 'Edit your creator site'}
-              </p>
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-        )}
-
-
-        {profile && (() => {
-          const completion = checkProfileCompletion(profile, (portfolioItems?.length || 0) + (credits?.length || 0));
-          return completion.percentage < 100 ? (
-            <div className="mt-4">
-              <ProfileCompletionProgress completion={completion} />
-            </div>
-          ) : null;
-        })()}
-
-        {/* Creative Circle invite prompt — drives viral loop */}
-        <div className="mt-4">
-          <InviteCircleCard variant="profile" />
-        </div>
+        {/* Tiny link to private dashboard — owner only */}
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard')}
+          className="mt-3 w-full text-[11px] text-muted-foreground hover:text-[hsl(var(--signal-teal))] transition-colors py-1.5"
+        >
+          View private dashboard →
+        </button>
         </section>
         {/* /Identity */}
 
         {/* Hire Me section — rates, availability, work-with-me */}
-        <section id="hire" className="scroll-mt-20 mt-4">
+        <section id="hire" className="scroll-mt-20 mt-6">
           <ProfileContentSections
             profile={profile}
             portfolioItems={portfolioItems}

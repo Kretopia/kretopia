@@ -321,30 +321,17 @@ export const ProfileHero = ({
           </p>
         )}
 
-        {/* Row 6: Owner action bar — full-width segmented like IG */}
+        {/* Row 6: Owner action bar — minimal: Share + Edit. Everything else lives in /dashboard. */}
         {isOwnProfile && (
-          <div className="space-y-1.5">
-            <RefreshUniverseButton lastScanAt={profile?.last_universe_scan_at} />
-            <div className="flex gap-1.5 flex-wrap">
-              <Button variant="default" size="sm" className="h-8 flex-1 min-w-[90px] text-xs gap-1.5" onClick={onShare}>
-                <Share2 className="h-3.5 w-3.5" />
-                Share
-              </Button>
-              <Button variant="secondary" size="sm" className="h-8 flex-1 min-w-[90px] text-xs gap-1.5" onClick={handleBook}>
-                <Briefcase className="h-3.5 w-3.5" />
-                Book
-              </Button>
-              {onEPKEditor && (
-                <Button variant="secondary" size="sm" className="h-8 flex-1 min-w-[90px] text-xs gap-1.5" onClick={onEPKEditor}>
-                  <FileDown className="h-3.5 w-3.5" />
-                  EPK
-                </Button>
-              )}
-              <Button variant="secondary" size="sm" className="h-8 flex-1 min-w-[90px] text-xs gap-1.5" onClick={onEdit}>
-                <Edit className="h-3.5 w-3.5" />
-                Edit Passport
-              </Button>
-            </div>
+          <div className="flex gap-1.5">
+            <Button variant="default" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onShare}>
+              <Share2 className="h-3.5 w-3.5" />
+              Share
+            </Button>
+            <Button variant="secondary" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onEdit}>
+              <Edit className="h-3.5 w-3.5" />
+              Edit
+            </Button>
           </div>
         )}
 

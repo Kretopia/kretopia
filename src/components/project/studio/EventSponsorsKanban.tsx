@@ -348,6 +348,12 @@ function DraggableSponsor({ sponsor, onRemove }: { sponsor: Sponsor; onRemove: (
           {sponsor.deliverables && (
             <p className="text-[10px] text-foreground/70 mt-1 line-clamp-2">{sponsor.deliverables}</p>
           )}
+          {sponsor.contact_name && (
+            <p className="text-[10px] text-muted-foreground mt-1 truncate">Contact: {sponsor.contact_name}</p>
+          )}
+          {sponsor.notes && (
+            <p className="text-[10px] text-muted-foreground mt-1 line-clamp-3 whitespace-pre-line">{sponsor.notes}</p>
+          )}
           <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
             {sponsor.contact_email && (
               <a href={`mailto:${sponsor.contact_email}`} className="inline-flex items-center gap-0.5 hover:text-primary">

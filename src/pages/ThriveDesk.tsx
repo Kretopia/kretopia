@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { CreativeLoader } from "@/components/ui/creative-loader";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Loader2, Menu, X, PanelRightOpen, PanelLeftClose, PanelLeftOpen, FolderKanban } from "lucide-react";
 import { ProjectSettingsMenu } from "@/components/project/ProjectSettingsMenu";
 import { SimpleProjectHeader } from "@/components/project/SimpleProjectHeader";
@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 
 const ThriveDesk = () => {
   const { projectId } = useParams();
+  const [searchParams] = useSearchParams();
   const {
     loading, project, collaborators, files, messages, tasks, milestones,
     projects, userRole, isPro, user, fetchProjectData,
@@ -80,6 +81,15 @@ const ThriveDesk = () => {
     window.addEventListener("thrivedesk:set-tab", handler);
     return () => window.removeEventListener("thrivedesk:set-tab", handler);
   }, []);
+
+  useEffect(() => {
+    if (!project || searchParams.get("section") !== "sponsors") return;
+    setActiveTab("today");
+    window.dispatchEvent(new CustomEvent("thrivedesk:set-tab", { detail: "today" }));
+    window.setTimeout(() => {
+      document.getElementById("studio-sponsors")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300);
+  }, [project, searchParams]);
 
   // Broadcast tab changes so global UI (e.g. Copilot FAB) can react.
   useEffect(() => {

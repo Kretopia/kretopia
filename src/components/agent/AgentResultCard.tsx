@@ -29,16 +29,23 @@ const iconFor = (kind: AgentResultCardData["icon"]) => {
 interface Props {
   card: AgentResultCardData;
   compact?: boolean;
+  onOpen?: () => void;
 }
 
 /**
  * Tappable summary card the agent emits after a tool runs (e.g. "10 sponsors found").
  * Lives at the bottom of CopilotPlanCard when a plan completes.
  */
-export const AgentResultCard = ({ card, compact }: Props) => {
+export const AgentResultCard = ({ card, compact, onOpen }: Props) => {
   const navigate = useNavigate();
   const Icon = iconFor(card.icon);
   const clickable = !!card.href;
+
+  const openCard = () => {
+    if (!card.href) return;
+    navigate(card.href);
+    onOpen?.();
+  };
 
   const inner = (
     <div className={cn("flex items-center gap-3", compact ? "py-2" : "py-2.5")}>
@@ -64,7 +71,7 @@ export const AgentResultCard = ({ card, compact }: Props) => {
     return (
       <button
         type="button"
-        onClick={() => navigate(card.href!)}
+        onClick={openCard}
         className="block w-full text-left rounded-xl border border-border bg-card hover:border-primary/50 hover:bg-accent/40 transition-colors px-3"
       >
         {inner}

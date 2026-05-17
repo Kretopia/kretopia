@@ -431,7 +431,7 @@ export function DesktopCopilotRail() {
 
               {m.role === "assistant" && resultCardsByMsg[i]?.length ? (
                 <div className="space-y-2 max-w-[95%]">
-                  {resultCardsByMsg[i].map((card) => <AgentResultCard key={card.id} card={card} compact />)}
+                  {resultCardsByMsg[i].map((card) => <AgentResultCard key={card.id} card={card} compact onOpen={() => persistCollapsed(true)} />)}
                 </div>
               ) : null}
 

@@ -418,7 +418,9 @@ export const StudioRoom = ({
               <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
             </HideableSection>
             <HideableSection projectId={project.id} sectionId="event-sponsors">
-              <EventSponsorsKanban project={project} currentUserId={currentUserId} />
+              <div id="studio-sponsors" className="scroll-mt-20">
+                <EventSponsorsKanban project={project} currentUserId={currentUserId} />
+              </div>
             </HideableSection>
             {project.created_by === currentUserId && (
               <>
@@ -493,7 +495,9 @@ export const StudioRoom = ({
                 <EventCrmSection project={project} currentUserId={currentUserId} kind="talent" />
               </HideableSection>
               <HideableSection projectId={project.id} sectionId="event-sponsors" className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
-                <EventSponsorsKanban project={project} currentUserId={currentUserId} />
+                <div id="studio-sponsors" className="scroll-mt-20">
+                  <EventSponsorsKanban project={project} currentUserId={currentUserId} />
+                </div>
               </HideableSection>
               {project.created_by === currentUserId && (
                 <>

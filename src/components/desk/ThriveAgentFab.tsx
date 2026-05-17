@@ -847,6 +847,37 @@ export const ThriveAgentFab = () => {
                     <div className="whitespace-pre-wrap">{m.content}</div>
                   )}
                 </div>
+                {/* Visible activity rows so users can see what Thrive is doing before a card appears */}
+                {m.role === "assistant" && activityByMsg[i]?.length ? (
+                  <div className="space-y-1.5 max-w-[95%]">
+                    {activityByMsg[i].map((item) => {
+                      const Icon = item.status === "running" ? Loader2 : item.status === "failed" ? AlertCircle : CheckCircle2;
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-start gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs"
+                        >
+                          <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                            <Icon
+                              className={cn(
+                                "h-3.5 w-3.5",
+                                item.status === "running" && "animate-spin text-primary",
+                                item.status === "done" && "text-primary",
+                                item.status === "failed" && "text-destructive",
+                              )}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold leading-snug text-foreground">{item.title}</p>
+                            {item.body && (
+                              <p className="mt-0.5 line-clamp-2 text-muted-foreground">{item.body}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
                 {/* Approval cards for any actions this assistant turn proposed */}
                 {m.role === "assistant" && actionsByMsg[i]?.length ? (
                   <div className="space-y-2 max-w-[95%]">

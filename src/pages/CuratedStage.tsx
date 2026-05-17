@@ -26,6 +26,7 @@ type Stage = {
 
 const CuratedStage = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();

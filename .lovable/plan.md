@@ -1,201 +1,149 @@
-# IA Lock — Daily Driver Redesign
+# Sound Stages — Phase 1 Plan
 
-Goal: ThriveIN feels like Apple + Linear + Notion + Stripe. Fewer choices. One destination per intent. Ship IA scaffolding first, copy/visual sweeps after.
+Live tab inside Circle becomes **Sound Stages** — a Hollywood lot of live rooms. Each Stage = a different format. Ship Open Stages + Scheduled Speed Sessions in Phase 1, with both video and audio modes. Scout Stages defer to Phase 2.
 
 ---
 
-## 1. Bottom Nav (Daily Actions Only)
+## The Lot (industry lingo, sticks the metaphor)
+
+| Stage | What it is | Phase |
+|---|---|---|
+| **Open Stage** | Spontaneous "Go Live" — host opens a room, others walk on. Video or audio. 1:1 rotate, group, or audience mode. | 1 |
+| **Speed Session** | Scheduled, host-run, Hi Right Now style. 5-min Smart-Matched 1:1s, auto re-pair, post-call Co-sign / Rolodex / Spin a Studio. | 1 |
+| **Scout Stage** | Producer/A&R hosts an audition queue. 3-min slot per talent, instant Co-sign or Put Forward. | 2 |
+| **Showcase Stage** | One creative on the mic with an audience (Clubhouse-style hands-up). | 2 |
+
+Phase 1 ships: **Open Stage + Speed Session**, both with **Video or Audio** toggle.
+
+---
+
+## Information Architecture
+
+Route stays `/circle?tab=live`. Tab label: **"Sound Stages"**.
 
 ```text
-Today    Desk    Scout    Messages    Passport
+SOUND STAGES                                    [ Go Live ▾ ]
+┌─────────────────────────────────────────────────────────┐
+│  ON AIR NOW              (Open Stages, live, scrollable) │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐                  │
+│  │ 🎙 Audio  │ │ 📹 Video  │ │ 🎙 Audio  │  ...            │
+│  │ "Beat    │ │ "Color   │ │ "Open    │                  │
+│  │  swap"   │ │  grading"│ │  mic"    │                  │
+│  │ 3 on     │ │ 1:1 open │ │ 7 listen │                  │
+│  └──────────┘ └──────────┘ └──────────┘                  │
+├─────────────────────────────────────────────────────────┤
+│  CALL SHEET — UPCOMING SPEED SESSIONS                    │
+│  Tue 7pm · Music Producers x Vocalists · 28 RSVP [Save]  │
+│  Thu 6pm · Editors x Directors · 14 RSVP        [Save]   │
+├─────────────────────────────────────────────────────────┤
+│  Join via link  [ paste daily.co url ]                   │
+└─────────────────────────────────────────────────────────┘
 ```
 
-| Tab | Route | Absorbs | Icon |
-|---|---|---|---|
-| Today | `/` | Home, MorningPulse, Approvals digest | Sun |
-| Desk | `/desk` | Studios, Projects, Rooms, Files, Tasks | LayoutGrid |
-| Scout | `/scout` | Match swipe + Gigs marketplace + Scouted | Compass |
-| Messages | `/messages` | Chat, Calls, Video, Approvals inbox | MessageCircle |
-| Passport | `/profile` | Profile + Pay + ThriveCredits + Wallet | BadgeCheck |
-
-**Removed from bottom**: Home (renamed Today), Studios (renamed Desk), Pay (absorbed by Passport).
-
-**Company mode** keeps its own 4-tab B2B nav unchanged.
+`Go Live ▾` opens a sheet: **Open Stage** (instant) or **Speed Session** (admin/host scheduled — gated in v1).
 
 ---
 
-## 2. Persistent Thrive Bar (global, floating)
+## Phase 1A — Open Stage (video + audio, ~6 hrs)
 
-- Component: `<ThrivePromptBar />` (rename + extract from existing `ThrivePromptHero`)
-- Position: `fixed bottom-[calc(env(safe-area-inset-bottom)+72px)]` (above bottom nav)
-- Slots: voice mic · text input "What are we moving forward today?" · upload · send
-- Hidden on: `/onboarding`, `/auth/*`, full-screen video call, mobile chat thread
-- Wired to existing `route-thrive-intent` edge fn
-- **No Thrive tab in nav.** Agent = presence, not destination.
+Builds on existing `create-direct-video-call` + Daily.co infra.
 
----
+### DB
+New table `sound_stages`:
+- `id`, `host_user_id`, `title`, `vibe_tag` (text), `mode` ('video'|'audio'), `format` ('open_1to1'|'open_group'|'audience'), `room_url`, `room_name`, `is_live` bool, `participant_count` int, `started_at`, `ended_at`, `circle_id` nullable
+- RLS: read = authenticated, write = host only, `is_live` updated via edge fn
 
-## 3. Top Nav Cleanup
+Realtime publication on `sound_stages` for the On Air rail.
 
-Current: Search · Messages · Notifications · Theme · Hamburger → **5 items**
-Target: Inbox · Menu → **2 items**
+### Edge fns
+- `create-sound-stage` — creates Daily room (audio-only flag for audio stages → Daily `start_video_off: true` + UI hides cameras), inserts `sound_stages` row, returns host token
+- `end-sound-stage` — sets `is_live=false`, ended_at
+- Reuse `mint-video-token` for joiners (extend authz: anyone authenticated can join an `is_live=true` open stage)
 
-```text
-[Logo]  ················  🔔  ☰
-```
+### UI
+- `src/components/circle/SoundStagesRail.tsx` — On Air horizontal scroll, live presence dot, mode icon (🎙/📹), participant count, vibe tag
+- `src/components/circle/GoLiveSheet.tsx` — title, vibe tag chips (Beat-making, Color, Writing, Open mic…), mode toggle (Video/Audio), format (1:1 rotate / Group / Audience)
+- `src/components/circle/SoundStageRoom.tsx` — wraps `VideoCallSheet`; for audio stages renders a stripped-down speaker grid (avatars + speaking ring) instead of video tiles
+- Replace current `LiveCallsPanel` body with these three blocks + existing Join-via-link
 
-- Remove: top-nav Search (Thrive handles), top-nav Messages (bottom tab), Theme toggle (move to Settings → Appearance)
-- Keep: Inbox bell (approvals + notifications merged), Hamburger
-- Phase 2 (post-IA): swap ☰ for avatar dropdown
-
----
-
-## 4. Hamburger Rebuild — System + Account ONLY
-
-Rule: **Hamburger ≠ navigation.** Anything reachable from bottom nav is removed from hamburger.
-
-```text
-ACCOUNT
-  Subscription
-  Standing
-  Storage
-  Switch to Company Mode
-
-WORKSPACE
-  Founding Circle
-  Creative Circle
-  Manager Mode
-  Referral Program
-
-SETTINGS
-  Settings
-  Notifications
-  Memory & Agent Preferences
-  Language
-  Privacy
-  Appearance (was Theme toggle)
-
-SUPPORT
-  Feedback
-  Help Centre
-  About
-
-ADMIN (conditional)
-  Admin Panel
-
-———
-Sign Out
-```
-
-**Deleted from hamburger**: Inbox, Studios, Scout, Pay, Profile, Events, ThriveCredits, Discover, Spotlight, Fund, Intel, Ambassador, Founding (the page — Circle stays), Website Builder.
+### Safety / scope guards
+- Only authenticated ThriveIN users with a Passport can join (no anon, no random global).
+- Host controls: mute all, remove participant, end stage.
+- Max 50 in group, 200 in audience mode (Daily.co cap).
 
 ---
 
-## 5. Passport (absorbs Profile + Pay + Credits)
+## Phase 1B — Speed Session (scheduled, ~5 hrs)
 
-Route: `/profile` keeps URL, header rebrands to "Your Creative Passport".
+### DB
+- `speed_sessions` — `id`, `host_user_id`, `title`, `theme` (e.g. "Producers × Vocalists"), `mode` ('video'|'audio'), `starts_at`, `duration_min` (default 60), `slot_seconds` (default 300), `match_filters` jsonb (roles, skills, location radius), `status` ('scheduled'|'live'|'ended')
+- `speed_session_rsvps` — `session_id`, `user_id`, `joined_at`, `left_at`
+- `speed_session_pairings` — `session_id`, `round`, `user_a`, `user_b`, `room_name`, `started_at`, `ended_at` (so we can render "you met X" post-session for Co-sign / Rolodex)
+- RLS: RSVPs self-managed; pairings readable by the two participants.
 
-Anchor sections (in order):
-1. **Standing** — tier chip, verification score
-2. **Stamps** — credits grid (was ThriveCredits)
-3. **Co-signs** — vouches
-4. **Press Kit** — portfolio + EPK
-5. **Receipts** — ThrivePay history
-6. **Wallet** — invoices/quotes/payout (absorbs old `/thrivepay`)
-7. **Recent work** — active productions feed
-8. **Verification** — ID, socials, badges
+### Edge fns
+- `rsvp-speed-session` — insert RSVP, optional waitlist
+- `start-speed-session` — sets status=live, kicks off matcher
+- `speed-session-matcher` (cron-invoked every `slot_seconds` while live):
+  1. Pull active RSVPs not currently paired
+  2. Run weighted Smart Match (reuse weights from `matching/weighted-suggestion-algorithm`) to pair, avoiding repeat matches
+  3. Create Daily room per pair, insert `speed_session_pairings`, push `speed_session_pair_ready` Realtime broadcast to both users
+- `end-speed-session` — status=ended, generate per-user recap (people you met → Co-sign / Add to Rolodex / Spin a Studio actions)
 
-`/thrivepay` and `/credits` redirect into Passport anchors (`/profile#wallet`, `/profile#stamps`).
+### UI
+- `src/components/circle/CallSheetUpcoming.tsx` — upcoming Speed Sessions list with Save my spot
+- `src/pages/SpeedSession.tsx` (`/circle/speed/:id`) — lobby (countdown + RSVPs), live (auto-launches `VideoCallSheet` per pairing, 5-min timer, "Skip → re-pair" button), recap (list of people met with Co-sign / Rolodex / Studio buttons)
+- Notifications: `speed_session_starting_soon` (T-10m), `speed_session_pair_ready` (pair created)
 
----
-
-## 6. Today Dashboard
-
-Route: `/` (renamed from "Home" in nav label). Order:
-
-```text
-Good evening, Ethan
-Working Creative · 12 Stamps · 4 Co-signs
-─────────────────────────────────────
-Thrive noticed…           (proactive cards)
-Active productions        (StudioCardsGrid, max 3)
-Recent receipts           (MoneyBrief compact)
-Open opportunities        (ScoutedGigsSection, max 3)
-Upcoming sessions         (EventsNearYou, max 2)
-```
-
-Strip from Today: Magazine, Spotlight, Streak chips, ProfileStrengthBar (move to Passport).
+### Scheduling who can host (v1)
+- v1: **admin-created only** (we curate themes to seed quality). Surface a "Suggest a Speed Session" form for users → admin queue.
+- v2: Creator+ tier can host their own.
 
 ---
 
-## Build Order (3 batches)
+## Audio mode (both Stages)
 
-### Batch 1 — IA scaffolding (this sprint, ~3 hrs)
-- Rename bottom nav labels + icons + routes per table above
-- Wire `/desk`, `/scout`, `/messages`, `/profile` to existing pages (Messages currently `/messages` — confirm)
-- Build `<ThrivePromptBar />` global wrapper, mount in `AppShell`, hide on excluded routes
-- Top nav: remove Search/Messages/Theme; keep Bell + Hamburger
-- Hamburger: delete duplicate nav items, regroup into ACCOUNT/WORKSPACE/SETTINGS/SUPPORT/ADMIN
-- Update `mvp-single-mode-nav` and `creative-os-nav` memories
-
-### Batch 2 — Passport merge (~4 hrs)
-- Refactor `/profile` into 8 anchor sections above
-- Redirect `/thrivepay` → `/profile#wallet`, `/credits` → `/profile#stamps`
-- Header: "Your Creative Passport" + Standing chip
-
-### Batch 3 — Today rebuild (~2 hrs)
-- Reorder `UnifiedHome` authed view to the 5-section list above
-- Strip Magazine/Spotlight/Streak from Today (still reachable via hamburger Spotlight if kept)
+- Daily room created with `start_video_off: true`, `start_audio_off: false`.
+- `SoundStageRoom` detects `mode='audio'` → renders avatar grid with a green ring when speaking (Daily.co `active-speaker` event), hides camera tiles, hides "turn on camera" button.
+- Same room infra, ~80 lines of conditional UI. No new SDK.
 
 ---
 
-## Out of scope this lock
-- Visual redesign / motion polish
-- Copy sweep (Brand Bible Batch 2)
-- Onboarding rebuild
-- B2B "Hiring creators?" landing strip
-- Avatar-dropdown replacing ☰
+## What we're explicitly NOT building in Phase 1
+- Scout Stages, Showcase Stages, recordings/replays, paid rooms, tipping, public lurker audiences beyond host's circle, anyone-can-schedule.
 
 ---
 
-## Open question (1 only — rest is decided)
+## File map
 
-**Messages tab** — currently `/messages` exists as basic inbox. Bottom-nav Messages should absorb Chat + Calls + Video + Approvals. Do we:
-- **(a) Ship Batch 1 with Messages pointing to existing `/messages`** (approvals stay in `/inbox` for now, merge in Batch 4)
-- **(b) Block Batch 1 until Messages merge is designed**
+**New**
+- `src/components/circle/SoundStagesRail.tsx`
+- `src/components/circle/GoLiveSheet.tsx`
+- `src/components/circle/SoundStageRoom.tsx`
+- `src/components/circle/CallSheetUpcoming.tsx`
+- `src/pages/SpeedSession.tsx`
+- `supabase/functions/create-sound-stage/index.ts`
+- `supabase/functions/end-sound-stage/index.ts`
+- `supabase/functions/rsvp-speed-session/index.ts`
+- `supabase/functions/start-speed-session/index.ts`
+- `supabase/functions/end-speed-session/index.ts`
+- `supabase/functions/speed-session-matcher/index.ts`
 
-Recommend (a) — unblocks IA, Messages merge is its own sprint (the "moat" from earlier convo).
-
----
-
-Approve this plan and I'll start Batch 1.
-
----
-
-## Phase 1 (DONE) — Community Call → Brief Pipeline
-
-`daily-recording-webhook` → `transcribe-call` → Gemini (`google/gemini-2.5-flash`, tool-call `record_call_analysis`) → `distributeBrief()`:
-- Posts formatted brief to Circle chat (`spark_room_messages`).
-- DMs each attendee a `call_brief_ready` notification, items matched by first-name.
-- Suggests "Create a Studio" notification to host when ≥2 collaborators detected.
-- Inherits circle_id from `meetings.circle_id` or `creative_jams.group_chat_room_id` so event calls also land in the right chat.
-
-See mem://features/calls/community-call-brief-pipeline.
+**Edited**
+- `src/components/circle/LiveCallsPanel.tsx` → rebuilt as Sound Stages shell
+- `supabase/functions/mint-video-token/index.ts` → allow Sound Stage joiners
+- `src/App.tsx` → `/circle/speed/:id` route
+- `.lovable/plan.md` → log Sound Stages phase
+- DB migrations: `sound_stages`, `speed_sessions`, `speed_session_rsvps`, `speed_session_pairings` + realtime publication + cron
 
 ---
 
-## Next: Nav Restructure (Circle tab returns)
+## Build order
 
-Bottom nav becomes: `Today · Desk · Circle · Scout · Passport`.
+1. **Migration** — 4 tables + RLS + realtime + cron extension
+2. **Phase 1A Open Stage** — edge fns + 3 UI components + LiveCallsPanel rebuild
+3. **Phase 1B Speed Session** — edge fns + matcher cron + SpeedSession page + CallSheetUpcoming
+4. **Audio mode** conditional UI in `SoundStageRoom`
+5. Memory update: new `mem://features/sound-stages/phase-1` entry, supersede `circle-page` live notes
 
-**Scout** (cleaned, scouting only):
-- Tabs: `Gigs` (scouted gigs feed) · `Talents` (Talent Scout AI talent finder for hirers)
-- Removes People swipe.
-
-**Circle** (new tab at `/circle`):
-- `Discover` — Hinge-style one-card swipe (current `SwipeFeature`)
-- `Browse` — grid of creators
-- `Live` — scheduled lives + RSVPs + reminders (Phase 4 jam rooms land here later)
-- `Network` — 6° of separation graph using existing `DegreeBadge` + `ConnectionPathDisplay` + path RPC
-
-**Routes preserved**: `/scout?tab=match` redirects to `/circle?tab=discover` so old links still work.
+Approve and I'll start with the migration.

@@ -48,6 +48,11 @@ interface VideoCallSheetProps {
   lobbyCta?: string;
   /** Pre-baked share URL for ad-hoc meetings (shown as Copy Link in lobby + invite). */
   meetingShareUrl?: string | null;
+  /** When set, enables 1-tap in-call Report / Block on the other person. */
+  peerUserId?: string | null;
+  peerName?: string | null;
+  /** Optional: called after a successful block so callers can end the call / re-pair. */
+  onPeerBlocked?: () => void;
 }
 
 type Phase = "lobby" | "live";

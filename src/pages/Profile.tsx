@@ -410,18 +410,17 @@ const ProfileContent = () => {
           onShowQR={() => setIsQRDialogOpen(true)}
           onCreatorCard={() => setIsCreatorCardOpen(true)}
           onEPKEditor={() => setIsEPKEditorOpen(true)}
-          dashboardTrigger={
-            <ProfileDashboardDrawer
-              profile={profile}
-              portfolioItems={portfolioItems}
-              credits={credits}
-              awards={awards}
-              pressLinks={pressLinks}
-              userTier={userTier}
-              onRefresh={fetchData}
-            />
-          }
         />
+
+        {/* Passport Overview — 4 trust cards (Stamps · Connections · Projects · Co-signs) */}
+        <div className="mt-3">
+          <PassportOverview
+            stamps={credits?.filter((c: any) => c.verification_status === 'verified').length || 0}
+            connections={stats.circle || 0}
+            projects={stats.projects || 0}
+            cosigns={reviews?.filter((r: any) => r.status === 'approved').length || 0}
+          />
+        </div>
 
         {/* Slim Duolingo-style profile strength bar — own profile only */}
         <div className="mt-3">

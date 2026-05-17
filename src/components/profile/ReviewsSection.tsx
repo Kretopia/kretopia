@@ -111,26 +111,26 @@ Thank you so much!`;
     <div className="space-y-3 md:space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div className="space-y-0.5">
-          <p className="brand-eyebrow">Social Proof</p>
-          <h3 className="text-xl md:text-2xl font-black tracking-[-0.02em]">Reviews</h3>
+          <p className="text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] font-semibold">Trust</p>
+          <h3 className="text-xl md:text-2xl font-black tracking-[-0.02em]">Co-signs</h3>
         </div>
         {isOwnProfile && (
           <Dialog open={isRequestOpen} onOpenChange={setIsRequestOpen}>
             <DialogTrigger asChild>
               <Button variant="gradient" size="sm" className="text-xs md:text-sm">
                 <MessageSquarePlus className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Request Review</span>
+                <span className="hidden sm:inline">Request Co-sign</span>
                 <span className="sm:hidden">Request</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>Request a Review</DialogTitle>
+                <DialogTitle>Request a Co-sign</DialogTitle>
                 <DialogDescription>
-                  Generate a shareable message with review link - perfect for email, WhatsApp, or any messaging app
+                  Generate a shareable message with a co-sign link — perfect for email, WhatsApp, or any messaging app
                 </DialogDescription>
               </DialogHeader>
-              
+
               {!showCopyTemplate ? (
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">

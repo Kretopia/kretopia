@@ -66,7 +66,7 @@ export function PassportAnchorStrip({ className }: { className?: string }) {
               className={cn(
                 "inline-flex items-center gap-1.5 shrink-0 px-3 h-8 rounded-full text-[12px] font-medium border transition-colors",
                 active
-                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  ? "bg-background text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40 ring-1 ring-[hsl(var(--signal-teal))]/20 shadow-sm"
                   : "bg-foreground/5 hover:bg-foreground/10 text-foreground/75 border-transparent"
               )}
             >

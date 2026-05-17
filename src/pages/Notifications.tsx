@@ -42,7 +42,7 @@ const Notifications = () => {
           <div className="space-y-1">
             <p className="brand-eyebrow">Your inbox</p>
             <h1 className="text-3xl font-black tracking-[-0.03em] flex items-center gap-3">
-              <Bell className="h-7 w-7 text-primary" />
+              <Bell className="h-7 w-7 text-[hsl(var(--signal-teal))]" />
               Inbox
               {unreadCount > 0 && (
                 <Badge variant="destructive" className="text-xs">{unreadCount} unread</Badge>

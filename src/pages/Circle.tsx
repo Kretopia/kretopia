@@ -178,8 +178,10 @@ export default function Circle() {
             {/* Title row */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 min-w-0">
-                <Sparkles className="h-5 w-5 text-energy shrink-0" />
-                <h1 className="text-2xl font-black tracking-[-0.03em] truncate">Circle</h1>
+                <Sparkles className="h-5 w-5 text-[hsl(var(--signal-teal))] shrink-0" />
+                <h1 className="text-2xl font-black tracking-[-0.03em] truncate">
+                  <span className="italic text-[hsl(var(--signal-teal))]">Circle</span>
+                </h1>
               </div>
               <Button
                 variant="ghost"
@@ -230,11 +232,17 @@ export default function Circle() {
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "match" | "live")} className="w-full mt-2">
               <TabsList className="grid w-full grid-cols-2 h-10 bg-muted/60">
-                <TabsTrigger value="match" className="gap-1.5 text-sm data-[state=active]:bg-background">
+                <TabsTrigger
+                  value="match"
+                  className="gap-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-[hsl(var(--signal-teal))] data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--signal-teal))]/20 data-[state=active]:shadow-sm"
+                >
                   <Sparkles className="h-4 w-4" />
                   Match
                 </TabsTrigger>
-                <TabsTrigger value="live" className="gap-1.5 text-sm data-[state=active]:bg-background">
+                <TabsTrigger
+                  value="live"
+                  className="gap-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-[hsl(var(--signal-teal))] data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--signal-teal))]/20 data-[state=active]:shadow-sm"
+                >
                   <Radio className="h-4 w-4" />
                   Live
                 </TabsTrigger>

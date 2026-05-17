@@ -179,6 +179,7 @@ export function LiveCallsPanel() {
       </p>
 
       <GoLiveSheet open={goLiveOpen} onOpenChange={setGoLiveOpen} onCreated={handleStageCreated} />
+      <CreateStageSheet open={scheduleOpen} onOpenChange={setScheduleOpen} onCreated={(id) => id && navigate(`/circle/stage/${id}`)} />
 
       {activeRoom && (
         <VideoCallSheet

@@ -24,12 +24,12 @@ export function PassportOverview({
 }: PassportOverviewProps) {
   const navigate = useNavigate();
 
-  const cards = [
-    { key: "stamps",      label: "Stamps",      value: stamps,      icon: Shield,    to: "/credits",       teal: true },
+  const cards: { key: string; label: string; value: number; icon: typeof Shield; to: string; teal?: boolean }[] = [
+    { key: "stamps",      label: "Stamps",      value: stamps,      icon: Shield,    to: "/credits", teal: true },
     { key: "connections", label: "Connections", value: connections, icon: Users,     to: "/circle?tab=network" },
     { key: "projects",    label: "Projects",    value: projects,    icon: Briefcase, to: "/desk" },
     { key: "cosigns",     label: "Co-signs",    value: cosigns,     icon: Award,     to: "/profile#hire" },
-  ] as const;
+  ];
 
   return (
     <div className={cn("grid grid-cols-4 gap-1.5 sm:gap-2", className)}>

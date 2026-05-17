@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Sparkles, Send, Loader2, Trash2, HelpCircle, Mic, Square, Volume2, VolumeX, Crown, RadioTower, CheckCircle2, AlertCircle } from "lucide-react";
+import { Sparkles, Send, Loader2, Trash2, HelpCircle, Mic, Square, Volume2, VolumeX, Crown, CheckCircle2, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   startRecording,

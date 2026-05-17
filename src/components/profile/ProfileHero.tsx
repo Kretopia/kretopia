@@ -189,20 +189,19 @@ export const ProfileHero = ({
             )}
           </div>
 
-          {/* Inline stats — IG-style horizontal row */}
+          {/* Passport meta — subtle passport metaphor */}
           {(() => {
             const cells = [
-              stats.circle > 0 && { label: "Circle", value: stats.circle },
-              stats.projects > 0 && { label: "Projects", value: stats.projects },
-              creditsCount > 0 && { label: "Credits", value: creditsCount },
-            ].filter(Boolean) as { label: string; value: string | number }[];
+              passportId && { label: "Passport ID", value: passportId, mono: true },
+              joinedYear && { label: "Joined", value: String(joinedYear) },
+            ].filter(Boolean) as { label: string; value: string; mono?: boolean }[];
             if (cells.length === 0) return <div className="flex-1" />;
             return (
               <div className="flex-1 flex items-center justify-around gap-1">
                 {cells.map((c) => (
                   <div key={c.label} className="text-center min-w-0">
-                    <div className="text-base sm:text-lg font-black leading-none">{c.value}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{c.label}</div>
+                    <div className={cn("text-sm sm:text-base font-bold leading-none truncate", c.mono && "font-mono tracking-tight")}>{c.value}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">{c.label}</div>
                   </div>
                 ))}
               </div>

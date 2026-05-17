@@ -6,325 +6,397 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ConnectionList } from "@/components/circle/ConnectionList";
 import { SwipeFeature } from "@/components/swipe";
 import { GuestSwipePreview } from "@/components/swipe/GuestSwipePreview";
 import { NetworkVisualization } from "@/components/circle/NetworkVisualization";
+import { EventsNearYouSection } from "@/components/home/EventsNearYouSection";
 import { SEO } from "@/components/SEO";
 import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { InviteDialog } from "@/components/InviteDialog";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Users, Sparkles, UserPlus, Search } from "lucide-react";
-import { TalentCopilot } from "@/components/match/TalentCopilot";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Sparkles, Users, Radio, LayoutGrid, UserPlus } from "lucide-react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 import { PageTransition } from "@/components/PageTransition";
-import { SwipeCardSkeleton, ConnectionListSkeleton } from "@/components/skeletons/CircleSkeletons";
 
+type BrowseProfile = {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: string | null;
+  location: string | null;
+};
 
 export default function Circle() {
   const { user, subscriptionInfo } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(tabParam || 'foryou');
+  const tabParam = searchParams.get("tab");
+  const initialTab = tabParam === "live" ? "live" : "match";
+  const [activeTab, setActiveTab] = useState<"match" | "live">(initialTab);
   const [profileVisibility, setProfileVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
   const [connections, setConnections] = useState<any[]>([]);
   const [connectionsLoading, setConnectionsLoading] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [showNetwork, setShowNetwork] = useState(false);
+  const [showBrowse, setShowBrowse] = useState(false);
   const [filters, setFilters] = useState<SwipeFiltersState>(DEFAULT_SWIPE_FILTERS);
   const [profilesCount, setProfilesCount] = useState(0);
-  const [accountType, setAccountType] = useState<string>("individual");
+  const [browseProfiles, setBrowseProfiles] = useState<BrowseProfile[]>([]);
+  const [browseLoading, setBrowseLoading] = useState(false);
   const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
   const [showMatchDialog, setShowMatchDialog] = useState(false);
-
-  // Fetch account type
-  useEffect(() => {
-    if (!user?.id) return;
-    supabase
-      .from("profiles")
-      .select("account_type")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data?.account_type) setAccountType(data.account_type);
-      }, () => {});
-  }, [user?.id]);
 
   const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   useEffect(() => {
-    if (tabParam && tabParam !== activeTab) {
-      setActiveTab(tabParam);
-    }
+    if (tabParam === "live" || tabParam === "match") setActiveTab(tabParam);
   }, [tabParam]);
 
-  // Celebratory welcome handoff after universal claim flow
+  // Welcome handoff
   useEffect(() => {
-    if (searchParams.get('welcome') === 'match') {
-      setActiveTab('foryou');
-      import('sonner').then(({ toast }) => {
+    if (searchParams.get("welcome") === "match") {
+      setActiveTab("match");
+      import("sonner").then(({ toast }) => {
         toast.success("We found you a match!", {
           description: "Tap the first card to say hi.",
           duration: 5000,
         });
       }).catch(() => {});
       const next = new URLSearchParams(searchParams);
-      next.delete('welcome');
+      next.delete("welcome");
       navigate(`/circle?${next.toString()}`, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    const checkProfileVisibility = async () => {
-      if (!user?.id) return;
-      try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('avatar_url, bio')
-          .eq('user_id', user.id)
-          .single();
-        const [portfolioResult, creditsResult] = await Promise.all([
-          supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-          supabase.from('credits').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        ]);
-        const workCount = (portfolioResult.count || 0) + (creditsResult.count || 0);
-        if (profile) {
-          const missingFields = getDiscoveryMissingFields(profile as any, workCount);
-          setProfileVisibility({ isVisible: missingFields.length === 0, missingFields });
-        }
-      } catch (error) {
-        console.error('[Circle] Error checking profile visibility:', error);
-      }
-    };
-    checkProfileVisibility();
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (user?.id) {
-      const trackPage = async () => {
-        const { analytics } = await import("@/lib/analytics");
-        analytics.pageView("circle");
-      };
-      trackPage();
-    }
+    if (!user?.id) return;
+    supabase
+      .from("profiles")
+      .select("avatar_url, bio")
+      .eq("user_id", user.id)
+      .single()
+      .then(async ({ data: profile }) => {
+        if (!profile) return;
+        const { count } = await supabase
+          .from("credits")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id);
+        const missingFields = getDiscoveryMissingFields(profile as any, count || 0);
+        setProfileVisibility({ isVisible: missingFields.length === 0, missingFields });
+      }, () => {});
   }, [user?.id]);
 
   const fetchConnections = useCallback(async () => {
     if (!user?.id) return;
     setConnectionsLoading(true);
     try {
-      const [outgoingResult, incomingResult] = await Promise.all([
-        supabase.from('connections').select('connected_user_id, status').eq('user_id', user.id),
-        supabase.from('connections').select('user_id, status').eq('connected_user_id', user.id)
+      const [outgoing, incoming] = await Promise.all([
+        supabase.from("connections").select("connected_user_id, status").eq("user_id", user.id),
+        supabase.from("connections").select("user_id, status").eq("connected_user_id", user.id),
       ]);
-      const connectedIds = new Set<string>();
-      outgoingResult.data?.forEach(c => { if (c.status === 'accepted') connectedIds.add(c.connected_user_id); });
-      incomingResult.data?.forEach(c => { if (c.status === 'accepted') connectedIds.add(c.user_id); });
-      if (connectedIds.size === 0) { setConnections([]); setConnectionsLoading(false); return; }
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, role, location, level, xp, bio, badge')
-        .in('user_id', Array.from(connectedIds));
-      setConnections(profiles || []);
-    } catch (error) {
-      console.error('[Circle] Error fetching connections:', error);
+      const ids = new Set<string>();
+      outgoing.data?.forEach(c => { if (c.status === "accepted") ids.add(c.connected_user_id); });
+      incoming.data?.forEach(c => { if (c.status === "accepted") ids.add(c.user_id); });
+      if (ids.size === 0) { setConnections([]); return; }
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, avatar_url, role, location, level, xp, bio, badge")
+        .in("user_id", Array.from(ids));
+      setConnections(data || []);
+    } catch (e) {
+      console.error("[Circle] connections", e);
     } finally {
       setConnectionsLoading(false);
     }
   }, [user?.id]);
 
   useEffect(() => {
-    if (activeTab === 'network' && user?.id) fetchConnections();
-  }, [activeTab, user?.id, fetchConnections]);
+    if (showNetwork) fetchConnections();
+  }, [showNetwork, fetchConnections]);
 
-   const handleMatch = async (matchedUserData: { name: string; avatar: string; role: string; userId: string }) => {
+  const fetchBrowse = useCallback(async () => {
+    if (!user?.id) return;
+    setBrowseLoading(true);
+    try {
+      let q = supabase
+        .from("profiles")
+        .select("user_id, full_name, avatar_url, role, location")
+        .neq("user_id", user.id)
+        .not("avatar_url", "is", null)
+        .not("full_name", "is", null)
+        .limit(60);
+      if (filters.roles?.length) q = q.in("role", filters.roles);
+      if (filters.locationCountry) q = q.ilike("location", `%${filters.locationCountry}%`);
+      const { data } = await q;
+      setBrowseProfiles((data || []) as BrowseProfile[]);
+    } finally {
+      setBrowseLoading(false);
+    }
+  }, [user?.id, filters.roles, filters.locationCountry]);
+
+  useEffect(() => {
+    if (showBrowse) fetchBrowse();
+  }, [showBrowse, fetchBrowse]);
+
+  const handleMatch = async (m: { name: string; avatar: string; role: string; userId: string }) => {
     const { analytics } = await import("@/lib/analytics");
-    analytics.match(matchedUserData.userId);
-    setMatchedUser(matchedUserData);
+    analytics.match(m.userId);
+    setMatchedUser(m);
     setShowMatchDialog(true);
   };
 
   const handleMessage = (userId: string) => navigate(`/messages?user=${userId}`);
 
-  const handleTabChange = async (tab: string) => {
-    setActiveTab(tab);
-    const { analytics } = await import("@/lib/analytics");
-    analytics.featureUsed("circle_tab_switch", { tab });
-  };
-
-  const handleFiltersChange = (newFilters: SwipeFiltersState) => {
+  const handleFiltersChange = (next: SwipeFiltersState) => {
     if (!isPro) {
-      newFilters.verifiedOnly = false;
-      newFilters.minFollowers = 'all';
-      newFilters.experienceLevel = 'all';
-      newFilters.aiMatchOnly = false;
+      next.verifiedOnly = false;
+      next.minFollowers = "all";
+      next.experienceLevel = "all";
+      next.aiMatchOnly = false;
     }
-    setFilters(newFilters);
+    setFilters(next);
   };
-
-  const networkOnly = tabParam === 'network';
 
   return (
     <PageTransition>
-    <div className="min-h-screen pb-28 sm:pb-24 md:pb-8">
-      <SEO
-        title={networkOnly ? "My Network — Your Creative Universe" : "Match - Find Your Creative Collaborators"}
-        description={networkOnly ? "See your connections and how far your creative network reaches." : "Tap to connect with creators who fit your craft"}
-      />
+      <div className="min-h-screen pb-28 sm:pb-24 md:pb-8 bg-background">
+        <SEO
+          title="Circle — Match, Live & Network"
+          description="Find collaborators, jump into live sessions, and grow your creative circle."
+        />
 
-      {/* Header — lite, single line */}
-      <div className="sticky top-0 z-10 border-b border-border/50 bg-background">
-        <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-2.5">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              {networkOnly ? (
-                <Users className="h-4 w-4 text-primary shrink-0" />
-              ) : (
-                <Sparkles className="h-4 w-4 text-energy shrink-0" />
-              )}
-              <h1 className="text-xl font-black tracking-[-0.03em] text-foreground truncate">
-                {networkOnly ? "My Network" : "Match"}
-              </h1>
-              {(networkOnly || activeTab === 'network') && connections.length > 0 && (
-                <span className="text-[11px] text-muted-foreground font-medium">· {connections.length}</span>
-              )}
+        {/* Sticky header */}
+        <div className="sticky top-0 z-10 border-b border-border/60 bg-background">
+          <div className="container mx-auto px-3 sm:px-4 pt-3 pb-2">
+            {/* Title row */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <Sparkles className="h-5 w-5 text-energy shrink-0" />
+                <h1 className="text-2xl font-black tracking-[-0.03em] truncate">Circle</h1>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setShowInvite(true)}
+                aria-label="Invite creators"
+              >
+                <UserPlus className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="flex items-center gap-1 shrink-0">
-              {!networkOnly && activeTab === 'foryou' && (
-                <SwipeFilters filters={filters} onFiltersChange={handleFiltersChange} isPro={isPro} profilesCount={profilesCount} />
-              )}
-              {!networkOnly && user && (
-                <Button
-                  variant={activeTab === 'find' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-9 w-9"
-                  onClick={() => handleTabChange(activeTab === 'find' ? 'foryou' : 'find')}
-                  aria-label="Search talent"
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              )}
-              {networkOnly && user && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9"
-                  onClick={() => setShowInvite(true)}
-                  aria-label="Invite creators"
-                >
-                  <UserPlus className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
-        <ProfileActivationGate
-          isVisible={profileVisibility.isVisible}
-          missingFields={profileVisibility.missingFields}
-          surfaceLabel={networkOnly ? "Network" : "Match"}
-        >
-        <Tabs value={networkOnly ? 'network' : activeTab} onValueChange={handleTabChange} className="w-full">
-          {/* Tab pill — hidden in network-only mode */}
-          {!networkOnly && activeTab !== 'find' && (
-            <TabsList className="grid w-full grid-cols-2 mb-2 sm:mb-3 h-9">
-              <TabsTrigger value="foryou" className="gap-1.5 text-xs">
-                <Sparkles className="h-3.5 w-3.5" />
-                For You
-              </TabsTrigger>
-              <TabsTrigger value="network" className="gap-1.5 text-xs">
-                <Users className="h-3.5 w-3.5" />
+            {/* Action row: Network · Browse · Filter (always visible) */}
+            <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-none">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 rounded-full shrink-0"
+                onClick={() => setShowNetwork(true)}
+              >
+                <Users className="h-4 w-4" />
                 Network
                 {connections.length > 0 && (
-                  <span className="ml-0.5 text-[10px] bg-primary/10 text-primary px-1.5 rounded-full">
+                  <span className="ml-0.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-semibold">
                     {connections.length}
                   </span>
                 )}
-              </TabsTrigger>
-            </TabsList>
-          )}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 rounded-full shrink-0"
+                onClick={() => setShowBrowse(true)}
+              >
+                <LayoutGrid className="h-4 w-4" />
+                Browse
+              </Button>
+              <div className="shrink-0">
+                <SwipeFilters
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                  isPro={isPro}
+                  profilesCount={profilesCount}
+                />
+              </div>
+            </div>
 
-          <TabsContent value="foryou" className="space-y-3">
-            {user ? (
-              <>
-                <SwipeFeature onMatch={handleMatch} filters={filters} onProfilesCountChange={setProfilesCount} />
-                {profilesCount > 0 && (
-                  <PageTip
-                    id="circle"
-                    title="Welcome to Match"
-                    message="Tap a creator to see their profile, then send a connect request. When they accept, you can start a conversation."
-                  />
+            {/* Tabs */}
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "match" | "live")} className="w-full mt-2">
+              <TabsList className="grid w-full grid-cols-2 h-10 bg-muted/60">
+                <TabsTrigger value="match" className="gap-1.5 text-sm data-[state=active]:bg-background">
+                  <Sparkles className="h-4 w-4" />
+                  Match
+                </TabsTrigger>
+                <TabsTrigger value="live" className="gap-1.5 text-sm data-[state=active]:bg-background">
+                  <Radio className="h-4 w-4" />
+                  Live
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="container mx-auto px-3 sm:px-4 py-3">
+          <ProfileActivationGate
+            isVisible={profileVisibility.isVisible}
+            missingFields={profileVisibility.missingFields}
+            surfaceLabel="Circle"
+          >
+            {activeTab === "match" ? (
+              <div className="space-y-3">
+                {user ? (
+                  <>
+                    <SwipeFeature
+                      onMatch={handleMatch}
+                      filters={filters}
+                      onProfilesCountChange={setProfilesCount}
+                    />
+                    {profilesCount > 0 && (
+                      <PageTip
+                        id="circle-match"
+                        title="Welcome to Circle"
+                        message="Swipe through creators. Tap a card for their profile, then send a connect. Use Network and Browse above to explore."
+                      />
+                    )}
+                  </>
+                ) : (
+                  <GuestSwipePreview />
                 )}
-              </>
+              </div>
             ) : (
-              <GuestSwipePreview />
+              <div className="space-y-3">
+                {user ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-lg font-bold tracking-tight">Live & upcoming</h2>
+                        <p className="text-xs text-muted-foreground">RSVP, get reminders, jump in.</p>
+                      </div>
+                      <Button asChild size="sm" variant="ghost" className="text-xs">
+                        <Link to="/events">View all →</Link>
+                      </Button>
+                    </div>
+                    <EventsNearYouSection limit={12} />
+                  </>
+                ) : (
+                  <AuthGate>
+                    <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />
+                  </AuthGate>
+                )}
+              </div>
             )}
-          </TabsContent>
+          </ProfileActivationGate>
+        </div>
 
-          <TabsContent value="find" className="space-y-3">
-            {user ? (
-              <TalentCopilot />
-            ) : (
-              <AuthGate>
-                <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />
-              </AuthGate>
-            )}
-          </TabsContent>
-
-          <TabsContent value="network" className="space-y-4">
-            {user ? (
-              <>
-                {connections.length === 0 && <InviteCircleCard variant="match" />}
-                <NetworkVisualization onInvite={() => setShowInvite(true)} />
+        {/* Network sheet */}
+        <Sheet open={showNetwork} onOpenChange={setShowNetwork}>
+          <SheetContent side="right" className="w-[92vw] sm:w-[480px] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                Your Network
                 {connections.length > 0 && (
-                  <div className="border-t pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold">Your Collaborators</h3>
-                      <p className="text-sm text-muted-foreground">{connections.length} collaborator{connections.length !== 1 ? 's' : ''}</p>
-                    </div>
-                    <ConnectionList connections={connections} loading={connectionsLoading} onMessage={handleMessage} />
-                  </div>
+                  <span className="text-sm text-muted-foreground font-normal">· {connections.length}</span>
                 )}
-                {connections.length === 0 && !connectionsLoading && (
-                  <div className="text-center py-6 border-t">
-                    <p className="text-muted-foreground mb-4">Start connecting with creators to grow your professional circle!</p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                      <Button onClick={() => setActiveTab("foryou")} variant="outline" className="gap-2">
-                        <Sparkles className="h-4 w-4" /> View Today's Picks
-                      </Button>
-                      <Button onClick={() => setShowInvite(true)} className="gap-2">
-                        <UserPlus className="h-4 w-4" /> Invite Creators
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <AuthGate>
-                <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />
-              </AuthGate>
-            )}
-          </TabsContent>
-        </Tabs>
-        </ProfileActivationGate>
-      </div>
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mt-4 space-y-4">
+              {connections.length === 0 && <InviteCircleCard variant="match" />}
+              <NetworkVisualization onInvite={() => { setShowNetwork(false); setShowInvite(true); }} />
+              {connections.length > 0 && (
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold mb-3 text-sm">Your collaborators</h3>
+                  <ConnectionList connections={connections} loading={connectionsLoading} onMessage={handleMessage} />
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
 
-      <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
-      {matchedUser && (
-        <MatchCelebrationDialog
-          open={showMatchDialog}
-          onOpenChange={setShowMatchDialog}
-          matchedUser={matchedUser}
-          onSendMessage={() => navigate(`/messages?user=${matchedUser.userId}`)}
-        />
-      )}
-    </div>
+        {/* Browse sheet */}
+        <Sheet open={showBrowse} onOpenChange={setShowBrowse}>
+          <SheetContent side="right" className="w-[92vw] sm:w-[520px] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <LayoutGrid className="h-5 w-5 text-primary" />
+                Browse creators
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mt-4">
+              <div className="mb-3">
+                <SwipeFilters
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                  isPro={isPro}
+                  profilesCount={browseProfiles.length}
+                />
+              </div>
+              {browseLoading ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="aspect-[3/4] rounded-xl bg-muted animate-pulse" />
+                  ))}
+                </div>
+              ) : browseProfiles.length === 0 ? (
+                <div className="py-12 text-center text-sm text-muted-foreground">
+                  No creators match your filters yet.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {browseProfiles.map((p) => (
+                    <Link
+                      key={p.user_id}
+                      to={`/profile/${p.user_id}`}
+                      onClick={() => setShowBrowse(false)}
+                      className="group rounded-xl border border-border/60 bg-card overflow-hidden hover:border-primary/40 transition-colors"
+                    >
+                      <div className="aspect-square bg-muted overflow-hidden">
+                        {p.avatar_url ? (
+                          <img
+                            src={p.avatar_url}
+                            alt={p.full_name ?? "Creator"}
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
+                          />
+                        ) : (
+                          <Avatar className="w-full h-full rounded-none">
+                            <AvatarFallback>{(p.full_name ?? "?").slice(0, 1)}</AvatarFallback>
+                          </Avatar>
+                        )}
+                      </div>
+                      <div className="p-2.5">
+                        <p className="text-sm font-semibold truncate">{p.full_name}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">
+                          {p.role ?? "Creator"}
+                          {p.location ? ` · ${p.location}` : ""}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        <InviteDialog open={showInvite} onOpenChange={setShowInvite} />
+        {matchedUser && (
+          <MatchCelebrationDialog
+            open={showMatchDialog}
+            onOpenChange={setShowMatchDialog}
+            matchedUser={matchedUser}
+            onSendMessage={() => navigate(`/messages?user=${matchedUser.userId}`)}
+          />
+        )}
+      </div>
     </PageTransition>
   );
 }

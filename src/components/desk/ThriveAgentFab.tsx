@@ -413,6 +413,19 @@ export const ThriveAgentFab = () => {
 
           // Fan out: each parsed action becomes a queued orchestrator run.
           for (const intentObj of parsed) {
+            const activityId = `action-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            setActivityByMsg((prev) => ({
+              ...prev,
+              [assistantIdx]: [
+                ...(prev[assistantIdx] ?? []),
+                {
+                  id: activityId,
+                  status: "running",
+                  title: "Finding the right tool",
+                  body: intentObj.intent,
+                },
+              ],
+            }));
             try {
               const run = await sendAgentIntent(intentObj.intent, {
                 surface: intentObj.surface ?? surface,
@@ -435,15 +448,62 @@ export const ThriveAgentFab = () => {
                     [assistantIdx]: [...(prev[assistantIdx] ?? []), ...resultCards],
                   }));
                 }
+                setActivityByMsg((prev) => ({
+                  ...prev,
+                  [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                    item.id === activityId
+                      ? {
+                          ...item,
+                          status: "done",
+                          title: proposed.length
+                            ? "Ready for your approval"
+                            : resultCards.length
+                              ? "Done — result ready"
+                              : "Checked the available tools",
+                          body: proposed.length
+                            ? `${proposed.length} action${proposed.length === 1 ? "" : "s"} below need your approval.`
+                            : resultCards.length
+                              ? "Open the result card below to continue."
+                              : run.reasoning,
+                        }
+                      : item,
+                  ),
+                }));
               }
             } catch (err) {
               console.warn("Copilot action propose failed", err);
+              setActivityByMsg((prev) => ({
+                ...prev,
+                [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                  item.id === activityId
+                    ? {
+                        ...item,
+                        status: "failed",
+                        title: "Couldn't queue that action",
+                        body: err instanceof Error ? err.message : "Try again.",
+                      }
+                    : item,
+                ),
+              }));
               toast.error("Couldn't queue that action — try again.");
             }
           }
 
           // Fan out: each parsed plan calls the planner directly and renders a PlanCard.
           for (const planReq of parsedPlans) {
+            const activityId = `plan-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            setActivityByMsg((prev) => ({
+              ...prev,
+              [assistantIdx]: [
+                ...(prev[assistantIdx] ?? []),
+                {
+                  id: activityId,
+                  status: "running",
+                  title: "Building the plan",
+                  body: planReq.goal,
+                },
+              ],
+            }));
             try {
               const { data, error } = await supabase.functions.invoke("copilot-planner", {
                 body: {
@@ -464,15 +524,49 @@ export const ThriveAgentFab = () => {
                       summary: data.summary,
                       status: data.status ?? "proposed",
                       steps: data.steps ?? [],
-                      autoRun: true,
+                      autoRun: false,
                     },
                   ],
                 }));
+                setActivityByMsg((prev) => ({
+                  ...prev,
+                  [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                    item.id === activityId
+                      ? {
+                          ...item,
+                          status: "done",
+                          title: "Plan ready for approval",
+                          body: `${data.steps?.length ?? 0} step${(data.steps?.length ?? 0) === 1 ? "" : "s"} prepared below.`,
+                        }
+                      : item,
+                  ),
+                }));
               } else if (data?.summary) {
+                setActivityByMsg((prev) => ({
+                  ...prev,
+                  [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                    item.id === activityId
+                      ? { ...item, status: "done", title: "No plan needed", body: data.summary }
+                      : item,
+                  ),
+                }));
                 toast.message(data.summary);
               }
             } catch (err) {
               console.warn("Copilot plan propose failed", err);
+              setActivityByMsg((prev) => ({
+                ...prev,
+                [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                  item.id === activityId
+                    ? {
+                        ...item,
+                        status: "failed",
+                        title: "Couldn't build the plan",
+                        body: err instanceof Error ? err.message : "Try again.",
+                      }
+                    : item,
+                ),
+              }));
               toast.error("Couldn't draft that plan — try again.");
             }
           }

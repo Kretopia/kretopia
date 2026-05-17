@@ -399,11 +399,10 @@ export const ThriveAgentFab = () => {
         // propose them as approval cards.
         const { visible, actions: parsed, plans: parsedPlans } = extractActions(assistantSoFar);
         if (parsed.length > 0 || parsedPlans.length > 0) {
-          let assistantIdx = -1;
+          const assistantIdx = messages.length + 1;
           setMessages((prev) => {
             const idx = prev.length - 1;
             if (prev[idx]?.role === "assistant") {
-              assistantIdx = idx;
               return prev.map((m, i) =>
                 i === idx ? { ...m, content: visible || "On it." } : m,
               );

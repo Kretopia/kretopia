@@ -31,7 +31,7 @@ export const SceneInvoice = () => {
                     <div style={{ fontSize: 9, letterSpacing: 1.5, color: "#666", textTransform: "uppercase", fontWeight: 700 }}>From</div>
                     <div style={{ fontWeight: 800, fontSize: 13 }}>Michelene Auguste</div>
                   </div>
-                  <div style={{ padding: "4px 8px", background: "#F0F4FF", color: "#5B6BF5", fontSize: 9, fontWeight: 800, borderRadius: 6, letterSpacing: 1 }}>USD</div>
+                  <div style={{ padding: "4px 8px", background: "#E6FBF8", color: "#20D3C2", fontSize: 9, fontWeight: 800, borderRadius: 6, letterSpacing: 1 }}>USD</div>
                 </div>
                 <div style={{ marginTop: 10 }}>
                   <div style={{ fontSize: 9, letterSpacing: 1.5, color: "#666", textTransform: "uppercase", fontWeight: 700 }}>Bill to</div>
@@ -52,7 +52,7 @@ export const SceneInvoice = () => {
                 </div>
                 <div style={{ marginTop: 10, borderTop: "2px solid #1a1a1a", paddingTop: 10, display: "flex", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 11, letterSpacing: 1, color: "#666", fontWeight: 700 }}>TOTAL</span>
-                  <span style={{ fontSize: 22, fontWeight: 800, color: "#5B6BF5" }}>${counter.toLocaleString()}.00</span>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: "#20D3C2" }}>${counter.toLocaleString()}.00</span>
                 </div>
               </div>
 

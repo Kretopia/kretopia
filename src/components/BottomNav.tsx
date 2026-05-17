@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Compass, LayoutGrid, Sun, BadgeCheck, MessageCircle, Briefcase, UserSearch, Wallet, Search } from "lucide-react";
+import { Compass, LayoutGrid, Sun, BadgeCheck, Users, Briefcase, UserSearch, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";

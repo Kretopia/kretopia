@@ -214,6 +214,13 @@ serve(async (req) => {
       }
     }
 
+    // 7. Distribute the brief (best-effort — never fail the transcript on this).
+    try {
+      await distributeBrief(admin, transcript_id, parsed);
+    } catch (e) {
+      console.warn("[transcribe-call] distribute failed", e);
+    }
+
     return new Response(JSON.stringify({ ok: true, transcript_id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

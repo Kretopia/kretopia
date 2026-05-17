@@ -33,6 +33,7 @@ import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletio
 import { ProfileStrengthBar } from "@/components/profile/ProfileStrengthBar";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
+import { PassportOverview } from "@/components/passport/PassportOverview";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";

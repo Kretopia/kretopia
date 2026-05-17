@@ -58,6 +58,17 @@ All colors MUST be HSL.
     --success-foreground: 0 0% 100%;
     --warning: 38 90% 48%;
     --warning-foreground: 30 50% 12%;
+
+    /* ============================================================
+       SIGNAL SPECTRUM — the three brand dots (pink · amber · teal).
+       Used surgically: brand mark, loading states, accent on key
+       words ("Get paid."), category-coded surfaces.
+       Pink = people  ·  Amber = momentum  ·  Teal = work/verified
+       Do NOT use as structural color. Ink does the heavy lifting.
+       ============================================================ */
+    --signal-pink: 330 100% 65%;     /* #FF4DA6 */
+    --signal-amber: 36 100% 56%;     /* #FFB020 */
+    --signal-teal: 174 73% 47%;      /* #20D3C2 */
     --radius: 1rem;
 
     /* Quieter gradient system — single-hue indigo, no purple→magenta */

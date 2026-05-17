@@ -40,11 +40,7 @@ export function BrandLogo({
   const content = (
     <span className={cn("flex items-center shrink-0", cfg.gap, className)}>
       {!textOnly && (
-        <img
-          src={thriveinIcon}
-          alt="ThriveIN"
-          className={cn(cfg.icon, "object-contain")}
-        />
+        <BrandDots size={cfg.dots} />
       )}
       {!iconOnly && (
         <span

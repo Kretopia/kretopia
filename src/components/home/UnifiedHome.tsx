@@ -575,6 +575,15 @@ export const UnifiedHome = () => {
           {/* The Pulse — Morning Brief + Today + Active Studios */}
           <MorningPulse firstName={firstName} greeting={greeting} />
 
+          {/* Sound Stages discovery — only renders when stages are scheduled this week */}
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sound Stages this week</p>
+              <Link to="/circle?tab=live" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
+            </div>
+            <CuratedStagesRail limit={6} hideWhenEmpty />
+          </div>
+
           {/* Pass B.1: MagicHomeHero hidden — ThrivePromptHero is the single hero. */}
           {false && (() => {
             const created = profileFull?.created_at ? new Date(profileFull.created_at).getTime() : 0;

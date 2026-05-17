@@ -37,8 +37,7 @@ const BottomNav = memo(() => {
       return (
         location.pathname.startsWith("/scout") ||
         location.pathname === "/opportunities" ||
-        location.pathname === "/opportunity-dashboard" ||
-        (location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"))
+        location.pathname === "/opportunity-dashboard"
       );
     }
     if (path === "/desk") return location.pathname.startsWith("/desk");

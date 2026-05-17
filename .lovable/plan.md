@@ -169,3 +169,33 @@ Recommend (a) — unblocks IA, Messages merge is its own sprint (the "moat" from
 ---
 
 Approve this plan and I'll start Batch 1.
+
+---
+
+## Phase 1 (DONE) — Community Call → Brief Pipeline
+
+`daily-recording-webhook` → `transcribe-call` → Gemini (`google/gemini-2.5-flash`, tool-call `record_call_analysis`) → `distributeBrief()`:
+- Posts formatted brief to Circle chat (`spark_room_messages`).
+- DMs each attendee a `call_brief_ready` notification, items matched by first-name.
+- Suggests "Create a Studio" notification to host when ≥2 collaborators detected.
+- Inherits circle_id from `meetings.circle_id` or `creative_jams.group_chat_room_id` so event calls also land in the right chat.
+
+See mem://features/calls/community-call-brief-pipeline.
+
+---
+
+## Next: Nav Restructure (Circle tab returns)
+
+Bottom nav becomes: `Today · Desk · Circle · Scout · Passport`.
+
+**Scout** (cleaned, scouting only):
+- Tabs: `Gigs` (scouted gigs feed) · `Talents` (Talent Scout AI talent finder for hirers)
+- Removes People swipe.
+
+**Circle** (new tab at `/circle`):
+- `Discover` — Hinge-style one-card swipe (current `SwipeFeature`)
+- `Browse` — grid of creators
+- `Live` — scheduled lives + RSVPs + reminders (Phase 4 jam rooms land here later)
+- `Network` — 6° of separation graph using existing `DegreeBadge` + `ConnectionPathDisplay` + path RPC
+
+**Routes preserved**: `/scout?tab=match` redirects to `/circle?tab=discover` so old links still work.

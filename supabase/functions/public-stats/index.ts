@@ -119,6 +119,7 @@ Deno.serve(async (req) => {
       },
       topLocations,
       topRoles,
+      featured,
       generatedAt: new Date().toISOString(),
     };
 

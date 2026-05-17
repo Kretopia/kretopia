@@ -106,6 +106,22 @@ export const ProfileHero = ({
 
   const currencySymbol = profile.rate_currency === 'EUR' ? '€' : profile.rate_currency === 'GBP' ? '£' : '$';
 
+  // Passport metadata — subtle "passport" metaphor (ID + joined year)
+  const passportId = profile.user_id
+    ? `THR-${profile.user_id.replace(/-/g, '').slice(0, 5).toUpperCase()}`
+    : null;
+  const joinedYear = profile.created_at
+    ? new Date(profile.created_at).getFullYear()
+    : null;
+
+  const handleBook = () => {
+    const el = document.getElementById('hire');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '/profile#hire');
+    }
+  };
+
   return (
     <div className="w-full">
       {/* Unclaimed Profile Banner */}

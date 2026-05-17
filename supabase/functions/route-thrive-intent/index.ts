@@ -78,7 +78,24 @@ serve(async (req) => {
         }],
         tool_choice: { type: "function", function: { name: "route_intent" } },
       }),
-    });
+      });
+    } catch (fetchErr) {
+      clearTimeout(timeoutId);
+      const aborted = (fetchErr as any)?.name === "AbortError";
+      console.error("route-thrive-intent gateway fetch failed", fetchErr);
+      // Graceful fallback so the client never just spins: treat as open chat.
+      return new Response(
+        JSON.stringify({
+          intent: "chat",
+          workspace_type: null,
+          title: null,
+          target_query: null,
+          preview: aborted ? "Taking too long — let's talk it through." : "Let's talk it through.",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    clearTimeout(timeoutId);
 
     if (resp.status === 429) {
       return new Response(JSON.stringify({ error: "Rate limit reached. Try again in a moment." }), {

@@ -1,17 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
-import { Compass, LayoutGrid, Sun, BadgeCheck, MessageCircle, Briefcase, UserSearch, Wallet, Search } from "lucide-react";
+import { Compass, LayoutGrid, Sun, BadgeCheck, Users, Briefcase, UserSearch, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
 
 // ThriveIN 2.0 — Daily Driver IA.
-// Today · Desk · Scout · Messages · Passport. Daily actions only.
+// Today · Desk · Scout · Circle · Passport. Daily actions only.
 // Pay absorbed into Passport (#wallet). Hamburger = system/account only.
 const NAV_ITEMS = [
   { path: "/", icon: Sun, label: "Today", hint: "Today — what to move forward" },
   { path: "/desk", icon: LayoutGrid, label: "Desk", hint: "Projects, rooms, files, tasks" },
   { path: "/scout", icon: Compass, label: "Scout", hint: "Opportunities, people, sponsors" },
-  { path: "/messages", icon: MessageCircle, label: "Messages", hint: "Chats, calls, approvals" },
+  { path: "/circle", icon: Users, label: "Circle", hint: "Match, Live, Network" },
   { path: "/profile", icon: BadgeCheck, label: "Passport", hint: "Standing, Stamps, Wallet" },
 ];
 
@@ -37,13 +37,12 @@ const BottomNav = memo(() => {
       return (
         location.pathname.startsWith("/scout") ||
         location.pathname === "/opportunities" ||
-        location.pathname === "/opportunity-dashboard" ||
-        (location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"))
+        location.pathname === "/opportunity-dashboard"
       );
     }
     if (path === "/desk") return location.pathname.startsWith("/desk");
-    if (path === "/messages")
-      return location.pathname.startsWith("/messages") || location.pathname.startsWith("/inbox");
+    if (path === "/circle")
+      return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
     if (path === "/profile")
       return (
         location.pathname.startsWith("/profile") ||

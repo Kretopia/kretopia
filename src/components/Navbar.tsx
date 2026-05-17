@@ -190,7 +190,18 @@ const Navbar = memo(({ user }: NavbarProps) => {
         )}
 
         <div className="flex items-center gap-0.5 sm:gap-2 ml-auto shrink-0">
-          {/* Top nav target: Logo · · · 🔔 ☰  — Search/Messages/Theme moved (Thrive bar / bottom nav / Settings) */}
+          {/* Top nav: Logo · · · ✉ 🔔 ☰ */}
+          {!isLandingPage && user && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 sm:h-10 sm:w-10"
+              onClick={() => navigate("/messages")}
+              aria-label="Messages"
+            >
+              <MessageCircle className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+            </Button>
+          )}
           {!isLandingPage && user && <NotificationCenter />}
           {!user && !isLandingPage && <ThemeToggle />}
           

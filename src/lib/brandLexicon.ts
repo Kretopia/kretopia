@@ -43,16 +43,6 @@ export const BRAND = {
   // ── Outreach ───────────────────────────────────────────────────────────
   rolodex: "The Rolodex",
 
-  // ── Tier / reputation ──────────────────────────────────────────────────
-  standing: "Standing",
-  standingLevels: {
-    rising: "Rising",
-    working: "Working",
-    booked: "Booked",
-    featured: "Featured",
-    legend: "Legend",
-  },
-
   // ── Payments ───────────────────────────────────────────────────────────
   receipts: "Receipts",
 

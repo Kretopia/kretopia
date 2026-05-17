@@ -218,20 +218,15 @@ export const HeroSection = () => {
             </p>
 
             <h1 className="font-serif text-[2.5rem] sm:text-5xl lg:text-6xl xl:text-7xl font-normal tracking-[-0.03em] text-foreground leading-[1.02] mb-6">
-              The Operating System for{" "}
-              <span className="italic text-primary">Creative Careers.</span>
+              Meet people. Build work.{" "}
+              <span className="italic text-primary">Own your record.</span>{" "}
+              Get paid.
             </h1>
 
             <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 leading-relaxed mb-3">
-              {ttVoice ? (
-                <>
-                  Build your <span className="text-foreground font-semibold">Creative Passport</span>. Collect verified <span className="text-foreground font-semibold">Stamps</span>. Run productions. Get paid — with Thrive handling the busy work.
-                </>
-              ) : (
-                <>
-                  Build your <span className="text-foreground font-semibold">Creative Passport</span>. Collect verified <span className="text-foreground font-semibold">Stamps</span>. Run productions. Get paid — with Thrive handling the busy work.
-                </>
-              )}
+              ThriveIN is where creators find collaborators, run real projects,
+              build a verified <span className="text-foreground font-semibold">{"Creative Passport"}</span>,
+              and get paid — with <span className="text-foreground font-semibold">Thrive</span> handling the busy work.
             </p>
 
             <p className="text-xs text-muted-foreground/60 mb-7">
@@ -306,12 +301,13 @@ export const HeroSection = () => {
           </div>
         </div>
 
-        {/* ═══════ HOW IT WORKS — 3-step value prop ═══════ */}
-        <div className="grid grid-cols-3 gap-3 my-6">
+        {/* ═══════ HOW IT WORKS — MVP value prop ═══════ */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 my-6">
         {[
-            { step: "1", icon: Database, title: "Get Stamped", desc: "Every credit becomes a verified Stamp on your Creative Passport — proof of the work you actually made" },
-            { step: "2", icon: Users, title: "Get Discovered", desc: "Brands and collaborators find you by your track record and Co-signs, not just a portfolio" },
-            { step: "3", icon: DollarSign, title: "Show Receipts", desc: "Land Calls, run productions, send invoices and get paid — all from one Creative OS" },
+            { step: "1", icon: Users, title: "Meet people", desc: "Match with verified creators by skill, scene and city" },
+            { step: "2", icon: FolderKanban, title: "Build work", desc: "Run real projects together — chat, files, briefs, calls" },
+            { step: "3", icon: Database, title: "Own your record", desc: "Every project becomes a verified Stamp on your Creative Passport" },
+            { step: "4", icon: DollarSign, title: "Get paid", desc: "Invoices, milestones, escrow — receipts you can show" },
           ].map((s) => (
             <div key={s.step} className="text-center p-3 sm:p-4 rounded-2xl border border-border bg-card">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-2.5">

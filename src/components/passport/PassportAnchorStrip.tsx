@@ -5,8 +5,7 @@ import { User, Briefcase, DollarSign } from "lucide-react";
 /**
  * PassportAnchorStrip — single horizontal nav for Passport surfaces.
  *
- * Cleanup pass: collapsed from 8→4→3 anchors. "Standing" is now a passive
- * chip in the Profile hero, not a destination. Pay/Wallet/Receipts moved
+ * Cleanup pass: collapsed from 8→4→3 anchors. Pay/Wallet/Receipts moved
  * back to /thrivepay (their own tool surface).
  *
  *   Identity → /profile (the who-you-are page)

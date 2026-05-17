@@ -162,9 +162,9 @@ export async function loadCopilotHistory(): Promise<CopilotMessage[]> {
     .from("ai_messages")
     .select("role, content, created_at")
     .eq("conversation_id", convo.id)
-    .order("created_at", { ascending: true })
+    .order("created_at", { ascending: false })
     .limit(60);
-  return (rows ?? []).map((r: { role: string; content: string }) => ({
+  return [...(rows ?? [])].reverse().map((r: { role: string; content: string }) => ({
     role: r.role as "user" | "assistant",
     content: r.content,
   }));

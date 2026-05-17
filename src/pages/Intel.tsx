@@ -219,7 +219,21 @@ const Intel = () => {
                     <p className="text-xs whitespace-pre-wrap">{l.pitch_draft}</p>
                   </div>
                 )}
-                {l.contact_info?.hint && <p className="text-[10px] text-muted-foreground">📧 {l.contact_info.hint}</p>}
+                {(l.contact_name || l.contact_email || l.contact_phone || l.address || l.contact_info?.hint) && (
+                  <div className="space-y-0.5 text-[10px] text-muted-foreground">
+                    {l.contact_name && <p>Contact: {l.contact_name}</p>}
+                    {l.contact_email && <p>Email: {l.contact_email}</p>}
+                    {l.contact_phone && <p>Phone: {l.contact_phone}</p>}
+                    {l.address && <p>Address: {l.address}</p>}
+                    {l.contact_info?.hint && <p>Hint: {l.contact_info.hint}</p>}
+                  </div>
+                )}
+                {(l.website || l.brand_url || l.source_url) && (
+                  <div className="flex flex-wrap gap-2 text-[10px]">
+                    {(l.website || l.brand_url) && <a className="text-primary underline" href={l.website || l.brand_url} target="_blank" rel="noreferrer">Website</a>}
+                    {l.source_url && <a className="text-primary underline" href={l.source_url} target="_blank" rel="noreferrer">Source</a>}
+                  </div>
+                )}
                 <div className="flex gap-1.5 pt-1 flex-wrap">
                   <Button size="sm" className="h-7 text-xs flex-1" onClick={() => draftPitch(l)} disabled={busy === `draft-${l.id}`}>
                     {busy === `draft-${l.id}` ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Wand2 className="h-3 w-3 mr-1" />}

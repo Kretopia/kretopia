@@ -99,8 +99,8 @@ const Scout = () => {
         {tab === "scouted" && <ScoutedGigsSection />}
         {tab === "marketplace" && <OpportunitiesFeed />}
         {tab === "talent" && (
-          <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 to-accent/5 p-8 text-center space-y-4">
-            <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+          <div className="rounded-2xl border border-border/60 bg-card p-8 text-center space-y-4">
+            <div className="h-14 w-14 rounded-2xl bg-[hsl(var(--signal-teal))]/10 text-[hsl(var(--signal-teal))] flex items-center justify-center mx-auto ring-1 ring-[hsl(var(--signal-teal))]/20">
               <UserSearch className="h-6 w-6" />
             </div>
             <div>

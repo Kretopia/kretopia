@@ -32,7 +32,7 @@ serve(async (req) => {
     const { stage_id, pitch, voice_url } = await req.json().catch(() => ({}));
     if (!stage_id) throw new Error("stage_id required");
 
-    const { data: stage } = await admin.from("curated_stages").select("type, status, host_user_id").eq("id", stage_id).single();
+    const { data: stage } = await admin.from("curated_stages").select("type, status, host_user_id, vibe_tags").eq("id", stage_id).single();
     if (!stage) throw new Error("Stage not found");
     if (stage.type !== "scout") throw new Error("Applications only on Scout Stages");
     if (!["scheduled", "live"].includes(stage.status)) throw new Error("Stage not accepting applications");

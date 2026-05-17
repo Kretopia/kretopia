@@ -18,7 +18,7 @@ import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { InviteDialog } from "@/components/InviteDialog";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Sparkles, Users, Radio, LayoutGrid, UserPlus } from "lucide-react";
+import { Sparkles, Users, Theater, LayoutGrid, UserPlus, SlidersHorizontal } from "lucide-react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
@@ -37,8 +37,8 @@ export default function Circle() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const initialTab = tabParam === "live" ? "live" : "match";
-  const [activeTab, setActiveTab] = useState<"match" | "live">(initialTab);
+  // Stages = Sound Stages first. Match is a sheet, not a tab.
+  const [showMatch, setShowMatch] = useState(tabParam === "match");
   const [profileVisibility, setProfileVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
   const [connections, setConnections] = useState<any[]>([]);
   const [connectionsLoading, setConnectionsLoading] = useState(false);
@@ -55,7 +55,7 @@ export default function Circle() {
   const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   useEffect(() => {
-    if (tabParam === "live" || tabParam === "match") setActiveTab(tabParam);
+    if (tabParam === "match") setShowMatch(true);
   }, [tabParam]);
 
   // Welcome handoff

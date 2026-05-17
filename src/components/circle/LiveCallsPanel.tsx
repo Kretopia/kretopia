@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
-import { Theater, LinkIcon, Loader2, Plus, Radio, Calendar } from "lucide-react";
+import { Theater, LinkIcon, Loader2, Plus, Radio, Calendar, Sparkles, CalendarPlus } from "lucide-react";
 import { SoundStagesRail, type SoundStage } from "./SoundStagesRail";
 import { GoLiveSheet } from "./GoLiveSheet";
 import { CallSheetUpcoming } from "./CallSheetUpcoming";
+import { CuratedStagesRail } from "./CuratedStagesRail";
+import { CreateStageSheet } from "./CreateStageSheet";
 
 /**
  * Sound Stages — the live tab on /circle.

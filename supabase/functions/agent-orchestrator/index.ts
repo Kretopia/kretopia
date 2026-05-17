@@ -209,18 +209,31 @@ async function planTools(
 
   const proposals: Array<{ tool_name: string; tool_args: Record<string, unknown>; preview_title: string; preview_body: string; auto_result?: unknown; already_executed?: boolean }> = [];
   const MAX_TURNS = 3;
+  const plannerStart = Date.now();
+  const PLANNER_BUDGET_MS = 110_000; // leave headroom under the 150s edge limit
 
   for (let turn = 0; turn < MAX_TURNS; turn++) {
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages,
-        tools: toolDefs,
-        tool_choice: turn === 0 ? "auto" : "auto",
-      }),
-    });
+    // If we're running out of time, stop adding turns and return whatever we have.
+    if (Date.now() - plannerStart > PLANNER_BUDGET_MS) {
+      console.warn("planTools: budget exceeded, breaking early");
+      break;
+    }
+    let resp: Response;
+    try {
+      resp = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages,
+          tools: toolDefs,
+          tool_choice: turn === 0 ? "auto" : "auto",
+        }),
+      }, 45_000);
+    } catch (_e) {
+      console.warn("planTools: gateway turn timed out");
+      break;
+    }
 
     if (!resp.ok) {
       if (resp.status === 429) throw new Error("Rate limited. Try again in a moment.");

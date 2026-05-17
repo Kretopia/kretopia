@@ -39,8 +39,14 @@ serve(async (req) => {
       });
     }
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Hard timeout so the client never hangs on a stuck gateway call.
+    const ac = new AbortController();
+    const timeoutId = setTimeout(() => ac.abort(), 15000);
+    let resp: Response;
+    try {
+      resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
+      signal: ac.signal,
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",
@@ -72,7 +78,24 @@ serve(async (req) => {
         }],
         tool_choice: { type: "function", function: { name: "route_intent" } },
       }),
-    });
+      });
+    } catch (fetchErr) {
+      clearTimeout(timeoutId);
+      const aborted = (fetchErr as any)?.name === "AbortError";
+      console.error("route-thrive-intent gateway fetch failed", fetchErr);
+      // Graceful fallback so the client never just spins: treat as open chat.
+      return new Response(
+        JSON.stringify({
+          intent: "chat",
+          workspace_type: null,
+          title: null,
+          target_query: null,
+          preview: aborted ? "Taking too long — let's talk it through." : "Let's talk it through.",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    clearTimeout(timeoutId);
 
     if (resp.status === 429) {
       return new Response(JSON.stringify({ error: "Rate limit reached. Try again in a moment." }), {

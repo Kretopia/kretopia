@@ -83,6 +83,19 @@ serve(async (req) => {
       pastSet.add(`${p.user_b}|${p.user_a}`);
     });
 
+    // Blocked pairs — never re-pair someone who blocked or was blocked
+    const { data: blocks } = await admin
+      .from("user_blocks")
+      .select("blocker_id, blocked_user_id")
+      .or(
+        joinedIds.map((id) => `blocker_id.eq.${id}`).join(",") || "blocker_id.eq.00000000-0000-0000-0000-000000000000",
+      );
+    const blockSet = new Set<string>();
+    (blocks ?? []).forEach((b) => {
+      blockSet.add(`${b.blocker_id}|${b.blocked_user_id}`);
+      blockSet.add(`${b.blocked_user_id}|${b.blocker_id}`);
+    });
+
     // Current round number
     const { data: roundRow } = await admin
       .from("speed_session_pairings")

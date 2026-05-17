@@ -5,8 +5,8 @@ export const COLORS = {
   bgCard: "#15172A",
   surface: "#1B1E36",
   border: "#2A2D4E",
-  primary: "#5B6BF5",    // ThriveIN primary indigo
-  primaryGlow: "#7B8CFF",
+  primary: "#20D3C2",    // ThriveIN teal accent
+  primaryGlow: "#5EEAD9",
   lime: "#D4FF3E",       // energy lime accent
   text: "#F5F6FF",
   textMuted: "#8A8FB5",

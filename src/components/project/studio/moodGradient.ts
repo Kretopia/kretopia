@@ -12,7 +12,7 @@ const GRADIENTS: Record<string, string> = {
   urgent: "linear-gradient(135deg, hsl(8 80% 58%), hsl(35 88% 60%))",
   // Deep purple → magenta for music
   musical: "linear-gradient(135deg, hsl(280 70% 55%), hsl(320 75% 60%))",
-  // Indigo → teal for visual / photo
+  // Ink → teal for visual / photo
   visual: "linear-gradient(135deg, hsl(232 75% 58%), hsl(190 70% 50%))",
   // Mint → sage for chill
   chill: "linear-gradient(135deg, hsl(160 50% 50%), hsl(200 55% 55%))",

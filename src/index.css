@@ -9,7 +9,7 @@ All colors MUST be HSL.
 @layer base {
   /* ============================================================
      LIGHT MODE — DEFAULT. Warm Minimal canvas.
-     Cream background · near-black text · single indigo accent.
+     Cream background · near-black ink · teal accent · spectrum signature.
      Inspired by Read.cv / Cargo / Are.na. The user's WORK is the color.
      ============================================================ */
   :root {
@@ -71,7 +71,7 @@ All colors MUST be HSL.
     --signal-teal: 174 73% 47%;      /* #20D3C2 */
     --radius: 1rem;
 
-    /* Quieter gradient system — single-hue indigo, no purple→magenta */
+    /* Quieter gradient system — single-hue ink, no purple→magenta */
     --gradient-primary: linear-gradient(135deg, hsl(240 11% 8%), hsl(240 11% 18%));
     --gradient-secondary: linear-gradient(135deg, hsl(232 87% 66% / 0.06), hsl(232 87% 66% / 0.02));
     --gradient-accent: linear-gradient(180deg, hsl(36 27% 97%), hsl(36 22% 95%));
@@ -100,7 +100,7 @@ All colors MUST be HSL.
     --mode-glow: 0 0 32px hsl(232 87% 66% / 0.25);
   }
 
-  /* Modes collapse to single indigo accent in warm-minimal */
+  /* Modes collapse to single ink accent in warm-minimal */
   [data-nav-mode="create"],
   [data-nav-mode="work"] {
     --mode-accent: 232 87% 66%;
@@ -109,7 +109,7 @@ All colors MUST be HSL.
   }
 
   /* ============================================================
-     DARK MODE — DEFAULT = MIDNIGHT vibe (indigo).
+     DARK MODE — DEFAULT = MIDNIGHT vibe (white ink, teal accent).
      Lime/Neon vibe only applies when [data-vibe="neon"] is set explicitly.
      ============================================================ */
   .dark {
@@ -190,7 +190,7 @@ All colors MUST be HSL.
   }
 
   /* ============================================================
-     VIBE: MIDNIGHT — dark canvas, single indigo accent.
+     VIBE: MIDNIGHT — dark canvas, white ink, teal accent.
      Same minimalism as Daylight, just inverted. Pairs with .dark class.
      ============================================================ */
   .dark[data-vibe="midnight"],
@@ -402,11 +402,11 @@ All colors MUST be HSL.
   .section-title {
     @apply text-2xl sm:text-3xl font-black tracking-[-0.03em];
   }
-  /* Cinematic hero backdrop — layered radial purple glow on deep black */
+  /* Cinematic hero backdrop — soft spectrum wash (teal → amber) on canvas */
   .bg-cinematic {
     background:
-      radial-gradient(ellipse 70% 50% at 25% 0%, hsl(248 100% 69% / 0.18), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 85% 100%, hsl(282 95% 60% / 0.10), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 25% 0%, hsl(var(--signal-teal) / 0.12), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 85% 100%, hsl(var(--signal-amber) / 0.08), transparent 60%),
       hsl(var(--background));
   }
 

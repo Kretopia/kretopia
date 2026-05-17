@@ -23,7 +23,7 @@ const TILES: Tile[] = [
   {
     id: "midnight",
     label: "Midnight",
-    blurb: "Dark canvas, indigo accent. Focused.",
+    blurb: "Dark canvas, teal accent. Focused.",
     bg: "#0F0F14",
     fg: "#FAF8F5",
     accent: "#20D3C2",

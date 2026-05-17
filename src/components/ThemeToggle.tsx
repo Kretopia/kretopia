@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { saveVibe, getStoredVibe, type Vibe } from "@/components/VibeThemeSync";
 
 /**
- * Top-nav toggle: flips between Daylight (light) and Midnight (dark indigo).
+ * Top-nav toggle: flips between Daylight (light) and Midnight (dark, teal accent).
  * Neon (lime) is opt-in via the Vibe Picker in onboarding/settings only.
  * If the user is currently on Neon, this toggle still flips them to Daylight.
  */

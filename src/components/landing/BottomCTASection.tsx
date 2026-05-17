@@ -41,7 +41,7 @@ export const BottomCTASection = () => {
     <section className="px-4 sm:px-6 py-16 sm:py-20 md:py-24">
       <div className="container mx-auto max-w-3xl">
         <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-card p-8 sm:p-12 text-center shadow-sm">
-          {/* Soft indigo wash — accent, not full bleed */}
+          {/* Soft ink wash — accent, not full bleed */}
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
           <div className="absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 

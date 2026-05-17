@@ -8,9 +8,9 @@ import { moodLabel } from "./moodGradient";
 
 // Solid, on-brand accent colors per mood (no gradients — keeps it editorial).
 const MOOD_ACCENT: Record<string, string> = {
-  creative: "hsl(232 87% 66%)", // indigo (brand)
+  creative: "hsl(174 73% 47%)", // teal (brand)
   urgent: "hsl(8 80% 58%)",
-  musical: "hsl(280 70% 55%)",
+  musical: "hsl(330 100% 65%)", // signal pink
   visual: "hsl(190 70% 45%)",
   chill: "hsl(160 45% 45%)",
 };

@@ -41,15 +41,16 @@ const Scout = () => {
       {/* Calm header */}
       <header className="border-b border-border/60 bg-background pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto max-w-5xl px-4 pt-7 pb-4 sm:pt-9 sm:pb-6">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-2">
             Scout
           </p>
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">
-            Gigs &amp; talent,
-            <span className="text-muted-foreground"> scouted for you.</span>
+            Gigs &amp; talent,{" "}
+            <span className="italic text-[hsl(var(--signal-teal))]">scouted</span>
+            <span className="text-foreground/60"> for you.</span>
           </h1>
 
-          {/* Segmented tabs */}
+          {/* Segmented tabs — teal outline on active */}
           <div
             role="tablist"
             aria-label="Scout sections"
@@ -68,11 +69,11 @@ const Scout = () => {
                   className={cn(
                     "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all",
                     active
-                      ? "bg-foreground text-background shadow-sm"
+                      ? "bg-background text-[hsl(var(--signal-teal))] shadow-sm ring-1 ring-[hsl(var(--signal-teal))]"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <Icon className="h-3.5 w-3.5" />
+                  <Icon className={cn("h-3.5 w-3.5", active && "text-[hsl(var(--signal-teal))]")} />
                   {t.label}
                 </button>
               );
@@ -98,8 +99,8 @@ const Scout = () => {
         {tab === "scouted" && <ScoutedGigsSection />}
         {tab === "marketplace" && <OpportunitiesFeed />}
         {tab === "talent" && (
-          <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 to-accent/5 p-8 text-center space-y-4">
-            <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+          <div className="rounded-2xl border border-border/60 bg-card p-8 text-center space-y-4">
+            <div className="h-14 w-14 rounded-2xl bg-[hsl(var(--signal-teal))]/10 text-[hsl(var(--signal-teal))] flex items-center justify-center mx-auto ring-1 ring-[hsl(var(--signal-teal))]/20">
               <UserSearch className="h-6 w-6" />
             </div>
             <div>

@@ -252,12 +252,11 @@ export default function Subscription() {
   return (
     <div className="container mx-auto px-4 py-12 sm:py-16">
       <div className="text-center mb-8 max-w-2xl mx-auto">
-        <p className="brand-eyebrow inline-flex items-center gap-2 mb-4">
-          <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-3">
           Pricing
         </p>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.95] mb-4">
-          Choose Your <span className="text-energy-glow">Plan</span>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-[-0.035em] leading-[0.95] mb-4 text-foreground">
+          Choose your <span className="italic text-[hsl(var(--signal-teal))]">plan</span>
         </h1>
         <p className="text-base sm:text-lg text-muted-foreground mb-6">
           {viewMode === "brand"

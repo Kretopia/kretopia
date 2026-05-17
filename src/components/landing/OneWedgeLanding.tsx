@@ -214,12 +214,6 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
             <SurfaceChip to="/events" icon={<ShieldCheck className="h-4 w-4" />} label="Auditions" />
           </div>
 
-          <Link to="/events" className="inline-block mt-8" onClick={() => trackLandingCta("wedge", "explore_events")}>
-            <Button size="lg" variant="outline" className="font-semibold">
-              Explore events
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
         </div>
       </div>
 

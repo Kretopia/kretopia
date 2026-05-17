@@ -34,6 +34,7 @@ import {
 } from "@/lib/thriveCopilot";
 import { sendAgentIntent, type OrchAction } from "@/lib/agentOrchestrator";
 import { AgentApprovalCard } from "@/components/agent/AgentApprovalCard";
+import { AgentResultCard, type AgentResultCardData } from "@/components/agent/AgentResultCard";
 import { CopilotPlanCard, type CopilotPlan } from "@/components/agent/CopilotPlanCard";
 import { CopilotCapabilities } from "@/components/agent/CopilotCapabilities";
 
@@ -100,6 +101,42 @@ const QUICK_PROMPTS_BY_SURFACE: Partial<Record<CopilotSurface, string[]>> = {
   ],
 };
 
+const resultCardForAction = (action: OrchAction): AgentResultCardData | null => {
+  if (action.status !== "auto_executed" && action.status !== "executed") return null;
+  const result = (action.result ?? {}) as any;
+  if (action.tool_name === "find_sponsors") {
+    const count = Array.isArray(result.leads) ? result.leads.length : result.count;
+    return {
+      id: action.id,
+      icon: "sponsor",
+      title: count ? `${count} sponsor leads found` : "Sponsor leads ready",
+      subtitle: "Review fit scores and pitch drafts in Intel.",
+      href: "/intel",
+      cta: "Open Intel",
+    };
+  }
+  if (action.tool_name === "weekly_money_summary") {
+    return {
+      id: action.id,
+      icon: "money",
+      title: "Money summary ready",
+      subtitle: "Review invoices and payment next steps.",
+      href: "/thrivepay",
+      cta: "Open Pay",
+    };
+  }
+  if (action.tool_name === "draft_outreach_email") {
+    return {
+      id: action.id,
+      icon: "outreach",
+      title: "Sponsor outreach draft ready",
+      subtitle: "Review before sending.",
+      href: "/inbox",
+    };
+  }
+  return null;
+};
+
 export const ThriveAgentFab = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -110,6 +147,8 @@ export const ThriveAgentFab = () => {
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
   // Map message index -> orchestrator actions proposed for that assistant turn.
   const [actionsByMsg, setActionsByMsg] = useState<Record<number, OrchAction[]>>({});
+  // Map message index -> safe auto-executed result cards for that assistant turn.
+  const [resultCardsByMsg, setResultCardsByMsg] = useState<Record<number, AgentResultCardData[]>>({});
   // Map message index -> multi-step plans proposed for that assistant turn.
   const [plansByMsg, setPlansByMsg] = useState<Record<number, CopilotPlan[]>>({});
   const [conversationId, setConversationId] = useState<string | undefined>();
@@ -406,10 +445,22 @@ export const ThriveAgentFab = () => {
                 ...surfaceContext,
               });
               if (assistantIdx >= 0 && run.actions?.length) {
-                setActionsByMsg((prev) => ({
-                  ...prev,
-                  [assistantIdx]: [...(prev[assistantIdx] ?? []), ...run.actions],
-                }));
+                const proposed = run.actions.filter((action) => action.status === "proposed");
+                const resultCards = run.actions
+                  .map(resultCardForAction)
+                  .filter(Boolean) as AgentResultCardData[];
+                if (proposed.length) {
+                  setActionsByMsg((prev) => ({
+                    ...prev,
+                    [assistantIdx]: [...(prev[assistantIdx] ?? []), ...proposed],
+                  }));
+                }
+                if (resultCards.length) {
+                  setResultCardsByMsg((prev) => ({
+                    ...prev,
+                    [assistantIdx]: [...(prev[assistantIdx] ?? []), ...resultCards],
+                  }));
+                }
               }
             } catch (err) {
               console.warn("Copilot action propose failed", err);
@@ -478,6 +529,7 @@ export const ThriveAgentFab = () => {
       }
       setMessages([]);
       setActionsByMsg({});
+      setResultCardsByMsg({});
       setPlansByMsg({});
       toast.success("History cleared");
     } catch (e) {
@@ -752,6 +804,14 @@ export const ThriveAgentFab = () => {
                           }));
                         }}
                       />
+                    ))}
+                  </div>
+                ) : null}
+                {/* Result cards for safe auto-runs (e.g. Sponsor Radar) */}
+                {m.role === "assistant" && resultCardsByMsg[i]?.length ? (
+                  <div className="space-y-2 max-w-[95%]">
+                    {resultCardsByMsg[i].map((card) => (
+                      <AgentResultCard key={card.id} card={card} compact />
                     ))}
                   </div>
                 ) : null}

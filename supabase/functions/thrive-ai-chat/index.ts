@@ -43,6 +43,39 @@ const SURFACE_TONE: Record<string, string> = {
     "post-event recaps.",
 };
 
+const AFFIRM_RE = /^\s*(ok(ay)?|yes|yep|yeah|sure|do it|run it|yes run it|go ahead|let'?s go|sounds good|please|👍|👌|✅|y)\s*[.!]?\s*$/i;
+const ACTION_OR_PLAN_RE = /<(action|plan)>[\s\S]*?<\/\1>/i;
+
+function replayPriorActionForAffirmation(latestUserText: string, priorAssistantText?: string | null) {
+  if (!AFFIRM_RE.test(latestUserText) || !priorAssistantText || !ACTION_OR_PLAN_RE.test(priorAssistantText)) {
+    return null;
+  }
+  const tag = priorAssistantText.match(ACTION_OR_PLAN_RE)?.[0];
+  if (!tag) return null;
+  const visible = priorAssistantText.replace(/<action>[\s\S]*?<\/action>/g, "").replace(/<plan>[\s\S]*?<\/plan>/g, "").trim();
+  const topic = /sponsor|brand partner|partnership/i.test(priorAssistantText)
+    ? "the sponsor request"
+    : /invoice|payment|money/i.test(priorAssistantText)
+      ? "the money request"
+      : "the last request";
+  const confirmation = visible
+    ? `Keeping this on ${topic} — ${visible.replace(/^(hey\s+[^—]+—\s*)/i, "")}`
+    : `Keeping this on ${topic}.`;
+  return `${confirmation}\n${tag}`;
+}
+
+function streamTextResponse(content: string, conversationId: string | null) {
+  const sse =
+    `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n` +
+    `data: [DONE]\n\n`;
+  const headers: Record<string, string> = {
+    ...corsHeaders,
+    "Content-Type": "text/event-stream",
+  };
+  if (conversationId) headers["X-Copilot-Conversation-Id"] = conversationId;
+  return new Response(sse, { headers });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -350,6 +383,35 @@ Short replies like "yes", "no", "ok", "sure", "do it", "go ahead", "nope", "let'
       }
     }
 
+    const immediatePriorAssistant = [...priorMessages].reverse().find((m) => m.role === "assistant");
+    const affirmedReplay = latestUser
+      ? replayPriorActionForAffirmation(latestUser.content, immediatePriorAssistant?.content)
+      : null;
+    if (affirmedReplay) {
+      if (persist && conversationId) {
+        try {
+          await admin.from("ai_messages").insert({
+            conversation_id: conversationId,
+            role: "assistant",
+            content: affirmedReplay,
+          });
+          await admin
+            .from("ai_conversations")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", conversationId);
+        } catch (e) {
+          console.warn("Persist affirmed replay failed", e);
+        }
+      }
+      if (!stream) {
+        return new Response(
+          JSON.stringify({ content: affirmedReplay, conversation_id: conversationId }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      return streamTextResponse(affirmedReplay, conversationId);
+    }
+
     // Final messages array sent to the model
     const modelMessages = [
       { role: "system", content: systemPrompt },
@@ -483,7 +545,6 @@ Short replies like "yes", "no", "ok", "sure", "do it", "go ahead", "nope", "let'
             // Without this, the Planner pivots to whatever's loudest in USER FACTS
             // (e.g. unpaid invoices) and we get the classic "I asked about sponsors,
             // got invoices" bug.
-            const AFFIRM_RE = /^\s*(ok(ay)?|yes|yep|yeah|sure|do it|go ahead|let'?s go|sounds good|please|👍|👌|✅|y)\s*[.!]?\s*$/i;
             const isAffirm = AFFIRM_RE.test(latestUser.content);
             const priorAssistant = isAffirm
               ? [...messages].reverse().find((m) => m.role === "assistant")

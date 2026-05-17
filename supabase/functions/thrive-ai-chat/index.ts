@@ -250,9 +250,9 @@ serve(async (req) => {
           .from("ai_messages")
           .select("role, content")
           .eq("conversation_id", conversationId)
-          .order("created_at", { ascending: true })
-          .limit(40); // last 40 turns is plenty for context windowing
-        priorMessages = (history ?? []) as Array<{ role: "user" | "assistant"; content: string }>;
+          .order("created_at", { ascending: false })
+          .limit(40); // fetch the most recent 40 turns, then restore chronological order
+        priorMessages = ((history ?? []) as Array<{ role: "user" | "assistant"; content: string }>).reverse();
       } catch (e) {
         console.warn("Could not load prior history", e);
       }

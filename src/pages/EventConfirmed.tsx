@@ -179,6 +179,16 @@ const EventConfirmed = () => {
           <Button onClick={handleShare} variant={guestToken ? "secondary" : "gradient"} className="w-full py-6">
             <Share2 className="h-4 w-4 mr-2" /> Invite friends
           </Button>
+          {!user && (
+            <Link
+              to={`/auth?tab=signup${guestEmail ? `&email=${encodeURIComponent(guestEmail)}` : ""}${guestName ? `&name=${encodeURIComponent(guestName)}` : ""}&redirect=${encodeURIComponent(`/event/${event.id}`)}`}
+              className="block"
+            >
+              <Button variant="gradient" className="w-full py-6">
+                Create your free profile <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
+          )}
           {user && event.created_by === user.id && (
             <Link to="/events/backstage" className="block">
               <Button variant="secondary" className="w-full py-6">

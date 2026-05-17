@@ -7790,6 +7790,8 @@ export type Database = {
           check_in_token: string
           checked_in_at: string | null
           checked_in_by: string | null
+          guest_email: string | null
+          guest_name: string | null
           id: string
           is_visible: boolean
           jam_id: string
@@ -7797,12 +7799,14 @@ export type Database = {
           referral_channel: string | null
           referred_by: string | null
           status: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           check_in_token?: string
           checked_in_at?: string | null
           checked_in_by?: string | null
+          guest_email?: string | null
+          guest_name?: string | null
           id?: string
           is_visible?: boolean
           jam_id: string
@@ -7810,12 +7814,14 @@ export type Database = {
           referral_channel?: string | null
           referred_by?: string | null
           status?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           check_in_token?: string
           checked_in_at?: string | null
           checked_in_by?: string | null
+          guest_email?: string | null
+          guest_name?: string | null
           id?: string
           is_visible?: boolean
           jam_id?: string
@@ -7823,7 +7829,7 @@ export type Database = {
           referral_channel?: string | null
           referred_by?: string | null
           status?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {

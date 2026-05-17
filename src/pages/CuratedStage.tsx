@@ -41,6 +41,9 @@ const CuratedStage = () => {
   const [room, setRoom] = useState<{ url: string; name: string; token: string } | null>(null);
   const [joining, setJoining] = useState(false);
   const [rsvping, setRsvping] = useState(false);
+  const [handRaised, setHandRaised] = useState(false);
+  const [raising, setRaising] = useState(false);
+  const [verifyingTicket, setVerifyingTicket] = useState(false);
 
   const isHost = !!user && !!stage && stage.host_user_id === user.id;
   const myName = useMemo(() => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest", [user]);
@@ -78,11 +81,64 @@ const CuratedStage = () => {
     return () => { mounted = false; supabase.removeChannel(channel); };
   }, [id, user]);
 
+  // Listen for host promoting a raised hand → swap in speaker token
+  useEffect(() => {
+    if (!user || !stage || !room) return;
+    const ch = supabase.channel(`stage_speaker_${stage.id}_${user.id}`)
+      .on("broadcast", { event: "promoted" }, ({ payload }) => {
+        const newToken = (payload as any)?.token;
+        if (!newToken) return;
+        setRoom((prev) => prev ? { ...prev, token: newToken } : prev);
+        setCallOpen(false);
+        setTimeout(() => setCallOpen(true), 250);
+        setHandRaised(false);
+        toast({ title: "You're up", description: "Host pulled you on stage — mic/cam on." });
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(ch); };
+  }, [user, stage, room, toast]);
+
+  // Post-checkout: verify Stripe session and confirm RSVP
+  useEffect(() => {
+    const ticket = searchParams.get("ticket");
+    const sessionId = searchParams.get("session_id");
+    if (ticket === "success" && sessionId && user && id) {
+      setVerifyingTicket(true);
+      supabase.functions.invoke("verify-stage-ticket", { body: { session_id: sessionId, stage_id: id } })
+        .then(({ data, error }) => {
+          if (error) throw error;
+          if (data?.status === "paid") {
+            setMyRsvp({ status: "rsvp" });
+            toast({ title: "Ticket confirmed", description: "You're in. We'll remind you before it starts." });
+          }
+        })
+        .catch((e) => toast({ title: "Couldn't verify ticket", description: e?.message, variant: "destructive" }))
+        .finally(() => {
+          setVerifyingTicket(false);
+          searchParams.delete("ticket"); searchParams.delete("session_id");
+          setSearchParams(searchParams, { replace: true });
+        });
+    } else if (ticket === "cancel") {
+      toast({ title: "Checkout cancelled" });
+      searchParams.delete("ticket");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, user, id]);
+
   const handleRsvp = async () => {
     if (!user) { navigate("/auth"); return; }
     if (!stage) return;
     if (stage.is_paid) {
-      toast({ title: "Paid tickets coming soon", description: "Ping the host directly for this stage." });
+      setRsvping(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("checkout-stage-ticket", {
+          body: { stage_id: stage.id },
+        });
+        if (error) throw error;
+        if (data?.url) window.location.href = data.url;
+      } catch (e: any) {
+        toast({ title: "Couldn't start checkout", description: e?.message, variant: "destructive" });
+      } finally { setRsvping(false); }
       return;
     }
     setRsvping(true);
@@ -96,6 +152,19 @@ const CuratedStage = () => {
     } catch (e: any) {
       toast({ title: "Couldn't RSVP", description: e?.message, variant: "destructive" });
     } finally { setRsvping(false); }
+  };
+
+  const handleRaiseHand = async () => {
+    if (!user || !stage) return;
+    setRaising(true);
+    try {
+      const { error } = await supabase.functions.invoke("raise-hand-stage", { body: { stage_id: stage.id } });
+      if (error) throw error;
+      setHandRaised(true);
+      toast({ title: "Hand raised", description: "Host will pull you up if there's a slot." });
+    } catch (e: any) {
+      toast({ title: "Couldn't raise hand", description: e?.message, variant: "destructive" });
+    } finally { setRaising(false); }
   };
 
   const handleJoinLive = async () => {
@@ -198,10 +267,18 @@ const CuratedStage = () => {
             </p>
           </div>
         ) : isLive ? (
-          <Button onClick={handleJoinLive} disabled={joining} size="lg" variant="lime" className="w-full">
-            {joining ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Radio className="h-4 w-4 mr-2" />}
-            Walk in
-          </Button>
+          <div className="space-y-2">
+            <Button onClick={handleJoinLive} disabled={joining} size="lg" variant="lime" className="w-full">
+              {joining ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Radio className="h-4 w-4 mr-2" />}
+              Walk in
+            </Button>
+            {!isHost && (
+              <Button onClick={handleRaiseHand} disabled={raising || handRaised} variant="outline" className="w-full">
+                <Hand className="h-4 w-4 mr-2" />
+                {handRaised ? "Hand raised — waiting for host" : "Raise hand to come on stage"}
+              </Button>
+            )}
+          </div>
         ) : isEnded ? (
           <Card className="p-6 text-center bg-muted/30">
             <p className="text-sm font-semibold">This stage has wrapped.</p>

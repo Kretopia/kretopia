@@ -41,6 +41,7 @@ import { DuplicateAccountBanner } from "@/components/account/DuplicateAccountBan
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
 import { MagicHomeHero } from "@/components/home/MagicHomeHero";
 import { MorningPulse } from "@/components/home/MorningPulse";
+import { CuratedStagesRail } from "@/components/circle/CuratedStagesRail";
 import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
 import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";
@@ -574,6 +575,15 @@ export const UnifiedHome = () => {
 
           {/* The Pulse — Morning Brief + Today + Active Studios */}
           <MorningPulse firstName={firstName} greeting={greeting} />
+
+          {/* Sound Stages discovery — only renders when stages are scheduled this week */}
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sound Stages this week</p>
+              <Link to="/circle?tab=live" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
+            </div>
+            <CuratedStagesRail limit={6} hideWhenEmpty />
+          </div>
 
           {/* Pass B.1: MagicHomeHero hidden — ThrivePromptHero is the single hero. */}
           {false && (() => {

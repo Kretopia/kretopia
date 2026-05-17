@@ -171,9 +171,17 @@ export function ThrivePromptHero() {
 
     setBusy(true);
     try {
-      const { data, error } = await supabase.functions.invoke<RouteResponse>("route-thrive-intent", {
+      // Client-side safety timeout — if routing stalls, fall back to opening chat.
+      const routePromise = supabase.functions.invoke<RouteResponse>("route-thrive-intent", {
         body: { prompt },
       });
+      const timeoutPromise = new Promise<{ data: RouteResponse; error: null }>((resolve) =>
+        setTimeout(() => resolve({
+          data: { intent: "chat", preview: "Let's talk it through." } as RouteResponse,
+          error: null,
+        }), 18000),
+      );
+      const { data, error } = await Promise.race([routePromise, timeoutPromise]) as any;
       if (error || !data) throw error || new Error("No response");
 
       void (supabase as any).from("thrive_intent_logs").insert({

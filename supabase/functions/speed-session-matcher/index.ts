@@ -123,14 +123,16 @@ serve(async (req) => {
       for (let j = i + 1; j < available.length; j++) {
         const b = available[j];
         if (used.has(b)) continue;
+        if (blockSet.has(`${a}|${b}`)) continue;
         if (pastSet.has(`${a}|${b}`)) continue;
         pairsToCreate.push([a, b]); used.add(a); used.add(b); matched = true; break;
       }
-      // If no fresh partner, allow repeat (better than skipping)
+      // If no fresh partner, allow repeat (better than skipping) — but still respect blocks
       if (!matched) {
         for (let j = i + 1; j < available.length; j++) {
           const b = available[j];
           if (used.has(b)) continue;
+          if (blockSet.has(`${a}|${b}`)) continue;
           pairsToCreate.push([a, b]); used.add(a); used.add(b); break;
         }
       }

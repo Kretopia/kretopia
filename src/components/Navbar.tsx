@@ -260,7 +260,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                           {!isPro && <span className="text-xs text-primary font-medium">Upgrade →</span>}
                         </div>
                       </Button>
-                      <MenuButton icon={Star} label="Standing" onClick={() => handleNavigation("/profile#standing")} />
+                      
                       <div className="px-1 py-1">
                         <StorageMeter variant="compact" />
                       </div>

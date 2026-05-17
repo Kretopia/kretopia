@@ -42,8 +42,8 @@ const BottomNav = memo(() => {
       );
     }
     if (path === "/desk") return location.pathname.startsWith("/desk");
-    if (path === "/messages")
-      return location.pathname.startsWith("/messages") || location.pathname.startsWith("/inbox");
+    if (path === "/circle")
+      return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
     if (path === "/profile")
       return (
         location.pathname.startsWith("/profile") ||

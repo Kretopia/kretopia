@@ -583,7 +583,16 @@ export const ThriveAgentFab = () => {
 
   const clearHistory = useCallback(async () => {
     if (!user) return;
-    if (!confirm("Clear your Thrive Copilot history? This can't be undone.")) return;
+    // One-click reset — no confirm dialog. Wipe local state immediately so
+    // the next prompt starts fresh, then clean up the server copy in the
+    // background.
+    setMessages([]);
+    setActionsByMsg({});
+    setResultCardsByMsg({});
+    setActivityByMsg({});
+    setPlansByMsg({});
+    setConversationId(undefined);
+    toast.success("Chat reset — next prompt starts fresh");
     try {
       const { data: convo } = await supabase
         .from("ai_conversations")
@@ -594,14 +603,8 @@ export const ThriveAgentFab = () => {
       if (convo?.id) {
         await supabase.from("ai_messages").delete().eq("conversation_id", convo.id);
       }
-      setMessages([]);
-      setActionsByMsg({});
-      setResultCardsByMsg({});
-      setActivityByMsg({});
-      setPlansByMsg({});
-      toast.success("History cleared");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not clear history");
+      console.warn("Background history wipe failed", e);
     }
   }, [user]);
 
@@ -775,15 +778,17 @@ export const ThriveAgentFab = () => {
                   <HelpCircle className="h-3.5 w-3.5" />
                   <span className="text-[11px] font-medium">What can I do?</span>
                 </Button>
-                {messages.length > 0 && (
+                {user && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 px-2 text-muted-foreground"
+                    className="h-7 px-2 gap-1 text-muted-foreground hover:text-foreground"
                     onClick={clearHistory}
-                    aria-label="Clear chat history"
+                    aria-label="Reset chat memory"
+                    title="Reset chat memory — next prompt starts fresh"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
+                    <span className="text-[11px] font-medium">Reset</span>
                   </Button>
                 )}
               </div>

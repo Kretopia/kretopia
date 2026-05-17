@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import thriveinIcon from "@/assets/thrivein-icon.png";
+import { BrandDots } from "@/components/brand/BrandDots";
 
 interface BrandLogoProps {
   /** "sm" = icon only, "md" = icon + text (default), "lg" = larger for hero/auth */
@@ -11,16 +11,16 @@ interface BrandLogoProps {
   linkToHome?: boolean;
   /** Extra classes on the wrapper */
   className?: string;
-  /** Show only the text mark, no icon */
+  /** Show only the text mark, no dots */
   textOnly?: boolean;
-  /** Show only the icon, no text */
+  /** Show only the dots, no text */
   iconOnly?: boolean;
 }
 
 const sizeConfig = {
-  sm: { icon: "h-10 w-10", text: "text-lg", gap: "gap-1.5" },
-  md: { icon: "h-12 w-12", text: "text-xl", gap: "gap-2" },
-  lg: { icon: "h-16 w-16", text: "text-3xl", gap: "gap-2.5" },
+  sm: { dots: "sm" as const, text: "text-lg", gap: "gap-2" },
+  md: { dots: "sm" as const, text: "text-xl", gap: "gap-2.5" },
+  lg: { dots: "md" as const, text: "text-3xl", gap: "gap-3" },
 } as const;
 
 /**
@@ -40,11 +40,7 @@ export function BrandLogo({
   const content = (
     <span className={cn("flex items-center shrink-0", cfg.gap, className)}>
       {!textOnly && (
-        <img
-          src={thriveinIcon}
-          alt="ThriveIN"
-          className={cn(cfg.icon, "object-contain")}
-        />
+        <BrandDots size={cfg.dots} />
       )}
       {!iconOnly && (
         <span

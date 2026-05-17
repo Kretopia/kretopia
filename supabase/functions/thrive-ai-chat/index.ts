@@ -545,7 +545,6 @@ Short replies like "yes", "no", "ok", "sure", "do it", "go ahead", "nope", "let'
             // Without this, the Planner pivots to whatever's loudest in USER FACTS
             // (e.g. unpaid invoices) and we get the classic "I asked about sponsors,
             // got invoices" bug.
-            const AFFIRM_RE = /^\s*(ok(ay)?|yes|yep|yeah|sure|do it|go ahead|let'?s go|sounds good|please|👍|👌|✅|y)\s*[.!]?\s*$/i;
             const isAffirm = AFFIRM_RE.test(latestUser.content);
             const priorAssistant = isAffirm
               ? [...messages].reverse().find((m) => m.role === "assistant")

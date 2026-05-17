@@ -81,11 +81,47 @@ const CuratedStage = () => {
     return () => { mounted = false; supabase.removeChannel(channel); };
   }, [id, user]);
 
+  // Post-checkout: verify Stripe session and confirm RSVP
+  useEffect(() => {
+    const ticket = searchParams.get("ticket");
+    const sessionId = searchParams.get("session_id");
+    if (ticket === "success" && sessionId && user && id) {
+      setVerifyingTicket(true);
+      supabase.functions.invoke("verify-stage-ticket", { body: { session_id: sessionId, stage_id: id } })
+        .then(({ data, error }) => {
+          if (error) throw error;
+          if (data?.status === "paid") {
+            setMyRsvp({ status: "rsvp" });
+            toast({ title: "Ticket confirmed", description: "You're in. We'll remind you before it starts." });
+          }
+        })
+        .catch((e) => toast({ title: "Couldn't verify ticket", description: e?.message, variant: "destructive" }))
+        .finally(() => {
+          setVerifyingTicket(false);
+          searchParams.delete("ticket"); searchParams.delete("session_id");
+          setSearchParams(searchParams, { replace: true });
+        });
+    } else if (ticket === "cancel") {
+      toast({ title: "Checkout cancelled" });
+      searchParams.delete("ticket");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, user, id]);
+
   const handleRsvp = async () => {
     if (!user) { navigate("/auth"); return; }
     if (!stage) return;
     if (stage.is_paid) {
-      toast({ title: "Paid tickets coming soon", description: "Ping the host directly for this stage." });
+      setRsvping(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("checkout-stage-ticket", {
+          body: { stage_id: stage.id },
+        });
+        if (error) throw error;
+        if (data?.url) window.location.href = data.url;
+      } catch (e: any) {
+        toast({ title: "Couldn't start checkout", description: e?.message, variant: "destructive" });
+      } finally { setRsvping(false); }
       return;
     }
     setRsvping(true);
@@ -101,7 +137,18 @@ const CuratedStage = () => {
     } finally { setRsvping(false); }
   };
 
-  const handleJoinLive = async () => {
+  const handleRaiseHand = async () => {
+    if (!user || !stage) return;
+    setRaising(true);
+    try {
+      const { error } = await supabase.functions.invoke("raise-hand-stage", { body: { stage_id: stage.id } });
+      if (error) throw error;
+      setHandRaised(true);
+      toast({ title: "Hand raised", description: "Host will pull you up if there's a slot." });
+    } catch (e: any) {
+      toast({ title: "Couldn't raise hand", description: e?.message, variant: "destructive" });
+    } finally { setRaising(false); }
+  };
     if (!user || !stage) { navigate("/auth"); return; }
     setJoining(true);
     try {

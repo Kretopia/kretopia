@@ -24,6 +24,7 @@ export function LiveCallsPanel() {
   const navigate = useNavigate();
 
   const [goLiveOpen, setGoLiveOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [joinUrl, setJoinUrl] = useState("");
   const [joining, setJoining] = useState(false);
 

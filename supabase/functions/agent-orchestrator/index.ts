@@ -72,39 +72,45 @@ async function classifyIntent(
     "memory",
   ];
 
-  const resp = await fetch(
-    "https://ai.gateway.lovable.dev/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
+  let resp: Response;
+  try {
+    resp = await fetchWithTimeout(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-lite",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an intent router for a creative-economy platform. Pick the SINGLE best sub-agent.\n\n" +
+                "Sub-agents:\n" +
+                kinds.join(", ") +
+                "\n\nDISAMBIGUATION RULES:\n" +
+                "- 'add <person> to <project>', 'invite <person> to my project', 'put X on the team', 'remove X from project' → project_manager (this is a collaborator action on an EXISTING project, NOT talent search).\n" +
+                "- 'find me a <role>', 'search for photographers', 'who can shoot in Bali' → talent (discovering new people).\n" +
+                "- 'create task', 'mark done', 'project status' → project_manager.\n" +
+                "- 'apply to <gig>', 'find gigs', 'draft cover letter' → gig.\n" +
+                "- 'send DM to <person>', 'message X' → talent.\n" +
+                "- 'find sponsors', 'brand partners', 'who could sponsor my event', 'sponsorship leads for X' → opportunity.\n" +
+                "- 'remember that...', 'forget...' → memory.\n\n" +
+                "Return JSON only: {\"agent_kind\":\"<one_of_the_above>\",\"reasoning\":\"<one short sentence>\"}",
+            },
+            { role: "user", content: intent },
+          ],
+          response_format: { type: "json_object" },
+        }),
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an intent router for a creative-economy platform. Pick the SINGLE best sub-agent.\n\n" +
-              "Sub-agents:\n" +
-              kinds.join(", ") +
-              "\n\nDISAMBIGUATION RULES:\n" +
-              "- 'add <person> to <project>', 'invite <person> to my project', 'put X on the team', 'remove X from project' → project_manager (this is a collaborator action on an EXISTING project, NOT talent search).\n" +
-              "- 'find me a <role>', 'search for photographers', 'who can shoot in Bali' → talent (discovering new people).\n" +
-              "- 'create task', 'mark done', 'project status' → project_manager.\n" +
-              "- 'apply to <gig>', 'find gigs', 'draft cover letter' → gig.\n" +
-              "- 'send DM to <person>', 'message X' → talent.\n" +
-              "- 'find sponsors', 'brand partners', 'who could sponsor my event', 'sponsorship leads for X' → opportunity.\n" +
-              "- 'remember that...', 'forget...' → memory.\n\n" +
-              "Return JSON only: {\"agent_kind\":\"<one_of_the_above>\",\"reasoning\":\"<one short sentence>\"}",
-          },
-          { role: "user", content: intent },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    },
-  );
+      20000,
+    );
+  } catch (_e) {
+    return { agent_kind: "project_manager", reasoning: "classifier timed out" };
+  }
 
   if (!resp.ok) {
     // Fall back to project_manager so the run still completes

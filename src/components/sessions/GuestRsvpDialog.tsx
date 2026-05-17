@@ -262,6 +262,52 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsv
             {errors.guest_name && <p className="text-xs text-destructive">{errors.guest_name}</p>}
           </div>
 
+          {!user && nameMatches.length > 0 && !matchDismissed && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <UserCheck className="h-3.5 w-3.5 text-primary" />
+                  Is this you? Sign in — your RSVP will be saved.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setMatchDismissed(true)}
+                  className="text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  Not me
+                </button>
+              </div>
+              <div className="space-y-1.5">
+                {nameMatches.map((m) => (
+                  <button
+                    key={m.user_id}
+                    type="button"
+                    onClick={() => {
+                      const redirect = `/event/${eventId}`;
+                      try { sessionStorage.setItem("post_auth_redirect", redirect); } catch {}
+                      navigate(`/auth?tab=signin&redirect=${encodeURIComponent(redirect)}`);
+                    }}
+                    className="w-full flex items-center gap-2.5 rounded-md bg-background/80 hover:bg-background p-2 text-left transition"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={m.avatar_url ?? undefined} />
+                      <AvatarFallback className="text-xs">
+                        {(m.full_name || "?").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{m.full_name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {[m.role, m.location].filter(Boolean).join(" · ") || (m.username ? `@${m.username}` : "Sign in to claim")}
+                      </p>
+                    </div>
+                    <span className="text-[11px] text-primary font-medium shrink-0">Sign in →</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="guest-email">Email</Label>
             <Input

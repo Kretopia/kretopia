@@ -10,7 +10,19 @@ import {
   Circle,
   ScreenShare,
   X,
+  MoreVertical,
+  Flag,
+  Ban,
+  ShieldAlert,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ReportBlockDialog } from "@/components/user/ReportBlockDialog";
 import { type DailyCall } from "@daily-co/daily-js";
 import { createDailyFrame } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +48,11 @@ interface VideoCallSheetProps {
   lobbyCta?: string;
   /** Pre-baked share URL for ad-hoc meetings (shown as Copy Link in lobby + invite). */
   meetingShareUrl?: string | null;
+  /** When set, enables 1-tap in-call Report / Block on the other person. */
+  peerUserId?: string | null;
+  peerName?: string | null;
+  /** Optional: called after a successful block so callers can end the call / re-pair. */
+  onPeerBlocked?: () => void;
 }
 
 type Phase = "lobby" | "live";
@@ -54,6 +71,9 @@ export const VideoCallSheet = ({
   roomName,
   lobbyCta = "Start call",
   meetingShareUrl = null,
+  peerUserId = null,
+  peerName = null,
+  onPeerBlocked,
 }: VideoCallSheetProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -66,6 +86,7 @@ export const VideoCallSheet = ({
   const [recording, setRecording] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [safetyMode, setSafetyMode] = useState<null | "report" | "block">(null);
   const [joinPrefs, setJoinPrefs] = useState<{ mic: boolean; cam: boolean }>({
     mic: true,
     cam: true,
@@ -313,14 +334,38 @@ export const VideoCallSheet = ({
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleEnd}
-                  aria-label="Close call"
-                  className="h-9 w-9 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/80 transition-colors shrink-0"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {peerUserId && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label="Safety options"
+                          className="h-9 w-9 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/80 transition-colors"
+                        >
+                          <ShieldAlert className="h-4 w-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuItem onClick={() => setSafetyMode("report")} className="text-destructive focus:text-destructive">
+                          <Flag className="h-4 w-4 mr-2" /> Report {peerName || "this person"}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setSafetyMode("block")} className="text-destructive focus:text-destructive">
+                          <Ban className="h-4 w-4 mr-2" /> Block & don't reconnect
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleEnd}
+                    aria-label="Close call"
+                    className="h-9 w-9 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/80 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </header>
 
               {/* Video area */}
@@ -412,6 +457,21 @@ export const VideoCallSheet = ({
             callerName: userName,
             callerAvatar: userAvatar ?? null,
             meetingShareUrl: meetingShareUrl ?? null,
+          }}
+        />
+      )}
+
+      {peerUserId && (
+        <ReportBlockDialog
+          open={!!safetyMode}
+          onOpenChange={(v) => !v && setSafetyMode(null)}
+          targetUserId={peerUserId}
+          targetUserName={peerName || "this person"}
+          mode={safetyMode ?? "report"}
+          onBlocked={() => {
+            setSafetyMode(null);
+            onPeerBlocked?.();
+            void handleEnd();
           }}
         />
       )}

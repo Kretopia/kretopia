@@ -778,15 +778,17 @@ export const ThriveAgentFab = () => {
                   <HelpCircle className="h-3.5 w-3.5" />
                   <span className="text-[11px] font-medium">What can I do?</span>
                 </Button>
-                {messages.length > 0 && (
+                {user && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 px-2 text-muted-foreground"
+                    className="h-7 px-2 gap-1 text-muted-foreground hover:text-foreground"
                     onClick={clearHistory}
-                    aria-label="Clear chat history"
+                    aria-label="Reset chat memory"
+                    title="Reset chat memory — next prompt starts fresh"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
+                    <span className="text-[11px] font-medium">Reset</span>
                   </Button>
                 )}
               </div>

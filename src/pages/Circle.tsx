@@ -4,7 +4,7 @@ import { PageTip } from "@/components/PageTip";
 import { AuthGate } from "@/components/AuthGate";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,7 +18,7 @@ import { ProfileActivationGate } from "@/components/ProfileActivationGate";
 import { InviteDialog } from "@/components/InviteDialog";
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 import { SwipeFilters, SwipeFiltersState, DEFAULT_SWIPE_FILTERS } from "@/components/circle/SwipeFilters";
-import { Sparkles, Users, Radio, LayoutGrid, UserPlus } from "lucide-react";
+import { Sparkles, Users, Theater, LayoutGrid, UserPlus } from "lucide-react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { getDiscoveryMissingFields } from "@/lib/profileCompletion";
 import { hasProAccess } from "@/lib/subscriptionConfig";
@@ -37,8 +37,8 @@ export default function Circle() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const initialTab = tabParam === "live" ? "live" : "match";
-  const [activeTab, setActiveTab] = useState<"match" | "live">(initialTab);
+  // Stages = Sound Stages first. Match is a sheet, not a tab.
+  const [showMatch, setShowMatch] = useState(tabParam === "match");
   const [profileVisibility, setProfileVisibility] = useState<{ isVisible: boolean; missingFields: string[] }>({ isVisible: true, missingFields: [] });
   const [connections, setConnections] = useState<any[]>([]);
   const [connectionsLoading, setConnectionsLoading] = useState(false);
@@ -55,13 +55,13 @@ export default function Circle() {
   const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   useEffect(() => {
-    if (tabParam === "live" || tabParam === "match") setActiveTab(tabParam);
+    if (tabParam === "match") setShowMatch(true);
   }, [tabParam]);
 
   // Welcome handoff
   useEffect(() => {
     if (searchParams.get("welcome") === "match") {
-      setActiveTab("match");
+      setShowMatch(true);
       import("sonner").then(({ toast }) => {
         toast.success("We found you a match!", {
           description: "Tap the first card to say hi.",
@@ -174,13 +174,13 @@ export default function Circle() {
 
         {/* Sticky header */}
         <div className="sticky top-0 z-10 border-b border-border/60 bg-background">
-          <div className="container mx-auto px-3 sm:px-4 pt-3 pb-2">
+          <div className="container mx-auto px-3 sm:px-4 pt-3 pb-3">
             {/* Title row */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 min-w-0">
-                <Sparkles className="h-5 w-5 text-[hsl(var(--signal-teal))] shrink-0" />
+                <Theater className="h-5 w-5 text-[hsl(var(--signal-teal))] shrink-0" />
                 <h1 className="text-2xl font-black tracking-[-0.03em] truncate">
-                  <span className="italic text-[hsl(var(--signal-teal))]">Circle</span>
+                  <span className="italic text-[hsl(var(--signal-teal))]">Stages</span>
                 </h1>
               </div>
               <Button
@@ -194,21 +194,16 @@ export default function Circle() {
               </Button>
             </div>
 
-            {/* Action row: Network · Browse · Filter (always visible) */}
+            {/* Action row: Match · Browse · Network (Filters live inside each sheet) */}
             <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-none">
               <Button
                 variant="outline"
                 size="sm"
                 className="h-9 gap-1.5 rounded-full shrink-0"
-                onClick={() => setShowNetwork(true)}
+                onClick={() => setShowMatch(true)}
               >
-                <Users className="h-4 w-4" />
-                Network
-                {connections.length > 0 && (
-                  <span className="ml-0.5 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-semibold">
-                    {connections.length}
-                  </span>
-                )}
+                <Sparkles className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
+                Match
               </Button>
               <Button
                 variant="outline"
@@ -219,79 +214,78 @@ export default function Circle() {
                 <LayoutGrid className="h-4 w-4" />
                 Browse
               </Button>
-              <div className="shrink-0">
-                <SwipeFilters
-                  filters={filters}
-                  onFiltersChange={handleFiltersChange}
-                  isPro={isPro}
-                  profilesCount={profilesCount}
-                />
-              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-1.5 rounded-full shrink-0 text-muted-foreground"
+                onClick={() => setShowNetwork(true)}
+              >
+                <Users className="h-4 w-4" />
+                Network
+                {connections.length > 0 && (
+                  <span className="ml-0.5 text-[10px] text-muted-foreground">· {connections.length}</span>
+                )}
+              </Button>
             </div>
-
-            {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "match" | "live")} className="w-full mt-2">
-              <TabsList className="grid w-full grid-cols-2 h-10 bg-muted/60">
-                <TabsTrigger
-                  value="match"
-                  className="gap-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-[hsl(var(--signal-teal))] data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--signal-teal))]/20 data-[state=active]:shadow-sm"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  Match
-                </TabsTrigger>
-                <TabsTrigger
-                  value="live"
-                  className="gap-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-[hsl(var(--signal-teal))] data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--signal-teal))]/20 data-[state=active]:shadow-sm"
-                >
-                  <Radio className="h-4 w-4" />
-                  Live
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
           </div>
         </div>
 
-        {/* Content */}
+        {/* Content — Sound Stages is the main page */}
         <div className="container mx-auto px-3 sm:px-4 py-3">
           <ProfileActivationGate
             isVisible={profileVisibility.isVisible}
             missingFields={profileVisibility.missingFields}
-            surfaceLabel="Circle"
+            surfaceLabel="Stages"
           >
-            {activeTab === "match" ? (
-              <div className="space-y-3">
-                {user ? (
-                  <>
-                    <SwipeFeature
-                      onMatch={handleMatch}
-                      filters={filters}
-                      onProfilesCountChange={setProfilesCount}
-                    />
-                    {profilesCount > 0 && (
-                      <PageTip
-                        id="circle-match"
-                        title="Welcome to Circle"
-                        message="Swipe through creators. Tap a card for their profile, then send a connect. Use Network and Browse above to explore."
-                      />
-                    )}
-                  </>
-                ) : (
-                  <GuestSwipePreview />
-                )}
-              </div>
+            {user ? (
+              <LiveCallsPanel />
             ) : (
-              <div className="space-y-3">
-                {user ? (
-                  <LiveCallsPanel />
-                ) : (
-                  <AuthGate>
-                    <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />
-                  </AuthGate>
-                )}
-              </div>
+              <AuthGate>
+                <div className="h-[40vh] bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl" />
+              </AuthGate>
             )}
           </ProfileActivationGate>
         </div>
+
+        {/* Match sheet */}
+        <Sheet open={showMatch} onOpenChange={setShowMatch}>
+          <SheetContent side="right" className="w-[96vw] sm:w-[520px] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-[hsl(var(--signal-teal))]" />
+                Match
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mt-3 mb-3">
+              <SwipeFilters
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                isPro={isPro}
+                profilesCount={profilesCount}
+              />
+            </div>
+            <div className="space-y-3">
+              {user ? (
+                <>
+                  <SwipeFeature
+                    onMatch={handleMatch}
+                    filters={filters}
+                    onProfilesCountChange={setProfilesCount}
+                  />
+                  {profilesCount > 0 && (
+                    <PageTip
+                      id="stages-match"
+                      title="Welcome to Match"
+                      message="Swipe through creators. Tap a card for their profile, then send a connect."
+                    />
+                  )}
+                </>
+              ) : (
+                <GuestSwipePreview />
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
 
         {/* Network sheet */}
         <Sheet open={showNetwork} onOpenChange={setShowNetwork}>

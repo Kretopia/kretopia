@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Compass, LayoutGrid, Sun, BadgeCheck, Users, Briefcase, UserSearch, Wallet } from "lucide-react";
+import { Compass, LayoutGrid, Sun, BadgeCheck, Theater, Briefcase, UserSearch, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { path: "/", icon: Sun, label: "Today", hint: "Today — what to move forward" },
   { path: "/desk", icon: LayoutGrid, label: "Desk", hint: "Projects, rooms, files, tasks" },
   { path: "/scout", icon: Compass, label: "Scout", hint: "Opportunities, people, sponsors" },
-  { path: "/circle", icon: Users, label: "Circle", hint: "Match, Live, Network" },
+  { path: "/circle", icon: Theater, label: "Stages", hint: "Sound Stages — go live, match, browse" },
   { path: "/profile", icon: BadgeCheck, label: "Passport", hint: "Stamps, Co-signs, Wallet" },
 ];
 

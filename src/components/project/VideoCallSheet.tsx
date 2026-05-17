@@ -71,6 +71,9 @@ export const VideoCallSheet = ({
   roomName,
   lobbyCta = "Start call",
   meetingShareUrl = null,
+  peerUserId = null,
+  peerName = null,
+  onPeerBlocked,
 }: VideoCallSheetProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -83,6 +86,7 @@ export const VideoCallSheet = ({
   const [recording, setRecording] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [safetyMode, setSafetyMode] = useState<null | "report" | "block">(null);
   const [joinPrefs, setJoinPrefs] = useState<{ mic: boolean; cam: boolean }>({
     mic: true,
     cam: true,

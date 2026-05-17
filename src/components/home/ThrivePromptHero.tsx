@@ -278,7 +278,7 @@ export function ThrivePromptHero() {
         <h1 className="font-serif italic font-normal leading-[1.05] tracking-tight text-[28px] sm:text-[34px] text-foreground">
           What are we
           <br />
-          <span className="text-primary not-italic font-semibold">moving forward</span> today?
+          <span className="text-[hsl(var(--signal-teal))] not-italic font-semibold">moving forward</span> today?
         </h1>
 
         {/* Composer */}

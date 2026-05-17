@@ -137,7 +137,7 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
     >
       {/* Morning Brief — one calm line */}
       <div className="rounded-2xl border border-border/60 bg-card px-4 py-3.5">
-        <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/80 mb-1">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--signal-teal))] mb-1">
           {greeting}, {firstName}
         </p>
         <p className="text-sm sm:text-[15px] text-foreground leading-snug">{brief}</p>
@@ -186,12 +186,12 @@ export const MorningPulse = ({ firstName, greeting }: { firstName: string; greet
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2.5">
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <FolderKanban className="h-4 w-4 text-primary" />
+              <FolderKanban className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
               Active Studios
             </h2>
             <Link
               to="/desk"
-              className="text-xs text-primary font-medium flex items-center gap-1 hover:underline"
+              className="text-xs text-[hsl(var(--signal-teal))] font-medium flex items-center gap-1 hover:underline"
             >
               All studios <ArrowRight className="h-3 w-3" />
             </Link>

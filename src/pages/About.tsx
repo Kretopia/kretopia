@@ -49,13 +49,12 @@ const About = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,hsl(var(--primary)/0.08),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_80%,hsl(var(--accent)/0.06),transparent_50%)]" />
         <div className="container relative mx-auto max-w-4xl px-4 py-14 sm:py-20">
-          <p className="brand-eyebrow mb-4 inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-energy/30 bg-energy/[0.04]">
-            <span className="h-1.5 w-1.5 rounded-full bg-energy animate-pulse" />
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-4">
             Since 2013
           </p>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] text-foreground mb-5 leading-[0.95]">
-            A Global Community<br />
-            <span className="text-energy-glow">Built for Creatives</span>
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-semibold tracking-[-0.035em] text-foreground mb-5 leading-[0.95]">
+            A global community<br />
+            built for <span className="italic text-[hsl(var(--signal-teal))]">creatives</span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl leading-relaxed">
             What started in 2013 as a weekly after-work gathering in Dubai has grown into an international network

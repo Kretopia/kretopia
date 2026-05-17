@@ -807,6 +807,14 @@ export const ThriveAgentFab = () => {
                     ))}
                   </div>
                 ) : null}
+                {/* Result cards for safe auto-runs (e.g. Sponsor Radar) */}
+                {m.role === "assistant" && resultCardsByMsg[i]?.length ? (
+                  <div className="space-y-2 max-w-[95%]">
+                    {resultCardsByMsg[i].map((card) => (
+                      <AgentResultCard key={card.id} card={card} compact />
+                    ))}
+                  </div>
+                ) : null}
                 {/* Plan cards for multi-step plans this turn proposed */}
                 {m.role === "assistant" && plansByMsg[i]?.length ? (
                   <div className="space-y-2 max-w-[95%]">

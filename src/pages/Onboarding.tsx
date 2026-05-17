@@ -606,13 +606,13 @@ export default function Onboarding() {
               {/* Header */}
               <div className="text-center space-y-2">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                  Step 1 · Building your {BRAND.passport}
+                  Step 1 · Own your record
                 </p>
                 <h1 className="font-serif text-3xl leading-tight tracking-tight">
-                  Let's find your first {BRAND.stampSingular}.
+                  Let's find the work you've already done.
                 </h1>
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                  Drop your name (and a portfolio link if you have one) — Thrive will search the web and turn your work into verified {BRAND.stamps.toLowerCase()} on your {BRAND.passport}.
+                  Drop your name (and a portfolio link if you have one) — Thrive will search the web and turn it into verified {BRAND.stamps.toLowerCase()} on your {BRAND.passport}. Then we'll get you matched and earning.
                 </p>
               </div>
 

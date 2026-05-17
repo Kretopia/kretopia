@@ -163,7 +163,10 @@ const CreditDatabase = () => {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      setCurrentUserId(data?.user?.id || null);
+      const uid = data?.user?.id || null;
+      setCurrentUserId(uid);
+      // Logged-out visitors land on Explore (no "My Work" to show)
+      if (!uid) setView("explore");
     });
   }, []);
 

@@ -39,8 +39,14 @@ serve(async (req) => {
       });
     }
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Hard timeout so the client never hangs on a stuck gateway call.
+    const ac = new AbortController();
+    const timeoutId = setTimeout(() => ac.abort(), 15000);
+    let resp: Response;
+    try {
+      resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
+      signal: ac.signal,
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",

@@ -31,6 +31,17 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
+// Wrap a fetch with a hard timeout so we never hang the 150s edge budget.
+async function fetchWithTimeout(url: string, init: RequestInit, ms: number): Promise<Response> {
+  const ac = new AbortController();
+  const id = setTimeout(() => ac.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: ac.signal });
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 type Tool = {
   tool_name: string;
   agent_kind: string;

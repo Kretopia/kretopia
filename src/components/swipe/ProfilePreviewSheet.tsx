@@ -137,7 +137,7 @@ export function ProfilePreviewSheet({
                     className={cn(
                       profile.badge === 'og' && "bg-amber-500/10 text-amber-600 border-amber-500/30",
                       profile.badge === 'founding_member' && "bg-amber-500/15 text-amber-700 border-amber-500/40",
-                      profile.badge === 'beta' && "bg-blue-500/10 text-blue-600 border-blue-500/30"
+                      profile.badge === 'beta' && "bg-primary/10 text-primary border-primary/30"
                     )}
                   >
                     {badgeLabel(profile.badge)}

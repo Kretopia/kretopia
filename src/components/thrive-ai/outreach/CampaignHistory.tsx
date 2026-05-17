@@ -33,7 +33,7 @@ export const CampaignHistory = ({ campaigns, onDuplicate }: Props) => {
               <p className="text-[10px] text-muted-foreground truncate">{c.subject}</p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
-              <Badge className={`text-[10px] px-1.5 py-0 ${c.status === "sent" ? "bg-green-500/10 text-green-600" : c.status === "scheduled" ? "bg-blue-500/10 text-blue-600" : "bg-muted text-muted-foreground"}`}>
+              <Badge className={`text-[10px] px-1.5 py-0 ${c.status === "sent" ? "bg-green-500/10 text-green-600" : c.status === "scheduled" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
                 {c.status}
               </Badge>
               <DropdownMenu>

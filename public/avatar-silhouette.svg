@@ -5,7 +5,7 @@
       <stop offset="100%" stop-color="#C7CEFF"/>
     </linearGradient>
     <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#5B6BF5"/>
+      <stop offset="0%" stop-color="#20D3C2"/>
       <stop offset="100%" stop-color="#3D4BC9"/>
     </linearGradient>
   </defs>

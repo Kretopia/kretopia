@@ -278,8 +278,8 @@ export const EditOpportunityDialog = ({
             </div>
 
             {formData.type === 'barter' && (
-              <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-purple-300 bg-primary/5">
-                <p className="text-xs font-semibold text-indigo-700 dark:text-purple-300">Barter Details</p>
+              <div className="space-y-3 p-3 rounded-xl border-2 border-dashed border-primary bg-primary/5">
+                <p className="text-xs font-semibold text-primary dark:text-primary">Barter Details</p>
                 <div className="space-y-2">
                   <Label htmlFor="edit-barter-offering">What You're Offering</Label>
                   <Input id="edit-barter-offering" value={formData.barter_offering} onChange={(e) => setFormData({ ...formData, barter_offering: e.target.value })} placeholder="e.g., Free dinner for 2" />

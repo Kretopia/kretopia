@@ -179,7 +179,7 @@ const MyAnalytics = () => {
                   label="Connections"
                   value={stats.totalConnections}
                   subtext="In your circle"
-                  color="text-blue-500"
+                  color="text-primary"
                 />
                 <StatCard
                   icon={<Eye className="h-4 w-4" />}
@@ -193,7 +193,7 @@ const MyAnalytics = () => {
                   label="Projects"
                   value={stats.totalProjects}
                   subtext="Active collabs"
-                  color="text-indigo-600"
+                  color="text-primary"
                 />
               </div>
 
@@ -215,7 +215,7 @@ const MyAnalytics = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <MessageCircle className="h-4 w-4 text-blue-500" />
+                      <MessageCircle className="h-4 w-4 text-primary" />
                       <span className="text-sm">Messages Received</span>
                     </div>
                     <span className="font-bold">{stats.messagesReceived}</span>
@@ -260,7 +260,7 @@ const MyAnalytics = () => {
                   )}
                   {stats.invitesSent === 0 && (
                     <div className="flex items-start gap-2 text-sm">
-                      <Users className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                      <Users className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                       <span>Invite fellow creators to level up your Creative Circle and unlock rewards!</span>
                     </div>
                   )}

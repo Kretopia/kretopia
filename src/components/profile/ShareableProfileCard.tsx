@@ -228,7 +228,7 @@ export const ShareableProfileCard = ({
                   <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary rounded-full blur-md opacity-50 scale-110" />
                   <Avatar className="h-16 w-16 border-2 border-white/30 shadow-xl relative">
                     <AvatarImage src={profile.avatar_url || ""} />
-                    <AvatarFallback className="bg-gradient-to-br from-indigo-700 to-primary text-white text-xl font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-primary text-white text-xl font-bold">
                       {profile.full_name?.charAt(0) || "?"}
                     </AvatarFallback>
                   </Avatar>
@@ -238,7 +238,7 @@ export const ShareableProfileCard = ({
                   {profile.full_name || "Creative"}
                 </h3>
                 
-                <p className="text-purple-300/80 text-xs font-medium">
+                <p className="text-primary/80 text-xs font-medium">
                   {profile.role || "Creator"}
                 </p>
                 

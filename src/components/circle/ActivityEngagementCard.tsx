@@ -38,7 +38,7 @@ export const ActivityEngagementCard = ({
       case 'award':
         return <Trophy className="h-4 w-4 text-amber-500" />;
       case 'press':
-        return <Newspaper className="h-4 w-4 text-blue-500" />;
+        return <Newspaper className="h-4 w-4 text-primary" />;
       case 'credit':
         return <Clapperboard className="h-4 w-4 text-emerald-500" />;
       default:

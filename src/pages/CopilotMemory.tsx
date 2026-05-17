@@ -44,10 +44,10 @@ const KIND_OPTIONS = [
 const KIND_COLOR: Record<string, string> = {
   preference: "bg-primary/10 text-primary",
   relationship: "bg-pink-500/10 text-pink-600 dark:text-pink-400",
-  working_style: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  working_style: "bg-primary/10 text-primary dark:text-primary",
   money: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
   project: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  goal: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+  goal: "bg-primary/10 text-primary dark:text-primary",
   dislike: "bg-destructive/10 text-destructive",
   fact: "bg-muted text-muted-foreground",
 };

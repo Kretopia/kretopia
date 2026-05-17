@@ -44,11 +44,11 @@ export const SocialStatsSection = ({
 
   const stats = [
     { icon: Youtube, label: "YouTube", value: youtubeSubscribers, url: youtubeUrl, color: "text-red-500" },
-    { icon: Instagram, label: "Instagram", value: instagramFollowers, url: instagramUrl, color: "text-indigo-500" },
+    { icon: Instagram, label: "Instagram", value: instagramFollowers, url: instagramUrl, color: "text-primary" },
     { icon: Music, label: "TikTok", value: tiktokFollowers, url: tiktokUrl, color: "text-primary" },
     { icon: Music, label: "Spotify", value: spotifyListeners, url: spotifyUrl, color: "text-green-500" },
-    { icon: Twitter, label: "Twitter/X", value: twitterFollowers, url: twitterUrl, color: "text-blue-500" },
-    { icon: Linkedin, label: "LinkedIn", value: linkedinConnections, url: linkedinUrl, color: "text-blue-600" },
+    { icon: Twitter, label: "Twitter/X", value: twitterFollowers, url: twitterUrl, color: "text-primary" },
+    { icon: Linkedin, label: "LinkedIn", value: linkedinConnections, url: linkedinUrl, color: "text-primary" },
   ].filter((s) => s.value && s.value > 0);
 
   const hasAnyUrl = !!(youtubeUrl || instagramUrl || tiktokUrl || spotifyUrl || twitterUrl || linkedinUrl);

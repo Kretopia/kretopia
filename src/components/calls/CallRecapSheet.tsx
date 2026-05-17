@@ -51,7 +51,7 @@ const KIND_META: Record<ActionItem["kind"], { label: string; icon: any; color: s
   task:     { label: "Task",      icon: ListChecks, color: "bg-primary/15 text-primary" },
   credit:   { label: "Credit",    icon: Sparkles,   color: "bg-amber-500/15 text-amber-600" },
   decision: { label: "Decision",  icon: CheckCircle2, color: "bg-emerald-500/15 text-emerald-600" },
-  followup: { label: "Follow-up", icon: ScrollText, color: "bg-blue-500/15 text-blue-600" },
+  followup: { label: "Follow-up", icon: ScrollText, color: "bg-primary/15 text-primary" },
   note:     { label: "Note",      icon: FileText,   color: "bg-muted text-muted-foreground" },
 };
 

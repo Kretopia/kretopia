@@ -18,12 +18,12 @@ interface IndustryMapProps {
 const ROLE_COLORS = [
   "bg-primary",
   "bg-accent",
-  "bg-blue-500",
+  "bg-primary",
   "bg-green-500",
   "bg-primary",
   "bg-orange-500",
   "bg-primary",
-  "bg-cyan-500",
+  "bg-primary",
   "bg-yellow-500",
   "bg-red-500",
 ];

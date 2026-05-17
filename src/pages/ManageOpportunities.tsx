@@ -59,7 +59,7 @@ const statusConfig: Record<string, { dot: string; pill: string; icon: React.Elem
   open:    { dot: "bg-emerald-500", pill: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20", icon: CheckCircle2, label: "Live" },
   paused:  { dot: "bg-amber-500",   pill: "bg-amber-500/10 text-amber-500 border-amber-500/20",       icon: Pause,        label: "Paused" },
   closed:  { dot: "bg-muted-foreground", pill: "bg-muted text-muted-foreground border-border",        icon: XCircle,      label: "Closed" },
-  filled:  { dot: "bg-blue-500",    pill: "bg-blue-500/10 text-blue-500 border-blue-500/20",          icon: Users,        label: "Filled" },
+  filled:  { dot: "bg-primary",    pill: "bg-primary/10 text-primary border-primary/20",          icon: Users,        label: "Filled" },
 };
 
 const appStatusConfig: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {

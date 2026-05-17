@@ -3,8 +3,8 @@ export const LEVEL_NAMES = {
   'Member': { range: [1, 5], color: 'from-slate-400 to-slate-500', icon: '◆' },
   'Silver': { range: [6, 10], color: 'from-slate-300 to-slate-400', icon: '◆◆' },
   'Gold': { range: [11, 20], color: 'from-amber-500 to-yellow-600', icon: '★' },
-  'Thriver': { range: [21, 30], color: 'from-indigo-500 to-indigo-600', icon: '★★' },
-  'Elite': { range: [31, 50], color: 'from-indigo-600 to-blue-700', icon: '★★★' },
+  'Thriver': { range: [21, 30], color: 'from-primary to-primary', icon: '★★' },
+  'Elite': { range: [31, 50], color: 'from-primary to-primary', icon: '★★★' },
   'Icon': { range: [51, 75], color: 'from-amber-400 to-amber-600', icon: '👑' },
   'Legend': { range: [76, 999], color: 'from-amber-300 via-yellow-400 to-amber-500', icon: '💎' },
 } as const;

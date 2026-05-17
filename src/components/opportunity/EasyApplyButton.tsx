@@ -217,7 +217,7 @@ export const EasyApplyButton = ({ opportunityId, opportunityTitle, className, si
                     <p className="text-xs text-muted-foreground truncate">{profile.role || "Creative"}</p>
                   </div>
                   {profile.avg_response_hours != null && profile.avg_response_hours > 0 && (
-                    <Badge variant="outline" className="text-[10px] shrink-0 border-blue-500/40 text-blue-600 bg-blue-500/5">
+                    <Badge variant="outline" className="text-[10px] shrink-0 border-primary/40 text-primary bg-primary/5">
                       Fast responder
                     </Badge>
                   )}

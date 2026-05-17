@@ -74,7 +74,7 @@ const templates: Template[] = [
     name: "Design Project",
     description: "Brand identity or design project from concept to delivery",
     icon: Palette,
-    color: "bg-blue-500/10 text-blue-500",
+    color: "bg-primary/10 text-primary",
     tasks: [
       { title: "Client Brief Review", description: "Understand project requirements", status: "todo" },
       { title: "Market Research", description: "Research competitors and trends", status: "todo" },

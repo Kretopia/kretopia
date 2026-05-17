@@ -22,7 +22,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; dotColor: st
   available: { label: "Available for work", color: "text-green-600", dotColor: "bg-green-500" },
   busy: { label: "Currently busy", color: "text-amber-600", dotColor: "bg-amber-500" },
   unavailable: { label: "Not available", color: "text-red-500", dotColor: "bg-red-500" },
-  selective: { label: "Selectively available", color: "text-blue-600", dotColor: "bg-blue-500" },
+  selective: { label: "Selectively available", color: "text-primary", dotColor: "bg-primary" },
 };
 
 export const AvailabilityIndicator = ({

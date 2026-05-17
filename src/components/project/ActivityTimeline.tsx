@@ -228,12 +228,12 @@ export function ActivityTimeline({ projectId }: ActivityTimelineProps) {
 
   const getIconColor = (type: ActivityEvent['type']) => {
     switch (type) {
-      case 'message': return 'text-blue-500';
+      case 'message': return 'text-primary';
       case 'task': return 'text-green-500';
-      case 'milestone': return 'text-indigo-600';
+      case 'milestone': return 'text-primary';
       case 'file': return 'text-orange-500';
-      case 'collaborator': return 'text-indigo-500';
-      case 'time_entry': return 'text-cyan-500';
+      case 'collaborator': return 'text-primary';
+      case 'time_entry': return 'text-primary';
       default: return 'text-gray-500';
     }
   };

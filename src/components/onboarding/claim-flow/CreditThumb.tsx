@@ -15,13 +15,13 @@ const PLATFORM_GRADIENTS: Record<string, string> = {
   "apple music": "from-pink-500/40 to-rose-700/20",
   applemusic: "from-pink-500/40 to-rose-700/20",
   youtube: "from-red-500/40 to-red-700/20",
-  vimeo: "from-cyan-500/40 to-cyan-700/20",
+  vimeo: "from-primary/40 to-primary/20",
   imdb: "from-yellow-500/40 to-amber-700/20",
-  behance: "from-blue-500/40 to-indigo-700/20",
+  behance: "from-primary/40 to-primary/20",
   dribbble: "from-pink-400/40 to-fuchsia-700/20",
   soundcloud: "from-orange-500/40 to-orange-700/20",
-  muso: "from-violet-500/40 to-purple-700/20",
-  artstation: "from-sky-500/40 to-blue-700/20",
+  muso: "from-primary/40 to-primary/20",
+  artstation: "from-primary/40 to-primary/20",
 };
 
 const PLATFORM_ICONS: Record<string, typeof Music> = {

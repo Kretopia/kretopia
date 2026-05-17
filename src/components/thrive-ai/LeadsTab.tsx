@@ -43,7 +43,7 @@ type ScoutedLead = {
 };
 
 const STAGES = [
-  { key: "cold", label: "Cold", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+  { key: "cold", label: "Cold", color: "bg-primary/10 text-primary border-primary/20" },
   { key: "warm", label: "Warm", color: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" },
   { key: "hot", label: "Hot", color: "bg-orange-500/10 text-orange-500 border-orange-500/20" },
   { key: "converted", label: "Converted", color: "bg-green-500/10 text-green-500 border-green-500/20" },

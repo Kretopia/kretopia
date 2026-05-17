@@ -11,7 +11,7 @@ const PLATFORMS = [
   { id: 'imdb', label: 'IMDb', icon: Film, placeholder: 'https://imdb.com/name/nm...', color: 'text-yellow-600' },
   { id: 'spotify', label: 'Spotify', icon: Music, placeholder: 'https://open.spotify.com/artist/...', color: 'text-green-500' },
   { id: 'youtube', label: 'YouTube', icon: Youtube, placeholder: 'https://youtube.com/@...', color: 'text-red-500' },
-  { id: 'instagram', label: 'Instagram', icon: Instagram, placeholder: 'https://instagram.com/...', color: 'text-indigo-500' },
+  { id: 'instagram', label: 'Instagram', icon: Instagram, placeholder: 'https://instagram.com/...', color: 'text-primary' },
   { id: 'other', label: 'Other URL', icon: Globe, placeholder: 'https://...', color: 'text-muted-foreground' },
 ];
 

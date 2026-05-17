@@ -57,9 +57,9 @@ export const CircleCard = ({ circle, onClick }: { circle: CircleData; onClick: (
       ) : (
         <div className={cn(
           "h-16 w-full bg-gradient-to-br opacity-80",
-          circle.category === "music" ? "from-violet-500/20 to-fuchsia-500/20" :
+          circle.category === "music" ? "from-primary/20 to-fuchsia-500/20" :
           circle.category === "film" ? "from-rose-500/20 to-orange-500/20" :
-          circle.category === "design" ? "from-cyan-500/20 to-blue-500/20" :
+          circle.category === "design" ? "from-primary/20 to-primary/20" :
           circle.category === "tech" ? "from-emerald-500/20 to-teal-500/20" :
           circle.category === "business" ? "from-amber-500/20 to-yellow-500/20" :
           "from-primary/10 to-primary/5"

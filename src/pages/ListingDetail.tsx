@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 
 const TYPE_CONFIG = {
-  digital: { icon: Download, color: "bg-blue-500/10 text-blue-500", label: "Digital Product" },
+  digital: { icon: Download, color: "bg-primary/10 text-primary", label: "Digital Product" },
   physical: { icon: Package, color: "bg-amber-500/10 text-amber-500", label: "Physical Item" },
   service: { icon: Wrench, color: "bg-emerald-500/10 text-emerald-500", label: "Service" },
 };

@@ -790,7 +790,7 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
       draft: "bg-muted text-muted-foreground",
-      sent: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      sent: "bg-primary text-primary dark:bg-primary dark:text-primary",
       viewed: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
       paid: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
       overdue: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",

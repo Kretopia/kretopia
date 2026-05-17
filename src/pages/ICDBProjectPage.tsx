@@ -170,7 +170,7 @@ const ICDBProjectPage = () => {
                   <div className="flex items-center gap-2 flex-wrap">
                     <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
                     {project.is_verified && (
-                      <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/30 text-[10px] gap-0.5">
+                      <Badge className="bg-primary/10 text-primary border-primary/30 text-[10px] gap-0.5">
                         <ShieldCheck className="h-2.5 w-2.5" /> Verified
                       </Badge>
                     )}

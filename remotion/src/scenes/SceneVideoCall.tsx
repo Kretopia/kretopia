@@ -3,9 +3,9 @@ import { Backdrop, PhoneShell, LowerThird } from "../components/UI";
 import { COLORS, FONTS } from "../theme";
 
 const PEEPS = [
-  { c: `linear-gradient(135deg, #5B6BF5, #D4FF3E)`, name: "Michelene" },
+  { c: `linear-gradient(135deg, #20D3C2, #D4FF3E)`, name: "Michelene" },
   { c: `linear-gradient(135deg, #E4405F, #F59E0B)`, name: "Aaliyah" },
-  { c: `linear-gradient(135deg, #25D366, #5B6BF5)`, name: "Jordan" },
+  { c: `linear-gradient(135deg, #25D366, #20D3C2)`, name: "Jordan" },
   { c: `linear-gradient(135deg, #D4FF3E, #25D366)`, name: "Renée" },
 ];
 

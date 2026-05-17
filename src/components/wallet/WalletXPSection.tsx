@@ -218,15 +218,15 @@ export function WalletXPSection() {
   };
 
   const shopItems = [
-    { id: "streak_freeze", name: "Streak Freeze", description: `Protect your streak. You have ${freezeCount}.`, cost: 500, icon: <Snowflake className="h-5 w-5 text-blue-400" />, action: buyStreakFreeze, available: true },
+    { id: "streak_freeze", name: "Streak Freeze", description: `Protect your streak. You have ${freezeCount}.`, cost: 500, icon: <Snowflake className="h-5 w-5 text-primary" />, action: buyStreakFreeze, available: true },
     { id: "profile_boost", name: "24h Profile Boost", description: "Top of Discover for 24 hours.", cost: 1000, icon: <Eye className="h-5 w-5 text-amber-400" />, action: buyProfileBoost, available: true },
     { id: "double_xp", name: "2x Points (24 hours)", description: "Double points on all activities.", cost: 750, icon: <Zap className="h-5 w-5 text-yellow-400" />, action: buyDoubleXP, available: true },
     { id: "extra_work_credits", name: "+5 Work Credits", description: "Add 5 more work credits this month.", cost: 400, icon: <Image className="h-5 w-5 text-emerald-400" />, action: buyExtraWorkCredits, available: true, badge: "Popular" },
-    { id: "extra_briefs", name: "+5 Smart Briefs", description: "5 extra Smart Briefs this month.", cost: 800, icon: <Search className="h-5 w-5 text-sky-400" />, action: buyExtraAIBriefs, available: true },
+    { id: "extra_briefs", name: "+5 Smart Briefs", description: "5 extra Smart Briefs this month.", cost: 800, icon: <Search className="h-5 w-5 text-primary" />, action: buyExtraAIBriefs, available: true },
     { id: "extra_invoices", name: "+3 Invoices", description: "3 extra invoices this month.", cost: 300, icon: <FileText className="h-5 w-5 text-teal-400" />, action: buyExtraInvoices, available: true },
     { id: "priority_gig", name: "Priority Gig Listing", description: "Pin your opportunity for 24h.", cost: 1500, icon: <Briefcase className="h-5 w-5 text-orange-400" />, action: buyPriorityGig, available: true },
-    { id: "analytics_unlock", name: "Analytics Report", description: "Full profile analytics export (1x).", cost: 2000, icon: <BarChart3 className="h-5 w-5 text-violet-400" />, action: buyAnalyticsReport, available: true },
-    { id: "pro_trial", name: "Pro Trial (3 Days)", description: "Unlock all Pro features.", cost: 2500, icon: <Crown className="h-5 w-5 text-indigo-500" />, action: buyProTrial, available: true, badge: "Best Value" },
+    { id: "analytics_unlock", name: "Analytics Report", description: "Full profile analytics export (1x).", cost: 2000, icon: <BarChart3 className="h-5 w-5 text-primary" />, action: buyAnalyticsReport, available: true },
+    { id: "pro_trial", name: "Pro Trial (3 Days)", description: "Unlock all Pro features.", cost: 2500, icon: <Crown className="h-5 w-5 text-primary" />, action: buyProTrial, available: true, badge: "Best Value" },
     { id: "gift_xp", name: "Gift 100 TP", description: "Send 100 Thrive Points to another creator.", cost: 150, icon: <Gift className="h-5 w-5 text-green-400" />, action: async () => {}, available: true },
   ];
 

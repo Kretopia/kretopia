@@ -97,10 +97,10 @@ export function VerificationReportCard({
         };
       case 'industry': 
         return {
-          card: 'bg-gradient-to-br from-violet-950/40 via-background to-indigo-950/30 border-violet-500/40',
-          badge: 'bg-gradient-to-r from-violet-500 to-primary text-white font-semibold',
-          accent: 'text-violet-400',
-          glow: 'shadow-violet-500/20'
+          card: 'bg-gradient-to-br from-primary/40 via-background to-primary/30 border-primary/40',
+          badge: 'bg-gradient-to-r from-primary to-primary text-white font-semibold',
+          accent: 'text-primary',
+          glow: 'shadow-primary/20'
         };
       default: 
         return {

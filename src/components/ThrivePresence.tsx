@@ -2,7 +2,7 @@
  * ThrivePresence — visual identity for the Thrive agent.
  *
  * Thrive is a presence, not a chatbot. No robot, no ✨, no speech bubble.
- * A breathing dot inside an orbiting signal ring. Indigo at rest, lime
+ * A breathing dot inside an orbiting signal ring. Teal at rest, lime
  * when Thrive has something to say (active state).
  *
  * Use this wherever Thrive "speaks" or is referenced as a being:

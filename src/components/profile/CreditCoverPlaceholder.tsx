@@ -8,19 +8,19 @@ import { cn } from "@/lib/utils";
 
 const CATEGORY_VISUALS: Record<string, { gradient: string; icon: any; accent: string }> = {
   // Film & TV
-  film: { gradient: "from-slate-900 via-indigo-950 to-slate-900", icon: Film, accent: "text-indigo-400/60" },
-  movie: { gradient: "from-slate-900 via-indigo-950 to-slate-900", icon: Film, accent: "text-indigo-400/60" },
-  short_film: { gradient: "from-zinc-900 via-violet-950 to-zinc-900", icon: Clapperboard, accent: "text-violet-400/60" },
+  film: { gradient: "from-slate-900 via-primary to-slate-900", icon: Film, accent: "text-primary/60" },
+  movie: { gradient: "from-slate-900 via-primary to-slate-900", icon: Film, accent: "text-primary/60" },
+  short_film: { gradient: "from-zinc-900 via-primary to-zinc-900", icon: Clapperboard, accent: "text-primary/60" },
   documentary: { gradient: "from-stone-900 via-amber-950 to-stone-900", icon: Camera, accent: "text-amber-400/60" },
-  tv: { gradient: "from-gray-900 via-blue-950 to-gray-900", icon: Tv, accent: "text-blue-400/60" },
-  television: { gradient: "from-gray-900 via-blue-950 to-gray-900", icon: Tv, accent: "text-blue-400/60" },
+  tv: { gradient: "from-gray-900 via-primary to-gray-900", icon: Tv, accent: "text-primary/60" },
+  television: { gradient: "from-gray-900 via-primary to-gray-900", icon: Tv, accent: "text-primary/60" },
 
   // Music
   music: { gradient: "from-zinc-900 via-rose-950 to-zinc-900", icon: Music, accent: "text-rose-400/60" },
   album: { gradient: "from-zinc-900 via-rose-950 to-zinc-900", icon: Music, accent: "text-rose-400/60" },
   single: { gradient: "from-neutral-900 via-pink-950 to-neutral-900", icon: Music, accent: "text-pink-400/60" },
   ep: { gradient: "from-neutral-900 via-fuchsia-950 to-neutral-900", icon: Music, accent: "text-fuchsia-400/60" },
-  mixtape: { gradient: "from-zinc-900 via-purple-950 to-zinc-900", icon: Music, accent: "text-purple-400/60" },
+  mixtape: { gradient: "from-zinc-900 via-primary to-zinc-900", icon: Music, accent: "text-primary/60" },
 
   // Audio & Podcast
   podcast: { gradient: "from-slate-900 via-emerald-950 to-slate-900", icon: Mic, accent: "text-emerald-400/60" },
@@ -28,12 +28,12 @@ const CATEGORY_VISUALS: Record<string, { gradient: string; icon: any; accent: st
 
   // Visual & Design
   photography: { gradient: "from-stone-900 via-orange-950 to-stone-900", icon: Camera, accent: "text-orange-400/60" },
-  design: { gradient: "from-slate-900 via-cyan-950 to-slate-900", icon: Palette, accent: "text-cyan-400/60" },
-  art: { gradient: "from-zinc-900 via-violet-950 to-zinc-900", icon: Palette, accent: "text-violet-400/60" },
+  design: { gradient: "from-slate-900 via-primary to-slate-900", icon: Palette, accent: "text-primary/60" },
+  art: { gradient: "from-zinc-900 via-primary to-zinc-900", icon: Palette, accent: "text-primary/60" },
 
   // Digital & Web
-  digital: { gradient: "from-gray-900 via-sky-950 to-gray-900", icon: Globe, accent: "text-sky-400/60" },
-  web: { gradient: "from-slate-900 via-blue-950 to-slate-900", icon: Globe, accent: "text-blue-400/60" },
+  digital: { gradient: "from-gray-900 via-primary to-gray-900", icon: Globe, accent: "text-primary/60" },
+  web: { gradient: "from-slate-900 via-primary to-slate-900", icon: Globe, accent: "text-primary/60" },
   gaming: { gradient: "from-zinc-900 via-green-950 to-zinc-900", icon: Gamepad2, accent: "text-green-400/60" },
 
   // Writing & Publishing
@@ -44,7 +44,7 @@ const CATEGORY_VISUALS: Record<string, { gradient: string; icon: any; accent: st
   // Video & Content
   video: { gradient: "from-gray-900 via-red-950 to-gray-900", icon: Video, accent: "text-red-400/60" },
   content: { gradient: "from-zinc-900 via-orange-950 to-zinc-900", icon: Video, accent: "text-orange-400/60" },
-  commercial: { gradient: "from-slate-900 via-indigo-950 to-slate-900", icon: Clapperboard, accent: "text-indigo-400/60" },
+  commercial: { gradient: "from-slate-900 via-primary to-slate-900", icon: Clapperboard, accent: "text-primary/60" },
 };
 
 const DEFAULT_VISUAL = { gradient: "from-slate-900 via-zinc-800 to-slate-900", icon: Film, accent: "text-zinc-400/60" };

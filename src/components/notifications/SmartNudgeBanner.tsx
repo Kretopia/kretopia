@@ -81,7 +81,7 @@ export function SmartNudgeBanner() {
         subtitle: "Someone wants to connect with you",
         action: () => navigate("/circle?tab=network"),
         actionLabel: "View",
-        color: "text-blue-500",
+        color: "text-primary",
         priority: 1,
       });
     }

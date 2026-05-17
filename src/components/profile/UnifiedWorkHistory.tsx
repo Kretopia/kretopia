@@ -487,8 +487,8 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
                           "w-14 h-14 rounded-lg flex items-center justify-center",
                           credit.thumbnailUrl && "hidden",
                           credit.categoryKey === "film_tv" ? "bg-gradient-to-br from-amber-500/20 to-orange-500/20" :
-                          credit.categoryKey === "music" ? "bg-gradient-to-br from-purple-500/20 to-pink-500/20" :
-                          credit.categoryKey === "events" ? "bg-gradient-to-br from-blue-500/20 to-cyan-500/20" :
+                          credit.categoryKey === "music" ? "bg-gradient-to-br from-primary/20 to-pink-500/20" :
+                          credit.categoryKey === "events" ? "bg-gradient-to-br from-primary/20 to-primary/20" :
                           credit.categoryKey === "digital" ? "bg-gradient-to-br from-red-500/20 to-rose-500/20" :
                           credit.categoryKey === "fashion" ? "bg-gradient-to-br from-pink-500/20 to-fuchsia-500/20" :
                           "bg-muted"

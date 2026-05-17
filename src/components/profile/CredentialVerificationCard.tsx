@@ -150,9 +150,9 @@ export function CredentialVerificationCard({
 
           {/* Verification Tiers Explanation */}
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <Verified className="w-4 h-4 mx-auto text-blue-500 mb-1" />
-              <div className="font-medium text-blue-500">Verified</div>
+            <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+              <Verified className="w-4 h-4 mx-auto text-primary mb-1" />
+              <div className="font-medium text-primary">Verified</div>
               <div className="text-muted-foreground">Profile complete</div>
             </div>
             <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">

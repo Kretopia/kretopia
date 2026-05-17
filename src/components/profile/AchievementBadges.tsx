@@ -79,8 +79,8 @@ const ACHIEVEMENT_CONFIG: Record<string, {
   },
   "Verified Artist": {
     icon: Verified,
-    color: "text-blue-500",
-    bgColor: "bg-blue-500/20 border-blue-500/50",
+    color: "text-primary",
+    bgColor: "bg-primary/20 border-primary/50",
     description: "Verified on Spotify/Apple Music",
     priority: 3
   },
@@ -135,8 +135,8 @@ const ACHIEVEMENT_CONFIG: Record<string, {
   },
   "Festival Official Selection": {
     icon: Film,
-    color: "text-cyan-500",
-    bgColor: "bg-cyan-500/20 border-cyan-500/50",
+    color: "text-primary",
+    bgColor: "bg-primary/20 border-primary/50",
     description: "Selected for major film festival",
     priority: 5
   },
@@ -152,8 +152,8 @@ const ACHIEVEMENT_CONFIG: Record<string, {
 const TIER_CONFIG = {
   verified: {
     icon: Verified,
-    color: "text-blue-500",
-    bgColor: "bg-blue-500/20 border-blue-500/50",
+    color: "text-primary",
+    bgColor: "bg-primary/20 border-primary/50",
     label: "Verified"
   },
   industry: {

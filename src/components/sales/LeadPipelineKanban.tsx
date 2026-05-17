@@ -9,10 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowRight, Building2, Mail, User } from "lucide-react";
 
 const STAGES = [
-  { key: "new", label: "New", color: "bg-blue-500" },
+  { key: "new", label: "New", color: "bg-primary" },
   { key: "contacted", label: "Contacted", color: "bg-amber-500" },
   { key: "hot", label: "Hot", color: "bg-orange-500" },
-  { key: "negotiating", label: "Negotiating", color: "bg-violet-500" },
+  { key: "negotiating", label: "Negotiating", color: "bg-primary" },
   { key: "converted", label: "Won", color: "bg-green-500" },
   { key: "lost", label: "Lost", color: "bg-muted-foreground" },
 ];

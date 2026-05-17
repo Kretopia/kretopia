@@ -29,10 +29,10 @@ interface ProjectTemplatePickerProps {
 
 const categoryColors: Record<string, string> = {
   music: 'bg-red-500/10 text-red-500',
-  marketing: 'bg-violet-500/10 text-violet-500',
+  marketing: 'bg-primary/10 text-primary',
   audio: 'bg-amber-500/10 text-amber-500',
   photography: 'bg-emerald-500/10 text-emerald-500',
-  design: 'bg-blue-500/10 text-blue-500',
+  design: 'bg-primary/10 text-primary',
   general: 'bg-muted text-muted-foreground',
 };
 

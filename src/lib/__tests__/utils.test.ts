@@ -12,7 +12,7 @@ describe("cn utility", () => {
 
   it("merges tailwind conflicts correctly", () => {
     expect(cn("p-4", "p-2")).toBe("p-2");
-    expect(cn("text-red-500", "text-blue-500")).toBe("text-blue-500");
+    expect(cn("text-red-500", "text-primary")).toBe("text-primary");
   });
 
   it("handles undefined and null", () => {

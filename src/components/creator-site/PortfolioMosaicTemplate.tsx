@@ -6,8 +6,8 @@ import { CustomProjectRequestDialog } from "@/components/profile/CustomProjectRe
 
 const getCategoryColor = (category?: string) => {
   switch (category?.toLowerCase()) {
-    case 'film & tv': return 'bg-blue-100 text-blue-800';
-    case 'music': return 'bg-violet-100 text-violet-800';
+    case 'film & tv': return 'bg-primary text-primary';
+    case 'music': return 'bg-primary text-primary';
     case 'photography': return 'bg-amber-100 text-amber-800';
     case 'design': return 'bg-teal-100 text-teal-800';
     case 'events': return 'bg-rose-100 text-rose-800';

@@ -43,11 +43,11 @@ const REACTION_EMOJIS = ["🔥", "❤️", "🙌", "💯", "😂", "🎯"];
 
 const roleIndicator = (role?: string) => {
   if (role === 'admin') return <Crown className="h-2.5 w-2.5 text-amber-500 inline ml-0.5" />;
-  if (role === 'moderator') return <Shield className="h-2.5 w-2.5 text-blue-500 inline ml-0.5" />;
-  if (role === 'mentor') return <span className="text-[10px] ml-0.5 inline-flex items-center gap-0.5 bg-primary/10 text-indigo-700 dark:text-primary px-1 rounded-full font-medium"><Sparkles className="h-2.5 w-2.5" /> Mentor</span>;
+  if (role === 'moderator') return <Shield className="h-2.5 w-2.5 text-primary inline ml-0.5" />;
+  if (role === 'mentor') return <span className="text-[10px] ml-0.5 inline-flex items-center gap-0.5 bg-primary/10 text-primary dark:text-primary px-1 rounded-full font-medium"><Sparkles className="h-2.5 w-2.5" /> Mentor</span>;
   if (role === 'featured') return <span className="text-[10px] ml-0.5 inline-flex items-center gap-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1 rounded-full font-medium"><Star className="h-2.5 w-2.5" /> Featured</span>;
   if (role === 'og') return <span className="text-[10px] ml-0.5 inline-flex items-center gap-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 rounded-full font-medium"><Trophy className="h-2.5 w-2.5" /> OG</span>;
-  if (role === 'vip') return <span className="text-[10px] ml-0.5 inline-flex items-center gap-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 px-1 rounded-full font-medium"><Gem className="h-2.5 w-2.5" /> VIP</span>;
+  if (role === 'vip') return <span className="text-[10px] ml-0.5 inline-flex items-center gap-0.5 bg-primary/10 text-primary dark:text-primary px-1 rounded-full font-medium"><Gem className="h-2.5 w-2.5" /> VIP</span>;
   return null;
 };
 

@@ -498,7 +498,7 @@ const Analytics = () => {
           <CardContent>
             <div className="space-y-3">
               {[
-                { label: 'Page Views', value: funnelData.pageViews, color: 'bg-blue-500' },
+                { label: 'Page Views', value: funnelData.pageViews, color: 'bg-primary' },
                 { label: 'Sign Ups', value: funnelData.signups, color: 'bg-green-500' },
                 { label: 'Onboarding Started', value: funnelData.onboardingStarts, color: 'bg-yellow-500' },
                 { label: 'Onboarding Completed', value: funnelData.onboardingCompletes, color: 'bg-orange-500' },
@@ -729,7 +729,7 @@ const Analytics = () => {
                       <span className="text-sm text-muted-foreground">67%</span>
                     </div>
                     <div className="w-full bg-secondary rounded-full h-2">
-                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: "67%" }} />
+                      <div className="bg-primary h-2 rounded-full" style={{ width: "67%" }} />
                     </div>
                   </div>
                 </div>
@@ -801,7 +801,7 @@ const Analytics = () => {
                   </div>
                   <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <Users className="h-5 w-5 text-blue-500" />
+                      <Users className="h-5 w-5 text-primary" />
                       <div>
                         <p className="font-medium">Network Growth</p>
                         <p className="text-sm text-muted-foreground">This month</p>
@@ -830,7 +830,7 @@ const Analytics = () => {
                     <p className="text-sm text-muted-foreground mt-1">Active Responses</p>
                   </div>
                   <div className="text-center p-4 bg-secondary/50 rounded-lg">
-                    <p className="text-3xl font-bold text-blue-500">3</p>
+                    <p className="text-3xl font-bold text-primary">3</p>
                     <p className="text-sm text-muted-foreground mt-1">Opportunities Won</p>
                   </div>
                 </div>

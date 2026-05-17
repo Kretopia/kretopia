@@ -86,6 +86,7 @@ const NotificationsPage = lazy(() => import("./pages/Notifications"));
 const InboxPage = lazy(() => import("./pages/Inbox"));
 const Intel = lazy(() => import("./pages/Intel"));
 const ThrivePay = lazy(() => import("./pages/ThrivePay"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
 
 const Install = lazy(() => import("./pages/Install"));
 const GuestCall = lazy(() => import("./pages/GuestCall"));
@@ -291,6 +292,7 @@ const AppContent = () => {
             <Route path="/circle/:circleId/chat" element={<ProtectedRoute><CircleChatView /></ProtectedRoute>} />
             <Route path="/circles" element={<Circles />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             
             {/* View other user's profile - Auth users get in-app view, public gets EPK */}
             <Route path="/profile/:userId" element={<ViewProfile />} />

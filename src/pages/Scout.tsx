@@ -1,38 +1,28 @@
-import { useState, useCallback } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
-import { SwipeFeature } from "@/components/swipe";
-import { GuestSwipePreview } from "@/components/swipe/GuestSwipePreview";
-import { MatchCelebrationDialog } from "@/components/discover/MatchCelebrationDialog";
-import { useAuth } from "@/hooks/useAuth";
-import { Radar, Store, Sparkles, UserSearch, ArrowRight } from "lucide-react";
+import { Radar, Store, UserSearch, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-type Tab = "match" | "scouted" | "marketplace";
+type Tab = "scouted" | "marketplace" | "talent";
 
 const TABS: { id: Tab; label: string; icon: typeof Radar; hint: string }[] = [
-  { id: "scouted", label: "For You", icon: Radar, hint: "Real gigs scouted across the web" },
-  { id: "match", label: "People", icon: Sparkles, hint: "Creators to collaborate with" },
-  { id: "marketplace", label: "Open", icon: Store, hint: "All open gigs on ThriveIN" },
+  { id: "scouted", label: "For You", icon: Radar, hint: "Real gigs scouted from across the web" },
+  { id: "marketplace", label: "Open Gigs", icon: Store, hint: "All open gigs on ThriveIN" },
+  { id: "talent", label: "Talent", icon: UserSearch, hint: "Scout creators to hire" },
 ];
 
 /**
- * Scout — the unified intelligent discovery surface.
- * Replaces the old /opportunities + /circle split. People + scouted gigs +
- * marketplace gigs in one calm shell. Existing routes still work; this is
- * just the new front door.
+ * Scout — gigs and talent only. Two purposes: find gigs to work on,
+ * find creators to hire. People-discovery for collaboration lives in /circle.
  */
 const Scout = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const initial = (params.get("tab") as Tab) || "scouted";
   const [tab, setTab] = useState<Tab>(initial);
-  const [matchedUser, setMatchedUser] = useState<{ name: string; avatar: string; role: string; userId: string } | null>(null);
-  const [showMatchDialog, setShowMatchDialog] = useState(false);
 
   const switchTab = (next: Tab) => {
     setTab(next);
@@ -40,11 +30,6 @@ const Scout = () => {
     p.set("tab", next);
     setParams(p, { replace: true });
   };
-
-  const handleMatch = useCallback((u: { name: string; avatar: string; role: string; userId: string }) => {
-    setMatchedUser(u);
-    setShowMatchDialog(true);
-  }, []);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -60,8 +45,8 @@ const Scout = () => {
             Scout
           </p>
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">
-            Your next gig &amp; collaborator,
-            <span className="text-muted-foreground"> in one feed.</span>
+            Gigs &amp; talent,
+            <span className="text-muted-foreground"> scouted for you.</span>
           </h1>
 
           {/* Segmented tabs */}
@@ -94,16 +79,17 @@ const Scout = () => {
             })}
           </div>
 
-          {/* Hire-side entry — Talent Scout (the AI talent finder) */}
-          <Link
-            to="/talent-finder"
-            className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Open Talent Scout — find creators to hire"
-          >
-            <UserSearch className="h-3.5 w-3.5" />
-            Hiring? Open Talent Scout
-            <ArrowRight className="h-3 w-3" />
-          </Link>
+          {/* Quick links */}
+          <div className="mt-3 flex items-center gap-4 flex-wrap">
+            <Link
+              to="/circle"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Find collaborators in Circle"
+            >
+              Looking for collaborators? Open Circle
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -111,23 +97,28 @@ const Scout = () => {
       <div className="container mx-auto max-w-5xl px-4 py-6">
         {tab === "scouted" && <ScoutedGigsSection />}
         {tab === "marketplace" && <OpportunitiesFeed />}
-        {tab === "match" && (
-          user ? (
-            <SwipeFeature onMatch={handleMatch} />
-          ) : (
-            <GuestSwipePreview />
-          )
+        {tab === "talent" && (
+          <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 to-accent/5 p-8 text-center space-y-4">
+            <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+              <UserSearch className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Scout creators to hire</h2>
+              <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+                Describe the brief — Thrive surfaces the right creators, with proof,
+                rates, and a one-tap intro.
+              </p>
+            </div>
+            <Link
+              to="/talent-finder"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
+              Open Talent Scout
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         )}
       </div>
-
-      {matchedUser && (
-        <MatchCelebrationDialog
-          open={showMatchDialog}
-          onOpenChange={setShowMatchDialog}
-          matchedUser={matchedUser}
-          onSendMessage={() => navigate(`/messages?user=${matchedUser.userId}`)}
-        />
-      )}
     </div>
   );
 };

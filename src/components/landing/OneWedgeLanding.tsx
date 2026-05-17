@@ -300,9 +300,26 @@ const Pillar = ({
   </div>
 );
 
-const SurfaceChip = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
-  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-medium text-foreground">
-    <span className="text-foreground/70">{icon}</span>
-    {label}
-  </span>
-);
+const SurfaceChip = ({
+  icon,
+  label,
+  to,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  to?: string;
+}) => {
+  const inner = (
+    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:border-[hsl(var(--signal-teal))]/40 hover:text-[hsl(var(--signal-teal))] transition-colors w-full justify-center">
+      <span className="text-foreground/70">{icon}</span>
+      {label}
+    </span>
+  );
+  return to ? (
+    <Link to={to} className="block">
+      {inner}
+    </Link>
+  ) : (
+    inner
+  );
+};

@@ -121,6 +121,8 @@ export const ThriveAgentFab = () => {
   const [actionsByMsg, setActionsByMsg] = useState<Record<number, OrchAction[]>>({});
   // Map message index -> safe auto-executed result cards for that assistant turn.
   const [resultCardsByMsg, setResultCardsByMsg] = useState<Record<number, AgentResultCardData[]>>({});
+  // Map message index -> visible "what Thrive is doing" activity rows.
+  const [activityByMsg, setActivityByMsg] = useState<Record<number, AgentActivity[]>>({});
   // Map message index -> multi-step plans proposed for that assistant turn.
   const [plansByMsg, setPlansByMsg] = useState<Record<number, CopilotPlan[]>>({});
   const [conversationId, setConversationId] = useState<string | undefined>();
@@ -502,6 +504,7 @@ export const ThriveAgentFab = () => {
       setMessages([]);
       setActionsByMsg({});
       setResultCardsByMsg({});
+      setActivityByMsg({});
       setPlansByMsg({});
       toast.success("History cleared");
     } catch (e) {

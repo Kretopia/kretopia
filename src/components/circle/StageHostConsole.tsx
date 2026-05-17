@@ -42,6 +42,7 @@ export function StageHostConsole({ stage }: { stage: Stage }) {
         .from("curated_stage_applications")
         .select("id,user_id,pitch,voice_url,status,match_score,created_at")
         .eq("stage_id", stage.id)
+        .order("match_score", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false });
 
       if (!data || !mounted) { setLoading(false); return; }

@@ -32,19 +32,21 @@ export function FunnelStepper({ current, className }: FunnelStepperProps) {
               <div className="flex flex-col items-center gap-1.5">
                 <div
                   className={cn(
-                    "h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-bold transition-all",
-                    done && "bg-primary text-primary-foreground",
-                    active && "bg-primary text-primary-foreground ring-4 ring-primary/15 scale-110",
+                    "h-8 w-8 rounded-full flex items-center justify-center text-[12px] font-bold transition-all",
+                    done && "bg-[hsl(var(--signal-teal))] text-white",
+                    active && "bg-[hsl(var(--signal-teal))] text-white ring-4 ring-[hsl(var(--signal-teal))]/20 scale-110 shadow-[0_0_0_1px_hsl(var(--signal-teal))]",
                     !done && !active && "bg-muted text-muted-foreground border border-border",
                   )}
                   aria-current={active ? "step" : undefined}
                 >
-                  {done ? <Check className="h-3.5 w-3.5" /> : i + 1}
+                  {done ? <Check className="h-4 w-4" /> : i + 1}
                 </div>
                 <span
                   className={cn(
-                    "text-[10px] font-medium whitespace-nowrap transition-colors",
-                    (done || active) ? "text-foreground" : "text-muted-foreground",
+                    "text-[10px] font-semibold whitespace-nowrap transition-colors",
+                    active && "text-[hsl(var(--signal-teal))]",
+                    done && "text-foreground",
+                    !done && !active && "text-muted-foreground",
                   )}
                 >
                   {step.label}
@@ -54,7 +56,7 @@ export function FunnelStepper({ current, className }: FunnelStepperProps) {
                 <div className="flex-1 h-0.5 mx-1 mb-5 rounded-full overflow-hidden bg-muted">
                   <div
                     className={cn(
-                      "h-full bg-primary transition-all duration-500",
+                      "h-full bg-[hsl(var(--signal-teal))] transition-all duration-500",
                       i < currentIdx ? "w-full" : "w-0",
                     )}
                   />

@@ -460,6 +460,21 @@ export const VideoCallSheet = ({
           }}
         />
       )}
+
+      {peerUserId && (
+        <ReportBlockDialog
+          open={!!safetyMode}
+          onOpenChange={(v) => !v && setSafetyMode(null)}
+          targetUserId={peerUserId}
+          targetUserName={peerName || "this person"}
+          mode={safetyMode ?? "report"}
+          onBlocked={() => {
+            setSafetyMode(null);
+            onPeerBlocked?.();
+            void handleEnd();
+          }}
+        />
+      )}
     </>
   );
 };

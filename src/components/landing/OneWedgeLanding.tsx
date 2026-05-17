@@ -103,10 +103,9 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/scout" onClick={() => trackLandingCta("wedge", "scout_cta")}>
+            <Link to="/auth?tab=signin" onClick={() => trackLandingCta("wedge", "hero_signin")}>
               <Button size="lg" variant="ghost" className="font-semibold">
-                Hiring creators?
-                <ArrowRight className="ml-2 h-4 w-4" />
+                Already a member? Sign in
               </Button>
             </Link>
           </div>
@@ -114,22 +113,27 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
           {/* Real creators + live count */}
           <div className="mt-7 flex items-center gap-3">
             <div className="flex -space-x-2">
-              {(creators.length ? creators.slice(0, 5) : Array.from({ length: 5 })).map((c: any, i) => (
-                <div
-                  key={c?.user_id ?? i}
-                  className="h-9 w-9 rounded-full ring-2 ring-background bg-muted overflow-hidden"
-                  title={c?.full_name ?? undefined}
-                >
-                  {c?.avatar_url ? (
-                    <img
-                      src={c.avatar_url}
-                      alt={c.full_name ?? "Creator"}
-                      loading="lazy"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : null}
-                </div>
-              ))}
+              {(creators.length ? creators.slice(0, 5) : Array.from({ length: 5 })).map((c: any, i) => {
+                const initial = (c?.full_name ?? "").trim().charAt(0).toUpperCase();
+                return (
+                  <div
+                    key={c?.user_id ?? i}
+                    className="h-9 w-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex items-center justify-center text-[11px] font-bold text-foreground/70"
+                    title={c?.full_name ?? undefined}
+                  >
+                    {c?.avatar_url ? (
+                      <img
+                        src={c.avatar_url}
+                        alt={c.full_name ?? "Creator"}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      initial || ""
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Join{" "}

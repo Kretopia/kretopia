@@ -82,7 +82,43 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ ok: true, sent: totalSent }), {
+    // No-show auto-cancel: scheduled stages that started 15min+ ago and never went live
+    const cutoff = new Date(now - 15 * 60_000).toISOString();
+    const { data: stale } = await admin
+      .from("curated_stages")
+      .select("id, title, host_user_id")
+      .eq("status", "scheduled")
+      .lt("starts_at", cutoff);
+    let cancelled = 0;
+    for (const s of stale || []) {
+      await admin.from("curated_stages")
+        .update({ status: "cancelled", ends_at: new Date().toISOString() })
+        .eq("id", s.id);
+      cancelled++;
+
+      // Notify host + RSVPs
+      const { data: rsvps } = await admin.from("curated_stage_rsvps")
+        .select("user_id").eq("stage_id", s.id).in("status", ["rsvp", "waitlist"]);
+      const targets = new Set<string>((rsvps || []).map((r: any) => r.user_id));
+      targets.add(s.host_user_id);
+      const notifs = Array.from(targets).map((uid) => ({
+        user_id: uid,
+        type: "stage_cancelled",
+        title: `"${s.title}" was cancelled`,
+        message: uid === s.host_user_id
+          ? "You didn't go live in time. Schedule a new stage when ready."
+          : "The host didn't show up. Any paid tickets will be refunded.",
+        action_url: `/circle/stage/${s.id}`,
+      }));
+      if (notifs.length) await admin.from("notifications").insert(notifs).catch(() => {});
+
+      // Mark paid orders as refunded (refund processing happens out-of-band)
+      await admin.from("curated_stage_orders")
+        .update({ status: "refunded" })
+        .eq("stage_id", s.id).eq("status", "paid").catch(() => {});
+    }
+
+    return new Response(JSON.stringify({ ok: true, sent: totalSent, cancelled }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

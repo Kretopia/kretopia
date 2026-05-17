@@ -3672,6 +3672,85 @@ export type Database = {
           },
         ]
       }
+      curated_stage_orders: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          stage_id: string
+          status: Database["public"]["Enums"]["curated_stage_order_status"]
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          stage_id: string
+          status?: Database["public"]["Enums"]["curated_stage_order_status"]
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          stage_id?: string
+          status?: Database["public"]["Enums"]["curated_stage_order_status"]
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curated_stage_orders_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "curated_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curated_stage_raised_hands: {
+        Row: {
+          created_at: string
+          id: string
+          promoted_at: string | null
+          stage_id: string
+          status: Database["public"]["Enums"]["curated_raised_hand_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          promoted_at?: string | null
+          stage_id: string
+          status?: Database["public"]["Enums"]["curated_raised_hand_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          promoted_at?: string | null
+          stage_id?: string
+          status?: Database["public"]["Enums"]["curated_raised_hand_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curated_stage_raised_hands_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "curated_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       curated_stage_reminders_sent: {
         Row: {
           id: string
@@ -18563,12 +18642,14 @@ export type Database = {
         | "accepted"
         | "declined"
         | "waitlist"
+      curated_raised_hand_status: "pending" | "promoted" | "dismissed"
       curated_rsvp_status:
         | "rsvp"
         | "waitlist"
         | "attended"
         | "no_show"
         | "cancelled"
+      curated_stage_order_status: "pending" | "paid" | "refunded" | "failed"
       curated_stage_status:
         | "draft"
         | "scheduled"
@@ -18790,6 +18871,7 @@ export const Constants = {
         "declined",
         "waitlist",
       ],
+      curated_raised_hand_status: ["pending", "promoted", "dismissed"],
       curated_rsvp_status: [
         "rsvp",
         "waitlist",
@@ -18797,6 +18879,7 @@ export const Constants = {
         "no_show",
         "cancelled",
       ],
+      curated_stage_order_status: ["pending", "paid", "refunded", "failed"],
       curated_stage_status: [
         "draft",
         "scheduled",

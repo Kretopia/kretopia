@@ -26,7 +26,9 @@ serve(async (req) => {
     const { stage_id } = await req.json().catch(() => ({}));
     if (!stage_id) throw new Error("stage_id required");
 
-    const { data: stage } = await admin.from("curated_stages").select("host_user_id, title, status").eq("id", stage_id).single();
+    const { data: stage } = await admin.from("curated_stages")
+      .select("host_user_id, title, status, starts_at, recording_url, type")
+      .eq("id", stage_id).single();
     if (!stage) throw new Error("Stage not found");
     if (stage.host_user_id !== user.id) throw new Error("Only host can end stage");
     if (stage.status === "ended") {
@@ -45,15 +47,45 @@ serve(async (req) => {
       await admin.from("curated_stages").update({ attended_count: count }).eq("id", stage_id);
     }
 
+    // Roll-call credits: Host gets a "Stage Host" credit; positive-outcome turn applicants get "Featured" credit
+    const year = new Date(stage.starts_at).getFullYear();
+    const hostRole = stage.type === "scout" ? "Scout Stage Host" : "Showcase Host";
+    await admin.from("credits").insert({
+      user_id: stage.host_user_id,
+      project_name: stage.title,
+      role: hostRole,
+      year,
+      credit_category: "stage",
+      verification_status: "verified",
+    }).catch(() => {});
+
+    const { data: turns } = await admin.from("curated_stage_turns")
+      .select("applicant_user_id, outcome")
+      .eq("stage_id", stage_id)
+      .in("outcome", ["co_sign", "credit", "rolodex", "followup"]);
+    const featured = Array.from(new Set((turns || []).map((t: any) => t.applicant_user_id)));
+    if (featured.length) {
+      await admin.from("credits").insert(featured.map((uid) => ({
+        user_id: uid,
+        project_name: stage.title,
+        role: stage.type === "scout" ? "Scouted Performer" : "Featured Guest",
+        year,
+        credit_category: "stage",
+        verification_status: "verified",
+        verified_by_user_id: stage.host_user_id,
+      }))).catch(() => {});
+    }
+
     // Best-effort recap notification to all attendees
     const { data: attendees } = await admin.from("curated_stage_rsvps")
       .select("user_id").eq("stage_id", stage_id).eq("status", "attended");
     if (attendees?.length) {
+      const recordingNote = stage.recording_url ? " Recording is up." : "";
       const notifs = attendees.map((a) => ({
         user_id: a.user_id,
         type: "stage_recap",
         title: `Wrap on "${stage.title}"`,
-        message: "Thanks for showing up. Tap to see follow-ups.",
+        message: `Thanks for showing up.${recordingNote} Tap to see follow-ups.`,
         action_url: `/circle/stage/${stage_id}`,
       }));
       await admin.from("notifications").insert(notifs).catch(() => {});

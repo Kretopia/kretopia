@@ -33,6 +33,7 @@ import { ProfileCompletionProgress } from "@/components/profile/ProfileCompletio
 import { ProfileStrengthBar } from "@/components/profile/ProfileStrengthBar";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
+import { PassportOverview } from "@/components/passport/PassportOverview";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
@@ -409,18 +410,17 @@ const ProfileContent = () => {
           onShowQR={() => setIsQRDialogOpen(true)}
           onCreatorCard={() => setIsCreatorCardOpen(true)}
           onEPKEditor={() => setIsEPKEditorOpen(true)}
-          dashboardTrigger={
-            <ProfileDashboardDrawer
-              profile={profile}
-              portfolioItems={portfolioItems}
-              credits={credits}
-              awards={awards}
-              pressLinks={pressLinks}
-              userTier={userTier}
-              onRefresh={fetchData}
-            />
-          }
         />
+
+        {/* Passport Overview — 4 trust cards (Stamps · Connections · Projects · Co-signs) */}
+        <div className="mt-3">
+          <PassportOverview
+            stamps={credits?.filter((c: any) => c.verification_status === 'verified').length || 0}
+            connections={stats.circle || 0}
+            projects={stats.projects || 0}
+            cosigns={reviews?.filter((r: any) => r.status === 'approved').length || 0}
+          />
+        </div>
 
         {/* Slim Duolingo-style profile strength bar — own profile only */}
         <div className="mt-3">

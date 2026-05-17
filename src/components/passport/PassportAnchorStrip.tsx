@@ -24,7 +24,7 @@ type Anchor = {
 
 const ANCHORS: Anchor[] = [
   { id: "identity", label: "Identity", to: "/profile",                icon: User,      match: (p, h) => p === "/profile" && h !== "#hire" },
-  { id: "work",     label: "Work",     to: "/credits",                icon: Briefcase, match: (p) => p.startsWith("/credits") },
+  { id: "work",     label: "Stamps",   to: "/credits",                icon: Briefcase, match: (p) => p.startsWith("/credits") },
   { id: "hire",     label: "Hire Me",  to: "/profile", hash: "#hire", icon: DollarSign, match: (p, h) => p === "/profile" && h === "#hire" },
 ];
 

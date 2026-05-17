@@ -106,6 +106,22 @@ export const ProfileHero = ({
 
   const currencySymbol = profile.rate_currency === 'EUR' ? '€' : profile.rate_currency === 'GBP' ? '£' : '$';
 
+  // Passport metadata — subtle "passport" metaphor (ID + joined year)
+  const passportId = profile.user_id
+    ? `THR-${profile.user_id.replace(/-/g, '').slice(0, 5).toUpperCase()}`
+    : null;
+  const joinedYear = profile.created_at
+    ? new Date(profile.created_at).getFullYear()
+    : null;
+
+  const handleBook = () => {
+    const el = document.getElementById('hire');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', '/profile#hire');
+    }
+  };
+
   return (
     <div className="w-full">
       {/* Unclaimed Profile Banner */}
@@ -173,20 +189,19 @@ export const ProfileHero = ({
             )}
           </div>
 
-          {/* Inline stats — IG-style horizontal row */}
+          {/* Passport meta — subtle passport metaphor */}
           {(() => {
             const cells = [
-              stats.circle > 0 && { label: "Circle", value: stats.circle },
-              stats.projects > 0 && { label: "Projects", value: stats.projects },
-              creditsCount > 0 && { label: "Credits", value: creditsCount },
-            ].filter(Boolean) as { label: string; value: string | number }[];
+              passportId && { label: "Passport ID", value: passportId, mono: true },
+              joinedYear && { label: "Joined", value: String(joinedYear) },
+            ].filter(Boolean) as { label: string; value: string; mono?: boolean }[];
             if (cells.length === 0) return <div className="flex-1" />;
             return (
               <div className="flex-1 flex items-center justify-around gap-1">
                 {cells.map((c) => (
                   <div key={c.label} className="text-center min-w-0">
-                    <div className="text-base sm:text-lg font-black leading-none">{c.value}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{c.label}</div>
+                    <div className={cn("text-sm sm:text-base font-bold leading-none truncate", c.mono && "font-mono tracking-tight")}>{c.value}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">{c.label}</div>
                   </div>
                 ))}
               </div>
@@ -224,18 +239,9 @@ export const ProfileHero = ({
               <p className="text-xs sm:text-sm text-muted-foreground font-medium leading-tight mt-0.5">{displayRole}</p>
             )}
           </div>
-          {isOwnProfile && (
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
-              onClick={onEdit}
-              aria-label="Edit profile"
-            >
-              <Edit className="h-3.5 w-3.5" />
-            </Button>
-          )}
+          {/* (Edit moved to the action bar below to reduce header clutter) */}
         </div>
+
 
         {/* Row 3: Meta — location · availability · rating · response */}
         <div className="flex items-center gap-x-2 gap-y-1 text-xs text-muted-foreground flex-wrap">
@@ -319,22 +325,25 @@ export const ProfileHero = ({
         {isOwnProfile && (
           <div className="space-y-1.5">
             <RefreshUniverseButton lastScanAt={profile?.last_universe_scan_at} />
-            <div className="flex gap-1.5">
-              <Button variant="secondary" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onEdit}>
-                <Edit className="h-3.5 w-3.5" />
-                Edit profile
-              </Button>
-              <Button variant="secondary" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onShare}>
+            <div className="flex gap-1.5 flex-wrap">
+              <Button variant="default" size="sm" className="h-8 flex-1 min-w-[90px] text-xs gap-1.5" onClick={onShare}>
                 <Share2 className="h-3.5 w-3.5" />
                 Share
               </Button>
+              <Button variant="secondary" size="sm" className="h-8 flex-1 min-w-[90px] text-xs gap-1.5" onClick={handleBook}>
+                <Briefcase className="h-3.5 w-3.5" />
+                Book
+              </Button>
               {onEPKEditor && (
-                <Button variant="secondary" size="sm" className="h-8 flex-1 text-xs gap-1.5" onClick={onEPKEditor}>
+                <Button variant="secondary" size="sm" className="h-8 flex-1 min-w-[90px] text-xs gap-1.5" onClick={onEPKEditor}>
                   <FileDown className="h-3.5 w-3.5" />
                   EPK
                 </Button>
               )}
-              {dashboardTrigger}
+              <Button variant="secondary" size="sm" className="h-8 flex-1 min-w-[90px] text-xs gap-1.5" onClick={onEdit}>
+                <Edit className="h-3.5 w-3.5" />
+                Edit Passport
+              </Button>
             </div>
           </div>
         )}
@@ -420,11 +429,11 @@ export const ProfileHero = ({
           </div>
         )}
 
-        {/* Verified credits chip — surface verification quality if any */}
+        {/* Stamps chip — verified credits surfaced as Passport stamps */}
         {verifiedCreditsCount > 0 && (
-          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-energy">
+          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-[hsl(var(--signal-teal))]">
             <Shield className="h-3 w-3" />
-            {verifiedCreditsCount} verified credit{verifiedCreditsCount === 1 ? '' : 's'}
+            {verifiedCreditsCount} stamp{verifiedCreditsCount === 1 ? '' : 's'}
             {stats.responseRate > 0 && (
               <span className="ml-2 text-muted-foreground font-medium normal-case tracking-normal">
                 · {stats.responseRate}% response

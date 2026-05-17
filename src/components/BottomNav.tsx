@@ -5,7 +5,7 @@ import { memo } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
 
 // ThriveIN 2.0 — Daily Driver IA.
-// Today · Desk · Scout · Messages · Passport. Daily actions only.
+// Today · Desk · Scout · Circle · Passport. Daily actions only.
 // Pay absorbed into Passport (#wallet). Hamburger = system/account only.
 const NAV_ITEMS = [
   { path: "/", icon: Sun, label: "Today", hint: "Today — what to move forward" },

@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { resolveCreditThumbnail } from "@/lib/thumbnailExtractor";
 import { CreditCoverPlaceholder } from "@/components/profile/CreditCoverPlaceholder";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
+import { UnifiedWorkHistory } from "@/components/profile/UnifiedWorkHistory";
 
 const CATEGORY_GROUPS = [
   { label: "All", value: "all", icon: Globe },

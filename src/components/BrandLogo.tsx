@@ -46,10 +46,10 @@ export function BrandLogo({
         <span
           className={cn(
             cfg.text,
-            "font-black tracking-tight text-primary select-none"
+            "font-black tracking-tight text-foreground select-none"
           )}
         >
-          Thrive<span className="text-energy">IN</span>
+          Thrive<span className="text-spectrum">IN</span>
         </span>
       )}
       {showBeta && (

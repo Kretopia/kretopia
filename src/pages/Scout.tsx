@@ -20,10 +20,15 @@ const TABS: { id: Tab; label: string; icon: typeof Radar; hint: string }[] = [
  */
 const Scout = () => {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const initial = (params.get("tab") as Tab) || "scouted";
-  const [tab, setTab] = useState<Tab>(initial);
+  const [tab, setTab] = useState<Tab>(initial === "talent" ? "scouted" : initial);
 
   const switchTab = (next: Tab) => {
+    if (next === "talent") {
+      navigate("/talent-finder");
+      return;
+    }
     setTab(next);
     const p = new URLSearchParams(params);
     p.set("tab", next);

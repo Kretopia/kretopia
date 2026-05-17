@@ -153,6 +153,8 @@ export function DesktopCopilotRail() {
     if (!content || streaming) return;
     setInput("");
     const next: CopilotMessage[] = [...messages, { role: "user", content }, { role: "assistant", content: "" }];
+    const assistantIdx = next.length - 1;
+    let assistantSoFar = "";
     setMessages(next);
     setStreaming(true);
     const ctrl = new AbortController();
@@ -164,11 +166,13 @@ export function DesktopCopilotRail() {
         surfaceContext: { pathname },
         signal: ctrl.signal,
         onDelta: (chunk) => {
+          assistantSoFar += chunk;
+          const visible = extractActions(assistantSoFar).visible;
           setMessages((prev) => {
             const copy = [...prev];
             const last = copy[copy.length - 1];
             if (last?.role === "assistant") {
-              copy[copy.length - 1] = { ...last, content: last.content + chunk };
+              copy[copy.length - 1] = { ...last, content: visible };
             }
             return copy;
           });
@@ -185,6 +189,85 @@ export function DesktopCopilotRail() {
           });
         },
       });
+
+      const { visible, actions: parsed, plans: parsedPlans } = extractActions(assistantSoFar);
+      setMessages((prev) => prev.map((m, i) => (i === assistantIdx ? { ...m, content: visible || "On it." } : m)));
+
+      for (const intentObj of parsed) {
+        const activityId = `rail-action-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        setActivityByMsg((prev) => ({
+          ...prev,
+          [assistantIdx]: [...(prev[assistantIdx] ?? []), { id: activityId, status: "running", title: "Finding the right tool", body: intentObj.intent }],
+        }));
+        try {
+          const run = await sendAgentIntent(intentObj.intent, { surface: intentObj.surface ?? surface, pathname });
+          const proposed = (run.actions ?? []).filter((action) => action.status === "proposed");
+          const resultCards = (run.actions ?? []).map(resultCardForAction).filter(Boolean) as AgentResultCardData[];
+          if (proposed.length) {
+            setActionsByMsg((prev) => ({ ...prev, [assistantIdx]: [...(prev[assistantIdx] ?? []), ...proposed] }));
+          }
+          if (resultCards.length) {
+            setResultCardsByMsg((prev) => ({ ...prev, [assistantIdx]: [...(prev[assistantIdx] ?? []), ...resultCards] }));
+          }
+          setActivityByMsg((prev) => ({
+            ...prev,
+            [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+              item.id === activityId
+                ? {
+                    ...item,
+                    status: "done",
+                    title: proposed.length ? "Ready for your approval" : resultCards.length ? "Done — result ready" : "Checked the available tools",
+                    body: proposed.length ? `${proposed.length} action${proposed.length === 1 ? "" : "s"} below need your approval.` : resultCards.length ? "Open the result card below to continue." : run.reasoning,
+                  }
+                : item,
+            ),
+          }));
+        } catch (err) {
+          setActivityByMsg((prev) => ({
+            ...prev,
+            [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+              item.id === activityId
+                ? { ...item, status: "failed", title: "Couldn't queue that action", body: err instanceof Error ? err.message : "Try again." }
+                : item,
+            ),
+          }));
+        }
+      }
+
+      for (const planReq of parsedPlans) {
+        const activityId = `rail-plan-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        setActivityByMsg((prev) => ({
+          ...prev,
+          [assistantIdx]: [...(prev[assistantIdx] ?? []), { id: activityId, status: "running", title: "Building the plan", body: planReq.goal }],
+        }));
+        try {
+          const { data, error } = await supabase.functions.invoke("copilot-planner", {
+            body: { goal: planReq.goal, surface: planReq.surface ?? surface, project_id: null },
+          });
+          if (error) throw error;
+          if (data?.plan_id) {
+            setPlansByMsg((prev) => ({
+              ...prev,
+              [assistantIdx]: [...(prev[assistantIdx] ?? []), { id: data.plan_id, goal: planReq.goal, summary: data.summary, status: data.status ?? "proposed", steps: data.steps ?? [], autoRun: false }],
+            }));
+            setActivityByMsg((prev) => ({
+              ...prev,
+              [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+                item.id === activityId ? { ...item, status: "done", title: "Plan ready for approval", body: `${data.steps?.length ?? 0} step${(data.steps?.length ?? 0) === 1 ? "" : "s"} prepared below.` } : item,
+              ),
+            }));
+          }
+        } catch (err) {
+          setActivityByMsg((prev) => ({
+            ...prev,
+            [assistantIdx]: (prev[assistantIdx] ?? []).map((item) =>
+              item.id === activityId
+                ? { ...item, status: "failed", title: "Couldn't build the plan", body: err instanceof Error ? err.message : "Try again." }
+                : item,
+            ),
+          }));
+        }
+      }
     } finally {
       setStreaming(false);
       abortRef.current = null;

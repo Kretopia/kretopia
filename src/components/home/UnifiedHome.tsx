@@ -1037,7 +1037,7 @@ export const UnifiedHome = () => {
               { icon: Star, label: t("landing.peerEndorsed") },
             ].map(b => (
               <div key={b.label} className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <b.icon className="h-3.5 w-3.5 text-primary/60" />
+                <b.icon className="h-3.5 w-3.5 text-[hsl(var(--signal-teal))]" />
                 <span className="font-medium">{b.label}</span>
               </div>
             ))}

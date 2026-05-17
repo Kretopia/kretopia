@@ -74,12 +74,12 @@ export const ConversationListPanel = ({
         />
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
           <TabsList className="w-full">
-            <TabsTrigger value="inbox" className="flex-1 text-xs sm:text-sm">Direct</TabsTrigger>
-            <TabsTrigger value="groups" className="flex-1 text-xs sm:text-sm">Groups</TabsTrigger>
-            <TabsTrigger value="calls" className="flex-1 text-xs sm:text-sm">
+            <TabsTrigger value="inbox" className="flex-1 text-xs sm:text-sm data-[state=active]:text-[hsl(var(--signal-teal))] data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--signal-teal))]/20">Direct</TabsTrigger>
+            <TabsTrigger value="groups" className="flex-1 text-xs sm:text-sm data-[state=active]:text-[hsl(var(--signal-teal))] data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--signal-teal))]/20">Groups</TabsTrigger>
+            <TabsTrigger value="calls" className="flex-1 text-xs sm:text-sm data-[state=active]:text-[hsl(var(--signal-teal))] data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--signal-teal))]/20">
               Calls {missedCount > 0 && <Badge variant="destructive" className="ml-1">{missedCount}</Badge>}
             </TabsTrigger>
-            <TabsTrigger value="requests" className="flex-1 text-xs sm:text-sm">
+            <TabsTrigger value="requests" className="flex-1 text-xs sm:text-sm data-[state=active]:text-[hsl(var(--signal-teal))] data-[state=active]:ring-1 data-[state=active]:ring-[hsl(var(--signal-teal))]/20">
               Requests {requestCount > 0 && <Badge variant="destructive" className="ml-1">{requestCount}</Badge>}
             </TabsTrigger>
           </TabsList>

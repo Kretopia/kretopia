@@ -147,8 +147,10 @@ const ProjectsList = () => {
       {/* Header — lite, single line */}
       <header className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <FolderKanban className="h-4 w-4 text-primary shrink-0" />
-          <h1 className="text-xl font-black tracking-[-0.03em] truncate">Studios</h1>
+          <FolderKanban className="h-4 w-4 text-[hsl(var(--signal-teal))] shrink-0" />
+          <h1 className="text-xl font-black tracking-[-0.03em] truncate">
+            <span className="italic text-[hsl(var(--signal-teal))]">Studios</span>
+          </h1>
           {projects.length > 0 && (
             <span className="text-[11px] text-muted-foreground font-medium shrink-0">
               · {activeCount} active
@@ -200,7 +202,7 @@ const ProjectsList = () => {
                 className={cn(
                   "shrink-0 h-7 px-3 rounded-full text-[11px] font-semibold transition-colors border",
                   statusFilter === c.id
-                    ? "bg-primary text-primary-foreground border-primary"
+                    ? "bg-background text-[hsl(var(--signal-teal))] border-[hsl(var(--signal-teal))]/40 ring-1 ring-[hsl(var(--signal-teal))]/20 shadow-sm"
                     : "bg-background text-muted-foreground border-border hover:text-foreground"
                 )}
               >

@@ -289,7 +289,7 @@ export default function ThrivePay() {
             <p className="brand-eyebrow">Your money, daily</p>
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <h1 className="text-3xl md:text-4xl font-black tracking-[-0.03em] flex items-center gap-3 leading-[1.05]">
-                <Wallet className="h-7 w-7 md:h-8 md:w-8 text-primary" />
+                <Wallet className="h-7 w-7 md:h-8 md:w-8 text-[hsl(var(--signal-teal))]" />
                 ThrivePay
               </h1>
               {getStatusBadge()}

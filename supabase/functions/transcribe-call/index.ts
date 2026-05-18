@@ -172,6 +172,13 @@ serve(async (req) => {
       language?: string;
       transcript: string;
       summary: string;
+      chapters?: Array<{
+        start_seconds: number;
+        end_seconds?: number;
+        title: string;
+        summary?: string;
+        speaker?: string;
+      }>;
       action_items: Array<{
         kind: string;
         title: string;
@@ -181,16 +188,18 @@ serve(async (req) => {
       }>;
     };
 
-    // 4. Save transcript + summary.
+    // 4. Save transcript + summary + chapters.
     await admin
       .from("call_transcripts")
       .update({
         transcript: parsed.transcript,
         summary: parsed.summary,
         language: parsed.language ?? null,
+        chapters: parsed.chapters ?? [],
         status: "ready",
       })
       .eq("id", transcript_id);
+
 
     // 5. Insert action items.
     if (parsed.action_items?.length) {

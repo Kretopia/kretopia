@@ -110,7 +110,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/", icon: Sun, label: "Today" },
         { path: "/desk", icon: LayoutGrid, label: "Desk" },
         { path: "/scout", icon: Compass, label: "Scout" },
-        { path: "/messages", icon: MessageCircle, label: "Messages" },
+        { path: "/circle", icon: Theater, label: "Stages" },
         { path: "/profile", icon: BadgeCheck, label: "Passport" },
       ];
 

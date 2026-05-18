@@ -87,8 +87,9 @@ export function SoundStageRoom({
       const cached = uid ? profileCache.current.get(uid) : null;
       if (uid && !cached) userIdsToFetch.push(uid);
       const isOwner = !!(p as any).owner;
+      const isHostByUserId = !!(uid && hostUserId && uid === hostUserId);
       let role: Role = "audience";
-      if (isOwner) role = "host";
+      if (isOwner || isHostByUserId) role = "host";
       else if (uid && speakersRef.current.has(uid)) role = "speaker";
 
       next[p.session_id] = {

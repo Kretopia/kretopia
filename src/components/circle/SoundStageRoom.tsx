@@ -719,13 +719,59 @@ function StageTile({
   );
 }
 
+function VideoTrackView({
+  track, muted, mirror,
+}: { track: MediaStreamTrack; muted?: boolean; mirror?: boolean }) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.srcObject = new MediaStream([track]);
+    el.play().catch(() => {});
+    return () => { try { el.srcObject = null; } catch {} };
+  }, [track]);
+  return (
+    <video
+      ref={ref}
+      autoPlay
+      playsInline
+      muted={muted}
+      className="h-full w-full object-cover"
+      style={mirror ? { transform: "scaleX(-1)" } : undefined}
+    />
+  );
+}
+
+function CamPreview({ stream, mirror }: { stream: MediaStream; mirror?: boolean }) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.srcObject = stream;
+    el.play().catch(() => {});
+    return () => { try { el.srcObject = null; } catch {} };
+  }, [stream]);
+  return (
+    <video
+      ref={ref}
+      autoPlay
+      playsInline
+      muted
+      className="h-full w-full object-cover"
+      style={mirror ? { transform: "scaleX(-1)" } : undefined}
+    />
+  );
+}
+
 function MicCheckScreen({
-  level, userName, userAvatar, isHost, onJoin, onCancel,
+  level, userName, userAvatar, isHost, mode, camStream, onJoin, onCancel,
 }: {
   level: number;
   userName: string;
   userAvatar?: string | null;
   isHost: boolean;
+  mode: "audio" | "video";
+  camStream: MediaStream | null;
   onJoin: () => void;
   onCancel: () => void;
 }) {

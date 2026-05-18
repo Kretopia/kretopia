@@ -137,37 +137,93 @@ export function SoundStageRoom({
     }
   }, []);
 
-  // Initialize call
+  // Reset to mic-check whenever the sheet opens
   useEffect(() => {
-    if (!open || !roomUrl) return;
+    if (open) {
+      setPhase("miccheck");
+      setJoining(false);
+      setMembers({});
+      setHandRaised(false);
+      setMyAudio(true);
+      setMyVideo(false);
+    }
+  }, [open]);
+
+  // Local mic VU meter (active in both miccheck phase and inside the room
+  // so the user always has visible proof their mic is hot).
+  useEffect(() => {
+    if (!open) return;
+    let stream: MediaStream | null = null;
+    let audioCtx: AudioContext | null = null;
+    let raf = 0;
+    let cancelled = false;
+    (async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
+        const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
+        audioCtx = new Ctx();
+        const src = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        src.connect(analyser);
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        const tick = () => {
+          analyser.getByteTimeDomainData(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i++) {
+            const v = (data[i] - 128) / 128;
+            sum += v * v;
+          }
+          const rms = Math.sqrt(sum / data.length);
+          const level = Math.min(1, rms * 3);
+          localLevelRef.current = level;
+          setLocalLevel(level);
+          raf = requestAnimationFrame(tick);
+        };
+        tick();
+      } catch (e: any) {
+        console.error("[SoundStageRoom] mic permission failed", e);
+        toast({
+          title: "Mic permission needed",
+          description: "Allow microphone access in your browser, then try again.",
+          variant: "destructive",
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (raf) cancelAnimationFrame(raf);
+      try { audioCtx?.close(); } catch {}
+      try { stream?.getTracks().forEach((t) => t.stop()); } catch {}
+    };
+  }, [open, toast]);
+
+  // Initialize Daily call (only after mic check passes)
+  useEffect(() => {
+    if (!open || !roomUrl || phase !== "joining") return;
     let cancelled = false;
 
     const init = async () => {
       setJoining(true);
-      // IMPORTANT: await Daily's destroy so the singleton slot is free
       await destroyExistingDailyFrameAsync();
       if (cancelled) return;
       try {
         let call: DailyCall;
+        const opts = {
+          url: roomUrl,
+          token: token ?? undefined,
+          audioSource: true,
+          videoSource: false,
+          userName,
+          subscribeToTracksAutomatically: true,
+        };
         try {
-          call = (DailyIframe as any).createCallObject({
-            url: roomUrl,
-            token: token ?? undefined,
-            audioSource: true,
-            videoSource: false, // audio-first; speakers can toggle later
-            userName,
-          });
+          call = (DailyIframe as any).createCallObject(opts);
         } catch (err: any) {
           if (String(err?.message || "").includes("Duplicate")) {
-            // Force-destroy any lingering instance and retry once
             await destroyExistingDailyFrameAsync();
-            call = (DailyIframe as any).createCallObject({
-              url: roomUrl,
-              token: token ?? undefined,
-              audioSource: true,
-              videoSource: false,
-              userName,
-            });
+            call = (DailyIframe as any).createCallObject(opts);
           } else {
             throw err;
           }
@@ -179,6 +235,8 @@ export function SoundStageRoom({
         call.on("participant-updated", onAny);
         call.on("participant-left", onAny);
         call.on("joined-meeting", onAny);
+        call.on("track-started", onAny);
+        call.on("track-stopped", onAny);
 
         call.on("active-speaker-change", (ev: any) => {
           const sid = ev?.activeSpeaker?.peerId ?? null;
@@ -201,7 +259,6 @@ export function SoundStageRoom({
             });
           }
           if (msg.type === "promote") {
-            // Host broadcasts that a uid is now a speaker
             if (msg.userId) speakersRef.current.add(msg.userId);
             refreshMembers().catch(() => {});
           }
@@ -218,8 +275,12 @@ export function SoundStageRoom({
         if (!isHost) {
           try { await call.setLocalAudio(false); } catch {}
           setMyAudio(false);
+        } else {
+          try { await call.setLocalAudio(true); } catch {}
+          setMyAudio(true);
         }
         setJoining(false);
+        setPhase("in");
         refreshMembers().catch(() => {});
       } catch (e: any) {
         console.error("[SoundStageRoom] join failed", e);
@@ -240,7 +301,7 @@ export function SoundStageRoom({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, roomUrl, token]);
+  }, [open, roomUrl, token, phase]);
 
   const toggleMic = async () => {
     const call = callRef.current;

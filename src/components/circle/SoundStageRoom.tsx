@@ -900,6 +900,25 @@ export function SoundStageRoom({
           )}
         </div>
 
+        {/* Phase 3C — Live captions overlay (rolling 3 lines) */}
+        {captionsOn && captions.length > 0 && (
+          <div
+            className="pointer-events-none absolute left-0 right-0 bottom-[140px] z-30 px-4"
+            aria-live="polite"
+          >
+            <div className="mx-auto max-w-2xl rounded-2xl bg-background/95 border border-border/70 px-3 py-2 shadow-lg space-y-0.5">
+              {captions.slice(-3).map((c) => (
+                <p key={c.id} className="text-sm leading-snug text-foreground">
+                  <span className="text-muted-foreground font-medium mr-1.5">
+                    {c.speaker}:
+                  </span>
+                  {c.text}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Bottom control bar */}
         <div
           className="border-t border-border/60 px-4 pt-3 bg-background shrink-0"

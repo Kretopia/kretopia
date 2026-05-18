@@ -563,19 +563,27 @@ export function SoundStageRoom({
     if (!call || !isHost) return;
     setCaptionsStarting(true);
     try {
-      if (captionsOn) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (call as any).stopTranscription?.();
-        setCaptions([]);
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (call as any).startTranscription?.({
-          language: "en",
-          model: "nova-2-general",
-          profanity_filter: false,
-          punctuate: true,
-        });
+      // Derive Daily room_name from the room URL (last path segment).
+      let roomName = "";
+      try {
+        roomName = new URL(roomUrl).pathname.replace(/^\//, "");
+      } catch {
+        roomName = "";
       }
+      if (!roomName) throw new Error("Missing room name");
+
+      const action = captionsOn ? "stop" : "start";
+      const { data, error } = await supabase.functions.invoke(
+        "start-stage-transcription",
+        { body: { room_name: roomName, action, stage_id: stageIdRef.current } },
+      );
+      if (error) throw error;
+      if (data && typeof data === "object" && "error" in data && data.error) {
+        throw new Error(String((data as { error: string }).error));
+      }
+      if (action === "stop") setCaptions([]);
+      // transcription-started / transcription-stopped events will flip
+      // captionsOn for all participants (host + audience) shortly after.
     } catch (e: unknown) {
       console.error("[SoundStageRoom] toggle captions failed", e);
       toast({
@@ -588,6 +596,7 @@ export function SoundStageRoom({
       setCaptionsStarting(false);
     }
   };
+
 
   const toggleHand = async () => {
     const call = callRef.current;

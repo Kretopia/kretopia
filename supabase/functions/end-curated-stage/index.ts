@@ -50,14 +50,17 @@ serve(async (req) => {
     // Roll-call credits: Host gets a "Stage Host" credit; positive-outcome turn applicants get "Featured" credit
     const year = new Date(stage.starts_at).getFullYear();
     const hostRole = stage.type === "scout" ? "Scout Stage Host" : "Showcase Host";
-    await admin.from("credits").insert({
-      user_id: stage.host_user_id,
-      project_name: stage.title,
-      role: hostRole,
-      year,
-      credit_category: "stage",
-      verification_status: "verified",
-    }).catch(() => {});
+    try {
+      await admin.from("credits").insert({
+        user_id: stage.host_user_id,
+        project_name: stage.title,
+        role: hostRole,
+        year,
+        credit_category: "stage",
+        verification_status: "verified",
+      });
+    } catch (_e) { /* best-effort */ }
+
 
     const { data: turns } = await admin.from("curated_stage_turns")
       .select("applicant_user_id, outcome")
@@ -65,16 +68,19 @@ serve(async (req) => {
       .in("outcome", ["co_sign", "credit", "rolodex", "followup"]);
     const featured = Array.from(new Set((turns || []).map((t: any) => t.applicant_user_id)));
     if (featured.length) {
-      await admin.from("credits").insert(featured.map((uid) => ({
-        user_id: uid,
-        project_name: stage.title,
-        role: stage.type === "scout" ? "Scouted Performer" : "Featured Guest",
-        year,
-        credit_category: "stage",
-        verification_status: "verified",
-        verified_by_user_id: stage.host_user_id,
-      }))).catch(() => {});
+      try {
+        await admin.from("credits").insert(featured.map((uid) => ({
+          user_id: uid,
+          project_name: stage.title,
+          role: stage.type === "scout" ? "Scouted Performer" : "Featured Guest",
+          year,
+          credit_category: "stage",
+          verification_status: "verified",
+          verified_by_user_id: stage.host_user_id,
+        })));
+      } catch (_e) { /* best-effort */ }
     }
+
 
     // Best-effort recap notification to all attendees
     const { data: attendees } = await admin.from("curated_stage_rsvps")
@@ -88,8 +94,9 @@ serve(async (req) => {
         message: `Thanks for showing up.${recordingNote} Tap to see follow-ups.`,
         action_url: `/circle/stage/${stage_id}`,
       }));
-      await admin.from("notifications").insert(notifs).catch(() => {});
+      try { await admin.from("notifications").insert(notifs); } catch (_e) { /* best-effort */ }
     }
+
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,

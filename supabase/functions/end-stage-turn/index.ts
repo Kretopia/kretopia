@@ -46,21 +46,26 @@ serve(async (req) => {
 
     // Auto-create a connection request when outcome is positive
     if (outcome && ["co_sign", "rolodex", "followup", "credit"].includes(outcome)) {
-      await admin.from("connections").insert({
-        requester_id: user.id,
-        recipient_id: turn.applicant_user_id,
-        status: "pending",
-        context: "stage",
-      }).catch(() => {});
+      try {
+        await admin.from("connections").insert({
+          requester_id: user.id,
+          recipient_id: turn.applicant_user_id,
+          status: "pending",
+          context: "stage",
+        });
+      } catch (_e) { /* best-effort */ }
 
-      await admin.from("notifications").insert({
-        user_id: turn.applicant_user_id,
-        type: "stage_outcome",
-        title: outcome === "co_sign" ? "You got a co-sign!" : outcome === "credit" ? "Stamp added by host" : "Host wants to follow up",
-        message: host_note ? String(host_note).slice(0, 140) : "Tap to see what's next.",
-        action_url: `/circle/stage/${turn.stage_id}`,
-      }).catch(() => {});
+      try {
+        await admin.from("notifications").insert({
+          user_id: turn.applicant_user_id,
+          type: "stage_outcome",
+          title: outcome === "co_sign" ? "You got a co-sign!" : outcome === "credit" ? "Stamp added by host" : "Host wants to follow up",
+          message: host_note ? String(host_note).slice(0, 140) : "Tap to see what's next.",
+          action_url: `/circle/stage/${turn.stage_id}`,
+        });
+      } catch (_e) { /* best-effort */ }
     }
+
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,

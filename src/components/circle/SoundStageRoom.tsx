@@ -453,6 +453,8 @@ export function SoundStageRoom({
               userName={userName}
               userAvatar={userAvatar}
               isHost={isHost}
+              mode={mode}
+              camStream={localCamStream}
               onJoin={() => setPhase("joining")}
               onCancel={leave}
             />

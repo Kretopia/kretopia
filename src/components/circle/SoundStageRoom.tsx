@@ -300,8 +300,7 @@ export function SoundStageRoom({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="p-0 h-[100dvh] sm:h-[92vh] sm:max-w-2xl sm:mx-auto sm:rounded-t-3xl bg-background border-t-0 overflow-hidden flex flex-col"
-        hideCloseButton
+        className="p-0 h-[100dvh] sm:h-[92vh] sm:max-w-2xl sm:mx-auto sm:rounded-t-3xl bg-background border-t-0 overflow-hidden flex flex-col [&>button.absolute]:hidden"
       >
         {/* Header */}
         <div className="px-4 pt-4 pb-3 border-b border-border/60 flex items-center gap-3 shrink-0">

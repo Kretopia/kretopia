@@ -20,7 +20,7 @@ type Format = "open_1to1" | "open_group" | "audience";
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onCreated: (data: { stage_id: string; room_url: string; room_name: string; token: string; title: string; mode: Mode }) => void;
+  onCreated: (data: { stage_id: string; room_url: string; room_name: string; token: string; title: string; mode: Mode; format: Format }) => void;
 }
 
 export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {

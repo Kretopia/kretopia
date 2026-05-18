@@ -313,9 +313,20 @@ export function SoundStageRoom({
     };
   }, [open, phase, mode, toast]);
 
+  // Initialize/cleanup the Daily call for this sheet session. Keep this effect
+  // independent from `phase`: changing `phase` from joining → in must not run
+  // cleanup, or the freshly joined room immediately leaves/destroys itself.
+  useEffect(() => {
+    if (!open) {
+      cleanupCall(true);
+      return;
+    }
+    return () => cleanupCall(false);
+  }, [open, roomUrl, token, cleanupCall]);
+
   // Initialize Daily call (only after mic check passes)
   useEffect(() => {
-    if (!open || !roomUrl || phase !== "joining") return;
+    if (!open || !roomUrl || phase !== "joining" || callRef.current) return;
     let cancelled = false;
 
     const init = async () => {
@@ -458,12 +469,6 @@ export function SoundStageRoom({
 
     return () => {
       cancelled = true;
-      const call = callRef.current;
-      callRef.current = null;
-      if (call) {
-        void call.leave().catch(() => undefined);
-        void call.destroy().catch(() => undefined);
-      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, roomUrl, token, phase]);

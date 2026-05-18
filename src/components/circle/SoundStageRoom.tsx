@@ -679,3 +679,96 @@ function StageTile({
     </div>
   );
 }
+
+function MicCheckScreen({
+  level, userName, userAvatar, isHost, onJoin, onCancel,
+}: {
+  level: number;
+  userName: string;
+  userAvatar?: string | null;
+  isHost: boolean;
+  onJoin: () => void;
+  onCancel: () => void;
+}) {
+  const detected = level > 0.04;
+  const bars = 12;
+  const lit = Math.round(level * bars * 1.4);
+  return (
+    <div className="flex flex-col items-center justify-center py-6 gap-6 text-center">
+      <div className="space-y-1">
+        <h2 className="text-lg font-black">Mic check</h2>
+        <p className="text-xs text-muted-foreground max-w-xs">
+          Say something — you should see the bars light up. This is just for you;
+          you're not live until you tap below.
+        </p>
+      </div>
+
+      <div className="relative">
+        <div
+          className="rounded-full p-1 transition-all"
+          style={{
+            background: detected ? "hsl(var(--signal-teal))" : "transparent",
+            boxShadow: detected
+              ? `0 0 0 ${6 + Math.round(level * 18)}px hsl(var(--signal-teal) / 0.22)`
+              : undefined,
+          }}
+        >
+          <Avatar className="h-24 w-24 ring-2 ring-background">
+            <AvatarImage src={userAvatar ?? undefined} />
+            <AvatarFallback className="text-2xl font-black">
+              {userName[0]?.toUpperCase() ?? "?"}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      </div>
+
+      {/* VU bars */}
+      <div className="flex items-end gap-1 h-10">
+        {Array.from({ length: bars }).map((_, i) => {
+          const active = i < lit;
+          const h = 8 + (i / bars) * 28;
+          return (
+            <div
+              key={i}
+              className={cn(
+                "w-1.5 rounded-full transition-colors",
+                active
+                  ? i < bars * 0.6
+                    ? "bg-[hsl(var(--signal-teal))]"
+                    : i < bars * 0.85
+                      ? "bg-[hsl(var(--signal-amber))]"
+                      : "bg-[hsl(var(--signal-pink))]"
+                  : "bg-muted",
+              )}
+              style={{ height: `${h}px` }}
+            />
+          );
+        })}
+      </div>
+
+      <p
+        className={cn(
+          "text-xs font-semibold",
+          detected ? "text-[hsl(var(--signal-teal))]" : "text-muted-foreground",
+        )}
+      >
+        {detected ? "Mic is hot ✓" : "No sound detected — try speaking"}
+      </p>
+
+      <div className="flex flex-col gap-2 w-full max-w-xs">
+        <Button
+          size="lg"
+          variant="lime"
+          className="rounded-full h-12 text-sm font-bold"
+          onClick={onJoin}
+        >
+          <Mic className="h-4 w-4 mr-2" />
+          {isHost ? "Go live on stage" : "Join the room"}
+        </Button>
+        <Button variant="ghost" className="rounded-full h-10 text-xs" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+}

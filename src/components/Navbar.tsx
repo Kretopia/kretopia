@@ -160,11 +160,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
               const isActive = location.pathname === path ||
                 (path === "/desk" && location.pathname.startsWith("/desk")) ||
                 (path === "/messages" && (location.pathname.startsWith("/messages") || location.pathname.startsWith("/inbox"))) ||
+                (path === "/circle" && location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles")) ||
                 (path === "/scout" && (
                   location.pathname.startsWith("/scout") ||
                   location.pathname === "/opportunities" ||
-                  location.pathname === "/opportunity-dashboard" ||
-                  (location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"))
+                  location.pathname === "/opportunity-dashboard"
                 )) ||
                 (path === "/profile" && (
                   location.pathname.startsWith("/profile") ||

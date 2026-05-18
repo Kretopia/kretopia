@@ -451,8 +451,17 @@ export function SoundStageRoom({
     const call = callRef.current;
     if (!call) return;
     const next = !myAudio;
-    call.setLocalAudio(next);
-    setMyAudio(next);
+    try {
+      await call.setLocalAudio(next);
+      setMyAudio(next);
+    } catch (e: unknown) {
+      console.error("[SoundStageRoom] toggle mic failed", e);
+      toast({
+        title: "Mic unavailable",
+        description: e instanceof Error ? e.message : undefined,
+        variant: "destructive",
+      });
+    }
   };
 
   const toggleCam = async () => {

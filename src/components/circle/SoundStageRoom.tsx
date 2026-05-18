@@ -706,6 +706,38 @@ function RemoteAudio({ track }: { track: MediaStreamTrack }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+function ColorfulAvatar({
+  className, name, avatar, seed,
+}: {
+  className?: string;
+  name: string;
+  avatar: string | null;
+  seed: string | null;
+}) {
+  const hue = useMemo(() => {
+    const s = (seed || name || "x").split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+    return s % 360;
+  }, [seed, name]);
+  const initial = (name?.trim()?.[0] || "?").toUpperCase();
+  return (
+    <div
+      className={cn("relative rounded-full overflow-hidden flex items-center justify-center", className)}
+      style={{ background: `linear-gradient(135deg, hsl(${hue} 70% 45%), hsl(${(hue + 60) % 360} 65% 28%))` }}
+    >
+      {avatar ? (
+        <img
+          src={avatar}
+          alt={name}
+          className="h-full w-full object-cover"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+      ) : (
+        <span className="font-black text-white text-xl drop-shadow">{initial}</span>
+      )}
+    </div>
+  );
+}
     const stream = new MediaStream([track]);
     el.srcObject = stream;
     el.autoplay = true;

@@ -880,11 +880,9 @@ function RemoteAudio({ track }: { track: MediaStreamTrack }) {
     const stream = new MediaStream([track]);
     el.srcObject = stream;
     el.autoplay = true;
-    el.play().catch(() => {});
+    void el.play().catch(() => undefined);
     return () => {
-      try {
-        el.srcObject = null;
-      } catch {}
+      el.srcObject = null;
     };
   }, [track]);
   return <audio ref={ref} autoPlay playsInline />;
@@ -1229,11 +1227,9 @@ function VideoTrackView({
     const el = ref.current;
     if (!el) return;
     el.srcObject = new MediaStream([track]);
-    el.play().catch(() => {});
+    void el.play().catch(() => undefined);
     return () => {
-      try {
-        el.srcObject = null;
-      } catch {}
+      el.srcObject = null;
     };
   }, [track]);
   return (
@@ -1260,11 +1256,9 @@ function CamPreview({
     const el = ref.current;
     if (!el) return;
     el.srcObject = stream;
-    el.play().catch(() => {});
+    void el.play().catch(() => undefined);
     return () => {
-      try {
-        el.srcObject = null;
-      } catch {}
+      el.srcObject = null;
     };
   }, [stream]);
   return (

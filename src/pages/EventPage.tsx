@@ -458,19 +458,19 @@ const EventPage = () => {
                   <DropdownMenuItem onClick={async () => {
                     const { data: parts } = await supabase
                       .from('jam_participants')
-                      .select('user_id, status, joined_at')
+                      .select('user_id, guest_name, guest_email, status, joined_at')
                       .eq('jam_id', event.id)
                       .in('status', ['going', 'interested', 'maybe']);
-                    const userIds = (parts || []).map((p: any) => p.user_id);
+                    const userIds = (parts || []).map((p: any) => p.user_id).filter(Boolean);
                     const { data: profiles } = userIds.length > 0
-                      ? await supabase.from('profiles').select('user_id, full_name, role').in('user_id', userIds)
+                      ? await supabase.from('public_profiles_safe').select('user_id, full_name, role').in('user_id', userIds)
                       : { data: [] };
                     const pMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
-                    const rows = [["Name", "Role", "Status", "Joined At"]];
+                    const rows = [["Name", "Role", "Email", "Status", "Joined At"]];
                     if (creator) rows.push([creator.full_name || "Host", creator.role || "", "Host", ""]);
                     (parts || []).forEach((p: any) => {
                       const prof = pMap.get(p.user_id) as any;
-                      rows.push([prof?.full_name || "Unknown", prof?.role || "", p.status, p.joined_at ? new Date(p.joined_at).toLocaleDateString() : ""]);
+                      rows.push([prof?.full_name || p.guest_name || "Guest", prof?.role || (p.user_id ? "" : "Guest RSVP"), p.guest_email || "", p.status, p.joined_at ? new Date(p.joined_at).toLocaleDateString() : ""]);
                     });
                     const csv = rows.map(r => r.map(c => `"${(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
                     const blob = new Blob([csv], { type: "text/csv" });

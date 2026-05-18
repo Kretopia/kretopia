@@ -30,6 +30,7 @@ interface SoundStageRoomProps {
   token: string | null;
   title: string;
   mode: "audio" | "video";
+  format?: "open_1to1" | "open_group" | "audience";
   isHost: boolean;
   stageId: string | null;
   hostUserId: string | null;
@@ -53,7 +54,7 @@ interface Member {
 }
 
 export function SoundStageRoom({
-  open, onOpenChange, roomUrl, token, title, mode, isHost,
+  open, onOpenChange, roomUrl, token, title, mode, format = "open_group", isHost,
   stageId, hostUserId, userName, userAvatar,
 }: SoundStageRoomProps) {
   const { user } = useAuth();
@@ -474,15 +475,65 @@ export function SoundStageRoom({
             </div>
           ) : (
             <>
-              {/* On stage */}
+              {/* On stage — layout adapts to (mode × format) */}
               <section className="space-y-3">
                 <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
-                  On stage · {stage.length}
+                  {format === "audience" ? "On stage" : format === "open_1to1" ? "In the call" : "On stage"} · {stage.length}
                 </h3>
-                {mode === "video" ? (
-                  stage.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No one on stage yet.</p>
+
+                {stage.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No one on stage yet.</p>
+                ) : mode === "video" ? (
+                  // ===== VIDEO LAYOUTS =====
+                  format === "audience" ? (
+                    // Performance: ONE giant hero performer + tiny strip of co-hosts (if any)
+                    <div className="space-y-2">
+                      <VideoStageTile
+                        member={stage[0]}
+                        isHostView={isHost}
+                        onDemote={demote}
+                        onMute={muteParticipant}
+                        onRemove={removeParticipant}
+                        localLevel={stage[0].isLocal ? localLevel : undefined}
+                        videoTrack={videoTracksBySession[stage[0].sessionId]}
+                        hero
+                      />
+                      {stage.length > 1 && (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                          {stage.slice(1).map((m) => (
+                            <VideoStageTile
+                              key={m.sessionId}
+                              member={m}
+                              isHostView={isHost}
+                              onDemote={demote}
+                              onMute={muteParticipant}
+                              onRemove={removeParticipant}
+                              localLevel={m.isLocal ? localLevel : undefined}
+                              videoTrack={videoTracksBySession[m.sessionId]}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : format === "open_1to1" ? (
+                    // 1:1 face-to-face — stack vertical on mobile, split desktop
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {stage.map((m) => (
+                        <VideoStageTile
+                          key={m.sessionId}
+                          member={m}
+                          isHostView={isHost}
+                          onDemote={demote}
+                          onMute={muteParticipant}
+                          onRemove={removeParticipant}
+                          localLevel={m.isLocal ? localLevel : undefined}
+                          videoTrack={videoTracksBySession[m.sessionId]}
+                          tall
+                        />
+                      ))}
+                    </div>
                   ) : (
+                    // Group video — balanced grid, hero only when solo
                     <div
                       className={cn(
                         "grid gap-2",
@@ -503,18 +554,25 @@ export function SoundStageRoom({
                           onRemove={removeParticipant}
                           localLevel={m.isLocal ? localLevel : undefined}
                           videoTrack={videoTracksBySession[m.sessionId]}
-                          solo={stage.length === 1}
+                          hero={stage.length === 1}
                         />
                       ))}
                     </div>
                   )
                 ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-2 gap-y-5">
+                  // ===== AUDIO LAYOUTS =====
+                  <div
+                    className={cn(
+                      "grid gap-x-2 gap-y-5",
+                      format === "open_1to1" ? "grid-cols-2 max-w-xs mx-auto" : "grid-cols-3 sm:grid-cols-4",
+                    )}
+                  >
                     {stage.map((m) => (
                       <StageTile
                         key={m.sessionId}
                         member={m}
                         large
+                        xlarge={format === "open_1to1"}
                         isHostView={isHost}
                         onDemote={demote}
                         onMute={muteParticipant}
@@ -524,9 +582,6 @@ export function SoundStageRoom({
                         videoTrack={videoTracksBySession[m.sessionId]}
                       />
                     ))}
-                    {stage.length === 0 && (
-                      <p className="col-span-full text-xs text-muted-foreground">No one on stage yet.</p>
-                    )}
                   </div>
                 )}
               </section>
@@ -554,20 +609,24 @@ export function SoundStageRoom({
                 </section>
               )}
 
-              {/* In the audience */}
-              <section className="space-y-3">
-                <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
-                  In the audience · {audience.length}
-                </h3>
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-x-2 gap-y-4">
-                  {audience.map((m) => (
-                    <StageTile key={m.sessionId} member={m} localLevel={m.isLocal ? localLevel : undefined} />
-                  ))}
-                  {audience.length === 0 && (
-                    <p className="col-span-full text-xs text-muted-foreground">Quiet so far.</p>
-                  )}
-                </div>
-              </section>
+              {/* In the audience — hidden for 1:1 calls */}
+              {format !== "open_1to1" && (
+                <section className="space-y-3">
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
+                    {format === "audience" ? "Listening in" : "In the audience"} · {audience.length}
+                  </h3>
+                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-x-2 gap-y-4">
+                    {audience.map((m) => (
+                      <StageTile key={m.sessionId} member={m} localLevel={m.isLocal ? localLevel : undefined} />
+                    ))}
+                    {audience.length === 0 && (
+                      <p className="col-span-full text-xs text-muted-foreground">
+                        {format === "audience" ? "No one tuned in yet." : "Quiet so far."}
+                      </p>
+                    )}
+                  </div>
+                </section>
+              )}
             </>
           )}
         </div>
@@ -650,18 +709,50 @@ function RemoteAudio({ track }: { track: MediaStreamTrack }) {
     const stream = new MediaStream([track]);
     el.srcObject = stream;
     el.autoplay = true;
-    // Some browsers require an explicit play() after srcObject is set.
     el.play().catch(() => {});
     return () => { try { el.srcObject = null; } catch {} };
   }, [track]);
   return <audio ref={ref} autoPlay playsInline />;
 }
 
+function ColorfulAvatar({
+  className, name, avatar, seed,
+}: {
+  className?: string;
+  name: string;
+  avatar: string | null;
+  seed: string | null;
+}) {
+  const hue = useMemo(() => {
+    const s = (seed || name || "x").split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+    return s % 360;
+  }, [seed, name]);
+  const initial = (name?.trim()?.[0] || "?").toUpperCase();
+  return (
+    <div
+      className={cn("relative rounded-full overflow-hidden flex items-center justify-center", className)}
+      style={{ background: `linear-gradient(135deg, hsl(${hue} 70% 45%), hsl(${(hue + 60) % 360} 65% 28%))` }}
+    >
+      {avatar ? (
+        <img
+          src={avatar}
+          alt={name}
+          className="h-full w-full object-cover"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+      ) : (
+        <span className="font-black text-white text-xl drop-shadow">{initial}</span>
+      )}
+    </div>
+  );
+}
+
 function StageTile({
-  member, large, isHostView, onDemote, onMute, onRemove, localLevel, mode, videoTrack,
+  member, large, xlarge, isHostView, onDemote, onMute, onRemove, localLevel, mode, videoTrack,
 }: {
   member: Member;
   large?: boolean;
+  xlarge?: boolean;
   isHostView?: boolean;
   onDemote?: (m: Member) => void;
   onMute?: (m: Member) => void;
@@ -670,7 +761,11 @@ function StageTile({
   mode?: "audio" | "video";
   videoTrack?: MediaStreamTrack;
 }) {
-  const size = large ? "h-16 w-16 sm:h-20 sm:w-20" : "h-12 w-12 sm:h-14 sm:w-14";
+  const size = xlarge
+    ? "h-24 w-24 sm:h-28 sm:w-28"
+    : large
+      ? "h-16 w-16 sm:h-20 sm:w-20"
+      : "h-12 w-12 sm:h-14 sm:w-14";
   const showHostMenu = isHostView && !member.isLocal;
   const liveSpeaking =
     member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
@@ -697,12 +792,12 @@ function StageTile({
               <VideoTrackView track={videoTrack!} muted={member.isLocal} mirror={member.isLocal} />
             </div>
           ) : (
-            <Avatar className={cn(size, "ring-2 ring-background")}>
-              <AvatarImage src={member.avatar ?? undefined} />
-              <AvatarFallback className="bg-muted text-foreground font-bold">
-                {member.name[0]?.toUpperCase() ?? "?"}
-              </AvatarFallback>
-            </Avatar>
+            <ColorfulAvatar
+              className={cn(size, "ring-2 ring-background")}
+              name={member.name}
+              avatar={member.avatar}
+              seed={member.userId || member.sessionId}
+            />
           )}
         </div>
         {/* Role / status badges */}
@@ -760,7 +855,7 @@ function StageTile({
 }
 
 function VideoStageTile({
-  member, isHostView, onDemote, onMute, onRemove, localLevel, videoTrack, solo,
+  member, isHostView, onDemote, onMute, onRemove, localLevel, videoTrack, hero, tall,
 }: {
   member: Member;
   isHostView?: boolean;
@@ -769,32 +864,59 @@ function VideoStageTile({
   onRemove?: (m: Member) => void;
   localLevel?: number;
   videoTrack?: MediaStreamTrack;
-  solo?: boolean;
+  hero?: boolean;
+  tall?: boolean;
 }) {
   const showHostMenu = isHostView && !member.isLocal;
   const liveSpeaking = member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
   const speaking = member.isSpeaking || liveSpeaking;
   const showVideo = member.videoOn && !!videoTrack;
+  // Deterministic colorful background per user so cam-off tiles never look "broken/black"
+  const hue = useMemo(() => {
+    const seed = (member.userId || member.name || member.sessionId).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+    return seed % 360;
+  }, [member.userId, member.name, member.sessionId]);
+  const initial = (member.name?.trim()?.[0] || "?").toUpperCase();
   return (
     <div
       className={cn(
-        "relative rounded-2xl overflow-hidden bg-black border-2 transition-all",
-        solo ? "aspect-video" : "aspect-[4/5] sm:aspect-square",
+        "relative rounded-2xl overflow-hidden border-2 transition-all bg-muted",
+        hero ? "aspect-video sm:aspect-[16/10]" : tall ? "aspect-[3/4] sm:aspect-square" : "aspect-square",
         speaking
           ? "border-[hsl(var(--signal-teal))] shadow-[0_0_0_4px_hsl(var(--signal-teal)/0.25)]"
           : "border-border/40",
       )}
     >
       {showVideo ? (
-        <VideoTrackView track={videoTrack!} muted={member.isLocal} mirror={member.isLocal} />
+        <div className="absolute inset-0 bg-black">
+          <VideoTrackView track={videoTrack!} muted={member.isLocal} mirror={member.isLocal} />
+        </div>
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/40 to-background">
-          <Avatar className={cn(solo ? "h-24 w-24" : "h-16 w-16", "ring-2 ring-background")}>
-            <AvatarImage src={member.avatar ?? undefined} />
-            <AvatarFallback className="bg-muted text-foreground font-bold text-xl">
-              {member.name[0]?.toUpperCase() ?? "?"}
-            </AvatarFallback>
-          </Avatar>
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            background: `linear-gradient(135deg, hsl(${hue} 70% 35%), hsl(${(hue + 60) % 360} 65% 22%))`,
+          }}
+        >
+          {member.avatar ? (
+            <img
+              src={member.avatar}
+              alt={member.name}
+              className="h-full w-full object-cover"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+          ) : (
+            <span className={cn(
+              "font-black text-white drop-shadow-lg",
+              hero ? "text-7xl sm:text-8xl" : "text-4xl sm:text-5xl",
+            )}>
+              {initial}
+            </span>
+          )}
+          {/* Camera-off chip */}
+          <span className="absolute bottom-12 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-black/55 text-white text-[10px] font-semibold">
+            <VideoOff className="h-3 w-3" /> Camera off
+          </span>
         </div>
       )}
 

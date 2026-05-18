@@ -609,20 +609,24 @@ export function SoundStageRoom({
                 </section>
               )}
 
-              {/* In the audience */}
-              <section className="space-y-3">
-                <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
-                  In the audience · {audience.length}
-                </h3>
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-x-2 gap-y-4">
-                  {audience.map((m) => (
-                    <StageTile key={m.sessionId} member={m} localLevel={m.isLocal ? localLevel : undefined} />
-                  ))}
-                  {audience.length === 0 && (
-                    <p className="col-span-full text-xs text-muted-foreground">Quiet so far.</p>
-                  )}
-                </div>
-              </section>
+              {/* In the audience — hidden for 1:1 calls */}
+              {format !== "open_1to1" && (
+                <section className="space-y-3">
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
+                    {format === "audience" ? "Listening in" : "In the audience"} · {audience.length}
+                  </h3>
+                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-x-2 gap-y-4">
+                    {audience.map((m) => (
+                      <StageTile key={m.sessionId} member={m} localLevel={m.isLocal ? localLevel : undefined} />
+                    ))}
+                    {audience.length === 0 && (
+                      <p className="col-span-full text-xs text-muted-foreground">
+                        {format === "audience" ? "No one tuned in yet." : "Quiet so far."}
+                      </p>
+                    )}
+                  </div>
+                </section>
+              )}
             </>
           )}
         </div>

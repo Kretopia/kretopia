@@ -460,7 +460,7 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
   }
   const highlights = parsed.highlights ?? [];
   if (highlights.length) {
-    lines.push("", "✨ Top moments:");
+    lines.push("", "Top moments:");
     highlights.forEach((h) => {
       const tc = formatTimecode(h.start_seconds);
       const who = h.speaker ? ` (${h.speaker})` : "";

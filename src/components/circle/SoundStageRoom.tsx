@@ -11,7 +11,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import DailyIframe, { type DailyCall, type DailyParticipant } from "@daily-co/daily-js";
-import { destroyExistingDailyFrame } from "@/lib/dailyFrame";
+import { destroyExistingDailyFrameAsync } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -141,15 +141,34 @@ export function SoundStageRoom({
 
     const init = async () => {
       setJoining(true);
-      destroyExistingDailyFrame();
+      // IMPORTANT: await Daily's destroy so the singleton slot is free
+      await destroyExistingDailyFrameAsync();
+      if (cancelled) return;
       try {
-        const call = (DailyIframe as any).createCallObject({
-          url: roomUrl,
-          token: token ?? undefined,
-          audioSource: true,
-          videoSource: false, // audio-first; speakers can toggle later
-          userName,
-        });
+        let call: DailyCall;
+        try {
+          call = (DailyIframe as any).createCallObject({
+            url: roomUrl,
+            token: token ?? undefined,
+            audioSource: true,
+            videoSource: false, // audio-first; speakers can toggle later
+            userName,
+          });
+        } catch (err: any) {
+          if (String(err?.message || "").includes("Duplicate")) {
+            // Force-destroy any lingering instance and retry once
+            await destroyExistingDailyFrameAsync();
+            call = (DailyIframe as any).createCallObject({
+              url: roomUrl,
+              token: token ?? undefined,
+              audioSource: true,
+              videoSource: false,
+              userName,
+            });
+          } else {
+            throw err;
+          }
+        }
         callRef.current = call;
 
         const onAny = () => { refreshMembers().catch(() => {}); };
@@ -194,7 +213,7 @@ export function SoundStageRoom({
 
         // Host starts with mic on, audience starts muted
         if (!isHost) {
-          await call.setLocalAudio(false).catch(() => {});
+          try { await call.setLocalAudio(false); } catch {}
           setMyAudio(false);
         }
         setJoining(false);

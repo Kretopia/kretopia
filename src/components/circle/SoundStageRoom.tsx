@@ -555,6 +555,40 @@ export function SoundStageRoom({
     }
   };
 
+  // Phase 3C — host toggles live captions on/off. Daily routes audio through
+  // its transcription provider; success fires "transcription-started" which
+  // flips captionsOn to true. Failures surface via "transcription-error".
+  const toggleCaptions = async () => {
+    const call = callRef.current;
+    if (!call || !isHost) return;
+    setCaptionsStarting(true);
+    try {
+      if (captionsOn) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (call as any).stopTranscription?.();
+        setCaptions([]);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (call as any).startTranscription?.({
+          language: "en",
+          model: "nova-2-general",
+          profanity_filter: false,
+          punctuate: true,
+        });
+      }
+    } catch (e: unknown) {
+      console.error("[SoundStageRoom] toggle captions failed", e);
+      toast({
+        title: "Captions unavailable",
+        description:
+          e instanceof Error ? e.message : "Try again or contact support.",
+        variant: "destructive",
+      });
+    } finally {
+      setCaptionsStarting(false);
+    }
+  };
+
   const toggleHand = async () => {
     const call = callRef.current;
     if (!call) return;

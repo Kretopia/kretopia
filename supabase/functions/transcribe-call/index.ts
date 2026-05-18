@@ -320,6 +320,8 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
   // Resolve linked event (if this came from a meeting tied to an event).
   let eventId: string | null = null;
   let eventTitle: string | null = null;
+  let stageTitle: string | null = null;
+  let stageId: string | null = null;
   if (t.call_kind === "meeting" || t.call_kind === "event") {
     const { data: mtg } = await admin
       .from("meetings")
@@ -328,7 +330,6 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
       .maybeSingle();
     if (mtg?.event_id) eventId = mtg.event_id;
     if (mtg?.circle_id && !t.circle_id) {
-      // Inherit circle from meeting if the transcript row didn't capture it.
       t.circle_id = mtg.circle_id;
     }
     if (mtg?.title) eventTitle = mtg.title;
@@ -340,20 +341,51 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
       .eq("id", eventId)
       .maybeSingle();
     eventTitle = ev?.title ?? null;
-    // Event with a host-toggled group chat → post the brief there too.
     if (ev?.group_chat_room_id && !t.circle_id) t.circle_id = ev.group_chat_room_id;
   }
+
+  // Stage recordings (Sound / Speed / Curated) → look up a friendly title.
+  if (t.call_kind === "sound_stage") {
+    const { data: s } = await admin.from("sound_stages").select("id, title").eq("id", t.call_id).maybeSingle();
+    stageTitle = s?.title ?? "Sound Stage";
+    stageId = s?.id ?? null;
+  } else if (t.call_kind === "speed_session") {
+    const { data: s } = await admin.from("speed_sessions").select("id, title, circle_id").eq("id", t.call_id).maybeSingle();
+    stageTitle = s?.title ?? "Speed Session";
+    stageId = s?.id ?? null;
+    if (s?.circle_id && !t.circle_id) t.circle_id = s.circle_id;
+  } else if (t.call_kind === "curated_stage") {
+    const { data: s } = await admin.from("curated_stages").select("id, title, type, recording_url").eq("id", t.call_id).maybeSingle();
+    stageTitle = s?.title ?? (s?.type === "scout" ? "Scout Stage" : "Showcase Stage");
+    stageId = s?.id ?? null;
+    // Persist the playback URL on the stage row so the recap UI can show it.
+    if (s?.id && t.recording_url) {
+      await admin.from("curated_stages").update({ recording_url: t.recording_url }).eq("id", s.id);
+    }
+  }
+
+  const headerTitle = stageTitle ?? eventTitle;
+  const headerEmoji = t.call_kind === "sound_stage" || t.call_kind === "curated_stage" || t.call_kind === "speed_session" ? "🎙️" : "📓";
 
   // ── 1. Build the brief message body ──
   const tasks = (parsed.action_items ?? []).filter((a) => a.kind === "task" || a.kind === "followup");
   const decisions = (parsed.action_items ?? []).filter((a) => a.kind === "decision");
   const notes = (parsed.action_items ?? []).filter((a) => a.kind === "note");
+  const chapters = parsed.chapters ?? [];
 
   const lines: string[] = [];
-  lines.push(eventTitle ? `📓 Call brief — ${eventTitle}` : "📓 Call brief");
+  lines.push(headerTitle ? `${headerEmoji} Recap — ${headerTitle}` : `${headerEmoji} Recap`);
   if (t.duration_seconds) lines.push(`Duration: ${Math.round(t.duration_seconds / 60)} min`);
   lines.push("");
   lines.push(parsed.summary);
+  if (chapters.length) {
+    lines.push("", "Chapters:");
+    chapters.forEach((c) => {
+      const tc = formatTimecode(c.start_seconds);
+      const who = c.speaker ? ` — ${c.speaker}` : "";
+      lines.push(`• ${tc} ${c.title}${who}`);
+    });
+  }
   if (decisions.length) {
     lines.push("", "Decisions:");
     decisions.forEach((d) => lines.push(`• ${d.title}`));
@@ -391,11 +423,16 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
   attendeeIds.add(t.created_by);
 
   // ── 4. Per-attendee notification (their own items if we can match by name) ──
-  const recapUrl = t.circle_id
-    ? `/circle/${t.circle_id}/chat`
-    : eventId
-      ? `/events/${eventId}`
-      : `/inbox`;
+  const recapUrl = t.call_kind === "curated_stage" && stageId
+    ? `/circle/stage/${stageId}`
+    : t.call_kind === "sound_stage" && stageId
+      ? `/circle?tab=live`
+      : t.circle_id
+        ? `/circle/${t.circle_id}/chat`
+        : eventId
+          ? `/events/${eventId}`
+          : `/inbox`;
+
 
   const notifRows: any[] = [];
   for (const uid of attendeeIds) {

@@ -11,7 +11,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import DailyIframe, { type DailyCall, type DailyParticipant } from "@daily-co/daily-js";
-import { destroyExistingDailyFrame } from "@/lib/dailyFrame";
+import { destroyExistingDailyFrame, destroyExistingDailyFrameAsync } from "@/lib/dailyFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";

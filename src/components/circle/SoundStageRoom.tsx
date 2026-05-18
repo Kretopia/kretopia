@@ -400,6 +400,19 @@ export function SoundStageRoom({
     // re-run whenever the member map changes (participant-updated fires refreshMembers)
   }, [members]);
 
+  // Map session_id → video MediaStreamTrack (local + remote) for video stages.
+  const videoTracksBySession = useMemo(() => {
+    const call = callRef.current;
+    const map: Record<string, MediaStreamTrack> = {};
+    if (!call || mode !== "video") return map;
+    const parts = call.participants();
+    Object.values(parts).forEach((p: any) => {
+      const track = p.tracks?.video?.persistentTrack || p.tracks?.video?.track;
+      if (track) map[p.session_id] = track;
+    });
+    return map;
+  }, [members, mode]);
+
   const stage = list.filter((m) => m.role === "host" || m.role === "speaker");
   const audience = list.filter((m) => m.role === "audience");
   const raisedHands = audience.filter((m) => m.handRaised);

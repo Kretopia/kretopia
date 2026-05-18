@@ -388,21 +388,20 @@ export function SoundStageRoom({
         });
         if (cancelled) return;
 
-        // Host starts with mic on, audience starts muted
+        // Host starts with mic on, audience starts muted. Daily already starts
+        // camera/mic from createCallObject()/join() options; after join(), the
+        // supported API is setLocalVideo()/setLocalAudio() — startCamera()
+        // throws once the meeting is joined.
         if (!isHost) {
-          call.setLocalAudio(false);
-          call.setLocalVideo(false);
+          await call.setLocalAudio(false);
+          await call.setLocalVideo(false);
           setMyAudio(false);
           setMyVideo(false);
         } else {
-          call.setLocalAudio(true);
+          await call.setLocalAudio(true);
           setMyAudio(true);
           if (mode === "video") {
             try {
-              await call.startCamera({
-                startVideoOff: false,
-                startAudioOff: false,
-              });
               await call.setLocalVideo(true);
               setMyVideo(true);
             } catch (videoError: unknown) {
@@ -461,12 +460,7 @@ export function SoundStageRoom({
     if (!call) return;
     const next = !myVideo;
     try {
-      if (next)
-        await call.startCamera({
-          startVideoOff: false,
-          startAudioOff: !myAudio,
-        });
-      call.setLocalVideo(next);
+      await call.setLocalVideo(next);
       setMyVideo(next);
     } catch (e: unknown) {
       console.error("[SoundStageRoom] toggle camera failed", e);

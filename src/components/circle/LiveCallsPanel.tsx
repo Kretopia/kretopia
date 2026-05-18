@@ -42,11 +42,12 @@ export function LiveCallsPanel() {
   );
 
   const handleStageCreated = (data: {
-    stage_id: string; room_url: string; room_name: string; token: string; title: string;
+    stage_id: string; room_url: string; room_name: string; token: string; title: string; mode: "audio" | "video";
   }) => {
     setActiveRoom({
       url: data.room_url, name: data.room_name, token: data.token,
       label: data.title, stageId: data.stage_id,
+      kind: "stage", mode: data.mode, isHost: true,
     });
     setCallOpen(true);
   };
@@ -64,6 +65,7 @@ export function LiveCallsPanel() {
       setActiveRoom({
         url: data.room_url, name: data.room_name, token: data.token,
         label: stage.title, stageId: stage.id,
+        kind: "stage", mode: stage.mode, isHost: stage.host_user_id === user.id,
       });
       setCallOpen(true);
     } catch (e: any) {
@@ -74,8 +76,8 @@ export function LiveCallsPanel() {
 
   const handleCallClose = async (next: boolean) => {
     setCallOpen(next);
-    if (!next && activeRoom?.stageId) {
-      // If host closes, mark stage ended (best-effort; server checks ownership)
+    if (!next && activeRoom?.stageId && activeRoom.isHost) {
+      // Host leaving → end the stage
       supabase.functions.invoke("end-sound-stage", {
         body: { stage_id: activeRoom.stageId },
       }).catch(() => {});
@@ -91,7 +93,10 @@ export function LiveCallsPanel() {
     }
     setJoining(true);
     const roomName = url.split("/").pop()?.split("?")[0] ?? "Call";
-    setActiveRoom({ url, name: roomName, token: null, label: "Joining call", stageId: null });
+    setActiveRoom({
+      url, name: roomName, token: null, label: "Joining call", stageId: null,
+      kind: "link", mode: "video", isHost: false,
+    });
     setCallOpen(true);
     setJoining(false);
   };

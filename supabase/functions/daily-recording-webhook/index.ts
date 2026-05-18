@@ -113,13 +113,45 @@ serve(async (req) => {
 });
 
 async function findCall(admin: any, roomName: string): Promise<{
-  kind: "project" | "direct" | "circle" | "meeting" | "event";
+  kind: "project" | "direct" | "circle" | "meeting" | "event" | "sound_stage" | "speed_session" | "curated_stage";
   id: string;
   host_id: string;
   project_id?: string;
   circle_id?: string;
   participants?: any[];
 } | null> {
+  // Stage rooms follow a `<prefix>-<id>` convention:
+  //   ss- → sound_stages (spontaneous Clubhouse-style)
+  //   sp- → speed_sessions (Hi-Right-Now style rotations)
+  //   cs- → curated_stages (scheduled Showcase / Scout)
+  // Match by room_name first, then fall back to room_url suffix.
+  const stageTables: Array<{ prefix: string; table: string; kind: "sound_stage" | "speed_session" | "curated_stage"; circleCol: boolean }> = [
+    { prefix: "ss-", table: "sound_stages", kind: "sound_stage", circleCol: false },
+    { prefix: "sp-", table: "speed_sessions", kind: "speed_session", circleCol: true },
+    { prefix: "cs-", table: "curated_stages", kind: "curated_stage", circleCol: false },
+  ];
+  for (const s of stageTables) {
+    if (!roomName.startsWith(s.prefix)) continue;
+    const cols = s.circleCol
+      ? "id, host_user_id, circle_id, room_name, room_url"
+      : "id, host_user_id, room_name, room_url";
+    const { data: row } = await admin
+      .from(s.table)
+      .select(cols)
+      .or(`room_name.eq.${roomName},room_url.ilike.%/${roomName}`)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (row) {
+      return {
+        kind: s.kind,
+        id: row.id,
+        host_id: row.host_user_id,
+        circle_id: s.circleCol ? row.circle_id ?? undefined : undefined,
+      };
+    }
+  }
+
   // Multi-party meetings (the new /meet/:id flow). Match by exact room_name.
   const { data: mtg } = await admin
     .from("meetings")

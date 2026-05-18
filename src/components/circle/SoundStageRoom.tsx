@@ -757,12 +757,12 @@ function StageTile({
               <VideoTrackView track={videoTrack!} muted={member.isLocal} mirror={member.isLocal} />
             </div>
           ) : (
-            <Avatar className={cn(size, "ring-2 ring-background")}>
-              <AvatarImage src={member.avatar ?? undefined} />
-              <AvatarFallback className="bg-muted text-foreground font-bold">
-                {member.name[0]?.toUpperCase() ?? "?"}
-              </AvatarFallback>
-            </Avatar>
+            <ColorfulAvatar
+              className={cn(size, "ring-2 ring-background")}
+              name={member.name}
+              avatar={member.avatar}
+              seed={member.userId || member.sessionId}
+            />
           )}
         </div>
         {/* Role / status badges */}

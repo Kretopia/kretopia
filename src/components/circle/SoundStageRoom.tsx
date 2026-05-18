@@ -868,7 +868,7 @@ function MicCheckScreen({
           className="rounded-full h-12 text-sm font-bold"
           onClick={onJoin}
         >
-          <Mic className="h-4 w-4 mr-2" />
+          {mode === "video" ? <Video className="h-4 w-4 mr-2" /> : <Mic className="h-4 w-4 mr-2" />}
           {isHost ? "Go live on stage" : "Join the room"}
         </Button>
         <Button variant="ghost" className="rounded-full h-10 text-xs" onClick={onCancel}>

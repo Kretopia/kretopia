@@ -66,7 +66,7 @@ export function LiveCallsPanel() {
       setActiveRoom({
         url: data.room_url, name: data.room_name, token: data.token,
         label: stage.title, stageId: stage.id,
-        kind: "stage", mode: stage.mode, isHost: stage.host_user_id === user.id,
+        kind: "stage", mode: stage.mode, isHost: stage.host_user_id === user.id, hostUserId: stage.host_user_id,
       });
       setCallOpen(true);
     } catch (e: any) {

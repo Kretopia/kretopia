@@ -475,15 +475,65 @@ export function SoundStageRoom({
             </div>
           ) : (
             <>
-              {/* On stage */}
+              {/* On stage — layout adapts to (mode × format) */}
               <section className="space-y-3">
                 <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
-                  On stage · {stage.length}
+                  {format === "audience" ? "On stage" : format === "open_1to1" ? "In the call" : "On stage"} · {stage.length}
                 </h3>
-                {mode === "video" ? (
-                  stage.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No one on stage yet.</p>
+
+                {stage.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No one on stage yet.</p>
+                ) : mode === "video" ? (
+                  // ===== VIDEO LAYOUTS =====
+                  format === "audience" ? (
+                    // Performance: ONE giant hero performer + tiny strip of co-hosts (if any)
+                    <div className="space-y-2">
+                      <VideoStageTile
+                        member={stage[0]}
+                        isHostView={isHost}
+                        onDemote={demote}
+                        onMute={muteParticipant}
+                        onRemove={removeParticipant}
+                        localLevel={stage[0].isLocal ? localLevel : undefined}
+                        videoTrack={videoTracksBySession[stage[0].sessionId]}
+                        hero
+                      />
+                      {stage.length > 1 && (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                          {stage.slice(1).map((m) => (
+                            <VideoStageTile
+                              key={m.sessionId}
+                              member={m}
+                              isHostView={isHost}
+                              onDemote={demote}
+                              onMute={muteParticipant}
+                              onRemove={removeParticipant}
+                              localLevel={m.isLocal ? localLevel : undefined}
+                              videoTrack={videoTracksBySession[m.sessionId]}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : format === "open_1to1" ? (
+                    // 1:1 face-to-face — stack vertical on mobile, split desktop
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {stage.map((m) => (
+                        <VideoStageTile
+                          key={m.sessionId}
+                          member={m}
+                          isHostView={isHost}
+                          onDemote={demote}
+                          onMute={muteParticipant}
+                          onRemove={removeParticipant}
+                          localLevel={m.isLocal ? localLevel : undefined}
+                          videoTrack={videoTracksBySession[m.sessionId]}
+                          tall
+                        />
+                      ))}
+                    </div>
                   ) : (
+                    // Group video — balanced grid, hero only when solo
                     <div
                       className={cn(
                         "grid gap-2",
@@ -504,18 +554,25 @@ export function SoundStageRoom({
                           onRemove={removeParticipant}
                           localLevel={m.isLocal ? localLevel : undefined}
                           videoTrack={videoTracksBySession[m.sessionId]}
-                          solo={stage.length === 1}
+                          hero={stage.length === 1}
                         />
                       ))}
                     </div>
                   )
                 ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-2 gap-y-5">
+                  // ===== AUDIO LAYOUTS =====
+                  <div
+                    className={cn(
+                      "grid gap-x-2 gap-y-5",
+                      format === "open_1to1" ? "grid-cols-2 max-w-xs mx-auto" : "grid-cols-3 sm:grid-cols-4",
+                    )}
+                  >
                     {stage.map((m) => (
                       <StageTile
                         key={m.sessionId}
                         member={m}
                         large
+                        xlarge={format === "open_1to1"}
                         isHostView={isHost}
                         onDemote={demote}
                         onMute={muteParticipant}
@@ -525,9 +582,6 @@ export function SoundStageRoom({
                         videoTrack={videoTracksBySession[m.sessionId]}
                       />
                     ))}
-                    {stage.length === 0 && (
-                      <p className="col-span-full text-xs text-muted-foreground">No one on stage yet.</p>
-                    )}
                   </div>
                 )}
               </section>

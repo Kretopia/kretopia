@@ -467,7 +467,7 @@ const EventPage = () => {
                       : { data: [] };
                     const pMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
                     const rows = [["Name", "Role", "Email", "Status", "Joined At"]];
-                    if (creator) rows.push([creator.full_name || "Host", creator.role || "", "Host", ""]);
+                    if (creator) rows.push([creator.full_name || "Host", creator.role || "", "", "Host", ""]);
                     (parts || []).forEach((p: any) => {
                       const prof = pMap.get(p.user_id) as any;
                       rows.push([prof?.full_name || p.guest_name || "Guest", prof?.role || (p.user_id ? "" : "Guest RSVP"), p.guest_email || "", p.status, p.joined_at ? new Date(p.joined_at).toLocaleDateString() : ""]);

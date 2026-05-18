@@ -58,12 +58,15 @@ export function SoundStageRoom({
   const { user } = useAuth();
   const { toast } = useToast();
   const callRef = useRef<DailyCall | null>(null);
-  const [joining, setJoining] = useState(true);
+  const [joining, setJoining] = useState(false);
+  const [phase, setPhase] = useState<"miccheck" | "joining" | "in">("miccheck");
   const [members, setMembers] = useState<Record<string, Member>>({});
   const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null);
   const [handRaised, setHandRaised] = useState(false);
   const [myAudio, setMyAudio] = useState(true);
   const [myVideo, setMyVideo] = useState(false);
+  const [localLevel, setLocalLevel] = useState(0); // 0..1 live mic VU
+  const localLevelRef = useRef(0);
   const profileCache = useRef<Map<string, { name: string; avatar: string | null }>>(new Map());
 
   // Track who the host has promoted to speaker (host-local, broadcast via app-message)

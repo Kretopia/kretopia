@@ -48,7 +48,7 @@ serve(async (req) => {
 
     const { data: stage } = await admin
       .from("sound_stages")
-      .select("id, room_name, room_url, is_live, format, participant_count, mode")
+      .select("id, host_user_id, room_name, room_url, is_live, format, participant_count, mode")
       .eq("id", stage_id)
       .maybeSingle();
     if (!stage || !stage.is_live) {
@@ -58,6 +58,7 @@ serve(async (req) => {
     }
 
     const exp = Math.floor(Date.now() / 1000) + 2 * 60 * 60;
+    const isHost = stage.host_user_id === userId;
     const tokenRes = await fetch(`${DAILY_API}/meeting-tokens`, {
       method: "POST",
       headers: { Authorization: `Bearer ${DAILY_API_KEY}`, "Content-Type": "application/json" },
@@ -67,7 +68,9 @@ serve(async (req) => {
           user_name: user_name || "Guest",
           user_id: userId,
           exp,
-          start_video_off: stage.mode === "audio",
+          start_video_off: stage.mode === "audio" || !isHost,
+          start_audio_off: !isHost,
+          is_owner: isHost,
         },
       }),
     });

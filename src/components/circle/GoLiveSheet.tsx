@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mic, Video, Users, User, Theater, Loader2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -49,9 +50,9 @@ export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {
       onCreated({ ...data, title: title.trim(), mode, format });
       onOpenChange(false);
       setTitle(""); setVibe(null);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("[GoLiveSheet]", e);
-      toast({ title: "Couldn't open the stage", description: e?.message, variant: "destructive" });
+      toast({ title: "Couldn't open the stage", description: e instanceof Error ? e.message : undefined, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -122,7 +123,7 @@ export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {
 }
 
 function ModeBtn({ icon: Icon, label, sub, active, onClick }: {
-  icon: any; label: string; sub?: string; active: boolean; onClick: () => void;
+  icon: LucideIcon; label: string; sub?: string; active: boolean; onClick: () => void;
 }) {
   return (
     <button onClick={onClick} className={cn(

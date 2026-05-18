@@ -72,9 +72,9 @@ export function LiveCallsPanel() {
         format: stage.format,
       });
       setCallOpen(true);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("[LiveCallsPanel] join", e);
-      toast({ title: "Couldn't walk on stage", description: e?.message, variant: "destructive" });
+      toast({ title: "Couldn't walk on stage", description: e instanceof Error ? e.message : undefined, variant: "destructive" });
     }
   };
 

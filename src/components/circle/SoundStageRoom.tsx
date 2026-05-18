@@ -713,10 +713,11 @@ function RemoteAudio({ track }: { track: MediaStreamTrack }) {
 }
 
 function StageTile({
-  member, large, isHostView, onDemote, onMute, onRemove, localLevel, mode, videoTrack,
+  member, large, xlarge, isHostView, onDemote, onMute, onRemove, localLevel, mode, videoTrack,
 }: {
   member: Member;
   large?: boolean;
+  xlarge?: boolean;
   isHostView?: boolean;
   onDemote?: (m: Member) => void;
   onMute?: (m: Member) => void;
@@ -725,7 +726,11 @@ function StageTile({
   mode?: "audio" | "video";
   videoTrack?: MediaStreamTrack;
 }) {
-  const size = large ? "h-16 w-16 sm:h-20 sm:w-20" : "h-12 w-12 sm:h-14 sm:w-14";
+  const size = xlarge
+    ? "h-24 w-24 sm:h-28 sm:w-28"
+    : large
+      ? "h-16 w-16 sm:h-20 sm:w-20"
+      : "h-12 w-12 sm:h-14 sm:w-14";
   const showHostMenu = isHostView && !member.isLocal;
   const liveSpeaking =
     member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;

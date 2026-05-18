@@ -458,6 +458,16 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
     lines.push("", "Notes:");
     notes.forEach((n) => lines.push(`• ${n.title}`));
   }
+  const highlights = parsed.highlights ?? [];
+  if (highlights.length) {
+    lines.push("", "✨ Top moments:");
+    highlights.forEach((h) => {
+      const tc = formatTimecode(h.start_seconds);
+      const who = h.speaker ? ` (${h.speaker})` : "";
+      lines.push(`• ${tc}${who} — "${h.quote}"`);
+      if (h.why) lines.push(`  ↳ ${h.why}`);
+    });
+  }
   const body = lines.join("\n");
 
   // ── 2. Post into the Circle chat (spark_room_messages) if we have one ──

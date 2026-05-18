@@ -110,6 +110,22 @@ serve(async (req) => {
                   language: { type: "string", description: "ISO 639-1 language code, e.g. 'en'" },
                   transcript: { type: "string", description: "Full verbatim transcript with speaker labels." },
                   summary: { type: "string", description: "2-4 sentence executive summary of the call." },
+                  chapters: {
+                    type: "array",
+                    description: "Time-stamped chapter markers covering the entire recording end-to-end. Aim for 3-10 chapters depending on length; each chapter should mark a meaningful topic, performer, or applicant turn.",
+                    items: {
+                      type: "object",
+                      properties: {
+                        start_seconds: { type: "number", description: "Chapter start time in seconds from the beginning of the recording." },
+                        end_seconds: { type: "number", description: "Chapter end time in seconds." },
+                        title: { type: "string", description: "Short, scannable chapter title (max ~60 chars)." },
+                        summary: { type: "string", description: "One-sentence summary of what happens in this chapter." },
+                        speaker: { type: "string", description: "Primary speaker or performer name, if identifiable." },
+                      },
+                      required: ["start_seconds", "title"],
+                      additionalProperties: false,
+                    },
+                  },
                   action_items: {
                     type: "array",
                     items: {
@@ -130,9 +146,10 @@ serve(async (req) => {
                     },
                   },
                 },
-                required: ["transcript", "summary", "action_items"],
+                required: ["transcript", "summary", "chapters", "action_items"],
                 additionalProperties: false,
               },
+
             },
           },
         ],

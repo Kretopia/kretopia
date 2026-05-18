@@ -71,15 +71,16 @@ serve(async (req) => {
         }));
 
         if (notifs.length) {
-          await admin.from("notifications").insert(notifs).catch(() => {});
+          try { await admin.from("notifications").insert(notifs); } catch (_e) { /* best-effort */ }
           totalSent += notifs.length;
         }
 
-        await admin
-          .from("curated_stage_reminders_sent")
-          .insert({ stage_id: stage.id, kind: w.kind })
-          .catch(() => {});
+        try {
+          await admin.from("curated_stage_reminders_sent")
+            .insert({ stage_id: stage.id, kind: w.kind });
+        } catch (_e) { /* best-effort */ }
       }
+
     }
 
     // No-show auto-cancel: scheduled stages that started 15min+ ago and never went live
@@ -110,7 +111,7 @@ serve(async (req) => {
           : "The host didn't show up. Any paid tickets will be refunded.",
         action_url: `/circle/stage/${s.id}`,
       }));
-      if (notifs.length) await admin.from("notifications").insert(notifs).catch(() => {});
+      if (notifs.length) { try { await admin.from("notifications").insert(notifs); } catch (_e) { /* best-effort */ } }
 
       // Mark paid orders as refunded (refund processing happens out-of-band)
       await admin.from("curated_stage_orders")

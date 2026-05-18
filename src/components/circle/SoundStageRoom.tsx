@@ -419,6 +419,43 @@ export function SoundStageRoom({
           },
         );
 
+        // ─── Phase 3C: live captions via Daily transcription ───
+        // Fires for both interim and final transcript chunks.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        call.on("transcription-message" as any, (ev: any) => {
+          if (!ev?.text || typeof ev.text !== "string") return;
+          // Daily sends interim updates while a speaker talks; only keep finals.
+          if (ev.is_final === false) return;
+          const speaker =
+            ev.user_name ||
+            (ev.session_id &&
+              callRef.current?.participants()?.[ev.session_id]?.user_name) ||
+            "Speaker";
+          const line = {
+            id: `${ev.session_id ?? "x"}-${Date.now()}-${Math.random()}`,
+            speaker,
+            text: String(ev.text).trim(),
+            ts: Date.now(),
+          };
+          setCaptions((prev) => [...prev.slice(-5), line]);
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        call.on("transcription-started" as any, () => setCaptionsOn(true));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        call.on("transcription-stopped" as any, () => setCaptionsOn(false));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        call.on("transcription-error" as any, (ev: any) => {
+          console.warn("[SoundStageRoom] transcription error", ev);
+          setCaptionsOn(false);
+          setCaptionsStarting(false);
+          toast({
+            title: "Captions unavailable",
+            description:
+              "Live captions aren't enabled for this room. The recap will still be transcribed after the stage ends.",
+            variant: "destructive",
+          });
+        });
+
         await call.join({
           url: roomUrl,
           token: token ?? undefined,

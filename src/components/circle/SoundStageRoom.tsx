@@ -479,25 +479,56 @@ export function SoundStageRoom({
                 <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
                   On stage · {stage.length}
                 </h3>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-2 gap-y-5">
-                  {stage.map((m) => (
-                    <StageTile
-                      key={m.sessionId}
-                      member={m}
-                      large
-                      isHostView={isHost}
-                      onDemote={demote}
-                      onMute={muteParticipant}
-                      onRemove={removeParticipant}
-                      localLevel={m.isLocal ? localLevel : undefined}
-                      mode={mode}
-                      videoTrack={videoTracksBySession[m.sessionId]}
-                    />
-                  ))}
-                  {stage.length === 0 && (
-                    <p className="col-span-full text-xs text-muted-foreground">No one on stage yet.</p>
-                  )}
-                </div>
+                {mode === "video" ? (
+                  stage.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No one on stage yet.</p>
+                  ) : (
+                    <div
+                      className={cn(
+                        "grid gap-2",
+                        stage.length === 1 && "grid-cols-1",
+                        stage.length === 2 && "grid-cols-1 sm:grid-cols-2",
+                        stage.length === 3 && "grid-cols-2 sm:grid-cols-3",
+                        stage.length === 4 && "grid-cols-2",
+                        stage.length >= 5 && "grid-cols-2 sm:grid-cols-3",
+                      )}
+                    >
+                      {stage.map((m) => (
+                        <VideoStageTile
+                          key={m.sessionId}
+                          member={m}
+                          isHostView={isHost}
+                          onDemote={demote}
+                          onMute={muteParticipant}
+                          onRemove={removeParticipant}
+                          localLevel={m.isLocal ? localLevel : undefined}
+                          videoTrack={videoTracksBySession[m.sessionId]}
+                          solo={stage.length === 1}
+                        />
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-2 gap-y-5">
+                    {stage.map((m) => (
+                      <StageTile
+                        key={m.sessionId}
+                        member={m}
+                        large
+                        isHostView={isHost}
+                        onDemote={demote}
+                        onMute={muteParticipant}
+                        onRemove={removeParticipant}
+                        localLevel={m.isLocal ? localLevel : undefined}
+                        mode={mode}
+                        videoTrack={videoTracksBySession[m.sessionId]}
+                      />
+                    ))}
+                    {stage.length === 0 && (
+                      <p className="col-span-full text-xs text-muted-foreground">No one on stage yet.</p>
+                    )}
+                  </div>
+                )}
               </section>
 
               {/* Raised hands — host control */}
@@ -724,6 +755,98 @@ function StageTile({
       {member.role === "host" && large && (
         <span className="text-[9px] text-amber-600 font-bold uppercase tracking-wide">Host</span>
       )}
+    </div>
+  );
+}
+
+function VideoStageTile({
+  member, isHostView, onDemote, onMute, onRemove, localLevel, videoTrack, solo,
+}: {
+  member: Member;
+  isHostView?: boolean;
+  onDemote?: (m: Member) => void;
+  onMute?: (m: Member) => void;
+  onRemove?: (m: Member) => void;
+  localLevel?: number;
+  videoTrack?: MediaStreamTrack;
+  solo?: boolean;
+}) {
+  const showHostMenu = isHostView && !member.isLocal;
+  const liveSpeaking = member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
+  const speaking = member.isSpeaking || liveSpeaking;
+  const showVideo = member.videoOn && !!videoTrack;
+  return (
+    <div
+      className={cn(
+        "relative rounded-2xl overflow-hidden bg-black border-2 transition-all",
+        solo ? "aspect-video" : "aspect-[4/5] sm:aspect-square",
+        speaking
+          ? "border-[hsl(var(--signal-teal))] shadow-[0_0_0_4px_hsl(var(--signal-teal)/0.25)]"
+          : "border-border/40",
+      )}
+    >
+      {showVideo ? (
+        <VideoTrackView track={videoTrack!} muted={member.isLocal} mirror={member.isLocal} />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/40 to-background">
+          <Avatar className={cn(solo ? "h-24 w-24" : "h-16 w-16", "ring-2 ring-background")}>
+            <AvatarImage src={member.avatar ?? undefined} />
+            <AvatarFallback className="bg-muted text-foreground font-bold text-xl">
+              {member.name[0]?.toUpperCase() ?? "?"}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      )}
+
+      {/* Top-left: host crown */}
+      {member.role === "host" && (
+        <span className="absolute top-2 left-2 h-6 px-1.5 rounded-full bg-amber-500 text-white flex items-center gap-1 text-[10px] font-black uppercase">
+          <Crown className="h-3 w-3" /> Host
+        </span>
+      )}
+
+      {/* Top-right: host menu */}
+      {showHostMenu && (
+        <div className="absolute top-2 right-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="h-7 w-7 rounded-full bg-black/50 backdrop-blur-sm text-white flex items-center justify-center">
+                <MoreVertical className="h-3.5 w-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onClick={() => onMute?.(member)}>
+                <MicOff className="h-3.5 w-3.5 mr-2" /> Mute
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onDemote?.(member)}>
+                <Hand className="h-3.5 w-3.5 mr-2" /> Move to audience
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => onRemove?.(member)}
+              >
+                <X className="h-3.5 w-3.5 mr-2" /> Remove
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+
+      {/* Bottom bar: name + mute */}
+      <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/80 to-transparent flex items-center gap-2">
+        <p className="flex-1 text-xs font-bold text-white truncate drop-shadow">
+          {member.isLocal ? "You" : member.name.split(" ")[0]}
+        </p>
+        {!member.audioOn ? (
+          <span className="h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center">
+            <MicOff className="h-3 w-3" />
+          </span>
+        ) : speaking ? (
+          <span className="h-6 w-6 rounded-full bg-[hsl(var(--signal-teal))] text-black flex items-center justify-center animate-pulse">
+            <Mic className="h-3 w-3" />
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -781,31 +781,52 @@ function MicCheckScreen({
   return (
     <div className="flex flex-col items-center justify-center py-6 gap-6 text-center">
       <div className="space-y-1">
-        <h2 className="text-lg font-black">Mic check</h2>
+        <h2 className="text-lg font-black">{mode === "video" ? "Camera + mic check" : "Mic check"}</h2>
         <p className="text-xs text-muted-foreground max-w-xs">
-          Say something — you should see the bars light up. This is just for you;
-          you're not live until you tap below.
+          {mode === "video"
+            ? "Check yourself out — see your video and watch the bars light up. You're not live until you tap below."
+            : "Say something — you should see the bars light up. This is just for you; you're not live until you tap below."}
         </p>
       </div>
 
-      <div className="relative">
+      {mode === "video" ? (
         <div
-          className="rounded-full p-1 transition-all"
+          className="relative rounded-2xl overflow-hidden bg-black border-2 transition-colors w-full max-w-xs aspect-video"
           style={{
-            background: detected ? "hsl(var(--signal-teal))" : "transparent",
+            borderColor: detected ? "hsl(var(--signal-teal))" : "hsl(var(--border))",
             boxShadow: detected
-              ? `0 0 0 ${6 + Math.round(level * 18)}px hsl(var(--signal-teal) / 0.22)`
+              ? `0 0 0 ${4 + Math.round(level * 12)}px hsl(var(--signal-teal) / 0.22)`
               : undefined,
           }}
         >
-          <Avatar className="h-24 w-24 ring-2 ring-background">
-            <AvatarImage src={userAvatar ?? undefined} />
-            <AvatarFallback className="text-2xl font-black">
-              {userName[0]?.toUpperCase() ?? "?"}
-            </AvatarFallback>
-          </Avatar>
+          {camStream ? (
+            <CamPreview stream={camStream} mirror />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-xs text-white/70">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" /> Warming up camera…
+            </div>
+          )}
         </div>
-      </div>
+      ) : (
+        <div className="relative">
+          <div
+            className="rounded-full p-1 transition-all"
+            style={{
+              background: detected ? "hsl(var(--signal-teal))" : "transparent",
+              boxShadow: detected
+                ? `0 0 0 ${6 + Math.round(level * 18)}px hsl(var(--signal-teal) / 0.22)`
+                : undefined,
+            }}
+          >
+            <Avatar className="h-24 w-24 ring-2 ring-background">
+              <AvatarImage src={userAvatar ?? undefined} />
+              <AvatarFallback className="text-2xl font-black">
+                {userName[0]?.toUpperCase() ?? "?"}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </div>
+      )}
 
       {/* VU bars */}
       <div className="flex items-end gap-1 h-10">

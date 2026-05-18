@@ -13,6 +13,7 @@ import { GoLiveSheet } from "./GoLiveSheet";
 import { CallSheetUpcoming } from "./CallSheetUpcoming";
 import { CuratedStagesRail } from "./CuratedStagesRail";
 import { CreateStageSheet } from "./CreateStageSheet";
+import { SoundStageRoom } from "./SoundStageRoom";
 
 /**
  * Sound Stages — the live tab on /circle.

@@ -820,7 +820,7 @@ function StageTile({
 }
 
 function VideoStageTile({
-  member, isHostView, onDemote, onMute, onRemove, localLevel, videoTrack, solo,
+  member, isHostView, onDemote, onMute, onRemove, localLevel, videoTrack, hero, tall,
 }: {
   member: Member;
   isHostView?: boolean;
@@ -829,32 +829,59 @@ function VideoStageTile({
   onRemove?: (m: Member) => void;
   localLevel?: number;
   videoTrack?: MediaStreamTrack;
-  solo?: boolean;
+  hero?: boolean;
+  tall?: boolean;
 }) {
   const showHostMenu = isHostView && !member.isLocal;
   const liveSpeaking = member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
   const speaking = member.isSpeaking || liveSpeaking;
   const showVideo = member.videoOn && !!videoTrack;
+  // Deterministic colorful background per user so cam-off tiles never look "broken/black"
+  const hue = useMemo(() => {
+    const seed = (member.userId || member.name || member.sessionId).split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+    return seed % 360;
+  }, [member.userId, member.name, member.sessionId]);
+  const initial = (member.name?.trim()?.[0] || "?").toUpperCase();
   return (
     <div
       className={cn(
-        "relative rounded-2xl overflow-hidden bg-black border-2 transition-all",
-        solo ? "aspect-video" : "aspect-[4/5] sm:aspect-square",
+        "relative rounded-2xl overflow-hidden border-2 transition-all bg-muted",
+        hero ? "aspect-video sm:aspect-[16/10]" : tall ? "aspect-[3/4] sm:aspect-square" : "aspect-square",
         speaking
           ? "border-[hsl(var(--signal-teal))] shadow-[0_0_0_4px_hsl(var(--signal-teal)/0.25)]"
           : "border-border/40",
       )}
     >
       {showVideo ? (
-        <VideoTrackView track={videoTrack!} muted={member.isLocal} mirror={member.isLocal} />
+        <div className="absolute inset-0 bg-black">
+          <VideoTrackView track={videoTrack!} muted={member.isLocal} mirror={member.isLocal} />
+        </div>
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/40 to-background">
-          <Avatar className={cn(solo ? "h-24 w-24" : "h-16 w-16", "ring-2 ring-background")}>
-            <AvatarImage src={member.avatar ?? undefined} />
-            <AvatarFallback className="bg-muted text-foreground font-bold text-xl">
-              {member.name[0]?.toUpperCase() ?? "?"}
-            </AvatarFallback>
-          </Avatar>
+        <div
+          className="absolute inset-0 flex items-center justify-center"
+          style={{
+            background: `linear-gradient(135deg, hsl(${hue} 70% 35%), hsl(${(hue + 60) % 360} 65% 22%))`,
+          }}
+        >
+          {member.avatar ? (
+            <img
+              src={member.avatar}
+              alt={member.name}
+              className="h-full w-full object-cover"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+          ) : (
+            <span className={cn(
+              "font-black text-white drop-shadow-lg",
+              hero ? "text-7xl sm:text-8xl" : "text-4xl sm:text-5xl",
+            )}>
+              {initial}
+            </span>
+          )}
+          {/* Camera-off chip */}
+          <span className="absolute bottom-12 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-black/55 text-white text-[10px] font-semibold">
+            <VideoOff className="h-3 w-3" /> Camera off
+          </span>
         </div>
       )}
 

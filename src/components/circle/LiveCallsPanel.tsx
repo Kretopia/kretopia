@@ -69,6 +69,7 @@ export function LiveCallsPanel() {
         url: data.room_url, name: data.room_name, token: data.token,
         label: stage.title, stageId: stage.id,
         kind: "stage", mode: stage.mode, isHost: stage.host_user_id === user.id, hostUserId: stage.host_user_id,
+        format: stage.format,
       });
       setCallOpen(true);
     } catch (e: any) {

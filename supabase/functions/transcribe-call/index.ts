@@ -146,6 +146,36 @@ serve(async (req) => {
                       additionalProperties: false,
                     },
                   },
+                  highlights: {
+                    type: "array",
+                    description: "2-5 clippable standout moments — a memorable quote, a punchline, a peak performance segment, a key insight. These become shareable cards in the recap.",
+                    items: {
+                      type: "object",
+                      properties: {
+                        start_seconds: { type: "number", description: "Start of the moment in seconds." },
+                        end_seconds: { type: "number", description: "End of the moment in seconds (typically 10-45s after start)." },
+                        quote: { type: "string", description: "The exact line or short paraphrase that makes this moment pop. Max ~200 chars." },
+                        why: { type: "string", description: "One sentence on why this stood out — emotion, insight, performance quality." },
+                        speaker: { type: "string", description: "Who said/performed it, if identifiable." },
+                      },
+                      required: ["start_seconds", "quote"],
+                      additionalProperties: false,
+                    },
+                  },
+                  co_sign_suggestions: {
+                    type: "array",
+                    description: "For Showcase/Scout stages and Speed Sessions: performers or applicants who clearly stood out and deserve a Co-sign. Empty for regular meetings.",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string", description: "Performer/applicant name as heard on the call." },
+                        reason: { type: "string", description: "One-line reason this person deserves a co-sign (e.g. 'Delivered a flawless 3-minute jazz set with original arrangement')." },
+                        confidence: { type: "string", enum: ["high", "medium", "low"] },
+                      },
+                      required: ["name", "reason"],
+                      additionalProperties: false,
+                    },
+                  },
                 },
                 required: ["transcript", "summary", "chapters", "action_items"],
                 additionalProperties: false,
@@ -186,9 +216,21 @@ serve(async (req) => {
         assignee_name?: string;
         due_hint?: string;
       }>;
+      highlights?: Array<{
+        start_seconds: number;
+        end_seconds?: number;
+        quote: string;
+        why?: string;
+        speaker?: string;
+      }>;
+      co_sign_suggestions?: Array<{
+        name: string;
+        reason: string;
+        confidence?: "high" | "medium" | "low";
+      }>;
     };
 
-    // 4. Save transcript + summary + chapters.
+    // 4. Save transcript + summary + chapters + highlights + co-sign hints.
     await admin
       .from("call_transcripts")
       .update({
@@ -196,6 +238,8 @@ serve(async (req) => {
         summary: parsed.summary,
         language: parsed.language ?? null,
         chapters: parsed.chapters ?? [],
+        highlights: parsed.highlights ?? [],
+        co_sign_suggestions: parsed.co_sign_suggestions ?? [],
         status: "ready",
       })
       .eq("id", transcript_id);
@@ -298,6 +342,18 @@ type ParsedBrief = {
     detail?: string;
     assignee_name?: string;
     due_hint?: string;
+  }>;
+  highlights?: Array<{
+    start_seconds: number;
+    end_seconds?: number;
+    quote: string;
+    why?: string;
+    speaker?: string;
+  }>;
+  co_sign_suggestions?: Array<{
+    name: string;
+    reason: string;
+    confidence?: "high" | "medium" | "low";
   }>;
 };
 
@@ -402,6 +458,16 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
     lines.push("", "Notes:");
     notes.forEach((n) => lines.push(`• ${n.title}`));
   }
+  const highlights = parsed.highlights ?? [];
+  if (highlights.length) {
+    lines.push("", "Top moments:");
+    highlights.forEach((h) => {
+      const tc = formatTimecode(h.start_seconds);
+      const who = h.speaker ? ` (${h.speaker})` : "";
+      lines.push(`• ${tc}${who} — "${h.quote}"`);
+      if (h.why) lines.push(`  ↳ ${h.why}`);
+    });
+  }
   const body = lines.join("\n");
 
   // ── 2. Post into the Circle chat (spark_room_messages) if we have one ──
@@ -490,6 +556,44 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
       action_text: "Create Studio",
       category: "agent",
       priority: "high",
+    });
+  }
+
+  // ── 6. Co-sign nudges to host (curated/speed stages only) ──
+  const coSigns = (parsed.co_sign_suggestions ?? []).filter((c) => c.name && c.reason);
+  if (coSigns.length && (t.call_kind === "curated_stage" || t.call_kind === "speed_session")) {
+    const coSignRows = coSigns.slice(0, 5).map((c) => {
+      const params = new URLSearchParams({
+        from_transcript: transcriptId,
+        name: c.name,
+        reason: c.reason,
+      });
+      return {
+        user_id: t.created_by,
+        type: "co_sign_suggested",
+        title: `🤝 Co-sign ${c.name}?`,
+        message: c.reason,
+        action_url: `/credits?action=co_sign&${params.toString()}`,
+        action_text: "Issue co-sign",
+        category: "agent",
+        priority: c.confidence === "high" ? "high" : "normal",
+      };
+    });
+    const { error } = await admin.from("notifications").insert(coSignRows);
+    if (error) console.warn("[distribute] co-sign nudges failed", error);
+  }
+
+  // ── 7. Save-clip nudge for sound stages with strong highlights ──
+  if (t.call_kind === "sound_stage" && stageId && (parsed.highlights ?? []).length >= 2) {
+    await admin.from("notifications").insert({
+      user_id: t.created_by,
+      type: "clip_suggestion",
+      title: "🎬 Save the best moments?",
+      message: `Thrive pulled ${parsed.highlights!.length} clippable moments from "${stageTitle}". Share as a Showcase clip?`,
+      action_url: `/circle?tab=live&stage=${stageId}&clips=1`,
+      action_text: "Review clips",
+      category: "agent",
+      priority: "normal",
     });
   }
 }

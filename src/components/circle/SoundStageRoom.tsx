@@ -15,6 +15,8 @@ import {
   VideoOff,
   Crown,
   MoreVertical,
+  Captions,
+  CaptionsOff,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -116,6 +118,12 @@ export function SoundStageRoom({
   const [localCamStream, setLocalCamStream] = useState<MediaStream | null>(
     null,
   );
+  // Live captions (Phase 3C). Rolling window of recent finalized lines.
+  const [captionsOn, setCaptionsOn] = useState(false);
+  const [captionsStarting, setCaptionsStarting] = useState(false);
+  const [captions, setCaptions] = useState<
+    Array<{ id: string; speaker: string; text: string; ts: number }>
+  >([]);
   const localLevelRef = useRef(0);
   const profileCache = useRef<
     Map<string, { name: string; avatar: string | null }>
@@ -411,6 +419,43 @@ export function SoundStageRoom({
           },
         );
 
+        // ─── Phase 3C: live captions via Daily transcription ───
+        // Fires for both interim and final transcript chunks.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        call.on("transcription-message" as any, (ev: any) => {
+          if (!ev?.text || typeof ev.text !== "string") return;
+          // Daily sends interim updates while a speaker talks; only keep finals.
+          if (ev.is_final === false) return;
+          const speaker =
+            ev.user_name ||
+            (ev.session_id &&
+              callRef.current?.participants()?.[ev.session_id]?.user_name) ||
+            "Speaker";
+          const line = {
+            id: `${ev.session_id ?? "x"}-${Date.now()}-${Math.random()}`,
+            speaker,
+            text: String(ev.text).trim(),
+            ts: Date.now(),
+          };
+          setCaptions((prev) => [...prev.slice(-5), line]);
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        call.on("transcription-started" as any, () => setCaptionsOn(true));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        call.on("transcription-stopped" as any, () => setCaptionsOn(false));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        call.on("transcription-error" as any, (ev: any) => {
+          console.warn("[SoundStageRoom] transcription error", ev);
+          setCaptionsOn(false);
+          setCaptionsStarting(false);
+          toast({
+            title: "Captions unavailable",
+            description:
+              "Live captions aren't enabled for this room. The recap will still be transcribed after the stage ends.",
+            variant: "destructive",
+          });
+        });
+
         await call.join({
           url: roomUrl,
           token: token ?? undefined,
@@ -507,6 +552,40 @@ export function SoundStageRoom({
           message || "Check camera permission or close another app using it.",
         variant: "destructive",
       });
+    }
+  };
+
+  // Phase 3C — host toggles live captions on/off. Daily routes audio through
+  // its transcription provider; success fires "transcription-started" which
+  // flips captionsOn to true. Failures surface via "transcription-error".
+  const toggleCaptions = async () => {
+    const call = callRef.current;
+    if (!call || !isHost) return;
+    setCaptionsStarting(true);
+    try {
+      if (captionsOn) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (call as any).stopTranscription?.();
+        setCaptions([]);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (call as any).startTranscription?.({
+          language: "en",
+          model: "nova-2-general",
+          profanity_filter: false,
+          punctuate: true,
+        });
+      }
+    } catch (e: unknown) {
+      console.error("[SoundStageRoom] toggle captions failed", e);
+      toast({
+        title: "Captions unavailable",
+        description:
+          e instanceof Error ? e.message : "Try again or contact support.",
+        variant: "destructive",
+      });
+    } finally {
+      setCaptionsStarting(false);
     }
   };
 
@@ -821,6 +900,25 @@ export function SoundStageRoom({
           )}
         </div>
 
+        {/* Phase 3C — Live captions overlay (rolling 3 lines) */}
+        {captionsOn && captions.length > 0 && (
+          <div
+            className="pointer-events-none absolute left-0 right-0 bottom-[140px] z-30 px-4"
+            aria-live="polite"
+          >
+            <div className="mx-auto max-w-2xl rounded-2xl bg-background/95 border border-border/70 px-3 py-2 shadow-lg space-y-0.5">
+              {captions.slice(-3).map((c) => (
+                <p key={c.id} className="text-sm leading-snug text-foreground">
+                  <span className="text-muted-foreground font-medium mr-1.5">
+                    {c.speaker}:
+                  </span>
+                  {c.text}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Bottom control bar */}
         <div
           className="border-t border-border/60 px-4 pt-3 bg-background shrink-0"
@@ -836,6 +934,27 @@ export function SoundStageRoom({
             >
               <X className="h-3.5 w-3.5" /> Leave
             </Button>
+            {isHost && (
+              <Button
+                variant={captionsOn ? "lime" : "outline"}
+                size="sm"
+                className="rounded-full text-xs h-10 px-3 gap-1.5"
+                onClick={toggleCaptions}
+                disabled={captionsStarting}
+                aria-label={captionsOn ? "Stop captions" : "Start captions"}
+              >
+                {captionsStarting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : captionsOn ? (
+                  <Captions className="h-3.5 w-3.5" />
+                ) : (
+                  <CaptionsOff className="h-3.5 w-3.5" />
+                )}
+                <span className="hidden sm:inline">
+                  {captionsOn ? "Captions on" : "Captions"}
+                </span>
+              </Button>
+            )}
             <div className="flex items-center gap-2">
               {meSpeaker ? (
                 <>

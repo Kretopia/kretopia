@@ -188,7 +188,21 @@ export function LiveCallsPanel() {
       <GoLiveSheet open={goLiveOpen} onOpenChange={setGoLiveOpen} onCreated={handleStageCreated} />
       <CreateStageSheet open={scheduleOpen} onOpenChange={setScheduleOpen} onCreated={(id) => id && navigate(`/circle/stage/${id}`)} />
 
-      {activeRoom && (
+      {activeRoom && activeRoom.kind === "stage" && (
+        <SoundStageRoom
+          open={callOpen}
+          onOpenChange={handleCallClose}
+          roomUrl={activeRoom.url}
+          token={activeRoom.token}
+          title={activeRoom.label}
+          mode={activeRoom.mode}
+          isHost={activeRoom.isHost}
+          stageId={activeRoom.stageId}
+          userName={myName}
+          userAvatar={user?.user_metadata?.avatar_url ?? null}
+        />
+      )}
+      {activeRoom && activeRoom.kind === "link" && (
         <VideoCallSheet
           open={callOpen}
           onOpenChange={handleCallClose}

@@ -65,8 +65,9 @@ export function SoundStageRoom({
   const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null);
   const [handRaised, setHandRaised] = useState(false);
   const [myAudio, setMyAudio] = useState(true);
-  const [myVideo, setMyVideo] = useState(false);
+  const [myVideo, setMyVideo] = useState(mode === "video" && isHost);
   const [localLevel, setLocalLevel] = useState(0); // 0..1 live mic VU
+  const [localCamStream, setLocalCamStream] = useState<MediaStream | null>(null);
   const localLevelRef = useRef(0);
   const profileCache = useRef<Map<string, { name: string; avatar: string | null }>>(new Map());
 
@@ -147,9 +148,9 @@ export function SoundStageRoom({
       setMembers({});
       setHandRaised(false);
       setMyAudio(true);
-      setMyVideo(false);
+      setMyVideo(mode === "video" && isHost);
     }
-  }, [open]);
+  }, [open, mode, isHost]);
 
   // Local mic VU meter (active in both miccheck phase and inside the room
   // so the user always has visible proof their mic is hot).
@@ -161,8 +162,13 @@ export function SoundStageRoom({
     let cancelled = false;
     (async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const wantVideo = mode === "video";
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: wantVideo ? { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" } : false,
+        });
         if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
+        if (wantVideo) setLocalCamStream(stream);
         const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
         audioCtx = new Ctx();
         const src = audioCtx.createMediaStreamSource(stream);
@@ -185,10 +191,10 @@ export function SoundStageRoom({
         };
         tick();
       } catch (e: any) {
-        console.error("[SoundStageRoom] mic permission failed", e);
+        console.error("[SoundStageRoom] media permission failed", e);
         toast({
-          title: "Mic permission needed",
-          description: "Allow microphone access in your browser, then try again.",
+          title: mode === "video" ? "Camera + mic needed" : "Mic permission needed",
+          description: "Allow access in your browser, then try again.",
           variant: "destructive",
         });
       }
@@ -198,8 +204,9 @@ export function SoundStageRoom({
       if (raf) cancelAnimationFrame(raf);
       try { audioCtx?.close(); } catch {}
       try { stream?.getTracks().forEach((t) => t.stop()); } catch {}
+      setLocalCamStream(null);
     };
-  }, [open, toast]);
+  }, [open, mode, toast]);
 
   // Initialize Daily call (only after mic check passes)
   useEffect(() => {
@@ -216,7 +223,7 @@ export function SoundStageRoom({
           url: roomUrl,
           token: token ?? undefined,
           audioSource: true,
-          videoSource: false,
+          videoSource: mode === "video",
           userName,
           subscribeToTracksAutomatically: true,
         };
@@ -276,10 +283,16 @@ export function SoundStageRoom({
         // Host starts with mic on, audience starts muted
         if (!isHost) {
           try { await call.setLocalAudio(false); } catch {}
+          try { await call.setLocalVideo(false); } catch {}
           setMyAudio(false);
+          setMyVideo(false);
         } else {
           try { await call.setLocalAudio(true); } catch {}
           setMyAudio(true);
+          if (mode === "video") {
+            try { await call.setLocalVideo(true); } catch {}
+            setMyVideo(true);
+          }
         }
         setJoining(false);
         setPhase("in");
@@ -387,6 +400,19 @@ export function SoundStageRoom({
     // re-run whenever the member map changes (participant-updated fires refreshMembers)
   }, [members]);
 
+  // Map session_id → video MediaStreamTrack (local + remote) for video stages.
+  const videoTracksBySession = useMemo(() => {
+    const call = callRef.current;
+    const map: Record<string, MediaStreamTrack> = {};
+    if (!call || mode !== "video") return map;
+    const parts = call.participants();
+    Object.values(parts).forEach((p: any) => {
+      const track = p.tracks?.video?.persistentTrack || p.tracks?.video?.track;
+      if (track) map[p.session_id] = track;
+    });
+    return map;
+  }, [members, mode]);
+
   const stage = list.filter((m) => m.role === "host" || m.role === "speaker");
   const audience = list.filter((m) => m.role === "audience");
   const raisedHands = audience.filter((m) => m.handRaised);
@@ -427,6 +453,8 @@ export function SoundStageRoom({
               userName={userName}
               userAvatar={userAvatar}
               isHost={isHost}
+              mode={mode}
+              camStream={localCamStream}
               onJoin={() => setPhase("joining")}
               onCancel={leave}
             />
@@ -453,6 +481,8 @@ export function SoundStageRoom({
                       onMute={muteParticipant}
                       onRemove={removeParticipant}
                       localLevel={m.isLocal ? localLevel : undefined}
+                      mode={mode}
+                      videoTrack={videoTracksBySession[m.sessionId]}
                     />
                   ))}
                   {stage.length === 0 && (
@@ -588,7 +618,7 @@ function RemoteAudio({ track }: { track: MediaStreamTrack }) {
 }
 
 function StageTile({
-  member, large, isHostView, onDemote, onMute, onRemove, localLevel,
+  member, large, isHostView, onDemote, onMute, onRemove, localLevel, mode, videoTrack,
 }: {
   member: Member;
   large?: boolean;
@@ -597,14 +627,15 @@ function StageTile({
   onMute?: (m: Member) => void;
   onRemove?: (m: Member) => void;
   localLevel?: number;
+  mode?: "audio" | "video";
+  videoTrack?: MediaStreamTrack;
 }) {
   const size = large ? "h-16 w-16 sm:h-20 sm:w-20" : "h-12 w-12 sm:h-14 sm:w-14";
   const showHostMenu = isHostView && !member.isLocal;
-  // For the local user, drive the speaking ring off our live VU meter so they
-  // can SEE their mic working even before Daily fires active-speaker-change.
   const liveSpeaking =
     member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
   const speaking = member.isSpeaking || liveSpeaking;
+  const showVideo = mode === "video" && member.videoOn && !!videoTrack;
   return (
     <div className="flex flex-col items-center gap-1.5 text-center min-w-0">
       <div className="relative">
@@ -621,12 +652,18 @@ function StageTile({
               : undefined
           }
         >
-          <Avatar className={cn(size, "ring-2 ring-background")}>
-            <AvatarImage src={member.avatar ?? undefined} />
-            <AvatarFallback className="bg-muted text-foreground font-bold">
-              {member.name[0]?.toUpperCase() ?? "?"}
-            </AvatarFallback>
-          </Avatar>
+          {showVideo ? (
+            <div className={cn(size, "rounded-full ring-2 ring-background overflow-hidden bg-black")}>
+              <VideoTrackView track={videoTrack!} muted={member.isLocal} mirror={member.isLocal} />
+            </div>
+          ) : (
+            <Avatar className={cn(size, "ring-2 ring-background")}>
+              <AvatarImage src={member.avatar ?? undefined} />
+              <AvatarFallback className="bg-muted text-foreground font-bold">
+                {member.name[0]?.toUpperCase() ?? "?"}
+              </AvatarFallback>
+            </Avatar>
+          )}
         </div>
         {/* Role / status badges */}
         {member.role === "host" && (
@@ -682,13 +719,59 @@ function StageTile({
   );
 }
 
+function VideoTrackView({
+  track, muted, mirror,
+}: { track: MediaStreamTrack; muted?: boolean; mirror?: boolean }) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.srcObject = new MediaStream([track]);
+    el.play().catch(() => {});
+    return () => { try { el.srcObject = null; } catch {} };
+  }, [track]);
+  return (
+    <video
+      ref={ref}
+      autoPlay
+      playsInline
+      muted={muted}
+      className="h-full w-full object-cover"
+      style={mirror ? { transform: "scaleX(-1)" } : undefined}
+    />
+  );
+}
+
+function CamPreview({ stream, mirror }: { stream: MediaStream; mirror?: boolean }) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.srcObject = stream;
+    el.play().catch(() => {});
+    return () => { try { el.srcObject = null; } catch {} };
+  }, [stream]);
+  return (
+    <video
+      ref={ref}
+      autoPlay
+      playsInline
+      muted
+      className="h-full w-full object-cover"
+      style={mirror ? { transform: "scaleX(-1)" } : undefined}
+    />
+  );
+}
+
 function MicCheckScreen({
-  level, userName, userAvatar, isHost, onJoin, onCancel,
+  level, userName, userAvatar, isHost, mode, camStream, onJoin, onCancel,
 }: {
   level: number;
   userName: string;
   userAvatar?: string | null;
   isHost: boolean;
+  mode: "audio" | "video";
+  camStream: MediaStream | null;
   onJoin: () => void;
   onCancel: () => void;
 }) {
@@ -698,31 +781,52 @@ function MicCheckScreen({
   return (
     <div className="flex flex-col items-center justify-center py-6 gap-6 text-center">
       <div className="space-y-1">
-        <h2 className="text-lg font-black">Mic check</h2>
+        <h2 className="text-lg font-black">{mode === "video" ? "Camera + mic check" : "Mic check"}</h2>
         <p className="text-xs text-muted-foreground max-w-xs">
-          Say something — you should see the bars light up. This is just for you;
-          you're not live until you tap below.
+          {mode === "video"
+            ? "Check yourself out — see your video and watch the bars light up. You're not live until you tap below."
+            : "Say something — you should see the bars light up. This is just for you; you're not live until you tap below."}
         </p>
       </div>
 
-      <div className="relative">
+      {mode === "video" ? (
         <div
-          className="rounded-full p-1 transition-all"
+          className="relative rounded-2xl overflow-hidden bg-black border-2 transition-colors w-full max-w-xs aspect-video"
           style={{
-            background: detected ? "hsl(var(--signal-teal))" : "transparent",
+            borderColor: detected ? "hsl(var(--signal-teal))" : "hsl(var(--border))",
             boxShadow: detected
-              ? `0 0 0 ${6 + Math.round(level * 18)}px hsl(var(--signal-teal) / 0.22)`
+              ? `0 0 0 ${4 + Math.round(level * 12)}px hsl(var(--signal-teal) / 0.22)`
               : undefined,
           }}
         >
-          <Avatar className="h-24 w-24 ring-2 ring-background">
-            <AvatarImage src={userAvatar ?? undefined} />
-            <AvatarFallback className="text-2xl font-black">
-              {userName[0]?.toUpperCase() ?? "?"}
-            </AvatarFallback>
-          </Avatar>
+          {camStream ? (
+            <CamPreview stream={camStream} mirror />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-xs text-white/70">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" /> Warming up camera…
+            </div>
+          )}
         </div>
-      </div>
+      ) : (
+        <div className="relative">
+          <div
+            className="rounded-full p-1 transition-all"
+            style={{
+              background: detected ? "hsl(var(--signal-teal))" : "transparent",
+              boxShadow: detected
+                ? `0 0 0 ${6 + Math.round(level * 18)}px hsl(var(--signal-teal) / 0.22)`
+                : undefined,
+            }}
+          >
+            <Avatar className="h-24 w-24 ring-2 ring-background">
+              <AvatarImage src={userAvatar ?? undefined} />
+              <AvatarFallback className="text-2xl font-black">
+                {userName[0]?.toUpperCase() ?? "?"}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </div>
+      )}
 
       {/* VU bars */}
       <div className="flex items-end gap-1 h-10">
@@ -764,7 +868,7 @@ function MicCheckScreen({
           className="rounded-full h-12 text-sm font-bold"
           onClick={onJoin}
         >
-          <Mic className="h-4 w-4 mr-2" />
+          {mode === "video" ? <Video className="h-4 w-4 mr-2" /> : <Mic className="h-4 w-4 mr-2" />}
           {isHost ? "Go live on stage" : "Join the room"}
         </Button>
         <Button variant="ghost" className="rounded-full h-10 text-xs" onClick={onCancel}>

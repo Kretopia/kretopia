@@ -32,6 +32,7 @@ interface SoundStageRoomProps {
   mode: "audio" | "video";
   isHost: boolean;
   stageId: string | null;
+  hostUserId: string | null;
   userName: string;
   userAvatar?: string | null;
 }

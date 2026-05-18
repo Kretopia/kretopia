@@ -481,6 +481,8 @@ export function SoundStageRoom({
                       onMute={muteParticipant}
                       onRemove={removeParticipant}
                       localLevel={m.isLocal ? localLevel : undefined}
+                      mode={mode}
+                      videoTrack={videoTracksBySession[m.sessionId]}
                     />
                   ))}
                   {stage.length === 0 && (

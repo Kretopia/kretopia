@@ -137,7 +137,7 @@ export function SoundStageRoom({
         return copy;
       });
     }
-  }, []);
+  }, [hostUserId]);
 
   // Reset to mic-check whenever the sheet opens
   useEffect(() => {

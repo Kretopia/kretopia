@@ -863,12 +863,15 @@ export type Database = {
           call_kind: string
           chapters: Json
           circle_id: string | null
+          co_sign_suggestions: Json
           created_at: string
           created_by: string
           duration_seconds: number | null
           error: string | null
+          highlights: Json
           id: string
           language: string | null
+          live_captions: Json
           participants: Json
           project_id: string | null
           recording_id: string | null
@@ -883,12 +886,15 @@ export type Database = {
           call_kind: string
           chapters?: Json
           circle_id?: string | null
+          co_sign_suggestions?: Json
           created_at?: string
           created_by: string
           duration_seconds?: number | null
           error?: string | null
+          highlights?: Json
           id?: string
           language?: string | null
+          live_captions?: Json
           participants?: Json
           project_id?: string | null
           recording_id?: string | null
@@ -903,12 +909,15 @@ export type Database = {
           call_kind?: string
           chapters?: Json
           circle_id?: string | null
+          co_sign_suggestions?: Json
           created_at?: string
           created_by?: string
           duration_seconds?: number | null
           error?: string | null
+          highlights?: Json
           id?: string
           language?: string | null
+          live_captions?: Json
           participants?: Json
           project_id?: string | null
           recording_id?: string | null

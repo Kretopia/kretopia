@@ -5,7 +5,7 @@ import {
   LogOut, Menu, Settings, Users, User, Briefcase, MessageCircle, Shield, Crown, Sparkles,
   DollarSign, FolderKanban, LayoutDashboard, Radar, Search, BarChart3, ShoppingBag, Share2, Rocket, Wallet,
   MapPin, Trophy, CheckCircle, Target, Zap, Globe, Palette, MessageSquarePlus, CalendarDays, Home, UserPlus, UserCircle2, Building2, Inbox,
-  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw
+  Sun, LayoutGrid, Compass, BadgeCheck, BookOpen, Bell, Languages, Lock, Brain, HardDrive, LifeBuoy, Gift, Star, RefreshCw, Theater
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 // UnifiedSearchDropdown removed from top nav — Thrive bar owns search
@@ -110,7 +110,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
         { path: "/", icon: Sun, label: "Today" },
         { path: "/desk", icon: LayoutGrid, label: "Desk" },
         { path: "/scout", icon: Compass, label: "Scout" },
-        { path: "/messages", icon: MessageCircle, label: "Messages" },
+        { path: "/circle", icon: Theater, label: "Stages" },
         { path: "/profile", icon: BadgeCheck, label: "Passport" },
       ];
 
@@ -160,11 +160,11 @@ const Navbar = memo(({ user }: NavbarProps) => {
               const isActive = location.pathname === path ||
                 (path === "/desk" && location.pathname.startsWith("/desk")) ||
                 (path === "/messages" && (location.pathname.startsWith("/messages") || location.pathname.startsWith("/inbox"))) ||
+                (path === "/circle" && location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles")) ||
                 (path === "/scout" && (
                   location.pathname.startsWith("/scout") ||
                   location.pathname === "/opportunities" ||
-                  location.pathname === "/opportunity-dashboard" ||
-                  (location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"))
+                  location.pathname === "/opportunity-dashboard"
                 )) ||
                 (path === "/profile" && (
                   location.pathname.startsWith("/profile") ||

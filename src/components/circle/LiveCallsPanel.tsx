@@ -34,6 +34,7 @@ export function LiveCallsPanel() {
     url: string; name: string; token: string | null;
     label: string; stageId: string | null;
     kind: "stage" | "link"; mode: "audio" | "video"; isHost: boolean;
+    hostUserId: string | null;
   } | null>(null);
 
   const myName = useMemo(

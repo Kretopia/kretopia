@@ -479,25 +479,56 @@ export function SoundStageRoom({
                 <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
                   On stage · {stage.length}
                 </h3>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-2 gap-y-5">
-                  {stage.map((m) => (
-                    <StageTile
-                      key={m.sessionId}
-                      member={m}
-                      large
-                      isHostView={isHost}
-                      onDemote={demote}
-                      onMute={muteParticipant}
-                      onRemove={removeParticipant}
-                      localLevel={m.isLocal ? localLevel : undefined}
-                      mode={mode}
-                      videoTrack={videoTracksBySession[m.sessionId]}
-                    />
-                  ))}
-                  {stage.length === 0 && (
-                    <p className="col-span-full text-xs text-muted-foreground">No one on stage yet.</p>
-                  )}
-                </div>
+                {mode === "video" ? (
+                  stage.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">No one on stage yet.</p>
+                  ) : (
+                    <div
+                      className={cn(
+                        "grid gap-2",
+                        stage.length === 1 && "grid-cols-1",
+                        stage.length === 2 && "grid-cols-1 sm:grid-cols-2",
+                        stage.length === 3 && "grid-cols-2 sm:grid-cols-3",
+                        stage.length === 4 && "grid-cols-2",
+                        stage.length >= 5 && "grid-cols-2 sm:grid-cols-3",
+                      )}
+                    >
+                      {stage.map((m) => (
+                        <VideoStageTile
+                          key={m.sessionId}
+                          member={m}
+                          isHostView={isHost}
+                          onDemote={demote}
+                          onMute={muteParticipant}
+                          onRemove={removeParticipant}
+                          localLevel={m.isLocal ? localLevel : undefined}
+                          videoTrack={videoTracksBySession[m.sessionId]}
+                          solo={stage.length === 1}
+                        />
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-2 gap-y-5">
+                    {stage.map((m) => (
+                      <StageTile
+                        key={m.sessionId}
+                        member={m}
+                        large
+                        isHostView={isHost}
+                        onDemote={demote}
+                        onMute={muteParticipant}
+                        onRemove={removeParticipant}
+                        localLevel={m.isLocal ? localLevel : undefined}
+                        mode={mode}
+                        videoTrack={videoTracksBySession[m.sessionId]}
+                      />
+                    ))}
+                    {stage.length === 0 && (
+                      <p className="col-span-full text-xs text-muted-foreground">No one on stage yet.</p>
+                    )}
+                  </div>
+                )}
               </section>
 
               {/* Raised hands — host control */}

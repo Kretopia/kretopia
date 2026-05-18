@@ -285,6 +285,13 @@ type ParsedBrief = {
   language?: string;
   transcript: string;
   summary: string;
+  chapters?: Array<{
+    start_seconds: number;
+    end_seconds?: number;
+    title: string;
+    summary?: string;
+    speaker?: string;
+  }>;
   action_items: Array<{
     kind: string;
     title: string;
@@ -293,6 +300,14 @@ type ParsedBrief = {
     due_hint?: string;
   }>;
 };
+
+function formatTimecode(sec: number): string {
+  const s = Math.max(0, Math.floor(sec));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${r.toString().padStart(2, "0")}`;
+}
+
 
 async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedBrief) {
   const { data: t } = await admin

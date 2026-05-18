@@ -34,6 +34,7 @@ export function LiveCallsPanel() {
     url: string; name: string; token: string | null;
     label: string; stageId: string | null;
     kind: "stage" | "link"; mode: "audio" | "video"; isHost: boolean;
+    hostUserId: string | null;
   } | null>(null);
 
   const myName = useMemo(
@@ -47,7 +48,7 @@ export function LiveCallsPanel() {
     setActiveRoom({
       url: data.room_url, name: data.room_name, token: data.token,
       label: data.title, stageId: data.stage_id,
-      kind: "stage", mode: data.mode, isHost: true,
+      kind: "stage", mode: data.mode, isHost: true, hostUserId: user?.id ?? null,
     });
     setCallOpen(true);
   };
@@ -65,7 +66,7 @@ export function LiveCallsPanel() {
       setActiveRoom({
         url: data.room_url, name: data.room_name, token: data.token,
         label: stage.title, stageId: stage.id,
-        kind: "stage", mode: stage.mode, isHost: stage.host_user_id === user.id,
+        kind: "stage", mode: stage.mode, isHost: stage.host_user_id === user.id, hostUserId: stage.host_user_id,
       });
       setCallOpen(true);
     } catch (e: any) {
@@ -95,7 +96,7 @@ export function LiveCallsPanel() {
     const roomName = url.split("/").pop()?.split("?")[0] ?? "Call";
     setActiveRoom({
       url, name: roomName, token: null, label: "Joining call", stageId: null,
-      kind: "link", mode: "video", isHost: false,
+      kind: "link", mode: "video", isHost: false, hostUserId: null,
     });
     setCallOpen(true);
     setJoining(false);
@@ -198,6 +199,7 @@ export function LiveCallsPanel() {
           mode={activeRoom.mode}
           isHost={activeRoom.isHost}
           stageId={activeRoom.stageId}
+          hostUserId={activeRoom.hostUserId}
           userName={myName}
           userAvatar={user?.user_metadata?.avatar_url ?? null}
         />

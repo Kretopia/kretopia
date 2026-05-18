@@ -32,6 +32,7 @@ interface SoundStageRoomProps {
   mode: "audio" | "video";
   isHost: boolean;
   stageId: string | null;
+  hostUserId: string | null;
   userName: string;
   userAvatar?: string | null;
 }
@@ -53,7 +54,7 @@ interface Member {
 
 export function SoundStageRoom({
   open, onOpenChange, roomUrl, token, title, mode, isHost,
-  stageId, userName, userAvatar,
+  stageId, hostUserId, userName, userAvatar,
 }: SoundStageRoomProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -86,8 +87,9 @@ export function SoundStageRoom({
       const cached = uid ? profileCache.current.get(uid) : null;
       if (uid && !cached) userIdsToFetch.push(uid);
       const isOwner = !!(p as any).owner;
+      const isHostByUserId = !!(uid && hostUserId && uid === hostUserId);
       let role: Role = "audience";
-      if (isOwner) role = "host";
+      if (isOwner || isHostByUserId) role = "host";
       else if (uid && speakersRef.current.has(uid)) role = "speaker";
 
       next[p.session_id] = {
@@ -135,7 +137,7 @@ export function SoundStageRoom({
         return copy;
       });
     }
-  }, []);
+  }, [hostUserId]);
 
   // Reset to mic-check whenever the sheet opens
   useEffect(() => {

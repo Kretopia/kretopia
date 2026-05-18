@@ -706,6 +706,14 @@ function RemoteAudio({ track }: { track: MediaStreamTrack }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    const stream = new MediaStream([track]);
+    el.srcObject = stream;
+    el.autoplay = true;
+    el.play().catch(() => {});
+    return () => { try { el.srcObject = null; } catch {} };
+  }, [track]);
+  return <audio ref={ref} autoPlay playsInline />;
+}
 
 function ColorfulAvatar({
   className, name, avatar, seed,
@@ -737,15 +745,6 @@ function ColorfulAvatar({
       )}
     </div>
   );
-}
-    const stream = new MediaStream([track]);
-    el.srcObject = stream;
-    el.autoplay = true;
-    // Some browsers require an explicit play() after srcObject is set.
-    el.play().catch(() => {});
-    return () => { try { el.srcObject = null; } catch {} };
-  }, [track]);
-  return <audio ref={ref} autoPlay playsInline />;
 }
 
 function StageTile({

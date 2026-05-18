@@ -201,6 +201,7 @@ export function LiveCallsPanel() {
           token={activeRoom.token}
           title={activeRoom.label}
           mode={activeRoom.mode}
+          format={activeRoom.format}
           isHost={activeRoom.isHost}
           stageId={activeRoom.stageId}
           hostUserId={activeRoom.hostUserId}

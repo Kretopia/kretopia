@@ -483,9 +483,32 @@ export function SoundStageRoom({
             </p>
           )}
         </div>
+
+        {/* Hidden audio sinks for every remote participant (call-object mode
+            requires manual track attachment — without this, no one is heard). */}
+        <div aria-hidden className="sr-only">
+          {remoteAudioTracks.map((t) => (
+            <RemoteAudio key={t.sessionId} track={t.track} />
+          ))}
+        </div>
       </SheetContent>
     </Sheet>
   );
+}
+
+function RemoteAudio({ track }: { track: MediaStreamTrack }) {
+  const ref = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const stream = new MediaStream([track]);
+    el.srcObject = stream;
+    el.autoplay = true;
+    // Some browsers require an explicit play() after srcObject is set.
+    el.play().catch(() => {});
+    return () => { try { el.srcObject = null; } catch {} };
+  }, [track]);
+  return <audio ref={ref} autoPlay playsInline />;
 }
 
 function StageTile({

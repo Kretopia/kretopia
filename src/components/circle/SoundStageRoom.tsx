@@ -213,7 +213,7 @@ export function SoundStageRoom({
 
         // Host starts with mic on, audience starts muted
         if (!isHost) {
-          await call.setLocalAudio(false).catch(() => {});
+          try { await call.setLocalAudio(false); } catch {}
           setMyAudio(false);
         }
         setJoining(false);

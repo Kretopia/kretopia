@@ -223,6 +223,8 @@ export function SoundStageRoom({
     const init = async () => {
       setJoining(true);
       await destroyExistingDailyFrameAsync();
+      // Give the mic-check preview a tick to fully release camera/mic on mobile
+      await new Promise((r) => setTimeout(r, 250));
       if (cancelled) return;
       try {
         let call: DailyCall;

@@ -199,6 +199,7 @@ export function LiveCallsPanel() {
           mode={activeRoom.mode}
           isHost={activeRoom.isHost}
           stageId={activeRoom.stageId}
+          hostUserId={activeRoom.hostUserId}
           userName={myName}
           userAvatar={user?.user_metadata?.avatar_url ?? null}
         />

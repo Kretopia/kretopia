@@ -192,7 +192,7 @@ export const EventGuestRoster = ({
           ) : (
             <ul className="divide-y divide-border rounded-lg border border-border overflow-hidden">
               {guests.map((g) => (
-                <li key={g.user_id}>
+                <li key={g.id}>
                   <button
                     onClick={() => setSelected(g)}
                     className="w-full flex items-center gap-3 p-3 hover:bg-accent/40 active:bg-accent/60 transition text-left"
@@ -210,6 +210,9 @@ export const EventGuestRoster = ({
                         </p>
                         {g.is_host && (
                           <Badge variant="secondary" className="text-[10px] shrink-0">Host</Badge>
+                        )}
+                        {g.is_guest && (
+                          <Badge variant="outline" className="text-[10px] shrink-0">RSVP</Badge>
                         )}
                       </div>
                       {g.role && (
@@ -264,13 +267,22 @@ export const EventGuestRoster = ({
                     <p className="text-sm whitespace-pre-wrap">{selected.bio}</p>
                   </div>
                 )}
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => openProfile(selected)}>
-                  View full profile <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
-                </Button>
+                {selected.user_id ? (
+                  <Button variant="ghost" size="sm" className="w-full" onClick={() => openProfile(selected)}>
+                    View full profile <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground rounded-lg border border-border bg-muted/30 p-3">
+                    Guest RSVP only — they can claim this RSVP by creating a profile with the same email.
+                  </p>
+                )}
               </div>
 
               <div className="border-t border-border p-4 space-y-2">
                 {(() => {
+                  if (!selected.user_id) return (
+                    <Badge variant="outline" className="w-full justify-center py-2.5">Waiting for profile</Badge>
+                  );
                   const status = connections[selected.user_id] || "none";
                   if (selected.user_id === currentUserId) return (
                     <Badge variant="outline" className="w-full justify-center py-2.5">This is you</Badge>

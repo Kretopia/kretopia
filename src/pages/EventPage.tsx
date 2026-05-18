@@ -149,15 +149,23 @@ const EventPage = () => {
 
       // Get participant count and avatars
       const { data: participants, count } = await supabase
-        .from('jam_participants').select('user_id', { count: 'exact' }).eq('jam_id', eventId).in('status', ['going', 'interested']);
+        .from('jam_participants')
+        .select('user_id, guest_name', { count: 'exact' })
+        .eq('jam_id', eventId)
+        .in('status', ['going', 'interested']);
       setParticipantCount(count || 0);
 
       // Fetch first 12 attendee avatars + roles for richer social proof
       if (participants && participants.length > 0) {
-        const userIds = participants.slice(0, 12).map(p => p.user_id);
-        const { data: profiles } = await supabase
-          .from('profiles').select('avatar_url, full_name, role').in('user_id', userIds);
-        setAttendeeAvatars(profiles || []);
+        const userIds = participants.map(p => p.user_id).filter(Boolean).slice(0, 12) as string[];
+        const { data: profiles } = userIds.length
+          ? await supabase.from('public_profiles_safe').select('user_id, avatar_url, full_name, role').in('user_id', userIds)
+          : { data: [] as any[] };
+        const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+        setAttendeeAvatars(participants.slice(0, 12).map((p: any) => {
+          const profile = p.user_id ? profileMap.get(p.user_id) as any : null;
+          return profile || { avatar_url: null, full_name: p.guest_name || 'Guest', role: null };
+        }));
       }
 
       if (user) {

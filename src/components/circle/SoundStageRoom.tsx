@@ -518,7 +518,7 @@ export function SoundStageRoom({
   const list = Object.values(members);
   // Remote participants whose audio track we need to play (call-object mode
   // does NOT auto-play remote audio — we must attach <audio> elements).
-  const remoteAudioTracks = useMemo(() => {
+  const remoteAudioTracks = (() => {
     const call = callRef.current;
     if (!call) return [] as { sessionId: string; track: MediaStreamTrack }[];
     const parts = call.participants();
@@ -529,11 +529,10 @@ export function SoundStageRoom({
       if (track) out.push({ sessionId: p.session_id, track });
     });
     return out;
-    // re-run whenever the member map changes (participant-updated fires refreshMembers)
-  }, [members]);
+  })();
 
   // Map session_id → video MediaStreamTrack (local + remote) for video stages.
-  const videoTracksBySession = useMemo(() => {
+  const videoTracksBySession = (() => {
     const call = callRef.current;
     const map: Record<string, MediaStreamTrack> = {};
     if (!call || mode !== "video") return map;
@@ -543,7 +542,7 @@ export function SoundStageRoom({
       if (track) map[p.session_id] = track;
     });
     return map;
-  }, [members, mode]);
+  })();
 
   const stage = list.filter((m) => m.role === "host" || m.role === "speaker");
   const audience = list.filter((m) => m.role === "audience");

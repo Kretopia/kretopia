@@ -419,7 +419,16 @@ export function SoundStageRoom({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-4 py-5 space-y-7">
-          {joining ? (
+          {phase === "miccheck" ? (
+            <MicCheckScreen
+              level={localLevel}
+              userName={userName}
+              userAvatar={userAvatar}
+              isHost={isHost}
+              onJoin={() => setPhase("joining")}
+              onCancel={leave}
+            />
+          ) : joining ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
               <Loader2 className="h-6 w-6 animate-spin" />
               <p className="text-sm">Walking on stage…</p>
@@ -441,6 +450,7 @@ export function SoundStageRoom({
                       onDemote={demote}
                       onMute={muteParticipant}
                       onRemove={removeParticipant}
+                      localLevel={m.isLocal ? localLevel : undefined}
                     />
                   ))}
                   {stage.length === 0 && (
@@ -479,7 +489,7 @@ export function SoundStageRoom({
                 </h3>
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-x-2 gap-y-4">
                   {audience.map((m) => (
-                    <StageTile key={m.sessionId} member={m} />
+                    <StageTile key={m.sessionId} member={m} localLevel={m.isLocal ? localLevel : undefined} />
                   ))}
                   {audience.length === 0 && (
                     <p className="col-span-full text-xs text-muted-foreground">Quiet so far.</p>

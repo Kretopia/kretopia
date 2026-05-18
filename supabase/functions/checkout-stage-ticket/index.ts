@@ -60,14 +60,17 @@ serve(async (req) => {
     });
 
     // Record pending order
-    await admin.from("curated_stage_orders").insert({
-      stage_id,
-      user_id: user.id,
-      stripe_session_id: session.id,
-      amount_cents: stage.price_cents || 0,
-      currency,
-      status: "pending",
-    }).catch(() => {});
+    try {
+      await admin.from("curated_stage_orders").insert({
+        stage_id,
+        user_id: user.id,
+        stripe_session_id: session.id,
+        amount_cents: stage.price_cents || 0,
+        currency,
+        status: "pending",
+      });
+    } catch (_e) { /* best-effort */ }
+
 
     return new Response(JSON.stringify({ url: session.url, session_id: session.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,

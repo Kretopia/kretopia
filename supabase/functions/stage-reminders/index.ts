@@ -114,9 +114,12 @@ serve(async (req) => {
       if (notifs.length) { try { await admin.from("notifications").insert(notifs); } catch (_e) { /* best-effort */ } }
 
       // Mark paid orders as refunded (refund processing happens out-of-band)
-      await admin.from("curated_stage_orders")
-        .update({ status: "refunded" })
-        .eq("stage_id", s.id).eq("status", "paid").catch(() => {});
+      try {
+        await admin.from("curated_stage_orders")
+          .update({ status: "refunded" })
+          .eq("stage_id", s.id).eq("status", "paid");
+      } catch (_e) { /* best-effort */ }
+
     }
 
     return new Response(JSON.stringify({ ok: true, sent: totalSent, cancelled }), {

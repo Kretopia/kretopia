@@ -558,5 +558,43 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
       priority: "high",
     });
   }
+
+  // ── 6. Co-sign nudges to host (curated/speed stages only) ──
+  const coSigns = (parsed.co_sign_suggestions ?? []).filter((c) => c.name && c.reason);
+  if (coSigns.length && (t.call_kind === "curated_stage" || t.call_kind === "speed_session")) {
+    const coSignRows = coSigns.slice(0, 5).map((c) => {
+      const params = new URLSearchParams({
+        from_transcript: transcriptId,
+        name: c.name,
+        reason: c.reason,
+      });
+      return {
+        user_id: t.created_by,
+        type: "co_sign_suggested",
+        title: `🤝 Co-sign ${c.name}?`,
+        message: c.reason,
+        action_url: `/credits?action=co_sign&${params.toString()}`,
+        action_text: "Issue co-sign",
+        category: "agent",
+        priority: c.confidence === "high" ? "high" : "normal",
+      };
+    });
+    const { error } = await admin.from("notifications").insert(coSignRows);
+    if (error) console.warn("[distribute] co-sign nudges failed", error);
+  }
+
+  // ── 7. Save-clip nudge for sound stages with strong highlights ──
+  if (t.call_kind === "sound_stage" && stageId && (parsed.highlights ?? []).length >= 2) {
+    await admin.from("notifications").insert({
+      user_id: t.created_by,
+      type: "clip_suggestion",
+      title: "🎬 Save the best moments?",
+      message: `Thrive pulled ${parsed.highlights!.length} clippable moments from "${stageTitle}". Share as a Showcase clip?`,
+      action_url: `/circle?tab=live&stage=${stageId}&clips=1`,
+      action_text: "Review clips",
+      category: "agent",
+      priority: "normal",
+    });
+  }
 }
 

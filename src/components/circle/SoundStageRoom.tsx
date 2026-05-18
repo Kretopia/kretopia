@@ -305,6 +305,22 @@ export function SoundStageRoom({
   const leave = () => onOpenChange(false);
 
   const list = Object.values(members);
+  // Remote participants whose audio track we need to play (call-object mode
+  // does NOT auto-play remote audio — we must attach <audio> elements).
+  const remoteAudioTracks = useMemo(() => {
+    const call = callRef.current;
+    if (!call) return [] as { sessionId: string; track: MediaStreamTrack }[];
+    const parts = call.participants();
+    const out: { sessionId: string; track: MediaStreamTrack }[] = [];
+    Object.values(parts).forEach((p: any) => {
+      if (p.local) return;
+      const track = p.tracks?.audio?.persistentTrack || p.tracks?.audio?.track;
+      if (track) out.push({ sessionId: p.session_id, track });
+    });
+    return out;
+    // re-run whenever the member map changes (participant-updated fires refreshMembers)
+  }, [members]);
+
   const stage = list.filter((m) => m.role === "host" || m.role === "speaker");
   const audience = list.filter((m) => m.role === "audience");
   const raisedHands = audience.filter((m) => m.handRaised);
@@ -467,9 +483,32 @@ export function SoundStageRoom({
             </p>
           )}
         </div>
+
+        {/* Hidden audio sinks for every remote participant (call-object mode
+            requires manual track attachment — without this, no one is heard). */}
+        <div aria-hidden className="sr-only">
+          {remoteAudioTracks.map((t) => (
+            <RemoteAudio key={t.sessionId} track={t.track} />
+          ))}
+        </div>
       </SheetContent>
     </Sheet>
   );
+}
+
+function RemoteAudio({ track }: { track: MediaStreamTrack }) {
+  const ref = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const stream = new MediaStream([track]);
+    el.srcObject = stream;
+    el.autoplay = true;
+    // Some browsers require an explicit play() after srcObject is set.
+    el.play().catch(() => {});
+    return () => { try { el.srcObject = null; } catch {} };
+  }, [track]);
+  return <audio ref={ref} autoPlay playsInline />;
 }
 
 function StageTile({

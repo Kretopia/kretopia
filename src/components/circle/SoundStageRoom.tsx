@@ -65,8 +65,9 @@ export function SoundStageRoom({
   const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null);
   const [handRaised, setHandRaised] = useState(false);
   const [myAudio, setMyAudio] = useState(true);
-  const [myVideo, setMyVideo] = useState(false);
+  const [myVideo, setMyVideo] = useState(mode === "video" && isHost);
   const [localLevel, setLocalLevel] = useState(0); // 0..1 live mic VU
+  const [localCamStream, setLocalCamStream] = useState<MediaStream | null>(null);
   const localLevelRef = useRef(0);
   const profileCache = useRef<Map<string, { name: string; avatar: string | null }>>(new Map());
 

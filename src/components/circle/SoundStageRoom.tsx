@@ -618,7 +618,7 @@ function RemoteAudio({ track }: { track: MediaStreamTrack }) {
 }
 
 function StageTile({
-  member, large, isHostView, onDemote, onMute, onRemove, localLevel,
+  member, large, isHostView, onDemote, onMute, onRemove, localLevel, mode, videoTrack,
 }: {
   member: Member;
   large?: boolean;
@@ -627,14 +627,15 @@ function StageTile({
   onMute?: (m: Member) => void;
   onRemove?: (m: Member) => void;
   localLevel?: number;
+  mode?: "audio" | "video";
+  videoTrack?: MediaStreamTrack;
 }) {
   const size = large ? "h-16 w-16 sm:h-20 sm:w-20" : "h-12 w-12 sm:h-14 sm:w-14";
   const showHostMenu = isHostView && !member.isLocal;
-  // For the local user, drive the speaking ring off our live VU meter so they
-  // can SEE their mic working even before Daily fires active-speaker-change.
   const liveSpeaking =
     member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
   const speaking = member.isSpeaking || liveSpeaking;
+  const showVideo = mode === "video" && member.videoOn && !!videoTrack;
   return (
     <div className="flex flex-col items-center gap-1.5 text-center min-w-0">
       <div className="relative">
@@ -651,12 +652,18 @@ function StageTile({
               : undefined
           }
         >
-          <Avatar className={cn(size, "ring-2 ring-background")}>
-            <AvatarImage src={member.avatar ?? undefined} />
-            <AvatarFallback className="bg-muted text-foreground font-bold">
-              {member.name[0]?.toUpperCase() ?? "?"}
-            </AvatarFallback>
-          </Avatar>
+          {showVideo ? (
+            <div className={cn(size, "rounded-full ring-2 ring-background overflow-hidden bg-black")}>
+              <VideoTrackView track={videoTrack!} muted={member.isLocal} mirror={member.isLocal} />
+            </div>
+          ) : (
+            <Avatar className={cn(size, "ring-2 ring-background")}>
+              <AvatarImage src={member.avatar ?? undefined} />
+              <AvatarFallback className="bg-muted text-foreground font-bold">
+                {member.name[0]?.toUpperCase() ?? "?"}
+              </AvatarFallback>
+            </Avatar>
+          )}
         </div>
         {/* Role / status badges */}
         {member.role === "host" && (

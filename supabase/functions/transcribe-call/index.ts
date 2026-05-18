@@ -82,15 +82,16 @@ serve(async (req) => {
           {
             role: "system",
             content:
-              "You are Thrive Copilot's call analyst. Transcribe the audio verbatim, then summarize the key decisions, and extract every concrete action item (who, what, when). Be precise. Do not invent attendees or commitments. If a name is unclear, use 'Speaker 1', 'Speaker 2', etc.",
+              "You are Thrive's call analyst. The recording may be a meeting, a Sound Stage (Clubhouse-style audio room), a Speed Session (rapid 1:1 rotations), or a Curated Stage (Showcase performance or Scout audition). Transcribe verbatim, summarize key decisions or standout moments, generate time-stamped chapters spanning the full duration, and extract concrete action items (who, what, when). Be precise. Do not invent attendees or commitments. If a name is unclear, use 'Speaker 1', 'Speaker 2'. For Showcase/Scout stages, treat each performer or applicant turn as a chapter and call out co-signs, credits, or follow-ups in action_items.",
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Transcribe and analyze this call recording. Use the `record_call_analysis` tool with the full transcript, a 2-4 sentence summary, and structured action items.",
+                text: "Transcribe and analyze this call recording. Use the `record_call_analysis` tool with the full transcript, a 2-4 sentence summary, time-stamped chapters covering the entire recording, and structured action items.",
               },
+
               {
                 type: "input_audio",
                 input_audio: { data: base64Audio, format: "mp4" },
@@ -110,6 +111,22 @@ serve(async (req) => {
                   language: { type: "string", description: "ISO 639-1 language code, e.g. 'en'" },
                   transcript: { type: "string", description: "Full verbatim transcript with speaker labels." },
                   summary: { type: "string", description: "2-4 sentence executive summary of the call." },
+                  chapters: {
+                    type: "array",
+                    description: "Time-stamped chapter markers covering the entire recording end-to-end. Aim for 3-10 chapters depending on length; each chapter should mark a meaningful topic, performer, or applicant turn.",
+                    items: {
+                      type: "object",
+                      properties: {
+                        start_seconds: { type: "number", description: "Chapter start time in seconds from the beginning of the recording." },
+                        end_seconds: { type: "number", description: "Chapter end time in seconds." },
+                        title: { type: "string", description: "Short, scannable chapter title (max ~60 chars)." },
+                        summary: { type: "string", description: "One-sentence summary of what happens in this chapter." },
+                        speaker: { type: "string", description: "Primary speaker or performer name, if identifiable." },
+                      },
+                      required: ["start_seconds", "title"],
+                      additionalProperties: false,
+                    },
+                  },
                   action_items: {
                     type: "array",
                     items: {
@@ -130,9 +147,10 @@ serve(async (req) => {
                     },
                   },
                 },
-                required: ["transcript", "summary", "action_items"],
+                required: ["transcript", "summary", "chapters", "action_items"],
                 additionalProperties: false,
               },
+
             },
           },
         ],
@@ -154,6 +172,13 @@ serve(async (req) => {
       language?: string;
       transcript: string;
       summary: string;
+      chapters?: Array<{
+        start_seconds: number;
+        end_seconds?: number;
+        title: string;
+        summary?: string;
+        speaker?: string;
+      }>;
       action_items: Array<{
         kind: string;
         title: string;
@@ -163,16 +188,18 @@ serve(async (req) => {
       }>;
     };
 
-    // 4. Save transcript + summary.
+    // 4. Save transcript + summary + chapters.
     await admin
       .from("call_transcripts")
       .update({
         transcript: parsed.transcript,
         summary: parsed.summary,
         language: parsed.language ?? null,
+        chapters: parsed.chapters ?? [],
         status: "ready",
       })
       .eq("id", transcript_id);
+
 
     // 5. Insert action items.
     if (parsed.action_items?.length) {
@@ -258,6 +285,13 @@ type ParsedBrief = {
   language?: string;
   transcript: string;
   summary: string;
+  chapters?: Array<{
+    start_seconds: number;
+    end_seconds?: number;
+    title: string;
+    summary?: string;
+    speaker?: string;
+  }>;
   action_items: Array<{
     kind: string;
     title: string;
@@ -266,6 +300,14 @@ type ParsedBrief = {
     due_hint?: string;
   }>;
 };
+
+function formatTimecode(sec: number): string {
+  const s = Math.max(0, Math.floor(sec));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${r.toString().padStart(2, "0")}`;
+}
+
 
 async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedBrief) {
   const { data: t } = await admin
@@ -278,6 +320,8 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
   // Resolve linked event (if this came from a meeting tied to an event).
   let eventId: string | null = null;
   let eventTitle: string | null = null;
+  let stageTitle: string | null = null;
+  let stageId: string | null = null;
   if (t.call_kind === "meeting" || t.call_kind === "event") {
     const { data: mtg } = await admin
       .from("meetings")
@@ -286,7 +330,6 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
       .maybeSingle();
     if (mtg?.event_id) eventId = mtg.event_id;
     if (mtg?.circle_id && !t.circle_id) {
-      // Inherit circle from meeting if the transcript row didn't capture it.
       t.circle_id = mtg.circle_id;
     }
     if (mtg?.title) eventTitle = mtg.title;
@@ -298,20 +341,51 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
       .eq("id", eventId)
       .maybeSingle();
     eventTitle = ev?.title ?? null;
-    // Event with a host-toggled group chat → post the brief there too.
     if (ev?.group_chat_room_id && !t.circle_id) t.circle_id = ev.group_chat_room_id;
   }
+
+  // Stage recordings (Sound / Speed / Curated) → look up a friendly title.
+  if (t.call_kind === "sound_stage") {
+    const { data: s } = await admin.from("sound_stages").select("id, title").eq("id", t.call_id).maybeSingle();
+    stageTitle = s?.title ?? "Sound Stage";
+    stageId = s?.id ?? null;
+  } else if (t.call_kind === "speed_session") {
+    const { data: s } = await admin.from("speed_sessions").select("id, title, circle_id").eq("id", t.call_id).maybeSingle();
+    stageTitle = s?.title ?? "Speed Session";
+    stageId = s?.id ?? null;
+    if (s?.circle_id && !t.circle_id) t.circle_id = s.circle_id;
+  } else if (t.call_kind === "curated_stage") {
+    const { data: s } = await admin.from("curated_stages").select("id, title, type, recording_url").eq("id", t.call_id).maybeSingle();
+    stageTitle = s?.title ?? (s?.type === "scout" ? "Scout Stage" : "Showcase Stage");
+    stageId = s?.id ?? null;
+    // Persist the playback URL on the stage row so the recap UI can show it.
+    if (s?.id && t.recording_url) {
+      await admin.from("curated_stages").update({ recording_url: t.recording_url }).eq("id", s.id);
+    }
+  }
+
+  const headerTitle = stageTitle ?? eventTitle;
+  const headerEmoji = t.call_kind === "sound_stage" || t.call_kind === "curated_stage" || t.call_kind === "speed_session" ? "🎙️" : "📓";
 
   // ── 1. Build the brief message body ──
   const tasks = (parsed.action_items ?? []).filter((a) => a.kind === "task" || a.kind === "followup");
   const decisions = (parsed.action_items ?? []).filter((a) => a.kind === "decision");
   const notes = (parsed.action_items ?? []).filter((a) => a.kind === "note");
+  const chapters = parsed.chapters ?? [];
 
   const lines: string[] = [];
-  lines.push(eventTitle ? `📓 Call brief — ${eventTitle}` : "📓 Call brief");
+  lines.push(headerTitle ? `${headerEmoji} Recap — ${headerTitle}` : `${headerEmoji} Recap`);
   if (t.duration_seconds) lines.push(`Duration: ${Math.round(t.duration_seconds / 60)} min`);
   lines.push("");
   lines.push(parsed.summary);
+  if (chapters.length) {
+    lines.push("", "Chapters:");
+    chapters.forEach((c) => {
+      const tc = formatTimecode(c.start_seconds);
+      const who = c.speaker ? ` — ${c.speaker}` : "";
+      lines.push(`• ${tc} ${c.title}${who}`);
+    });
+  }
   if (decisions.length) {
     lines.push("", "Decisions:");
     decisions.forEach((d) => lines.push(`• ${d.title}`));
@@ -349,11 +423,16 @@ async function distributeBrief(admin: any, transcriptId: string, parsed: ParsedB
   attendeeIds.add(t.created_by);
 
   // ── 4. Per-attendee notification (their own items if we can match by name) ──
-  const recapUrl = t.circle_id
-    ? `/circle/${t.circle_id}/chat`
-    : eventId
-      ? `/events/${eventId}`
-      : `/inbox`;
+  const recapUrl = t.call_kind === "curated_stage" && stageId
+    ? `/circle/stage/${stageId}`
+    : t.call_kind === "sound_stage" && stageId
+      ? `/circle?tab=live`
+      : t.circle_id
+        ? `/circle/${t.circle_id}/chat`
+        : eventId
+          ? `/events/${eventId}`
+          : `/inbox`;
+
 
   const notifRows: any[] = [];
   for (const uid of attendeeIds) {

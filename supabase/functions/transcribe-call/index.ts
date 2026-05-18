@@ -146,6 +146,36 @@ serve(async (req) => {
                       additionalProperties: false,
                     },
                   },
+                  highlights: {
+                    type: "array",
+                    description: "2-5 clippable standout moments — a memorable quote, a punchline, a peak performance segment, a key insight. These become shareable cards in the recap.",
+                    items: {
+                      type: "object",
+                      properties: {
+                        start_seconds: { type: "number", description: "Start of the moment in seconds." },
+                        end_seconds: { type: "number", description: "End of the moment in seconds (typically 10-45s after start)." },
+                        quote: { type: "string", description: "The exact line or short paraphrase that makes this moment pop. Max ~200 chars." },
+                        why: { type: "string", description: "One sentence on why this stood out — emotion, insight, performance quality." },
+                        speaker: { type: "string", description: "Who said/performed it, if identifiable." },
+                      },
+                      required: ["start_seconds", "quote"],
+                      additionalProperties: false,
+                    },
+                  },
+                  co_sign_suggestions: {
+                    type: "array",
+                    description: "For Showcase/Scout stages and Speed Sessions: performers or applicants who clearly stood out and deserve a Co-sign. Empty for regular meetings.",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string", description: "Performer/applicant name as heard on the call." },
+                        reason: { type: "string", description: "One-line reason this person deserves a co-sign (e.g. 'Delivered a flawless 3-minute jazz set with original arrangement')." },
+                        confidence: { type: "string", enum: ["high", "medium", "low"] },
+                      },
+                      required: ["name", "reason"],
+                      additionalProperties: false,
+                    },
+                  },
                 },
                 required: ["transcript", "summary", "chapters", "action_items"],
                 additionalProperties: false,
@@ -186,9 +216,21 @@ serve(async (req) => {
         assignee_name?: string;
         due_hint?: string;
       }>;
+      highlights?: Array<{
+        start_seconds: number;
+        end_seconds?: number;
+        quote: string;
+        why?: string;
+        speaker?: string;
+      }>;
+      co_sign_suggestions?: Array<{
+        name: string;
+        reason: string;
+        confidence?: "high" | "medium" | "low";
+      }>;
     };
 
-    // 4. Save transcript + summary + chapters.
+    // 4. Save transcript + summary + chapters + highlights + co-sign hints.
     await admin
       .from("call_transcripts")
       .update({
@@ -196,6 +238,8 @@ serve(async (req) => {
         summary: parsed.summary,
         language: parsed.language ?? null,
         chapters: parsed.chapters ?? [],
+        highlights: parsed.highlights ?? [],
+        co_sign_suggestions: parsed.co_sign_suggestions ?? [],
         status: "ready",
       })
       .eq("id", transcript_id);

@@ -30,6 +30,7 @@ interface SoundStageRoomProps {
   token: string | null;
   title: string;
   mode: "audio" | "video";
+  format?: "open_1to1" | "open_group" | "audience";
   isHost: boolean;
   stageId: string | null;
   hostUserId: string | null;
@@ -53,7 +54,7 @@ interface Member {
 }
 
 export function SoundStageRoom({
-  open, onOpenChange, roomUrl, token, title, mode, isHost,
+  open, onOpenChange, roomUrl, token, title, mode, format = "open_group", isHost,
   stageId, hostUserId, userName, userAvatar,
 }: SoundStageRoomProps) {
   const { user } = useAuth();

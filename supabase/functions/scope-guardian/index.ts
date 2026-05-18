@@ -28,7 +28,13 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { action, projectId, brief, message, milestones } = body;
+    // Accept `action` from direct calls OR `_tool` from the agent orchestrator.
+    // Also accept snake_case `project_id` / `target_project_id` aliases.
+    const action = body.action ?? body._tool;
+    const projectId = body.projectId ?? body.project_id ?? body.target_project_id;
+    const brief = body.brief ?? body.project_brief ?? body.description ?? "";
+    const message = body.message;
+    const milestones = body.milestones;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {

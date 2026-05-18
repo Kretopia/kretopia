@@ -120,9 +120,30 @@ export function SoundStageRoom({
   const profileCache = useRef<
     Map<string, { name: string; avatar: string | null }>
   >(new Map());
+  const isHostRef = useRef(isHost);
+  const stageIdRef = useRef(stageId);
 
   // Track who the host has promoted to speaker (host-local, broadcast via app-message)
   const speakersRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    isHostRef.current = isHost;
+    stageIdRef.current = stageId;
+  }, [isHost, stageId]);
+
+  const cleanupCall = useCallback((endStage: boolean) => {
+    const call = callRef.current;
+    callRef.current = null;
+    if (call) {
+      void call.leave().catch(() => undefined);
+      void call.destroy().catch(() => undefined);
+    }
+    if (endStage && isHostRef.current && stageIdRef.current) {
+      supabase.functions
+        .invoke("end-sound-stage", { body: { stage_id: stageIdRef.current } })
+        .catch(() => undefined);
+    }
+  }, []);
 
   const localSessionId =
     callRef.current?.participants()?.local?.session_id ?? null;
@@ -292,9 +313,20 @@ export function SoundStageRoom({
     };
   }, [open, phase, mode, toast]);
 
+  // Initialize/cleanup the Daily call for this sheet session. Keep this effect
+  // independent from `phase`: changing `phase` from joining → in must not run
+  // cleanup, or the freshly joined room immediately leaves/destroys itself.
+  useEffect(() => {
+    if (!open) {
+      cleanupCall(true);
+      return;
+    }
+    return () => cleanupCall(false);
+  }, [open, roomUrl, token, cleanupCall]);
+
   // Initialize Daily call (only after mic check passes)
   useEffect(() => {
-    if (!open || !roomUrl || phase !== "joining") return;
+    if (!open || !roomUrl || phase !== "joining" || callRef.current) return;
     let cancelled = false;
 
     const init = async () => {
@@ -388,21 +420,20 @@ export function SoundStageRoom({
         });
         if (cancelled) return;
 
-        // Host starts with mic on, audience starts muted
+        // Host starts with mic on, audience starts muted. Daily already starts
+        // camera/mic from createCallObject()/join() options; after join(), the
+        // supported API is setLocalVideo()/setLocalAudio() — startCamera()
+        // throws once the meeting is joined.
         if (!isHost) {
-          call.setLocalAudio(false);
-          call.setLocalVideo(false);
+          await call.setLocalAudio(false);
+          await call.setLocalVideo(false);
           setMyAudio(false);
           setMyVideo(false);
         } else {
-          call.setLocalAudio(true);
+          await call.setLocalAudio(true);
           setMyAudio(true);
           if (mode === "video") {
             try {
-              await call.startCamera({
-                startVideoOff: false,
-                startAudioOff: false,
-              });
               await call.setLocalVideo(true);
               setMyVideo(true);
             } catch (videoError: unknown) {
@@ -438,12 +469,6 @@ export function SoundStageRoom({
 
     return () => {
       cancelled = true;
-      const call = callRef.current;
-      callRef.current = null;
-      if (call) {
-        void call.leave().catch(() => undefined);
-        void call.destroy().catch(() => undefined);
-      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, roomUrl, token, phase]);
@@ -452,8 +477,17 @@ export function SoundStageRoom({
     const call = callRef.current;
     if (!call) return;
     const next = !myAudio;
-    call.setLocalAudio(next);
-    setMyAudio(next);
+    try {
+      await call.setLocalAudio(next);
+      setMyAudio(next);
+    } catch (e: unknown) {
+      console.error("[SoundStageRoom] toggle mic failed", e);
+      toast({
+        title: "Mic unavailable",
+        description: e instanceof Error ? e.message : undefined,
+        variant: "destructive",
+      });
+    }
   };
 
   const toggleCam = async () => {
@@ -461,12 +495,7 @@ export function SoundStageRoom({
     if (!call) return;
     const next = !myVideo;
     try {
-      if (next)
-        await call.startCamera({
-          startVideoOff: false,
-          startAudioOff: !myAudio,
-        });
-      call.setLocalVideo(next);
+      await call.setLocalVideo(next);
       setMyVideo(next);
     } catch (e: unknown) {
       console.error("[SoundStageRoom] toggle camera failed", e);

@@ -223,7 +223,7 @@ export function SoundStageRoom({
           url: roomUrl,
           token: token ?? undefined,
           audioSource: true,
-          videoSource: false,
+          videoSource: mode === "video",
           userName,
           subscribeToTracksAutomatically: true,
         };

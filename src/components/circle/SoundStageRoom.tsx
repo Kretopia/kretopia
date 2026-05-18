@@ -148,9 +148,9 @@ export function SoundStageRoom({
       setMembers({});
       setHandRaised(false);
       setMyAudio(true);
-      setMyVideo(false);
+      setMyVideo(mode === "video" && isHost);
     }
-  }, [open]);
+  }, [open, mode, isHost]);
 
   // Local mic VU meter (active in both miccheck phase and inside the room
   // so the user always has visible proof their mic is hot).

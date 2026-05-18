@@ -861,6 +861,7 @@ export type Database = {
         Row: {
           call_id: string
           call_kind: string
+          chapters: Json
           circle_id: string | null
           created_at: string
           created_by: string
@@ -880,6 +881,7 @@ export type Database = {
         Insert: {
           call_id: string
           call_kind: string
+          chapters?: Json
           circle_id?: string | null
           created_at?: string
           created_by: string
@@ -899,6 +901,7 @@ export type Database = {
         Update: {
           call_id?: string
           call_kind?: string
+          chapters?: Json
           circle_id?: string | null
           created_at?: string
           created_by?: string

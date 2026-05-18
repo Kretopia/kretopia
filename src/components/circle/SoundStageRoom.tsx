@@ -58,12 +58,15 @@ export function SoundStageRoom({
   const { user } = useAuth();
   const { toast } = useToast();
   const callRef = useRef<DailyCall | null>(null);
-  const [joining, setJoining] = useState(true);
+  const [joining, setJoining] = useState(false);
+  const [phase, setPhase] = useState<"miccheck" | "joining" | "in">("miccheck");
   const [members, setMembers] = useState<Record<string, Member>>({});
   const [activeSpeakerId, setActiveSpeakerId] = useState<string | null>(null);
   const [handRaised, setHandRaised] = useState(false);
   const [myAudio, setMyAudio] = useState(true);
   const [myVideo, setMyVideo] = useState(false);
+  const [localLevel, setLocalLevel] = useState(0); // 0..1 live mic VU
+  const localLevelRef = useRef(0);
   const profileCache = useRef<Map<string, { name: string; avatar: string | null }>>(new Map());
 
   // Track who the host has promoted to speaker (host-local, broadcast via app-message)
@@ -134,37 +137,93 @@ export function SoundStageRoom({
     }
   }, []);
 
-  // Initialize call
+  // Reset to mic-check whenever the sheet opens
   useEffect(() => {
-    if (!open || !roomUrl) return;
+    if (open) {
+      setPhase("miccheck");
+      setJoining(false);
+      setMembers({});
+      setHandRaised(false);
+      setMyAudio(true);
+      setMyVideo(false);
+    }
+  }, [open]);
+
+  // Local mic VU meter (active in both miccheck phase and inside the room
+  // so the user always has visible proof their mic is hot).
+  useEffect(() => {
+    if (!open) return;
+    let stream: MediaStream | null = null;
+    let audioCtx: AudioContext | null = null;
+    let raf = 0;
+    let cancelled = false;
+    (async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
+        const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
+        audioCtx = new Ctx();
+        const src = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        src.connect(analyser);
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        const tick = () => {
+          analyser.getByteTimeDomainData(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i++) {
+            const v = (data[i] - 128) / 128;
+            sum += v * v;
+          }
+          const rms = Math.sqrt(sum / data.length);
+          const level = Math.min(1, rms * 3);
+          localLevelRef.current = level;
+          setLocalLevel(level);
+          raf = requestAnimationFrame(tick);
+        };
+        tick();
+      } catch (e: any) {
+        console.error("[SoundStageRoom] mic permission failed", e);
+        toast({
+          title: "Mic permission needed",
+          description: "Allow microphone access in your browser, then try again.",
+          variant: "destructive",
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (raf) cancelAnimationFrame(raf);
+      try { audioCtx?.close(); } catch {}
+      try { stream?.getTracks().forEach((t) => t.stop()); } catch {}
+    };
+  }, [open, toast]);
+
+  // Initialize Daily call (only after mic check passes)
+  useEffect(() => {
+    if (!open || !roomUrl || phase !== "joining") return;
     let cancelled = false;
 
     const init = async () => {
       setJoining(true);
-      // IMPORTANT: await Daily's destroy so the singleton slot is free
       await destroyExistingDailyFrameAsync();
       if (cancelled) return;
       try {
         let call: DailyCall;
+        const opts = {
+          url: roomUrl,
+          token: token ?? undefined,
+          audioSource: true,
+          videoSource: false,
+          userName,
+          subscribeToTracksAutomatically: true,
+        };
         try {
-          call = (DailyIframe as any).createCallObject({
-            url: roomUrl,
-            token: token ?? undefined,
-            audioSource: true,
-            videoSource: false, // audio-first; speakers can toggle later
-            userName,
-          });
+          call = (DailyIframe as any).createCallObject(opts);
         } catch (err: any) {
           if (String(err?.message || "").includes("Duplicate")) {
-            // Force-destroy any lingering instance and retry once
             await destroyExistingDailyFrameAsync();
-            call = (DailyIframe as any).createCallObject({
-              url: roomUrl,
-              token: token ?? undefined,
-              audioSource: true,
-              videoSource: false,
-              userName,
-            });
+            call = (DailyIframe as any).createCallObject(opts);
           } else {
             throw err;
           }
@@ -176,6 +235,8 @@ export function SoundStageRoom({
         call.on("participant-updated", onAny);
         call.on("participant-left", onAny);
         call.on("joined-meeting", onAny);
+        call.on("track-started", onAny);
+        call.on("track-stopped", onAny);
 
         call.on("active-speaker-change", (ev: any) => {
           const sid = ev?.activeSpeaker?.peerId ?? null;
@@ -198,7 +259,6 @@ export function SoundStageRoom({
             });
           }
           if (msg.type === "promote") {
-            // Host broadcasts that a uid is now a speaker
             if (msg.userId) speakersRef.current.add(msg.userId);
             refreshMembers().catch(() => {});
           }
@@ -215,8 +275,12 @@ export function SoundStageRoom({
         if (!isHost) {
           try { await call.setLocalAudio(false); } catch {}
           setMyAudio(false);
+        } else {
+          try { await call.setLocalAudio(true); } catch {}
+          setMyAudio(true);
         }
         setJoining(false);
+        setPhase("in");
         refreshMembers().catch(() => {});
       } catch (e: any) {
         console.error("[SoundStageRoom] join failed", e);
@@ -237,7 +301,7 @@ export function SoundStageRoom({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, roomUrl, token]);
+  }, [open, roomUrl, token, phase]);
 
   const toggleMic = async () => {
     const call = callRef.current;
@@ -355,7 +419,16 @@ export function SoundStageRoom({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-4 py-5 space-y-7">
-          {joining ? (
+          {phase === "miccheck" ? (
+            <MicCheckScreen
+              level={localLevel}
+              userName={userName}
+              userAvatar={userAvatar}
+              isHost={isHost}
+              onJoin={() => setPhase("joining")}
+              onCancel={leave}
+            />
+          ) : joining ? (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
               <Loader2 className="h-6 w-6 animate-spin" />
               <p className="text-sm">Walking on stage…</p>
@@ -377,6 +450,7 @@ export function SoundStageRoom({
                       onDemote={demote}
                       onMute={muteParticipant}
                       onRemove={removeParticipant}
+                      localLevel={m.isLocal ? localLevel : undefined}
                     />
                   ))}
                   {stage.length === 0 && (
@@ -415,7 +489,7 @@ export function SoundStageRoom({
                 </h3>
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-x-2 gap-y-4">
                   {audience.map((m) => (
-                    <StageTile key={m.sessionId} member={m} />
+                    <StageTile key={m.sessionId} member={m} localLevel={m.isLocal ? localLevel : undefined} />
                   ))}
                   {audience.length === 0 && (
                     <p className="col-span-full text-xs text-muted-foreground">Quiet so far.</p>
@@ -512,7 +586,7 @@ function RemoteAudio({ track }: { track: MediaStreamTrack }) {
 }
 
 function StageTile({
-  member, large, isHostView, onDemote, onMute, onRemove,
+  member, large, isHostView, onDemote, onMute, onRemove, localLevel,
 }: {
   member: Member;
   large?: boolean;
@@ -520,19 +594,30 @@ function StageTile({
   onDemote?: (m: Member) => void;
   onMute?: (m: Member) => void;
   onRemove?: (m: Member) => void;
+  localLevel?: number;
 }) {
   const size = large ? "h-16 w-16 sm:h-20 sm:w-20" : "h-12 w-12 sm:h-14 sm:w-14";
   const showHostMenu = isHostView && !member.isLocal;
+  // For the local user, drive the speaking ring off our live VU meter so they
+  // can SEE their mic working even before Daily fires active-speaker-change.
+  const liveSpeaking =
+    member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
+  const speaking = member.isSpeaking || liveSpeaking;
   return (
     <div className="flex flex-col items-center gap-1.5 text-center min-w-0">
       <div className="relative">
         <div
           className={cn(
             "rounded-full p-[2px] transition-all",
-            member.isSpeaking
+            speaking
               ? "bg-[hsl(var(--signal-teal))] shadow-[0_0_0_4px_hsl(var(--signal-teal)/0.25)]"
               : "bg-transparent",
           )}
+          style={
+            liveSpeaking
+              ? { boxShadow: `0 0 0 ${4 + Math.round((localLevel ?? 0) * 10)}px hsl(var(--signal-teal) / 0.25)` }
+              : undefined
+          }
         >
           <Avatar className={cn(size, "ring-2 ring-background")}>
             <AvatarImage src={member.avatar ?? undefined} />
@@ -591,6 +676,99 @@ function StageTile({
       {member.role === "host" && large && (
         <span className="text-[9px] text-amber-600 font-bold uppercase tracking-wide">Host</span>
       )}
+    </div>
+  );
+}
+
+function MicCheckScreen({
+  level, userName, userAvatar, isHost, onJoin, onCancel,
+}: {
+  level: number;
+  userName: string;
+  userAvatar?: string | null;
+  isHost: boolean;
+  onJoin: () => void;
+  onCancel: () => void;
+}) {
+  const detected = level > 0.04;
+  const bars = 12;
+  const lit = Math.round(level * bars * 1.4);
+  return (
+    <div className="flex flex-col items-center justify-center py-6 gap-6 text-center">
+      <div className="space-y-1">
+        <h2 className="text-lg font-black">Mic check</h2>
+        <p className="text-xs text-muted-foreground max-w-xs">
+          Say something — you should see the bars light up. This is just for you;
+          you're not live until you tap below.
+        </p>
+      </div>
+
+      <div className="relative">
+        <div
+          className="rounded-full p-1 transition-all"
+          style={{
+            background: detected ? "hsl(var(--signal-teal))" : "transparent",
+            boxShadow: detected
+              ? `0 0 0 ${6 + Math.round(level * 18)}px hsl(var(--signal-teal) / 0.22)`
+              : undefined,
+          }}
+        >
+          <Avatar className="h-24 w-24 ring-2 ring-background">
+            <AvatarImage src={userAvatar ?? undefined} />
+            <AvatarFallback className="text-2xl font-black">
+              {userName[0]?.toUpperCase() ?? "?"}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      </div>
+
+      {/* VU bars */}
+      <div className="flex items-end gap-1 h-10">
+        {Array.from({ length: bars }).map((_, i) => {
+          const active = i < lit;
+          const h = 8 + (i / bars) * 28;
+          return (
+            <div
+              key={i}
+              className={cn(
+                "w-1.5 rounded-full transition-colors",
+                active
+                  ? i < bars * 0.6
+                    ? "bg-[hsl(var(--signal-teal))]"
+                    : i < bars * 0.85
+                      ? "bg-[hsl(var(--signal-amber))]"
+                      : "bg-[hsl(var(--signal-pink))]"
+                  : "bg-muted",
+              )}
+              style={{ height: `${h}px` }}
+            />
+          );
+        })}
+      </div>
+
+      <p
+        className={cn(
+          "text-xs font-semibold",
+          detected ? "text-[hsl(var(--signal-teal))]" : "text-muted-foreground",
+        )}
+      >
+        {detected ? "Mic is hot ✓" : "No sound detected — try speaking"}
+      </p>
+
+      <div className="flex flex-col gap-2 w-full max-w-xs">
+        <Button
+          size="lg"
+          variant="lime"
+          className="rounded-full h-12 text-sm font-bold"
+          onClick={onJoin}
+        >
+          <Mic className="h-4 w-4 mr-2" />
+          {isHost ? "Go live on stage" : "Join the room"}
+        </Button>
+        <Button variant="ghost" className="rounded-full h-10 text-xs" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 }

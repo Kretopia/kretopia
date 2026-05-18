@@ -343,6 +343,18 @@ type ParsedBrief = {
     assignee_name?: string;
     due_hint?: string;
   }>;
+  highlights?: Array<{
+    start_seconds: number;
+    end_seconds?: number;
+    quote: string;
+    why?: string;
+    speaker?: string;
+  }>;
+  co_sign_suggestions?: Array<{
+    name: string;
+    reason: string;
+    confidence?: "high" | "medium" | "low";
+  }>;
 };
 
 function formatTimecode(sec: number): string {

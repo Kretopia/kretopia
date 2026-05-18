@@ -100,6 +100,7 @@ export function LiveCallsPanel() {
     setActiveRoom({
       url, name: roomName, token: null, label: "Joining call", stageId: null,
       kind: "link", mode: "video", isHost: false, hostUserId: null,
+      format: "open_group",
     });
     setCallOpen(true);
     setJoining(false);

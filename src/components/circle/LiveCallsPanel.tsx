@@ -44,12 +44,13 @@ export function LiveCallsPanel() {
   );
 
   const handleStageCreated = (data: {
-    stage_id: string; room_url: string; room_name: string; token: string; title: string; mode: "audio" | "video";
+    stage_id: string; room_url: string; room_name: string; token: string; title: string; mode: "audio" | "video"; format: "open_1to1" | "open_group" | "audience";
   }) => {
     setActiveRoom({
       url: data.room_url, name: data.room_name, token: data.token,
       label: data.title, stageId: data.stage_id,
       kind: "stage", mode: data.mode, isHost: true, hostUserId: user?.id ?? null,
+      format: data.format,
     });
     setCallOpen(true);
   };

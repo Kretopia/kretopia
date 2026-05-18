@@ -22,6 +22,15 @@ export function destroyExistingDailyFrame(): void {
   try { stale.destroy?.(); } catch {}
 }
 
+/** Async variant — awaits Daily's destroy promise so the singleton slot is
+ *  actually free before the next createCallObject/createFrame call. */
+export async function destroyExistingDailyFrameAsync(): Promise<void> {
+  const stale = getStaleInstance();
+  if (!stale) return;
+  try { await stale.leave?.(); } catch {}
+  try { await stale.destroy?.(); } catch {}
+}
+
 export function createDailyFrame(
   container: HTMLElement,
   props: Record<string, any>,

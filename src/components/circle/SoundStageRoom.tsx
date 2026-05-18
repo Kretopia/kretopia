@@ -586,7 +586,7 @@ function RemoteAudio({ track }: { track: MediaStreamTrack }) {
 }
 
 function StageTile({
-  member, large, isHostView, onDemote, onMute, onRemove,
+  member, large, isHostView, onDemote, onMute, onRemove, localLevel,
 }: {
   member: Member;
   large?: boolean;
@@ -594,19 +594,30 @@ function StageTile({
   onDemote?: (m: Member) => void;
   onMute?: (m: Member) => void;
   onRemove?: (m: Member) => void;
+  localLevel?: number;
 }) {
   const size = large ? "h-16 w-16 sm:h-20 sm:w-20" : "h-12 w-12 sm:h-14 sm:w-14";
   const showHostMenu = isHostView && !member.isLocal;
+  // For the local user, drive the speaking ring off our live VU meter so they
+  // can SEE their mic working even before Daily fires active-speaker-change.
+  const liveSpeaking =
+    member.isLocal && member.audioOn && (localLevel ?? 0) > 0.06;
+  const speaking = member.isSpeaking || liveSpeaking;
   return (
     <div className="flex flex-col items-center gap-1.5 text-center min-w-0">
       <div className="relative">
         <div
           className={cn(
             "rounded-full p-[2px] transition-all",
-            member.isSpeaking
+            speaking
               ? "bg-[hsl(var(--signal-teal))] shadow-[0_0_0_4px_hsl(var(--signal-teal)/0.25)]"
               : "bg-transparent",
           )}
+          style={
+            liveSpeaking
+              ? { boxShadow: `0 0 0 ${4 + Math.round((localLevel ?? 0) * 10)}px hsl(var(--signal-teal) / 0.25)` }
+              : undefined
+          }
         >
           <Avatar className={cn(size, "ring-2 ring-background")}>
             <AvatarImage src={member.avatar ?? undefined} />

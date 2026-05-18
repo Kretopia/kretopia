@@ -13,6 +13,7 @@ import { GoLiveSheet } from "./GoLiveSheet";
 import { CallSheetUpcoming } from "./CallSheetUpcoming";
 import { CuratedStagesRail } from "./CuratedStagesRail";
 import { CreateStageSheet } from "./CreateStageSheet";
+import { SoundStageRoom } from "./SoundStageRoom";
 
 /**
  * Sound Stages — the live tab on /circle.
@@ -32,6 +33,7 @@ export function LiveCallsPanel() {
   const [activeRoom, setActiveRoom] = useState<{
     url: string; name: string; token: string | null;
     label: string; stageId: string | null;
+    kind: "stage" | "link"; mode: "audio" | "video"; isHost: boolean;
   } | null>(null);
 
   const myName = useMemo(
@@ -40,11 +42,12 @@ export function LiveCallsPanel() {
   );
 
   const handleStageCreated = (data: {
-    stage_id: string; room_url: string; room_name: string; token: string; title: string;
+    stage_id: string; room_url: string; room_name: string; token: string; title: string; mode: "audio" | "video";
   }) => {
     setActiveRoom({
       url: data.room_url, name: data.room_name, token: data.token,
       label: data.title, stageId: data.stage_id,
+      kind: "stage", mode: data.mode, isHost: true,
     });
     setCallOpen(true);
   };
@@ -62,6 +65,7 @@ export function LiveCallsPanel() {
       setActiveRoom({
         url: data.room_url, name: data.room_name, token: data.token,
         label: stage.title, stageId: stage.id,
+        kind: "stage", mode: stage.mode, isHost: stage.host_user_id === user.id,
       });
       setCallOpen(true);
     } catch (e: any) {
@@ -72,8 +76,8 @@ export function LiveCallsPanel() {
 
   const handleCallClose = async (next: boolean) => {
     setCallOpen(next);
-    if (!next && activeRoom?.stageId) {
-      // If host closes, mark stage ended (best-effort; server checks ownership)
+    if (!next && activeRoom?.stageId && activeRoom.isHost) {
+      // Host leaving → end the stage
       supabase.functions.invoke("end-sound-stage", {
         body: { stage_id: activeRoom.stageId },
       }).catch(() => {});
@@ -89,7 +93,10 @@ export function LiveCallsPanel() {
     }
     setJoining(true);
     const roomName = url.split("/").pop()?.split("?")[0] ?? "Call";
-    setActiveRoom({ url, name: roomName, token: null, label: "Joining call", stageId: null });
+    setActiveRoom({
+      url, name: roomName, token: null, label: "Joining call", stageId: null,
+      kind: "link", mode: "video", isHost: false,
+    });
     setCallOpen(true);
     setJoining(false);
   };
@@ -181,7 +188,21 @@ export function LiveCallsPanel() {
       <GoLiveSheet open={goLiveOpen} onOpenChange={setGoLiveOpen} onCreated={handleStageCreated} />
       <CreateStageSheet open={scheduleOpen} onOpenChange={setScheduleOpen} onCreated={(id) => id && navigate(`/circle/stage/${id}`)} />
 
-      {activeRoom && (
+      {activeRoom && activeRoom.kind === "stage" && (
+        <SoundStageRoom
+          open={callOpen}
+          onOpenChange={handleCallClose}
+          roomUrl={activeRoom.url}
+          token={activeRoom.token}
+          title={activeRoom.label}
+          mode={activeRoom.mode}
+          isHost={activeRoom.isHost}
+          stageId={activeRoom.stageId}
+          userName={myName}
+          userAvatar={user?.user_metadata?.avatar_url ?? null}
+        />
+      )}
+      {activeRoom && activeRoom.kind === "link" && (
         <VideoCallSheet
           open={callOpen}
           onOpenChange={handleCallClose}

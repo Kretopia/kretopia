@@ -14,7 +14,8 @@ const DAILY_API = "https://api.daily.co/v1";
  * Anyone authenticated can join a live, public Open Stage.
  */
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS")
+    return new Response(null, { headers: corsHeaders });
   try {
     const DAILY_API_KEY = Deno.env.get("DAILY_API_KEY");
     if (!DAILY_API_KEY) throw new Error("DAILY_API_KEY not configured");
@@ -22,7 +23,8 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     const supabase = createClient(
@@ -38,7 +40,8 @@ serve(async (req) => {
     const { data: claims } = await supabase.auth.getClaims(t);
     if (!claims?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     const userId = claims.claims.sub as string;
@@ -48,12 +51,15 @@ serve(async (req) => {
 
     const { data: stage } = await admin
       .from("sound_stages")
-      .select("id, host_user_id, room_name, room_url, is_live, format, participant_count, mode")
+      .select(
+        "id, host_user_id, room_name, room_url, is_live, format, participant_count, mode",
+      )
       .eq("id", stage_id)
       .maybeSingle();
     if (!stage || !stage.is_live) {
       return new Response(JSON.stringify({ error: "Stage not live" }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -61,7 +67,10 @@ serve(async (req) => {
     const isHost = stage.host_user_id === userId;
     const tokenRes = await fetch(`${DAILY_API}/meeting-tokens`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${DAILY_API_KEY}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${DAILY_API_KEY}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         properties: {
           room_name: stage.room_name,
@@ -89,13 +98,21 @@ serve(async (req) => {
         room_name: stage.room_name,
         token: meetingToken,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      },
     );
   } catch (e) {
     console.error("[join-sound-stage]", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({
+        error: e instanceof Error ? e.message : "Unknown error",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });

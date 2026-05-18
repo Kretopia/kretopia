@@ -286,8 +286,8 @@ export function SoundStageRoom({
     return () => {
       cancelled = true;
       if (raf) cancelAnimationFrame(raf);
-        void audioCtx?.close().catch(() => undefined);
-        stream?.getTracks().forEach((t) => t.stop());
+      void audioCtx?.close().catch(() => undefined);
+      stream?.getTracks().forEach((t) => t.stop());
       setLocalCamStream(null);
     };
   }, [open, phase, mode, toast]);
@@ -338,40 +338,46 @@ export function SoundStageRoom({
         call.on("track-started", onAny);
         call.on("track-stopped", onAny);
 
-        call.on("active-speaker-change", (ev: DailyEventObjectActiveSpeakerChange) => {
-          const sid = ev?.activeSpeaker?.peerId ?? null;
-          setActiveSpeakerId(sid);
-          setMembers((prev) => {
-            const copy = { ...prev };
-            Object.values(copy).forEach((m) => {
-              m.isSpeaking = m.sessionId === sid;
-            });
-            return copy;
-          });
-        });
-
-        call.on("app-message", (ev: DailyEventObjectAppMessage<StageMessage>) => {
-          const msg = ev?.data;
-          if (!msg?.type) return;
-          if (msg.type === "raise-hand") {
+        call.on(
+          "active-speaker-change",
+          (ev: DailyEventObjectActiveSpeakerChange) => {
+            const sid = ev?.activeSpeaker?.peerId ?? null;
+            setActiveSpeakerId(sid);
             setMembers((prev) => {
-              const sid = ev.fromId;
-              if (!prev[sid]) return prev;
-              return {
-                ...prev,
-                [sid]: { ...prev[sid], handRaised: !!msg.raised },
-              };
+              const copy = { ...prev };
+              Object.values(copy).forEach((m) => {
+                m.isSpeaking = m.sessionId === sid;
+              });
+              return copy;
             });
-          }
-          if (msg.type === "promote") {
-            if (msg.userId) speakersRef.current.add(msg.userId);
-            refreshMembers().catch(() => {});
-          }
-          if (msg.type === "demote") {
-            if (msg.userId) speakersRef.current.delete(msg.userId);
-            refreshMembers().catch(() => {});
-          }
-        });
+          },
+        );
+
+        call.on(
+          "app-message",
+          (ev: DailyEventObjectAppMessage<StageMessage>) => {
+            const msg = ev?.data;
+            if (!msg?.type) return;
+            if (msg.type === "raise-hand") {
+              setMembers((prev) => {
+                const sid = ev.fromId;
+                if (!prev[sid]) return prev;
+                return {
+                  ...prev,
+                  [sid]: { ...prev[sid], handRaised: !!msg.raised },
+                };
+              });
+            }
+            if (msg.type === "promote") {
+              if (msg.userId) speakersRef.current.add(msg.userId);
+              refreshMembers().catch(() => {});
+            }
+            if (msg.type === "demote") {
+              if (msg.userId) speakersRef.current.delete(msg.userId);
+              refreshMembers().catch(() => {});
+            }
+          },
+        );
 
         await call.join({
           url: roomUrl,
@@ -402,7 +408,8 @@ export function SoundStageRoom({
             } catch (videoError: unknown) {
               console.error("[SoundStageRoom] camera start failed", videoError);
               setMyVideo(false);
-              const message = videoError instanceof Error ? videoError.message : null;
+              const message =
+                videoError instanceof Error ? videoError.message : null;
               toast({
                 title: "Camera didn't start",
                 description:
@@ -468,8 +475,7 @@ export function SoundStageRoom({
       toast({
         title: "Camera unavailable",
         description:
-          message ||
-          "Check camera permission or close another app using it.",
+          message || "Check camera permission or close another app using it.",
         variant: "destructive",
       });
     }
@@ -486,10 +492,7 @@ export function SoundStageRoom({
   const promote = async (m: Member) => {
     if (!isHost || !m.userId) return;
     speakersRef.current.add(m.userId);
-    callRef.current?.sendAppMessage(
-      { type: "promote", userId: m.userId },
-      "*",
-    );
+    callRef.current?.sendAppMessage({ type: "promote", userId: m.userId }, "*");
     refreshMembers();
     toast({ title: `${m.name} is now on stage` });
   };

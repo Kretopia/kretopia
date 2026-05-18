@@ -96,7 +96,7 @@ export function LiveCallsPanel() {
     const roomName = url.split("/").pop()?.split("?")[0] ?? "Call";
     setActiveRoom({
       url, name: roomName, token: null, label: "Joining call", stageId: null,
-      kind: "link", mode: "video", isHost: false,
+      kind: "link", mode: "video", isHost: false, hostUserId: null,
     });
     setCallOpen(true);
     setJoining(false);

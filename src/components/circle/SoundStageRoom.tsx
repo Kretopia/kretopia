@@ -54,7 +54,7 @@ interface Member {
 
 export function SoundStageRoom({
   open, onOpenChange, roomUrl, token, title, mode, isHost,
-  stageId, userName, userAvatar,
+  stageId, hostUserId, userName, userAvatar,
 }: SoundStageRoomProps) {
   const { user } = useAuth();
   const { toast } = useToast();

@@ -82,15 +82,16 @@ serve(async (req) => {
           {
             role: "system",
             content:
-              "You are Thrive Copilot's call analyst. Transcribe the audio verbatim, then summarize the key decisions, and extract every concrete action item (who, what, when). Be precise. Do not invent attendees or commitments. If a name is unclear, use 'Speaker 1', 'Speaker 2', etc.",
+              "You are Thrive's call analyst. The recording may be a meeting, a Sound Stage (Clubhouse-style audio room), a Speed Session (rapid 1:1 rotations), or a Curated Stage (Showcase performance or Scout audition). Transcribe verbatim, summarize key decisions or standout moments, generate time-stamped chapters spanning the full duration, and extract concrete action items (who, what, when). Be precise. Do not invent attendees or commitments. If a name is unclear, use 'Speaker 1', 'Speaker 2'. For Showcase/Scout stages, treat each performer or applicant turn as a chapter and call out co-signs, credits, or follow-ups in action_items.",
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Transcribe and analyze this call recording. Use the `record_call_analysis` tool with the full transcript, a 2-4 sentence summary, and structured action items.",
+                text: "Transcribe and analyze this call recording. Use the `record_call_analysis` tool with the full transcript, a 2-4 sentence summary, time-stamped chapters covering the entire recording, and structured action items.",
               },
+
               {
                 type: "input_audio",
                 input_audio: { data: base64Audio, format: "mp4" },

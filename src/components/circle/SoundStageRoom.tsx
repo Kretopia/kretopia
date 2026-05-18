@@ -15,6 +15,8 @@ import {
   VideoOff,
   Crown,
   MoreVertical,
+  Captions,
+  CaptionsOff,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -116,6 +118,12 @@ export function SoundStageRoom({
   const [localCamStream, setLocalCamStream] = useState<MediaStream | null>(
     null,
   );
+  // Live captions (Phase 3C). Rolling window of recent finalized lines.
+  const [captionsOn, setCaptionsOn] = useState(false);
+  const [captionsStarting, setCaptionsStarting] = useState(false);
+  const [captions, setCaptions] = useState<
+    Array<{ id: string; speaker: string; text: string; ts: number }>
+  >([]);
   const localLevelRef = useRef(0);
   const profileCache = useRef<
     Map<string, { name: string; avatar: string | null }>

@@ -152,10 +152,17 @@ export function SoundStageRoom({
     }
   }, [open, mode, isHost]);
 
-  // Local mic VU meter (active in both miccheck phase and inside the room
-  // so the user always has visible proof their mic is hot).
+  // Local mic + camera preview — ONLY during mic-check. We must release the
+  // devices before Daily joins, otherwise the camera/mic are locked by this
+  // preview and Daily's setLocalVideo/Audio silently fails (the user lands
+  // in what looks like an audio-only room even though they picked video).
   useEffect(() => {
-    if (!open) return;
+    if (!open || phase !== "miccheck") {
+      setLocalCamStream(null);
+      setLocalLevel(0);
+      localLevelRef.current = 0;
+      return;
+    }
     let stream: MediaStream | null = null;
     let audioCtx: AudioContext | null = null;
     let raf = 0;
@@ -206,7 +213,7 @@ export function SoundStageRoom({
       try { stream?.getTracks().forEach((t) => t.stop()); } catch {}
       setLocalCamStream(null);
     };
-  }, [open, mode, toast]);
+  }, [open, phase, mode, toast]);
 
   // Initialize Daily call (only after mic check passes)
   useEffect(() => {
@@ -216,6 +223,8 @@ export function SoundStageRoom({
     const init = async () => {
       setJoining(true);
       await destroyExistingDailyFrameAsync();
+      // Give the mic-check preview a tick to fully release camera/mic on mobile
+      await new Promise((r) => setTimeout(r, 250));
       if (cancelled) return;
       try {
         let call: DailyCall;

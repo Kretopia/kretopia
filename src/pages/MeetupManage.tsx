@@ -420,15 +420,27 @@ const AttendeesTab = ({ eventId, onInvite }: { eventId: string; onInvite: () => 
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("jam_participants")
-        .select("id, user_id, guest_name, guest_email, status, joined_at, profiles:user_id(full_name, avatar_url, username)")
+        .select("id, user_id, guest_name, guest_email, status, joined_at")
         .eq("jam_id", eventId)
         .order("joined_at", { ascending: false })
         .limit(200);
-      setList((data as any[]) || []);
+      if (error) console.error("[AttendeesTab]", error);
+      const rows = (data as any[]) || [];
+      const userIds = rows.map((r) => r.user_id).filter(Boolean);
+      let profilesById: Record<string, any> = {};
+      if (userIds.length) {
+        const { data: profs } = await supabase
+          .from("public_profiles_safe")
+          .select("user_id, full_name, avatar_url, username")
+          .in("user_id", userIds);
+        (profs || []).forEach((p: any) => { profilesById[p.user_id] = p; });
+      }
+      setList(rows.map((r) => ({ ...r, profiles: r.user_id ? profilesById[r.user_id] : null })));
       setLoading(false);
-    })().catch(() => {
+    })().catch((e) => {
+      console.error("[AttendeesTab]", e);
       setList([]);
       setLoading(false);
     });

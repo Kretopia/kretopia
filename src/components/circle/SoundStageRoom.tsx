@@ -152,10 +152,17 @@ export function SoundStageRoom({
     }
   }, [open, mode, isHost]);
 
-  // Local mic VU meter (active in both miccheck phase and inside the room
-  // so the user always has visible proof their mic is hot).
+  // Local mic + camera preview — ONLY during mic-check. We must release the
+  // devices before Daily joins, otherwise the camera/mic are locked by this
+  // preview and Daily's setLocalVideo/Audio silently fails (the user lands
+  // in what looks like an audio-only room even though they picked video).
   useEffect(() => {
-    if (!open) return;
+    if (!open || phase !== "miccheck") {
+      setLocalCamStream(null);
+      setLocalLevel(0);
+      localLevelRef.current = 0;
+      return;
+    }
     let stream: MediaStream | null = null;
     let audioCtx: AudioContext | null = null;
     let raf = 0;

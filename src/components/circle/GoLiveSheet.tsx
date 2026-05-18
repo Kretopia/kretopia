@@ -46,7 +46,7 @@ export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {
       });
       if (error) throw error;
       if (!data?.room_url) throw new Error("No room");
-      onCreated({ ...data, title: title.trim(), mode });
+      onCreated({ ...data, title: title.trim(), mode, format });
       onOpenChange(false);
       setTitle(""); setVibe(null);
     } catch (e: any) {

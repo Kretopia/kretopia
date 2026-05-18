@@ -162,8 +162,13 @@ export function SoundStageRoom({
     let cancelled = false;
     (async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const wantVideo = mode === "video";
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: wantVideo ? { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" } : false,
+        });
         if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
+        if (wantVideo) setLocalCamStream(stream);
         const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
         audioCtx = new Ctx();
         const src = audioCtx.createMediaStreamSource(stream);
@@ -186,10 +191,10 @@ export function SoundStageRoom({
         };
         tick();
       } catch (e: any) {
-        console.error("[SoundStageRoom] mic permission failed", e);
+        console.error("[SoundStageRoom] media permission failed", e);
         toast({
-          title: "Mic permission needed",
-          description: "Allow microphone access in your browser, then try again.",
+          title: mode === "video" ? "Camera + mic needed" : "Mic permission needed",
+          description: "Allow access in your browser, then try again.",
           variant: "destructive",
         });
       }
@@ -199,8 +204,9 @@ export function SoundStageRoom({
       if (raf) cancelAnimationFrame(raf);
       try { audioCtx?.close(); } catch {}
       try { stream?.getTracks().forEach((t) => t.stop()); } catch {}
+      setLocalCamStream(null);
     };
-  }, [open, toast]);
+  }, [open, mode, toast]);
 
   // Initialize Daily call (only after mic check passes)
   useEffect(() => {

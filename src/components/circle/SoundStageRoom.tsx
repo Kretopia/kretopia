@@ -120,9 +120,30 @@ export function SoundStageRoom({
   const profileCache = useRef<
     Map<string, { name: string; avatar: string | null }>
   >(new Map());
+  const isHostRef = useRef(isHost);
+  const stageIdRef = useRef(stageId);
 
   // Track who the host has promoted to speaker (host-local, broadcast via app-message)
   const speakersRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    isHostRef.current = isHost;
+    stageIdRef.current = stageId;
+  }, [isHost, stageId]);
+
+  const cleanupCall = useCallback((endStage: boolean) => {
+    const call = callRef.current;
+    callRef.current = null;
+    if (call) {
+      void call.leave().catch(() => undefined);
+      void call.destroy().catch(() => undefined);
+    }
+    if (endStage && isHostRef.current && stageIdRef.current) {
+      supabase.functions
+        .invoke("end-sound-stage", { body: { stage_id: stageIdRef.current } })
+        .catch(() => undefined);
+    }
+  }, []);
 
   const localSessionId =
     callRef.current?.participants()?.local?.session_id ?? null;

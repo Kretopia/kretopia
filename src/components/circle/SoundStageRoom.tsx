@@ -213,7 +213,7 @@ export function SoundStageRoom({
       try { stream?.getTracks().forEach((t) => t.stop()); } catch {}
       setLocalCamStream(null);
     };
-  }, [open, mode, toast]);
+  }, [open, phase, mode, toast]);
 
   // Initialize Daily call (only after mic check passes)
   useEffect(() => {

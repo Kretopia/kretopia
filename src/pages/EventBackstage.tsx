@@ -403,7 +403,7 @@ const EventBackstage = () => {
     try {
       const { data: parts, error } = await supabase
         .from("jam_participants")
-        .select("user_id, status, checked_in_at, joined_at")
+        .select("user_id, guest_name, guest_email, status, checked_in_at, joined_at")
         .eq("jam_id", ev.id);
       if (error) throw error;
       if (!parts || parts.length === 0) {
@@ -435,8 +435,8 @@ const EventBackstage = () => {
       const rows = parts.map((p: any) => {
         const prof = p.user_id ? profileMap[p.user_id] : null;
         return [
-          prof?.name || "Guest",
-          prof?.email || "",
+          prof?.name || p.guest_name || "Guest",
+          prof?.email || p.guest_email || "",
           prof?.username || "",
           p.status || "",
           p.joined_at ? new Date(p.joined_at).toISOString() : "",

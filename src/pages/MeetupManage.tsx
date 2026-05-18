@@ -422,13 +422,16 @@ const AttendeesTab = ({ eventId, onInvite }: { eventId: string; onInvite: () => 
     (async () => {
       const { data } = await supabase
         .from("jam_participants")
-        .select("id, user_id, status, created_at, profiles:user_id(full_name, avatar_url, username)")
+        .select("id, user_id, guest_name, guest_email, status, joined_at, profiles:user_id(full_name, avatar_url, username)")
         .eq("jam_id", eventId)
-        .order("created_at", { ascending: false })
+        .order("joined_at", { ascending: false })
         .limit(200);
       setList((data as any[]) || []);
       setLoading(false);
-    })();
+    })().catch(() => {
+      setList([]);
+      setLoading(false);
+    });
   }, [eventId]);
 
   return (
@@ -451,8 +454,11 @@ const AttendeesTab = ({ eventId, onInvite }: { eventId: string; onInvite: () => 
                 {p.profiles?.avatar_url && <img src={p.profiles.avatar_url} alt="" className="w-full h-full object-cover" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm line-clamp-1">{p.profiles?.full_name || "Member"}</p>
-                <p className="text-[10px] text-muted-foreground">{format(new Date(p.created_at), "MMM d")}</p>
+                <p className="font-bold text-sm line-clamp-1">{p.profiles?.full_name || p.guest_name || "Guest"}</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {p.profiles?.username ? `@${p.profiles.username} · ` : p.guest_email ? `${p.guest_email} · ` : ""}
+                  {format(new Date(p.joined_at), "MMM d")}
+                </p>
               </div>
               <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{p.status || "going"}</Badge>
             </div>

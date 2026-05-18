@@ -11,7 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 interface Guest {
-  user_id: string;
+  id: string;
+  user_id: string | null;
   full_name: string | null;
   username: string | null;
   avatar_url: string | null;
@@ -19,6 +20,7 @@ interface Guest {
   bio: string | null;
   location: string | null;
   is_host?: boolean;
+  is_guest?: boolean;
 }
 
 interface Props {
@@ -56,18 +58,36 @@ export const EventGuestRoster = ({
       try {
         const { data: parts } = await supabase
           .from("jam_participants")
-          .select("user_id")
+          .select("id, user_id, guest_name, guest_email, joined_at")
           .eq("jam_id", eventId)
           .in("status", ["going", "interested"]);
-        const userIds = Array.from(new Set([hostId, ...(parts || []).map((p) => p.user_id)]));
-        if (userIds.length === 0) { setGuests([]); return; }
+        const participantRows = parts || [];
+        const userIds = Array.from(new Set([hostId, ...participantRows.map((p) => p.user_id).filter(Boolean)])) as string[];
         const { data: profiles } = await supabase
-          .from("profiles")
+          .from("public_profiles_safe")
           .select("user_id, full_name, username, avatar_url, role, bio, location")
           .in("user_id", userIds);
-        const list: Guest[] = (profiles || [])
-          .map((p) => ({ ...p, is_host: p.user_id === hostId }))
-          .sort((a, b) => (a.is_host ? -1 : b.is_host ? 1 : 0));
+        const profileMap = new Map((profiles || []).map((p) => [p.user_id, p]));
+        const hostProfile = profileMap.get(hostId);
+        const hostGuest: Guest | null = hostProfile ? { ...hostProfile, id: `host:${hostId}`, is_host: true, is_guest: false } : null;
+        const list: Guest[] = [
+          ...(hostGuest ? [hostGuest] : []),
+          ...participantRows.map((p) => {
+            const profile = p.user_id ? profileMap.get(p.user_id) : null;
+            return {
+              id: p.user_id ? `user:${p.user_id}` : `guest:${p.id}`,
+              user_id: p.user_id,
+              full_name: profile?.full_name || p.guest_name || "Guest",
+              username: profile?.username || null,
+              avatar_url: profile?.avatar_url || null,
+              role: profile?.role || (p.user_id ? null : "Guest RSVP"),
+              bio: profile?.bio || null,
+              location: profile?.location || null,
+              is_host: p.user_id === hostId,
+              is_guest: !p.user_id,
+            } satisfies Guest;
+          }).filter((g) => !g.is_host),
+        ];
         setGuests(list);
 
         // Load connection status for current user vs each guest
@@ -98,6 +118,10 @@ export const EventGuestRoster = ({
       navigate("/auth");
       return;
     }
+    if (!guest.user_id) {
+      toast({ title: "Guest RSVP", description: "They need to create a profile before you can connect." });
+      return;
+    }
     if (guest.user_id === currentUserId) return;
     setActing(true);
     try {
@@ -118,6 +142,7 @@ export const EventGuestRoster = ({
   };
 
   const openProfile = (g: Guest) => {
+    if (!g.user_id) return;
     if (g.username) navigate(`/u/${g.username}`);
     else navigate(`/profile/${g.user_id}`);
   };
@@ -167,7 +192,7 @@ export const EventGuestRoster = ({
           ) : (
             <ul className="divide-y divide-border rounded-lg border border-border overflow-hidden">
               {guests.map((g) => (
-                <li key={g.user_id}>
+                <li key={g.id}>
                   <button
                     onClick={() => setSelected(g)}
                     className="w-full flex items-center gap-3 p-3 hover:bg-accent/40 active:bg-accent/60 transition text-left"
@@ -185,6 +210,9 @@ export const EventGuestRoster = ({
                         </p>
                         {g.is_host && (
                           <Badge variant="secondary" className="text-[10px] shrink-0">Host</Badge>
+                        )}
+                        {g.is_guest && (
+                          <Badge variant="outline" className="text-[10px] shrink-0">RSVP</Badge>
                         )}
                       </div>
                       {g.role && (
@@ -239,13 +267,22 @@ export const EventGuestRoster = ({
                     <p className="text-sm whitespace-pre-wrap">{selected.bio}</p>
                   </div>
                 )}
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => openProfile(selected)}>
-                  View full profile <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
-                </Button>
+                {selected.user_id ? (
+                  <Button variant="ghost" size="sm" className="w-full" onClick={() => openProfile(selected)}>
+                    View full profile <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground rounded-lg border border-border bg-muted/30 p-3">
+                    Guest RSVP only — they can claim this RSVP by creating a profile with the same email.
+                  </p>
+                )}
               </div>
 
               <div className="border-t border-border p-4 space-y-2">
                 {(() => {
+                  if (!selected.user_id) return (
+                    <Badge variant="outline" className="w-full justify-center py-2.5">Waiting for profile</Badge>
+                  );
                   const status = connections[selected.user_id] || "none";
                   if (selected.user_id === currentUserId) return (
                     <Badge variant="outline" className="w-full justify-center py-2.5">This is you</Badge>

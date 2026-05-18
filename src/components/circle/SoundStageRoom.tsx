@@ -141,15 +141,34 @@ export function SoundStageRoom({
 
     const init = async () => {
       setJoining(true);
-      destroyExistingDailyFrame();
+      // IMPORTANT: await Daily's destroy so the singleton slot is free
+      await destroyExistingDailyFrameAsync();
+      if (cancelled) return;
       try {
-        const call = (DailyIframe as any).createCallObject({
-          url: roomUrl,
-          token: token ?? undefined,
-          audioSource: true,
-          videoSource: false, // audio-first; speakers can toggle later
-          userName,
-        });
+        let call: DailyCall;
+        try {
+          call = (DailyIframe as any).createCallObject({
+            url: roomUrl,
+            token: token ?? undefined,
+            audioSource: true,
+            videoSource: false, // audio-first; speakers can toggle later
+            userName,
+          });
+        } catch (err: any) {
+          if (String(err?.message || "").includes("Duplicate")) {
+            // Force-destroy any lingering instance and retry once
+            await destroyExistingDailyFrameAsync();
+            call = (DailyIframe as any).createCallObject({
+              url: roomUrl,
+              token: token ?? undefined,
+              audioSource: true,
+              videoSource: false,
+              userName,
+            });
+          } else {
+            throw err;
+          }
+        }
         callRef.current = call;
 
         const onAny = () => { refreshMembers().catch(() => {}); };

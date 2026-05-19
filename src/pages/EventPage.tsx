@@ -409,6 +409,33 @@ const EventPage = () => {
         )}
 
         <div className="max-w-2xl mx-auto px-3 sm:px-4 pb-24 -mt-8 relative z-10">
+
+          {/* RSVP success banner (after guest quick-RSVP) */}
+          {typeof window !== "undefined" && new URLSearchParams(window.location.search).get("rsvp") === "confirmed" && (
+            <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/30 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+              <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-foreground">You're going! 🎉</p>
+                <p className="text-sm text-muted-foreground">
+                  Confirmation sent to{" "}
+                  <span className="text-foreground font-medium">
+                    {new URLSearchParams(window.location.search).get("email") || "your email"}
+                  </span>
+                  . Here's the full event below.
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 -mr-1 -mt-1 shrink-0"
+                onClick={() => navigate(`/event/${event.id}`, { replace: true })}
+                aria-label="Dismiss"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          
           
           {/* Cancelled/Completed Banner */}
           {isCancelled && (

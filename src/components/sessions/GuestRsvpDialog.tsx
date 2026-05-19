@@ -148,6 +148,21 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, start
         await (supabase as any).from("event_rsvp_answers").insert(answerRows);
       }
 
+      const eventTimezone = "America/Port_of_Spain";
+      const eventDate = startTime
+        ? new Date(startTime).toLocaleDateString("en-US", {
+            weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: eventTimezone,
+          })
+        : undefined;
+      const eventTime = startTime
+        ? new Date(startTime).toLocaleTimeString("en-US", {
+            hour: "numeric", minute: "2-digit", timeZoneName: "short", timeZone: eventTimezone,
+          })
+        : undefined;
+      const venue = venueName
+        ? (venueAddress ? `${venueName}, ${venueAddress}` : venueName)
+        : undefined;
+
       supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "event-registration-confirmation",
@@ -157,6 +172,9 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, start
             attendeeName: parsed.data.guest_name,
             attendeeEmail: parsed.data.guest_email,
             eventTitle,
+            eventDate,
+            eventTime,
+            eventVenue: venue,
             eventUrl: `${window.location.origin}/event/${eventId}`,
             passUrl: guestToken
               ? `${window.location.origin}/event/${eventId}/pass?token=${encodeURIComponent(guestToken)}&name=${encodeURIComponent(parsed.data.guest_name)}`
@@ -176,12 +194,14 @@ export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, start
 
       onOpenChange(false);
       onRsvpComplete?.();
+      // Land on the full event page (not gated) with a success banner.
       const qs = new URLSearchParams({
+        rsvp: "confirmed",
         name: parsed.data.guest_name,
         email: parsed.data.guest_email,
       });
       if (guestToken) qs.set("token", guestToken);
-      navigate(`/event/${eventId}/confirmed?${qs.toString()}`);
+      navigate(`/event/${eventId}?${qs.toString()}`);
     } catch (err: any) {
       toast({ title: "Couldn't RSVP", description: err?.message || "Try again", variant: "destructive" });
     } finally {

@@ -57,23 +57,42 @@ serve(async (req) => {
     // Service client for cross-user reads
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Verify caller is project owner/collaborator for this event
-    const { data: project } = await admin
-      .from("projects")
+    // Verify caller is event host (creator) or project collaborator.
+    // Events may exist without a linked project (legacy / failed studio creation),
+    // so fall back to creative_jams.created_by.
+    const { data: eventRow } = await admin
+      .from("creative_jams")
       .select("id, created_by")
-      .eq("event_id", event_id)
+      .eq("id", event_id)
       .maybeSingle();
-    if (!project) {
-      return new Response(JSON.stringify({ error: "Event project not found" }), {
+    if (!eventRow) {
+      return new Response(JSON.stringify({ error: "Event not found" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    let isHost = project.created_by === user.id;
+    let isHost = eventRow.created_by === user.id;
     if (!isHost) {
-      const { data: collab } = await admin
-        .from("project_collaborators")
-        .select("id").eq("project_id", project.id).eq("user_id", user.id).maybeSingle();
-      isHost = !!collab;
+      const { data: project } = await admin
+        .from("projects")
+        .select("id, created_by")
+        .eq("event_id", event_id)
+        .maybeSingle();
+      if (project) {
+        isHost = project.created_by === user.id;
+        if (!isHost) {
+          const { data: collab } = await admin
+            .from("project_collaborators")
+            .select("id").eq("project_id", project.id).eq("user_id", user.id).maybeSingle();
+          isHost = !!collab;
+        }
+      }
+      // Also allow event co-hosts
+      if (!isHost) {
+        const { data: cohost } = await admin
+          .from("event_cohosts")
+          .select("user_id").eq("event_id", event_id).eq("user_id", user.id).maybeSingle();
+        isHost = !!cohost;
+      }
     }
 
     if (isAuto) {

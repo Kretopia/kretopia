@@ -948,6 +948,10 @@ const EventPage = () => {
             onOpenChange={setShowGuestRsvp}
             eventId={event.id}
             eventTitle={event.title}
+            startTime={event.start_time}
+            endTime={event.end_time}
+            venueName={event.venue_name}
+            venueAddress={event.venue_address}
             onRsvpComplete={() => {
               setParticipation('going');
               setParticipantCount(prev => prev + 1);

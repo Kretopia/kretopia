@@ -36,10 +36,14 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   eventId: string;
   eventTitle: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
   onRsvpComplete?: () => void;
 }
 
-export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, onRsvpComplete }: Props) => {
+export const GuestRsvpDialog = ({ open, onOpenChange, eventId, eventTitle, startTime, endTime, venueName, venueAddress, onRsvpComplete }: Props) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();

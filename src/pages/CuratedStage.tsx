@@ -251,6 +251,12 @@ const CuratedStage = () => {
             <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{stage.rsvp_count}/{stage.capacity}</span>
             {!isLive && !isEnded && <span>Starts {formatDistanceToNowStrict(new Date(stage.starts_at), { addSuffix: true })}</span>}
           </div>
+          {stage.type === "scout" && stage.description && (
+            <Card className="p-4 mt-2 bg-muted/30">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">What the host is looking for</p>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{stage.description}</p>
+            </Card>
+          )}
         </div>
 
         {/* Host card */}

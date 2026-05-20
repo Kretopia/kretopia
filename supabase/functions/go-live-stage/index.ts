@@ -28,13 +28,40 @@ serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
     if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { stage_id, user_name } = await req.json().catch(() => ({}));
+    const { stage_id, user_name, invite_token } = await req.json().catch(() => ({}));
     if (!stage_id) throw new Error("stage_id required");
 
     const { data: stage } = await admin.from("curated_stages").select("*").eq("id", stage_id).single();
     if (!stage) throw new Error("Stage not found");
 
     const isHost = stage.host_user_id === user.id;
+
+    // Private-stage gate: only host, holders of the matching invite_token, or invited emails can join.
+    if (!isHost && stage.visibility === "private") {
+      let allowed = false;
+      if (invite_token && stage.invite_token && invite_token === stage.invite_token) {
+        allowed = true;
+      }
+      if (!allowed) {
+        const email = (user.email || "").toLowerCase();
+        if (email) {
+          const { data: inv } = await admin.from("curated_stage_invites")
+            .select("id, status").eq("stage_id", stage_id).ilike("email", email).maybeSingle();
+          if (inv && inv.status !== "revoked") {
+            allowed = true;
+            // Mark accepted on first join
+            await admin.from("curated_stage_invites")
+              .update({ status: "accepted", accepted_at: new Date().toISOString(), user_id: user.id })
+              .eq("id", inv.id);
+          }
+        }
+      }
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "INVITE_REQUIRED", message: "This stage is private. Ask the host for an invite link." }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // Lazy-create Daily room on first go-live
     let roomUrl = stage.room_url;

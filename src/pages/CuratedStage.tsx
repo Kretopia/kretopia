@@ -275,8 +275,17 @@ const CuratedStage = () => {
               {joining ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Radio className="h-4 w-4 mr-2" />}
               {isLive ? "Re-enter stage" : isEnded ? "Stage ended" : "Go live now"}
             </Button>
-            <p className="text-[11px] text-center text-muted-foreground">
-              You're the host. {stage.type === "scout" ? "Review applicants below before going live." : "Doors open when you go live."}
+            {(stage.visibility === "private" || stage.visibility === "unlisted") && !isEnded && (
+              <Button onClick={() => setInviteOpen(true)} variant="outline" className="w-full">
+                {stage.visibility === "private"
+                  ? <><Send className="h-4 w-4 mr-2" /> Invite people</>
+                  : <><Link2 className="h-4 w-4 mr-2" /> Copy share link</>}
+              </Button>
+            )}
+            <p className="text-[11px] text-center text-muted-foreground flex items-center justify-center gap-1.5">
+              {stage.visibility === "private" && <><Lock className="h-3 w-3" /> Private — invite only.</>}
+              {stage.visibility === "unlisted" && <><Link2 className="h-3 w-3" /> Unlisted — anyone with the link.</>}
+              {(!stage.visibility || stage.visibility === "public") && <>You're the host. {stage.type === "scout" ? "Review applicants below before going live." : "Doors open when you go live."}</>}
             </p>
           </div>
         ) : isLive ? (

@@ -180,13 +180,18 @@ const CuratedStage = () => {
     setJoining(true);
     try {
       const { data, error } = await supabase.functions.invoke("go-live-stage", {
-        body: { stage_id: stage.id, user_name: myName },
+        body: { stage_id: stage.id, user_name: myName, invite_token: inviteToken },
       });
       if (error) throw error;
       setRoom({ url: data.room_url, name: data.room_name, token: data.token });
       setCallOpen(true);
     } catch (e: any) {
-      toast({ title: "Couldn't join", description: e?.message, variant: "destructive" });
+      const msg = String(e?.message || "");
+      if (msg.includes("INVITE_REQUIRED") || msg.includes("private")) {
+        toast({ title: "Invite-only stage", description: "Ask the host for an invite link to join.", variant: "destructive" });
+      } else {
+        toast({ title: "Couldn't join", description: msg, variant: "destructive" });
+      }
     } finally { setJoining(false); }
   };
 

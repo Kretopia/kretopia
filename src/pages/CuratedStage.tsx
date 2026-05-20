@@ -49,6 +49,9 @@ const CuratedStage = () => {
   const [handRaised, setHandRaised] = useState(false);
   const [raising, setRaising] = useState(false);
   const [verifyingTicket, setVerifyingTicket] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+
+  const inviteToken = searchParams.get("invite") || undefined;
 
   const isHost = !!user && !!stage && stage.host_user_id === user.id;
   const myName = useMemo(() => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest", [user]);

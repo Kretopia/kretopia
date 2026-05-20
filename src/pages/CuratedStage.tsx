@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { ApplyToStageSheet } from "@/components/circle/ApplyToStageSheet";
 import { StageHostConsole } from "@/components/circle/StageHostConsole";
-import { ArrowLeft, Calendar, Users, Radio, Mic2, Search, Loader2, CheckCircle2, Hand } from "lucide-react";
+import { InviteToStageDialog } from "@/components/circle/InviteToStageDialog";
+import { ArrowLeft, Calendar, Users, Radio, Mic2, Search, Loader2, CheckCircle2, Hand, Lock, Link2, Send } from "lucide-react";
 import { formatDistanceToNowStrict, format } from "date-fns";
 
 type Stage = {
@@ -22,6 +23,10 @@ type Stage = {
   status: string; host_user_id: string; rsvp_count: number; attended_count: number;
   application_required: boolean; application_prompt: string | null;
   vibe_tags: string[] | null; recording_enabled: boolean; turn_seconds: number;
+  mode?: "audio" | "video" | null;
+  visibility?: "public" | "unlisted" | "private" | null;
+  invite_token?: string | null;
+  description?: string | null;
 };
 
 const CuratedStage = () => {
@@ -44,6 +49,9 @@ const CuratedStage = () => {
   const [handRaised, setHandRaised] = useState(false);
   const [raising, setRaising] = useState(false);
   const [verifyingTicket, setVerifyingTicket] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+
+  const inviteToken = searchParams.get("invite") || undefined;
 
   const isHost = !!user && !!stage && stage.host_user_id === user.id;
   const myName = useMemo(() => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest", [user]);
@@ -144,7 +152,7 @@ const CuratedStage = () => {
     setRsvping(true);
     try {
       const { data, error } = await supabase.functions.invoke("rsvp-curated-stage", {
-        body: { stage_id: stage.id },
+        body: { stage_id: stage.id, invite_token: inviteToken },
       });
       if (error) throw error;
       setMyRsvp({ status: data?.status || "rsvp" });
@@ -172,13 +180,18 @@ const CuratedStage = () => {
     setJoining(true);
     try {
       const { data, error } = await supabase.functions.invoke("go-live-stage", {
-        body: { stage_id: stage.id, user_name: myName },
+        body: { stage_id: stage.id, user_name: myName, invite_token: inviteToken },
       });
       if (error) throw error;
       setRoom({ url: data.room_url, name: data.room_name, token: data.token });
       setCallOpen(true);
     } catch (e: any) {
-      toast({ title: "Couldn't join", description: e?.message, variant: "destructive" });
+      const msg = String(e?.message || "");
+      if (msg.includes("INVITE_REQUIRED") || msg.includes("private")) {
+        toast({ title: "Invite-only stage", description: "Ask the host for an invite link to join.", variant: "destructive" });
+      } else {
+        toast({ title: "Couldn't join", description: msg, variant: "destructive" });
+      }
     } finally { setJoining(false); }
   };
 
@@ -218,8 +231,12 @@ const CuratedStage = () => {
           className="h-44 rounded-2xl bg-gradient-to-br from-primary/30 via-accent/15 to-background relative overflow-hidden"
           style={stage.cover_url ? { backgroundImage: `url(${stage.cover_url})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
         >
-          <div className="absolute top-3 left-3 flex items-center gap-2">
+          <div className="absolute top-3 left-3 flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="gap-1"><Icon className="h-3 w-3" />{stage.type === "scout" ? "Scout Stage" : "Showcase"}</Badge>
+            {stage.mode === "audio" && <Badge variant="outline" className="gap-1 bg-background/70">Audio</Badge>}
+            {stage.mode === "video" && <Badge variant="outline" className="gap-1 bg-background/70">Video</Badge>}
+            {stage.visibility === "private" && <Badge variant="outline" className="gap-1 bg-background/70"><Lock className="h-3 w-3" /> Private</Badge>}
+            {stage.visibility === "unlisted" && <Badge variant="outline" className="gap-1 bg-background/70"><Link2 className="h-3 w-3" /> Unlisted</Badge>}
             {isLive && <Badge variant="destructive" className="gap-1 animate-pulse"><Radio className="h-3 w-3" /> Live</Badge>}
             {isEnded && <Badge variant="outline">Ended</Badge>}
           </div>
@@ -234,6 +251,12 @@ const CuratedStage = () => {
             <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" />{stage.rsvp_count}/{stage.capacity}</span>
             {!isLive && !isEnded && <span>Starts {formatDistanceToNowStrict(new Date(stage.starts_at), { addSuffix: true })}</span>}
           </div>
+          {stage.type === "scout" && stage.description && (
+            <Card className="p-4 mt-2 bg-muted/30">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">What the host is looking for</p>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{stage.description}</p>
+            </Card>
+          )}
         </div>
 
         {/* Host card */}
@@ -262,8 +285,17 @@ const CuratedStage = () => {
               {joining ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Radio className="h-4 w-4 mr-2" />}
               {isLive ? "Re-enter stage" : isEnded ? "Stage ended" : "Go live now"}
             </Button>
-            <p className="text-[11px] text-center text-muted-foreground">
-              You're the host. {stage.type === "scout" ? "Review applicants below before going live." : "Doors open when you go live."}
+            {(stage.visibility === "private" || stage.visibility === "unlisted") && !isEnded && (
+              <Button onClick={() => setInviteOpen(true)} variant="outline" className="w-full">
+                {stage.visibility === "private"
+                  ? <><Send className="h-4 w-4 mr-2" /> Invite people</>
+                  : <><Link2 className="h-4 w-4 mr-2" /> Copy share link</>}
+              </Button>
+            )}
+            <p className="text-[11px] text-center text-muted-foreground flex items-center justify-center gap-1.5">
+              {stage.visibility === "private" && <><Lock className="h-3 w-3" /> Private — invite only.</>}
+              {stage.visibility === "unlisted" && <><Link2 className="h-3 w-3" /> Unlisted — anyone with the link.</>}
+              {(!stage.visibility || stage.visibility === "public") && <>You're the host. {stage.type === "scout" ? "Review applicants below before going live." : "Doors open when you go live."}</>}
             </p>
           </div>
         ) : isLive ? (
@@ -347,6 +379,17 @@ const CuratedStage = () => {
           userName={myName}
           userAvatar={user?.user_metadata?.avatar_url ?? null}
           lobbyCta={isHost ? "Start stage" : "Walk in"}
+        />
+      )}
+
+      {isHost && (
+        <InviteToStageDialog
+          open={inviteOpen}
+          onOpenChange={setInviteOpen}
+          stageId={stage.id}
+          stageTitle={stage.title}
+          inviteToken={stage.invite_token}
+          visibility={(stage.visibility ?? "public") as "public" | "unlisted" | "private"}
         />
       )}
     </div>

@@ -23,15 +23,24 @@ serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const {
-      type, title, blurb, cover_url, starts_at, ends_at, capacity,
+      type, title, blurb, description, cover_url, starts_at, ends_at, capacity,
       is_paid, price_cents, currency, vibe_tags,
       application_required, application_prompt, turn_seconds, recording_enabled,
+      mode, visibility,
     } = body || {};
 
     if (!["showcase", "scout"].includes(type)) throw new Error("Invalid stage type");
     if (!title || typeof title !== "string") throw new Error("Title required");
     if (!starts_at) throw new Error("Start time required");
     if (new Date(starts_at) < new Date(Date.now() - 5 * 60_000)) throw new Error("Start time must be in the future");
+
+    const safeMode = mode === "audio" ? "audio" : "video";
+    const safeVisibility = ["public", "unlisted", "private"].includes(visibility) ? visibility : "public";
+    // Private/unlisted stages get a shareable token so the host can share a magic link.
+    const inviteToken = safeVisibility === "public"
+      ? null
+      : Array.from(crypto.getRandomValues(new Uint8Array(18)))
+          .map((b) => b.toString(16).padStart(2, "0")).join("");
 
     const { data: stage, error } = await supabase
       .from("curated_stages")
@@ -40,6 +49,7 @@ serve(async (req) => {
         type,
         title: title.slice(0, 120),
         blurb: blurb ? String(blurb).slice(0, 600) : null,
+        description: description ? String(description).slice(0, 2000) : null,
         cover_url: cover_url || null,
         starts_at,
         ends_at: ends_at || null,
@@ -51,7 +61,10 @@ serve(async (req) => {
         application_required: type === "scout" ? !!application_required : false,
         application_prompt: application_prompt ? String(application_prompt).slice(0, 300) : null,
         turn_seconds: Math.min(Math.max(Number(turn_seconds) || 120, 30), 600),
-        recording_enabled: !!recording_enabled,
+        recording_enabled: type === "scout" ? true : !!recording_enabled,
+        mode: safeMode,
+        visibility: safeVisibility,
+        invite_token: inviteToken,
         status: "scheduled",
       })
       .select("*")

@@ -3684,6 +3684,50 @@ export type Database = {
           },
         ]
       }
+      curated_stage_invites: {
+        Row: {
+          accepted_at: string | null
+          email: string
+          id: string
+          invited_at: string
+          invited_by: string
+          stage_id: string
+          status: string
+          token: string
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          email: string
+          id?: string
+          invited_at?: string
+          invited_by: string
+          stage_id: string
+          status?: string
+          token?: string
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          email?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string
+          stage_id?: string
+          status?: string
+          token?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curated_stage_invites_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "curated_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       curated_stage_orders: {
         Row: {
           amount_cents: number
@@ -3881,10 +3925,13 @@ export type Database = {
           cover_url: string | null
           created_at: string
           currency: string | null
+          description: string | null
           ends_at: string | null
           host_user_id: string
           id: string
+          invite_token: string | null
           is_paid: boolean
+          mode: string
           price_cents: number | null
           recording_enabled: boolean
           recording_url: string | null
@@ -3898,6 +3945,7 @@ export type Database = {
           type: Database["public"]["Enums"]["curated_stage_type"]
           updated_at: string
           vibe_tags: string[] | null
+          visibility: string
         }
         Insert: {
           application_prompt?: string | null
@@ -3908,10 +3956,13 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           currency?: string | null
+          description?: string | null
           ends_at?: string | null
           host_user_id: string
           id?: string
+          invite_token?: string | null
           is_paid?: boolean
+          mode?: string
           price_cents?: number | null
           recording_enabled?: boolean
           recording_url?: string | null
@@ -3925,6 +3976,7 @@ export type Database = {
           type: Database["public"]["Enums"]["curated_stage_type"]
           updated_at?: string
           vibe_tags?: string[] | null
+          visibility?: string
         }
         Update: {
           application_prompt?: string | null
@@ -3935,10 +3987,13 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           currency?: string | null
+          description?: string | null
           ends_at?: string | null
           host_user_id?: string
           id?: string
+          invite_token?: string | null
           is_paid?: boolean
+          mode?: string
           price_cents?: number | null
           recording_enabled?: boolean
           recording_url?: string | null
@@ -3952,6 +4007,7 @@ export type Database = {
           type?: Database["public"]["Enums"]["curated_stage_type"]
           updated_at?: string
           vibe_tags?: string[] | null
+          visibility?: string
         }
         Relationships: []
       }

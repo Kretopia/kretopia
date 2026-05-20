@@ -231,8 +231,12 @@ const CuratedStage = () => {
           className="h-44 rounded-2xl bg-gradient-to-br from-primary/30 via-accent/15 to-background relative overflow-hidden"
           style={stage.cover_url ? { backgroundImage: `url(${stage.cover_url})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
         >
-          <div className="absolute top-3 left-3 flex items-center gap-2">
+          <div className="absolute top-3 left-3 flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="gap-1"><Icon className="h-3 w-3" />{stage.type === "scout" ? "Scout Stage" : "Showcase"}</Badge>
+            {stage.mode === "audio" && <Badge variant="outline" className="gap-1 bg-background/70">Audio</Badge>}
+            {stage.mode === "video" && <Badge variant="outline" className="gap-1 bg-background/70">Video</Badge>}
+            {stage.visibility === "private" && <Badge variant="outline" className="gap-1 bg-background/70"><Lock className="h-3 w-3" /> Private</Badge>}
+            {stage.visibility === "unlisted" && <Badge variant="outline" className="gap-1 bg-background/70"><Link2 className="h-3 w-3" /> Unlisted</Badge>}
             {isLive && <Badge variant="destructive" className="gap-1 animate-pulse"><Radio className="h-3 w-3" /> Live</Badge>}
             {isEnded && <Badge variant="outline">Ended</Badge>}
           </div>

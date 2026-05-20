@@ -23,7 +23,7 @@ serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
     if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { stage_id, cancel } = await req.json().catch(() => ({}));
+    const { stage_id, cancel, invite_token } = await req.json().catch(() => ({}));
     if (!stage_id) throw new Error("stage_id required");
 
     if (cancel) {
@@ -35,9 +35,27 @@ serve(async (req) => {
     }
 
     const { data: stage } = await admin.from("curated_stages")
-      .select("id, status, capacity, is_paid, rsvp_count").eq("id", stage_id).single();
+      .select("id, status, capacity, is_paid, rsvp_count, visibility, invite_token, host_user_id").eq("id", stage_id).single();
     if (!stage) throw new Error("Stage not found");
     if (!["scheduled", "live"].includes(stage.status)) throw new Error("Stage not open for RSVP");
+
+    // Private-stage gate: only host, invite-token holders, or invited emails can RSVP.
+    if (stage.visibility === "private" && stage.host_user_id !== user.id) {
+      let allowed = invite_token && stage.invite_token && invite_token === stage.invite_token;
+      if (!allowed) {
+        const email = (user.email || "").toLowerCase();
+        if (email) {
+          const { data: inv } = await admin.from("curated_stage_invites")
+            .select("id").eq("stage_id", stage_id).ilike("email", email).neq("status", "revoked").maybeSingle();
+          allowed = !!inv;
+        }
+      }
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "INVITE_REQUIRED" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
     if (stage.is_paid) {
       // Paid flow handled separately by checkout-event-tickets equivalent.
       // For Phase 2 free RSVP only — paid path returns a hint.

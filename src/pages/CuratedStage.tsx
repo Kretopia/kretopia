@@ -152,7 +152,7 @@ const CuratedStage = () => {
     setRsvping(true);
     try {
       const { data, error } = await supabase.functions.invoke("rsvp-curated-stage", {
-        body: { stage_id: stage.id },
+        body: { stage_id: stage.id, invite_token: inviteToken },
       });
       if (error) throw error;
       setMyRsvp({ status: data?.status || "rsvp" });

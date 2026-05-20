@@ -22,6 +22,10 @@ type Stage = {
   status: string; host_user_id: string; rsvp_count: number; attended_count: number;
   application_required: boolean; application_prompt: string | null;
   vibe_tags: string[] | null; recording_enabled: boolean; turn_seconds: number;
+  mode?: "audio" | "video" | null;
+  visibility?: "public" | "unlisted" | "private" | null;
+  invite_token?: string | null;
+  description?: string | null;
 };
 
 const CuratedStage = () => {

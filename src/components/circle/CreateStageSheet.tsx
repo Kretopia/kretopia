@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Search, Mic2, Loader2 } from "lucide-react";
+import { Search, Mic2, Loader2, Mic, Video, Globe, Lock, Link2 } from "lucide-react";
 
 interface CreateStageSheetProps {
   open: boolean;
@@ -16,9 +16,14 @@ interface CreateStageSheetProps {
   onCreated?: (stageId: string) => void;
 }
 
+type Mode = "audio" | "video";
+type Visibility = "public" | "unlisted" | "private";
+
 /**
  * Host-facing scheduler for a Scout or Showcase Stage.
- * Keeps it under ~60s with smart defaults — capacity 50, free, 2h from now.
+ * Phase A: adds Mode (audio/video), Visibility (public/unlisted/private),
+ * and "what I'm looking for" description so the use case (e.g. Grammy songwriter
+ * running private auditions) is properly modeled end-to-end.
  */
 export function CreateStageSheet({ open, onOpenChange, onCreated }: CreateStageSheetProps) {
   const { user } = useAuth();
@@ -26,12 +31,15 @@ export function CreateStageSheet({ open, onOpenChange, onCreated }: CreateStageS
   const [type, setType] = useState<"scout" | "showcase">("scout");
   const [title, setTitle] = useState("");
   const [blurb, setBlurb] = useState("");
+  const [description, setDescription] = useState("");
+  const [mode, setMode] = useState<Mode>("video");
+  const [visibility, setVisibility] = useState<Visibility>("public");
   const [startsAt, setStartsAt] = useState(defaultStart());
   const [capacity, setCapacity] = useState("50");
   const [isPaid, setIsPaid] = useState(false);
   const [priceUsd, setPriceUsd] = useState("0");
   const [appRequired, setAppRequired] = useState(true);
-  const [recording, setRecording] = useState(false);
+  const [recording, setRecording] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   const submit = async () => {
@@ -50,6 +58,9 @@ export function CreateStageSheet({ open, onOpenChange, onCreated }: CreateStageS
           type,
           title: title.trim(),
           blurb: blurb.trim() || null,
+          description: description.trim() || null,
+          mode,
+          visibility,
           starts_at: new Date(startsAt).toISOString(),
           capacity: Number(capacity),
           is_paid: isPaid,
@@ -57,11 +68,14 @@ export function CreateStageSheet({ open, onOpenChange, onCreated }: CreateStageS
           currency: "USD",
           application_required: type === "scout" ? appRequired : false,
           recording_enabled: recording,
-          turn_seconds: 120,
+          turn_seconds: 300, // 5 min per slot (auditioning sweet spot; editable per artist in Phase C)
         },
       });
       if (error) throw error;
-      toast({ title: "Stage scheduled" });
+      toast({
+        title: visibility === "private" ? "Private stage scheduled" : "Stage scheduled",
+        description: visibility === "private" ? "Invite people from the stage page" : undefined,
+      });
       onOpenChange(false);
       resetForm();
       onCreated?.(data?.stage?.id);
@@ -73,14 +87,14 @@ export function CreateStageSheet({ open, onOpenChange, onCreated }: CreateStageS
   };
 
   const resetForm = () => {
-    setTitle(""); setBlurb(""); setStartsAt(defaultStart());
+    setTitle(""); setBlurb(""); setDescription(""); setStartsAt(defaultStart());
     setCapacity("50"); setIsPaid(false); setPriceUsd("0");
-    setAppRequired(true); setRecording(false);
+    setAppRequired(true); setRecording(true); setMode("video"); setVisibility("public");
   };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
+      <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto">
         <SheetHeader className="text-left">
           <SheetTitle>Schedule a stage</SheetTitle>
         </SheetHeader>
@@ -102,7 +116,40 @@ export function CreateStageSheet({ open, onOpenChange, onCreated }: CreateStageS
 
           <Field label="What's it about? (optional)">
             <Textarea value={blurb} onChange={(e) => setBlurb(e.target.value)}
-              placeholder="A short pitch so people know what to bring." rows={3} maxLength={600} />
+              placeholder="A short pitch so people know what to bring." rows={2} maxLength={600} />
+          </Field>
+
+          {type === "scout" && (
+            <Field label="What you're looking for (for applicants)">
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)}
+                placeholder={`e.g. "Female vocalists 18–28, R&B/soul, comfortable with falsetto. Bring a 60-second a cappella sample and one full song."`}
+                rows={3} maxLength={2000} />
+            </Field>
+          )}
+
+          {/* Mode */}
+          <Field label="Mode">
+            <div className="grid grid-cols-2 gap-2">
+              <ModeBtn active={mode === "video"} onClick={() => setMode("video")} icon={<Video className="h-4 w-4" />} label="Video" hint="Camera on" />
+              <ModeBtn active={mode === "audio"} onClick={() => setMode("audio")} icon={<Mic className="h-4 w-4" />} label="Audio" hint="Voices only" />
+            </div>
+          </Field>
+
+          {/* Visibility */}
+          <Field label="Who can join">
+            <div className="grid grid-cols-3 gap-2">
+              <ModeBtn active={visibility === "public"} onClick={() => setVisibility("public")}
+                icon={<Globe className="h-4 w-4" />} label="Public" hint="Listed on the lot" />
+              <ModeBtn active={visibility === "unlisted"} onClick={() => setVisibility("unlisted")}
+                icon={<Link2 className="h-4 w-4" />} label="Unlisted" hint="Anyone with link" />
+              <ModeBtn active={visibility === "private"} onClick={() => setVisibility("private")}
+                icon={<Lock className="h-4 w-4" />} label="Private" hint="Invite only" />
+            </div>
+            {visibility !== "public" && (
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                You'll get a shareable link {visibility === "private" ? "and can invite specific emails" : ""} after scheduling.
+              </p>
+            )}
           </Field>
 
           <Field label="Starts">
@@ -124,14 +171,14 @@ export function CreateStageSheet({ open, onOpenChange, onCreated }: CreateStageS
           {type === "scout" && (
             <ToggleRow
               label="Require application"
-              hint="Creators submit a pitch before getting a slot"
+              hint="Creators submit a pitch + audio/video sample before getting a slot"
               checked={appRequired} onChange={setAppRequired}
             />
           )}
 
           <ToggleRow
             label="Record this stage"
-            hint="Attendees get a recap link after"
+            hint={type === "scout" ? "Recommended — you'll get a per-artist recap after" : "Attendees get a recap link after"}
             checked={recording} onChange={setRecording}
           />
 
@@ -156,6 +203,16 @@ function TypeButton({ active, onClick, icon, title, hint }: any) {
       className={`text-left p-3 rounded-xl border transition-colors ${active ? "border-primary bg-primary/5" : "border-border bg-card"}`}>
       <div className="flex items-center gap-2 font-bold text-sm">{icon}{title}</div>
       <p className="text-[11px] text-muted-foreground mt-1">{hint}</p>
+    </button>
+  );
+}
+
+function ModeBtn({ active, onClick, icon, label, hint }: any) {
+  return (
+    <button onClick={onClick}
+      className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border transition-colors ${active ? "border-primary bg-primary/10" : "border-border hover:border-primary/40"}`}>
+      <div className="flex items-center gap-1.5 text-sm font-semibold">{icon}{label}</div>
+      <span className="text-[10px] text-muted-foreground">{hint}</span>
     </button>
   );
 }

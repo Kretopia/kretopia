@@ -12,7 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { ApplyToStageSheet } from "@/components/circle/ApplyToStageSheet";
 import { StageHostConsole } from "@/components/circle/StageHostConsole";
-import { ArrowLeft, Calendar, Users, Radio, Mic2, Search, Loader2, CheckCircle2, Hand } from "lucide-react";
+import { InviteToStageDialog } from "@/components/circle/InviteToStageDialog";
+import { ArrowLeft, Calendar, Users, Radio, Mic2, Search, Loader2, CheckCircle2, Hand, Lock, Link2, Send } from "lucide-react";
 import { formatDistanceToNowStrict, format } from "date-fns";
 
 type Stage = {

@@ -371,6 +371,17 @@ const CuratedStage = () => {
           lobbyCta={isHost ? "Start stage" : "Walk in"}
         />
       )}
+
+      {isHost && (
+        <InviteToStageDialog
+          open={inviteOpen}
+          onOpenChange={setInviteOpen}
+          stageId={stage.id}
+          stageTitle={stage.title}
+          inviteToken={stage.invite_token}
+          visibility={(stage.visibility ?? "public") as "public" | "unlisted" | "private"}
+        />
+      )}
     </div>
   );
 };

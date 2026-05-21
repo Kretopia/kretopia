@@ -925,6 +925,14 @@ const EventBackstage = () => {
           onOpenChange={(o) => !o && setHostToolsFor(null)}
         />
       )}
+      {responsesFor && (
+        <EventResponsesDialog
+          eventId={responsesFor.id}
+          eventTitle={responsesFor.title}
+          open={!!responsesFor}
+          onOpenChange={(o) => !o && setResponsesFor(null)}
+        />
+      )}
       {shareFor && (
         <EventShareKit
           event={shareFor as any}

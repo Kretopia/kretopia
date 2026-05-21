@@ -583,6 +583,11 @@ const EventBackstage = () => {
                       </DropdownMenuItem>
                     )}
                     {!isDraft && (
+                      <DropdownMenuItem onClick={() => setResponsesFor(ev)}>
+                        <FileQuestion className="h-4 w-4 mr-2" /> Guest responses (Q&amp;A)
+                      </DropdownMenuItem>
+                    )}
+                    {!isDraft && (
                       <DropdownMenuItem onClick={() => setAnalyticsFor(ev)}>
                         <BarChart3 className="h-4 w-4 mr-2" /> Analytics
                       </DropdownMenuItem>

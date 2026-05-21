@@ -47,7 +47,8 @@ import { ScoutEventDialog } from "@/components/sessions/ScoutEventDialog";
 import { InviteByEmailDialog } from "@/components/sessions/InviteByEmailDialog";
 import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
 import { EventAnalyticsDialog } from "@/components/sessions/EventAnalyticsDialog";
-import { Mail, UserPlus, MessageCircle, Scan, BarChart3 } from "lucide-react";
+import { EventResponsesDialog } from "@/components/sessions/EventResponsesDialog";
+import { Mail, UserPlus, MessageCircle, Scan, BarChart3, FileQuestion } from "lucide-react";
 import {
   Dialog,
   DialogContent,

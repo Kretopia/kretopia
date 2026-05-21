@@ -47,7 +47,8 @@ import { ScoutEventDialog } from "@/components/sessions/ScoutEventDialog";
 import { InviteByEmailDialog } from "@/components/sessions/InviteByEmailDialog";
 import { BlastComposerDialog } from "@/components/meetup/BlastComposerDialog";
 import { EventAnalyticsDialog } from "@/components/sessions/EventAnalyticsDialog";
-import { Mail, UserPlus, MessageCircle, Scan, BarChart3 } from "lucide-react";
+import { EventResponsesDialog } from "@/components/sessions/EventResponsesDialog";
+import { Mail, UserPlus, MessageCircle, Scan, BarChart3, FileQuestion } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -114,6 +115,7 @@ const EventBackstage = () => {
   const [emailBlastFor, setEmailBlastFor] = useState<BackstageEvent | null>(null);
   const [inviteFor, setInviteFor] = useState<BackstageEvent | null>(null);
   const [hostToolsFor, setHostToolsFor] = useState<BackstageEvent | null>(null);
+  const [responsesFor, setResponsesFor] = useState<BackstageEvent | null>(null);
   const [analyticsFor, setAnalyticsFor] = useState<BackstageEvent | null>(null);
   const [convertingId, setConvertingId] = useState<string | null>(null);
 
@@ -581,6 +583,11 @@ const EventBackstage = () => {
                       </DropdownMenuItem>
                     )}
                     {!isDraft && (
+                      <DropdownMenuItem onClick={() => setResponsesFor(ev)}>
+                        <FileQuestion className="h-4 w-4 mr-2" /> Guest responses (Q&amp;A)
+                      </DropdownMenuItem>
+                    )}
+                    {!isDraft && (
                       <DropdownMenuItem onClick={() => setAnalyticsFor(ev)}>
                         <BarChart3 className="h-4 w-4 mr-2" /> Analytics
                       </DropdownMenuItem>
@@ -916,6 +923,14 @@ const EventBackstage = () => {
           eventTitle={hostToolsFor.title}
           open={!!hostToolsFor}
           onOpenChange={(o) => !o && setHostToolsFor(null)}
+        />
+      )}
+      {responsesFor && (
+        <EventResponsesDialog
+          eventId={responsesFor.id}
+          eventTitle={responsesFor.title}
+          open={!!responsesFor}
+          onOpenChange={(o) => !o && setResponsesFor(null)}
         />
       )}
       {shareFor && (

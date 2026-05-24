@@ -605,7 +605,7 @@ When you respond in natural language (after tools), keep it to 1–2 sentences, 
               description: args.description || null,
               due_date: due || null,
               assigned_to: args.assignee_user_id || null,
-              priority: args.priority || null,
+              priority: args.priority || "normal",
               status: "todo",
             })
             .select("id, title")

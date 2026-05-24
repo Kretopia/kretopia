@@ -231,6 +231,14 @@ async function dispatchStep(
         error: typeof parsed === "string" ? parsed.slice(0, 300) : JSON.stringify(parsed).slice(0, 300),
       };
     }
+    if (parsed && typeof parsed === "object") {
+      const payload = parsed as any;
+      const failedAction = Array.isArray(payload.actions) ? payload.actions.find((a: any) => a?.ok === false) : null;
+      if (payload.ok === false || failedAction) {
+        const nestedError = failedAction?.result?.error ?? payload.error ?? payload.reply ?? "Tool action failed";
+        return { ok: false, error: String(nestedError).slice(0, 300) };
+      }
+    }
     return { ok: true, result: parsed };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };

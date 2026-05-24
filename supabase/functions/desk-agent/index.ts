@@ -330,6 +330,49 @@ Deno.serve(async (req) => {
     ).trim();
     const is_pro = body?.is_pro ?? false;
     const confirm_token = body?.confirm_token;
+
+    // ── Special case: create_project doesn't need an existing project_id.
+    if (requestedTool === "create_project") {
+      const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const title = String(body?.title ?? body?.project_title ?? "").trim().slice(0, 120);
+      const description = body?.description ? String(body.description).slice(0, 4000) : null;
+      if (!title) {
+        return new Response(JSON.stringify({ error: "title required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: newProj, error: createErr } = await admin
+        .from("projects")
+        .insert({
+          title,
+          description,
+          created_by: user.id,
+          status: "active",
+          deal_type: "solo" as any,
+          setup_completed: true,
+        } as any)
+        .select("id, title")
+        .single();
+      if (createErr) {
+        return new Response(JSON.stringify({ error: createErr.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          result: {
+            project_id: newProj.id,
+            title: newProj.title,
+            url: `/desk/${newProj.id}`,
+          },
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     if (!project_id || !message) {
       return new Response(JSON.stringify({ error: "project_id and message required" }), {
         status: 400,

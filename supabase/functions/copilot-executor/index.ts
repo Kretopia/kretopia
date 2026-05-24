@@ -60,17 +60,22 @@ async function createProjectForPlan(
 
   if (error || !project) return { ok: false, error: error?.message ?? "Project create failed" };
 
-  await admin.from("project_collaborators").upsert(
-    {
+  const { data: existingOwner } = await admin
+    .from("project_collaborators")
+    .select("id")
+    .eq("project_id", project.id)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!existingOwner) {
+    await admin.from("project_collaborators").insert({
       project_id: project.id,
       user_id: userId,
       role: "owner",
       status: "accepted",
       invited_by: userId,
       accepted_at: new Date().toISOString(),
-    },
-    { onConflict: "project_id,user_id" },
-  );
+    });
+  }
 
   return {
     ok: true,

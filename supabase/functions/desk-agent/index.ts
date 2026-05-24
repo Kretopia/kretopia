@@ -336,6 +336,12 @@ Deno.serve(async (req) => {
       const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
       const title = String(body?.title ?? body?.project_title ?? "").trim().slice(0, 120);
       const description = body?.description ? String(body.description).slice(0, 4000) : null;
+      if (!user?.id) {
+        return new Response(JSON.stringify({ error: "Missing authenticated user for project creation" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       if (!title) {
         return new Response(JSON.stringify({ error: "title required" }), {
           status: 400,
@@ -360,12 +366,25 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      await admin.from("project_collaborators").upsert(
+        {
+          project_id: newProj.id,
+          user_id: user.id,
+          role: "owner",
+          status: "accepted",
+          invited_by: user.id,
+          accepted_at: new Date().toISOString(),
+        },
+        { onConflict: "project_id,user_id" },
+      );
       return new Response(
         JSON.stringify({
           ok: true,
           result: {
             project_id: newProj.id,
+            id: newProj.id,
             title: newProj.title,
+            action_url: `/desk/${newProj.id}`,
             url: `/desk/${newProj.id}`,
           },
         }),

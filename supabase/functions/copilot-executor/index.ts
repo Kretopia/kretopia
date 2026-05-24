@@ -335,6 +335,7 @@ Deno.serve(async (req) => {
       .update({
         status: finalStatus,
         steps: completed,
+          project_id: currentProjectId,
         summary,
         completed_at: new Date().toISOString(),
       })

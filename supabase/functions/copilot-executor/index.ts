@@ -277,6 +277,7 @@ Deno.serve(async (req) => {
 
     const steps: Step[] = (plan.steps as Step[]) ?? [];
     const completed: Step[] = [];
+    let currentProjectId: string | null = plan.project_id ?? null;
     let failed = false;
     let failureReason: string | null = null;
 
@@ -298,10 +299,14 @@ Deno.serve(async (req) => {
         .update({ current_step: i + 1, steps: completed.concat(steps.slice(i + 1)) })
         .eq("id", planId);
 
-      const res = await dispatchStep(step, completed.slice(0, i), authHeader, plan.project_id);
+      const res = await dispatchStep(step, completed.slice(0, i), authHeader, currentProjectId, userId);
       step.status = res.ok ? "succeeded" : "failed";
       step.result = res.ok ? res.result : { error: res.error };
       completed[i] = step;
+      const nextProjectId = (res.result as any)?.project_id ?? (res.result as any)?.result?.project_id;
+      if (res.ok && typeof nextProjectId === "string" && nextProjectId) {
+        currentProjectId = nextProjectId;
+      }
 
       // Persist progress so the UI can poll/stream
       await admin

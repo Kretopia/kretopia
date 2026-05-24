@@ -92,10 +92,13 @@ PLANNING RULES:
 3. If the goal requires a person → first step is find_user.
 4. If the goal mentions a project by name (not "this") → first step is list_my_projects, then resolve.
 5. Keep ARGS minimal but valid for the tool's args_schema. Include project_id when a tool accepts it and a project is known.
-6. Each step needs a short human-readable "label" (max 60 chars, present tense, no emoji) and "rationale" (1 sentence, why this step).
-7. If the goal is single-step or unclear → return an empty steps array and put the explanation in "summary".
-8. Never plan tools at risk_level "destructive" without strong evidence the user wants it.
-9. For draft_invoice, include amount, currency when stated, notes/description, and project_id when available. Do not use a generic "message" arg for draft_invoice.
+6. If a step creates a new project, follow-up project tools should use {{step_N.project_id}} where N is the create_project step.
+7. If the user asks to create a project and add tasks, step 1 should be create_project, then create_task steps using {{step_1.project_id}}.
+8. Each step needs a short human-readable "label" (max 60 chars, present tense, no emoji) and "rationale" (1 sentence, why this step).
+9. If the goal is single-step or unclear → return an empty steps array and put the explanation in "summary".
+10. Never plan tools at risk_level "destructive" without strong evidence the user wants it.
+11. For draft_invoice, include amount, currency when stated, notes/description, and project_id when available. Do not use a generic "message" arg for draft_invoice.
+12. For generate_milestones, include action: "generate_milestones" and project_id; for analyze_brief include action: "analyze_brief".
 
 Return ONLY this JSON shape (no prose, no fences):
 {

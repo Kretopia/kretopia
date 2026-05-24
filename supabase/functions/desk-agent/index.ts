@@ -366,17 +366,22 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      await admin.from("project_collaborators").upsert(
-        {
+      const { data: existingOwner } = await admin
+        .from("project_collaborators")
+        .select("id")
+        .eq("project_id", newProj.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!existingOwner) {
+        await admin.from("project_collaborators").insert({
           project_id: newProj.id,
           user_id: user.id,
           role: "owner",
           status: "accepted",
           invited_by: user.id,
           accepted_at: new Date().toISOString(),
-        },
-        { onConflict: "project_id,user_id" },
-      );
+        });
+      }
       return new Response(
         JSON.stringify({
           ok: true,

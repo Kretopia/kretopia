@@ -34,6 +34,61 @@ interface Step {
   result: unknown;
 }
 
+async function createProjectForPlan(
+  args: Record<string, unknown>,
+  userId: string,
+): Promise<{ ok: boolean; result?: unknown; error?: string }> {
+  const title = String(args.title ?? args.project_title ?? "").trim().slice(0, 120);
+  const description = args.description ? String(args.description).slice(0, 4000) : null;
+
+  if (!userId) return { ok: false, error: "Missing authenticated user for project creation" };
+  if (!title) return { ok: false, error: "Project title is required" };
+
+  const { data: project, error } = await admin
+    .from("projects")
+    .insert({
+      title,
+      description,
+      created_by: userId,
+      status: "active",
+      deal_type: "solo",
+      workspace_type: String(args.workspace_type ?? "general"),
+      setup_completed: true,
+    })
+    .select("id, title")
+    .single();
+
+  if (error || !project) return { ok: false, error: error?.message ?? "Project create failed" };
+
+  await admin.from("project_collaborators").upsert(
+    {
+      project_id: project.id,
+      user_id: userId,
+      role: "owner",
+      status: "accepted",
+      invited_by: userId,
+      accepted_at: new Date().toISOString(),
+    },
+    { onConflict: "project_id,user_id" },
+  );
+
+  return {
+    ok: true,
+    result: {
+      project_id: project.id,
+      id: project.id,
+      title: project.title,
+      action_url: `/desk/${project.id}`,
+      card: {
+        icon: "project",
+        title: `Studio ready: ${project.title}`,
+        subtitle: "Open the Studio Room to keep going.",
+        href: `/desk/${project.id}`,
+      },
+    },
+  };
+}
+
 // Walk a value tree and replace {{step_N.field}} or {{step_N.candidates.0.user_id}} tokens
 function resolvePlaceholders(value: unknown, completed: Step[]): unknown {
   if (typeof value === "string") {
@@ -123,8 +178,13 @@ async function dispatchStep(
   completed: Step[],
   authHeader: string,
   projectId: string | null,
+  userId: string,
 ): Promise<{ ok: boolean; result?: unknown; error?: string }> {
   const args = normalizeStepArgs(step, resolvePlaceholders(step.args, completed) as Record<string, unknown>, projectId);
+
+  if (step.tool_name === "create_project") {
+    return await createProjectForPlan(args, userId);
+  }
 
   // Inline tools handled here (no edge fn)
   if (step.handler === "inline" || step.tool_name === "ask_clarification") {
@@ -141,12 +201,9 @@ async function dispatchStep(
   }
 
   // Pass tool name marker so multi-tool handlers route internally
-  if (
-    step.handler === "copilot-collaborator-tools" ||
-    step.handler === "desk-agent" ||
-    step.handler === "thrive-memory-tool"
-  ) {
-    (args as any)._tool = step.tool_name;
+  (args as any)._tool = step.tool_name;
+  if (step.handler === "scope-guardian" && !(args as any).action) {
+    (args as any).action = step.tool_name;
   }
 
   if (!step.handler) {

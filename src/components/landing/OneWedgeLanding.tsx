@@ -97,45 +97,60 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
             </Link>
           </div>
 
-          {/* Real creators + live count */}
-          <div className="mt-7 flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {(creators.length ? creators.slice(0, 5) : Array.from({ length: 5 })).map((c: any, i) => {
-                const initial = (c?.full_name ?? "?").trim().charAt(0).toUpperCase() || "?";
-                return (
+          {/* Real creators + live count — render a clean skeleton until data lands,
+              never the broken-looking "? ? ? ? ? / Join … creators" state. */}
+          {creatorCount === null || creators.length === 0 ? (
+            <div className="mt-7 flex items-center gap-3" aria-hidden>
+              <div className="flex -space-x-2">
+                {Array.from({ length: 5 }).map((_, i) => (
                   <div
-                    key={c?.user_id ?? i}
-                    className="relative h-9 w-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex items-center justify-center text-[11px] font-bold text-foreground/70"
-                    title={c?.full_name ?? undefined}
-                  >
-                    <span aria-hidden className="absolute inset-0 flex items-center justify-center">
-                      {initial}
-                    </span>
-                    {c?.avatar_url ? (
-                      <img
-                        src={c.avatar_url}
-                        alt={c.full_name ?? "Creator"}
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        crossOrigin="anonymous"
-                        className="relative h-full w-full object-cover"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    ) : null}
-                  </div>
-                );
-              })}
+                    key={i}
+                    className="h-9 w-9 rounded-full ring-2 ring-background bg-muted/60 animate-pulse"
+                  />
+                ))}
+              </div>
+              <div className="h-3 w-44 rounded bg-muted/60 animate-pulse" />
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Join{" "}
-              <span className="font-bold text-foreground">
-                {creatorCount !== null ? creatorCount.toLocaleString() : "…"}
-              </span>{" "}
-              creators building on ThriveIN
-            </p>
-          </div>
+          ) : (
+            <div className="mt-7 flex items-center gap-3">
+              <div className="flex -space-x-2">
+                {creators.slice(0, 5).map((c, i) => {
+                  const initial = (c?.full_name ?? "").trim().charAt(0).toUpperCase() || "•";
+                  return (
+                    <div
+                      key={c?.user_id ?? i}
+                      className="relative h-9 w-9 rounded-full ring-2 ring-background bg-muted overflow-hidden flex items-center justify-center text-[11px] font-bold text-foreground/70"
+                      title={c?.full_name ?? undefined}
+                    >
+                      <span aria-hidden className="absolute inset-0 flex items-center justify-center">
+                        {initial}
+                      </span>
+                      {c?.avatar_url ? (
+                        <img
+                          src={c.avatar_url}
+                          alt={c.full_name ?? "Creator"}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          crossOrigin="anonymous"
+                          className="relative h-full w-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Join{" "}
+                <span className="font-bold text-foreground">
+                  {creatorCount.toLocaleString()}
+                </span>{" "}
+                creators building on ThriveIN
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

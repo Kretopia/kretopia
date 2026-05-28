@@ -1,97 +1,98 @@
-## The use case
+# ThriveIN Wallet — Path 2
 
-A Grammy-winning songwriter wants to audition vocalists. He needs to:
-1. Schedule a **private** Scout Stage and share via link/email allowlist (not public).
-2. Have artists **submit a pitch + audio/video sample** ahead of time.
-3. Pre-screen submissions in a queue with **Interested / Pass / Maybe**, AI summary + rating, and notes.
-4. **Schedule each chosen artist into a time slot** (e.g. 5-min audition each, back to back).
-5. Run the live audition (audio or **video**) with **recording on**, mic only opens for the artist whose turn it is.
-6. Get an **AI recap per artist** (vocal range, style notes, recommendation, follow-up actions).
-
-The current Scout Stage gets ~30% of this. Plan below fills the gaps.
+Goal: creators never touch Stripe. They see "Add your bank → get paid." ThriveIN is the platform; Stripe handles compliance and rails under the hood via **Connect with `controller.requirement_collection: 'stripe'` + `losses.payments: 'application'`** (Stripe-collected KYC, ThriveIN-controlled UX, ThriveIN holds funds in platform balance, payouts to creator bank via Stripe Payouts).
 
 ---
 
-## What's broken / missing today
+## Phase 0 — Foundations (this PR)
 
-1. **`CreateStageSheet` has no Mode (audio/video) toggle** — it always defaults to audio in the backend. Bug fix #1.
-2. **No pre-screen media** on applications — `curated_stage_applications` has `voice_url` but no video, no track, no description, no genre, no AI score breakdown.
-3. **No slot scheduler** — the turn engine just rotates through approved apps with one global `turn_seconds`. Hosts can't pin "8:00pm Aaliyah, 8:05pm Brent, 8:10pm Maya".
-4. **No privacy mode** — every curated stage is publicly listable.
-5. **No email invite + allowlist gating** on join.
-6. **No per-applicant AI rating** before or after.
-7. **No host reactions** (Interested / Pass / Callback) tied to the audition record.
+**DB**
+- `creator_wallets` (user_id PK, stripe_account_id, kyc_status: `none|pending|verified|restricted`, payout_method: `none|bank|card`, default_currency, country, created_at, updated_at)
+- `creator_wallet_balances` (user_id, currency, available_cents, pending_cents, updated_at) — mirror of Stripe balance, refreshed on webhook
+- `creator_payout_methods` (id, user_id, type, last4, bank_name, brand, is_default, stripe_external_account_id)
+- `creator_payouts` (id, user_id, amount_cents, currency, status, stripe_payout_id, arrival_date, failure_reason, created_at)
+- Trigger: auto-create `creator_wallets` row on profile insert.
+- Migrate existing `profiles.stripe_account_id` → seed `creator_wallets`.
 
----
+**Edge functions (all `verify_jwt = false`, validate in code)**
+- `wallet-onboard-start` — creates Connect account with controller config + returns hosted KYC link (only used when bank requires it; for most flows we collect bank details directly).
+- `wallet-add-bank` — accepts bank details (account_number, routing/IBAN, holder name, country), creates `external_account` on the Connect account. No Stripe redirect.
+- `wallet-add-card-payout` — for debit-card instant payouts (US/select markets).
+- `wallet-balance` — returns mirrored balances.
+- `wallet-payout` — requests payout to default method.
+- `wallet-list-payouts` — history.
+- `stripe-wallet-webhook` — handles `account.updated`, `payout.*`, `balance.available`, `capability.updated`. Updates `kyc_status`, balances, payout statuses.
 
-## What I'll build
-
-### Phase A — Bug + Mode + Privacy (fast, foundational)
-
-1. **`CreateStageSheet`**: add Mode toggle (Audio / Video), Visibility toggle (Public / Private — invite only), Genre/Looking-for chips.
-2. **`curated_stages`** migration: add `mode text default 'video'`, `visibility text default 'public'` ('public' | 'unlisted' | 'private'), `invite_token text` (random, for shareable link), `description text` (host's "what I'm looking for").
-3. **`create-curated-stage`** edge fn: accept + persist those fields; generate `invite_token` for non-public; default mode='video'.
-4. **`curated_stage_invites`** new table: `(stage_id, email, user_id?, status, invited_at)` — host adds emails, system sends invite via existing `send-transactional-email`.
-5. **`join-curated-stage`** edge fn: if visibility=private, require either matching `invite_token` query param OR the joining user's email is in `curated_stage_invites`. Otherwise 403.
-
-### Phase B — Pre-screen submissions (the auditioning core)
-
-1. **`curated_stage_applications`** migration: add `display_name`, `headline`, `genre`, `links jsonb` (Spotify/IG/YouTube), `sample_audio_url`, `sample_video_url`, `ai_score numeric`, `ai_summary text`, `ai_tags jsonb`, `host_decision text` ('interested'|'pass'|'maybe'|null), `host_notes text`, `scheduled_at timestamptz`, `slot_seconds int`.
-2. **`ApplyToStageSheet`** (already exists — extend): add audio + video upload (reuse `project-files` bucket or new `audition-samples` bucket, owner-scoped), description, links, genre. Show "pre-screen submission" tone.
-3. **`score-audition` edge fn**: when an application is submitted with media, async call Gemini 2.5 flash (audio/video) → returns `{ score 1-10, summary, tags[], vocal_range?, recommendation }`. Best-effort; stores onto the row.
-4. **`AuditionReviewQueue` component** (new, host-only on the stage manage page): swipe-style cards showing pitch, embedded audio/video player, AI score badge, links, with **Interested / Maybe / Pass** buttons + free-text note. Filters: All / Interested / Unreviewed.
-
-### Phase C — Slot scheduler
-
-1. **`AuditionScheduler` component**: drag-or-tap to assign "Interested" applicants into a vertical time strip (host picks duration per slot, default 5 min). Writes `scheduled_at` + `slot_seconds` per application.
-2. Update **`start-stage-turn` / `end-stage-turn`** edge fns to honor `scheduled_at` if present (use schedule), else fall back to existing greedy queue.
-3. **Auto-advance**: at each scheduled slot start, server promotes that applicant to speaker, mutes prior. UI shows "Up next at 8:05 — Brent" countdown.
-
-### Phase D — Live room polish + AI co-host
-
-1. **`CuratedStage` page (live phase)** — for Scout stages: show **Audition HUD** to the host: current artist card with pitch + AI score + 3 quick-action buttons (★ Star, Callback, Pass) which write back to the application row.
-2. **Recording**: already wired via `recording_enabled`; ensure default ON for Scout.
-3. **Live AI advice (host-only side panel)**: reuse the live transcription we built. Stream short bullets every ~30s: "Strong head voice on the bridge", "Pitchy on the chorus", "Sounds like Sevdaliza meets H.E.R." via `transcribe-stage-live` edge fn (new) calling Gemini 2.5 flash with the rolling transcript chunk. Host-only display.
-
-### Phase E — Recap & follow-up
-
-1. After stage ends, existing `end-curated-stage` already issues credits + posts recap. Extend `transcribe-call` to:
-   - Tie each chapter to the scheduled artist (using slot timestamps).
-   - Per artist: AI rating, standout quote, recommended next step ("Send a brief", "Book a callback", "Pass").
-2. **Recap UI**: host sees a ranked list, one tap to message the artist or open a Studio with them.
+**UI**
+- `/thrivepay` → new "Wallet" hero replacing the Stripe Connect CTA:
+  - Balance card (available / pending, multi-currency)
+  - "Add your bank" sheet (`WalletAddBankSheet.tsx`) — country picker → bank fields → done. No Stripe redirect.
+  - "Cash out" button → `WalletPayoutSheet.tsx` (amount, method, confirm).
+  - Payout history list.
+- Replace `PayoutsConnectWarning` link/copy → "Add your bank" inline sheet, not external `/thrivepay` redirect.
+- Hide all "Stripe" wording from creators. Internal admin can still see `stripe_account_id`.
 
 ---
 
-## Routes / files touched
+## Phase 1 — Buyer-side parity (parallel quick win)
 
-- `supabase/migrations/...` — 2 migrations (stages + applications + invites table).
-- `supabase/functions/create-curated-stage/index.ts` — accept mode/visibility/description.
-- `supabase/functions/join-curated-stage/index.ts` — invite gating.
-- `supabase/functions/score-audition/index.ts` — new.
-- `supabase/functions/invite-to-stage/index.ts` — new (host adds emails, sends mail).
-- `supabase/functions/transcribe-call/index.ts` — per-artist recap.
-- `src/components/circle/CreateStageSheet.tsx` — mode, visibility, description, genre.
-- `src/components/circle/ApplyToStageSheet.tsx` — media upload + links.
-- `src/components/circle/AuditionReviewQueue.tsx` — new.
-- `src/components/circle/AuditionScheduler.tsx` — new.
-- `src/components/circle/AuditionHUD.tsx` — new (host live HUD).
-- `src/pages/CuratedStage.tsx` — wire the above into host manage view + live view.
+- Enable Apple Pay / Google Pay / Link on all existing Stripe Checkout sessions (`payment_method_types` left default + `automatic_payment_methods.enabled: true`).
+- Audit: `create-payment`, `wallet-topup`, ticket purchase, invoice pay, ThriveFund pledge edge functions.
 
 ---
 
-## Ship order (so something works each step)
+## Phase 2 — Migration & deprecation
 
-1. **Day 1 (this turn)**: Phase A — mode toggle bug, visibility/privacy, invite table + token. This unblocks the songwriter immediately and lets him share a private link today.
-2. **Day 2**: Phase B — submissions with media + AI score + review queue.
-3. **Day 3**: Phase C+D — scheduler, live HUD, AI advice.
-4. **Day 4**: Phase E — per-artist recap and one-tap follow-up.
+- Backfill: any creator with active `stripe_account_id` from old Express flow → mark `kyc_status='verified'` in `creator_wallets`, copy external account to new model where possible. Show one-time banner: "Your payouts are now managed inside ThriveIN."
+- Update all consumers (events, gigs, ThrivePay invoices, ThriveFund) to read from `creator_wallets` instead of `profiles.stripe_account_id`.
+- Sunset old `PayoutsConnectWarning` copy that linked out.
 
 ---
 
-## Open questions before I build
+## Phase 3 — Polish
 
-- For private invites: send via Lovable Cloud's existing email infra (Resend-backed) — OK?
-- Storage: drop audition samples in the existing `project-files` bucket scoped to the host (counts against host's quota), or stand up a dedicated `audition-samples` bucket (own quota, simpler RLS)?
-- Default slot length for Scout stages — 5 minutes per artist sound right, or do you want the host to set it per artist?
+- Multi-currency display (USD/TTD/EUR), conversion preview using existing `convert-currency` fn.
+- Payout schedules: instant (debit card, +1.5% fee), standard (2 business days, free).
+- Tax forms (1099 / equivalents) surfaced inside ThriveIN — Stripe collects via dashboard-less API.
+- Wallet activity feed.
 
-Reply with answers (or just say "go" and I'll take the defaults: existing email infra, dedicated `audition-samples` bucket, 5-min default slot editable per artist), and I'll ship Phase A.
+---
+
+## Technical details
+
+**Stripe Connect controller config** (used by `wallet-onboard-start`):
+```ts
+stripe.accounts.create({
+  controller: {
+    losses: { payments: 'application' },
+    fees: { payer: 'application' },
+    stripe_dashboard: { type: 'none' },
+    requirement_collection: 'stripe', // Stripe collects KYC, we drive UX via Account Sessions if needed
+  },
+  country, email, capabilities: { transfers: { requested: true }, card_payments: { requested: true } },
+})
+```
+
+**External account creation** (no redirect):
+```ts
+stripe.accounts.createExternalAccount(acctId, {
+  external_account: { object: 'bank_account', country, currency, account_holder_name, account_number, routing_number }
+})
+```
+
+**Payout**:
+```ts
+stripe.payouts.create({ amount, currency }, { stripeAccount: acctId })
+```
+
+Funds flow: buyers pay → funds land on **platform** account → app credits `creator_wallets.balance` (tracked via metadata + webhooks) → on payout request, app uses `stripe.transfers.create` to move funds to connected account, then `stripe.payouts.create` from connected account to bank.
+
+**Webhook idempotency**: dedupe by `event.id` in `stripe_webhook_events` table.
+
+---
+
+## Scope of this first PR
+
+Phase 0 only: schema + 4 edge functions (`wallet-add-bank`, `wallet-balance`, `wallet-payout`, `stripe-wallet-webhook`) + Wallet UI on `/thrivepay`. Phases 1-3 follow once Phase 0 ships and we test with real creators.
+
+Approve to proceed?

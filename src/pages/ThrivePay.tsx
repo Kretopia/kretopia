@@ -26,6 +26,7 @@ import { getFeeDisplayText } from "@/lib/platformFees";
 import { EmptyState } from "@/components/ui/empty-state";
 
 import { WalletTopUpDialog } from "@/components/wallet/WalletTopUpDialog";
+import { ThriveWalletCard } from "@/components/wallet/ThriveWalletCard";
 import { WalletTransferDialog } from "@/components/wallet/WalletTransferDialog";
 import { AccountingDashboard } from "@/components/project/AccountingDashboard";
 import { FreeTierGate } from "@/components/FreeTierGate";
@@ -283,6 +284,12 @@ export default function ThrivePay() {
 
       <div className="mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
         <PassportAnchorStrip className="mb-3" />
+
+        {/* ThriveIN Wallet — frictionless payouts (Path 2) */}
+        <div className="mb-6">
+          <ThriveWalletCard />
+        </div>
+
         {/* Header */}
         <div className="mb-4 sm:mb-6 flex flex-wrap items-start justify-between gap-3 border-b-2 border-primary/20 pb-4">
           <div className="space-y-1.5 min-w-0">

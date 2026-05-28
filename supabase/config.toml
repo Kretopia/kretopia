@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.mint-meeting-token]
 verify_jwt = false
+
+[functions.stripe-wallet-webhook]
+verify_jwt = false

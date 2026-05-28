@@ -26,6 +26,7 @@ import { getFeeDisplayText } from "@/lib/platformFees";
 import { EmptyState } from "@/components/ui/empty-state";
 
 import { WalletTopUpDialog } from "@/components/wallet/WalletTopUpDialog";
+import { ThriveWalletCard } from "@/components/wallet/ThriveWalletCard";
 import { WalletTransferDialog } from "@/components/wallet/WalletTransferDialog";
 import { AccountingDashboard } from "@/components/project/AccountingDashboard";
 import { FreeTierGate } from "@/components/FreeTierGate";

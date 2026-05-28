@@ -3130,6 +3130,87 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_payout_methods: {
+        Row: {
+          brand: string | null
+          country: string | null
+          created_at: string
+          currency: string
+          id: string
+          is_default: boolean
+          last4: string | null
+          stripe_external_account_id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          brand?: string | null
+          country?: string | null
+          created_at?: string
+          currency: string
+          id?: string
+          is_default?: boolean
+          last4?: string | null
+          stripe_external_account_id: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          brand?: string | null
+          country?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          is_default?: boolean
+          last4?: string | null
+          stripe_external_account_id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      creator_payouts: {
+        Row: {
+          amount_cents: number
+          arrival_date: string | null
+          created_at: string
+          currency: string
+          failure_reason: string | null
+          id: string
+          payout_method_id: string | null
+          status: string
+          stripe_payout_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          arrival_date?: string | null
+          created_at?: string
+          currency: string
+          failure_reason?: string | null
+          id?: string
+          payout_method_id?: string | null
+          status?: string
+          stripe_payout_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          arrival_date?: string | null
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          payout_method_id?: string | null
+          status?: string
+          stripe_payout_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       creator_rates: {
         Row: {
           amount: number
@@ -3227,6 +3308,69 @@ export type Database = {
           service_format?: string | null
           tags?: string[] | null
           title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      creator_wallet_balances: {
+        Row: {
+          available_cents: number
+          currency: string
+          pending_cents: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available_cents?: number
+          currency: string
+          pending_cents?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available_cents?: number
+          currency?: string
+          pending_cents?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      creator_wallets: {
+        Row: {
+          charges_enabled: boolean
+          country: string | null
+          created_at: string
+          default_currency: string
+          kyc_status: string
+          payouts_enabled: boolean
+          requirements: Json
+          stripe_account_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          charges_enabled?: boolean
+          country?: string | null
+          created_at?: string
+          default_currency?: string
+          kyc_status?: string
+          payouts_enabled?: boolean
+          requirements?: Json
+          stripe_account_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          charges_enabled?: boolean
+          country?: string | null
+          created_at?: string
+          default_currency?: string
+          kyc_status?: string
+          payouts_enabled?: boolean
+          requirements?: Json
+          stripe_account_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -15340,6 +15484,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stripe_webhook_events: {
+        Row: {
+          event_id: string
+          payload: Json | null
+          processed_at: string
+          type: string
+        }
+        Insert: {
+          event_id: string
+          payload?: Json | null
+          processed_at?: string
+          type: string
+        }
+        Update: {
+          event_id?: string
+          payload?: Json | null
+          processed_at?: string
+          type?: string
+        }
+        Relationships: []
       }
       studio_pulse_comments: {
         Row: {

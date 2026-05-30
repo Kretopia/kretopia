@@ -670,11 +670,13 @@ export const UnifiedHome = () => {
             7. ThriveFund teaser   8. Bottom CTA */}
         {isWedge && <OneWedgeLanding onSearchSubmit={handleHeroClaimSearch} />}
         {!user && !isWedge && <ClaimYourCreditsSection onSearchSubmit={handleHeroClaimSearch} />}
+        {!user && !isWedge && <CoreValueBlocks />}
         {!user && !isWedge && <ProductReelSection />}
         {!user && !isWedge && <ComparisonTableSection />}
         {!user && !isWedge && <SocialProofSection />}
         {!user && !isWedge && <PricingPreviewSection />}
         {!user && !isWedge && <ThriveFundTeaserCard />}
+        {!user && !isWedge && <FAQSection />}
         {!user && !isWedge && <BottomCTASection />}
 
 

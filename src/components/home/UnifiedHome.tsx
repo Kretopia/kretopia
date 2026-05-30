@@ -28,6 +28,8 @@ import { ClaimYourCreditsSection } from "@/components/landing/ClaimYourCreditsSe
 import { ProductReelSection } from "@/components/landing/ProductReelSection";
 import { ComparisonTableSection } from "@/components/landing/ComparisonTableSection";
 import { ThriveFundTeaserCard } from "@/components/landing/ThriveFundTeaserCard";
+import { CoreValueBlocks } from "@/components/landing/CoreValueBlocks";
+import { FAQSection } from "@/components/landing/FAQSection";
 import { BottomCTASection } from "@/components/landing/BottomCTASection";
 import { OneWedgeLanding } from "@/components/landing/OneWedgeLanding";
 import { useLandingVariant } from "@/hooks/useLandingVariant";

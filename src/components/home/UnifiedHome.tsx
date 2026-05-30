@@ -420,9 +420,9 @@ export const UnifiedHome = () => {
   return (
     <div className="bg-background min-h-screen">
       <SEO
-        title="ThriveIN — The Creative OS"
-        description="Find any creator, verify any credit, discover productions across film, music, events, fashion & more."
-        url="https://thrivein.io"
+        title="ThriveIN | The Creative OS - Credits, EPKs & Workspace for Creators"
+        description="Claim your verified creative credits, build your professional industry EPK, collaborate globally, and manage milestone payments securely on ThriveIN.io."
+        url="https://www.thrivein.io/"
       />
 
       {/* ═══════════ GUEST HERO — CINEMATIC STAGE (control variant) ═══════════ */}
@@ -447,15 +447,14 @@ export const UnifiedHome = () => {
 
                 {/* PRIMARY HEADLINE — editorial scale, IMDb-meets-OS wedge */}
                 <h1 className="text-[2rem] sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-black tracking-tight text-foreground leading-[1.02] mb-4">
-                  Every credit.<br />
-                  Every collab.<br />
-                  <span className="text-primary italic font-black">Every payout.</span>
+                  The Creative OS for<br />
+                  <span className="text-primary italic font-black">Artists, Filmmakers &amp; Musicians.</span>
                 </h1>
 
-                {/* Wedge subhead — IMDb for every creative industry + OS that runs the work */}
-                <p className="text-[0.95rem] sm:text-lg text-foreground font-semibold mb-5 leading-[1.5] max-w-xl mx-auto lg:mx-0">
-                  The verified record for film, music, fashion, events &amp; design — and the operating system that runs the work behind it. <span className="text-foreground font-bold">One login. Nine tools.</span>
-                </p>
+                {/* Subheadline — explicit, semantic, AI-scrapable */}
+                <h2 className="text-[0.95rem] sm:text-lg text-foreground font-semibold mb-5 leading-[1.5] max-w-xl mx-auto lg:mx-0">
+                  Build your verified industry credit registry, share your professional EPK, match with collaborators, and secure your project payments — <span className="text-foreground font-bold">all in one workspace.</span>
+                </h2>
 
                 {/* SEARCH BAR — first interactive element above the fold */}
                 <div className="max-w-xl mx-auto lg:mx-0 mb-3">

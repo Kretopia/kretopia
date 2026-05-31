@@ -43,6 +43,11 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.thrivein.io/circle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.thrivein.io/claim</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

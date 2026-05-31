@@ -208,7 +208,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
           {user && !isLandingPage ? (
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
+                <Button variant="ghost" size="icon" aria-label="Open menu" className="h-8 w-8 sm:h-10 sm:w-10">
                   <Menu className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 </Button>
               </SheetTrigger>
@@ -334,7 +334,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
               {/* Mobile hamburger for guests — all pages */}
               <Sheet open={guestMenuOpen} onOpenChange={setGuestMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 md:hidden">
+                  <Button variant="ghost" size="icon" aria-label="Open menu" className="h-9 w-9 md:hidden">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>

@@ -360,7 +360,7 @@ export const EditOpportunityDialog = ({
                 </div>
                 {imagePreview && (
                   <div className="relative w-full h-48 rounded-lg overflow-hidden border">
-                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <img src={imagePreview} alt="Opportunity cover image preview" className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>

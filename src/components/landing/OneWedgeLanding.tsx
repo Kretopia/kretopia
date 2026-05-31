@@ -16,6 +16,7 @@ import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { trackLandingCta } from "@/hooks/useLandingVariant";
 import { supabase } from "@/integrations/supabase/client";
+import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 
 interface Props {
   onSearchSubmit: (q: string) => void;

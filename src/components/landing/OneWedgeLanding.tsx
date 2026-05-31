@@ -16,6 +16,7 @@ import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 import { SocialProofSection } from "@/components/landing/SocialProofSection";
 import { trackLandingCta } from "@/hooks/useLandingVariant";
 import { supabase } from "@/integrations/supabase/client";
+import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 
 interface Props {
   onSearchSubmit: (q: string) => void;
@@ -82,8 +83,31 @@ export const OneWedgeLanding = ({ onSearchSubmit }: Props) => {
             Passport — with Thrive helping move the work forward.
           </motion.p>
 
+          {/* SEARCH — "search your name → claim your credits → onboard" funnel */}
+          <div className="mt-7 max-w-xl">
+            <p className="inline-flex items-center gap-2 text-xs sm:text-sm font-black uppercase tracking-[0.15em] text-[hsl(var(--signal-teal))] mb-2">
+              <Search className="h-3.5 w-3.5" />
+              Already have work? Search your name
+            </p>
+            <div className="relative rounded-2xl p-[2px] bg-gradient-to-r from-[hsl(var(--signal-pink))] via-[hsl(var(--signal-amber))] to-[hsl(var(--signal-teal))] shadow-[0_0_30px_-8px_hsl(var(--signal-teal)/0.4)]">
+              <div className="rounded-[14px] bg-card">
+                <UnifiedSearchDropdown
+                  variant="hero"
+                  placeholder="Search your name…"
+                  onQuerySubmit={(q) => {
+                    trackLandingCta("wedge", "hero_search");
+                    onSearchSubmit(q);
+                  }}
+                />
+              </div>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              We'll find your verified credits across the web — claim them and start your Passport.
+            </p>
+          </div>
+
           {/* CTAs */}
-          <div className="mt-7 flex flex-wrap items-center gap-3">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <Link to="/auth?tab=signup" onClick={() => trackLandingCta("wedge", "hero_primary")}>
               <Button size="lg" className="font-semibold">
                 Start your Passport

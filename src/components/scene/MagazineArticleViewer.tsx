@@ -237,7 +237,7 @@ export const MagazineArticleViewer = ({ article, onBack, isPublicPage = false, i
                 <Link to="/auth">Get Started Free</Link>
               </Button>
               <Button asChild variant="outline" size="sm" className="flex-1">
-                <Link to="/">Learn More</Link>
+                <Link to="/">Learn more about ThriveIN</Link>
               </Button>
             </div>
           </div>

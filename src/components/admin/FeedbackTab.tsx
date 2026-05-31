@@ -272,7 +272,7 @@ export function FeedbackTab() {
               {selectedItem.screenshot_url && (
                 <div>
                   <h3 className="text-sm font-semibold mb-2">Screenshot</h3>
-                  <img src={selectedItem.screenshot_url} alt="Screenshot" className="rounded-lg max-h-48 object-contain" />
+                  <img src={selectedItem.screenshot_url} alt="User-submitted feedback screenshot showing the issue context" className="rounded-lg max-h-48 object-contain" />
                 </div>
               )}
 

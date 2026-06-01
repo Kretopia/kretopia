@@ -511,9 +511,16 @@ export function ICDBCreditForm({ open, onOpenChange, onSuccess, userId }: ICDBCr
       resetForm();
       onOpenChange(false);
       onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding credit:", error);
-      toast.error("Failed to add credit");
+      const msg = error?.message || error?.error_description || error?.details || "Unknown error";
+      toast.error(`Failed to add credit: ${msg}`);
+      try {
+        const { logClientError } = await import("@/lib/errorLogger");
+        await logClientError(error instanceof Error ? error : new Error(String(msg)), "ICDBCreditForm.addCredit", {
+          code: error?.code, hint: error?.hint, details: error?.details,
+        });
+      } catch {}
     } finally {
       setSaving(false);
     }

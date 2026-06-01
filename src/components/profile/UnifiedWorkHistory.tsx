@@ -255,9 +255,16 @@ export function UnifiedWorkHistory({ userId, isOwnProfile, onRefresh }: UnifiedW
       setIsAddDialogOpen(false);
       fetchAllCredits();
       onRefresh?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding credit:", error);
-      toast.error("Failed to add credit");
+      const msg = error?.message || error?.details || error?.hint || "Unknown error";
+      toast.error(`Failed to add credit: ${msg}`);
+      try {
+        const { logClientError } = await import("@/lib/errorLogger");
+        await logClientError(error instanceof Error ? error : new Error(String(msg)), "UnifiedWorkHistory.addCredit", {
+          code: error?.code, hint: error?.hint, details: error?.details,
+        });
+      } catch {}
     } finally {
       setSaving(false);
     }

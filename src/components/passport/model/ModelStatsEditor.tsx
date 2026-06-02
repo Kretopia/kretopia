@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Ruler } from "lucide-react";
+import { Save, Ruler, IdCard } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   type ModelStats, type UnitSystem,
   cmToFeetInches, feetInchesToCm, inchesToCm,

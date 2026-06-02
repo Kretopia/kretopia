@@ -21,20 +21,20 @@ export default function CompCard() {
     (async () => {
       const { data: p } = await supabase
         .from("profiles")
-        .select("user_id, full_name, avatar_url, mother_agency, model_unions, model_categories, model_stats, comp_card_layout, public_email, sub_roles")
+        .select("user_id, full_name, avatar_url, mother_agency, model_unions, model_categories, model_stats, comp_card_layout, sub_roles")
         .eq("user_id", userId)
-        .maybeSingle()
-        .catch(() => ({ data: null } as any));
+        .maybeSingle();
 
       let portfolio: any[] = [];
-      const { data: pf } = await supabase
-        .from("portfolio_items" as any)
-        .select("id, url, image_url, thumbnail_url, order_index")
-        .eq("user_id", userId)
-        .order("order_index", { ascending: true })
-        .limit(20)
-        .catch(() => ({ data: [] } as any));
-      if (Array.isArray(pf)) portfolio = pf;
+      try {
+        const { data: pf } = await supabase
+          .from("portfolio_items" as any)
+          .select("id, url, image_url, thumbnail_url, order_index")
+          .eq("user_id", userId)
+          .order("order_index", { ascending: true })
+          .limit(20);
+        if (Array.isArray(pf)) portfolio = pf;
+      } catch { /* portfolio table may differ; fall through */ }
 
       const layout: any = (p as any)?.comp_card_layout;
       let imgs: string[] = [];

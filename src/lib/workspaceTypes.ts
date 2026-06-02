@@ -3,7 +3,7 @@
  * Each workspace_type maps to its module set, copilot persona, and starter content.
  */
 import type { LucideIcon } from "lucide-react";
-import { Mic, Calendar, Camera, Megaphone, Music2, Briefcase, Sparkles } from "lucide-react";
+import { Mic, Calendar, Camera, Megaphone, Music2, Briefcase, Sparkles, UserSquare2 } from "lucide-react";
 
 export type WorkspaceType =
   | "podcast"
@@ -11,6 +11,7 @@ export type WorkspaceType =
   | "content"
   | "campaign"
   | "music"
+  | "modeling"
   | "client"
   | "general";
 

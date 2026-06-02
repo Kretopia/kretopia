@@ -43,6 +43,7 @@ const CopilotMemory = lazy(() => import("./pages/CopilotMemory"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CompanyOnboarding = lazy(() => import("./pages/CompanyOnboarding"));
 const TalentFinder = lazy(() => import("./pages/TalentFinder"));
+const SalesDashboard = lazy(() => import("./pages/SalesDashboard"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));

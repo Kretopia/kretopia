@@ -84,6 +84,8 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId, epkPdfData }
     try {
       const { generateEPKPdf } = await import("@/lib/epkPdfGenerator");
       await generateEPKPdf(epkPdfData);
+      const { trackDeckEvent } = await import("@/lib/deckMetrics");
+      void trackDeckEvent("epk_pdf_downloaded", "passport", { profile_user_id: userId });
       toast.success("EPK PDF downloaded!");
     } catch (error) {
       console.error("EPK PDF generation error:", error);

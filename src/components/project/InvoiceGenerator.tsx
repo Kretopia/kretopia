@@ -768,6 +768,21 @@ export function InvoiceGenerator({ projectId }: InvoiceGeneratorProps) {
         doc.text(termLines, 20, payY + 4);
       }
 
+      // Clickable "Pay with ThrivePay" link (only for unpaid invoices, not quotes)
+      if (!isQuoteDoc && invoice.status !== "paid") {
+        const payUrl = `https://www.thrivein.io/pay/invoice/${invoice.id}`;
+        doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+        doc.roundedRect(20, 270, 75, 10, 2, 2, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.setFont(undefined!, "bold");
+        doc.textWithLink("Pay with ThrivePay", 27, 277, { url: payUrl });
+        doc.setFont(undefined!, "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(120, 120, 120);
+        doc.textWithLink(payUrl, 100, 277, { url: payUrl });
+      }
+
       // Footer
       doc.setFontSize(7);
       doc.setTextColor(150, 150, 150);

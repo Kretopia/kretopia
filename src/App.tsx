@@ -336,6 +336,8 @@ const AppContent = () => {
             <Route path="/purchase-success" element={<PaymentSuccess />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
+            <Route path="/pay/invoice/:id" element={<PayInvoice />} />
+            <Route path="/pay/:slug" element={<PayLink />} />
             
             {/* Legacy redirects for removed features */}
             <Route path="/agent" element={<Navigate to="/circle" replace />} />

@@ -50,6 +50,7 @@ const TalentManager = lazy(() => import("./pages/TalentManager"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));
 const CompCard = lazy(() => import("./pages/CompCard"));
+const CompCardBuilder = lazy(() => import("./pages/CompCardBuilder"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ViewProfile = lazy(() => import("./pages/ViewProfile"));

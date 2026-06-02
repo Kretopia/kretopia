@@ -49,6 +49,7 @@ const SalesDashboard = lazy(() => import("./pages/SalesDashboard"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));
+const CompCard = lazy(() => import("./pages/CompCard"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ViewProfile = lazy(() => import("./pages/ViewProfile"));
@@ -231,7 +232,7 @@ const AppContent = () => {
   useActivityPing();
   
   // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
-  const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname);
+  const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname) || /^\/comp\/[^/]+$/.test(location.pathname);
   const isCreatorSite = /^\/site\/[^/]+$/.test(location.pathname) || location.pathname === '/website-builder';
   const isPublicEvent = /^\/event\/[^/]+$/.test(location.pathname);
   const isAuthPage = location.pathname === '/auth';
@@ -302,6 +303,7 @@ const AppContent = () => {
             <Route path="/dispute/:creditId" element={<ProtectedRoute><DisputeCredit /></ProtectedRoute>} />
             <Route path="/dispute-manage/:disputeId" element={<ProtectedRoute><DisputeManage /></ProtectedRoute>} />
             <Route path="/epk/:userId" element={<CreatorEPK />} />
+            <Route path="/comp/:userId" element={<CompCard />} />
             <Route path="/site/:userId" element={<CreatorSite />} />
             <Route path="/website-builder" element={<ProtectedRoute><WebsiteBuilder /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />

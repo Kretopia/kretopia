@@ -3,7 +3,7 @@
  * Each workspace_type maps to its module set, copilot persona, and starter content.
  */
 import type { LucideIcon } from "lucide-react";
-import { Mic, Calendar, Camera, Megaphone, Music2, Briefcase, Sparkles } from "lucide-react";
+import { Mic, Calendar, Camera, Megaphone, Music2, Briefcase, Sparkles, UserSquare2 } from "lucide-react";
 
 export type WorkspaceType =
   | "podcast"
@@ -11,6 +11,7 @@ export type WorkspaceType =
   | "content"
   | "campaign"
   | "music"
+  | "modeling"
   | "client"
   | "general";
 
@@ -26,7 +27,7 @@ export interface WorkspaceConfig {
   /** Default deliverables to suggest at creation */
   defaultDeliverables: string[];
   /** Modules the Studio Room should mount (besides shared brief/work/money) */
-  modules: Array<"podcast" | "event_runsheet" | "content_shotlist" | "campaign_matrix" | "music_releases">;
+  modules: Array<"podcast" | "event_runsheet" | "content_shotlist" | "campaign_matrix" | "music_releases" | "modeling_shoot">;
 }
 
 export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
@@ -79,6 +80,16 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     vaultFolders: ["Stems", "Masters", "Artwork", "Press Kit", "Splits"],
     defaultDeliverables: ["Masters delivered", "Artwork finalized", "Distro live"],
     modules: ["music_releases"],
+  },
+  modeling: {
+    type: "modeling",
+    label: "Modeling Shoot",
+    tagline: "Call sheet, looks, shot list, usage rights.",
+    icon: UserSquare2,
+    copilotPersona: "You're producing a fashion or modeling shoot. Help with call sheets, looks/wardrobe, shot lists per look, usage rights and image selects. Be precise about call times, locations, and rights scope.",
+    vaultFolders: ["Call Sheet", "Looks", "Polaroids", "Selects", "Final Retouched"],
+    defaultDeliverables: ["Call sheet locked", "Looks confirmed", "Selects approved"],
+    modules: ["modeling_shoot"],
   },
   client: {
     type: "client",

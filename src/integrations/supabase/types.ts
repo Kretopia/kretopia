@@ -9323,6 +9323,156 @@ export type Database = {
           },
         ]
       }
+      modeling_call_sheets: {
+        Row: {
+          call_time: string | null
+          contacts: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          location: Json | null
+          notes: string | null
+          project_id: string
+          shoot_date: string | null
+          updated_at: string
+          weather_cache: Json | null
+          wrap_time: string | null
+        }
+        Insert: {
+          call_time?: string | null
+          contacts?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: Json | null
+          notes?: string | null
+          project_id: string
+          shoot_date?: string | null
+          updated_at?: string
+          weather_cache?: Json | null
+          wrap_time?: string | null
+        }
+        Update: {
+          call_time?: string | null
+          contacts?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: Json | null
+          notes?: string | null
+          project_id?: string
+          shoot_date?: string | null
+          updated_at?: string
+          weather_cache?: Json | null
+          wrap_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modeling_call_sheets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modeling_looks: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          notes: string | null
+          order_idx: number
+          project_id: string
+          reference_urls: string[] | null
+          updated_at: string
+          wardrobe: Json | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          order_idx?: number
+          project_id: string
+          reference_urls?: string[] | null
+          updated_at?: string
+          wardrobe?: Json | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          order_idx?: number
+          project_id?: string
+          reference_urls?: string[] | null
+          updated_at?: string
+          wardrobe?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modeling_looks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modeling_usage_rights: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          duration_months: number | null
+          exclusivity: boolean | null
+          id: string
+          notes: string | null
+          project_id: string
+          rate_usd: number | null
+          scope: string
+          territory: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          duration_months?: number | null
+          exclusivity?: boolean | null
+          id?: string
+          notes?: string | null
+          project_id: string
+          rate_usd?: number | null
+          scope: string
+          territory?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          duration_months?: number | null
+          exclusivity?: boolean | null
+          id?: string
+          notes?: string | null
+          project_id?: string
+          rate_usd?: number | null
+          scope?: string
+          territory?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modeling_usage_rights_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       money_streaks: {
         Row: {
           created_at: string
@@ -11590,6 +11740,7 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"]
           achievement_badges: string[] | null
           age_verified: boolean
+          agency_representation: Json | null
           ambassador_code: string | null
           availability_note: string | null
           availability_status: string | null
@@ -11609,6 +11760,7 @@ export type Database = {
           claimed_at: string | null
           claimed_by: string | null
           collab_intent: string | null
+          comp_card_layout: Json | null
           company_about: string | null
           company_address: string | null
           company_images: Json | null
@@ -11672,6 +11824,11 @@ export type Database = {
           longest_streak: number | null
           longitude: number | null
           membership_number: string | null
+          model_categories: string[] | null
+          model_stats: Json | null
+          model_unions: string[] | null
+          mother_agency: string | null
+          mother_agency_verified: boolean | null
           og_promotion_expires_at: string | null
           og_promotion_used: boolean | null
           onboarding_completed: boolean
@@ -11686,6 +11843,7 @@ export type Database = {
           phone_otp: string | null
           phone_otp_expires_at: string | null
           phone_verified: boolean
+          polaroids: Json | null
           portfolio_verified: boolean | null
           preferred_currency: string
           press_links: Json | null
@@ -11760,6 +11918,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           achievement_badges?: string[] | null
           age_verified?: boolean
+          agency_representation?: Json | null
           ambassador_code?: string | null
           availability_note?: string | null
           availability_status?: string | null
@@ -11779,6 +11938,7 @@ export type Database = {
           claimed_at?: string | null
           claimed_by?: string | null
           collab_intent?: string | null
+          comp_card_layout?: Json | null
           company_about?: string | null
           company_address?: string | null
           company_images?: Json | null
@@ -11842,6 +12002,11 @@ export type Database = {
           longest_streak?: number | null
           longitude?: number | null
           membership_number?: string | null
+          model_categories?: string[] | null
+          model_stats?: Json | null
+          model_unions?: string[] | null
+          mother_agency?: string | null
+          mother_agency_verified?: boolean | null
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
           onboarding_completed?: boolean
@@ -11856,6 +12021,7 @@ export type Database = {
           phone_otp?: string | null
           phone_otp_expires_at?: string | null
           phone_verified?: boolean
+          polaroids?: Json | null
           portfolio_verified?: boolean | null
           preferred_currency?: string
           press_links?: Json | null
@@ -11930,6 +12096,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           achievement_badges?: string[] | null
           age_verified?: boolean
+          agency_representation?: Json | null
           ambassador_code?: string | null
           availability_note?: string | null
           availability_status?: string | null
@@ -11949,6 +12116,7 @@ export type Database = {
           claimed_at?: string | null
           claimed_by?: string | null
           collab_intent?: string | null
+          comp_card_layout?: Json | null
           company_about?: string | null
           company_address?: string | null
           company_images?: Json | null
@@ -12012,6 +12180,11 @@ export type Database = {
           longest_streak?: number | null
           longitude?: number | null
           membership_number?: string | null
+          model_categories?: string[] | null
+          model_stats?: Json | null
+          model_unions?: string[] | null
+          mother_agency?: string | null
+          mother_agency_verified?: boolean | null
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
           onboarding_completed?: boolean
@@ -12026,6 +12199,7 @@ export type Database = {
           phone_otp?: string | null
           phone_otp_expires_at?: string | null
           phone_verified?: boolean
+          polaroids?: Json | null
           portfolio_verified?: boolean | null
           preferred_currency?: string
           press_links?: Json | null

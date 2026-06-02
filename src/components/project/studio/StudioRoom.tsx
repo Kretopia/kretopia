@@ -34,6 +34,7 @@ import { PodcastStudioSection } from "./PodcastStudioSection";
 import { ContentStudioSection } from "./ContentStudioSection";
 import { CampaignStudioSection } from "./CampaignStudioSection";
 import { MusicStudioSection } from "./MusicStudioSection";
+import { ModelingStudioSection } from "./ModelingStudioSection";
 import { EventStudioSection } from "./EventStudioSection";
 import { EventHeroCard } from "./EventHeroCard";
 import { EventCrmSection } from "./EventCrmSection";
@@ -397,6 +398,9 @@ export const StudioRoom = ({
         {["music","music_release"].includes(project.workspace_type) && (
           <MusicStudioSection project={project} currentUserId={currentUserId} />
         )}
+        {["modeling","modeling_shoot"].includes(project.workspace_type) && (
+          <ModelingStudioSection project={project} currentUserId={currentUserId} />
+        )}
         {isEvent && (
           <>
             {/* Brief first — carries the event's main concept */}
@@ -470,6 +474,11 @@ export const StudioRoom = ({
           {["music","music_release"].includes(project.workspace_type) && (
             <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
               <MusicStudioSection project={project} currentUserId={currentUserId} />
+            </div>
+          )}
+          {["modeling","modeling_shoot"].includes(project.workspace_type) && (
+            <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+              <ModelingStudioSection project={project} currentUserId={currentUserId} />
             </div>
           )}
           {isEvent && (

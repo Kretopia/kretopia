@@ -22,6 +22,24 @@ export const resultCardForAction = (action: OrchAction): AgentResultCardData | n
     };
   }
 
+  if (action.tool_name === "research_web") {
+    const count = Array.isArray(payload.leads) ? payload.leads.length : (payload.count ?? 0);
+    const saved = payload.saved_count ?? 0;
+    const q = payload.query ? String(payload.query) : "your search";
+    const loc = payload.location ? ` in ${payload.location}` : "";
+    return {
+      id: action.id,
+      icon: "sponsor",
+      title: count
+        ? `${count} lead${count === 1 ? "" : "s"} found${loc ? ` ·${loc}` : ""}`
+        : "No leads found — try a more specific query",
+      subtitle: saved
+        ? `Saved to your Rolodex — open to review, tag, and start outreach.`
+        : `Open your Rolodex to review "${q}".`,
+      href: payload.action_url || "/sales",
+      cta: "Open Rolodex",
+    };
+
   if (action.tool_name === "weekly_money_summary") {
     return {
       id: action.id,

@@ -50,6 +50,7 @@ const TalentManager = lazy(() => import("./pages/TalentManager"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));
 const CompCard = lazy(() => import("./pages/CompCard"));
+const CompCardBuilder = lazy(() => import("./pages/CompCardBuilder"));
 const SubmitReview = lazy(() => import("./pages/SubmitReview"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ViewProfile = lazy(() => import("./pages/ViewProfile"));
@@ -304,6 +305,7 @@ const AppContent = () => {
             <Route path="/dispute-manage/:disputeId" element={<ProtectedRoute><DisputeManage /></ProtectedRoute>} />
             <Route path="/epk/:userId" element={<CreatorEPK />} />
             <Route path="/comp/:userId" element={<CompCard />} />
+            <Route path="/passport/comp-card" element={<ProtectedRoute><CompCardBuilder /></ProtectedRoute>} />
             <Route path="/site/:userId" element={<CreatorSite />} />
             <Route path="/website-builder" element={<ProtectedRoute><WebsiteBuilder /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />

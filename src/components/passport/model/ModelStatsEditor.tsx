@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Ruler } from "lucide-react";
+import { Save, Ruler, IdCard } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   type ModelStats, type UnitSystem,
   cmToFeetInches, feetInchesToCm, inchesToCm,
@@ -179,6 +180,12 @@ export function ModelStatsEditor({
 
       <Button onClick={save} disabled={saving} className="w-full">
         <Save className="h-4 w-4 mr-2" />{saving ? "Saving…" : "Save model details"}
+      </Button>
+
+      <Button asChild variant="outline" className="w-full">
+        <Link to="/passport/comp-card">
+          <IdCard className="h-4 w-4 mr-2" />Build comp card
+        </Link>
       </Button>
     </div>
   );

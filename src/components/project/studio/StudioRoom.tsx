@@ -34,6 +34,7 @@ import { PodcastStudioSection } from "./PodcastStudioSection";
 import { ContentStudioSection } from "./ContentStudioSection";
 import { CampaignStudioSection } from "./CampaignStudioSection";
 import { MusicStudioSection } from "./MusicStudioSection";
+import { ModelingStudioSection } from "./ModelingStudioSection";
 import { EventStudioSection } from "./EventStudioSection";
 import { EventHeroCard } from "./EventHeroCard";
 import { EventCrmSection } from "./EventCrmSection";

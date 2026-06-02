@@ -11590,6 +11590,7 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"]
           achievement_badges: string[] | null
           age_verified: boolean
+          agency_representation: Json | null
           ambassador_code: string | null
           availability_note: string | null
           availability_status: string | null
@@ -11609,6 +11610,7 @@ export type Database = {
           claimed_at: string | null
           claimed_by: string | null
           collab_intent: string | null
+          comp_card_layout: Json | null
           company_about: string | null
           company_address: string | null
           company_images: Json | null
@@ -11672,6 +11674,11 @@ export type Database = {
           longest_streak: number | null
           longitude: number | null
           membership_number: string | null
+          model_categories: string[] | null
+          model_stats: Json | null
+          model_unions: string[] | null
+          mother_agency: string | null
+          mother_agency_verified: boolean | null
           og_promotion_expires_at: string | null
           og_promotion_used: boolean | null
           onboarding_completed: boolean
@@ -11686,6 +11693,7 @@ export type Database = {
           phone_otp: string | null
           phone_otp_expires_at: string | null
           phone_verified: boolean
+          polaroids: Json | null
           portfolio_verified: boolean | null
           preferred_currency: string
           press_links: Json | null
@@ -11760,6 +11768,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           achievement_badges?: string[] | null
           age_verified?: boolean
+          agency_representation?: Json | null
           ambassador_code?: string | null
           availability_note?: string | null
           availability_status?: string | null
@@ -11779,6 +11788,7 @@ export type Database = {
           claimed_at?: string | null
           claimed_by?: string | null
           collab_intent?: string | null
+          comp_card_layout?: Json | null
           company_about?: string | null
           company_address?: string | null
           company_images?: Json | null
@@ -11842,6 +11852,11 @@ export type Database = {
           longest_streak?: number | null
           longitude?: number | null
           membership_number?: string | null
+          model_categories?: string[] | null
+          model_stats?: Json | null
+          model_unions?: string[] | null
+          mother_agency?: string | null
+          mother_agency_verified?: boolean | null
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
           onboarding_completed?: boolean
@@ -11856,6 +11871,7 @@ export type Database = {
           phone_otp?: string | null
           phone_otp_expires_at?: string | null
           phone_verified?: boolean
+          polaroids?: Json | null
           portfolio_verified?: boolean | null
           preferred_currency?: string
           press_links?: Json | null
@@ -11930,6 +11946,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           achievement_badges?: string[] | null
           age_verified?: boolean
+          agency_representation?: Json | null
           ambassador_code?: string | null
           availability_note?: string | null
           availability_status?: string | null
@@ -11949,6 +11966,7 @@ export type Database = {
           claimed_at?: string | null
           claimed_by?: string | null
           collab_intent?: string | null
+          comp_card_layout?: Json | null
           company_about?: string | null
           company_address?: string | null
           company_images?: Json | null
@@ -12012,6 +12030,11 @@ export type Database = {
           longest_streak?: number | null
           longitude?: number | null
           membership_number?: string | null
+          model_categories?: string[] | null
+          model_stats?: Json | null
+          model_unions?: string[] | null
+          mother_agency?: string | null
+          mother_agency_verified?: boolean | null
           og_promotion_expires_at?: string | null
           og_promotion_used?: boolean | null
           onboarding_completed?: boolean
@@ -12026,6 +12049,7 @@ export type Database = {
           phone_otp?: string | null
           phone_otp_expires_at?: string | null
           phone_verified?: boolean
+          polaroids?: Json | null
           portfolio_verified?: boolean | null
           preferred_currency?: string
           press_links?: Json | null

@@ -303,6 +303,7 @@ const AppContent = () => {
             <Route path="/dispute/:creditId" element={<ProtectedRoute><DisputeCredit /></ProtectedRoute>} />
             <Route path="/dispute-manage/:disputeId" element={<ProtectedRoute><DisputeManage /></ProtectedRoute>} />
             <Route path="/epk/:userId" element={<CreatorEPK />} />
+            <Route path="/comp/:userId" element={<CompCard />} />
             <Route path="/site/:userId" element={<CreatorSite />} />
             <Route path="/website-builder" element={<ProtectedRoute><WebsiteBuilder /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />

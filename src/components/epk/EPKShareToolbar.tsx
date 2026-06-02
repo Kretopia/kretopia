@@ -60,6 +60,8 @@ export const EPKShareToolbar = ({ profileName, profileRole, userId, epkPdfData }
     await navigator.clipboard.writeText(epkUrl);
     setCopied(true);
     toast.success("EPK link copied!");
+    const { trackDeckEvent } = await import("@/lib/deckMetrics");
+    void trackDeckEvent("epk_link_shared", "share", { profile_user_id: userId, surface: "copy" });
     setTimeout(() => setCopied(false), 2000);
   };
 

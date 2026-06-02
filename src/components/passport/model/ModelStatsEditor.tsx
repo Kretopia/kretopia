@@ -181,6 +181,12 @@ export function ModelStatsEditor({
       <Button onClick={save} disabled={saving} className="w-full">
         <Save className="h-4 w-4 mr-2" />{saving ? "Saving…" : "Save model details"}
       </Button>
+
+      <Button asChild variant="outline" className="w-full">
+        <Link to="/passport/comp-card">
+          <IdCard className="h-4 w-4 mr-2" />Build comp card
+        </Link>
+      </Button>
     </div>
   );
 }

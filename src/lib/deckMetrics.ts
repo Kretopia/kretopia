@@ -17,15 +17,15 @@ export async function trackDeckEvent(
 ) {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    await supabase.from("analytics_events").insert({
-      user_id: user?.id ?? null,
+    await supabase.from("analytics_events").insert([{
+      user_id: user?.id ?? undefined,
       event_name,
       event_category,
-      event_properties,
-      page_path: typeof window !== "undefined" ? window.location.pathname : null,
-      referrer: typeof document !== "undefined" ? (document.referrer || null) : null,
-      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-    });
+      event_properties: event_properties as never,
+      page_path: typeof window !== "undefined" ? window.location.pathname : undefined,
+      referrer: typeof document !== "undefined" ? (document.referrer || undefined) : undefined,
+      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+    }]);
   } catch {
     /* silent */
   }

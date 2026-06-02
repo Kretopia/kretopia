@@ -9323,6 +9323,156 @@ export type Database = {
           },
         ]
       }
+      modeling_call_sheets: {
+        Row: {
+          call_time: string | null
+          contacts: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          location: Json | null
+          notes: string | null
+          project_id: string
+          shoot_date: string | null
+          updated_at: string
+          weather_cache: Json | null
+          wrap_time: string | null
+        }
+        Insert: {
+          call_time?: string | null
+          contacts?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: Json | null
+          notes?: string | null
+          project_id: string
+          shoot_date?: string | null
+          updated_at?: string
+          weather_cache?: Json | null
+          wrap_time?: string | null
+        }
+        Update: {
+          call_time?: string | null
+          contacts?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          location?: Json | null
+          notes?: string | null
+          project_id?: string
+          shoot_date?: string | null
+          updated_at?: string
+          weather_cache?: Json | null
+          wrap_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modeling_call_sheets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modeling_looks: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          notes: string | null
+          order_idx: number
+          project_id: string
+          reference_urls: string[] | null
+          updated_at: string
+          wardrobe: Json | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          order_idx?: number
+          project_id: string
+          reference_urls?: string[] | null
+          updated_at?: string
+          wardrobe?: Json | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          order_idx?: number
+          project_id?: string
+          reference_urls?: string[] | null
+          updated_at?: string
+          wardrobe?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modeling_looks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modeling_usage_rights: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          duration_months: number | null
+          exclusivity: boolean | null
+          id: string
+          notes: string | null
+          project_id: string
+          rate_usd: number | null
+          scope: string
+          territory: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          duration_months?: number | null
+          exclusivity?: boolean | null
+          id?: string
+          notes?: string | null
+          project_id: string
+          rate_usd?: number | null
+          scope: string
+          territory?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          duration_months?: number | null
+          exclusivity?: boolean | null
+          id?: string
+          notes?: string | null
+          project_id?: string
+          rate_usd?: number | null
+          scope?: string
+          territory?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modeling_usage_rights_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       money_streaks: {
         Row: {
           created_at: string

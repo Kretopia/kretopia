@@ -34,6 +34,7 @@ import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { MoneyStreakChip } from "@/components/thrivepay/MoneyStreakChip";
 import { WeeklyMoneyInsights } from "@/components/thrivepay/WeeklyMoneyInsights";
 import { SnapReceiptFAB } from "@/components/thrivepay/SnapReceiptFAB";
+import { PaymentLinksSection } from "@/components/thrivepay/PaymentLinksSection";
 import {
   DollarSign,
   TrendingUp,
@@ -420,304 +421,212 @@ export default function ThrivePay() {
           )}
         </div>
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <TabsList className="w-full grid grid-cols-3 h-10 sm:h-11">
-            <TabsTrigger value="earnings" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
-              <TrendingUp className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Invoices & Earnings</span>
-              <span className="sm:hidden">Invoices</span>
-            </TabsTrigger>
-            <TabsTrigger value="wallet" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
-              <Wallet className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Wallet</span>
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="gap-1 sm:gap-1.5 text-xs px-1 sm:px-3">
-              <CreditCard className="h-4 w-4 flex-shrink-0" />
-              <span className="hidden sm:inline">Payouts</span>
-              <span className="sm:hidden">Payouts</span>
-            </TabsTrigger>
-          </TabsList>
+        {/* ───── Single-scroll command center (no tabs) ───── */}
 
-          {/* Wallet Tab - Transactions */}
-          <TabsContent value="wallet" className="space-y-4 sm:space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg sm:text-xl font-semibold">Recent Activity</h2>
-              <Button variant="link" size="sm" onClick={() => navigate("/payment-history")}>
-                View All
-              </Button>
-            </div>
-            <div className="space-y-2 sm:space-y-3">
-              {recentTransactions.length === 0 ? (
-                <Card>
-                  <EmptyState
-                    icon={Wallet}
-                    eyebrow="Your creative finances"
-                    title="Ready to get paid"
-                    description="Send your first invoice or set up a payment link — your creative finances start here."
-                    action={{
-                      label: "Create Invoice",
-                      icon: Plus,
-                      onClick: () => window.dispatchEvent(new CustomEvent("thrivepay:create-document", { detail: { type: "invoice" } })),
-                    }}
-                  />
-                </Card>
-              ) : (
-                recentTransactions.map((tx) => (
+        {/* 1. Payment Links — share & get paid in seconds */}
+        <section className="mb-6">
+          <PaymentLinksSection />
+        </section>
+
+        {/* 2. Invoices & Earnings */}
+        <section className="mb-6 space-y-3">
+          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" /> Invoices & Earnings
+          </h2>
+          <FreeTierGate
+            feature="expenses"
+            featureLabel="Creative Earnings"
+            description="Upgrade to Pro for unlimited expense tracking, invoicing, and earnings insights."
+          >
+            <AccountingDashboard />
+          </FreeTierGate>
+        </section>
+
+        {/* 3. Recent Activity */}
+        <section className="mb-6 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-primary" /> Recent Activity
+            </h2>
+            <Button variant="link" size="sm" onClick={() => navigate("/payment-history")}>
+              View All
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {recentTransactions.length === 0 ? (
+              <Card>
+                <EmptyState
+                  icon={Wallet}
+                  eyebrow="Your creative finances"
+                  title="Ready to get paid"
+                  description="Send your first invoice or share a payment link — your creative finances start here."
+                  action={{
+                    label: "Create Invoice",
+                    icon: Plus,
+                    onClick: () => window.dispatchEvent(new CustomEvent("thrivepay:create-document", { detail: { type: "invoice" } })),
+                  }}
+                />
+              </Card>
+            ) : (
+              recentTransactions.map((tx) => {
+                const isIn = tx.type.includes("earned") || tx.type.includes("received");
+                return (
                   <Card key={tx.id} className="hover:bg-accent/5 transition-smooth">
                     <CardContent className="p-3 sm:p-4">
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                          <div className={`rounded-full p-1.5 sm:p-2 flex-shrink-0 ${
-                            tx.type.includes("earned") || tx.type.includes("received")
-                              ? "bg-green-500/10"
-                              : "bg-red-500/10"
-                          }`}>
-                            {tx.type.includes("earned") || tx.type.includes("received") ? (
-                              <ArrowDownRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
-                            ) : (
-                              <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-500" />
-                            )}
+                          <div className={`rounded-full p-1.5 sm:p-2 flex-shrink-0 ${isIn ? "bg-green-500/10" : "bg-red-500/10"}`}>
+                            {isIn ? <ArrowDownRight className="h-4 w-4 text-green-500" /> : <ArrowUpRight className="h-4 w-4 text-red-500" />}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium text-sm sm:text-base truncate">{tx.description || tx.type}</p>
-                            <p className="text-xs sm:text-sm text-muted-foreground">
-                              {new Date(tx.created_at).toLocaleDateString()}
-                            </p>
+                            <p className="font-medium text-sm truncate">{tx.description || tx.type}</p>
+                            <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
                           </div>
                         </div>
-                        <span className={`text-sm sm:text-lg font-semibold flex-shrink-0 ${
-                          tx.type.includes("earned") || tx.type.includes("received")
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}>
-                          {tx.type.includes("earned") || tx.type.includes("received") ? "+" : "-"}
-                          ${tx.amount}
+                        <span className={`text-sm sm:text-lg font-semibold flex-shrink-0 ${isIn ? "text-green-500" : "text-red-500"}`}>
+                          {isIn ? "+" : "-"}${tx.amount}
                         </span>
                       </div>
                     </CardContent>
                   </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Earnings Tab */}
-          <TabsContent value="earnings" className="space-y-6">
-            <FreeTierGate
-              feature="expenses"
-              featureLabel="Creative Earnings"
-              description="Upgrade to Pro for unlimited expense tracking, invoicing, and earnings insights."
-            >
-              <AccountingDashboard />
-            </FreeTierGate>
-          </TabsContent>
-
-
-          {/* Payments Tab - Stripe Connect */}
-          <TabsContent value="payments" className="space-y-6">
-            {/* Not Connected */}
-            {connectStatus === "not_connected" && (
-              <Card className="border-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
-                    Connect Your Payment Account
-                  </CardTitle>
-                  <CardDescription>Start receiving payments securely through Stripe Connect</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold mb-1">Secure & Compliant</h3>
-                        <p className="text-sm text-muted-foreground">Stripe handles all security</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Zap className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold mb-1">Fast Payouts</h3>
-                        <p className="text-sm text-muted-foreground">Automatic transfers to your bank</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <DollarSign className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold mb-1">No Liability</h3>
-                        <p className="text-sm text-muted-foreground">ThriveIN doesn't hold your funds</p>
-                      </div>
-                    </div>
-                  </div>
-                  <Button onClick={handleConnectAccount} className="w-full" size="lg">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Connect Stripe Account
-                  </Button>
-                </CardContent>
-              </Card>
+                );
+              })
             )}
+          </div>
+        </section>
 
-            {/* Pending / Restricted */}
-            {(connectStatus === "pending" || connectStatus === "restricted") && (
-              <Card className="border-yellow-500/30 bg-yellow-500/5">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
-                      {connectStatus === "restricted" ? <AlertCircle className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
-                      {connectStatus === "restricted" ? "Action Required" : "Setup Incomplete"}
-                    </CardTitle>
-                    <Button variant="outline" size="sm" onClick={checkConnectStatus} disabled={checkingStatus}>
-                      {checkingStatus ? "Checking..." : "Refresh Status"}
-                    </Button>
-                  </div>
-                  <CardDescription>
-                    {connectStatus === "restricted"
-                      ? "Your account has restrictions. Complete the items below."
-                      : "Complete Stripe onboarding to start receiving payments."}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    {[
-                      { label: "Details Submitted", ok: connectDetails?.detailsSubmitted },
-                      { label: "Charges Enabled", ok: connectDetails?.chargesEnabled },
-                      { label: "Payouts Enabled", ok: connectDetails?.payoutsEnabled },
-                    ].map((item) => (
-                      <div key={item.label} className={`flex items-center gap-2 rounded-lg border p-3 ${item.ok ? "border-green-500/30 bg-green-500/5" : "border-yellow-500/30 bg-yellow-500/5"}`}>
-                        {item.ok ? <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" /> : <AlertCircle className="h-4 w-4 text-yellow-500 flex-shrink-0" />}
-                        <span className="text-sm font-medium">{item.label}</span>
-                      </div>
-                    ))}
-                  </div>
+        {/* 4. Payouts — Stripe Connect */}
+        <section className="mb-6 space-y-3">
+          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-primary" /> Payouts to your bank
+          </h2>
 
-                  {connectDetails?.requirements && connectDetails.requirements.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold">Missing Information:</h4>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {connectDetails.requirements.map((req, i) => (
-                          <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <div className="h-1.5 w-1.5 rounded-full bg-yellow-500 flex-shrink-0" />
-                            {req}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {connectDetails?.deadline && (
-                    <Alert variant="destructive" className="border-red-500/30">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        <strong>Deadline:</strong> Complete by{" "}
-                        {new Date(connectDetails.deadline).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  <Button onClick={handleConnectAccount} size="lg" className="w-full sm:w-auto">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Complete Setup on Stripe
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Active - Account Management */}
-            {connectStatus === "active" && (
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Account Management</CardTitle>
-                    <CardDescription>Manage your payment settings and view detailed history</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-wrap gap-4">
-                    <Button onClick={handleManageAccount} variant="outline">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Stripe Dashboard
-                    </Button>
-                    <Button onClick={fetchAccountStatus} variant="outline">
-                      Refresh Balance
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* How Payments Work */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Shield className="h-5 w-5 text-primary" />
-                      How Payments Work
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <h4 className="font-semibold">Secure Payment Processing</h4>
-                      <p className="text-sm text-muted-foreground">
-                        All payments go through Stripe Connect. ThriveIN never holds your funds.
-                      </p>
-                    </div>
-                    <Separator />
-                    <div className="space-y-2">
-                      <h4 className="font-semibold">Automatic Payouts</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Stripe automatically transfers your balance to your bank on your configured schedule.
-                      </p>
-                    </div>
-                    <Separator />
-                    <div className="space-y-2">
-                      <h4 className="font-semibold">Transparent Pricing</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Platform fees are deducted per transaction. Stripe fees (~2.9% + 30¢) are separate. Upgrade to reduce fees.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Fees Tab */}
-          <TabsContent value="fees" className="space-y-6">
-            <Card>
+          {connectStatus === "not_connected" && (
+            <Card className="border-primary/20">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Percent className="h-5 w-5 text-primary" />
-                  Your Platform Fee Rate
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Shield className="h-5 w-5 text-primary" />
+                  Connect your bank — no Stripe account needed
                 </CardTitle>
                 <CardDescription>
-                  Based on your {subscriptionTier === "free" ? "Spark (Free)" : subscriptionTier === "creator_pro" ? "Creator+" : "Creator"} membership
+                  ThriveIN Wallet handles the heavy lifting. You won't manage a Stripe dashboard — just add your bank and get paid.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-4xl font-bold text-primary mb-1">
-                      {getFeeDisplayText(subscriptionTier)}
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+                  {[
+                    { icon: CheckCircle, title: "Secure & Compliant", desc: "Bank-grade security" },
+                    { icon: Zap, title: "Fast Payouts", desc: "Direct to your bank" },
+                    { icon: DollarSign, title: "No Liability", desc: "ThriveIN never holds funds" },
+                  ].map((f) => (
+                    <div key={f.title} className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <f.icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold mb-0.5 text-sm">{f.title}</h3>
+                        <p className="text-xs text-muted-foreground">{f.desc}</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">per transaction</p>
-                  </div>
-                  {subscriptionTier === "free" && (
-                    <Button variant="outline" onClick={() => navigate("/subscription")}>
-                      Upgrade to Save
-                    </Button>
-                  )}
+                  ))}
                 </div>
+                <Button onClick={handleConnectAccount} className="w-full" size="lg">
+                  <ExternalLink className="mr-2 h-4 w-4" /> Set up payouts
+                </Button>
               </CardContent>
             </Card>
+          )}
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              <FeeStructure currentTier={subscriptionTier} />
-              <FeeCalculator subscriptionTier={subscriptionTier} />
-            </div>
-          </TabsContent>
-        </Tabs>
+          {(connectStatus === "pending" || connectStatus === "restricted") && (
+            <Card className="border-yellow-500/30 bg-yellow-500/5">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400 text-base">
+                    {connectStatus === "restricted" ? <AlertCircle className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
+                    {connectStatus === "restricted" ? "Action Required" : "Setup Incomplete"}
+                  </CardTitle>
+                  <Button variant="outline" size="sm" onClick={checkConnectStatus} disabled={checkingStatus}>
+                    {checkingStatus ? "Checking..." : "Refresh"}
+                  </Button>
+                </div>
+                <CardDescription>
+                  {connectStatus === "restricted"
+                    ? "Your account has restrictions. Complete the items below."
+                    : "Complete onboarding to start receiving payouts."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {[
+                    { label: "Details Submitted", ok: connectDetails?.detailsSubmitted },
+                    { label: "Charges Enabled", ok: connectDetails?.chargesEnabled },
+                    { label: "Payouts Enabled", ok: connectDetails?.payoutsEnabled },
+                  ].map((item) => (
+                    <div key={item.label} className={`flex items-center gap-2 rounded-lg border p-3 ${item.ok ? "border-green-500/30 bg-green-500/5" : "border-yellow-500/30 bg-yellow-500/5"}`}>
+                      {item.ok ? <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" /> : <AlertCircle className="h-4 w-4 text-yellow-500 flex-shrink-0" />}
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+                {connectDetails?.requirements && connectDetails.requirements.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold">Missing Information:</h4>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {connectDetails.requirements.map((req, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="h-1.5 w-1.5 rounded-full bg-yellow-500 flex-shrink-0" />
+                          {req}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <Button onClick={handleConnectAccount} size="lg" className="w-full sm:w-auto">
+                  <ExternalLink className="mr-2 h-4 w-4" /> Complete Setup
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {connectStatus === "active" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Payouts active</CardTitle>
+                <CardDescription>Your bank is connected. Stripe transfers your balance automatically.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-3">
+                <Button onClick={handleManageAccount} variant="outline" size="sm">
+                  <ExternalLink className="mr-2 h-4 w-4" /> Payout settings
+                </Button>
+                <Button onClick={fetchAccountStatus} variant="outline" size="sm">Refresh Balance</Button>
+              </CardContent>
+            </Card>
+          )}
+        </section>
+
+        {/* 5. Fees */}
+        <section className="mb-6 space-y-3">
+          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+            <Percent className="h-5 w-5 text-primary" /> Your fee rate
+          </h2>
+          <Card>
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold text-primary">{getFeeDisplayText(subscriptionTier)}</div>
+                <p className="text-xs text-muted-foreground">per transaction · Stripe fees (~2.9% + 30¢) separate</p>
+              </div>
+              {subscriptionTier === "free" && (
+                <Button variant="outline" size="sm" onClick={() => navigate("/subscription")}>
+                  Upgrade to Save
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <FeeStructure currentTier={subscriptionTier} />
+            <FeeCalculator subscriptionTier={subscriptionTier} />
+          </div>
+        </section>
       </div>
 
       {/* Floating Snap Receipt button — opens camera immediately, AI fills the expense */}

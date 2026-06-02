@@ -81,6 +81,16 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     defaultDeliverables: ["Masters delivered", "Artwork finalized", "Distro live"],
     modules: ["music_releases"],
   },
+  modeling: {
+    type: "modeling",
+    label: "Modeling Shoot",
+    tagline: "Call sheet, looks, shot list, usage rights.",
+    icon: UserSquare2,
+    copilotPersona: "You're producing a fashion or modeling shoot. Help with call sheets, looks/wardrobe, shot lists per look, usage rights and image selects. Be precise about call times, locations, and rights scope.",
+    vaultFolders: ["Call Sheet", "Looks", "Polaroids", "Selects", "Final Retouched"],
+    defaultDeliverables: ["Call sheet locked", "Looks confirmed", "Selects approved"],
+    modules: ["modeling_shoot"],
+  },
   client: {
     type: "client",
     label: "Client Project",

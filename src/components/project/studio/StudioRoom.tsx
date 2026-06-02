@@ -398,6 +398,9 @@ export const StudioRoom = ({
         {["music","music_release"].includes(project.workspace_type) && (
           <MusicStudioSection project={project} currentUserId={currentUserId} />
         )}
+        {["modeling","modeling_shoot"].includes(project.workspace_type) && (
+          <ModelingStudioSection project={project} currentUserId={currentUserId} />
+        )}
         {isEvent && (
           <>
             {/* Brief first — carries the event's main concept */}

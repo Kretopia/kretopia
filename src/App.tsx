@@ -232,7 +232,7 @@ const AppContent = () => {
   useActivityPing();
   
   // Check if on public EPK page (hide navbar/bottomnav for standalone link-in-bio experience)
-  const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname);
+  const isPublicEPK = /^\/epk\/[^/]+$/.test(location.pathname) || /^\/comp\/[^/]+$/.test(location.pathname);
   const isCreatorSite = /^\/site\/[^/]+$/.test(location.pathname) || location.pathname === '/website-builder';
   const isPublicEvent = /^\/event\/[^/]+$/.test(location.pathname);
   const isAuthPage = location.pathname === '/auth';

@@ -39,6 +39,8 @@ export const resultCardForAction = (action: OrchAction): AgentResultCardData | n
       href: payload.action_url || "/sales",
       cta: "Open Rolodex",
     };
+  }
+
 
   if (action.tool_name === "weekly_money_summary") {
     return {

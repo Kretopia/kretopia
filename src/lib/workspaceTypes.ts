@@ -27,7 +27,7 @@ export interface WorkspaceConfig {
   /** Default deliverables to suggest at creation */
   defaultDeliverables: string[];
   /** Modules the Studio Room should mount (besides shared brief/work/money) */
-  modules: Array<"podcast" | "event_runsheet" | "content_shotlist" | "campaign_matrix" | "music_releases">;
+  modules: Array<"podcast" | "event_runsheet" | "content_shotlist" | "campaign_matrix" | "music_releases" | "modeling_shoot">;
 }
 
 export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {

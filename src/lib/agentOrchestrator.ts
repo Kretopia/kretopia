@@ -76,10 +76,19 @@ export async function decideAgentAction(
   editedArgs?: Record<string, unknown>,
   note?: string,
 ): Promise<{ ok: boolean; result?: unknown; error?: string }> {
-  return callOrchestrator<{ ok: boolean; result?: unknown; error?: string }>({
+  const res = await callOrchestrator<{ ok: boolean; result?: unknown; error?: string }>({
     action_id: actionId,
     decision,
     edited_args: editedArgs,
     note,
   });
+  // Deck instrumentation — fire-and-forget
+  import("@/lib/deckMetrics").then(({ trackDeckEvent }) =>
+    trackDeckEvent(
+      decision === "rejected" ? "agent_action_rejected" : "agent_action_completed",
+      "agent",
+      { action_id: actionId, decision, ok: res.ok, edited: decision === "edited" },
+    ),
+  ).catch(() => {});
+  return res;
 }

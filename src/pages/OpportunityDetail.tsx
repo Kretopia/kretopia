@@ -301,6 +301,9 @@ const OpportunityDetail = () => {
 
   const handleShare = () => {
     setShowShareDialog(true);
+    import("@/lib/deckMetrics").then(({ trackDeckEvent }) =>
+      trackDeckEvent("opportunity_share_opened", "opportunity", { opportunity_id: id, surface: "share_dialog" }),
+    );
   };
 
   const handleApply = () => {

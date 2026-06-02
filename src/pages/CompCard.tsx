@@ -21,41 +21,29 @@ export default function CompCard() {
     (async () => {
       const { data: p } = await supabase
         .from("profiles")
-        .select("user_id, full_name, avatar_url, mother_agency, model_unions, model_categories, model_stats, comp_card_layout, sub_roles")
+        .select("user_id, full_name, avatar_url, portfolio_links, mother_agency, model_unions, model_categories, model_stats, comp_card_layout, sub_roles")
         .eq("user_id", userId)
         .maybeSingle();
 
-      let portfolio: any[] = [];
-      try {
-        const { data: pf } = await supabase
-          .from("portfolio_items" as any)
-          .select("id, url, image_url, thumbnail_url, order_index")
-          .eq("user_id", userId)
-          .order("order_index", { ascending: true })
-          .limit(20);
-        if (Array.isArray(pf)) portfolio = pf;
-      } catch { /* portfolio table may differ; fall through */ }
-
       const layout: any = (p as any)?.comp_card_layout;
-      let imgs: string[] = [];
+      const imgs: string[] = Array.from({ length: 5 }, () => "") as string[];
       if (layout?.slots && Array.isArray(layout.slots)) {
-        imgs = layout.slots
-          .map((s: any) => {
-            const item = portfolio.find((x: any) => x.id === s.portfolio_id);
-            return item?.image_url || item?.url || item?.thumbnail_url || null;
-          })
-          .filter(Boolean) as string[];
+        layout.slots.forEach((s: any) => {
+          if (typeof s?.slot_index === "number" && s.image_url && s.slot_index < 5) {
+            imgs[s.slot_index] = s.image_url;
+          }
+        });
       }
-      if (imgs.length < 5) {
-        const fallback = [
-          (p as any)?.avatar_url,
-          ...portfolio.map((x: any) => x.image_url || x.url || x.thumbnail_url),
-        ].filter(Boolean) as string[];
-        for (const u of fallback) {
-          if (imgs.length >= 5) break;
-          if (!imgs.includes(u)) imgs.push(u);
+      // Fill any empty slots with avatar + portfolio_links fallback
+      const fallback = [(p as any)?.avatar_url, ...((p as any)?.portfolio_links || [])].filter(Boolean) as string[];
+      let fi = 0;
+      for (let i = 0; i < 5; i++) {
+        if (!imgs[i]) {
+          while (fi < fallback.length && imgs.includes(fallback[fi])) fi++;
+          if (fi < fallback.length) imgs[i] = fallback[fi++];
         }
       }
+      const filled = imgs.filter(Boolean) as string[];
       setImages(imgs.slice(0, 5));
       setProfile(p);
       setLoading(false);

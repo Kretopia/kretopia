@@ -132,6 +132,16 @@ serve(async (req) => {
             </div>
           ` : ''}
 
+          ${invoice.status !== 'paid' ? `
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://www.thrivein.io/pay/invoice/${invoice.id}"
+                 style="display: inline-block; background-color: #111827; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+                Pay $${Number(invoice.total_amount).toFixed(2)} securely
+              </a>
+              <p style="margin: 10px 0 0 0; color: #9ca3af; font-size: 12px;">Card, Apple Pay, Google Pay · Powered by ThrivePay</p>
+            </div>
+          ` : ''}
+
           <div style="text-align: center; padding-top: 30px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;">
             <p>Thank you for your business!</p>
           </div>

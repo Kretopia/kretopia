@@ -17,3 +17,15 @@ verify_jwt = false
 
 [functions.stripe-wallet-webhook]
 verify_jwt = false
+
+[functions.payment-link-info]
+verify_jwt = false
+
+[functions.create-payment-link-checkout]
+verify_jwt = false
+
+[functions.invoice-pay-info]
+verify_jwt = false
+
+[functions.create-invoice-checkout]
+verify_jwt = false

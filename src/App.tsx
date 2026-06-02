@@ -39,6 +39,8 @@ import { ThriveBar } from "./components/agent/ThriveBar";
 
 // Lazy load active page components
 const Auth = lazy(() => import("./pages/Auth"));
+const PayLink = lazy(() => import("./pages/PayLink"));
+const PayInvoice = lazy(() => import("./pages/PayInvoice"));
 const CopilotMemory = lazy(() => import("./pages/CopilotMemory"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CompanyOnboarding = lazy(() => import("./pages/CompanyOnboarding"));
@@ -336,6 +338,8 @@ const AppContent = () => {
             <Route path="/purchase-success" element={<PaymentSuccess />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-canceled" element={<PaymentCanceled />} />
+            <Route path="/pay/invoice/:id" element={<PayInvoice />} />
+            <Route path="/pay/:slug" element={<PayLink />} />
             
             {/* Legacy redirects for removed features */}
             <Route path="/agent" element={<Navigate to="/circle" replace />} />

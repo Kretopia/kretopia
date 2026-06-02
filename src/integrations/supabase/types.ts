@@ -10899,6 +10899,128 @@ export type Database = {
           },
         ]
       }
+      payment_link_payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          paid_at: string | null
+          payer_email: string | null
+          payer_name: string | null
+          payer_note: string | null
+          payment_link_id: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          payer_email?: string | null
+          payer_name?: string | null
+          payer_note?: string | null
+          payment_link_id: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_at?: string | null
+          payer_email?: string | null
+          payer_name?: string | null
+          payer_note?: string | null
+          payment_link_id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_link_payments_payment_link_id_fkey"
+            columns: ["payment_link_id"]
+            isOneToOne: false
+            referencedRelation: "payment_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_links: {
+        Row: {
+          active: boolean
+          amount_cents: number | null
+          cover_image_url: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          last_paid_at: string | null
+          max_amount_cents: number | null
+          max_uses: number | null
+          min_amount_cents: number | null
+          mode: string
+          single_use: boolean
+          slug: string
+          success_message: string | null
+          title: string
+          updated_at: string
+          use_count: number
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          amount_cents?: number | null
+          cover_image_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          last_paid_at?: string | null
+          max_amount_cents?: number | null
+          max_uses?: number | null
+          min_amount_cents?: number | null
+          mode?: string
+          single_use?: boolean
+          slug: string
+          success_message?: string | null
+          title: string
+          updated_at?: string
+          use_count?: number
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          amount_cents?: number | null
+          cover_image_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          last_paid_at?: string | null
+          max_amount_cents?: number | null
+          max_uses?: number | null
+          min_amount_cents?: number | null
+          mode?: string
+          single_use?: boolean
+          slug?: string
+          success_message?: string | null
+          title?: string
+          updated_at?: string
+          use_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       pending_discoveries: {
         Row: {
           created_at: string

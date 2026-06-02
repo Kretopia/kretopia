@@ -43,8 +43,7 @@ export default function CompCard() {
           if (fi < fallback.length) imgs[i] = fallback[fi++];
         }
       }
-      const filled = imgs.filter(Boolean) as string[];
-      setImages(imgs.slice(0, 5));
+      setImages(imgs.filter(Boolean).slice(0, 5));
       setProfile(p);
       setLoading(false);
     })();

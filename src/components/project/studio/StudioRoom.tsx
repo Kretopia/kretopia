@@ -476,6 +476,11 @@ export const StudioRoom = ({
               <MusicStudioSection project={project} currentUserId={currentUserId} />
             </div>
           )}
+          {["modeling","modeling_shoot"].includes(project.workspace_type) && (
+            <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+              <ModelingStudioSection project={project} currentUserId={currentUserId} />
+            </div>
+          )}
           {isEvent && (
             <>
               {/* Brief first on desktop too */}

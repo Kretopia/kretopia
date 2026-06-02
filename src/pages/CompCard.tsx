@@ -80,7 +80,7 @@ export default function CompCard() {
           categories={profile.model_categories}
           stats={profile.model_stats}
           images={images}
-          contact={profile.public_email}
+          contact={null}
         />
         <div className="mt-3 text-center text-xs text-muted-foreground">
           Powered by ThriveIN

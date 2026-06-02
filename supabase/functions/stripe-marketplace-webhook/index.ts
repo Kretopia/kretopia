@@ -59,8 +59,94 @@ serve(async (req) => {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      
-      // Only handle marketplace purchases
+      const kind = session.metadata?.kind;
+
+      // ── Invoice payment ──
+      if (kind === "invoice" && session.payment_status === "paid") {
+        const invoiceId = session.metadata?.invoice_id;
+        if (invoiceId) {
+          await supabaseAdmin
+            .from("invoices")
+            .update({
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              stripe_payment_intent_id: session.payment_intent as string,
+            })
+            .eq("id", invoiceId);
+
+          const recipientUserId = session.metadata?.recipient_user_id;
+          if (recipientUserId) {
+            await supabaseAdmin.from("notifications").insert({
+              user_id: recipientUserId,
+              title: "Invoice paid 💰",
+              message: `Invoice payment received via ThrivePay`,
+              type: "payment",
+              category: "payment",
+              priority: "high",
+              link: "/thrivepay",
+            });
+          }
+          logStep("Invoice marked paid", { invoiceId });
+        }
+        return new Response(JSON.stringify({ received: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // ── Payment link ──
+      if (kind === "payment_link" && session.payment_status === "paid") {
+        const linkId = session.metadata?.payment_link_id;
+        if (linkId) {
+          await supabaseAdmin
+            .from("payment_link_payments")
+            .update({
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              stripe_payment_intent_id: session.payment_intent as string,
+            })
+            .eq("stripe_session_id", session.id);
+
+          // Increment use_count and disable if single_use
+          const { data: link } = await supabaseAdmin
+            .from("payment_links")
+            .select("use_count, single_use, max_uses, title")
+            .eq("id", linkId)
+            .maybeSingle();
+
+          if (link) {
+            const newCount = (link.use_count || 0) + 1;
+            const shouldDisable =
+              link.single_use || (link.max_uses && newCount >= link.max_uses);
+            await supabaseAdmin
+              .from("payment_links")
+              .update({
+                use_count: newCount,
+                last_paid_at: new Date().toISOString(),
+                active: shouldDisable ? false : true,
+              })
+              .eq("id", linkId);
+          }
+
+          const recipientUserId = session.metadata?.recipient_user_id;
+          if (recipientUserId) {
+            await supabaseAdmin.from("notifications").insert({
+              user_id: recipientUserId,
+              title: "Payment received 💰",
+              message: `${link?.title || "Payment link"} — paid via ThrivePay`,
+              type: "payment",
+              category: "payment",
+              priority: "high",
+              link: "/thrivepay",
+            });
+          }
+          logStep("Payment link payment recorded", { linkId });
+        }
+        return new Response(JSON.stringify({ received: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Only handle marketplace purchases from here
       if (session.metadata?.type !== 'marketplace_purchase') {
         logStep("Skipping non-marketplace session", { sessionId: session.id });
         return new Response(JSON.stringify({ received: true }), {

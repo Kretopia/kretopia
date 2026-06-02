@@ -43,6 +43,7 @@ const CopilotMemory = lazy(() => import("./pages/CopilotMemory"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const CompanyOnboarding = lazy(() => import("./pages/CompanyOnboarding"));
 const TalentFinder = lazy(() => import("./pages/TalentFinder"));
+const SalesDashboard = lazy(() => import("./pages/SalesDashboard"));
 const TalentManager = lazy(() => import("./pages/TalentManager"));
 const EndorseSkill = lazy(() => import("./pages/EndorseSkill"));
 const CreatorEPK = lazy(() => import("./pages/CreatorEPK"));
@@ -338,9 +339,10 @@ const AppContent = () => {
             
             {/* Legacy redirects for removed features */}
             <Route path="/agent" element={<Navigate to="/circle" replace />} />
-            <Route path="/sales" element={<Navigate to="/opportunities" replace />} />
-            <Route path="/leads" element={<Navigate to="/opportunities" replace />} />
-            <Route path="/outreach" element={<Navigate to="/opportunities" replace />} />
+            <Route path="/sales" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
+            <Route path="/leads" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
+            <Route path="/rolodex" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
+            <Route path="/outreach" element={<ProtectedRoute><SalesDashboard /></ProtectedRoute>} />
             <Route path="/thrive-ai" element={<Navigate to="/circle" replace />} />
             <Route path="/challenges" element={<Navigate to="/" replace />} />
             <Route path="/challenges/:id" element={<Navigate to="/" replace />} />

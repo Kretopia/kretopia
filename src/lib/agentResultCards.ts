@@ -67,6 +67,20 @@ export function deriveResultCards(steps: PlanStepLike[]): AgentResultCardData[] 
         });
         break;
       }
+      case "research_web": {
+        const n = len(r.leads) ?? len(r.results) ?? r.count;
+        const saved = r.saved_count;
+        cards.push({
+          id, icon: "sponsor",
+          title: n ? `${n} lead${n === 1 ? "" : "s"} found` : "No leads found",
+          subtitle: saved
+            ? "Saved to your Rolodex — review and start outreach."
+            : "Open your Rolodex to review.",
+          href: r.action_url ?? "/sales",
+          cta: "Open Rolodex",
+        });
+        break;
+      }
       case "draft_outreach":
       case "draft_dm":
       case "send_dm": {

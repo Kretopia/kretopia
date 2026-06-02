@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -180,9 +182,59 @@ Return a JSON array of objects with these fields:
 
     console.log(`Found ${leads.length} leads`);
 
-    return new Response(JSON.stringify({ leads, sources: results.map((r: any) => r.url) }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // Persist leads into the user's Rolodex so they're actually visible somewhere.
+    let saved_count = 0;
+    let user_id: string | null = null;
+    try {
+      const authHeader = req.headers.get("Authorization") || "";
+      const token = authHeader.replace(/^Bearer\s+/i, "");
+      if (token) {
+        const admin = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        );
+        const { data: userData } = await admin.auth.getUser(token);
+        user_id = userData?.user?.id ?? null;
+        if (user_id && leads.length) {
+          const sourceTag = `thrive-research: ${query}${location ? ` · ${location}` : ""}`.slice(0, 200);
+          const rows = leads.slice(0, 50).map((l: any) => ({
+            user_id,
+            name: String(l.name || "Unknown").slice(0, 200),
+            company: l.company || null,
+            role: l.role || null,
+            email: l.email || null,
+            profile_url: l.website || null,
+            notes: l.notes || null,
+            type: l.type === "collaborator" ? "collaborator" : "client",
+            stage: "cold",
+            priority: ["high", "medium", "low"].includes(l.priority) ? l.priority : "medium",
+            source: sourceTag,
+            tags: location ? [location] : [],
+          }));
+          const { error: insErr, data: ins } = await admin
+            .from("leads")
+            .insert(rows)
+            .select("id");
+          if (insErr) console.warn("scout-leads persist failed:", insErr.message);
+          else saved_count = ins?.length ?? 0;
+        }
+      }
+    } catch (persistErr) {
+      console.warn("scout-leads persist exception:", persistErr);
+    }
+
+    return new Response(
+      JSON.stringify({
+        leads,
+        count: leads.length,
+        saved_count,
+        query,
+        location: location ?? null,
+        action_url: "/sales",
+        sources: results.map((r: any) => r.url),
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (e) {
     console.error("scout-leads error:", e);
     return new Response(

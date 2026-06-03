@@ -428,6 +428,11 @@ const PostOpportunity = () => {
                   maxLength={1000}
                 />
               </div>
+
+              {formData.type === "casting" && (
+                <CastingFieldsForm value={casting} onChange={setCasting} />
+              )}
+
               <div className="space-y-2">
                 <Label>Cover Image (optional)</Label>
                 <input

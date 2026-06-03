@@ -183,10 +183,10 @@ serve(async (req) => {
 
     // Pull Passport context in parallel
     const [profileRes, creditsRes, memoryRes, projectRes] = await Promise.all([
-      admin.from("profiles").select("display_name, username, headline, bio, location, rates, packages, top_skills, sub_roles, professional_role").eq("user_id", user.id).maybeSingle(),
-      admin.from("thrive_credits").select("title, role, year, production_type, thumbnail_url").eq("user_id", user.id).order("year", { ascending: false }).limit(10),
+      admin.from("profiles").select("display_name, username, headline, bio, location, professional_role").eq("user_id", user.id).maybeSingle(),
+      admin.from("credits").select("project_name, role, year, project_type, thumbnail_url").eq("user_id", user.id).order("year", { ascending: false }).limit(10),
       admin.from("thrive_memory").select("kind, mem_key, content").eq("user_id", user.id).limit(40),
-      project_id ? admin.from("projects").select("title, description, workspace_type, mood, deadline").eq("id", project_id).maybeSingle() : Promise.resolve({ data: null }),
+      project_id ? admin.from("projects").select("title, description, workspace_type, deadline").eq("id", project_id).maybeSingle() : Promise.resolve({ data: null }),
     ]);
 
     const ctx = {

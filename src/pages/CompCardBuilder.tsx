@@ -66,9 +66,12 @@ export default function CompCardBuilder() {
   };
 
   const importFromPortfolio = (i: number) => {
-    const url = (profile?.portfolio_links || [])[0];
-    if (!url) { toast({ title: "No portfolio links yet" }); return; }
-    setSlot(i, url);
+    const links: string[] = profile?.portfolio_links || [];
+    if (!links.length) { toast({ title: "No portfolio links yet", description: "Pull some from Instagram / TikTok below." }); return; }
+    // pick first link not already used in another slot
+    const used = new Set(slots.filter(Boolean) as string[]);
+    const next = links.find((u) => !used.has(u)) || links[0];
+    setSlot(i, next);
   };
 
   const save = async () => {

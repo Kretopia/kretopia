@@ -9,6 +9,7 @@ import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { EPKShareToolbar } from "@/components/epk/EPKShareToolbar";
 import { EPKReviews } from "@/components/epk/EPKReviews";
 import { EPKFooterCTA } from "@/components/epk/EPKFooterCTA";
+import { ModelStrip } from "@/components/passport/model/ModelStrip";
 import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
 import { RateCardSection } from "@/components/profile/RateCardSection";
 import { getMediaThumbnail } from "@/lib/mediaUtils";
@@ -156,7 +157,7 @@ const CreatorEPK = () => {
         // Fetch from profiles table directly - RLS allows public read
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range, is_claimed, icdb_creator_id, cover_image_url, job_title')
+          .select('user_id, full_name, role, bio, location, avatar_url, website, calendly_url, linkedin_url, instagram_url, twitter_url, youtube_url, spotify_url, behance_url, imdb_url, soundcloud_url, average_rating, total_reviews, achievement_badges, verification_tier, verification_status, professional_skills, passion_skills, collab_intent, rate_range, is_claimed, icdb_creator_id, cover_image_url, job_title, sub_roles, model_stats, mother_agency, model_unions, model_categories')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -506,6 +507,18 @@ const CreatorEPK = () => {
               onRefresh={() => window.location.reload()}
             />
           </div>
+        )}
+
+        {/* Model strip — casting-grade info, only when sub_roles includes model */}
+        {((profile as any).sub_roles || []).includes?.('model') && (
+          <ModelStrip
+            userId={userId || ''}
+            isOwner={isOwner}
+            stats={(profile as any).model_stats}
+            motherAgency={(profile as any).mother_agency}
+            unions={(profile as any).model_unions}
+            categories={(profile as any).model_categories}
+          />
         )}
 
         {/* Why work with me — pulled from headline/bio so the press kit leads with positioning */}

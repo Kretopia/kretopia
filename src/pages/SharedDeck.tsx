@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import SEO from "@/components/SEO";
+import { SEO } from "@/components/SEO";
 import { DeckRenderer, type DeckContent } from "@/components/thrive/DeckRenderer";
 import type { DeckTheme } from "@/lib/deckThemes";
 import { Loader2 } from "lucide-react";
@@ -22,7 +22,7 @@ export default function SharedDeck() {
           setError("This document isn't available.");
         } else {
           setDoc(data[0]);
-          supabase.rpc("increment_thrive_doc_views", { _token: token }).catch(() => {});
+          supabase.rpc("increment_thrive_doc_views", { _token: token }).then(() => {}, () => {});
         }
       } catch (e: any) {
         setError(e?.message || "Couldn't load.");

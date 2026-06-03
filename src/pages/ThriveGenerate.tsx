@@ -11,7 +11,7 @@ import { Loader2, Sparkles, Download, Share2, RefreshCw, ArrowLeft, Wand2 } from
 import { DeckRenderer, type DeckContent } from "@/components/thrive/DeckRenderer";
 import { DECK_THEMES, type DeckTheme } from "@/lib/deckThemes";
 import { exportDeckToPDF } from "@/lib/deckExport";
-import SEO from "@/components/SEO";
+import { SEO } from "@/components/SEO";
 
 type Intent =
   | "sponsor_deck" | "pitch_deck" | "business_plan" | "client_proposal"
@@ -49,8 +49,7 @@ export default function ThriveGenerate() {
     if (!projectId) return;
     supabase.from("projects").select("title, description, workspace_type")
       .eq("id", projectId).maybeSingle()
-      .then(({ data }) => setProject(data))
-      .catch(() => {});
+      .then(({ data }) => setProject(data), () => {});
   }, [projectId]);
 
   const generate = async () => {

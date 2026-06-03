@@ -20,7 +20,8 @@ Deno.serve(async (req) => {
 
     if (action === "send-verification") {
       // Create guest opportunity and send verification email
-      const { email, company_name, logo_url, title, description, type, compensation, skills, requirements, deliverables, location, location_city, location_country, image_url } = params;
+      const { email, company_name, logo_url, title, description, type, compensation, skills, requirements, deliverables, location, location_city, location_country, image_url,
+        casting_gender, casting_min_height_cm, casting_max_height_cm, casting_age_min, casting_age_max, casting_categories, casting_fitting_date, casting_shoot_date, casting_usage_summary } = params;
 
       if (!email || !title || !description || !company_name) {
         return new Response(

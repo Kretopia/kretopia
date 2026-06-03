@@ -64,6 +64,7 @@ const PostOpportunity = () => {
     location_country: draft?.location_country || "",
     image_url: draft?.image_url || "",
   });
+  const [casting, setCasting] = useState<CastingFields>(draft?.casting || {});
   const { toast } = useToast();
   const { subscriptionInfo } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);

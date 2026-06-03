@@ -71,8 +71,8 @@ const PostOpportunity = () => {
 
   // Auto-save draft on every form change
   useEffect(() => {
-    saveDraft(formData);
-  }, [formData]);
+    saveDraft({ ...formData, casting });
+  }, [formData, casting]);
 
   // Warn before leaving page with data
   useEffect(() => {

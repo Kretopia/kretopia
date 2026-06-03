@@ -158,7 +158,7 @@ const PostOpportunity = () => {
       }
 
       const { data, error } = await supabase.functions.invoke("verify-guest-opportunity", {
-        body: { action: "send-verification", ...formData, image_data: imageData },
+        body: { action: "send-verification", ...formData, ...(formData.type === "casting" ? casting : {}), image_data: imageData },
       });
 
       if (error) throw error;

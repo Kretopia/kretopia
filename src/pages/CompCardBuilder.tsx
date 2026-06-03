@@ -163,7 +163,17 @@ export default function CompCardBuilder() {
         </div>
 
         <div className="space-y-3">
-          <h2 className="text-sm font-medium">Slots</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium">Slots</h2>
+            <span className="text-[10px] text-muted-foreground">{(profile?.portfolio_links || []).length} portfolio link{(profile?.portfolio_links || []).length === 1 ? "" : "s"}</span>
+          </div>
+          {user && (
+            <SocialFeedIngest
+              userId={user.id}
+              existingLinks={profile?.portfolio_links || []}
+              onIngested={(added) => setProfile((p: any) => ({ ...p, portfolio_links: [...(p?.portfolio_links || []), ...added] }))}
+            />
+          )}
           {SLOT_LABELS.map((label, i) => (
             <SlotRow
               key={i}

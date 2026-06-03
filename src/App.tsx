@@ -65,6 +65,8 @@ const CircleChatView = lazy(() => import("./pages/CircleChatView"));
 const Circles = lazy(() => import("./pages/Circles"));
 const Messages = lazy(() => import("./pages/Messages"));
 const ThriveDesk = lazy(() => import("./pages/ThriveDesk"));
+const ThriveGenerate = lazy(() => import("./pages/ThriveGenerate"));
+const SharedDeck = lazy(() => import("./pages/SharedDeck"));
 const ProjectsList = lazy(() => import("./pages/ProjectsList"));
 const Shortlists = lazy(() => import("./pages/Shortlists"));
 const Clients = lazy(() => import("./pages/Clients"));
@@ -319,6 +321,9 @@ const AppContent = () => {
             <Route path="/desk/projects" element={<Navigate to="/desk" replace />} />
             <Route path="/shortlists" element={<ProtectedRoute><Shortlists /></ProtectedRoute>} />
             <Route path="/desk/:projectId" element={<ProtectedRoute><ThriveDesk /></ProtectedRoute>} />
+            <Route path="/desk/:id/thrive/generate" element={<ProtectedRoute><ThriveGenerate /></ProtectedRoute>} />
+            <Route path="/thrive/generate" element={<ProtectedRoute><ThriveGenerate /></ProtectedRoute>} />
+            <Route path="/deck/:token" element={<SharedDeck />} />
 
             {/* Client Hub — group projects per client */}
             <Route path="/manage" element={<ProtectedRoute><ManageHub /></ProtectedRoute>} />

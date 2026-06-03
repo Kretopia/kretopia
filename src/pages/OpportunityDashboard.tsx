@@ -710,6 +710,13 @@ Return ONLY valid JSON array:
         </>
       )}
 
+      {selectedOpp?.type === 'casting' && (
+        <CompBoard
+          applicants={applicants as any}
+          onStatusChange={updateApplicationStatus}
+        />
+      )}
+
       {viewMode === 'pipeline' && isPro ? (
         <ApplicantPipeline
           applicants={applicants}

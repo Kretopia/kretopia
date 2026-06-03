@@ -328,6 +328,7 @@ const PostOpportunity = () => {
                       <SelectItem value="job">Paid Job</SelectItem>
                       <SelectItem value="collab">Collaboration</SelectItem>
                       <SelectItem value="barter">Barter/Trade</SelectItem>
+                      <SelectItem value="casting">Casting Call (Models)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -164,7 +164,7 @@ const OpportunityDashboard = () => {
     // Fetch applications first
     const { data: appsData, error: appsError } = await supabase
       .from('applications')
-      .select('id, applicant_id, cover_letter, portfolio_links, status, created_at, expected_rate, availability')
+      .select('id, applicant_id, cover_letter, portfolio_links, status, created_at, expected_rate, availability, comp_card_snapshot')
       .eq('opportunity_id', opportunityId)
       .order('created_at', { ascending: false });
 

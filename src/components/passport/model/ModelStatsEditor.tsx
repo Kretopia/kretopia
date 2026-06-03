@@ -13,6 +13,7 @@ import {
   cmToFeetInches, feetInchesToCm, inchesToCm,
   MODEL_CATEGORIES, MODEL_UNIONS,
 } from "@/lib/modelUnits";
+import { SocialFeedIngest } from "./SocialFeedIngest";
 
 interface Props {
   userId: string;

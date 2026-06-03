@@ -55,6 +55,15 @@ Deno.serve(async (req) => {
           guest_logo_url: logo_url || null,
           verification_token: token,
           created_by: null, // guest post - no auth user
+          casting_gender: casting_gender || null,
+          casting_min_height_cm: casting_min_height_cm ?? null,
+          casting_max_height_cm: casting_max_height_cm ?? null,
+          casting_age_min: casting_age_min ?? null,
+          casting_age_max: casting_age_max ?? null,
+          casting_categories: casting_categories || [],
+          casting_fitting_date: casting_fitting_date || null,
+          casting_shoot_date: casting_shoot_date || null,
+          casting_usage_summary: casting_usage_summary || null,
         })
         .select()
         .single();

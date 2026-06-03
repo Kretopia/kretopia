@@ -495,6 +495,7 @@ export type Database = {
           applicant_id: string
           application_notes: string | null
           availability: string | null
+          comp_card_snapshot: Json | null
           cover_letter: string | null
           created_at: string | null
           expected_rate: string | null
@@ -508,6 +509,7 @@ export type Database = {
           applicant_id: string
           application_notes?: string | null
           availability?: string | null
+          comp_card_snapshot?: Json | null
           cover_letter?: string | null
           created_at?: string | null
           expected_rate?: string | null
@@ -521,6 +523,7 @@ export type Database = {
           applicant_id?: string
           application_notes?: string | null
           availability?: string | null
+          comp_card_snapshot?: Json | null
           cover_letter?: string | null
           created_at?: string | null
           expected_rate?: string | null
@@ -10044,6 +10047,15 @@ export type Database = {
           barter_offering: string | null
           barter_posting_deadline: string | null
           barter_requesting: string | null
+          casting_age_max: number | null
+          casting_age_min: number | null
+          casting_categories: string[] | null
+          casting_fitting_date: string | null
+          casting_gender: string | null
+          casting_max_height_cm: number | null
+          casting_min_height_cm: number | null
+          casting_shoot_date: string | null
+          casting_usage_summary: string | null
           claim_status: string | null
           claim_token: string | null
           compensation: string | null
@@ -10095,6 +10107,15 @@ export type Database = {
           barter_offering?: string | null
           barter_posting_deadline?: string | null
           barter_requesting?: string | null
+          casting_age_max?: number | null
+          casting_age_min?: number | null
+          casting_categories?: string[] | null
+          casting_fitting_date?: string | null
+          casting_gender?: string | null
+          casting_max_height_cm?: number | null
+          casting_min_height_cm?: number | null
+          casting_shoot_date?: string | null
+          casting_usage_summary?: string | null
           claim_status?: string | null
           claim_token?: string | null
           compensation?: string | null
@@ -10146,6 +10167,15 @@ export type Database = {
           barter_offering?: string | null
           barter_posting_deadline?: string | null
           barter_requesting?: string | null
+          casting_age_max?: number | null
+          casting_age_min?: number | null
+          casting_categories?: string[] | null
+          casting_fitting_date?: string | null
+          casting_gender?: string | null
+          casting_max_height_cm?: number | null
+          casting_min_height_cm?: number | null
+          casting_shoot_date?: string | null
+          casting_usage_summary?: string | null
           claim_status?: string | null
           claim_token?: string | null
           compensation?: string | null

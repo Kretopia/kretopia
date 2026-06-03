@@ -19,6 +19,7 @@ import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { EditOpportunityDialog } from "@/components/EditOpportunityDialog";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { ApplicantPipeline } from "@/components/opportunity/ApplicantPipeline";
+import { CompBoard } from "@/components/opportunity/CompBoard";
 import { OpportunityAnalytics } from "@/components/opportunity/OpportunityAnalytics";
 import { hasProAccess } from "@/lib/subscriptionConfig";
 
@@ -163,7 +164,7 @@ const OpportunityDashboard = () => {
     // Fetch applications first
     const { data: appsData, error: appsError } = await supabase
       .from('applications')
-      .select('id, applicant_id, cover_letter, portfolio_links, status, created_at, expected_rate, availability')
+      .select('id, applicant_id, cover_letter, portfolio_links, status, created_at, expected_rate, availability, comp_card_snapshot')
       .eq('opportunity_id', opportunityId)
       .order('created_at', { ascending: false });
 
@@ -206,6 +207,7 @@ const OpportunityDashboard = () => {
         expected_rate: app.expected_rate,
         availability: app.availability,
         professional_skills: profile?.professional_skills || [],
+        comp_card_snapshot: app.comp_card_snapshot,
       };
     });
     setApplicants(formatted);
@@ -707,6 +709,13 @@ Return ONLY valid JSON array:
             </FreeTierGate>
           ) : null}
         </>
+      )}
+
+      {selectedOpp?.type === 'casting' && (
+        <CompBoard
+          applicants={applicants as any}
+          onStatusChange={updateApplicationStatus}
+        />
       )}
 
       {viewMode === 'pipeline' && isPro ? (

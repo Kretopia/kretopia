@@ -14,6 +14,7 @@ import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
+import { CastingFieldsForm, type CastingFields } from "@/components/opportunity/CastingFieldsForm";
 
 const STORAGE_KEY = "thrivein_draft_opportunity";
 
@@ -63,14 +64,15 @@ const PostOpportunity = () => {
     location_country: draft?.location_country || "",
     image_url: draft?.image_url || "",
   });
+  const [casting, setCasting] = useState<CastingFields>(draft?.casting || {});
   const { toast } = useToast();
   const { subscriptionInfo } = useAuth();
   const isPro = hasProAccess(subscriptionInfo.tier as any);
 
   // Auto-save draft on every form change
   useEffect(() => {
-    saveDraft(formData);
-  }, [formData]);
+    saveDraft({ ...formData, casting });
+  }, [formData, casting]);
 
   // Warn before leaving page with data
   useEffect(() => {
@@ -156,7 +158,7 @@ const PostOpportunity = () => {
       }
 
       const { data, error } = await supabase.functions.invoke("verify-guest-opportunity", {
-        body: { action: "send-verification", ...formData, image_data: imageData },
+        body: { action: "send-verification", ...formData, ...(formData.type === "casting" ? casting : {}), image_data: imageData },
       });
 
       if (error) throw error;
@@ -326,6 +328,7 @@ const PostOpportunity = () => {
                       <SelectItem value="job">Paid Job</SelectItem>
                       <SelectItem value="collab">Collaboration</SelectItem>
                       <SelectItem value="barter">Barter/Trade</SelectItem>
+                      <SelectItem value="casting">Casting Call (Models)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -425,6 +428,11 @@ const PostOpportunity = () => {
                   maxLength={1000}
                 />
               </div>
+
+              {formData.type === "casting" && (
+                <CastingFieldsForm value={casting} onChange={setCasting} />
+              )}
+
               <div className="space-y-2">
                 <Label>Cover Image (optional)</Label>
                 <input

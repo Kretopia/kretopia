@@ -73,6 +73,29 @@ function profileChips(opts: {
   return chips.slice(0, 4);
 }
 
+
+/**
+ * Fast-path: catch deck/proposal/treatment/rate-card/moodboard/one-pager intents
+ * client-side and skip the LLM router — these always go straight to the
+ * Executive Producer surface.
+ */
+function detectDocIntent(prompt: string):
+  | "sponsor_deck" | "pitch_deck" | "business_plan" | "client_proposal"
+  | "treatment" | "rate_card" | "moodboard_deck" | "one_pager" | null {
+  const p = prompt.toLowerCase();
+  if (/\b(sponsor(ship)?\s+deck|sponsor\s+pitch)\b/.test(p)) return "sponsor_deck";
+  if (/\b(business\s+plan)\b/.test(p)) return "business_plan";
+  if (/\b(pitch\s+deck|investor\s+deck|product\s+deck|app\s+deck)\b/.test(p)) return "pitch_deck";
+  if (/\b(client\s+proposal|proposal\s+for\s+(a\s+)?client|project\s+proposal)\b/.test(p)) return "client_proposal";
+  if (/\b(treatment|director'?s\s+treatment)\b/.test(p)) return "treatment";
+  if (/\b(rate\s+card|service\s+packages?)\b/.test(p)) return "rate_card";
+  if (/\b(moodboard|mood\s+board)\b/.test(p)) return "moodboard_deck";
+  if (/\b(one[-\s]?pager)\b/.test(p)) return "one_pager";
+  if (/\b(make|build|create|draft|generate)\s+(me\s+)?(a\s+)?(deck|slides|presentation)\b/.test(p)) return "pitch_deck";
+  return null;
+}
+
+
 /**
  * ThrivePromptHero — the conversational entry point on Home.
  * Smart "For You" chips replace the static dropdown — driven by the user's
@@ -171,6 +194,13 @@ export function ThrivePromptHero() {
 
     setBusy(true);
     try {
+      // Fast-path: document/deck requests skip the LLM router entirely.
+      const docIntent = detectDocIntent(prompt);
+      if (docIntent) {
+        navigate(`/thrive/generate?intent=${docIntent}&brief=${encodeURIComponent(prompt)}`);
+        setText("");
+        return;
+      }
       // Client-side safety timeout — if routing stalls, fall back to opening chat.
       const routePromise = supabase.functions.invoke<RouteResponse>("route-thrive-intent", {
         body: { prompt },

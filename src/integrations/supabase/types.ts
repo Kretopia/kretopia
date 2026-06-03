@@ -16297,6 +16297,106 @@ export type Database = {
         }
         Relationships: []
       }
+      thrive_document_versions: {
+        Row: {
+          change_note: string | null
+          content: Json
+          created_at: string
+          document_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          change_note?: string | null
+          content: Json
+          created_at?: string
+          document_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          change_note?: string | null
+          content?: Json
+          created_at?: string
+          document_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thrive_document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "thrive_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thrive_documents: {
+        Row: {
+          brief: string | null
+          content: Json
+          cover_image_url: string | null
+          created_at: string
+          credits_spent: number
+          id: string
+          intent: string
+          model_used: string | null
+          project_id: string | null
+          share_token: string | null
+          status: string
+          theme: string
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          brief?: string | null
+          content?: Json
+          cover_image_url?: string | null
+          created_at?: string
+          credits_spent?: number
+          id?: string
+          intent: string
+          model_used?: string | null
+          project_id?: string | null
+          share_token?: string | null
+          status?: string
+          theme?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          brief?: string | null
+          content?: Json
+          cover_image_url?: string | null
+          created_at?: string
+          credits_spent?: number
+          id?: string
+          intent?: string
+          model_used?: string | null
+          project_id?: string | null
+          share_token?: string | null
+          status?: string
+          theme?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thrive_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       thrive_intent_logs: {
         Row: {
           created_at: string
@@ -18944,6 +19044,19 @@ export type Database = {
           won: number
         }[]
       }
+      get_shared_thrive_document: {
+        Args: { _token: string }
+        Returns: {
+          content: Json
+          cover_image_url: string
+          created_at: string
+          id: string
+          intent: string
+          theme: string
+          title: string
+          user_id: string
+        }[]
+      }
       get_tier_storage_limit: { Args: { tier: string }; Returns: number }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       guest_drop_post: {
@@ -18979,6 +19092,10 @@ export type Database = {
       increment_promo_use: { Args: { _id: string }; Returns: undefined }
       increment_template_usage: {
         Args: { template_id: string }
+        Returns: undefined
+      }
+      increment_thrive_doc_views: {
+        Args: { _token: string }
         Returns: undefined
       }
       is_event_host: {

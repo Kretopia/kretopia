@@ -123,6 +123,14 @@ export const EasyApplyButton = ({ opportunityId, opportunityTitle, className, si
         .filter(p => p.media_url)
         .map(p => p.media_url!);
 
+      // Snapshot model/comp-card data so casting reviews don't depend on later profile edits
+      const { data: snap } = await supabase
+        .from("profiles")
+        .select("model_stats, model_categories, model_unions, mother_agency, comp_card_layout, sub_roles, avatar_url, full_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const compCardSnapshot = snap && (snap as any).sub_roles?.includes?.("model") ? snap : null;
+
       const { error } = await supabase.from("applications").insert({
         applicant_id: user.id,
         opportunity_id: opportunityId,
@@ -130,6 +138,7 @@ export const EasyApplyButton = ({ opportunityId, opportunityTitle, className, si
         portfolio_links: portfolioLinks.length > 0 ? portfolioLinks : null,
         expected_rate: rateInfo || null,
         status: "pending",
+        comp_card_snapshot: compCardSnapshot as any,
       });
 
       if (error) throw error;

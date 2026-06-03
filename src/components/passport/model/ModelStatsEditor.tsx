@@ -188,6 +188,9 @@ export function ModelStatsEditor({
           <IdCard className="h-4 w-4 mr-2" />Build comp card
         </Link>
       </Button>
+
+      <SocialFeedIngest userId={userId} />
+
     </div>
   );
 }

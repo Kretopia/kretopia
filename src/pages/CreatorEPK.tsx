@@ -509,6 +509,18 @@ const CreatorEPK = () => {
           </div>
         )}
 
+        {/* Model strip — casting-grade info, only when sub_roles includes model */}
+        {((profile as any).sub_roles || []).includes?.('model') && (
+          <ModelStrip
+            userId={userId || ''}
+            isOwner={isOwner}
+            stats={(profile as any).model_stats}
+            motherAgency={(profile as any).mother_agency}
+            unions={(profile as any).model_unions}
+            categories={(profile as any).model_categories}
+          />
+        )}
+
         {/* Why work with me — pulled from headline/bio so the press kit leads with positioning */}
         {(profile.headline || profile.bio) && (
           <div className="mb-6 p-5 rounded-xl border-l-4 border-primary bg-primary/5">

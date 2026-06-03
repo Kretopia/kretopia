@@ -14,6 +14,7 @@ import { ImageCropDialog } from "@/components/ImageCropDialog";
 import { AIJobDescriptionGenerator } from "@/components/opportunity/AIJobDescriptionGenerator";
 import { useAuth } from "@/hooks/useAuth";
 import { hasProAccess } from "@/lib/subscriptionConfig";
+import { CastingFieldsForm, type CastingFields } from "@/components/opportunity/CastingFieldsForm";
 
 const STORAGE_KEY = "thrivein_draft_opportunity";
 

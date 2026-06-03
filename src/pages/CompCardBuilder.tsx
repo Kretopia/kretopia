@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CompCardPreview } from "@/components/passport/model/CompCardPreview";
+import { SocialFeedIngest } from "@/components/passport/model/SocialFeedIngest";
 import { BrandLoader } from "@/components/brand/BrandDots";
 import { ArrowLeft, Upload, Download, Share2, Save, Link2, Trash2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
@@ -65,9 +66,12 @@ export default function CompCardBuilder() {
   };
 
   const importFromPortfolio = (i: number) => {
-    const url = (profile?.portfolio_links || [])[0];
-    if (!url) { toast({ title: "No portfolio links yet" }); return; }
-    setSlot(i, url);
+    const links: string[] = profile?.portfolio_links || [];
+    if (!links.length) { toast({ title: "No portfolio links yet", description: "Pull some from Instagram / TikTok below." }); return; }
+    // pick first link not already used in another slot
+    const used = new Set(slots.filter(Boolean) as string[]);
+    const next = links.find((u) => !used.has(u)) || links[0];
+    setSlot(i, next);
   };
 
   const save = async () => {
@@ -159,7 +163,17 @@ export default function CompCardBuilder() {
         </div>
 
         <div className="space-y-3">
-          <h2 className="text-sm font-medium">Slots</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium">Slots</h2>
+            <span className="text-[10px] text-muted-foreground">{(profile?.portfolio_links || []).length} portfolio link{(profile?.portfolio_links || []).length === 1 ? "" : "s"}</span>
+          </div>
+          {user && (
+            <SocialFeedIngest
+              userId={user.id}
+              existingLinks={profile?.portfolio_links || []}
+              onIngested={(added) => setProfile((p: any) => ({ ...p, portfolio_links: [...(p?.portfolio_links || []), ...added] }))}
+            />
+          )}
           {SLOT_LABELS.map((label, i) => (
             <SlotRow
               key={i}

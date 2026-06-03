@@ -13,6 +13,7 @@ import {
   cmToFeetInches, feetInchesToCm, inchesToCm,
   MODEL_CATEGORIES, MODEL_UNIONS,
 } from "@/lib/modelUnits";
+import { SocialFeedIngest } from "./SocialFeedIngest";
 
 interface Props {
   userId: string;
@@ -187,6 +188,9 @@ export function ModelStatsEditor({
           <IdCard className="h-4 w-4 mr-2" />Build comp card
         </Link>
       </Button>
+
+      <SocialFeedIngest userId={userId} />
+
     </div>
   );
 }

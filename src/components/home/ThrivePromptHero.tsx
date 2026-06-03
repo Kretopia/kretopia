@@ -171,6 +171,13 @@ export function ThrivePromptHero() {
 
     setBusy(true);
     try {
+      // Fast-path: document/deck requests skip the LLM router entirely.
+      const docIntent = detectDocIntent(prompt);
+      if (docIntent) {
+        navigate(`/thrive/generate?intent=${docIntent}&brief=${encodeURIComponent(prompt)}`);
+        setText("");
+        return;
+      }
       // Client-side safety timeout — if routing stalls, fall back to opening chat.
       const routePromise = supabase.functions.invoke<RouteResponse>("route-thrive-intent", {
         body: { prompt },

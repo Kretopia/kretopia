@@ -207,6 +207,7 @@ const OpportunityDashboard = () => {
         expected_rate: app.expected_rate,
         availability: app.availability,
         professional_skills: profile?.professional_skills || [],
+        comp_card_snapshot: app.comp_card_snapshot,
       };
     });
     setApplicants(formatted);

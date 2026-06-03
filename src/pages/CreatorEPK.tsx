@@ -9,6 +9,7 @@ import { ClaimProfileDialog } from "@/components/profile/ClaimProfileDialog";
 import { EPKShareToolbar } from "@/components/epk/EPKShareToolbar";
 import { EPKReviews } from "@/components/epk/EPKReviews";
 import { EPKFooterCTA } from "@/components/epk/EPKFooterCTA";
+import { ModelStrip } from "@/components/passport/model/ModelStrip";
 import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
 import { RateCardSection } from "@/components/profile/RateCardSection";
 import { getMediaThumbnail } from "@/lib/mediaUtils";

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CompCardPreview } from "@/components/passport/model/CompCardPreview";
+import { SocialFeedIngest } from "@/components/passport/model/SocialFeedIngest";
 import { BrandLoader } from "@/components/brand/BrandDots";
 import { ArrowLeft, Upload, Download, Share2, Save, Link2, Trash2 } from "lucide-react";
 import { Helmet } from "react-helmet-async";

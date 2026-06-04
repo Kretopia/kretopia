@@ -166,7 +166,7 @@ export default function Circle() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen pb-28 sm:pb-24 md:pb-8 bg-background">
+      <div className="min-h-screen pb-28 sm:pb-24 md:pb-8 bg-background accent-match">
         <SEO
           title="Circle — Match, Live & Network"
           description="Find collaborators, jump into live sessions, and grow your creative circle."

@@ -418,7 +418,7 @@ export const UnifiedHome = () => {
   const firstName = profile?.full_name?.split(" ")[0] || "Creator";
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background min-h-screen accent-passport">
       <SEO
         title="ThriveIN | The Creative OS - Credits, EPKs & Workspace for Creators"
         description="Claim your verified creative credits, build your professional industry EPK, collaborate globally, and manage milestone payments securely on ThriveIN.io."

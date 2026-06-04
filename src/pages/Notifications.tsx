@@ -35,7 +35,7 @@ const Notifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-20 accent-match">
       <SEO title="Inbox - ThriveIN" description="Notifications and approvals in one place" />
       <div className="container mx-auto max-w-2xl px-4 py-6 space-y-6">
         <div className="flex items-center justify-between border-b-2 border-primary/20 pb-4">

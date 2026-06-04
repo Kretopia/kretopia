@@ -283,7 +283,7 @@ export default function ThrivePay() {
         description="Manage your wallet, earnings, status, and payment account"
       />
 
-      <div className="mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
+      <div className="accent-pay mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
         <PassportAnchorStrip className="mb-3" />
 
         {/* ThriveIN Wallet — frictionless payouts (Path 2) */}
@@ -297,7 +297,7 @@ export default function ThrivePay() {
             <p className="brand-eyebrow">Your money, daily</p>
             <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <h1 className="text-3xl md:text-4xl font-black tracking-[-0.03em] flex items-center gap-3 leading-[1.05]">
-                <Wallet className="h-7 w-7 md:h-8 md:w-8 text-[hsl(var(--signal-teal))]" />
+                <Wallet className="h-7 w-7 md:h-8 md:w-8 text-pay" />
                 ThrivePay
               </h1>
               {getStatusBadge()}

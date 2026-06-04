@@ -418,6 +418,11 @@ All colors MUST be HSL.
   .accent-scout    { --surface-accent: var(--accent-scout); }
   .accent-match    { --surface-accent: var(--accent-match); }
   .accent-pay      { --surface-accent: var(--accent-pay); }
+  /* Studios = teal dominant with yellow nods (per Brand System v1.0) */
+  .accent-studios  { --surface-accent: var(--accent-passport); --surface-accent-alt: var(--accent-scout); }
+  .text-studios    { color: hsl(var(--accent-passport)); }
+  .bg-studios      { background-color: hsl(var(--accent-passport)); color: hsl(225 44% 4%); }
+  .border-studios  { border-color: hsl(var(--accent-passport)); }
 
   .text-passport { color: hsl(var(--accent-passport)); }
   .text-scout    { color: hsl(var(--accent-scout)); }

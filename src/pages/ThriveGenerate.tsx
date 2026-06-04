@@ -112,7 +112,7 @@ export default function ThriveGenerate() {
   const content = doc?.content as DeckContent | null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background accent-scout">
       <SEO title="Thrive · Executive Producer" description="Generate decks, proposals, rate cards, and treatments inside your Studio." />
 
       <header className="sticky top-0 z-30 bg-background border-b border-border">

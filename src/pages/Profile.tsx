@@ -356,7 +356,7 @@ const ProfileContent = () => {
   }
 
   return (
-    <div className="min-h-screen pb-24 sm:pb-20 md:pb-6 bg-background">
+    <div className="accent-passport min-h-screen pb-24 sm:pb-20 md:pb-6 bg-background">
       <ClaimedProfileGlow />
       {/* Hidden file input */}
       <input

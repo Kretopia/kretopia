@@ -80,14 +80,14 @@ All colors MUST be HSL.
     --accent-pay:      141 71% 42%;   /* #1DB954  — Money only */
     --radius: 1rem;
 
-    /* Quieter gradient system — single-hue ink, no purple→magenta */
+    /* Daylight gradient + shadow system — v1.0 teal accent (was indigo). */
     --gradient-primary: linear-gradient(135deg, hsl(240 11% 8%), hsl(240 11% 18%));
-    --gradient-secondary: linear-gradient(135deg, hsl(232 87% 66% / 0.06), hsl(232 87% 66% / 0.02));
+    --gradient-secondary: linear-gradient(135deg, hsl(178 80% 47% / 0.08), hsl(178 80% 47% / 0.02));
     --gradient-accent: linear-gradient(180deg, hsl(36 27% 97%), hsl(36 22% 95%));
-    --gradient-subtle: linear-gradient(180deg, hsl(232 87% 66% / 0.03), transparent);
+    --gradient-subtle: linear-gradient(180deg, hsl(178 80% 47% / 0.04), transparent);
     --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.95), hsl(0 0% 100% / 0.85));
-    --gradient-gold: linear-gradient(135deg, hsl(45 90% 60%), hsl(38 90% 55%));
-    --gradient-hero: linear-gradient(180deg, hsl(232 87% 66% / 0.05), transparent);
+    --gradient-gold: linear-gradient(135deg, hsl(43 100% 58%), hsl(36 96% 52%));
+    --gradient-hero: linear-gradient(180deg, hsl(178 80% 47% / 0.06), transparent);
 
     /* Shadow system — softer, warm-tinted */
     --shadow-xs: 0 1px 2px hsl(240 11% 8% / 0.03);
@@ -95,27 +95,28 @@ All colors MUST be HSL.
     --shadow-md: 0 4px 12px hsl(240 11% 8% / 0.06);
     --shadow-lg: 0 8px 24px hsl(240 11% 8% / 0.08);
     --shadow-xl: 0 16px 48px hsl(240 11% 8% / 0.12);
-    --shadow-glow: 0 0 32px hsl(232 87% 66% / 0.20);
-    --shadow-glow-lime: 0 0 12px hsl(232 87% 66% / 0.15);
+    --shadow-glow: 0 0 32px hsl(178 80% 47% / 0.22);
+    --shadow-glow-lime: 0 0 12px hsl(178 80% 47% / 0.18);
     --shadow-card: 0 1px 2px hsl(240 11% 8% / 0.04), 0 2px 8px -2px hsl(240 11% 8% / 0.05);
     --shadow-card-hover: 0 2px 4px hsl(240 11% 8% / 0.05), 0 6px 16px -4px hsl(240 11% 8% / 0.08);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    /* Mode accent tokens */
-    --mode-accent: 232 87% 66%;
+    /* Mode accent tokens — v1.0 teal */
+    --mode-accent: 178 80% 47%;
     --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 32px hsl(232 87% 66% / 0.25);
+    --mode-glow: 0 0 32px hsl(178 80% 47% / 0.22);
   }
 
-  /* Modes collapse to single ink accent in warm-minimal */
+  /* Modes collapse to single teal accent in Daylight v1.0 */
   [data-nav-mode="create"],
   [data-nav-mode="work"] {
-    --mode-accent: 232 87% 66%;
+    --mode-accent: 178 80% 47%;
     --mode-accent-foreground: 0 0% 100%;
-    --mode-glow: 0 0 32px hsl(232 87% 66% / 0.25);
+    --mode-glow: 0 0 32px hsl(178 80% 47% / 0.22);
   }
+
 
   /* ============================================================
      DARK MODE — DEFAULT = MIDNIGHT vibe (white ink, teal accent).

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-vibe="daylight" style="color-scheme: light; background-color: hsl(40 30% 97%);">
+<html lang="en" data-vibe="midnight" class="dark" style="color-scheme: dark; background-color: #05070D;">
   <head>
     <meta charset="UTF-8" />
     <meta name="google-site-verification" content="Q9BsvA9vwgxyOg6XZDaZ-g9T-WyRjbSbIvBuGBZ8VLY" />
@@ -10,9 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#FAF7F2" />
+    <meta name="theme-color" content="#05070D" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="ThriveIN" />
     <title>ThriveIN — Creative OS: Credits, EPKs & Workspace</title>
     <meta name="description" content="Claim your verified creative credits, build your professional industry EPK, collaborate globally, and manage milestone payments securely on ThriveIN.io." />
@@ -134,11 +134,11 @@
     <meta name="twitter:image" content="https://www.thrivein.io/og-image.png" />
     <script>
       // Boot vibe — honor stored choice before paint to avoid theme flash.
-      // Default = daylight. Midnight/Neon also toggle .dark for shadcn dark variants.
+      // Default = midnight (Brand System v1.0 — near-black #05070D canvas).
       (function () {
         try {
           var v = localStorage.getItem("ui_vibe");
-          if (v !== "daylight" && v !== "midnight" && v !== "neon") v = "daylight";
+          if (v !== "daylight" && v !== "midnight" && v !== "neon") v = "midnight";
           var html = document.documentElement;
           html.setAttribute("data-vibe", v);
           if (v === "daylight") {
@@ -148,7 +148,7 @@
           } else {
             html.classList.add("dark");
             html.style.colorScheme = "dark";
-            html.style.backgroundColor = "hsl(250 35% 6%)";
+            html.style.backgroundColor = "#05070D";
           }
         } catch (_) {}
       })();

@@ -36,7 +36,7 @@ const Scout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="accent-scout min-h-screen bg-background pb-24">
       <SEO
         title="Scout — Find your next gig & collaborator | ThriveIN"
         description="One feed for the gigs and people that fit your work — scouted from across the web and curated by Thrive."
@@ -45,12 +45,12 @@ const Scout = () => {
       {/* Calm header */}
       <header className="border-b border-border/60 bg-background pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto max-w-5xl px-4 pt-7 pb-4 sm:pt-9 sm:pb-6">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--signal-teal))] mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--accent-scout))] mb-2">
             Scout
           </p>
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-foreground leading-[1.05]">
             Gigs &amp; talent,{" "}
-            <span className="italic text-[hsl(var(--signal-teal))]">scouted</span>
+            <span className="italic text-[hsl(var(--accent-scout))]">scouted</span>
             <span className="text-foreground/60"> for you.</span>
           </h1>
 

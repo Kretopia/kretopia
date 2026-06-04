@@ -45,15 +45,15 @@ export const BrandDots = ({
       aria-hidden={animated ? undefined : true}
     >
       <span
-        className={cn(dot, "rounded-full bg-[#FF4DA6]", animated && "animate-brand-dot")}
+        className={cn(dot, "rounded-full bg-[#FF0A78]", animated && "animate-brand-dot")}
         style={animated ? { animationDelay: "0ms" } : undefined}
       />
       <span
-        className={cn(dot, "rounded-full bg-[#FFB020]", animated && "animate-brand-dot")}
+        className={cn(dot, "rounded-full bg-[#FFC72C]", animated && "animate-brand-dot")}
         style={animated ? { animationDelay: "150ms" } : undefined}
       />
       <span
-        className={cn(dot, "rounded-full bg-[#20D3C2]", animated && "animate-brand-dot")}
+        className={cn(dot, "rounded-full bg-[#17D9D4]", animated && "animate-brand-dot")}
         style={animated ? { animationDelay: "300ms" } : undefined}
       />
     </div>

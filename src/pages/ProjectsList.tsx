@@ -143,7 +143,7 @@ const ProjectsList = () => {
   ];
 
   return (
-    <div className="container max-w-6xl mx-auto py-3 sm:py-4 px-3 sm:px-4 space-y-3 sm:space-y-4 pb-32 md:pb-12 overflow-y-auto">
+    <div className="accent-studios container max-w-6xl mx-auto py-3 sm:py-4 px-3 sm:px-4 space-y-3 sm:space-y-4 pb-32 md:pb-12 overflow-y-auto">
       {/* Header — lite, single line */}
       <header className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">

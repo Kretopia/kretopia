@@ -283,7 +283,7 @@ export default function ThrivePay() {
         description="Manage your wallet, earnings, status, and payment account"
       />
 
-      <div className="mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
+      <div className="accent-pay mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl min-h-screen pb-24">
         <PassportAnchorStrip className="mb-3" />
 
         {/* ThriveIN Wallet — frictionless payouts (Path 2) */}

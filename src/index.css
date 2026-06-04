@@ -407,6 +407,36 @@ All colors MUST be HSL.
   .brand-eyebrow {
     @apply text-[10px] font-black uppercase tracking-[0.18em] text-energy;
   }
+
+  /* ============================================================
+     PRODUCT ACCENT UTILITIES — Brand System v1.0
+     One dominant accent per surface. Apply at the page/section root.
+     Subtle references to the other two colors should appear elsewhere
+     so the experience always feels like one ThriveIN ecosystem.
+     ============================================================ */
+  .accent-passport { --surface-accent: var(--accent-passport); }
+  .accent-scout    { --surface-accent: var(--accent-scout); }
+  .accent-match    { --surface-accent: var(--accent-match); }
+  .accent-pay      { --surface-accent: var(--accent-pay); }
+
+  .text-passport { color: hsl(var(--accent-passport)); }
+  .text-scout    { color: hsl(var(--accent-scout)); }
+  .text-match    { color: hsl(var(--accent-match)); }
+  .text-pay      { color: hsl(var(--accent-pay)); }
+
+  .bg-passport { background-color: hsl(var(--accent-passport)); color: hsl(225 44% 4%); }
+  .bg-scout    { background-color: hsl(var(--accent-scout));    color: hsl(225 44% 4%); }
+  .bg-match    { background-color: hsl(var(--accent-match));    color: hsl(0 0% 100%); }
+  .bg-pay      { background-color: hsl(var(--accent-pay));      color: hsl(0 0% 100%); }
+
+  .border-passport { border-color: hsl(var(--accent-passport)); }
+  .border-scout    { border-color: hsl(var(--accent-scout)); }
+  .border-match    { border-color: hsl(var(--accent-match)); }
+  .border-pay      { border-color: hsl(var(--accent-pay)); }
+
+  .ring-passport { --tw-ring-color: hsl(var(--accent-passport)); }
+  .ring-scout    { --tw-ring-color: hsl(var(--accent-scout)); }
+  .ring-match    { --tw-ring-color: hsl(var(--accent-match)); }
   /* Editorial section header */
   .section-title {
     @apply text-2xl sm:text-3xl font-black tracking-[-0.03em];

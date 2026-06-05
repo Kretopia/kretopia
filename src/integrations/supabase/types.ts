@@ -15832,6 +15832,133 @@ export type Database = {
         }
         Relationships: []
       }
+      studio_entities: {
+        Row: {
+          aliases: string[]
+          attrs: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          importance: number
+          kind: string
+          name: string
+          project_id: string
+          slug: string
+          source_file_id: string | null
+          source_kind: string
+          source_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          aliases?: string[]
+          attrs?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          importance?: number
+          kind: string
+          name: string
+          project_id: string
+          slug: string
+          source_file_id?: string | null
+          source_kind?: string
+          source_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          aliases?: string[]
+          attrs?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          importance?: number
+          kind?: string
+          name?: string
+          project_id?: string
+          slug?: string
+          source_file_id?: string | null
+          source_kind?: string
+          source_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_entities_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_facts: {
+        Row: {
+          confidence: number
+          context: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          importance: number
+          kind: string
+          label: string | null
+          project_id: string
+          source_excerpt: string | null
+          source_file_id: string | null
+          source_kind: string
+          source_url: string | null
+          updated_at: string
+          value: string | null
+          value_date: string | null
+          value_numeric: number | null
+        }
+        Insert: {
+          confidence?: number
+          context?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          importance?: number
+          kind: string
+          label?: string | null
+          project_id: string
+          source_excerpt?: string | null
+          source_file_id?: string | null
+          source_kind?: string
+          source_url?: string | null
+          updated_at?: string
+          value?: string | null
+          value_date?: string | null
+          value_numeric?: number | null
+        }
+        Update: {
+          confidence?: number
+          context?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          importance?: number
+          kind?: string
+          label?: string | null
+          project_id?: string
+          source_excerpt?: string | null
+          source_file_id?: string | null
+          source_kind?: string
+          source_url?: string | null
+          updated_at?: string
+          value?: string | null
+          value_date?: string | null
+          value_numeric?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_facts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       studio_pulse_comments: {
         Row: {
           author_id: string

@@ -211,16 +211,19 @@ export const StudioRoom = ({
     "event-recap": "Post-event recap",
   };
 
+  // Studio Brain entry point — lives at the very top of the room so every
+  // drop (file/link/voice) goes through the unified `studio-ingest` router.
+  const dropZone = (
+    <BriefDropZone
+      projectId={project.id}
+      projectTitle={project.title ?? "this project"}
+      isOwner={isOwner}
+      onIngested={onUpdated}
+    />
+  );
+
   const briefBlock = (
-    <>
-      <BriefDropZone
-        projectId={project.id}
-        projectTitle={project.title ?? "this project"}
-        isOwner={isOwner}
-        onIngested={onUpdated}
-      />
-      <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
-    </>
+    <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
   );
 
   const mobileWorkColumn = (includeBrief: boolean) => (
@@ -378,6 +381,7 @@ export const StudioRoom = ({
 
       {/* Mobile: original single-scroll order */}
       <div className="lg:hidden">
+        {isOwner && dropZone}
         {RoomChatButton}
         {tasks.length === 0 && (
           <FirstTimeHint
@@ -459,6 +463,11 @@ export const StudioRoom = ({
       {/* Desktop: 2-column draggable widget board */}
       <div className="hidden lg:grid lg:grid-cols-12 lg:gap-5 lg:px-6 lg:py-5 lg:max-w-[1500px] lg:mx-auto">
         <div className="col-span-12 xl:col-span-8 space-y-4 min-w-0">
+          {isOwner && (
+            <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
+              {dropZone}
+            </div>
+          )}
           {/* (ProactiveCards lifted above the responsive split — see top of return) */}
           {project.workspace_type === "podcast" && (
             <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">

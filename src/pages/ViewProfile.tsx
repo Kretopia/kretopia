@@ -738,6 +738,12 @@ const ViewProfile = () => {
             className="my-4"
           />
 
+          {/* Live proof chips — booked this month + reply SLA */}
+          <div className="flex flex-wrap items-center gap-2 my-3">
+            <BookedThisMonthChip userId={profile.user_id} variant="light" />
+            <ReplySLABadge userId={profile.user_id} fallbackHours={profile.avg_response_hours as any} variant="light" />
+          </div>
+
           {/* Recently worked with — IMDb-style collaborator strip */}
           <RecentlyWorkedWith userId={profile.user_id} className="my-4" />
 

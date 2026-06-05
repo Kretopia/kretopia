@@ -113,7 +113,15 @@ export function HotLeadsStrip() {
           if (mine) setMyProfile(mine as any);
         }
 
-        if (!cancelled) setLeads(hot);
+        if (!cancelled) {
+          setLeads(hot);
+          if (hot.length > 0) {
+            trackDeckEvent("hot_leads_seen", "opportunity", {
+              count: hot.length,
+              matched: hot.map(h => h.matched.toLowerCase()),
+            });
+          }
+        }
       } catch {/* silent */}
       if (!cancelled) setLoading(false);
     })();

@@ -67,6 +67,8 @@ RULES:
 - Each slide must be specific to THIS brief, not template-y boilerplate.
 - Body copy: punchy, scannable. Use short paragraphs and bulleted lists where it helps.
 - Keep the user's voice. If they mention their style ("bold, no-fluff"), match it.
+- If a BRAND is provided in context, treat it as law: use the brand name, tagline and voice_tone everywhere, honour the do/dont list, surface palette colours by HEX when referring to look-and-feel, and weave the brand's links into the contact slide.
+- If a STUDIO BRAIN is provided (facts, entities), use those real numbers, dates, venues, sponsors, contacts and budgets directly. Never re-ask the user for something already in the brain.
 - If you don't have a real fact, leave a clearly-labelled [PLACEHOLDER: ...] for the user to fill — never invent numbers, dates, or names.
 
 Return a single tool call with the structured document.`;

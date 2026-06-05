@@ -124,6 +124,17 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
       onClick: () => navigate("/thrivepay?tab=invoices"),
     },
     {
+      key: "week",
+      icon: DollarSign,
+      label: "This week",
+      value:
+        stats.weekEarned > 0
+          ? `+$${Math.round(stats.weekEarned).toLocaleString()}`
+          : "$0",
+      tone: stats.weekEarned > 0 ? "money" : "muted",
+      onClick: () => navigate("/thrivepay"),
+    },
+    {
       key: "messages",
       icon: MessageSquare,
       label: repliesOwed > 0 ? "Replies owed" : "Threads",

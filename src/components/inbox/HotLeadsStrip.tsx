@@ -132,8 +132,11 @@ export function HotLeadsStrip() {
     if (drafts[idx]?.length) { setOpenIdx(openIdx === idx ? null : idx); return; }
     setOpenIdx(idx);
     setDrafting(d => ({ ...d, [idx]: true }));
+    const l = leads[idx];
+    trackDeckEvent("hot_lead_draft_requested", "opportunity", {
+      sender_id: l.sender_id, matched: l.matched.toLowerCase(),
+    });
     try {
-      const l = leads[idx];
       const { data, error } = await supabase.functions.invoke('draft-lead-reply', {
         body: {
           inbound: l.preview,
@@ -145,6 +148,9 @@ export function HotLeadsStrip() {
       if (error) throw error;
       const out: DraftOpt[] = (data as any)?.drafts || [];
       setDrafts(d => ({ ...d, [idx]: out }));
+      trackDeckEvent("hot_lead_draft_returned", "opportunity", {
+        sender_id: l.sender_id, count: out.length,
+      });
     } catch (e: any) {
       toast({ title: "Couldn't draft right now", description: e?.message || 'Try again in a sec.', variant: 'destructive' });
       setOpenIdx(null);
@@ -155,7 +161,17 @@ export function HotLeadsStrip() {
 
   const useDraft = async (lead: Lead, text: string) => {
     try { await navigator.clipboard.writeText(text); } catch {/* ignore */}
+    trackDeckEvent("hot_lead_draft_used", "opportunity", {
+      sender_id: lead.sender_id, matched: lead.matched.toLowerCase(), length: text.length,
+    });
     toast({ title: 'Draft copied', description: 'Paste it in the chat to send.' });
+    navigate(lead.conversation_id ? `/messages?c=${lead.conversation_id}` : `/messages?user=${lead.sender_id}`);
+  };
+
+  const openThread = (lead: Lead) => {
+    trackDeckEvent("hot_lead_opened", "opportunity", {
+      sender_id: lead.sender_id, matched: lead.matched.toLowerCase(),
+    });
     navigate(lead.conversation_id ? `/messages?c=${lead.conversation_id}` : `/messages?user=${lead.sender_id}`);
   };
 

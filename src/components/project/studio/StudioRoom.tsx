@@ -30,6 +30,8 @@ import { WrapProjectCard } from "./WrapProjectCard";
 import { CallHistorySection } from "./CallHistorySection";
 import { PadPreviewSection } from "./PadPreviewSection";
 import { ThriveGenerateCard } from "./ThriveGenerateCard";
+import { StudioOutcomeComposer } from "./StudioOutcomeComposer";
+import { BrandVaultChip } from "@/components/brand-vault/BrandVaultChip";
 import { DeliverablesSection } from "./DeliverablesSection";
 import { ProductionPrepSection } from "./ProductionPrepSection";
 import { PodcastStudioSection } from "./PodcastStudioSection";

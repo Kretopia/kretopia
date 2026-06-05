@@ -406,9 +406,9 @@ const ViewProfile = () => {
             <CardContent className="p-6">
               {/* Unclaimed Profile Banner */}
               {isUnclaimedProfile && (
-                <div className="mb-6 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
+                <div className="mb-6 p-3 rounded-xl bg-scout/10 border border-scout/30">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-amber-500">
+                    <div className="flex items-center gap-2 text-scout">
                       <Sparkles className="h-4 w-4" />
                       <span className="text-sm font-medium">Unclaimed Profile</span>
                     </div>
@@ -417,7 +417,7 @@ const ViewProfile = () => {
                         size="sm" 
                         variant="outline"
                         onClick={() => setShowShareDialog(true)}
-                        className="gap-1.5 h-8 border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                        className="gap-1.5 h-8 border-scout/30 text-scout hover:bg-scout/10"
                       >
                         <Share2 className="h-3.5 w-3.5" />
                         Share

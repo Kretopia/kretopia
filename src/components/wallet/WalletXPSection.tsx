@@ -239,8 +239,8 @@ export function WalletXPSection() {
       <Card className="p-5 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent border-primary/20">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500">
-              <Sparkles className="h-6 w-6 text-white" />
+            <div className="p-2.5 rounded-xl bg-scout">
+              <Sparkles className="h-6 w-6 text-[hsl(var(--accent-scout-foreground,225_44%_4%))]" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Your Thrive Points</p>
@@ -248,7 +248,7 @@ export function WalletXPSection() {
             </div>
           </div>
           <div className="text-right">
-            <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
+            <Badge className="bg-primary text-primary-foreground border-0">
               {userXP.toLocaleString()} TP
             </Badge>
           </div>

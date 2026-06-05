@@ -12,7 +12,10 @@
 //     project_id: string,
 //     source_kind: "pdf"|"image"|"voice"|"email"|"link"|"deck"|"contract"|
 //                  "budget"|"brief"|"message"|"manual",
-//     text?: string,             // pre-extracted text (preferred)
+//     text?: string,             // pre-extracted text (preferred when available)
+//     image_base64?: string,     // raw base64 (no data: prefix) for vision extract
+//     image_mime?: string,       // e.g. "image/jpeg" (default image/jpeg)
+//     image_url?: string,        // remote image url for vision extract
 //     file_name?: string,
 //     file_id?: string,          // project_files.id when applicable
 //     url?: string,              // source URL when this is a link/asset

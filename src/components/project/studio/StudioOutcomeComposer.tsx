@@ -70,12 +70,15 @@ export function StudioOutcomeComposer({ projectId, projectTitle }: Props) {
           break;
         }
         case "draft_invoice": {
-          // Hand off to Money tab inside the Studio with the brief prefilled.
-          dispatchDeskIntent("finance", "create-invoice", { brief: refined });
+          // Switch to Money tab first, then fire the intent once it mounts.
           window.dispatchEvent(new CustomEvent("thrivedesk:set-tab", { detail: "finance" }));
-          toast({ title: "Drafting an invoice", description: data?.preview || "" });
+          setTimeout(() => {
+            dispatchDeskIntent("finance", "create-invoice", { brief: refined });
+          }, 250);
+          toast({ title: "Drafting an invoice", description: data?.preview || "Switching to Money…" });
           break;
         }
+
         case "chat":
         default: {
           // Open Thrive Copilot drawer with the prompt pre-loaded.

@@ -59,6 +59,7 @@ import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicato
 import { ViewProfileTabs } from "@/components/profile/ViewProfileTabs";
 import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
 import { HireMeTrustBar } from "@/components/passport/HireMeTrustBar";
+import { PassportMomentum } from "@/components/passport/PassportMomentum";
 
 interface Profile {
   user_id: string;

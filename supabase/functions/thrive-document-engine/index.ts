@@ -232,7 +232,20 @@ serve(async (req) => {
         : null,
     };
 
-    const doc = await generate(intent, ctx, LOVABLE_API_KEY);
+    const generated = await generate(intent, ctx, LOVABLE_API_KEY);
+    // Snapshot the active brand inside the saved document so renderers
+    // (editor + public share) can paint logo/palette without re-fetching.
+    const doc = ctx.brand
+      ? { ...generated, brand_snapshot: {
+          name: ctx.brand.name,
+          tagline: ctx.brand.tagline,
+          logo_url: ctx.brand.logo_url,
+          palette: ctx.brand.palette,
+          fonts: ctx.brand.fonts,
+        } }
+      : generated;
+
+
 
     // Persist
     let saved;

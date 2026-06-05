@@ -17,6 +17,7 @@ import {
 import { VibeHeader } from "./VibeHeader";
 import { StudioPulseFeed } from "./StudioPulseFeed";
 import { NextStepCard } from "./NextStepCard";
+import { SendInvoiceNudge } from "./SendInvoiceNudge";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import { ProactiveCards } from "./ProactiveCards";
 import { BriefSection } from "./BriefSection";
@@ -388,6 +389,7 @@ export const StudioRoom = ({
           />
         )}
         {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
+        <SendInvoiceNudge project={project as any} />
         {project.workspace_type === "podcast" && (
           <PodcastStudioSection project={project} currentUserId={currentUserId} />
         )}

@@ -182,7 +182,7 @@ serve(async (req) => {
     }
 
     // Pull Passport context in parallel
-    const [profileRes, creditsRes, memoryRes, projectRes, factsRes, entitiesRes] = await Promise.all([
+    const [profileRes, creditsRes, memoryRes, projectRes, factsRes, entitiesRes, brandRes] = await Promise.all([
       admin.from("profiles").select("display_name, username, headline, bio, location, professional_role").eq("user_id", user.id).maybeSingle(),
       admin.from("credits").select("project_name, role, year, project_type, thumbnail_url").eq("user_id", user.id).order("year", { ascending: false }).limit(10),
       admin.from("thrive_memory").select("kind, mem_key, content").eq("user_id", user.id).limit(40),
@@ -190,7 +190,16 @@ serve(async (req) => {
       // STUDIO BRAIN — facts extracted from anything dropped into this Studio
       project_id ? admin.from("studio_facts").select("kind, label, value, value_numeric, value_date, importance, source_kind").eq("project_id", project_id).order("importance", { ascending: false }).limit(60) : Promise.resolve({ data: [] }),
       project_id ? admin.from("studio_entities").select("kind, name, aliases, attrs, importance").eq("project_id", project_id).order("importance", { ascending: false }).limit(40) : Promise.resolve({ data: [] }),
+      // BRAND VAULT — project-attached vault wins, else the user's default
+      admin.from("brand_vaults")
+        .select("name, logo_url, palette, fonts, voice_tone, tagline, do_dont, links, attrs, is_default, project_id")
+        .eq("user_id", user.id)
+        .or(project_id ? `project_id.eq.${project_id},and(project_id.is.null,is_default.eq.true)` : `project_id.is.null,is_default.eq.true`)
+        .limit(5),
     ]);
+
+    const vaults = brandRes.data || [];
+    const brand = vaults.find((v: any) => v.project_id === project_id) || vaults.find((v: any) => v.is_default) || null;
 
     const ctx = {
       user_brief,
@@ -205,6 +214,20 @@ serve(async (req) => {
         facts: factsRes.data || [],
         entities: entitiesRes.data || [],
       },
+      // BRAND VAULT — persistent brand identity. Apply automatically.
+      brand: brand
+        ? {
+            name: brand.name,
+            tagline: brand.tagline,
+            voice_tone: brand.voice_tone,
+            palette: brand.palette,
+            fonts: brand.fonts,
+            logo_url: brand.logo_url,
+            do: brand.do_dont?.do ?? [],
+            dont: brand.do_dont?.dont ?? [],
+            links: brand.links,
+          }
+        : null,
     };
 
     const doc = await generate(intent, ctx, LOVABLE_API_KEY);

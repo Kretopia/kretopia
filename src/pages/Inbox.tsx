@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { SEO } from "@/components/SEO";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
+import { HotLeadsStrip } from "@/components/inbox/HotLeadsStrip";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePendingAgentActions } from "@/hooks/usePendingAgentActions";
 import { Badge } from "@/components/ui/badge";
@@ -119,11 +120,14 @@ const Inbox = () => {
           </button>
         </div>
 
-        {/* Approvals — always at top of Needs You */}
+        {/* Hot leads + Approvals — always at top of Needs You */}
         {tab === "needs" && (
-          <div className="mb-5">
-            <ApprovalsHub limit={6} />
-          </div>
+          <>
+            <HotLeadsStrip />
+            <div className="mb-5">
+              <ApprovalsHub limit={6} />
+            </div>
+          </>
         )}
 
         {/* List */}

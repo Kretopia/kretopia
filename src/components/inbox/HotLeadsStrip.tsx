@@ -8,6 +8,7 @@ import { Flame, MessageCircle, Sparkles, Copy, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { trackDeckEvent } from "@/lib/deckMetrics";
 
 /**
  * HotLeadsStrip — surfaces unread inbound messages that smell like real

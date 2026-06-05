@@ -216,12 +216,25 @@ export const StudioRoom = ({
   // Studio Brain entry point — lives at the very top of the room so every
   // drop (file/link/voice) goes through the unified `studio-ingest` router.
   const dropZone = (
-    <BriefDropZone
-      projectId={project.id}
-      projectTitle={project.title ?? "this project"}
-      isOwner={isOwner}
-      onIngested={onUpdated}
-    />
+    <>
+      <BriefDropZone
+        projectId={project.id}
+        projectTitle={project.title ?? "this project"}
+        isOwner={isOwner}
+        onIngested={onUpdated}
+      />
+      {/* Phase E — outcome composer: free-text → routed capability */}
+      {isOwner && (
+        <StudioOutcomeComposer projectId={project.id} projectTitle={project.title ?? "this project"} />
+      )}
+      {/* Brand chip — shows the active Brand Vault that Thrive will use */}
+      {isOwner && (
+        <div className="px-4 pt-2 flex items-center gap-2">
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Brand</span>
+          <BrandVaultChip projectId={project.id} />
+        </div>
+      )}
+    </>
   );
 
   const briefBlock = (

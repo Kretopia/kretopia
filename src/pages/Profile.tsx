@@ -35,6 +35,7 @@ import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { PassportOverview } from "@/components/passport/PassportOverview";
 import { PassportMomentum } from "@/components/passport/PassportMomentum";
+import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
@@ -431,14 +432,31 @@ const ProfileContent = () => {
           <PassportMomentum />
         </div>
 
-        {/* Tiny link to private dashboard — owner only */}
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard')}
-          className="mt-3 w-full text-[11px] text-muted-foreground hover:text-[hsl(var(--signal-teal))] transition-colors py-1.5"
-        >
-          View private dashboard →
-        </button>
+        {/* Recently worked with — IMDb-style collaborator avatar strip */}
+        {profile?.user_id && (
+          <div className="mt-3">
+            <RecentlyWorkedWith userId={profile.user_id} />
+          </div>
+        )}
+
+        {/* Owner tools — preview public Passport + private dashboard */}
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.open(`/profile/${profile?.user_id}`, '_blank', 'noopener')}
+            className="flex-1 text-[11px] text-muted-foreground hover:text-[hsl(var(--signal-teal))] transition-colors py-1.5 border border-border rounded-full"
+          >
+            Preview public Passport ↗
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="flex-1 text-[11px] text-muted-foreground hover:text-[hsl(var(--signal-teal))] transition-colors py-1.5 border border-border rounded-full"
+          >
+            Private dashboard →
+          </button>
+        </div>
+
         </section>
         {/* /Identity */}
 

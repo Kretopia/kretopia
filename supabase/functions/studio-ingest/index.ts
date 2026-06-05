@@ -210,11 +210,14 @@ Deno.serve(async (req) => {
     const visionHint = hasVision
       ? " The source includes an IMAGE/SCAN — read every visible value: numbers, dates, names, line items, totals, headers, signatures, logos, addresses, contact info."
       : "";
+    const audioHint = hasAudio
+      ? " The source includes an AUDIO/VOICE NOTE — transcribe internally and extract any concrete plans, deadlines, dollar amounts, names, venues, sponsors mentioned. Ignore filler/'um'/small talk."
+      : "";
     const systemPrompt =
       "You are the Studio Brain for an Executive Producer working on " +
       `"${project_title}". A creative just dropped a piece of source material ` +
       `(${source_kind}${file_name ? ` — ${file_name}` : ""}${hint ? `; hint: ${hint}` : ""}).` +
-      visionHint +
+      visionHint + audioHint +
       " Extract ONLY the things that will be reusable later: budgets, dates, " +
       "venues, sponsors, contacts, deliverables, brand guidance, payment terms, " +
       "key messages. Be concise. Never invent. If something isn't in the source, " +
@@ -231,12 +234,20 @@ Deno.serve(async (req) => {
     } else if (image_url) {
       userContent.push({ type: "image_url", image_url: { url: image_url } });
     }
+    if (audio_base64) {
+      // Gemini accepts inline audio via input_audio
+      userContent.push({
+        type: "input_audio",
+        input_audio: { data: audio_base64, format: audio_mime.replace(/^audio\//, "") },
+      });
+    }
     if (!userContent.length) {
       userContent.push({ type: "text", text: `Extract anything reusable for ${project_title}.` });
     }
 
-    // Vision needs Pro for reliable extraction; text-only stays on flash for speed/cost
-    const model = hasVision ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
+    // Vision/audio needs Pro for reliable extraction; text-only stays on flash for speed/cost
+    const model = (hasVision || hasAudio) ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
+
 
     const aiResp = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",

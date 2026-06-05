@@ -278,6 +278,7 @@ const Navbar = memo(({ user }: NavbarProps) => {
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Manager Mode" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
+                      <MenuButton icon={Palette} label="Brand Vault" onClick={() => handleNavigation("/brand-vault")} path="/brand-vault" />
                       <MenuButton icon={Gift} label="Referral Program" onClick={() => handleNavigation("/ambassador")} path="/ambassador" />
 
                       <Separator className="my-3" />

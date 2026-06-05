@@ -332,7 +332,7 @@ const CreatorEPK = () => {
 
   const getVerificationBadge = () => {
     if (profile.verification_tier === 'elite') {
-      return { label: 'Elite Verified', color: 'bg-gradient-to-r from-amber-500 to-yellow-400' };
+      return { label: 'Elite Verified', color: 'bg-scout' };
     }
     if (profile.verification_tier === 'industry') {
       return { label: 'Industry Verified', color: 'bg-primary' };
@@ -535,8 +535,8 @@ const CreatorEPK = () => {
 
         {/* Unclaimed Profile Banner */}
         {profile.is_claimed === false && (
-          <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
-            <div className="flex items-center gap-2 text-amber-500 mb-2">
+          <div className="mb-6 p-4 rounded-xl bg-scout/10 border border-scout/30">
+            <div className="flex items-center gap-2 text-scout mb-2">
               <Sparkles className="h-4 w-4" />
               <span className="font-semibold">Is this you?</span>
             </div>
@@ -545,7 +545,7 @@ const CreatorEPK = () => {
             </p>
             <Button 
               onClick={() => setShowClaimDialog(true)}
-              className="w-full gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0"
+              className="w-full gap-2 bg-scout hover:opacity-90 border-0"
             >
               <UserCheck className="h-4 w-4" />
               Claim This Profile

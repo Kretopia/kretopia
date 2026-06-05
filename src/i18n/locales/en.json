@@ -1,14 +1,16 @@
 {
   "nav": {
-    "home": "Home",
-    "scene": "Scene",
+    "home": "Today",
+    "scene": "Today",
     "desk": "Desk",
+    "scout": "Scout",
     "messages": "Messages",
-    "discover": "Discover",
+    "passport": "Passport",
+    "discover": "Scout",
     "signIn": "Sign In",
     "signUp": "Get Started",
     "signOut": "Sign Out",
-    "myProfile": "My Profile",
+    "myProfile": "My Passport",
     "settings": "Settings",
     "subscription": "Subscription",
     "goPro": "Go Creator"

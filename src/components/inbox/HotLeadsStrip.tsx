@@ -203,7 +203,7 @@ export function HotLeadsStrip() {
                   <AvatarFallback>{(l.sender_name || "?").slice(0, 1)}</AvatarFallback>
                 </Avatar>
                 <button
-                  onClick={() => navigate(l.conversation_id ? `/messages?c=${l.conversation_id}` : `/messages?user=${l.sender_id}`)}
+                  onClick={() => openThread(l)}
                   className="flex-1 min-w-0 text-left"
                 >
                   <div className="flex items-center gap-2 mb-0.5">

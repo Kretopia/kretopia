@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
-import { Upload, FileText, Loader2, CheckCircle2, X } from "lucide-react";
+import { Upload, FileText, Loader2, CheckCircle2, X, Link2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +24,8 @@ interface IngestSummary {
   runOfShow: number;
   suppliers: number;
   talent: number;
+  facts: number;
+  entities: number;
 }
 
 const offsetToISODate = (offset: number | null | undefined): string | null => {
@@ -32,14 +35,14 @@ const offsetToISODate = (offset: number | null | undefined): string | null => {
   return d.toISOString().slice(0, 10);
 };
 
+const TEXT_EXTS = /\.(pdf|txt|md|markdown|csv)$/i;
+
 /**
- * Top-of-studio drop target. Drop any plan/PDF/text doc — we extract, elevate
- * via `elevate-brief`, and spread the output across:
- *   • projects.description (the brief)
- *   • project_tasks
- *   • project_deliverables
- *   • project_run_of_show / event_suppliers / event_talent (event studios)
- *   • project_notes (full elevated brief preserved)
+ * Studio drop zone — the unified entry point. Drop anything (plan, contract,
+ * budget, sponsor deck, voice note, photos, paste a link) and we route it
+ * through `studio-ingest` so it lands in the Studio Brain as reusable facts
+ * and entities. Text-shaped documents (PDF/MD/CSV/TXT) are also elevated
+ * via `elevate-brief` to populate tasks, deliverables, run-of-show etc.
  */
 export const BriefDropZone = ({
   projectId,
@@ -53,10 +56,34 @@ export const BriefDropZone = ({
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<IngestSummary | null>(null);
+  const [linkValue, setLinkValue] = useState("");
+  const [showLink, setShowLink] = useState(false);
 
   if (!isOwner) return null;
 
-  const ingest = async (file: File | null) => {
+  const sourceKindFor = (file: File): string => {
+    const n = file.name.toLowerCase();
+    const t = file.type.toLowerCase();
+    if (t.startsWith("image/")) return "image";
+    if (t.startsWith("audio/") || /\.(m4a|mp3|wav|webm|ogg)$/.test(n)) return "voice";
+    if (n.endsWith(".pdf") || t === "application/pdf") return "pdf";
+    if (n.endsWith(".eml") || n.endsWith(".msg")) return "email";
+    if (/budget|invoice|quote/.test(n)) return "budget";
+    if (/contract|agreement|nda|sow/.test(n)) return "contract";
+    if (/deck|pitch|sponsor|proposal/.test(n)) return "deck";
+    return "brief";
+  };
+
+  const callIngest = async (payload: Record<string, unknown>) => {
+    const { data, error: invErr } = await supabase.functions.invoke("studio-ingest", {
+      body: { project_id: projectId, project_title: projectTitle, ...payload },
+    });
+    if (invErr) throw invErr;
+    if (data?.error) throw new Error(String(data.error));
+    return data ?? { facts: 0, entities: 0 };
+  };
+
+  const ingestFile = async (file: File | null) => {
     if (!file) return;
     setError(null);
     setSummary(null);
@@ -64,184 +91,172 @@ export const BriefDropZone = ({
     try {
       if (file.size > 25 * 1024 * 1024) throw new Error("File too large (max 25 MB)");
 
-      // 1. Extract text client-side
-      const extracted = await extractTextFromFile(file);
-      if (!extracted.text.trim()) {
-        throw new Error("No readable text found. If it's a scanned PDF, paste the text instead.");
+      const isTextDoc = TEXT_EXTS.test(file.name) || file.type === "application/pdf" || file.type.startsWith("text/");
+      const source_kind = sourceKindFor(file);
+
+      let elevated: any = null;
+      let extractedText = "";
+
+      if (isTextDoc) {
+        const extracted = await extractTextFromFile(file);
+        extractedText = extracted.text.trim();
+        if (!extractedText) {
+          throw new Error("No readable text found. If it's a scanned PDF, paste the text instead.");
+        }
+
+        // Brief-elevation path for plan-like documents only
+        if (source_kind === "brief" || source_kind === "pdf") {
+          const { data, error: elevateErr } = await supabase.functions.invoke("elevate-brief", {
+            body: {
+              source: "text",
+              text: `[Uploaded — ${file.name}]\n\n${extractedText}`,
+              project_title: projectTitle,
+            },
+          });
+          if (!elevateErr && data?.elevated_brief) elevated = data;
+        }
+      } else {
+        // For images, voice, etc, we let studio-ingest handle classification
+        // via its source_kind hint. Future phases will upload + vision-extract.
+        extractedText = `[${source_kind} drop — ${file.name}]`;
       }
 
-      // 2. Elevate via edge function
-      const { data, error: elevateErr } = await supabase.functions.invoke("elevate-brief", {
-        body: {
-          source: "text",
-          text: `[Uploaded plan — ${file.name}]\n\n${extracted.text}`,
-          project_title: projectTitle,
-        },
+      // 1. Brief elevation side-effects (tasks / deliverables / run-of-show)
+      let elevatedCounts = { tasks: 0, deliverables: 0, runOfShow: 0, suppliers: 0, talent: 0, brief: "" as string | undefined };
+      if (elevated?.elevated_brief) {
+        const brief = elevated.elevated_brief;
+        const deliverables: any[] = elevated.deliverables ?? [];
+        const tasks: any[] = elevated.tasks ?? [];
+        const runOfShow: any[] = Array.isArray(elevated.run_of_show) ? elevated.run_of_show : [];
+        const suppliers: any[] = Array.isArray(elevated.suppliers) ? elevated.suppliers : [];
+        const talent: any[] = Array.isArray(elevated.talent) ? elevated.talent : [];
+        const { data: userRes } = await supabase.auth.getUser();
+        const me = userRes?.user?.id;
+        if (me) {
+          const briefText = [brief.summary, "", `Audience: ${brief.audience}`, `Tone: ${brief.tone}`].filter(Boolean).join("\n");
+          await supabase.from("projects").update({ description: briefText.slice(0, 4000) }).eq("id", projectId);
+
+          if (tasks.length) {
+            const rows = tasks.filter((t) => t.title?.trim()).map((t) => ({
+              project_id: projectId,
+              title: t.title.trim().slice(0, 200),
+              description: t.description ?? null,
+              status: "todo",
+              priority: t.priority ?? "normal",
+              assigned_to: t.suggested_assignee_id || null,
+              created_by: me,
+              due_date: offsetToISODate(t.due_offset_days)
+                ? new Date(offsetToISODate(t.due_offset_days)!).toISOString()
+                : null,
+              labels: ["smart-brief"],
+            }));
+            if (rows.length) await supabase.from("project_tasks").insert(rows as never).then(() => {}, () => {});
+          }
+          if (deliverables.length) {
+            const rows = deliverables.filter((d) => d.title?.trim()).map((d, i) => ({
+              project_id: projectId,
+              title: d.title.trim().slice(0, 200),
+              description: d.description ?? null,
+              status: "pending",
+              version: 1,
+              source: "ai-elevated",
+              kind: d.kind ?? "other",
+              sort_order: i,
+              due_date: offsetToISODate(d.due_offset_days),
+              submitted_by: me,
+              assignee_id: d.suggested_assignee_id || null,
+              moodboard: [] as never,
+            }));
+            if (rows.length) await supabase.from("project_deliverables").insert(rows as never).then(() => {}, () => {});
+          }
+          if (runOfShow.length) {
+            const rows = runOfShow.filter((r) => r.segment_title?.trim()).map((r, i) => ({
+              project_id: projectId,
+              created_by: me,
+              segment_title: r.segment_title.trim().slice(0, 200),
+              time_slot: r.time && /^\d{1,2}:\d{2}$/.test(r.time) ? `${r.time}:00` : null,
+              duration_min: r.duration_min ?? null,
+              notes: r.notes ?? null,
+              position: i,
+            }));
+            if (rows.length) await supabase.from("project_run_of_show").insert(rows as never).then(() => {}, () => {});
+          }
+          if (suppliers.length) {
+            const rows = suppliers.filter((s) => s.name?.trim()).map((s) => ({
+              project_id: projectId,
+              created_by: me,
+              category: s.category || "other",
+              name: s.name.trim().slice(0, 200),
+              notes: s.notes ?? null,
+              status: "lead",
+            }));
+            if (rows.length) await supabase.from("event_suppliers").insert(rows as never).then(() => {}, () => {});
+          }
+          if (talent.length) {
+            const rows = talent.filter((t) => t.name?.trim()).map((t) => ({
+              project_id: projectId,
+              created_by: me,
+              role: t.role || "performer",
+              name: t.name.trim().slice(0, 200),
+              notes: t.notes ?? null,
+              status: "invited",
+            }));
+            if (rows.length) await supabase.from("event_talent").insert(rows as never).then(() => {}, () => {});
+          }
+          await supabase.from("project_notes").insert({
+            project_id: projectId,
+            created_by: me,
+            title: `Brief: ${brief.title}`,
+            content: [
+              `**Summary**\n${brief.summary}`,
+              `**Audience**\n${brief.audience}`,
+              `**Tone**\n${brief.tone}`,
+              brief.objectives?.length ? `**Objectives**\n${brief.objectives.map((o: string) => `• ${o}`).join("\n")}` : "",
+              brief.success_criteria?.length ? `**Success criteria**\n${brief.success_criteria.map((s: string) => `• ${s}`).join("\n")}` : "",
+              brief.research_notes?.length ? `**Research notes**\n${brief.research_notes.map((r: string) => `• ${r}`).join("\n")}` : "",
+            ].filter(Boolean).join("\n\n"),
+          } as never).then(() => {}, () => {});
+
+          elevatedCounts = {
+            tasks: tasks.length,
+            deliverables: deliverables.length,
+            runOfShow: runOfShow.length,
+            suppliers: suppliers.length,
+            talent: talent.length,
+            brief: brief.title,
+          };
+        }
+      }
+
+      // 2. Studio Brain — record facts + entities (always)
+      const brainRes = await callIngest({
+        source_kind,
+        text: extractedText,
+        file_name: file.name,
+        hint: elevated?.elevated_brief?.title,
+      }).catch((err) => {
+        console.error("studio-ingest failed", err);
+        return { facts: 0, entities: 0 };
       });
-      if (elevateErr) throw elevateErr;
-      if (!data?.elevated_brief) throw new Error("Couldn't read this plan — try a different file");
-
-      const brief = data.elevated_brief as {
-        title: string;
-        summary: string;
-        objectives: string[];
-        audience: string;
-        tone: string;
-        success_criteria: string[];
-        research_notes: string[];
-      };
-      const deliverables: any[] = data.deliverables ?? [];
-      const tasks: any[] = data.tasks ?? [];
-      const runOfShow: any[] = Array.isArray(data.run_of_show) ? data.run_of_show : [];
-      const suppliers: any[] = Array.isArray(data.suppliers) ? data.suppliers : [];
-      const talent: any[] = Array.isArray(data.talent) ? data.talent : [];
-
-      const { data: userRes } = await supabase.auth.getUser();
-      const me = userRes?.user?.id;
-      if (!me) throw new Error("Not signed in");
-
-      // 3. Set the project description (the brief itself)
-      const briefText = [brief.summary, "", `Audience: ${brief.audience}`, `Tone: ${brief.tone}`]
-        .filter(Boolean)
-        .join("\n");
-      await supabase
-        .from("projects")
-        .update({ description: briefText.slice(0, 4000) })
-        .eq("id", projectId);
-
-      // 4. Tasks
-      if (tasks.length) {
-        const rows = tasks
-          .filter((t) => t.title?.trim())
-          .map((t) => ({
-            project_id: projectId,
-            title: t.title.trim().slice(0, 200),
-            description: t.description ?? null,
-            status: "todo",
-            priority: t.priority ?? "normal",
-            assigned_to: t.suggested_assignee_id || null,
-            created_by: me,
-            due_date: offsetToISODate(t.due_offset_days)
-              ? new Date(offsetToISODate(t.due_offset_days)!).toISOString()
-              : null,
-            labels: ["smart-brief"],
-          }));
-        if (rows.length) {
-          await supabase.from("project_tasks").insert(rows as never).then(() => {}, () => {});
-        }
-      }
-
-      // 5. Deliverables
-      if (deliverables.length) {
-        const rows = deliverables
-          .filter((d) => d.title?.trim())
-          .map((d, i) => ({
-            project_id: projectId,
-            title: d.title.trim().slice(0, 200),
-            description: d.description ?? null,
-            status: "pending",
-            version: 1,
-            source: "ai-elevated",
-            kind: d.kind ?? "other",
-            sort_order: i,
-            due_date: offsetToISODate(d.due_offset_days),
-            submitted_by: me,
-            assignee_id: d.suggested_assignee_id || null,
-            moodboard: [] as never,
-          }));
-        if (rows.length) {
-          await supabase.from("project_deliverables").insert(rows as never).then(() => {}, () => {});
-        }
-      }
-
-      // 6. Run of show
-      if (runOfShow.length) {
-        const rows = runOfShow
-          .filter((r) => r.segment_title?.trim())
-          .map((r, i) => ({
-            project_id: projectId,
-            created_by: me,
-            segment_title: r.segment_title.trim().slice(0, 200),
-            time_slot: r.time && /^\d{1,2}:\d{2}$/.test(r.time) ? `${r.time}:00` : null,
-            duration_min: r.duration_min ?? null,
-            notes: r.notes ?? null,
-            position: i,
-          }));
-        if (rows.length) {
-          await supabase.from("project_run_of_show").insert(rows as never).then(() => {}, () => {});
-        }
-      }
-
-      // 7. Suppliers
-      if (suppliers.length) {
-        const rows = suppliers
-          .filter((s) => s.name?.trim())
-          .map((s) => ({
-            project_id: projectId,
-            created_by: me,
-            category: s.category || "other",
-            name: s.name.trim().slice(0, 200),
-            notes: s.notes ?? null,
-            status: "lead",
-          }));
-        if (rows.length) {
-          await supabase.from("event_suppliers").insert(rows as never).then(() => {}, () => {});
-        }
-      }
-
-      // 8. Talent
-      if (talent.length) {
-        const rows = talent
-          .filter((t) => t.name?.trim())
-          .map((t) => ({
-            project_id: projectId,
-            created_by: me,
-            role: t.role || "performer",
-            name: t.name.trim().slice(0, 200),
-            notes: t.notes ?? null,
-            status: "invited",
-          }));
-        if (rows.length) {
-          await supabase.from("event_talent").insert(rows as never).then(() => {}, () => {});
-        }
-      }
-
-      // 9. Save the full elevated brief as a note for reference
-      await supabase
-        .from("project_notes")
-        .insert({
-          project_id: projectId,
-          created_by: me,
-          title: `Brief: ${brief.title}`,
-          content: [
-            `**Summary**\n${brief.summary}`,
-            `**Audience**\n${brief.audience}`,
-            `**Tone**\n${brief.tone}`,
-            brief.objectives?.length ? `**Objectives**\n${brief.objectives.map((o) => `• ${o}`).join("\n")}` : "",
-            brief.success_criteria?.length ? `**Success criteria**\n${brief.success_criteria.map((s) => `• ${s}`).join("\n")}` : "",
-            brief.research_notes?.length ? `**Research notes**\n${brief.research_notes.map((r) => `• ${r}`).join("\n")}` : "",
-          ]
-            .filter(Boolean)
-            .join("\n\n"),
-        } as never)
-        .then(() => {}, () => {});
 
       setSummary({
         fileName: file.name,
-        brief: brief.title,
-        tasks: tasks.length,
-        deliverables: deliverables.length,
-        runOfShow: runOfShow.length,
-        suppliers: suppliers.length,
-        talent: talent.length,
+        brief: elevatedCounts.brief,
+        tasks: elevatedCounts.tasks,
+        deliverables: elevatedCounts.deliverables,
+        runOfShow: elevatedCounts.runOfShow,
+        suppliers: elevatedCounts.suppliers,
+        talent: elevatedCounts.talent,
+        facts: brainRes.facts ?? 0,
+        entities: brainRes.entities ?? 0,
       });
       toast({
-        title: "Studio populated",
-        description: `${tasks.length} tasks · ${deliverables.length} deliverables · ${runOfShow.length} run of show`,
+        title: "Studio Brain updated",
+        description: `${brainRes.facts ?? 0} facts · ${brainRes.entities ?? 0} entities remembered`,
       });
       onIngested();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Couldn't process file";
+      const msg = e instanceof Error ? e.message : "Couldn't process drop";
       setError(msg);
       toast({ title: "Drop failed", description: msg, variant: "destructive" });
     } finally {
@@ -249,21 +264,56 @@ export const BriefDropZone = ({
     }
   };
 
-  // Active processing state — show cinematic loader
+  const ingestLink = async () => {
+    const url = linkValue.trim();
+    if (!url) return;
+    setError(null);
+    setSummary(null);
+    setBusy(true);
+    try {
+      const brainRes = await callIngest({
+        source_kind: "link",
+        url,
+        text: `Link dropped into Studio: ${url}`,
+        hint: "Extract anything reusable from this URL's title/topic.",
+      });
+      setSummary({
+        fileName: url,
+        tasks: 0, deliverables: 0, runOfShow: 0, suppliers: 0, talent: 0,
+        facts: brainRes.facts ?? 0,
+        entities: brainRes.entities ?? 0,
+      });
+      setLinkValue("");
+      setShowLink(false);
+      toast({
+        title: "Link remembered",
+        description: `${brainRes.facts ?? 0} facts · ${brainRes.entities ?? 0} entities`,
+      });
+      onIngested();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Couldn't ingest link";
+      setError(msg);
+      toast({ title: "Link failed", description: msg, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (busy) {
     return (
       <div className="px-4 pt-5">
         <StudioComingAliveLoader />
         <p className="text-xs text-center text-muted-foreground mt-2">
-          Reading your plan and shaping the studio…
+          Reading and remembering for the Studio Brain…
         </p>
       </div>
     );
   }
 
-  // Success state — what landed where
   if (summary) {
     const rows = [
+      { n: summary.facts, label: "Facts", where: "Studio Brain" },
+      { n: summary.entities, label: "Entities", where: "Studio Brain" },
       { n: summary.tasks, label: "Tasks", where: "Studio feed" },
       { n: summary.deliverables, label: "Deliverables", where: "Vault" },
       { n: summary.runOfShow, label: "Run of show", where: "Event" },
@@ -283,8 +333,8 @@ export const BriefDropZone = ({
             <X className="h-3.5 w-3.5" />
           </button>
           <div className="flex items-center gap-2 mb-2">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
-            <h3 className="font-semibold text-sm">Here's what landed in your studio</h3>
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h3 className="font-semibold text-sm">Studio Brain remembered this</h3>
           </div>
           <p className="text-xs text-muted-foreground mb-3 truncate">
             From <span className="font-medium text-foreground">{summary.fileName}</span>
@@ -303,22 +353,31 @@ export const BriefDropZone = ({
               ))}
             </ul>
           ) : (
-            <p className="text-xs text-muted-foreground">Brief saved — no extras detected.</p>
+            <p className="text-xs text-muted-foreground">Saved — no new facts detected.</p>
           )}
-          <Button
-            size="sm"
-            variant="outline"
-            className="mt-3 h-8 text-xs gap-1.5 rounded-full"
-            onClick={() => inputRef.current?.click()}
-          >
-            <Upload className="h-3 w-3" /> Drop another
-          </Button>
+          <div className="flex items-center gap-2 mt-3">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs gap-1.5 rounded-full"
+              onClick={() => inputRef.current?.click()}
+            >
+              <Upload className="h-3 w-3" /> Drop another
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 text-xs gap-1.5 rounded-full"
+              onClick={() => setShowLink(true)}
+            >
+              <Link2 className="h-3 w-3" /> Paste link
+            </Button>
+          </div>
           <input
             ref={inputRef}
             type="file"
-            accept=".pdf,.txt,.md,.markdown,.csv,application/pdf,text/plain,text/markdown,text/csv"
             className="hidden"
-            onChange={(e) => ingest(e.target.files?.[0] ?? null)}
+            onChange={(e) => ingestFile(e.target.files?.[0] ?? null)}
           />
         </div>
       </div>
@@ -330,9 +389,8 @@ export const BriefDropZone = ({
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf,.txt,.md,.markdown,.csv,application/pdf,text/plain,text/markdown,text/csv"
         className="hidden"
-        onChange={(e) => ingest(e.target.files?.[0] ?? null)}
+        onChange={(e) => ingestFile(e.target.files?.[0] ?? null)}
       />
       <div
         role="button"
@@ -344,15 +402,12 @@ export const BriefDropZone = ({
             inputRef.current?.click();
           }
         }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => {
           e.preventDefault();
           setDragOver(false);
-          ingest(e.dataTransfer.files?.[0] ?? null);
+          ingestFile(e.dataTransfer.files?.[0] ?? null);
         }}
         className={cn(
           "group relative overflow-hidden rounded-2xl cursor-pointer transition-all",
@@ -369,25 +424,50 @@ export const BriefDropZone = ({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-base font-bold leading-tight">Drop a plan to start the studio</p>
+              <p className="text-base font-bold leading-tight">Feed the Studio Brain</p>
               <Badge
                 variant="secondary"
                 className="rounded-full text-[10px] font-bold uppercase tracking-wider bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))] border border-[hsl(var(--energy)/0.3)]"
               >
-                Auto-spreads
+                Remembers everything
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              PDF, doc, or notes from any AI — we'll fill the brief, tasks, deliverables, run of show,
-              suppliers & talent in one shot.
+              Drop a sponsor deck, contract, budget, venue PDF, photo, voice
+              note, or paste a link. Thrive remembers it so you never re-explain.
             </p>
             <div className="flex items-center gap-1.5 mt-2 text-[11px] text-muted-foreground">
               <FileText className="h-3 w-3" />
-              <span>PDF · .txt · .md · .csv · max 25 MB</span>
+              <span>PDF · doc · image · audio · link · max 25 MB</span>
             </div>
           </div>
         </div>
       </div>
+
+      <div className="mt-2 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowLink((v) => !v)}
+          className="text-[11px] font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+        >
+          <Link2 className="h-3 w-3" /> {showLink ? "Hide link" : "Paste a link instead"}
+        </button>
+      </div>
+      {showLink && (
+        <div className="mt-2 flex items-center gap-2">
+          <Input
+            value={linkValue}
+            onChange={(e) => setLinkValue(e.target.value)}
+            placeholder="https://… venue page, sponsor site, brief doc"
+            className="h-9 text-sm"
+            onKeyDown={(e) => { if (e.key === "Enter") ingestLink(); }}
+          />
+          <Button size="sm" onClick={ingestLink} disabled={!linkValue.trim()}>
+            Remember
+          </Button>
+        </div>
+      )}
+
       {error && (
         <div className="mt-2 text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-2.5 flex items-start gap-2">
           <Loader2 className="h-3.5 w-3.5 shrink-0 mt-0.5" />

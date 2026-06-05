@@ -545,7 +545,7 @@ const CreatorEPK = () => {
             </p>
             <Button 
               onClick={() => setShowClaimDialog(true)}
-              className="w-full gap-2 bg-scout text-[hsl(var(--accent-scout-foreground,225_44%_4%))] hover:opacity-90 border-0"
+              className="w-full gap-2 bg-scout hover:opacity-90 border-0"
             >
               <UserCheck className="h-4 w-4" />
               Claim This Profile

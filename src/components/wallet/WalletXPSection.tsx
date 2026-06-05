@@ -240,7 +240,7 @@ export function WalletXPSection() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-scout">
-              <Sparkles className="h-6 w-6 text-[hsl(var(--accent-scout-foreground,225_44%_4%))]" />
+              <Sparkles className="h-6 w-6" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Your Thrive Points</p>

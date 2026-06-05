@@ -389,6 +389,7 @@ export const StudioRoom = ({
           />
         )}
         {nextStep && <NextStepCard nextStep={nextStep} onAction={onNavigateToTab} />}
+        <SendInvoiceNudge project={project as any} />
         {project.workspace_type === "podcast" && (
           <PodcastStudioSection project={project} currentUserId={currentUserId} />
         )}

@@ -31,7 +31,7 @@ export function PassportMomentum() {
     let cancelled = false;
     const cutoff = since30d();
 
-    const stampsP = supabase
+    const stampsP = (supabase as any)
       .from("credits")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
@@ -39,7 +39,7 @@ export function PassportMomentum() {
       .gte("created_at", cutoff)
       .then((r: any) => r.count || 0, () => 0);
 
-    const cosignsP = supabase
+    const cosignsP = (supabase as any)
       .from("reviews")
       .select("id", { count: "exact", head: true })
       .eq("reviewee_id", user.id)

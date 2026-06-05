@@ -60,9 +60,8 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
 
       const invoicesPromise = (supabase as any)
         .from("invoices")
-        .select("total_amount, currency, status")
+        .select("total_amount, currency, status, paid_at")
         .eq("issued_by", user.id)
-        .in("status", ["pending", "sent", "overdue"])
         .then((r: any) => r, () => ({ data: [] }));
 
       const [tasksRes, invoicesRes] = await Promise.all([tasksPromise, invoicesPromise]);
@@ -70,15 +69,21 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
       if (cancelled) return;
 
       const tasks = (tasksRes as any).data || [];
-      const invoices = (invoicesRes as any).data || [];
+      const allInvoices = (invoicesRes as any).data || [];
+      const pending = allInvoices.filter((i: any) => ["pending", "sent", "overdue"].includes(i.status));
+      const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const weekEarned = allInvoices
+        .filter((i: any) => i.status === "paid" && i.paid_at && new Date(i.paid_at).getTime() >= weekAgo)
+        .reduce((s: number, i: any) => s + (Number(i.total_amount) || 0), 0);
 
       setStats({
         dueToday: tasks.filter((t: any) => t.due_date === today).length,
         overdue: tasks.filter((t: any) => t.due_date < today).length,
-        unreadMessages: 0, // best-effort placeholder — wire when feed available
-        pendingInvoices: invoices.length,
-        pendingAmount: invoices.reduce((s: number, i: any) => s + (Number(i.total_amount) || 0), 0),
+        unreadMessages: 0,
+        pendingInvoices: pending.length,
+        pendingAmount: pending.reduce((s: number, i: any) => s + (Number(i.total_amount) || 0), 0),
         upcomingCalls: 0,
+        weekEarned,
       });
     };
 

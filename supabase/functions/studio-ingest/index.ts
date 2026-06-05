@@ -12,7 +12,10 @@
 //     project_id: string,
 //     source_kind: "pdf"|"image"|"voice"|"email"|"link"|"deck"|"contract"|
 //                  "budget"|"brief"|"message"|"manual",
-//     text?: string,             // pre-extracted text (preferred)
+//     text?: string,             // pre-extracted text (preferred when available)
+//     image_base64?: string,     // raw base64 (no data: prefix) for vision extract
+//     image_mime?: string,       // e.g. "image/jpeg" (default image/jpeg)
+//     image_url?: string,        // remote image url for vision extract
 //     file_name?: string,
 //     file_id?: string,          // project_files.id when applicable
 //     url?: string,              // source URL when this is a link/asset
@@ -167,8 +170,14 @@ Deno.serve(async (req) => {
     const url: string | null = body.url ? String(body.url).slice(0, 2000) : null;
     const project_title: string = String(body.project_title ?? "this project").slice(0, 200);
 
-    if (!text && !url) {
-      return json({ error: "text or url required" }, 400);
+    // Phase D — vision inputs (for non-text drops: images, scanned PDFs, screenshots)
+    const image_base64: string | null = body.image_base64 ? String(body.image_base64) : null;
+    const image_mime: string = String(body.image_mime ?? "image/jpeg").toLowerCase();
+    const image_url: string | null = body.image_url ? String(body.image_url) : null;
+    const hasVision = !!(image_base64 || image_url);
+
+    if (!text && !url && !hasVision) {
+      return json({ error: "text, url, or image required" }, 400);
     }
 
     // Membership check (owner or collaborator)
@@ -192,11 +201,15 @@ Deno.serve(async (req) => {
     if (!isMember) return json({ error: "Forbidden" }, 403);
 
     // -------- Ask the model to structure the drop --------
+    const visionHint = hasVision
+      ? " The source includes an IMAGE/SCAN — read every visible value: numbers, dates, names, line items, totals, headers, signatures, logos, addresses, contact info."
+      : "";
     const systemPrompt =
       "You are the Studio Brain for an Executive Producer working on " +
       `"${project_title}". A creative just dropped a piece of source material ` +
-      `(${source_kind}${file_name ? ` — ${file_name}` : ""}${hint ? `; hint: ${hint}` : ""}). ` +
-      "Extract ONLY the things that will be reusable later: budgets, dates, " +
+      `(${source_kind}${file_name ? ` — ${file_name}` : ""}${hint ? `; hint: ${hint}` : ""}).` +
+      visionHint +
+      " Extract ONLY the things that will be reusable later: budgets, dates, " +
       "venues, sponsors, contacts, deliverables, brand guidance, payment terms, " +
       "key messages. Be concise. Never invent. If something isn't in the source, " +
       "don't return it.";
@@ -204,6 +217,20 @@ Deno.serve(async (req) => {
     const userContent: any[] = [];
     if (text) userContent.push({ type: "text", text });
     if (url) userContent.push({ type: "text", text: `Source URL: ${url}` });
+    if (image_base64) {
+      userContent.push({
+        type: "image_url",
+        image_url: { url: `data:${image_mime};base64,${image_base64}` },
+      });
+    } else if (image_url) {
+      userContent.push({ type: "image_url", image_url: { url: image_url } });
+    }
+    if (!userContent.length) {
+      userContent.push({ type: "text", text: `Extract anything reusable for ${project_title}.` });
+    }
+
+    // Vision needs Pro for reliable extraction; text-only stays on flash for speed/cost
+    const model = hasVision ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
 
     const aiResp = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -214,7 +241,7 @@ Deno.serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model,
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userContent },

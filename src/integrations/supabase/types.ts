@@ -783,6 +783,71 @@ export type Database = {
           },
         ]
       }
+      brand_vaults: {
+        Row: {
+          attrs: Json
+          created_at: string
+          do_dont: Json
+          fonts: Json
+          id: string
+          is_default: boolean
+          links: Json
+          logo_dark_url: string | null
+          logo_url: string | null
+          name: string
+          palette: Json
+          project_id: string | null
+          tagline: string | null
+          updated_at: string
+          user_id: string
+          voice_tone: string | null
+        }
+        Insert: {
+          attrs?: Json
+          created_at?: string
+          do_dont?: Json
+          fonts?: Json
+          id?: string
+          is_default?: boolean
+          links?: Json
+          logo_dark_url?: string | null
+          logo_url?: string | null
+          name: string
+          palette?: Json
+          project_id?: string | null
+          tagline?: string | null
+          updated_at?: string
+          user_id: string
+          voice_tone?: string | null
+        }
+        Update: {
+          attrs?: Json
+          created_at?: string
+          do_dont?: Json
+          fonts?: Json
+          id?: string
+          is_default?: boolean
+          links?: Json
+          logo_dark_url?: string | null
+          logo_url?: string | null
+          name?: string
+          palette?: Json
+          project_id?: string | null
+          tagline?: string | null
+          updated_at?: string
+          user_id?: string
+          voice_tone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_vaults_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bulk_email_usage: {
         Row: {
           id: string

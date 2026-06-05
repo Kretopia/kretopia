@@ -12,6 +12,7 @@ import { DeckRenderer, type DeckContent } from "@/components/thrive/DeckRenderer
 import { DECK_THEMES, type DeckTheme } from "@/lib/deckThemes";
 import { exportDeckToPDF } from "@/lib/deckExport";
 import { SEO } from "@/components/SEO";
+import { BrandVaultChip } from "@/components/brand-vault/BrandVaultChip";
 
 type Intent =
   | "sponsor_deck" | "pitch_deck" | "business_plan" | "client_proposal"
@@ -173,6 +174,12 @@ export default function ThriveGenerate() {
             <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">
               Thrive pulls your Passport, recent credits and memory automatically. Mention only what's new.
             </p>
+            {projectId && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Brand</span>
+                <BrandVaultChip projectId={projectId} />
+              </div>
+            )}
           </Card>
 
           {doc && (

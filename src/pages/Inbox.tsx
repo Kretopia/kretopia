@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { SEO } from "@/components/SEO";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
+import { HotLeadsStrip } from "@/components/inbox/HotLeadsStrip";
 import { useNotifications } from "@/hooks/useNotifications";
 import { usePendingAgentActions } from "@/hooks/usePendingAgentActions";
 import { Badge } from "@/components/ui/badge";

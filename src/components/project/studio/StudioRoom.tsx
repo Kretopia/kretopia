@@ -229,15 +229,17 @@ export const StudioRoom = ({
       {isOwner && (
         <StudioOutcomeComposer projectId={project.id} projectTitle={project.title ?? "this project"} />
       )}
-      {/* Brand chip — shows the active Brand Vault that Thrive will use */}
+      {/* Brand + Brain — what Thrive knows and how it'll style every output */}
       {isOwner && (
-        <div className="px-4 pt-2 flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Brand</span>
+        <div className="px-4 pt-2 flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Thrive uses</span>
           <BrandVaultChip projectId={project.id} />
+          <StudioBrainPanel projectId={project.id} isOwner={isOwner} />
         </div>
       )}
     </>
   );
+
 
   const briefBlock = (
     <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />

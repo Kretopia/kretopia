@@ -176,9 +176,15 @@ Deno.serve(async (req) => {
     const image_url: string | null = body.image_url ? String(body.image_url) : null;
     const hasVision = !!(image_base64 || image_url);
 
-    if (!text && !url && !hasVision) {
-      return json({ error: "text, url, or image required" }, 400);
+    // Phase D+ — audio inputs (voice notes dropped into the Studio).
+    const audio_base64: string | null = body.audio_base64 ? String(body.audio_base64) : null;
+    const audio_mime: string = String(body.audio_mime ?? "audio/webm").toLowerCase();
+    const hasAudio = !!audio_base64;
+
+    if (!text && !url && !hasVision && !hasAudio) {
+      return json({ error: "text, url, image, or audio required" }, 400);
     }
+
 
     // Membership check (owner or collaborator)
     const { data: project } = await admin

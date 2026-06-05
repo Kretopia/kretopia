@@ -83,6 +83,47 @@ export const BriefDropZone = ({
     return data ?? { facts: 0, entities: 0 };
   };
 
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const result = String(r.result || "");
+        const idx = result.indexOf(",");
+        resolve(idx >= 0 ? result.slice(idx + 1) : result);
+      };
+      r.onerror = () => reject(r.error || new Error("read failed"));
+      r.readAsDataURL(file);
+    });
+
+  // Compress an image to <= ~1280px on the longest side, JPEG, to keep payload small.
+  const compressImage = async (file: File): Promise<{ base64: string; mime: string }> => {
+    if (file.size <= 900 * 1024 && file.type === "image/jpeg") {
+      return { base64: await fileToBase64(file), mime: "image/jpeg" };
+    }
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = reject;
+        i.src = url;
+      });
+      const maxSide = 1280;
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      return { base64: dataUrl.split(",")[1] ?? "", mime: "image/jpeg" };
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const ingestFile = async (file: File | null) => {
     if (!file) return;
     setError(null);
@@ -91,17 +132,33 @@ export const BriefDropZone = ({
     try {
       if (file.size > 25 * 1024 * 1024) throw new Error("File too large (max 25 MB)");
 
+      const isImage = file.type.startsWith("image/");
       const isTextDoc = TEXT_EXTS.test(file.name) || file.type === "application/pdf" || file.type.startsWith("text/");
       const source_kind = sourceKindFor(file);
 
       let elevated: any = null;
       let extractedText = "";
+      let visionPayload: { image_base64?: string; image_mime?: string } = {};
 
-      if (isTextDoc) {
-        const extracted = await extractTextFromFile(file);
-        extractedText = extracted.text.trim();
+      if (isImage) {
+        // Phase D — route images through vision extraction
+        const { base64, mime } = await compressImage(file);
+        visionPayload = { image_base64: base64, image_mime: mime };
+        extractedText = "";
+      } else if (isTextDoc) {
+        try {
+          const extracted = await extractTextFromFile(file);
+          extractedText = extracted.text.trim();
+        } catch {
+          extractedText = "";
+        }
+
+        // Scanned PDF fallback — if no text but it's a PDF, send the first page as image
+        if (!extractedText && file.type === "application/pdf") {
+          throw new Error("No readable text found in this PDF. Try exporting text from your reader, or drop a screenshot instead.");
+        }
         if (!extractedText) {
-          throw new Error("No readable text found. If it's a scanned PDF, paste the text instead.");
+          throw new Error("No readable text found.");
         }
 
         // Brief-elevation path for plan-like documents only
@@ -116,8 +173,7 @@ export const BriefDropZone = ({
           if (!elevateErr && data?.elevated_brief) elevated = data;
         }
       } else {
-        // For images, voice, etc, we let studio-ingest handle classification
-        // via its source_kind hint. Future phases will upload + vision-extract.
+        // voice / other — let downstream handle classification; pass a hint string
         extractedText = `[${source_kind} drop — ${file.name}]`;
       }
 
@@ -231,9 +287,10 @@ export const BriefDropZone = ({
       // 2. Studio Brain — record facts + entities (always)
       const brainRes = await callIngest({
         source_kind,
-        text: extractedText,
+        text: extractedText || undefined,
         file_name: file.name,
         hint: elevated?.elevated_brief?.title,
+        ...visionPayload,
       }).catch((err) => {
         console.error("studio-ingest failed", err);
         return { facts: 0, entities: 0 };

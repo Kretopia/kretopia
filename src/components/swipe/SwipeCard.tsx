@@ -170,12 +170,15 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
               </p>
             )}
 
-            {/* Collab Intent - Pill style tags */}
-            {profile.collab_intent && (
-              <span className="inline-flex px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-white/90 text-xs font-medium border border-white/10">
-                {COLLAB_INTENT_LABELS[profile.collab_intent] || profile.collab_intent}
-              </span>
-            )}
+            {/* Collab Intent + SLA badge */}
+            <div className="flex flex-wrap items-center gap-2">
+              {profile.collab_intent && (
+                <span className="inline-flex px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-white/90 text-xs font-medium border border-white/10">
+                  {COLLAB_INTENT_LABELS[profile.collab_intent] || profile.collab_intent}
+                </span>
+              )}
+              <ReplySLABadge userId={profile.user_id} />
+            </div>
 
             {/* Portfolio Count */}
             {profile.portfolio_count && profile.portfolio_count > 0 && (

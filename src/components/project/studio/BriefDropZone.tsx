@@ -133,17 +133,25 @@ export const BriefDropZone = ({
       if (file.size > 25 * 1024 * 1024) throw new Error("File too large (max 25 MB)");
 
       const isImage = file.type.startsWith("image/");
+      const isAudio = file.type.startsWith("audio/") || /\.(m4a|mp3|wav|webm|ogg)$/i.test(file.name);
       const isTextDoc = TEXT_EXTS.test(file.name) || file.type === "application/pdf" || file.type.startsWith("text/");
       const source_kind = sourceKindFor(file);
 
       let elevated: any = null;
       let extractedText = "";
       let visionPayload: { image_base64?: string; image_mime?: string } = {};
+      let audioPayload: { audio_base64?: string; audio_mime?: string } = {};
 
       if (isImage) {
         // Phase D — route images through vision extraction
         const { base64, mime } = await compressImage(file);
         visionPayload = { image_base64: base64, image_mime: mime };
+        extractedText = "";
+      } else if (isAudio) {
+        // Phase D+ — voice notes go straight to Gemini audio
+        if (file.size > 15 * 1024 * 1024) throw new Error("Audio too large (max 15 MB)");
+        const base64 = await fileToBase64(file);
+        audioPayload = { audio_base64: base64, audio_mime: file.type || "audio/webm" };
         extractedText = "";
       } else if (isTextDoc) {
         try {
@@ -173,9 +181,10 @@ export const BriefDropZone = ({
           if (!elevateErr && data?.elevated_brief) elevated = data;
         }
       } else {
-        // voice / other — let downstream handle classification; pass a hint string
+        // other — let downstream handle classification; pass a hint string
         extractedText = `[${source_kind} drop — ${file.name}]`;
       }
+
 
       // 1. Brief elevation side-effects (tasks / deliverables / run-of-show)
       let elevatedCounts = { tasks: 0, deliverables: 0, runOfShow: 0, suppliers: 0, talent: 0, brief: "" as string | undefined };

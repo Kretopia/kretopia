@@ -179,6 +179,7 @@ export const SwipeCard = forwardRef<HTMLDivElement, SwipeCardProps>(
                 </span>
               )}
               <ReplySLABadge userId={profile.user_id} />
+              <BookedThisMonthChip userId={profile.user_id} />
             </div>
 
             {/* Portfolio Count */}

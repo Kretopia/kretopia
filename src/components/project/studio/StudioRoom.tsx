@@ -211,16 +211,19 @@ export const StudioRoom = ({
     "event-recap": "Post-event recap",
   };
 
+  // Studio Brain entry point — lives at the very top of the room so every
+  // drop (file/link/voice) goes through the unified `studio-ingest` router.
+  const dropZone = (
+    <BriefDropZone
+      projectId={project.id}
+      projectTitle={project.title ?? "this project"}
+      isOwner={isOwner}
+      onIngested={onUpdated}
+    />
+  );
+
   const briefBlock = (
-    <>
-      <BriefDropZone
-        projectId={project.id}
-        projectTitle={project.title ?? "this project"}
-        isOwner={isOwner}
-        onIngested={onUpdated}
-      />
-      <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
-    </>
+    <BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />
   );
 
   const mobileWorkColumn = (includeBrief: boolean) => (

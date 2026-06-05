@@ -39,7 +39,7 @@ export function PassportMomentum({ userId }: PassportMomentumProps = {}) {
     const stampsP = (supabase as any)
       .from("credits")
       .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
+      .eq("user_id", targetId)
       .eq("verification_status", "verified")
       .gte("created_at", cutoff)
       .then((r: any) => r.count || 0, () => 0);
@@ -47,7 +47,7 @@ export function PassportMomentum({ userId }: PassportMomentumProps = {}) {
     const cosignsP = (supabase as any)
       .from("reviews")
       .select("id", { count: "exact", head: true })
-      .eq("reviewee_id", user.id)
+      .eq("reviewee_id", targetId)
       .eq("status", "approved")
       .gte("created_at", cutoff)
       .then((r: any) => r.count || 0, () => 0);
@@ -55,7 +55,7 @@ export function PassportMomentum({ userId }: PassportMomentumProps = {}) {
     const connectionsP = (supabase as any)
       .from("connections")
       .select("id", { count: "exact", head: true })
-      .or(`user_id.eq.${user.id},connected_user_id.eq.${user.id}`)
+      .or(`user_id.eq.${targetId},connected_user_id.eq.${targetId}`)
       .eq("status", "accepted")
       .gte("created_at", cutoff)
       .then((r: any) => r.count || 0, () => 0);
@@ -63,7 +63,7 @@ export function PassportMomentum({ userId }: PassportMomentumProps = {}) {
     const messagesP = (supabase as any)
       .from("messages")
       .select("id", { count: "exact", head: true })
-      .eq("recipient_id", user.id)
+      .eq("recipient_id", targetId)
       .gte("created_at", cutoff)
       .then((r: any) => r.count || 0, () => 0);
 
@@ -75,7 +75,7 @@ export function PassportMomentum({ userId }: PassportMomentumProps = {}) {
       .catch(() => {});
 
     return () => { cancelled = true; };
-  }, [user]);
+  }, [targetId]);
 
   if (!m) return null;
   const total = m.stamps + m.cosigns + m.connections + m.messages;

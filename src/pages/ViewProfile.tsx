@@ -60,6 +60,8 @@ import { ViewProfileTabs } from "@/components/profile/ViewProfileTabs";
 import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
 import { HireMeTrustBar } from "@/components/passport/HireMeTrustBar";
 import { PassportMomentum } from "@/components/passport/PassportMomentum";
+import { BookedThisMonthChip } from "@/components/passport/BookedThisMonthChip";
+import { ReplySLABadge } from "@/components/passport/ReplySLABadge";
 
 interface Profile {
   user_id: string;

@@ -182,11 +182,14 @@ serve(async (req) => {
     }
 
     // Pull Passport context in parallel
-    const [profileRes, creditsRes, memoryRes, projectRes] = await Promise.all([
+    const [profileRes, creditsRes, memoryRes, projectRes, factsRes, entitiesRes] = await Promise.all([
       admin.from("profiles").select("display_name, username, headline, bio, location, professional_role").eq("user_id", user.id).maybeSingle(),
       admin.from("credits").select("project_name, role, year, project_type, thumbnail_url").eq("user_id", user.id).order("year", { ascending: false }).limit(10),
       admin.from("thrive_memory").select("kind, mem_key, content").eq("user_id", user.id).limit(40),
       project_id ? admin.from("projects").select("title, description, workspace_type, deadline").eq("id", project_id).maybeSingle() : Promise.resolve({ data: null }),
+      // STUDIO BRAIN — facts extracted from anything dropped into this Studio
+      project_id ? admin.from("studio_facts").select("kind, label, value, value_numeric, value_date, importance, source_kind").eq("project_id", project_id).order("importance", { ascending: false }).limit(60) : Promise.resolve({ data: [] }),
+      project_id ? admin.from("studio_entities").select("kind, name, aliases, attrs, importance").eq("project_id", project_id).order("importance", { ascending: false }).limit(40) : Promise.resolve({ data: [] }),
     ]);
 
     const ctx = {
@@ -196,6 +199,12 @@ serve(async (req) => {
       recent_credits: creditsRes.data || [],
       memory: memoryRes.data || [],
       studio: projectRes.data || null,
+      // The Studio Brain — pre-extracted, reusable project memory.
+      // EP should rely on these instead of asking the user to re-explain.
+      studio_brain: {
+        facts: factsRes.data || [],
+        entities: entitiesRes.data || [],
+      },
     };
 
     const doc = await generate(intent, ctx, LOVABLE_API_KEY);

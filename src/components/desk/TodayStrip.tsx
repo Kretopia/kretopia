@@ -32,13 +32,14 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
   const navigate = useNavigate();
   const { user } = useAuth();
   const repliesOwed = useRepliesOwed();
-  const [stats, setStats] = useState<Stats>({
+  const [stats, setStats] = useState<Stats & { weekEarned: number }>({
     dueToday: 0,
     overdue: 0,
     unreadMessages: 0,
     pendingInvoices: 0,
     pendingAmount: 0,
     upcomingCalls: 0,
+    weekEarned: 0,
   });
 
   useEffect(() => {

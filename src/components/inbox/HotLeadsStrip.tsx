@@ -8,6 +8,7 @@ import { Flame, MessageCircle, Sparkles, Copy, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { trackDeckEvent } from "@/lib/deckMetrics";
 
 /**
  * HotLeadsStrip — surfaces unread inbound messages that smell like real
@@ -112,7 +113,15 @@ export function HotLeadsStrip() {
           if (mine) setMyProfile(mine as any);
         }
 
-        if (!cancelled) setLeads(hot);
+        if (!cancelled) {
+          setLeads(hot);
+          if (hot.length > 0) {
+            trackDeckEvent("hot_leads_seen", "opportunity", {
+              count: hot.length,
+              matched: hot.map(h => h.matched.toLowerCase()),
+            });
+          }
+        }
       } catch {/* silent */}
       if (!cancelled) setLoading(false);
     })();
@@ -123,8 +132,11 @@ export function HotLeadsStrip() {
     if (drafts[idx]?.length) { setOpenIdx(openIdx === idx ? null : idx); return; }
     setOpenIdx(idx);
     setDrafting(d => ({ ...d, [idx]: true }));
+    const l = leads[idx];
+    trackDeckEvent("hot_lead_draft_requested", "opportunity", {
+      sender_id: l.sender_id, matched: l.matched.toLowerCase(),
+    });
     try {
-      const l = leads[idx];
       const { data, error } = await supabase.functions.invoke('draft-lead-reply', {
         body: {
           inbound: l.preview,
@@ -136,6 +148,9 @@ export function HotLeadsStrip() {
       if (error) throw error;
       const out: DraftOpt[] = (data as any)?.drafts || [];
       setDrafts(d => ({ ...d, [idx]: out }));
+      trackDeckEvent("hot_lead_draft_returned", "opportunity", {
+        sender_id: l.sender_id, count: out.length,
+      });
     } catch (e: any) {
       toast({ title: "Couldn't draft right now", description: e?.message || 'Try again in a sec.', variant: 'destructive' });
       setOpenIdx(null);
@@ -146,7 +161,17 @@ export function HotLeadsStrip() {
 
   const useDraft = async (lead: Lead, text: string) => {
     try { await navigator.clipboard.writeText(text); } catch {/* ignore */}
+    trackDeckEvent("hot_lead_draft_used", "opportunity", {
+      sender_id: lead.sender_id, matched: lead.matched.toLowerCase(), length: text.length,
+    });
     toast({ title: 'Draft copied', description: 'Paste it in the chat to send.' });
+    navigate(lead.conversation_id ? `/messages?c=${lead.conversation_id}` : `/messages?user=${lead.sender_id}`);
+  };
+
+  const openThread = (lead: Lead) => {
+    trackDeckEvent("hot_lead_opened", "opportunity", {
+      sender_id: lead.sender_id, matched: lead.matched.toLowerCase(),
+    });
     navigate(lead.conversation_id ? `/messages?c=${lead.conversation_id}` : `/messages?user=${lead.sender_id}`);
   };
 
@@ -178,7 +203,7 @@ export function HotLeadsStrip() {
                   <AvatarFallback>{(l.sender_name || "?").slice(0, 1)}</AvatarFallback>
                 </Avatar>
                 <button
-                  onClick={() => navigate(l.conversation_id ? `/messages?c=${l.conversation_id}` : `/messages?user=${l.sender_id}`)}
+                  onClick={() => openThread(l)}
                   className="flex-1 min-w-0 text-left"
                 >
                   <div className="flex items-center gap-2 mb-0.5">
@@ -206,7 +231,7 @@ export function HotLeadsStrip() {
                     size="icon"
                     variant="ghost"
                     className="h-7 w-7"
-                    onClick={() => navigate(l.conversation_id ? `/messages?c=${l.conversation_id}` : `/messages?user=${l.sender_id}`)}
+                    onClick={() => openThread(l)}
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
                   </Button>

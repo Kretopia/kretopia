@@ -231,7 +231,7 @@ export function HotLeadsStrip() {
                     size="icon"
                     variant="ghost"
                     className="h-7 w-7"
-                    onClick={() => navigate(l.conversation_id ? `/messages?c=${l.conversation_id}` : `/messages?user=${l.sender_id}`)}
+                    onClick={() => openThread(l)}
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
                   </Button>

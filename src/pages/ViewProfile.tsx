@@ -57,6 +57,7 @@ import { VideoIntroSection } from "@/components/profile/VideoIntroSection";
 import { ServicePackagesSection } from "@/components/profile/ServicePackagesSection";
 import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
 import { ViewProfileTabs } from "@/components/profile/ViewProfileTabs";
+import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
 
 interface Profile {
   user_id: string;
@@ -723,6 +724,10 @@ const ViewProfile = () => {
 
           {/* Service Packages */}
           <ServicePackagesSection userId={profile.user_id} isOwnProfile={false} />
+
+          {/* Recently worked with — IMDb-style collaborator strip */}
+          <RecentlyWorkedWith userId={profile.user_id} className="my-4" />
+
 
           {/* Tabbed Content Sections */}
           <ViewProfileTabs

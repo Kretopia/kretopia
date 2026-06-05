@@ -58,6 +58,7 @@ import { ServicePackagesSection } from "@/components/profile/ServicePackagesSect
 import { AvailabilityIndicator } from "@/components/profile/AvailabilityIndicator";
 import { ViewProfileTabs } from "@/components/profile/ViewProfileTabs";
 import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
+import { HireMeTrustBar } from "@/components/passport/HireMeTrustBar";
 
 interface Profile {
   user_id: string;
@@ -725,8 +726,20 @@ const ViewProfile = () => {
           {/* Service Packages */}
           <ServicePackagesSection userId={profile.user_id} isOwnProfile={false} />
 
+          {/* Hire-Me trust bar — response time, rate confidence, booking availability */}
+          <HireMeTrustBar
+            userId={profile.user_id}
+            avgResponseHours={profile.avg_response_hours as any}
+            hourlyRate={profile.hourly_rate}
+            projectRate={profile.project_rate}
+            rateCurrency={profile.rate_currency}
+            collabIntent={profile.collab_intent}
+            className="my-4"
+          />
+
           {/* Recently worked with — IMDb-style collaborator strip */}
           <RecentlyWorkedWith userId={profile.user_id} className="my-4" />
+
 
 
           {/* Tabbed Content Sections */}

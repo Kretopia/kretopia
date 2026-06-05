@@ -120,11 +120,14 @@ const Inbox = () => {
           </button>
         </div>
 
-        {/* Approvals — always at top of Needs You */}
+        {/* Hot leads + Approvals — always at top of Needs You */}
         {tab === "needs" && (
-          <div className="mb-5">
-            <ApprovalsHub limit={6} />
-          </div>
+          <>
+            <HotLeadsStrip />
+            <div className="mb-5">
+              <ApprovalsHub limit={6} />
+            </div>
+          </>
         )}
 
         {/* List */}

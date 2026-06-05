@@ -3,13 +3,15 @@ import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
-import { Radar, Store, UserSearch, ArrowRight } from "lucide-react";
+import { ShortlistedGigs } from "@/components/opportunity/ShortlistedGigs";
+import { Radar, Store, UserSearch, ArrowRight, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Tab = "scouted" | "marketplace" | "talent";
+type Tab = "scouted" | "shortlist" | "marketplace" | "talent";
 
 const TABS: { id: Tab; label: string; icon: typeof Radar; hint: string }[] = [
   { id: "scouted", label: "For You", icon: Radar, hint: "Real gigs scouted from across the web" },
+  { id: "shortlist", label: "Shortlist", icon: Bookmark, hint: "Gigs you saved for later" },
   { id: "marketplace", label: "Open Gigs", icon: Store, hint: "All open gigs on ThriveIN" },
   { id: "talent", label: "Hire Talent", icon: UserSearch, hint: "Open Talent Scout" },
 ];
@@ -101,6 +103,7 @@ const Scout = () => {
       {/* Body */}
       <div className="container mx-auto max-w-5xl px-4 py-6">
         {tab === "scouted" && <ScoutedGigsSection />}
+        {tab === "shortlist" && <ShortlistedGigs />}
         {tab === "marketplace" && <OpportunitiesFeed />}
       </div>
     </div>

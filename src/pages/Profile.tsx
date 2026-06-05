@@ -34,6 +34,7 @@ import { ProfileStrengthBar } from "@/components/profile/ProfileStrengthBar";
 import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { PassportOverview } from "@/components/passport/PassportOverview";
+import { PassportMomentum } from "@/components/passport/PassportMomentum";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 
 import { TIER_LIMITS, SubscriptionTier } from "@/lib/subscriptionLimits";
@@ -423,6 +424,11 @@ const ProfileContent = () => {
             projects={stats.projects || 0}
             cosigns={reviews?.filter((r: any) => r.status === 'approved').length || 0}
           />
+        </div>
+
+        {/* Last-30-day momentum strip — only renders when something happened */}
+        <div className="mt-3">
+          <PassportMomentum />
         </div>
 
         {/* Tiny link to private dashboard — owner only */}

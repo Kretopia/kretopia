@@ -84,13 +84,14 @@ export function HireMeTrustBar({
       // Rate confidence — based on paid invoices in last 12 months.
       try {
         const since = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
-        const { count } = await supabase
+        const { count } = await (supabase as any)
           .from("invoices")
           .select("id", { count: "exact", head: true })
           .eq("creator_id", userId)
           .eq("status", "paid")
           .gte("paid_at", since)
-          .then((r) => r, () => ({ count: 0 } as any));
+          .then((r: any) => r, () => ({ count: 0 }));
+
         if (!cancelled) {
           if ((count || 0) >= 5) setConfidence("repeat");
           else if ((count || 0) >= 1) setConfidence("market");

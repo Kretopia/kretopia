@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { MapPin, Briefcase, Star, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ReplySLABadge } from '@/components/passport/ReplySLABadge';
+import { BookedThisMonthChip } from '@/components/passport/BookedThisMonthChip';
 
 interface SwipeCardProps {
   profile: {

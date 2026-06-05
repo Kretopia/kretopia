@@ -300,10 +300,12 @@ export const BriefDropZone = ({
         file_name: file.name,
         hint: elevated?.elevated_brief?.title,
         ...visionPayload,
+        ...audioPayload,
       }).catch((err) => {
         console.error("studio-ingest failed", err);
         return { facts: 0, entities: 0 };
       });
+
 
       setSummary({
         fileName: file.name,

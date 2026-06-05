@@ -381,6 +381,7 @@ export const StudioRoom = ({
 
       {/* Mobile: original single-scroll order */}
       <div className="lg:hidden">
+        {isOwner && dropZone}
         {RoomChatButton}
         {tasks.length === 0 && (
           <FirstTimeHint

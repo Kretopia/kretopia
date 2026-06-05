@@ -17,6 +17,7 @@ import {
 import { VibeHeader } from "./VibeHeader";
 import { StudioPulseFeed } from "./StudioPulseFeed";
 import { NextStepCard } from "./NextStepCard";
+import { SendInvoiceNudge } from "./SendInvoiceNudge";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";
 import { ProactiveCards } from "./ProactiveCards";
 import { BriefSection } from "./BriefSection";

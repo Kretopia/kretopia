@@ -22,12 +22,17 @@ interface Momentum {
 
 const since30d = () => new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-export function PassportMomentum() {
+interface PassportMomentumProps {
+  userId?: string; // when provided, render public momentum for that user
+}
+
+export function PassportMomentum({ userId }: PassportMomentumProps = {}) {
   const { user } = useAuth();
+  const targetId = userId || user?.id;
   const [m, setM] = useState<Momentum | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!targetId) return;
     let cancelled = false;
     const cutoff = since30d();
 

@@ -332,7 +332,7 @@ const CreatorEPK = () => {
 
   const getVerificationBadge = () => {
     if (profile.verification_tier === 'elite') {
-      return { label: 'Elite Verified', color: 'bg-gradient-to-r from-amber-500 to-yellow-400' };
+      return { label: 'Elite Verified', color: 'bg-scout' };
     }
     if (profile.verification_tier === 'industry') {
       return { label: 'Industry Verified', color: 'bg-primary' };

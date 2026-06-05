@@ -32,6 +32,8 @@ import { PadPreviewSection } from "./PadPreviewSection";
 import { ThriveGenerateCard } from "./ThriveGenerateCard";
 import { StudioOutcomeComposer } from "./StudioOutcomeComposer";
 import { BrandVaultChip } from "@/components/brand-vault/BrandVaultChip";
+import { StudioBrainPanel } from "./StudioBrainPanel";
+
 import { DeliverablesSection } from "./DeliverablesSection";
 import { ProductionPrepSection } from "./ProductionPrepSection";
 import { PodcastStudioSection } from "./PodcastStudioSection";

@@ -4,6 +4,7 @@ import { CheckCircle2, DollarSign, MessageSquare, Calendar, Sparkles, ArrowRight
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { useRepliesOwed } from "@/hooks/useRepliesOwed";
 
 interface TodayStripProps {
   onVoice: () => void;
@@ -30,6 +31,7 @@ interface Stats {
 export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStripProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const repliesOwed = useRepliesOwed();
   const [stats, setStats] = useState<Stats>({
     dueToday: 0,
     overdue: 0,
@@ -118,9 +120,9 @@ export const TodayStrip = ({ onVoice, onCommandPalette, onWrapWeek }: TodayStrip
     {
       key: "messages",
       icon: MessageSquare,
-      label: "Threads",
-      value: stats.unreadMessages > 0 ? `${stats.unreadMessages} new` : "Open",
-      tone: stats.unreadMessages > 0 ? "energy" : "muted",
+      label: repliesOwed > 0 ? "Replies owed" : "Threads",
+      value: repliesOwed > 0 ? `${repliesOwed}` : "Open",
+      tone: repliesOwed > 0 ? "energy" : "muted",
       onClick: () => navigate("/messages"),
     },
     {

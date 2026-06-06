@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { ContentBlock } from "./BlockTypes";
 import { getVideoEmbedUrl } from "./BlockEditor";
 

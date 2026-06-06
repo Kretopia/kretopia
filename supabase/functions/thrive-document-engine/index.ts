@@ -19,7 +19,8 @@ type Intent =
   | "treatment"
   | "rate_card"
   | "moodboard_deck"
-  | "one_pager";
+  | "one_pager"
+  | "letter_of_intent";
 
 const INTENT_SKELETONS: Record<Intent, { slides: string[]; tone: string }> = {
   sponsor_deck: {
@@ -53,6 +54,14 @@ const INTENT_SKELETONS: Record<Intent, { slides: string[]; tone: string }> = {
   one_pager: {
     tone: "Single dense page. Hook, value, proof, ask.",
     slides: ["One Pager"],
+  },
+  letter_of_intent: {
+    tone: "Formal business letter on branded letterhead. Warm but professional. First person. No marketing fluff. Reads like a real letter a senior producer would send — recipient name, clear intent, terms, signature line. Use the brand's letterhead (logo + name + tagline appear via the renderer).",
+    slides: [
+      "Letterhead Cover (recipient block + date + subject line, NO body)",
+      "Letter Body (Dear [Recipient], 3-5 short paragraphs: intent, scope, key terms/timeline, ask, close. End with 'Sincerely,' + sender name & title.)",
+      "Terms & Next Steps (brief bullets: scope, exclusivity, validity, signatures required)",
+    ],
   },
 };
 

@@ -161,16 +161,22 @@ export const BriefDropZone = ({
           extractedText = "";
         }
 
-        // Scanned PDF fallback — if no text but it's a PDF, send the first page as image
+        // Scanned PDF fallback — render first page as image and route through
+        // vision so a scanned deck never hard-fails.
         if (!extractedText && file.type === "application/pdf") {
-          throw new Error("No readable text found in this PDF. Try exporting text from your reader, or drop a screenshot instead.");
-        }
-        if (!extractedText) {
+          try {
+            const { renderPdfFirstPageToImage } = await import("@/lib/extractBriefDocument");
+            const img = await renderPdfFirstPageToImage(file);
+            visionPayload = { image_base64: img.base64, image_mime: img.mime };
+          } catch {
+            throw new Error("Couldn't read this PDF. Try a screenshot or a text-based export.");
+          }
+        } else if (!extractedText) {
           throw new Error("No readable text found.");
         }
 
         // Brief-elevation path for plan-like documents only
-        if (source_kind === "brief" || source_kind === "pdf") {
+        if (extractedText && (source_kind === "brief" || source_kind === "pdf")) {
           const { data, error: elevateErr } = await supabase.functions.invoke("elevate-brief", {
             body: {
               source: "text",
@@ -180,8 +186,15 @@ export const BriefDropZone = ({
           });
           if (!elevateErr && data?.elevated_brief) elevated = data;
         }
+      } else if (file.type.startsWith("text/") || /\.(csv|tsv|md|txt|json|yml|yaml)$/i.test(file.name)) {
+        // Plain text-ish files not caught by TEXT_EXTS — read as text.
+        try {
+          extractedText = (await file.text()).slice(0, 200_000);
+        } catch {
+          extractedText = `[${source_kind} drop — ${file.name}]`;
+        }
       } else {
-        // other — let downstream handle classification; pass a hint string
+        // other — let downstream classify; pass a hint string
         extractedText = `[${source_kind} drop — ${file.name}]`;
       }
 
@@ -294,6 +307,7 @@ export const BriefDropZone = ({
       }
 
       // 2. Studio Brain — record facts + entities (always)
+      let brainErr: string | null = null;
       const brainRes = await callIngest({
         source_kind,
         text: extractedText || undefined,
@@ -303,6 +317,7 @@ export const BriefDropZone = ({
         ...audioPayload,
       }).catch((err) => {
         console.error("studio-ingest failed", err);
+        brainErr = err?.message || "Brain didn't update";
         return { facts: 0, entities: 0 };
       });
 
@@ -318,10 +333,16 @@ export const BriefDropZone = ({
         facts: brainRes.facts ?? 0,
         entities: brainRes.entities ?? 0,
       });
-      toast({
-        title: "Studio Brain updated",
-        description: `${brainRes.facts ?? 0} facts · ${brainRes.entities ?? 0} entities remembered`,
-      });
+      if (brainErr) {
+        toast({ title: "Brain didn't fully update", description: brainErr, variant: "destructive" });
+      } else {
+        toast({
+          title: "Studio Brain updated",
+          description: `${brainRes.facts ?? 0} facts · ${brainRes.entities ?? 0} entities remembered`,
+        });
+      }
+      // Notify any open Brain panels to refresh counts/lists.
+      window.dispatchEvent(new CustomEvent("studio-brain:updated", { detail: { projectId } }));
       onIngested();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't process drop";
@@ -444,6 +465,7 @@ export const BriefDropZone = ({
           <input
             ref={inputRef}
             type="file"
+            accept="application/pdf,text/*,image/*,audio/*,.csv,.tsv,.md,.json,.yaml,.yml,.docx"
             className="hidden"
             onChange={(e) => ingestFile(e.target.files?.[0] ?? null)}
           />
@@ -457,6 +479,7 @@ export const BriefDropZone = ({
       <input
         ref={inputRef}
         type="file"
+        accept="application/pdf,text/*,image/*,audio/*,.csv,.tsv,.md,.json,.yaml,.yml,.docx"
         className="hidden"
         onChange={(e) => ingestFile(e.target.files?.[0] ?? null)}
       />
@@ -538,7 +561,7 @@ export const BriefDropZone = ({
 
       {error && (
         <div className="mt-2 text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-2.5 flex items-start gap-2">
-          <Loader2 className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+          <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}

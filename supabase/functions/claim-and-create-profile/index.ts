@@ -131,24 +131,38 @@ async function upsertProfileAndCredits(
   conflicts: Array<{ url: string; role: string; title: string; existing_owner_id?: string }>,
   faceMatchScore: number | null,
 ) {
+  // Only upsert profile fields for brand-new profiles. Never overwrite a real, onboarded profile
+  // with caller-supplied data — that would let any unauth caller silently rewrite a stranger's bio.
+  const { data: existingProfile } = await admin
+    .from("profiles")
+    .select("user_id, onboarding_completed")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const safeToWriteProfile = !existingProfile || existingProfile.onboarding_completed === false;
   const verified = (faceMatchScore ?? 0) >= 0.7;
-  const { error: profileErr } = await admin.from("profiles").upsert(
-    {
-      user_id: userId,
-      full_name: profile.full_name,
-      role: profile.role || null,
-      bio: profile.bio?.slice(0, 500) || null,
-      location: profile.location || null,
-      professional_skills: profile.skills?.slice(0, 12) || [],
-      avatar_url: profile.avatar_url || null,
-      website: profile.website || null,
-      onboarding_completed: false,
-      identity_face_verified: verified,
-      identity_face_verified_at: verified ? new Date().toISOString() : null,
-    },
-    { onConflict: "user_id" },
-  );
-  if (profileErr) console.error("[claim] profile upsert error:", profileErr);
+
+  if (safeToWriteProfile) {
+    const { error: profileErr } = await admin.from("profiles").upsert(
+      {
+        user_id: userId,
+        full_name: profile.full_name,
+        role: profile.role || null,
+        bio: profile.bio?.slice(0, 500) || null,
+        location: profile.location || null,
+        professional_skills: profile.skills?.slice(0, 12) || [],
+        avatar_url: profile.avatar_url || null,
+        website: profile.website || null,
+        onboarding_completed: false,
+        identity_face_verified: verified,
+        identity_face_verified_at: verified ? new Date().toISOString() : null,
+      },
+      { onConflict: "user_id" },
+    );
+    if (profileErr) console.error("[claim] profile upsert error:", profileErr);
+  } else {
+    console.log(`[claim] skipping profile overwrite for onboarded user ${userId}`);
+  }
 
   if (credits?.length) {
     for (const c of credits.slice(0, 50)) {
@@ -167,7 +181,9 @@ async function upsertProfileAndCredits(
         platform: c.platform || null,
         client_brand: c.client_brand || null,
         source: "web_verified",
-        verification_status: "verified",
+        // Caller-supplied credits cannot self-attest as verified. They start as pending
+        // and must be confirmed by the real owner after they sign in.
+        verification_status: "pending",
       };
       const { error: insErr } = await admin.from("credits").insert(row);
       if (insErr) {

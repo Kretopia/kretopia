@@ -248,7 +248,7 @@ export const StudioRoom = ({
   const mobileWorkColumn = (includeBrief: boolean) => (
     <div className="divide-y divide-border/60">
       {includeBrief && briefBlock}
-      <StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />
+      {/* Pulse merged into the single Drop Zone at the top of the room. */}
       <DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />
       {isOwner && <div className="px-4 py-3"><ThriveGenerateCard projectId={project.id} /></div>}
       <PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />

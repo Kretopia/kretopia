@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { VibeHeader } from "./VibeHeader";
-import { StudioPulseFeed } from "./StudioPulseFeed";
+// StudioPulseFeed retired — merged into BriefDropZone (one true Drop Zone).
 import { NextStepCard } from "./NextStepCard";
 import { SendInvoiceNudge } from "./SendInvoiceNudge";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";

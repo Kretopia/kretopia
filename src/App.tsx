@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
-import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
+
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { useOnboarding } from "./hooks/useOnboarding";
@@ -506,7 +506,7 @@ const App = () => {
               <TooltipProvider>
                 <Toaster />
                 <Sonner />
-                <VercelAnalytics />
+                
                 <BrowserRouter>
                   <InteractiveOnboarding />
                   <FeedbackWidget />

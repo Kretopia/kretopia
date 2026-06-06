@@ -36,22 +36,16 @@ import { useLandingVariant } from "@/hooks/useLandingVariant";
 // StickyMobileCTA removed — dismissible popup handles guest CTA
 import { InviteCircleCard } from "@/components/InviteCircleCard";
 // import { StartCircleNudgeCard } from "@/components/home/StartCircleNudgeCard"; // Hidden in Pass A
-import { NewMemberStarterCard } from "@/components/home/NewMemberStarterCard";
-import { FoundingMemberCard } from "@/components/founding/FoundingMemberCard";
+// Prune: NewMemberStarterCard, FoundingMemberCard, MagicHomeHero, OpportunityIntelCard,
+// WeeklyIntentCard, ThriveFundFeedRow, EventsNearYouSection moved off Home → live on their own surfaces.
 import { GetStartedChecklist } from "@/components/onboarding/GetStartedChecklist";
 import { DuplicateAccountBanner } from "@/components/account/DuplicateAccountBanner";
 import { FirstWinSheet } from "@/components/onboarding/FirstWinSheet";
-import { MagicHomeHero } from "@/components/home/MagicHomeHero";
 import { MorningPulse } from "@/components/home/MorningPulse";
 import { CuratedStagesRail } from "@/components/circle/CuratedStagesRail";
 import { ThrivePromptHero } from "@/components/home/ThrivePromptHero";
 import { RecentIntentsDrawer } from "@/components/home/RecentIntentsDrawer";
 import { PersonaCardsRow } from "@/components/home/PersonaCardsRow";
-// StreakChipsRow + SpotlightFeedRow removed from Today (Daily Driver IA).
-import { OpportunityIntelCard } from "@/components/home/OpportunityIntelCard";
-import { WeeklyIntentCard } from "@/components/home/WeeklyIntentCard";
-import { ThriveFundFeedRow } from "@/components/home/ThriveFundFeedRow";
-import { EventsNearYouSection } from "@/components/home/EventsNearYouSection";
 import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";

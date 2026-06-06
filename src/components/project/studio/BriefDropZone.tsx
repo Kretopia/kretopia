@@ -58,6 +58,8 @@ export const BriefDropZone = ({
   const [summary, setSummary] = useState<IngestSummary | null>(null);
   const [linkValue, setLinkValue] = useState("");
   const [showLink, setShowLink] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [draftText, setDraftText] = useState("");
 
   if (!isOwner) return null;
 

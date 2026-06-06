@@ -417,6 +417,57 @@ export const BriefDropZone = ({
     }
   };
 
+  const ingestThought = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setError(null);
+    setSummary(null);
+    setBusy(true);
+    try {
+      const brainRes = await callIngest({
+        source_kind: "note",
+        text: trimmed,
+        hint: "User-typed thought dropped into the Studio.",
+      });
+      // Also drop it into the Pad so it's visible, not just in the Brain.
+      try {
+        const { data: userRes } = await supabase.auth.getUser();
+        const me = userRes?.user?.id;
+        if (me) {
+          await supabase.from("project_notes").insert({
+            project_id: projectId,
+            created_by: me,
+            title: trimmed.slice(0, 60),
+            content: trimmed,
+          } as never).then(() => {}, () => {});
+        }
+      } catch { /* noop */ }
+      setSummary({
+        fileName: "Thought",
+        tasks: 0, deliverables: 0, runOfShow: 0, suppliers: 0, talent: 0,
+        facts: brainRes.facts ?? 0,
+        entities: brainRes.entities ?? 0,
+      });
+      toast({
+        title: "Got it 🎯",
+        description: `Filed to the Pad · Brain +${brainRes.facts ?? 0} facts`,
+      });
+      onIngested();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Couldn't save thought";
+      setError(msg);
+      toast({ title: "Thought failed", description: msg, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+      toast({ title: "Link failed", description: msg, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (busy) {
     return (
       <div className="px-4 pt-5">

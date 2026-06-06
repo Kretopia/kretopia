@@ -53,18 +53,31 @@ export function StudioBrainPanel({ projectId, isOwner }: Props) {
   const [entities, setEntities] = useState<Entity[]>([]);
   const [counts, setCounts] = useState<{ f: number; e: number }>({ f: 0, e: 0 });
 
-  // Light count fetch on mount so the chip can show a number.
+  // Light count fetch so the chip can show a number. Refreshes on open AND
+  // whenever a drop signals "studio-brain:updated".
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const [{ count: fc }, { count: ec }] = await Promise.all([
-        supabase.from("studio_facts").select("id", { count: "exact", head: true }).eq("project_id", projectId),
-        supabase.from("studio_entities").select("id", { count: "exact", head: true }).eq("project_id", projectId),
-      ]);
-      if (cancelled) return;
-      setCounts({ f: fc ?? 0, e: ec ?? 0 });
-    })().catch(() => {});
-    return () => { cancelled = true; };
+    const fetchCounts = async () => {
+      try {
+        const [{ count: fc }, { count: ec }] = await Promise.all([
+          supabase.from("studio_facts").select("id", { count: "exact", head: true }).eq("project_id", projectId),
+          supabase.from("studio_entities").select("id", { count: "exact", head: true }).eq("project_id", projectId),
+        ]);
+        if (cancelled) return;
+        setCounts({ f: fc ?? 0, e: ec ?? 0 });
+      } catch { /* silent */ }
+    };
+    fetchCounts();
+    const onUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail || detail.projectId === projectId) {
+        fetchCounts();
+        if (open) loadAll();
+      }
+    };
+    window.addEventListener("studio-brain:updated", onUpdate);
+    return () => { cancelled = true; window.removeEventListener("studio-brain:updated", onUpdate); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, open]);
 
   const loadAll = async () => {
@@ -127,7 +140,7 @@ export function StudioBrainPanel({ projectId, isOwner }: Props) {
           )}
         </button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+      <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto pt-[max(env(safe-area-inset-top),0.5rem)]">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-primary" /> Studio Brain
@@ -165,8 +178,8 @@ export function StudioBrainPanel({ projectId, isOwner }: Props) {
                           )}
                         </div>
                         {isOwner && (
-                          <button onClick={() => forgetFact(f.id)} className="opacity-0 group-hover:opacity-100 transition text-muted-foreground hover:text-destructive" title="Forget this">
-                            <Trash2 className="h-3 w-3" />
+                          <button onClick={() => forgetFact(f.id)} className="opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition text-muted-foreground hover:text-destructive p-1 -m-1" title="Forget this" aria-label="Forget fact">
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         )}
                       </li>
@@ -189,8 +202,8 @@ export function StudioBrainPanel({ projectId, isOwner }: Props) {
                       <Badge variant="outline" className="text-[9px] uppercase tracking-wider">{e.kind}</Badge>
                       <span className="text-sm font-medium flex-1 truncate">{e.name}</span>
                       {isOwner && (
-                        <button onClick={() => forgetEntity(e.id)} className="opacity-0 group-hover:opacity-100 transition text-muted-foreground hover:text-destructive" title="Forget this">
-                          <Trash2 className="h-3 w-3" />
+                        <button onClick={() => forgetEntity(e.id)} className="opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition text-muted-foreground hover:text-destructive p-1 -m-1" title="Forget this" aria-label="Forget entity">
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       )}
                     </li>

@@ -5,15 +5,51 @@ import { supabase } from "@/integrations/supabase/client";
  * Writes to public.site_analytics with scope='platform'.
  *
  * - Visitor ID: persistent across sessions (localStorage)
- * - Session ID: 30-min inactivity window (sessionStorage + timestamp)
+ * - Session ID: 30-min inactivity window
  * - Bounce: a session with exactly 1 pageview AND duration < 10s
- * - Time on page: measured on visibilitychange/pagehide and route change
+ * - Time on page: measured on visibilitychange/pagehide via sendBeacon
+ * - Filters Lovable preview, bots, headless browsers, admin routes
+ * - Attaches user_id when an auth session is present
  */
 
 const VISITOR_KEY = "_ti_vid";
 const SESSION_KEY = "_ti_sid";
 const SESSION_TS_KEY = "_ti_sid_ts";
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 min
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+
+// ---- environment / bot filters --------------------------------------------
+const isPreviewOrBot = (): boolean => {
+  if (typeof window === "undefined") return true;
+  try {
+    const host = window.location.hostname.toLowerCase();
+    if (
+      host.includes("lovable.app") ||
+      host.includes("lovableproject.com") ||
+      host.includes("lovable.dev") ||
+      host === "localhost" ||
+      host.startsWith("127.") ||
+      host.endsWith(".local")
+    ) {
+      return true;
+    }
+    // @ts-ignore
+    if (navigator.webdriver) return true;
+    const ua = navigator.userAgent.toLowerCase();
+    if (
+      /bot|crawl|spider|slurp|bingpreview|headlesschrome|puppeteer|playwright|lighthouse|prerender/i.test(
+        ua
+      )
+    ) {
+      return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+};
+
+const isExcludedPath = (path: string): boolean =>
+  path.startsWith("/admin") || path.startsWith("/__");
 
 const getDeviceType = (): string => {
   const w = window.innerWidth;
@@ -51,41 +87,110 @@ const getSessionId = (): string => {
   }
 };
 
-// Internal: track current page for duration measurement
+// ---- user_id cache (refreshed on auth state change) -----------------------
+let cachedUserId: string | null = null;
+let userIdInitialized = false;
+
+const ensureUserId = async (): Promise<string | null> => {
+  if (userIdInitialized) return cachedUserId;
+  userIdInitialized = true;
+  try {
+    const { data } = await supabase.auth.getSession();
+    cachedUserId = data.session?.user?.id ?? null;
+    supabase.auth.onAuthStateChange((_evt, session) => {
+      cachedUserId = session?.user?.id ?? null;
+    });
+  } catch {
+    cachedUserId = null;
+  }
+  return cachedUserId;
+};
+
+// ---- duration measurement -------------------------------------------------
 let currentPath: string | null = null;
-let pageStartTs: number = 0;
+let pageStartTs = 0;
 let durationFlushed = false;
 
-const flushPageDuration = async () => {
+const SUPABASE_URL =
+  (import.meta as any).env?.VITE_SUPABASE_URL ||
+  `https://${(import.meta as any).env?.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
+const SUPABASE_ANON_KEY = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+/**
+ * Send via sendBeacon (preferred on pagehide/visibilitychange) with a
+ * keepalive fetch fallback. Both survive page unload.
+ */
+const beaconInsert = (row: Record<string, unknown>) => {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
+  const url = `${SUPABASE_URL}/rest/v1/site_analytics`;
+  const body = JSON.stringify(row);
+  try {
+    if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+      // PostgREST accepts apikey/Authorization via query? No — must use headers.
+      // sendBeacon can only send Blob; use a small POST via keepalive fetch instead
+      // when we need headers. Try sendBeacon w/ Blob first if the project allows
+      // public inserts, otherwise fall back to keepalive fetch.
+      const ok = navigator.sendBeacon(
+        `${url}?apikey=${encodeURIComponent(SUPABASE_ANON_KEY)}`,
+        new Blob([body], { type: "application/json" })
+      );
+      if (ok) return;
+    }
+    void fetch(url, {
+      method: "POST",
+      keepalive: true,
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        Prefer: "return=minimal",
+      },
+      body,
+    }).catch(() => {});
+  } catch {
+    /* silent */
+  }
+};
+
+const flushPageDuration = (useBeacon = false) => {
   if (!currentPath || durationFlushed) return;
   durationFlushed = true;
   const duration = Date.now() - pageStartTs;
   const sessionId = getSessionId();
-  try {
-    await supabase.from("site_analytics").insert({
-      scope: "platform",
-      event_type: "duration",
-      visitor_id: getVisitorId(),
-      session_id: sessionId,
-      page_path: currentPath,
-      duration_ms: duration,
-      device_type: getDeviceType(),
-    });
-  } catch {
-    // silent
+  const row = {
+    scope: "platform",
+    event_type: "duration",
+    visitor_id: getVisitorId(),
+    session_id: sessionId,
+    page_path: currentPath,
+    duration_ms: duration,
+    device_type: getDeviceType(),
+    user_id: cachedUserId,
+  };
+  if (useBeacon) {
+    beaconInsert(row);
+  } else {
+    supabase.from("site_analytics").insert(row as any).then(
+      () => {},
+      () => {}
+    );
   }
 };
 
 export const trackPlatformPageview = async (path: string) => {
+  if (isPreviewOrBot()) return;
+  if (isExcludedPath(path)) return;
+
   // Flush previous page's duration before starting a new one
   if (currentPath && currentPath !== path) {
-    await flushPageDuration();
+    flushPageDuration(false);
   }
 
   currentPath = path;
   pageStartTs = Date.now();
   durationFlushed = false;
 
+  await ensureUserId();
   const sessionId = getSessionId();
   try {
     await supabase.from("site_analytics").insert({
@@ -96,9 +201,10 @@ export const trackPlatformPageview = async (path: string) => {
       page_path: path,
       referrer: document.referrer || null,
       device_type: getDeviceType(),
-    });
+      user_id: cachedUserId,
+    } as any);
   } catch {
-    // silent
+    /* silent */
   }
 };
 
@@ -107,13 +213,14 @@ let listenersAttached = false;
 export const attachPlatformAnalyticsListeners = () => {
   if (listenersAttached || typeof window === "undefined") return;
   listenersAttached = true;
+  void ensureUserId();
 
-  // Flush on tab hide / page unload
-  const onHide = () => {
-    if (document.visibilityState === "hidden") {
-      void flushPageDuration();
-    }
-  };
-  document.addEventListener("visibilitychange", onHide);
-  window.addEventListener("pagehide", () => void flushPageDuration());
+  // visibilitychange = hidden  → flush via beacon (survives backgrounding)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushPageDuration(true);
+  });
+  // pagehide  → flush via beacon (survives navigation/close)
+  window.addEventListener("pagehide", () => flushPageDuration(true));
+  // beforeunload fallback (some browsers skip pagehide)
+  window.addEventListener("beforeunload", () => flushPageDuration(true));
 };

@@ -52,10 +52,10 @@ export const ProductDashboardTab = () => {
     const load = async () => {
       setLoading(true);
       const [kpisRes, activeRes, dailyRes, cohortsRes] = await Promise.all([
-        supabase.rpc("get_product_kpis").catch(() => ({ data: null })),
-        supabase.rpc("get_active_users_rollup").catch(() => ({ data: null })),
-        supabase.rpc("get_creative_actions_daily", { _days: 30 }).catch(() => ({ data: null })),
-        supabase.rpc("get_retention_cohorts", { _weeks: 8 }).catch(() => ({ data: null })),
+        (supabase.rpc as any)("get_product_kpis").then((r: any) => r, () => ({ data: null })),
+        (supabase.rpc as any)("get_active_users_rollup").then((r: any) => r, () => ({ data: null })),
+        (supabase.rpc as any)("get_creative_actions_daily", { _days: 30 }).then((r: any) => r, () => ({ data: null })),
+        (supabase.rpc as any)("get_retention_cohorts", { _weeks: 8 }).then((r: any) => r, () => ({ data: null })),
       ]);
       if (cancelled) return;
       setKpis((kpisRes.data as any) || {});

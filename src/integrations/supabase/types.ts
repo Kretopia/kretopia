@@ -18918,6 +18918,10 @@ export type Database = {
           path_user_names: string[]
         }[]
       }
+      get_creative_action_funnels: {
+        Args: { _end?: string; _start?: string }
+        Returns: Json
+      }
       get_creative_actions_daily: {
         Args: { _days?: number }
         Returns: {

@@ -189,6 +189,7 @@ export function BrandVaultEditor({ projectId = null, vaultId = null, onSaved }: 
         setVault((v) => ({ ...v, id: saved.id }));
       }
       toast({ title: "Brand Vault saved", description: "Thrive will use this for every doc it generates." });
+      window.dispatchEvent(new CustomEvent("brand-vault:updated"));
       onSaved?.(saved);
     } catch (e: any) {
       toast({ title: "Couldn't save", description: e?.message, variant: "destructive" });

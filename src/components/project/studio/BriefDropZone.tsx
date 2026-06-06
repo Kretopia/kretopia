@@ -462,11 +462,6 @@ export const BriefDropZone = ({
     }
   };
 
-      toast({ title: "Link failed", description: msg, variant: "destructive" });
-    } finally {
-      setBusy(false);
-    }
-  };
 
   if (busy) {
     return (

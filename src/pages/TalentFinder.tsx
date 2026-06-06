@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,15 +36,26 @@ interface TalentMatch {
 
 export default function TalentFinder() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
   const { guard: guardAiMatch } = useFeatureGate("aiApplicantRankings");
 
-  const [brief, setBrief] = useState("");
+  const initialQuery = searchParams.get("q") || "";
+  const [brief, setBrief] = useState(initialQuery);
   const [matches, setMatches] = useState<TalentMatch[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [shortlisted, setShortlisted] = useState<Record<string, boolean>>({});
+
+  // If we landed here from the Outcome Composer with a brief, surface it.
+  useEffect(() => {
+    if (initialQuery && initialQuery.length > 10) {
+      toast({ title: "Brief loaded", description: "Hit Find talent when you're ready." });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const handleFindTalent = async () => {
     if (!brief.trim() || brief.trim().length < 10) {

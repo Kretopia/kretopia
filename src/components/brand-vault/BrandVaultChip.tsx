@@ -16,6 +16,11 @@ interface VaultRow {
   name: string;
   logo_url: string | null;
   palette: string[];
+  fonts: any;
+  voice_tone: string | null;
+  tagline: string | null;
+  do_dont: any;
+  links: any;
   project_id: string | null;
   is_default: boolean;
 }
@@ -32,16 +37,20 @@ export function BrandVaultChip({ projectId }: Props) {
   const [defaultVault, setDefaultVault] = useState<VaultRow | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const load = async () => {
-    if (!user) return;
+  const load = async (userId: string) => {
     const { data } = await supabase
       .from("brand_vaults")
-      .select("id, name, logo_url, palette, project_id, is_default")
-      .eq("user_id", user.id);
+      .select("id, name, logo_url, palette, fonts, voice_tone, tagline, do_dont, links, project_id, is_default")
+      .eq("user_id", userId);
     const rows = (data || []) as any[];
     const normalize = (r: any): VaultRow => ({
       id: r.id, name: r.name, logo_url: r.logo_url,
       palette: Array.isArray(r.palette) ? r.palette : [],
+      fonts: r.fonts ?? {},
+      voice_tone: r.voice_tone ?? null,
+      tagline: r.tagline ?? null,
+      do_dont: r.do_dont ?? {},
+      links: r.links ?? {},
       project_id: r.project_id, is_default: r.is_default,
     });
     const pinned = rows.find((r) => r.project_id === projectId);
@@ -51,11 +60,37 @@ export function BrandVaultChip({ projectId }: Props) {
   };
 
   useEffect(() => {
-    let cancelled = false;
     if (!user) return;
-    load().catch(() => {});
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    const run = async () => {
+      try {
+        const { data } = await supabase
+          .from("brand_vaults")
+          .select("id, name, logo_url, palette, fonts, voice_tone, tagline, do_dont, links, project_id, is_default")
+          .eq("user_id", user.id);
+        if (cancelled) return;
+        const rows = (data || []) as any[];
+        const normalize = (r: any): VaultRow => ({
+          id: r.id, name: r.name, logo_url: r.logo_url,
+          palette: Array.isArray(r.palette) ? r.palette : [],
+          fonts: r.fonts ?? {},
+          voice_tone: r.voice_tone ?? null,
+          tagline: r.tagline ?? null,
+          do_dont: r.do_dont ?? {},
+          links: r.links ?? {},
+          project_id: r.project_id, is_default: r.is_default,
+        });
+        const pinned = rows.find((r) => r.project_id === projectId);
+        const def = rows.find((r) => !r.project_id && r.is_default);
+        setVault(pinned ? normalize(pinned) : def ? normalize(def) : null);
+        setDefaultVault(def ? normalize(def) : null);
+      } catch { /* silent */ }
+    };
+    run();
+    // Refresh when the editor signals a change.
+    const onUpdate = () => { if (!cancelled) run(); };
+    window.addEventListener("brand-vault:updated", onUpdate);
+    return () => { cancelled = true; window.removeEventListener("brand-vault:updated", onUpdate); };
   }, [user?.id, projectId]);
 
   const isPinned = !!vault?.project_id;
@@ -65,11 +100,10 @@ export function BrandVaultChip({ projectId }: Props) {
     setBusy(true);
     try {
       if (!defaultVault) {
-        // No default exists — send user to editor scoped to project.
         window.location.href = `/brand-vault?project=${projectId}`;
         return;
       }
-      // Clone default vault → project-scoped vault.
+      // Clone default vault → project-scoped vault (full payload, not just palette).
       const { error } = await supabase.from("brand_vaults").insert({
         user_id: user.id,
         project_id: projectId,
@@ -77,10 +111,16 @@ export function BrandVaultChip({ projectId }: Props) {
         name: `${defaultVault.name} · Studio`,
         logo_url: defaultVault.logo_url,
         palette: defaultVault.palette,
+        fonts: defaultVault.fonts,
+        voice_tone: defaultVault.voice_tone,
+        tagline: defaultVault.tagline,
+        do_dont: defaultVault.do_dont,
+        links: defaultVault.links,
       });
       if (error) throw error;
       toast({ title: "Pinned to this Studio", description: "Thrive will use this brand for every doc here." });
-      await load();
+      window.dispatchEvent(new CustomEvent("brand-vault:updated"));
+      if (user) await load(user.id);
     } catch (e: any) {
       toast({ title: "Couldn't pin", description: e?.message, variant: "destructive" });
     } finally {
@@ -95,7 +135,8 @@ export function BrandVaultChip({ projectId }: Props) {
       const { error } = await supabase.from("brand_vaults").delete().eq("id", vault.id);
       if (error) throw error;
       toast({ title: "Unpinned", description: "Falling back to your default brand." });
-      await load();
+      window.dispatchEvent(new CustomEvent("brand-vault:updated"));
+      if (user) await load(user.id);
     } catch (e: any) {
       toast({ title: "Couldn't unpin", description: e?.message, variant: "destructive" });
     } finally {

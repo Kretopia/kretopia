@@ -45,16 +45,21 @@ export function DeckRenderer({ doc, theme, coverImageUrl, authorName }: Props) {
   const brand = doc.brand_snapshot;
   const accent = brand?.palette?.[1] || brand?.palette?.[0] || null;
   const accentSecondary = brand?.palette?.[2] || brand?.palette?.[1] || null;
+  const headingFont = brand?.fonts?.heading?.trim() || undefined;
+  const bodyFont = brand?.fonts?.body?.trim() || undefined;
+  const headingStyle = headingFont ? { fontFamily: headingFont } : undefined;
+  const bodyStyle = bodyFont ? { fontFamily: bodyFont } : undefined;
 
   return (
-    <div id="thrive-deck-root" className={`flex flex-col gap-6 ${t.font}`}>
+    <div id="thrive-deck-root" className={`flex flex-col gap-6 ${t.font}`} style={bodyStyle}>
+
       {/* Cover */}
       <Slide className={`${t.page} ${t.cover}`} aspect>
         <div className="flex flex-col h-full justify-between relative z-10">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className={t.eyebrow}>{doc.subtitle || (brand?.name ? `Prepared by ${brand.name}` : "Prepared by Thrive")}</div>
-              <h1 className={t.heading}>{doc.title}</h1>
+              <h1 className={t.heading} style={headingStyle}>{doc.title}</h1>
               {brand?.tagline && (
                 <p className="text-sm opacity-70 mt-2 italic">{brand.tagline}</p>
               )}
@@ -79,7 +84,7 @@ export function DeckRenderer({ doc, theme, coverImageUrl, authorName }: Props) {
       {doc.slides.map((s, i) => (
         <Slide key={i} className={t.page} aspect>
           {s.eyebrow && <div className={t.eyebrow}>{s.eyebrow}</div>}
-          <h2 className={t.heading}>{s.heading}</h2>
+          <h2 className={t.heading} style={headingStyle}>{s.heading}</h2>
           {s.body && (
             <div className={`prose prose-sm dark:prose-invert max-w-none ${t.body}`}>
               <ReactMarkdown>{s.body}</ReactMarkdown>

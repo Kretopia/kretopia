@@ -24,11 +24,12 @@ const Scout = () => {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const initial = (params.get("tab") as Tab) || "scouted";
+  const contextQuery = params.get("q") || "";
   const [tab, setTab] = useState<Tab>(initial === "talent" ? "scouted" : initial);
 
   const switchTab = (next: Tab) => {
     if (next === "talent") {
-      navigate("/talent-finder");
+      navigate(contextQuery ? `/talent-finder?q=${encodeURIComponent(contextQuery)}` : "/talent-finder");
       return;
     }
     setTab(next);
@@ -36,6 +37,7 @@ const Scout = () => {
     p.set("tab", next);
     setParams(p, { replace: true });
   };
+
 
   return (
     <div className="accent-scout min-h-screen bg-background pb-24">
@@ -102,6 +104,15 @@ const Scout = () => {
 
       {/* Body */}
       <div className="container mx-auto max-w-5xl px-4 py-6">
+        {contextQuery && (
+          <div className="mb-4 rounded-xl border border-[hsl(var(--accent-scout))]/30 bg-[hsl(var(--accent-scout))]/5 p-3 text-xs flex items-start gap-2">
+            <Radar className="h-3.5 w-3.5 mt-0.5 text-[hsl(var(--accent-scout))] shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-foreground">From your Studio:</p>
+              <p className="text-muted-foreground truncate">{contextQuery}</p>
+            </div>
+          </div>
+        )}
         {tab === "scouted" && <ScoutedGigsSection />}
         {tab === "shortlist" && <ShortlistedGigs />}
         {tab === "marketplace" && <OpportunitiesFeed />}

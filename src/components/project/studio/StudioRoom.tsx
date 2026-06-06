@@ -232,7 +232,7 @@ export const StudioRoom = ({
       {/* Brand + Brain — what Thrive knows and how it'll style every output */}
       {isOwner && (
         <div className="px-4 pt-2 flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Thrive uses</span>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground w-full sm:w-auto">Thrive uses</span>
           <BrandVaultChip projectId={project.id} />
           <StudioBrainPanel projectId={project.id} isOwner={isOwner} />
         </div>

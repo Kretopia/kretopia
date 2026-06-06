@@ -356,6 +356,8 @@ export const ProductDashboardTab = () => {
           )}
         </CardContent>
       </Card>
+
+      <CreativeActionFunnels />
     </div>
   );
 };

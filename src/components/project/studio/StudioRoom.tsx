@@ -285,7 +285,7 @@ export const StudioRoom = ({
     );
     switch (id) {
       case "brief": return wrap(<BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />);
-      case "pulse": return wrap(<StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />);
+      case "pulse": return null; // retired — Drop Zone now lives above the layout
       case "deliverables": return wrap(<DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />);
       case "pad": return wrap(<PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />);
       case "prep": return showPrep ? wrap(<ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />) : null;

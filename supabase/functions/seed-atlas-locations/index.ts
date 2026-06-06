@@ -127,7 +127,7 @@ Each location must have coordinates within ${radius_km}km of the center point. M
     );
 
     const insertData = locations.map((loc: any) => ({
-      user_id: user.id,
+      user_id: userId,
       name: loc.name,
       description: loc.description,
       location_type: loc.location_type || "creative_space",

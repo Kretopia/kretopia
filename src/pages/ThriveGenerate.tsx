@@ -16,13 +16,14 @@ import { BrandVaultChip } from "@/components/brand-vault/BrandVaultChip";
 
 type Intent =
   | "sponsor_deck" | "pitch_deck" | "business_plan" | "client_proposal"
-  | "treatment" | "rate_card" | "moodboard_deck" | "one_pager";
+  | "treatment" | "rate_card" | "moodboard_deck" | "one_pager" | "letter_of_intent";
 
 const INTENTS: { id: Intent; label: string; hint: string }[] = [
   { id: "sponsor_deck", label: "Sponsor Deck", hint: "Pitch sponsors on your event or content" },
+  { id: "client_proposal", label: "Client Proposal", hint: "Win a client with a specific plan + price" },
+  { id: "letter_of_intent", label: "Letter of Intent", hint: "Branded letterhead — formal LOI to a partner, sponsor or govt body" },
   { id: "pitch_deck", label: "Pitch Deck", hint: "Investor pitch for your product or studio" },
   { id: "business_plan", label: "Business Plan", hint: "Full strategy + financials deck" },
-  { id: "client_proposal", label: "Client Proposal", hint: "Win a client with a specific plan + price" },
   { id: "treatment", label: "Treatment", hint: "Director's treatment for a film/video" },
   { id: "rate_card", label: "Rate Card", hint: "Premium packaging of your services" },
   { id: "moodboard_deck", label: "Moodboard", hint: "Image-led concept deck" },

@@ -2746,6 +2746,33 @@ export type Database = {
         }
         Relationships: []
       }
+      creative_actions: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: number
+          metadata: Json | null
+          ref_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: number
+          metadata?: Json | null
+          ref_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: number
+          metadata?: Json | null
+          ref_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       creative_assets: {
         Row: {
           created_at: string
@@ -18847,6 +18874,15 @@ export type Database = {
       generate_membership_number: { Args: never; Returns: string }
       generate_secure_token: { Args: never; Returns: string }
       generate_unsubscribe_token: { Args: never; Returns: string }
+      get_active_users_rollup: {
+        Args: never
+        Returns: {
+          dau: number
+          dau_wau_ratio: number
+          mau: number
+          wau: number
+        }[]
+      }
       get_ambassador_by_code: {
         Args: { _code: string }
         Returns: {
@@ -18880,6 +18916,15 @@ export type Database = {
           degree: number
           path_user_ids: string[]
           path_user_names: string[]
+        }[]
+      }
+      get_creative_actions_daily: {
+        Args: { _days?: number }
+        Returns: {
+          action_count: number
+          action_type: string
+          day: string
+          unique_users: number
         }[]
       }
       get_credit_endorsement_by_token: {
@@ -19145,6 +19190,7 @@ export type Database = {
           subscription_tier: string
         }[]
       }
+      get_product_kpis: { Args: never; Returns: Json }
       get_profiles_by_degree: {
         Args: {
           p_degree: number
@@ -19196,6 +19242,16 @@ export type Database = {
           role: string
           user_id: string
           verification_tier: string
+        }[]
+      }
+      get_retention_cohorts: {
+        Args: { _weeks?: number }
+        Returns: {
+          cohort_size: number
+          cohort_week: string
+          retained: number
+          retention_pct: number
+          week_offset: number
         }[]
       }
       get_review_request_by_token: {
@@ -19330,6 +19386,10 @@ export type Database = {
           file_url: string
           folder_id: string
         }[]
+      }
+      log_creative_action: {
+        Args: { _action_type: string; _metadata?: Json; _ref_id?: string }
+        Returns: number
       }
       log_share_link_view: {
         Args: {

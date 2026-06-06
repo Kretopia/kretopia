@@ -299,7 +299,7 @@ export const StudioRoom = ({
     }
   };
 
-  const DEFAULT_LEFT: WidgetId[] = ["brief", "pulse", "deliverables", "pad", "prep", "work"];
+  const DEFAULT_LEFT: WidgetId[] = ["brief", "deliverables", "pad", "prep", "work"];
   const DEFAULT_RIGHT: WidgetId[] = ["money", "request_pay", "people", "wrap", "credit", "calls"];
   const STORAGE_KEY = `thrivedesk:widgets:${project.id}`;
 

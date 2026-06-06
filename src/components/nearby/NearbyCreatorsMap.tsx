@@ -99,19 +99,36 @@ export const NearbyCreatorsMap = ({
     markers.current.forEach((marker) => marker.remove());
     markers.current = [];
 
+    // Escape user-controlled strings to prevent stored XSS in marker/popup HTML
+    const escapeHtml = (s: string | null | undefined) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    const safeUrl = (u: string | null | undefined) => {
+      const s = String(u ?? "");
+      return /^https?:\/\//i.test(s) ? escapeHtml(s) : "";
+    };
+
     // Add creator markers
     creators.forEach((creator) => {
       const el = document.createElement("div");
       el.className = "creator-marker cursor-pointer";
-      
+
       const isSelected = selectedCreator?.user_id === creator.user_id;
-      
+      const safeName = escapeHtml(creator.full_name);
+      const safeRole = escapeHtml(creator.role);
+      const safeAvatar = safeUrl(creator.avatar_url);
+      const initial = escapeHtml(creator.full_name?.charAt(0) || "U");
+
       el.innerHTML = `
         <div class="relative transition-transform ${isSelected ? 'scale-125' : 'hover:scale-110'}">
           <div class="h-10 w-10 rounded-full overflow-hidden border-2 ${isSelected ? 'border-primary shadow-lg shadow-primary/30' : 'border-white'} bg-background">
-            ${creator.avatar_url 
-              ? `<img src="${creator.avatar_url}" alt="${creator.full_name}" class="h-full w-full object-cover" />`
-              : `<div class="h-full w-full flex items-center justify-center bg-primary/10 text-primary font-semibold">${creator.full_name?.charAt(0) || 'U'}</div>`
+            ${safeAvatar
+              ? `<img src="${safeAvatar}" alt="${safeName}" class="h-full w-full object-cover" />`
+              : `<div class="h-full w-full flex items-center justify-center bg-primary/10 text-primary font-semibold">${initial}</div>`
             }
           </div>
           ${isSelected ? `
@@ -124,16 +141,16 @@ export const NearbyCreatorsMap = ({
         onSelectCreator(creator);
       });
 
-      const popup = new mapboxgl.Popup({ 
+      const popup = new mapboxgl.Popup({
         offset: 25,
         closeButton: false,
         className: 'creator-popup'
       }).setHTML(`
         <div class="p-2 min-w-[150px]">
-          <p class="font-semibold text-sm">${creator.full_name}</p>
-          <p class="text-xs text-gray-500">${creator.role}</p>
-          <p class="text-xs text-primary mt-1">${creator.distance_km < 1 
-            ? `${Math.round(creator.distance_km * 1000)}m away` 
+          <p class="font-semibold text-sm">${safeName}</p>
+          <p class="text-xs text-gray-500">${safeRole}</p>
+          <p class="text-xs text-primary mt-1">${creator.distance_km < 1
+            ? `${Math.round(creator.distance_km * 1000)}m away`
             : `${creator.distance_km.toFixed(1)}km away`
           }</p>
         </div>

@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { ContentBlock } from "./BlockTypes";
 import { getVideoEmbedUrl } from "./BlockEditor";
 
@@ -145,7 +146,16 @@ export const BlockRenderer = ({ blocks, theme = 'dark', accentColor }: BlockRend
             {block.type === 'embed' && block.embedCode && (
               <div className="space-y-3">
                 {block.title && <h3 className={`text-xl font-bold ${textColor}`}>{block.title}</h3>}
-                <div className="rounded-xl overflow-hidden" dangerouslySetInnerHTML={{ __html: block.embedCode }} />
+                <div
+                  className="rounded-xl overflow-hidden"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(block.embedCode, {
+                      ALLOWED_TAGS: ['iframe', 'div', 'p', 'span', 'br'],
+                      ALLOWED_ATTR: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'title', 'loading', 'referrerpolicy', 'class', 'style'],
+                      ALLOWED_URI_REGEXP: /^https?:\/\//i,
+                    }),
+                  }}
+                />
               </div>
             )}
           </div>

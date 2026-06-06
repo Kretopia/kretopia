@@ -321,6 +321,35 @@ export const BriefDropZone = ({
         return { facts: 0, entities: 0 };
       });
 
+      // Phase F — also file the drop into the right Studio section:
+      // images → Moodboard (project_files), so they're not lost to the Brain alone.
+      if (isImage) {
+        try {
+          const { data: userRes } = await supabase.auth.getUser();
+          const me = userRes?.user?.id;
+          if (me) {
+            const ext = file.name.split(".").pop() || "jpg";
+            const path = `${projectId}/drop-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const { error: upErr } = await supabase.storage
+              .from("project-files")
+              .upload(path, file, { cacheControl: "3600", upsert: false });
+            if (!upErr) {
+              const { data: pub } = supabase.storage.from("project-files").getPublicUrl(path);
+              await supabase.from("project_files").insert({
+                project_id: projectId,
+                user_id: me,
+                file_name: file.name,
+                file_url: pub?.publicUrl ?? path,
+                file_type: "image",
+              } as never).then(() => {}, () => {});
+            }
+          }
+        } catch (e) {
+          console.warn("[dropzone] moodboard upload failed", e);
+        }
+      }
+
+
 
       setSummary({
         fileName: file.name,

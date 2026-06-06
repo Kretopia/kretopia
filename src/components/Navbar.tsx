@@ -268,16 +268,22 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <Separator className="my-3" />
 
-                      {/* WORKSPACE */}
+                      {/* WORKSPACE — daily-driver surfaces only */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
                       <MenuButton icon={LayoutDashboard} label="Dashboard" onClick={() => handleNavigation("/dashboard")} path="/dashboard" />
                       <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
                       <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
-                      <MenuButton icon={Crown} label="Founding Circle" onClick={() => handleNavigation("/founding-member")} path="/founding-member" />
-                      <MenuButton icon={UserPlus} label="Creative Circle" onClick={() => handleNavigation("/creative-circle")} path="/creative-circle" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Manager Mode" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
+
+                      <Separator className="my-3" />
+
+                      {/* MORE — deprioritized surfaces (Spotlight, Fund, Founding, Referrals, Vault) */}
+                      <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">More</p>
+                      <MenuButton icon={Sparkles} label="Spotlight" onClick={() => handleNavigation("/spotlight")} path="/spotlight" />
+                      <MenuButton icon={Crown} label="Founding Circle" onClick={() => handleNavigation("/founding-member")} path="/founding-member" />
+                      <MenuButton icon={UserPlus} label="Creative Circle" onClick={() => handleNavigation("/creative-circle")} path="/creative-circle" />
                       <MenuButton icon={Palette} label="Brand Vault" onClick={() => handleNavigation("/brand-vault")} path="/brand-vault" />
                       <MenuButton icon={Gift} label="Referral Program" onClick={() => handleNavigation("/ambassador")} path="/ambassador" />
 

@@ -28,7 +28,7 @@ import { useNativeCapacitor } from "./hooks/useNativeCapacitor";
 import { useActivityPing } from "./hooks/useActivityPing";
 import { GuestBanner } from "./components/GuestBanner";
 import { AuthGate } from "./components/AuthGate";
-import { OnboardingTour } from "./components/OnboardingTour";
+// OnboardingTour removed — real /onboarding page is the single source of truth.
 import { NewsletterPopup } from "./components/NewsletterPopup";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import UnifiedHome from "./components/home/UnifiedHome";

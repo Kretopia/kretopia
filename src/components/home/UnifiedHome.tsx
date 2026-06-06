@@ -16,7 +16,7 @@ import { PushNotificationPrompt } from "@/components/PushNotificationPrompt";
 
 import { UnifiedSearchDropdown } from "@/components/search/UnifiedSearchDropdown";
 import { CreditThumb } from "@/components/onboarding/claim-flow/CreditThumb";
-import { ProfileHubCard } from "@/components/home/ProfileHubCard";
+// ProfileHubCard removed from Home — Passport tab covers profile surface.
 import { DiscoverCreativesRow } from "@/components/landing/DiscoverCreativesRow";
 import { OAuthQuickButtons } from "@/components/landing/OAuthQuickButtons";
 // Hero visual is now <HeroPhoneCarousel /> — no static image needed.

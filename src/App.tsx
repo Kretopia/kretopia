@@ -271,7 +271,7 @@ const AppContent = () => {
       <DesktopCopilotRail />
       {showBottomNav && <ThriveBar />}
       
-      {user && !isAuthPage && !isOnboardingPage && <OnboardingTour />}
+      {/* OnboardingTour removed — real /onboarding flow + GetStartedChecklist cover this. */}
       {user && <GlobalIncomingCall />}
       {!user && <NewsletterPopup />}
       <PWAInstallPrompt />

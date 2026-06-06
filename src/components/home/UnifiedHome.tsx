@@ -580,21 +580,7 @@ export const UnifiedHome = () => {
             <CuratedStagesRail limit={6} hideWhenEmpty />
           </div>
 
-          {/* Pass B.1: MagicHomeHero hidden — ThrivePromptHero is the single hero. */}
-          {false && (() => {
-            const created = profileFull?.created_at ? new Date(profileFull.created_at).getTime() : 0;
-            const ageHrs = (Date.now() - created) / 3_600_000;
-            const pct = checkProfileCompletion(profileFull || profile, myCredits).percentage;
-            const isMagic = ageHrs < 72 || pct < 30;
-            return isMagic ? (
-              <MagicHomeHero
-                profile={profileFull || profile}
-                creditsCount={myCredits}
-                connectionsCount={myConnections}
-                className="mb-4"
-              />
-            ) : null;
-          })()}
+          {/* MagicHomeHero removed — ThrivePromptHero + GetStartedChecklist cover this. */}
 
           {/* Duplicate-account merge prompt */}
           <div className="mb-4 empty:hidden">
@@ -608,43 +594,14 @@ export const UnifiedHome = () => {
             </div>
           )}
 
-          {/* Pass B.1: ProfileHubCard hidden — Profile tab covers this. */}
-          {false && (
-            <ProfileHubCard
-              userId={user.id}
-              profile={profileFull || profile}
-              creditsCount={myCredits}
-              connectionsCount={myConnections}
-              className="mb-4"
-            />
-          )}
+          {/* ProfileHubCard removed — Passport tab is the canonical surface. */}
 
           {/* Unified Approvals — only renders when there are pending items */}
           <div className="mb-4">
             <ApprovalsHub limit={4} />
           </div>
 
-          {/* Pass B.1: "More for you" details collapsed — moved to dedicated surfaces.
-              WeeklyIntent → Desk · MoneyBrief → Pay · Founding/Invite → their own pages. */}
-          {false && (
-            <details className="group mb-4 rounded-2xl border border-border/60 bg-card/50 [&[open]]:bg-card transition-colors">
-              <summary className="flex items-center justify-between cursor-pointer list-none px-4 py-3 text-sm font-semibold text-foreground">
-                <span className="flex items-center gap-2">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
-                  More for you
-                </span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
-              </summary>
-              <div className="px-4 pb-4 pt-1 space-y-4">
-                <WeeklyIntentCard />
-                <MoneyBrief variant="compact" />
-                <NewMemberStarterCard />
-                <FoundingMemberCard />
-                <InviteCircleCard variant="home" />
-                <PushNotificationPrompt trigger="default" />
-              </div>
-            </details>
-          )}
+          {/* "More for you" details removed — every card now lives on its dedicated surface. */}
 
           {/* Push prompt still fires (cooldown-gated) but lives quietly outside the section. */}
           <PushNotificationPrompt trigger="default" />
@@ -674,97 +631,7 @@ export const UnifiedHome = () => {
         {!user && !isWedge && <BottomCTASection />}
 
 
-        {/* ── 1. CREATORS FOR YOU (auth only) ── */}
-        {user && featuredCreators.length === 0 && (
-          <section className="mb-8">
-            <div className="rounded-2xl border border-dashed border-primary/30 bg-gradient-to-br from-primary/[0.06] via-card to-accent/[0.04] p-5 text-center">
-              <div className="mx-auto mb-3 h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-primary" />
-              </div>
-              <p className="text-sm font-bold text-foreground">Your matches are warming up</p>
-              <p className="text-[12px] text-muted-foreground mt-1 max-w-xs mx-auto">
-                Add your skills, location, and a few credits — Thrive will line up creators and gigs that fit you.
-              </p>
-              <button
-                onClick={() => navigate("/profile/edit")}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                Finish your profile <ArrowRight className="h-3 w-3" />
-              </button>
-            </div>
-          </section>
-        )}
-        {user && featuredCreators.length > 0 && (
-          <section className="mb-8 scroll-mt-14">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Users className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
-                Creators For You
-              </h2>
-              <Link to="/circle" className="text-xs text-[hsl(var(--signal-teal))] font-medium flex items-center gap-1 hover:underline">
-                See all <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
-              {featuredCreators.slice(0, 8).map((c: any, i: number) => (
-                <motion.div
-                  key={c.user_id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="shrink-0 w-[210px] snap-start"
-                >
-                  <div
-                    className="relative rounded-2xl border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group h-full overflow-hidden"
-                    onClick={() => navigate(`/profile/${c.user_id}`)}
-                  >
-                    {typeof c.match_score === "number" && (
-                      <span className="absolute top-2 right-2 z-10 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary text-primary-foreground shadow-sm">
-                        {c.match_score}% match
-                      </span>
-                    )}
-                    <div className="p-3 pb-2 flex items-start gap-2.5">
-                      <Avatar className="h-12 w-12 shrink-0 border-2 border-primary/20 group-hover:border-primary/40 transition-colors">
-                        <AvatarImage src={c.avatar_url || ""} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
-                          {(c.full_name || "?")[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1 pr-12">
-                        <p className="text-sm font-semibold text-foreground line-clamp-1 leading-tight">{c.full_name}</p>
-                        <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">{c.role || "Creative"}</p>
-                        {c.location && (
-                          <p className="text-[10px] text-muted-foreground/80 line-clamp-1 mt-0.5 flex items-center gap-0.5">
-                            <MapPin className="h-2.5 w-2.5" /> {String(c.location).split(",")[0]}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    {(c.reason || (Array.isArray(c.skill_match) && c.skill_match.length > 0)) && (
-                      <div className="px-3 pb-3 pt-1 border-t border-border/40 mt-1">
-                        {c.reason && (
-                          <p className="text-[11px] text-foreground/80 line-clamp-2 leading-snug flex gap-1">
-                            <Sparkles className="h-3 w-3 text-primary shrink-0 mt-0.5" />
-                            <span>{c.reason}</span>
-                          </p>
-                        )}
-                        {Array.isArray(c.skill_match) && c.skill_match.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1.5">
-                            {c.skill_match.slice(0, 2).map((s: string) => (
-                              <span key={s} className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                                {s}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* "Creators For You" rail removed from Today — lives on /scout and /circle. */}
 
         {/* Pass B.1: ScoutedGigsSection — the moat. Real gigs from across the web. */}
         {user && (
@@ -781,249 +648,16 @@ export const UnifiedHome = () => {
         )}
 
         {/* What's on — upcoming events with free/ticketed filters */}
-        {user && <EventsNearYouSection limit={8} />}
+        {/* EventsNearYou removed from Today — Sound Stages rail above + /meetup cover this. */}
 
         {/* Daily Driver IA: Streak + Spotlight stripped from Today — Home stays a focused brief.
             Spotlight (Magazine + Podcast) lives at /spotlight; streak chips moved to Passport. */}
 
-        {/* Pass B.1: Legacy "Gigs For You" hidden — ScoutedGigsSection above is the moat. */}
-        {false && user && (
-          <section id="section-gigs" className="mb-8 scroll-mt-14">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Zap className="h-4 w-4 text-warning" />
-                {t("landing.gigsForYou")}
-              </h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setQuickPostType("gig")}
-                  className="text-[10px] font-semibold text-success flex items-center gap-1 hover:text-success/80 transition-colors"
-                >
-                  <PlusCircle className="h-3.5 w-3.5" /> {t("landing.postGig")}
-                </button>
-                <span className="text-border">·</span>
-                <Link to="/opportunities" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                  {t("landing.browse")} <ArrowRight className="h-3 w-3" />
-                </Link>
-              </div>
-            </div>
-            {activeGigs.length > 0 ? (
-              <div className="flex items-stretch gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-4 px-4 snap-x snap-mandatory">
-                {activeGigs.map((g, i) => (
-                  <motion.div
-                    key={g.id}
-                    initial={{ opacity: 0, x: 12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="shrink-0 w-[78%] sm:w-[300px] snap-start flex"
-                  >
-                    <GigRailCard opportunity={g} />
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/[0.06] via-card to-warning/[0.04] p-5">
-                <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-warning/10 blur-2xl" aria-hidden />
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-9 w-9 rounded-xl bg-warning/15 flex items-center justify-center">
-                      <Zap className="h-4.5 w-4.5 text-warning" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground leading-tight">No matched gigs yet</p>
-                      <p className="text-[11px] text-muted-foreground">New opportunities drop daily.</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Strengthen your profile to get matched faster, or post your own gig to find collaborators.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => navigate("/opportunities")}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[11px] font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-                    >
-                      Browse gigs <ArrowRight className="h-3 w-3" />
-                    </button>
-                    <button
-                      onClick={() => setQuickPostType("gig")}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground hover:border-primary/40 transition-colors"
-                    >
-                      <PlusCircle className="h-3 w-3" /> Post a gig
-                    </button>
-                    <button
-                      onClick={() => navigate("/profile/edit")}
-                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Improve profile →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
+        {/* Legacy "Gigs For You" removed — ScoutedGigsSection above is the moat. */}
 
-        {/* Pass B.1: Events row hidden — Events surface is off-nav for MVP. */}
-        {false && user && (
-          <section className="mb-8 scroll-mt-14">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-warning" />
-                What's Happening Near You
-              </h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setQuickPostType("event")}
-                  className="text-[10px] font-semibold text-warning flex items-center gap-1 hover:text-warning/80 transition-colors"
-                >
-                  <PlusCircle className="h-3.5 w-3.5" /> Create Event
-                </button>
-                <span className="text-border">·</span>
-                <Link to="/nearby" className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                  Explore <ArrowRight className="h-3 w-3" />
-                </Link>
-              </div>
-            </div>
-            {upcomingEvents.length > 0 ? (
-              <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
-                {upcomingEvents.map((ev: any, i: number) => {
-                  const eventDate = new Date(ev.start_time);
-                  const month = eventDate.toLocaleString("en", { month: "short" }).toUpperCase();
-                  const day = eventDate.getDate();
-                  return (
-                    <motion.div
-                      key={ev.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.06 }}
-                      className="shrink-0 w-[200px] sm:w-[240px] snap-start"
-                    >
-                      <div
-                        className="rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/30 transition-all shadow-sm hover:shadow-md cursor-pointer group"
-                        onClick={() => navigate(`/event/${ev.id}`)}
-                      >
-                        {ev.cover_image_url ? (
-                          <div className="aspect-[16/9] overflow-hidden relative">
-                            <img src={ev.cover_image_url} alt={ev.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                            <div className="absolute top-2 left-2 bg-card/90 rounded-lg px-2 py-1 text-center">
-                              <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
-                              <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="aspect-[16/9] bg-gradient-to-br from-warning/10 to-primary/10 flex items-center justify-center relative">
-                            <CalendarDays className="h-6 w-6 text-warning/30" />
-                            <div className="absolute top-2 left-2 bg-card/90 rounded-lg px-2 py-1 text-center">
-                              <p className="text-[9px] font-bold text-primary leading-none">{month}</p>
-                              <p className="text-sm font-bold text-foreground leading-tight">{day}</p>
-                            </div>
-                          </div>
-                        )}
-                        <div className="p-3">
-                          <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug">{ev.title}</p>
-                          {ev.venue_name && (
-                            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                              <MapPin className="h-2.5 w-2.5" /> {ev.venue_name}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-warning/[0.07] via-card to-primary/[0.05] p-5">
-                <div className="absolute -bottom-8 -left-8 h-28 w-28 rounded-full bg-primary/10 blur-2xl" aria-hidden />
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-9 w-9 rounded-xl bg-warning/15 flex items-center justify-center">
-                      <CalendarDays className="h-4.5 w-4.5 text-warning" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground leading-tight">No events near you yet</p>
-                      <p className="text-[11px] text-muted-foreground">Be the spark — start the scene.</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    Host a casual meetup, jam session, or open mic. Most successful scenes start with one creator showing up.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setQuickPostType("event")}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-warning px-3 py-1.5 text-[11px] font-semibold text-warning-foreground hover:bg-warning/90 transition-colors"
-                    >
-                      <PlusCircle className="h-3 w-3" /> Host an event
-                    </button>
-                    <button
-                      onClick={() => navigate("/nearby")}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground hover:border-primary/40 transition-colors"
-                    >
-                      Explore map <ArrowRight className="h-3 w-3" />
-                    </button>
-                    <button
-                      onClick={() => navigate("/sessions")}
-                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Browse all events →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
-        )}
+        {/* Hidden "What's Happening Near You" removed — /meetup + Sound Stages cover events. */}
 
-        {/* Pass B.1: Trending credits hidden — accessible via Credits tab. */}
-        {false && user && (
-          <section id="section-credits" className="mb-8 scroll-mt-14">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
-                Credits In Your World
-              </h2>
-              <Link to="/credits" className="text-xs text-[hsl(var(--signal-teal))] font-medium flex items-center gap-1 hover:underline">
-                {t("landing.viewAll")} <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1 snap-x snap-mandatory">
-              {trendingCredits.map((c, i) => (
-                <motion.button
-                  key={c.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  onClick={() => navigate(`/production?name=${encodeURIComponent(c.project_name)}`)}
-                  className="shrink-0 w-[140px] sm:w-[180px] group text-left snap-start"
-                >
-                  <div className="relative rounded-2xl overflow-hidden bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm hover:shadow-lg">
-                    <div className="aspect-[3/4] overflow-hidden">
-                      <CreditThumb
-                        src={c.thumbnail_url || c.primary_media_url}
-                        title={c.project_name}
-                        platform={c.platform || c.category}
-                        className="w-full h-full group-hover:scale-105 transition-transform duration-700"
-                        iconClassName="h-10 w-10"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent pointer-events-none" />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <div className="flex items-center gap-1 mb-1">
-                        <Verified className="h-3 w-3 text-primary" />
-                        <span className="text-[8px] font-bold text-primary uppercase tracking-widest">{t("landing.verified")}</span>
-                      </div>
-                      <p className="text-xs font-bold text-foreground leading-tight line-clamp-2">{c.project_name}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{c.role}{c.year ? ` · ${c.year}` : ''}</p>
-                    </div>
-                  </div>
-                </motion.button>
-              ))}
-              {trendingCredits.length === 0 && Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="shrink-0 w-[140px] sm:w-[180px] rounded-2xl border border-border bg-card aspect-[3/4] animate-pulse" />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Hidden "Trending credits" removed — accessible via Credits tab. */}
 
         {/* Trust badges - guest only */}
         {!user && (

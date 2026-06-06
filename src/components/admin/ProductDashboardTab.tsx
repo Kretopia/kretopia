@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Users, MessageSquare, Briefcase, FileText, Wallet, Trophy, Sparkles, TrendingUp } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+import { CreativeActionFunnels } from "./CreativeActionFunnels";
 
 type KPIs = {
   growth?: { signups_7d: number; signups_30d: number; total_users: number };
@@ -355,6 +356,8 @@ export const ProductDashboardTab = () => {
           )}
         </CardContent>
       </Card>
+
+      <CreativeActionFunnels />
     </div>
   );
 };

@@ -22,6 +22,7 @@ const DOC_INTENTS = [
   "rate_card",
   "moodboard_deck",
   "one_pager",
+  "letter_of_intent",
 ] as const;
 
 const SYSTEM = `You are Thrive's Studio Outcome Router. The user is inside a Studio (a project workspace) and just told you what they want to make. Decide the OUTCOME to spin up and respond by calling the route_outcome tool.

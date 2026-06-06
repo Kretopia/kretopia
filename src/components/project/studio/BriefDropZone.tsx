@@ -549,97 +549,192 @@ export const BriefDropZone = ({
     );
   }
 
+  // === Cinematic skydive bullseye — ONE true Drop Zone for anything ===
   return (
-    <div className="px-4 pt-5">
+    <section className="px-4 pt-5 pb-2 space-y-3">
+      <header>
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[hsl(var(--energy))]">
+          Drop Zone
+        </p>
+        <h2 className="text-lg font-black leading-none tracking-tight">
+          Land it here — Thrive files it
+        </h2>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          Deck · contract · budget · PDF · image · voice · link · idea.
+          Thrive remembers it and routes it to Moodboard, Tasks, Pad or Vault.
+        </p>
+      </header>
+
       <input
         ref={inputRef}
         type="file"
         accept="application/pdf,text/*,image/*,audio/*,.csv,.tsv,.md,.json,.yaml,.yml,.docx"
         className="hidden"
-        onChange={(e) => ingestFile(e.target.files?.[0] ?? null)}
+        onChange={(e) => {
+          ingestFile(e.target.files?.[0] ?? null);
+          if (inputRef.current) inputRef.current.value = "";
+        }}
       />
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => inputRef.current?.click()}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
+
+      {!open ? (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setOpen(true);
+            }
+          }}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
             e.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragOver(false);
-          ingestFile(e.dataTransfer.files?.[0] ?? null);
-        }}
-        className={cn(
-          "group relative overflow-hidden rounded-2xl cursor-pointer transition-all",
-          "border-2 border-dashed",
-          dragOver
-            ? "border-primary bg-primary/10 scale-[1.01]"
-            : "border-primary/30 bg-gradient-to-br from-primary/5 via-[hsl(var(--energy)/0.04)] to-transparent hover:border-primary/60 hover:from-primary/10",
-          "p-4 sm:p-5",
-        )}
-      >
-        <div className="flex items-start gap-3">
-          <div className="h-11 w-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-[var(--shadow-glow)] group-hover:scale-105 transition-transform">
-            <Upload className="h-5 w-5" />
+            setDragOver(false);
+            const f = e.dataTransfer.files?.[0];
+            if (f) ingestFile(f);
+          }}
+          className={cn(
+            "relative w-full aspect-[16/10] rounded-2xl overflow-hidden cursor-pointer",
+            "bg-gradient-to-br from-primary/5 via-background to-[hsl(var(--energy)/0.08)]",
+            "ring-1 ring-border hover:ring-[hsl(var(--energy))] transition-all group",
+            dragOver && "ring-2 ring-[hsl(var(--energy))] scale-[1.01]",
+          )}
+          aria-label="Open Drop Zone"
+        >
+          {/* Skydive target rings */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="relative">
+              <div className={cn(
+                "absolute inset-0 m-auto rounded-full border-2 border-primary/15 h-56 w-56 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:border-primary/30 transition-colors",
+                dragOver && "animate-ping border-[hsl(var(--energy))]/40",
+              )} />
+              <div className="absolute inset-0 m-auto rounded-full border-2 border-primary/25 h-44 w-44 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:border-primary/45 transition-colors" />
+              <div className="absolute inset-0 m-auto rounded-full border-2 border-[hsl(var(--energy)/0.4)] h-32 w-32 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 group-hover:border-[hsl(var(--energy)/0.7)] transition-colors" />
+              <div className="absolute inset-0 m-auto rounded-full border-2 border-[hsl(var(--energy)/0.6)] h-20 w-20 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 transition-colors" />
+              <div className="absolute inset-0 m-auto h-10 w-10 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 rounded-full bg-[hsl(var(--energy))] shadow-[0_0_30px_hsl(var(--energy)/0.6)] flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-background" />
+              </div>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-base font-bold leading-tight">Feed the Studio Brain</p>
-              <Badge
-                variant="secondary"
-                className="rounded-full text-[10px] font-bold uppercase tracking-wider bg-[hsl(var(--energy)/0.15)] text-[hsl(var(--energy))] border border-[hsl(var(--energy)/0.3)]"
-              >
-                Remembers everything
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              Drop a sponsor deck, contract, budget, venue PDF, photo, voice
-              note, or paste a link. Thrive remembers it so you never re-explain.
+
+          {/* Floating hint icons — each opens the matching input mode */}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setOpen(true); setShowLink(true); }}
+            className="absolute top-3 left-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
+          >
+            <Link2 className="h-3 w-3" /> Link
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
+            className="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
+          >
+            <ImagePlus className="h-3 w-3" /> Image
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
+            className="absolute bottom-3 left-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
+          >
+            <Mic className="h-3 w-3" /> Voice
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+            className="absolute bottom-3 right-3 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground"
+          >
+            💭 Idea
+          </button>
+
+          <div className="absolute inset-x-0 bottom-10 text-center pointer-events-none">
+            <p className="text-[11px] font-semibold text-foreground/80">
+              {dragOver ? "Drop to land 🎯" : "Tap or drop anything"}
             </p>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px] text-muted-foreground">
-              <FileText className="h-3 w-3" />
-              <span>PDF · doc · image · audio · link · max 25 MB</span>
-            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-2xl border-2 border-[hsl(var(--energy)/0.4)] p-3 space-y-2.5 bg-card shadow-[0_0_30px_hsl(var(--energy)/0.15)]">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-full bg-[hsl(var(--energy))] flex items-center justify-center shrink-0">
+              <Sparkles className="h-3.5 w-3.5 text-background" />
+            </div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[hsl(var(--energy))]">
+              Landing zone armed
+            </p>
+            <Badge variant="secondary" className="ml-auto rounded-full text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
+              Remembers everything
+            </Badge>
+          </div>
 
-      <div className="mt-2 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setShowLink((v) => !v)}
-          className="text-[11px] font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-        >
-          <Link2 className="h-3 w-3" /> {showLink ? "Hide link" : "Paste a link instead"}
-        </button>
-      </div>
-      {showLink && (
-        <div className="mt-2 flex items-center gap-2">
-          <Input
-            value={linkValue}
-            onChange={(e) => setLinkValue(e.target.value)}
-            placeholder="https://… venue page, sponsor site, brief doc"
-            className="h-9 text-sm"
-            onKeyDown={(e) => { if (e.key === "Enter") ingestLink(); }}
+          <textarea
+            autoFocus
+            rows={3}
+            value={draftText}
+            onChange={(e) => setDraftText(e.target.value)}
+            placeholder="Paste a link, write a thought, or tap a button below to add a file / voice note."
+            className="w-full resize-none bg-transparent text-sm border-0 focus-visible:outline-none px-1 placeholder:text-muted-foreground/70"
           />
-          <Button size="sm" onClick={ingestLink} disabled={!linkValue.trim()}>
-            Remember
-          </Button>
+
+          {showLink && (
+            <Input
+              value={linkValue}
+              onChange={(e) => setLinkValue(e.target.value)}
+              placeholder="https://… venue, sponsor, doc"
+              className="h-9 text-sm"
+              onKeyDown={(e) => { if (e.key === "Enter") ingestLink(); }}
+            />
+          )}
+
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-1">
+              <Button type="button" size="sm" variant="ghost" className="h-8 text-xs gap-1.5"
+                onClick={() => inputRef.current?.click()}>
+                <Upload className="h-3.5 w-3.5" /> File
+              </Button>
+              <Button type="button" size="sm" variant="ghost" className="h-8 text-xs gap-1.5"
+                onClick={() => setShowLink((v) => !v)}>
+                <Link2 className="h-3.5 w-3.5" /> {showLink ? "Hide link" : "Link"}
+              </Button>
+            </div>
+            <div className="flex gap-1.5">
+              <Button size="sm" variant="ghost" className="h-8 text-xs"
+                onClick={() => { setOpen(false); setDraftText(""); setLinkValue(""); setShowLink(false); setError(null); }}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5 bg-[hsl(var(--energy))] hover:bg-[hsl(var(--energy)/0.9)] text-background font-bold"
+                disabled={!draftText.trim() && !linkValue.trim()}
+                onClick={async () => {
+                  if (linkValue.trim()) {
+                    await ingestLink();
+                  }
+                  if (draftText.trim()) {
+                    const t = draftText;
+                    setDraftText("");
+                    await ingestThought(t);
+                  }
+                  setOpen(false);
+                }}
+              >
+                <Send className="h-3 w-3" />
+                Drop 🎯
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 
       {error && (
-        <div className="mt-2 text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-2.5 flex items-start gap-2">
+        <div className="text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-2.5 flex items-start gap-2">
           <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
-    </div>
+    </section>
   );
 };
+

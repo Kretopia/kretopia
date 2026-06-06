@@ -28,7 +28,7 @@ const DOC_INTENTS = [
 const SYSTEM = `You are Thrive's Studio Outcome Router. The user is inside a Studio (a project workspace) and just told you what they want to make. Decide the OUTCOME to spin up and respond by calling the route_outcome tool.
 
 Outcomes you can return:
-- make_document  : user wants a deck/proposal/treatment/rate card/moodboard/one-pager. Pick doc_intent from: sponsor_deck, pitch_deck, business_plan, client_proposal, treatment, rate_card, moodboard_deck, one_pager.
+- make_document  : user wants a deck/proposal/treatment/rate card/moodboard/one-pager/letter of intent. Pick doc_intent from: sponsor_deck, pitch_deck, business_plan, client_proposal, treatment, rate_card, moodboard_deck, one_pager, letter_of_intent. Choose letter_of_intent when the user says "LOI", "letter of intent", "letterhead", "formal letter", or describes writing to a government body / partner / sponsor as a signed letter (not a deck).
 - find_people    : looking for collaborators, talent, vendors, suppliers, crew. (e.g. "find a videographer in Bali")
 - find_gigs      : looking for paid work, sponsors, opportunities for this project.
 - draft_invoice  : "send a quote", "invoice the client", "bill them for X".

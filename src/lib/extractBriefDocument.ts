@@ -58,3 +58,28 @@ export async function extractTextFromFile(file: File): Promise<ExtractedDoc> {
     "Unsupported file. Upload a PDF, .txt, .md, or paste the contents into the Type tab.",
   );
 }
+
+/**
+ * Render the first page of a PDF to a JPEG so it can be routed through a
+ * vision model when text extraction returns nothing (i.e. scanned decks).
+ */
+export async function renderPdfFirstPageToImage(
+  file: File,
+  maxWidth = 1400,
+): Promise<{ base64: string; mime: string }> {
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 1 });
+  const scale = Math.min(maxWidth / viewport.width, 2);
+  const scaled = page.getViewport({ scale });
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.floor(scaled.width);
+  canvas.height = Math.floor(scaled.height);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas unavailable");
+  await page.render({ canvasContext: ctx, viewport: scaled } as any).promise;
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+  const base64 = dataUrl.split(",")[1] || "";
+  return { base64, mime: "image/jpeg" };
+}

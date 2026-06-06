@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { VibeHeader } from "./VibeHeader";
-import { StudioPulseFeed } from "./StudioPulseFeed";
+// StudioPulseFeed retired — merged into BriefDropZone (one true Drop Zone).
 import { NextStepCard } from "./NextStepCard";
 import { SendInvoiceNudge } from "./SendInvoiceNudge";
 import { FirstTimeHint } from "@/components/ui/first-time-hint";
@@ -248,7 +248,7 @@ export const StudioRoom = ({
   const mobileWorkColumn = (includeBrief: boolean) => (
     <div className="divide-y divide-border/60">
       {includeBrief && briefBlock}
-      <StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />
+      {/* Pulse merged into the single Drop Zone at the top of the room. */}
       <DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />
       {isOwner && <div className="px-4 py-3"><ThriveGenerateCard projectId={project.id} /></div>}
       <PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />
@@ -285,7 +285,7 @@ export const StudioRoom = ({
     );
     switch (id) {
       case "brief": return wrap(<BriefSection project={project} files={files} isOwner={isOwner} onUpdated={onUpdated} onAddReference={handleAddReference} currentUserId={currentUserId} />);
-      case "pulse": return wrap(<StudioPulseFeed projectId={project.id} currentUserId={currentUserId} collaborators={people} />);
+      case "pulse": return null; // retired — Drop Zone now lives above the layout
       case "deliverables": return wrap(<DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />);
       case "pad": return wrap(<PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />);
       case "prep": return showPrep ? wrap(<ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />) : null;
@@ -299,7 +299,7 @@ export const StudioRoom = ({
     }
   };
 
-  const DEFAULT_LEFT: WidgetId[] = ["brief", "pulse", "deliverables", "pad", "prep", "work"];
+  const DEFAULT_LEFT: WidgetId[] = ["brief", "deliverables", "pad", "prep", "work"];
   const DEFAULT_RIGHT: WidgetId[] = ["money", "request_pay", "people", "wrap", "credit", "calls"];
   const STORAGE_KEY = `thrivedesk:widgets:${project.id}`;
 

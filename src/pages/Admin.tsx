@@ -21,6 +21,7 @@ import { FounderGrantTab } from "@/components/admin/FounderGrantTab";
 import { BankTransfersTab } from "@/components/admin/BankTransfersTab";
 import { BounceRateTab } from "@/components/admin/BounceRateTab";
 import { AmbassadorsTab } from "@/components/admin/AmbassadorsTab";
+import { ProductDashboardTab } from "@/components/admin/ProductDashboardTab";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -300,9 +301,13 @@ export default function Admin() {
             <Megaphone className="h-4 w-4" />
             <span>Ambassadors</span>
           </TabsTrigger>
+          <TabsTrigger value="product" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
+            <Sparkles className="h-4 w-4" />
+            <span>Product</span>
+          </TabsTrigger>
           <TabsTrigger value="analytics" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <Activity className="h-4 w-4" />
-            <span>Analytics</span>
+            <span>Hosting</span>
           </TabsTrigger>
           <TabsTrigger value="scout-funnel" className="flex-shrink-0 text-xs sm:text-sm px-3 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
             <TrendingUp className="h-4 w-4" />
@@ -348,6 +353,10 @@ export default function Admin() {
 
         <TabsContent value="ambassadors" className="mt-4 sm:mt-6">
           <AmbassadorsTab />
+        </TabsContent>
+
+        <TabsContent value="product" className="mt-4 sm:mt-6">
+          <ProductDashboardTab />
         </TabsContent>
 
         <TabsContent value="analytics" className="mt-4 sm:mt-6">

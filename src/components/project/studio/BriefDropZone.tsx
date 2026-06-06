@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Upload, FileText, Loader2, CheckCircle2, X, Link2, Sparkles, AlertCircle } from "lucide-react";
+import { Upload, Loader2, X, Link2, Sparkles, AlertCircle, ImagePlus, Mic, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";

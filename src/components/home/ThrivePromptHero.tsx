@@ -126,9 +126,9 @@ export function ThrivePromptHero() {
   const [planMode, setPlanMode] = useState(false);
   const [activeWorkspaceType, setActiveWorkspaceType] = useState<string | null>(null);
   const [activeProjectTitle, setActiveProjectTitle] = useState<string | null>(null);
-  const [profileSignals, setProfileSignals] = useState({
-    hasBio: true, hasAvatar: true, creditsCount: 3, connectionsCount: 5,
-  });
+  const [profileSignals, setProfileSignals] = useState<{
+    hasBio: boolean; hasAvatar: boolean; creditsCount: number; connectionsCount: number; intents: PrimaryIntent[];
+  }>({ hasBio: true, hasAvatar: true, creditsCount: 3, connectionsCount: 5, intents: [] });
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 

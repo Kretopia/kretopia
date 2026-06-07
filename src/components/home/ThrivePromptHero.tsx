@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { normalizeIntents, type PrimaryIntent } from "@/lib/intents";
 
 interface RouteResponse {
   intent: "create_workspace" | "find_people" | "find_gigs" | "outreach" | "profile_epk" | "summarize" | "chat";
@@ -57,19 +58,33 @@ const CHIPS_BY_WORKSPACE: Record<string, Chip[]> = {
   ],
 };
 
-// Fallback chips when there's no active workspace — driven by profile gaps.
+// Intent-led chips — one warm starter per onboarding intent.
+const INTENT_LEAD_CHIP: Record<PrimaryIntent, Chip> = {
+  gigs: { label: "Find paid gigs", prompt: "Find paid gigs that match my skills" },
+  collaborate: { label: "Find collaborators", prompt: "Find collaborators near me" },
+  hire: { label: "Find talent", prompt: "Find verified creatives for a project" },
+  fund: { label: "Plan a campaign", prompt: "Help me plan a fundraising campaign" },
+  manage: { label: "Draft an invoice", prompt: "Draft an invoice for a recent project" },
+};
+
+// Fallback chips when there's no active workspace — driven by intent + profile gaps.
 function profileChips(opts: {
   hasBio: boolean;
   hasAvatar: boolean;
   creditsCount: number;
   connectionsCount: number;
+  intents: PrimaryIntent[];
 }): Chip[] {
   const chips: Chip[] = [];
+  // Lead with the user's primary intent (if set) so the first chip feels personal.
+  opts.intents.slice(0, 2).forEach((id) => {
+    const c = INTENT_LEAD_CHIP[id];
+    if (c && !chips.find((x) => x.label === c.label)) chips.push(c);
+  });
   if (!opts.hasBio || !opts.hasAvatar) chips.push({ label: "Update Press Kit", prompt: "Help me update my Press Kit" });
   if (opts.creditsCount < 3) chips.push({ label: "Add a credit", prompt: "Help me add a credit to my profile" });
-  if (opts.connectionsCount < 5) chips.push({ label: "Find collaborators", prompt: "Find collaborators near me" });
-  chips.push({ label: "Find paid gigs", prompt: "Find paid gigs that match my skills" });
-  chips.push({ label: "Draft outreach", prompt: "Draft outreach to a sponsor or brand" });
+  // Always offer a draft action as a safe fallback.
+  if (chips.length < 4) chips.push({ label: "Draft outreach", prompt: "Draft outreach to a sponsor or brand" });
   return chips.slice(0, 4);
 }
 
@@ -111,9 +126,9 @@ export function ThrivePromptHero() {
   const [planMode, setPlanMode] = useState(false);
   const [activeWorkspaceType, setActiveWorkspaceType] = useState<string | null>(null);
   const [activeProjectTitle, setActiveProjectTitle] = useState<string | null>(null);
-  const [profileSignals, setProfileSignals] = useState({
-    hasBio: true, hasAvatar: true, creditsCount: 3, connectionsCount: 5,
-  });
+  const [profileSignals, setProfileSignals] = useState<{
+    hasBio: boolean; hasAvatar: boolean; creditsCount: number; connectionsCount: number; intents: PrimaryIntent[];
+  }>({ hasBio: true, hasAvatar: true, creditsCount: 3, connectionsCount: 5, intents: [] });
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -145,7 +160,7 @@ export function ThrivePromptHero() {
             .order("updated_at", { ascending: false })
             .limit(1)
             .maybeSingle(),
-          supabase.from("profiles").select("bio,avatar_url").eq("user_id", user.id).maybeSingle(),
+          supabase.from("profiles").select("bio,avatar_url,primary_intent,primary_intents").eq("user_id", user.id).maybeSingle(),
           supabase.from("credits").select("id", { count: "exact", head: true }).eq("user_id", user.id),
           supabase.from("connections").select("id", { count: "exact", head: true }).or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`).eq("status", "accepted"),
         ]);
@@ -157,6 +172,7 @@ export function ThrivePromptHero() {
           hasAvatar: !!(prof.data as any)?.avatar_url,
           creditsCount: credits.count ?? 0,
           connectionsCount: conns.count ?? 0,
+          intents: normalizeIntents((prof.data as any)?.primary_intents ?? (prof.data as any)?.primary_intent),
         });
       } catch {
         /* non-fatal — fall back to default chips */

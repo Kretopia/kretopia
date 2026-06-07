@@ -58,19 +58,33 @@ const CHIPS_BY_WORKSPACE: Record<string, Chip[]> = {
   ],
 };
 
-// Fallback chips when there's no active workspace — driven by profile gaps.
+// Intent-led chips — one warm starter per onboarding intent.
+const INTENT_LEAD_CHIP: Record<PrimaryIntent, Chip> = {
+  gigs: { label: "Find paid gigs", prompt: "Find paid gigs that match my skills" },
+  collaborate: { label: "Find collaborators", prompt: "Find collaborators near me" },
+  hire: { label: "Find talent", prompt: "Find verified creatives for a project" },
+  fund: { label: "Plan a campaign", prompt: "Help me plan a fundraising campaign" },
+  manage: { label: "Draft an invoice", prompt: "Draft an invoice for a recent project" },
+};
+
+// Fallback chips when there's no active workspace — driven by intent + profile gaps.
 function profileChips(opts: {
   hasBio: boolean;
   hasAvatar: boolean;
   creditsCount: number;
   connectionsCount: number;
+  intents: PrimaryIntent[];
 }): Chip[] {
   const chips: Chip[] = [];
+  // Lead with the user's primary intent (if set) so the first chip feels personal.
+  opts.intents.slice(0, 2).forEach((id) => {
+    const c = INTENT_LEAD_CHIP[id];
+    if (c && !chips.find((x) => x.label === c.label)) chips.push(c);
+  });
   if (!opts.hasBio || !opts.hasAvatar) chips.push({ label: "Update Press Kit", prompt: "Help me update my Press Kit" });
   if (opts.creditsCount < 3) chips.push({ label: "Add a credit", prompt: "Help me add a credit to my profile" });
-  if (opts.connectionsCount < 5) chips.push({ label: "Find collaborators", prompt: "Find collaborators near me" });
-  chips.push({ label: "Find paid gigs", prompt: "Find paid gigs that match my skills" });
-  chips.push({ label: "Draft outreach", prompt: "Draft outreach to a sponsor or brand" });
+  // Always offer a draft action as a safe fallback.
+  if (chips.length < 4) chips.push({ label: "Draft outreach", prompt: "Draft outreach to a sponsor or brand" });
   return chips.slice(0, 4);
 }
 

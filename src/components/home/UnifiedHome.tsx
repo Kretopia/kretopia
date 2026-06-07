@@ -50,6 +50,8 @@ import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
+import { TodayThreeCards } from "@/components/home/TodayThreeCards";
+import { ChevronDown } from "lucide-react";
 // LiveGigsStrip removed — see Smart Gig Scout
 // ThriveFundShowcase replaced by compact ThriveFundTeaserCard on landing
 import GigCard from "@/components/opportunity/GigCard";

@@ -50,6 +50,8 @@ import { MoneyBrief } from "@/components/thrivepay/MoneyBrief";
 import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
+import { TodayThreeCards } from "@/components/home/TodayThreeCards";
+import { ChevronDown } from "lucide-react";
 // LiveGigsStrip removed — see Smart Gig Scout
 // ThriveFundShowcase replaced by compact ThriveFundTeaserCard on landing
 import GigCard from "@/components/opportunity/GigCard";
@@ -568,19 +570,19 @@ export const UnifiedHome = () => {
             <ThrivePromptHero />
           </div>
 
-          {/* The Pulse — Morning Brief + Today + Active Studios */}
-          <MorningPulse firstName={firstName} greeting={greeting} />
+          {/* Today = Home, ≤3 cards. The whole day collapsed into 3 glanceable tiles. */}
+          <div className="mb-4">
+            <TodayThreeCards />
+          </div>
 
           {/* Sound Stages discovery — only renders when stages are scheduled this week */}
-          <div className="mt-4 space-y-2">
+          <div className="mt-2 mb-4 space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sound Stages this week</p>
               <Link to="/circle?tab=live" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
             </div>
             <CuratedStagesRail limit={6} hideWhenEmpty />
           </div>
-
-          {/* MagicHomeHero removed — ThrivePromptHero + GetStartedChecklist cover this. */}
 
           {/* Duplicate-account merge prompt */}
           <div className="mb-4 empty:hidden">
@@ -594,14 +596,20 @@ export const UnifiedHome = () => {
             </div>
           )}
 
-          {/* ProfileHubCard removed — Passport tab is the canonical surface. */}
-
-          {/* Unified Approvals — only renders when there are pending items */}
-          <div className="mb-4">
-            <ApprovalsHub limit={4} />
-          </div>
-
-          {/* "More for you" details removed — every card now lives on its dedicated surface. */}
+          {/* More from today — the full Pulse / Approvals / Scouted / Money sections live here,
+              one tap away but out of the main scroll. */}
+          <details className="group mb-4 rounded-2xl border border-border bg-card/40">
+            <summary className="flex items-center justify-between cursor-pointer list-none px-4 py-3 text-xs font-bold uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground transition-colors">
+              <span>More from today</span>
+              <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="px-3 sm:px-4 pb-4 pt-1 space-y-4">
+              <MorningPulse firstName={firstName} greeting={greeting} />
+              <ApprovalsHub limit={4} />
+              <ScoutedGigsSection limit={3} />
+              <MoneyBrief variant="compact" />
+            </div>
+          </details>
 
           {/* Push prompt still fires (cooldown-gated) but lives quietly outside the section. */}
           <PushNotificationPrompt trigger="default" />
@@ -633,22 +641,7 @@ export const UnifiedHome = () => {
 
         {/* "Creators For You" rail removed from Today — lives on /scout and /circle. */}
 
-        {/* Pass B.1: ScoutedGigsSection — the moat. Real gigs from across the web. */}
-        {user && (
-          <section className="mb-8 scroll-mt-14">
-            <ScoutedGigsSection limit={3} />
-          </section>
-        )}
-
-        {/* Money — compact pulse of invoicing + expenses */}
-        {user && (
-          <section className="mb-8">
-            <MoneyBrief variant="compact" />
-          </section>
-        )}
-
-        {/* What's on — upcoming events with free/ticketed filters */}
-        {/* EventsNearYou removed from Today — Sound Stages rail above + /meetup cover this. */}
+        {/* Scouted gigs + MoneyBrief moved into "More from today" above to keep Today calm. */}
 
         {/* Daily Driver IA: Streak + Spotlight stripped from Today — Home stays a focused brief.
             Spotlight (Magazine + Podcast) lives at /spotlight; streak chips moved to Passport. */}

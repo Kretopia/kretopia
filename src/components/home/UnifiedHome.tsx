@@ -641,22 +641,7 @@ export const UnifiedHome = () => {
 
         {/* "Creators For You" rail removed from Today — lives on /scout and /circle. */}
 
-        {/* Pass B.1: ScoutedGigsSection — the moat. Real gigs from across the web. */}
-        {user && (
-          <section className="mb-8 scroll-mt-14">
-            <ScoutedGigsSection limit={3} />
-          </section>
-        )}
-
-        {/* Money — compact pulse of invoicing + expenses */}
-        {user && (
-          <section className="mb-8">
-            <MoneyBrief variant="compact" />
-          </section>
-        )}
-
-        {/* What's on — upcoming events with free/ticketed filters */}
-        {/* EventsNearYou removed from Today — Sound Stages rail above + /meetup cover this. */}
+        {/* Scouted gigs + MoneyBrief moved into "More from today" above to keep Today calm. */}
 
         {/* Daily Driver IA: Streak + Spotlight stripped from Today — Home stays a focused brief.
             Spotlight (Magazine + Podcast) lives at /spotlight; streak chips moved to Passport. */}

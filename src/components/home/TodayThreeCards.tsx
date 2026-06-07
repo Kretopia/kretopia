@@ -35,6 +35,7 @@ export function TodayThreeCards() {
   const [topGig, setTopGig] = useState<{ id: string; title: string; company: string | null } | null>(null);
   const [owedToYou, setOwedToYou] = useState(0);
   const [overdueInv, setOverdueInv] = useState(0);
+  const [intents, setIntents] = useState<PrimaryIntent[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -71,7 +72,14 @@ export function TodayThreeCards() {
       .eq("issued_by", user.id)
       .then((r: any) => r.data ?? [], () => []);
 
-    Promise.all([approvalsP, tasksP, gigP, invP]).then(([a, t, g, inv]) => {
+    const profP = sb
+      .from("profiles")
+      .select("primary_intent, primary_intents")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then((r: any) => r.data ?? null, () => null);
+
+    Promise.all([approvalsP, tasksP, gigP, invP, profP]).then(([a, t, g, inv, prof]) => {
       if (cancelled) return;
       setApprovals(a);
       setOverdueTasks(t);
@@ -87,10 +95,12 @@ export function TodayThreeCards() {
       });
       setOwedToYou(owed);
       setOverdueInv(overdue);
+      setIntents(normalizeIntents(prof?.primary_intents ?? prof?.primary_intent));
     }).catch(() => {});
 
     return () => { cancelled = true; };
   }, [user]);
+
 
   if (!user) return null;
 

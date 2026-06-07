@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { normalizeIntents, type PrimaryIntent } from "@/lib/intents";
 
 interface RouteResponse {
   intent: "create_workspace" | "find_people" | "find_gigs" | "outreach" | "profile_epk" | "summarize" | "chat";

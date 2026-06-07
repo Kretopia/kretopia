@@ -4,8 +4,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, CheckCircle2, Compass, DollarSign, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { normalizeIntents, type PrimaryIntent } from "@/lib/intents";
 
 interface CardData {
+  key: "next" | "opportunity" | "money";
   title: string;
   value: string;
   detail: string;

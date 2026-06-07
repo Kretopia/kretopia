@@ -105,8 +105,29 @@ export function TodayThreeCards() {
   if (!user) return null;
 
   const nextMoveCount = approvals + overdueTasks;
+  const primary = intents[0];
+
+  // Intent-driven empty-state CTAs for the Opportunity card
+  const opportunityEmpty: { value: string; detail: string; cta: string; to: string } = (() => {
+    switch (primary) {
+      case "gigs":
+        return { value: "Browse", detail: "Live gigs are waiting — find your next paid brief", cta: "Open gigs", to: "/gigs" };
+      case "collaborate":
+        return { value: "Match", detail: "Find creators to collaborate with this week", cta: "Open match", to: "/match" };
+      case "hire":
+        return { value: "Find talent", detail: "Search verified creators for your next project", cta: "Search talent", to: "/scout" };
+      case "fund":
+        return { value: "Fund", detail: "Launch or back a creative project", cta: "Open fund", to: "/fund" };
+      case "manage":
+        return { value: "Plan", detail: "Spin up a Studio to organize your next project", cta: "New studio", to: "/desk" };
+      default:
+        return { value: "Scouting", detail: "Scout is searching the web for you", cta: "See scout", to: "/scout" };
+    }
+  })();
+
   const cards: CardData[] = [
     {
+      key: "next",
       title: "Next Move",
       icon: nextMoveCount > 0 ? Sparkles : CheckCircle2,
       tone: nextMoveCount > 0 ? "primary" : "energy",
@@ -123,17 +144,19 @@ export function TodayThreeCards() {
       to: approvals > 0 ? "/inbox" : "/desk",
     },
     {
+      key: "opportunity",
       title: "Opportunity",
       icon: Compass,
       tone: "energy",
-      value: topGig ? "1 fresh" : "Scouting",
+      value: topGig ? "1 fresh" : opportunityEmpty.value,
       detail: topGig
         ? `${topGig.title}${topGig.company ? ` · ${topGig.company}` : ""}`
-        : "Scout is searching the web for you",
-      cta: topGig ? "Open" : "See scout",
-      to: "/scout",
+        : opportunityEmpty.detail,
+      cta: topGig ? "Open" : opportunityEmpty.cta,
+      to: topGig ? "/scout" : opportunityEmpty.to,
     },
     {
+      key: "money",
       title: "Money Signal",
       icon: DollarSign,
       tone: "money",
@@ -148,6 +171,18 @@ export function TodayThreeCards() {
       to: "/thrivepay",
     },
   ];
+
+  // Re-order so the intent-aligned card leads
+  const order: Record<PrimaryIntent, CardData["key"]> = {
+    gigs: "opportunity",
+    collaborate: "opportunity",
+    hire: "opportunity",
+    fund: "opportunity",
+    manage: "money",
+  };
+  const lead = primary ? order[primary] : "next";
+  cards.sort((a, b) => (a.key === lead ? -1 : b.key === lead ? 1 : 0));
+
 
   const toneClass = (tone: CardData["tone"]) => {
     switch (tone) {

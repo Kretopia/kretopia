@@ -550,32 +550,34 @@ export const UnifiedHome = () => {
       {/* Live gigs strip removed — Smart Gig Scout is the new front door */}
 
 
-      {/* ═══════════ AUTH HUB ═══════════ */}
-      {user && profile && (
+      {/* ═══════════ AUTH HUB ═══════════
+          Render as soon as we know there's a user — don't wait for the profile fetch.
+          ThrivePromptHero + TodayThreeCards load their own data and skeletons, so
+          gating the whole hub on `profile` left mobile blank for ~500ms+ on slow nets. */}
+      {user && (
         <div className="container mx-auto max-w-5xl px-4 sm:px-6 pt-4">
-          {/* Compact greeting + messages shortcut — desktop only.
-              On mobile, the canvas hero + MorningPulse greeting carry this. */}
+          {/* Compact greeting + messages shortcut — desktop only. */}
           <div className="hidden lg:flex items-center justify-between mb-3">
             <p className="text-sm text-muted-foreground">
-              <span className="font-bold text-foreground">{greeting}</span>, {firstName}
+              <span className="font-bold text-foreground">{greeting}</span>
+              {profile ? `, ${firstName}` : ""}
             </p>
             <Link to="/messages" className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors">
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </Link>
           </div>
 
-          {/* Conversational entry — Tell Thrive what you want to create. THE hero of Home.
-              On mobile this opens expanded so it owns the top half of the screen. */}
+          {/* Conversational entry — Tell Thrive what you want to create. */}
           <div className="mb-4">
             <ThrivePromptHero />
           </div>
 
-          {/* Today = Home, ≤3 cards. The whole day collapsed into 3 glanceable tiles. */}
+          {/* Today = Home, ≤3 cards. */}
           <div className="mb-4">
             <TodayThreeCards />
           </div>
 
-          {/* Sound Stages discovery — only renders when stages are scheduled this week */}
+          {/* Sound Stages discovery */}
           <div className="mt-2 mb-4 space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sound Stages this week</p>
@@ -589,8 +591,8 @@ export const UnifiedHome = () => {
             <DuplicateAccountBanner />
           </div>
 
-          {/* New-user setup checklist — only shows while profile completion < 50% */}
-          {checkProfileCompletion(profileFull || profile, myCredits).percentage < 50 && (
+          {/* New-user setup checklist — gated on profile load */}
+          {profile && checkProfileCompletion(profileFull || profile, myCredits).percentage < 50 && (
             <div className="mb-4">
               <GetStartedChecklist />
             </div>

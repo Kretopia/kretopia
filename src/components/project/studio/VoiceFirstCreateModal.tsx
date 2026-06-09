@@ -332,7 +332,7 @@ export const VoiceFirstCreateModal = ({
               </div>
               {workspaceType !== "general" && (
                 <p className="mt-2 text-[11px] text-muted-foreground text-center">
-                  {WORKSPACE_CONFIGS[workspaceType].tagline}
+                  {WORKSPACE_CONFIGS[workspaceType].description}
                 </p>
               )}
             </div>

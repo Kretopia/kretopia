@@ -58,6 +58,10 @@ export interface WorkspaceConfig {
   aiPersonaPrompt: string;
   /** Suggested gradient hue for visual identity (uses semantic tokens). */
   accent: "primary" | "accent" | "secondary";
+  /** Default Vault folders scaffolded at project create. */
+  vaultFolders: string[];
+  /** Default deliverables/tasks scaffolded at project create. */
+  defaultDeliverables: string[];
 }
 
 const COMMON_BASE: DeskTabKey[] = ["today", "messages", "tasks", "files", "notes", "ai"];

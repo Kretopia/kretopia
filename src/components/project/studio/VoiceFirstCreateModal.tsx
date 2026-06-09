@@ -8,17 +8,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceTypes";
+import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceConfigs";
 
 /** Lightweight keyword inference so the room shape matches what was said. */
 function inferWorkspaceType(text: string): WorkspaceType {
   const t = (text || "").toLowerCase();
-  if (/\b(podcast|episode|guest|interview show|mic|recording session)\b/.test(t)) return "podcast";
-  if (/\b(event|festival|launch party|conference|gala|run sheet|venue|doors open|lineup)\b/.test(t)) return "event";
-  if (/\b(album|ep|single|track|mix|master|release|tour|studio session|song)\b/.test(t)) return "music";
-  if (/\b(campaign|brand|sponsor|paid social|launch.*(brand|product))\b/.test(t)) return "campaign";
-  if (/\b(client|retainer|deliverable for|brief from)\b/.test(t)) return "client";
-  if (/\b(shoot|reel|video|content|tiktok|instagram|youtube|carousel|post|edit)\b/.test(t)) return "content";
+  if (/\b(podcast|episode|guest|interview show|mic|recording session)\b/.test(t)) return "content_series";
+  if (/\b(event|festival|launch party|conference|gala|run sheet|venue|doors open|lineup)\b/.test(t)) return "event_production";
+  if (/\b(album|ep|single|track|mix|master|release|tour|studio session|song)\b/.test(t)) return "music_project";
+  if (/\b(campaign|brand|sponsor|paid social|launch.*(brand|product))\b/.test(t)) return "brand_collab";
+  if (/\b(runway|fashion show|lookbook|model lineup)\b/.test(t)) return "fashion_show";
+  if (/\b(dj|set|live gig|club night)\b/.test(t)) return "dj_live_gig";
+  if (/\b(retouch|color grade|edit pass|audio mix)\b/.test(t)) return "edit_job";
+  if (/\b(illustration|painting|commission)\b/.test(t)) return "commissioned_art";
+  if (/\b(film|short film|music video|commercial spot|treatment)\b/.test(t)) return "video_shoot";
+  if (/\b(photo shoot|editorial|headshot)\b/.test(t)) return "photo_shoot";
+  if (/\b(shoot|reel|video|content|tiktok|instagram|youtube|carousel|post|edit)\b/.test(t)) return "content_series";
   return "general";
 }
 
@@ -246,6 +251,19 @@ export const VoiceFirstCreateModal = ({
         }
       }
 
+      // Scaffold default Vault folders + starter deliverables (skip tasks if AI seeded any)
+      try {
+        const { scaffoldProjectDefaults } = await import("@/lib/scaffoldProject");
+        await scaffoldProjectDefaults({
+          projectId: project.id,
+          workspaceType,
+          userId: user.id,
+          skipTasks: picked.length > 0,
+        });
+      } catch (e) {
+        console.warn("scaffold defaults failed", e);
+      }
+
       try {
         const { analytics } = await import("@/lib/analytics");
         analytics.projectCreated(project.id);
@@ -327,7 +345,7 @@ export const VoiceFirstCreateModal = ({
               </div>
               {workspaceType !== "general" && (
                 <p className="mt-2 text-[11px] text-muted-foreground text-center">
-                  {WORKSPACE_CONFIGS[workspaceType].tagline}
+                  {WORKSPACE_CONFIGS[workspaceType].description}
                 </p>
               )}
             </div>
@@ -363,14 +381,14 @@ export const VoiceFirstCreateModal = ({
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
                   placeholder={
-                    workspaceType === "event"
+                    workspaceType === "event_production"
                       ? "Bali Carnival — 2-day beach festival, Aug 2026, 5k guests, 3 stages."
-                      : workspaceType === "podcast"
-                      ? "Weekly interview show with creative founders. Pilot episode in 3 weeks."
-                      : workspaceType === "music"
+                      : workspaceType === "music_project"
                       ? "Debut EP — 5 tracks, summer release, lo-fi beats with vocal features."
-                      : workspaceType === "campaign"
+                      : workspaceType === "brand_collab"
                       ? "Spring brand launch for Acme — paid + organic across IG, TikTok, YouTube."
+                      : workspaceType === "photo_shoot"
+                      ? "Editorial shoot — 3 looks, 2 models, studio + rooftop, deliver in 10 days."
                       : "A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday."
                   }
                   className="min-h-[140px] text-base text-left"
@@ -516,7 +534,7 @@ export const VoiceFirstCreateModal = ({
                 Room type
               </p>
               <p className="text-xs text-muted-foreground">
-                {WORKSPACE_CONFIGS[workspaceType].tagline} Tap to change.
+                {WORKSPACE_CONFIGS[workspaceType].description} Tap to change.
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {(Object.keys(WORKSPACE_CONFIGS) as WorkspaceType[]).map((t) => {

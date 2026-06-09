@@ -46,7 +46,10 @@ export function useStudioRole(
     else if (raw === "creative") role = "creative";
     else if (raw === "guest") role = "guest";
 
-    const canContribute = role !== "guest" ? true : true; // guests can still write into Vault/Chat/Pad
+    // Guests are read-mostly: chat/comment only — they cannot upload to Vault,
+    // edit Pad, or change project state. Clients can contribute (approvals,
+    // comments). Only creatives/collaborators get full contribute + AI.
+    const canContribute = role === "creative" || role === "collaborator" || role === "client";
     const canSeeMoney = false; // never expose money to non-owners
     const canUseAI = role === "creative" || role === "collaborator";
     const canManage = false;

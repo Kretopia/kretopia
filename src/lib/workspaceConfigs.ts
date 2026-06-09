@@ -58,6 +58,10 @@ export interface WorkspaceConfig {
   aiPersonaPrompt: string;
   /** Suggested gradient hue for visual identity (uses semantic tokens). */
   accent: "primary" | "accent" | "secondary";
+  /** Default Vault folders scaffolded at project create. */
+  vaultFolders: string[];
+  /** Default deliverables/tasks scaffolded at project create. */
+  defaultDeliverables: string[];
 }
 
 const COMMON_BASE: DeskTabKey[] = ["today", "messages", "tasks", "files", "notes", "ai"];
@@ -74,6 +78,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     tasksLabel: "Shot List",
     aiPersonaPrompt: "You're producing a photo shoot. Help with call sheets, shot lists, lighting notes, model/talent coordination, and post-production milestones.",
     accent: "primary",
+    vaultFolders: ["Call Sheet", "References", "Shot List", "Raw", "Selects", "Final Retouched"],
+    defaultDeliverables: ["Lock shoot date & location", "Build shot list", "Confirm talent + glam", "Deliver selects for review"],
   },
   video_shoot: {
     id: "video_shoot",
@@ -86,6 +92,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     tasksLabel: "Shot List",
     aiPersonaPrompt: "You're producing a video/film shoot. Help with call sheets, shot lists, scene breakdowns, equipment lists, talent releases, and edit milestones.",
     accent: "primary",
+    vaultFolders: ["Treatment", "Call Sheet", "Shot List", "Raw", "Edits", "Final Exports"],
+    defaultDeliverables: ["Lock treatment & scenes", "Confirm crew + cast", "Build call sheet", "Deliver first cut"],
   },
   music_project: {
     id: "music_project",
@@ -98,6 +106,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     tasksLabel: "Session Plan",
     aiPersonaPrompt: "You're producing a music project. Help with session planning, split sheets, mix/master revision rounds, sync licensing, and release milestones.",
     accent: "accent",
+    vaultFolders: ["Stems", "Sessions", "Masters", "Artwork", "Splits", "Press Kit"],
+    defaultDeliverables: ["Confirm session date", "Track song splits", "Send mix round", "Approve master"],
   },
   fashion_show: {
     id: "fashion_show",
@@ -110,6 +120,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     tasksLabel: "Looks & Tasks",
     aiPersonaPrompt: "You're producing a fashion show. Help with run of show, model lineup, looks/changes, backstage roll call, and vendor coordination.",
     accent: "secondary",
+    vaultFolders: ["Looks", "Run of Show", "Backstage", "Models", "Show Assets"],
+    defaultDeliverables: ["Finalize model lineup", "Map backstage changes", "Build runway run of show", "Confirm glam call times"],
   },
   event_production: {
     id: "event_production",
@@ -122,6 +134,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     tasksLabel: "Production Tasks",
     aiPersonaPrompt: "You're producing a live event. Help with run of show, vendor lineup, roll call, load-in/out, and budget tracking.",
     accent: "accent",
+    vaultFolders: ["Run Sheet", "Vendor Quotes", "Floor Plans", "Guest Lists", "Sponsor Decks"],
+    defaultDeliverables: ["Confirm venue & vendors", "Build run of show", "Assign stage/door leads", "Capture recap assets"],
   },
   commissioned_art: {
     id: "commissioned_art",
@@ -134,6 +148,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     tasksLabel: "Stages",
     aiPersonaPrompt: "You're managing a commissioned art piece. Help with concept rounds, milestone deliverables, revision tracking, and final handoff.",
     accent: "secondary",
+    vaultFolders: ["Brief", "Sketches", "WIP", "Approvals", "Final"],
+    defaultDeliverables: ["Confirm concept & size", "Share sketch/mockup", "Approve direction", "Package final handoff"],
   },
   brand_collab: {
     id: "brand_collab",
@@ -146,6 +162,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     tasksLabel: "Deliverables",
     aiPersonaPrompt: "You're managing a brand collaboration. Help with deliverable tracking, brief alignment, approval rounds, usage rights, and payment milestones.",
     accent: "primary",
+    vaultFolders: ["Brand Brief", "Concepts", "Assets", "Approvals", "Reporting"],
+    defaultDeliverables: ["Confirm brief & usage rights", "Draft content concepts", "Submit first cut", "Send final assets + invoice"],
   },
   dj_live_gig: {
     id: "dj_live_gig",
@@ -158,6 +176,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     tasksLabel: "Setlist & Tasks",
     aiPersonaPrompt: "You're managing a DJ/live performance gig. Help with setlist, tech rider, load-in time, payment terms, and rider requirements.",
     accent: "accent",
+    vaultFolders: ["Setlist", "Tech Rider", "Contract", "Recap Clips"],
+    defaultDeliverables: ["Confirm set time & rider", "Build setlist", "Confirm payment", "Upload recap clips"],
   },
   edit_job: {
     id: "edit_job",
@@ -170,6 +190,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     tasksLabel: "Edit Tasks",
     aiPersonaPrompt: "You're managing an editing job. Help with version control, revision rounds, raw asset organization, and final delivery.",
     accent: "secondary",
+    vaultFolders: ["Raw", "References", "WIP", "Review", "Final Exports"],
+    defaultDeliverables: ["Collect raw + references", "Create first pass", "Send review link", "Export final deliverables"],
   },
   content_series: {
     id: "content_series",
@@ -182,6 +204,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     tasksLabel: "Episodes & Tasks",
     aiPersonaPrompt: "You're producing a content series. Help with episode planning, content calendar, asset tracking, and publishing schedule.",
     accent: "primary",
+    vaultFolders: ["Scripts", "Shot Lists", "Raw", "Edits", "Final Exports", "Thumbnails"],
+    defaultDeliverables: ["Outline episodes", "Build production calendar", "Batch record assets", "Schedule publishing"],
   },
   general: {
     id: "general",
@@ -193,6 +217,8 @@ export const WORKSPACE_CONFIGS: Record<WorkspaceType, WorkspaceConfig> = {
     defaultTab: "today",
     aiPersonaPrompt: "You're managing a creative project. Adapt to whatever the user is working on.",
     accent: "primary",
+    vaultFolders: ["References", "Drafts", "Final"],
+    defaultDeliverables: ["Confirm scope", "Share first draft", "Collect approval", "Wrap + assign credits"],
   },
 };
 

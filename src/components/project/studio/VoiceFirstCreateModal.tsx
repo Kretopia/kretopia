@@ -8,17 +8,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceTypes";
+import { type WorkspaceType } from "@/lib/workspaceConfigs";
 
 /** Lightweight keyword inference so the room shape matches what was said. */
 function inferWorkspaceType(text: string): WorkspaceType {
   const t = (text || "").toLowerCase();
-  if (/\b(podcast|episode|guest|interview show|mic|recording session)\b/.test(t)) return "podcast";
-  if (/\b(event|festival|launch party|conference|gala|run sheet|venue|doors open|lineup)\b/.test(t)) return "event";
-  if (/\b(album|ep|single|track|mix|master|release|tour|studio session|song)\b/.test(t)) return "music";
-  if (/\b(campaign|brand|sponsor|paid social|launch.*(brand|product))\b/.test(t)) return "campaign";
-  if (/\b(client|retainer|deliverable for|brief from)\b/.test(t)) return "client";
-  if (/\b(shoot|reel|video|content|tiktok|instagram|youtube|carousel|post|edit)\b/.test(t)) return "content";
+  if (/\b(podcast|episode|guest|interview show|mic|recording session)\b/.test(t)) return "content_series";
+  if (/\b(event|festival|launch party|conference|gala|run sheet|venue|doors open|lineup)\b/.test(t)) return "event_production";
+  if (/\b(album|ep|single|track|mix|master|release|tour|studio session|song)\b/.test(t)) return "music_project";
+  if (/\b(campaign|brand|sponsor|paid social|launch.*(brand|product))\b/.test(t)) return "brand_collab";
+  if (/\b(runway|fashion show|lookbook|model lineup)\b/.test(t)) return "fashion_show";
+  if (/\b(dj|set|live gig|club night)\b/.test(t)) return "dj_live_gig";
+  if (/\b(retouch|color grade|edit pass|audio mix)\b/.test(t)) return "edit_job";
+  if (/\b(illustration|painting|commission)\b/.test(t)) return "commissioned_art";
+  if (/\b(film|short film|music video|commercial spot|treatment)\b/.test(t)) return "video_shoot";
+  if (/\b(photo shoot|editorial|headshot)\b/.test(t)) return "photo_shoot";
+  if (/\b(shoot|reel|video|content|tiktok|instagram|youtube|carousel|post|edit)\b/.test(t)) return "content_series";
   return "general";
 }
 

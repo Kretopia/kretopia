@@ -251,6 +251,19 @@ export const VoiceFirstCreateModal = ({
         }
       }
 
+      // Scaffold default Vault folders + starter deliverables (skip tasks if AI seeded any)
+      try {
+        const { scaffoldProjectDefaults } = await import("@/lib/scaffoldProject");
+        await scaffoldProjectDefaults({
+          projectId: project.id,
+          workspaceType,
+          userId: user.id,
+          skipTasks: picked.length > 0,
+        });
+      } catch (e) {
+        console.warn("scaffold defaults failed", e);
+      }
+
       try {
         const { analytics } = await import("@/lib/analytics");
         analytics.projectCreated(project.id);

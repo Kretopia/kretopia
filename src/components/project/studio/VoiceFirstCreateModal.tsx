@@ -521,7 +521,7 @@ export const VoiceFirstCreateModal = ({
                 Room type
               </p>
               <p className="text-xs text-muted-foreground">
-                {WORKSPACE_CONFIGS[workspaceType].tagline} Tap to change.
+                {WORKSPACE_CONFIGS[workspaceType].description} Tap to change.
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {(Object.keys(WORKSPACE_CONFIGS) as WorkspaceType[]).map((t) => {

@@ -248,7 +248,8 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
       if (projectError) throw projectError;
 
       // Seed AI-extracted starter tasks if we expanded the brief
-      if (seedTasks.length > 0) {
+      const seededFromAI = seedTasks.length > 0;
+      if (seededFromAI) {
         try {
           await supabase.from("project_tasks").insert(
             seedTasks.slice(0, 8).map((t) => ({
@@ -262,6 +263,19 @@ export function CreateProjectWizard({ open, onOpenChange, onSuccess }: CreatePro
         } catch (e) {
           console.warn("seed tasks failed", e);
         }
+      }
+
+      // Scaffold default Vault folders + starter deliverables (skip tasks if AI already seeded)
+      try {
+        const { scaffoldProjectDefaults } = await import("@/lib/scaffoldProject");
+        await scaffoldProjectDefaults({
+          projectId: project.id,
+          workspaceType,
+          userId: user.id,
+          skipTasks: seededFromAI,
+        });
+      } catch (e) {
+        console.warn("scaffold defaults failed", e);
       }
 
       try {

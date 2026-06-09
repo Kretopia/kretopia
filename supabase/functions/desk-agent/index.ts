@@ -437,13 +437,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Gather context — project facts AND unified user identity
-    const [projectRes, tasksRes, collabRes, history, copilotCtx] = await Promise.all([
-      admin.from("projects").select("id, title, description, status, deadline, created_by, client_user_id, currency").eq("id", project_id).single(),
+    // Gather context — project facts AND unified user identity AND Studio Brain
+    const [projectRes, tasksRes, collabRes, history, copilotCtx, factsRes, entitiesRes] = await Promise.all([
+      admin.from("projects").select("id, title, description, status, deadline, created_by, client_user_id, currency, workspace_type").eq("id", project_id).single(),
       admin.from("project_tasks").select("id, title, status, due_date, assigned_to, priority").eq("project_id", project_id).order("created_at", { ascending: false }).limit(40),
       admin.from("project_collaborators").select("user_id, role, profiles:profiles!project_collaborators_user_id_fkey(full_name)").eq("project_id", project_id),
       admin.from("agent_project_context").select("role, content").eq("project_id", project_id).eq("user_id", user.id).order("created_at", { ascending: true }).limit(10),
       loadCopilotContext(admin, user.id).catch(() => null),
+      admin.from("studio_facts").select("kind, label, value, value_numeric, value_date, importance").eq("project_id", project_id).order("importance", { ascending: false }).order("updated_at", { ascending: false }).limit(40),
+      admin.from("studio_entities").select("kind, name, importance, attrs").eq("project_id", project_id).order("importance", { ascending: false }).limit(40),
     ]);
 
     const project = projectRes.data;
@@ -453,6 +455,8 @@ Deno.serve(async (req) => {
       full_name: c.profiles?.full_name || "Member",
       role: c.role,
     }));
+    const facts = (factsRes.data || []) as Array<{ kind: string; label: string; value: string | null; value_numeric: number | null; value_date: string | null; importance: number | null }>;
+    const entities = (entitiesRes.data || []) as Array<{ kind: string; name: string; importance: number | null; attrs: any }>;
 
     const openTasks = tasks.filter((t) => t.status !== "done");
     const overdue = openTasks.filter(
@@ -467,6 +471,18 @@ Deno.serve(async (req) => {
       .map((t) => `- [${t.id}] ${t.title}${t.due_date ? ` (due ${String(t.due_date).slice(0, 10)})` : ""}${t.priority ? ` [${t.priority}]` : ""}`)
       .join("\n") || "(no open tasks)";
 
+    // Studio Brain — what we've learned about this project from briefs/drops
+    const factLines = facts.length
+      ? facts.map((f) => {
+          const v = f.value ?? (f.value_numeric != null ? String(f.value_numeric) : f.value_date ?? "");
+          return `- ${f.kind}: ${f.label}${v ? ` = ${v}` : ""}`;
+        }).join("\n")
+      : "(no facts yet)";
+    const entityLines = entities.length
+      ? entities.map((e) => `- ${e.kind}: ${e.name}`).join("\n")
+      : "(no entities yet)";
+    const studioBrain = `\nSTUDIO BRAIN (extracted from briefs, drops & docs — treat as ground truth for this project):\nFacts:\n${factLines}\nPeople & places:\n${entityLines}\n`;
+
     const userPreamble = copilotCtx
       ? renderContextPreamble(copilotCtx, "desk", { project_id })
       : "";
@@ -475,12 +491,13 @@ Deno.serve(async (req) => {
 
 ${userPreamble || "(no profile loaded — greet without a name)"}
 
-CURRENT PROJECT: "${project?.title}" · status: ${project?.status} · deadline: ${project?.deadline || "n/a"}
+CURRENT PROJECT: "${project?.title}" · status: ${project?.status} · deadline: ${project?.deadline || "n/a"} · type: ${project?.workspace_type || "general"}
 Description: ${(project?.description || "").slice(0, 300)}
 Open tasks (${openTasks.length}, ${overdue.length} overdue):
 ${taskList}
 Collaborators (use these exact ids for assignee_user_id / mention_user_id):
 ${collabList}
+${studioBrain}
 Today: ${today}.
 
 DECISION RULES:

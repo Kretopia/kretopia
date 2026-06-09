@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { type WorkspaceType } from "@/lib/workspaceConfigs";
+import { WORKSPACE_CONFIGS, type WorkspaceType } from "@/lib/workspaceConfigs";
 
 /** Lightweight keyword inference so the room shape matches what was said. */
 function inferWorkspaceType(text: string): WorkspaceType {

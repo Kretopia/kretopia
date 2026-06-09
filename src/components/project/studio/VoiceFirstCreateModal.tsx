@@ -368,14 +368,14 @@ export const VoiceFirstCreateModal = ({
                   value={textInput}
                   onChange={(e) => setTextInput(e.target.value)}
                   placeholder={
-                    workspaceType === "event"
+                    workspaceType === "event_production"
                       ? "Bali Carnival — 2-day beach festival, Aug 2026, 5k guests, 3 stages."
-                      : workspaceType === "podcast"
-                      ? "Weekly interview show with creative founders. Pilot episode in 3 weeks."
-                      : workspaceType === "music"
+                      : workspaceType === "music_project"
                       ? "Debut EP — 5 tracks, summer release, lo-fi beats with vocal features."
-                      : workspaceType === "campaign"
+                      : workspaceType === "brand_collab"
                       ? "Spring brand launch for Acme — paid + organic across IG, TikTok, YouTube."
+                      : workspaceType === "photo_shoot"
+                      ? "Editorial shoot — 3 looks, 2 models, studio + rooftop, deliver in 10 days."
                       : "A 60-second product reel for Acme. Moody, fast cuts. Shoot Friday."
                   }
                   className="min-h-[140px] text-base text-left"

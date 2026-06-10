@@ -433,6 +433,12 @@ const ProfileContent = () => {
           <PassportMomentum />
         </div>
 
+        {/* Quiet trust signal — what Thrive remembers about the owner. */}
+        <div className="mt-3">
+          <ThriveRemembersChip />
+        </div>
+
+
         {/* Recently worked with — IMDb-style collaborator avatar strip */}
         {profile?.user_id && (
           <div className="mt-3">

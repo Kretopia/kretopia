@@ -63,9 +63,7 @@ export const GuestStudioShareDialog = ({
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [label, setLabel] = useState("");
-  const [comment, setComment] = useState(true);
-  const [upload, setUpload] = useState(true);
-  const [call, setCall] = useState(true);
+  const [role, setRole] = useState<GuestRole>("commenter");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const load = async () => {

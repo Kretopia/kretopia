@@ -35,6 +35,7 @@ import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { PassportOverview } from "@/components/passport/PassportOverview";
 import { PassportMomentum } from "@/components/passport/PassportMomentum";
+import { ThriveRemembersChip } from "@/components/passport/ThriveRemembersChip";
 import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 

@@ -167,7 +167,7 @@ Draft the document now.`;
     body: JSON.stringify({
       model: "google/gemini-2.5-pro",
       messages: [
-        { role: "system", content: SYSTEM(intent) },
+        { role: "system", content: SYSTEM(intent, theme) },
         { role: "user", content: userMsg },
       ],
       tools: [tool],

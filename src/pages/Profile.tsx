@@ -35,6 +35,7 @@ import { checkProfileCompletion } from "@/lib/profileCompletion";
 import { PassportAnchorStrip } from "@/components/passport/PassportAnchorStrip";
 import { PassportOverview } from "@/components/passport/PassportOverview";
 import { PassportMomentum } from "@/components/passport/PassportMomentum";
+import { ThriveRemembersChip } from "@/components/passport/ThriveRemembersChip";
 import { RecentlyWorkedWith } from "@/components/passport/RecentlyWorkedWith";
 import { EPKPdfEditor } from "@/components/epk/EPKPdfEditor";
 
@@ -431,6 +432,12 @@ const ProfileContent = () => {
         <div className="mt-3">
           <PassportMomentum />
         </div>
+
+        {/* Quiet trust signal — what Thrive remembers about the owner. */}
+        <div className="mt-3">
+          <ThriveRemembersChip />
+        </div>
+
 
         {/* Recently worked with — IMDb-style collaborator avatar strip */}
         {profile?.user_id && (

@@ -274,17 +274,3 @@ export const GuestStudioShareDialog = ({
   );
 };
 
-const PermToggle = ({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) => (
-  <label className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-2.5 py-2">
-    <span className="text-xs font-medium">{label}</span>
-    <Switch checked={checked} onCheckedChange={onChange} />
-  </label>
-);

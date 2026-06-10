@@ -44,6 +44,54 @@ export const PeopleSection = ({
   const [pending, setPending] = useState<PendingPerson[]>([]);
   const [shareOpen, setShareOpen] = useState(false);
   const [projectTitle, setProjectTitle] = useState<string>("");
+  const [quickSharing, setQuickSharing] = useState(false);
+  const { toast } = useToast();
+
+  const quickShareGuestLink = async () => {
+    setQuickSharing(true);
+    try {
+      const { data: existing } = await supabase
+        .from("guest_studio_tokens")
+        .select("token")
+        .eq("project_id", projectId)
+        .is("revoked_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      let token = existing?.token as string | undefined;
+      if (!token) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not signed in");
+        const { data: created, error } = await supabase
+          .from("guest_studio_tokens")
+          .insert({ project_id: projectId, created_by: user.id })
+          .select("token")
+          .single();
+        if (error) throw error;
+        token = created.token;
+      }
+
+      const url = getShareUrl(`/guest/${token}`);
+      const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+      if (nav.share) {
+        try {
+          await nav.share({
+            title: `Join "${projectTitle || 'my Studio'}" on ThriveIN`,
+            text: "I'm bringing you into a studio — tap to see the brief, vault & chat.",
+            url,
+          });
+          return;
+        } catch { /* user cancelled — fall through to copy */ }
+      }
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Guest link copied", description: "Paste it anywhere — they can open the studio instantly." });
+    } catch (e: any) {
+      toast({ title: "Couldn't share link", description: e.message, variant: "destructive" });
+    } finally {
+      setQuickSharing(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {

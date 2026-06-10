@@ -467,6 +467,36 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
               </div>
             )}
 
+            {/* Bulk email paste — 2+ emails detected */}
+            {isBulkEmails && (
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span className="text-sm">{parsedEmails.length} emails detected</span>
+                </div>
+                <div className="rounded-lg border-2 border-dashed p-3 space-y-2 max-h-32 overflow-y-auto">
+                  {parsedEmails.slice(0, 8).map((e) => (
+                    <p key={e} className="text-xs font-mono text-muted-foreground truncate">{e}</p>
+                  ))}
+                  {parsedEmails.length > 8 && (
+                    <p className="text-[10px] text-muted-foreground">+ {parsedEmails.length - 8} more</p>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  className="w-full gap-1.5"
+                  onClick={() => handleBulkInviteByEmail(parsedEmails)}
+                  disabled={sending}
+                >
+                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                  Send {parsedEmails.length} invites
+                </Button>
+                <p className="text-[10px] text-muted-foreground text-center">
+                  Tip: paste from any spreadsheet or contact list — we'll pull out every valid email.
+                </p>
+              </div>
+            )}
+
             {/* Empty states */}
             {!searchInput && connectedUsers.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 text-center">

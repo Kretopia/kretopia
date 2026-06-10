@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 
     const { data: link, error: linkErr } = await admin
       .from("project_guest_links")
-      .select("id, project_id, expires_at, max_uses, uses, revoked_at, permissions, created_by")
+      .select("id, project_id, expires_at, max_uses, uses, revoked_at, permissions, guest_role, created_by")
       .eq("token", token)
       .maybeSingle();
     if (linkErr || !link) {

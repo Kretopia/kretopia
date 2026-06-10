@@ -629,6 +629,18 @@ const GuestLinkPanel = ({ projectId }: { projectId: string }) => {
     }
   };
 
+  const share = async () => {
+    if (!url) return;
+    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+    if (nav.share) {
+      try {
+        await nav.share({ title: "Join my Studio on ThriveIN", text: "I'm bringing you into a studio — tap to see the brief, vault & chat.", url });
+        return;
+      } catch { /* user cancelled */ }
+    }
+    copy();
+  };
+
   if (loading) {
     return <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
   }

@@ -309,6 +309,7 @@ export const PeopleSection = ({
           ))}
         </div>
       </div>
+      {isOwner && <PendingInvitations projectId={projectId} />}
     </section>
   );
 };

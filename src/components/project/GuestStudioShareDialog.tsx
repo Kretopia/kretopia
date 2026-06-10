@@ -176,10 +176,28 @@ export const GuestStudioShareDialog = ({
               onChange={(e) => setLabel(e.target.value)}
             />
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <PermToggle label="Comment" checked={comment} onChange={setComment} />
-            <PermToggle label="Upload" checked={upload} onChange={setUpload} />
-            <PermToggle label="Calls" checked={call} onChange={setCall} />
+          <div className="space-y-1.5">
+            <Label className="text-xs">Access level</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {(Object.keys(ROLE_PRESETS) as GuestRole[]).map((r) => {
+                const active = role === r;
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRole(r)}
+                    className={`rounded-lg border px-2.5 py-2 text-left transition ${
+                      active
+                        ? "border-primary bg-primary/10 ring-1 ring-primary/40"
+                        : "border-border bg-background hover:bg-accent/40"
+                    }`}
+                  >
+                    <div className="text-xs font-semibold">{ROLE_PRESETS[r].label}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-muted-foreground">{ROLE_PRESETS[role].hint}</p>
           </div>
           <Button onClick={create} disabled={creating} className="w-full">
             {creating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Link2 className="h-4 w-4 mr-2" />}

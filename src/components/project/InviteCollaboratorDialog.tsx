@@ -202,6 +202,56 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
     }
   };
 
+  const handleBulkInviteByEmail = async (emails: string[]) => {
+    if (!emails.length) return;
+    setSending(true);
+    let ok = 0;
+    let fail = 0;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { data: profile } = await supabase.from('profiles').select('full_name').eq('user_id', user.id).single();
+      const { data: project } = await supabase.from('projects').select('title').eq('id', projectId).single();
+
+      for (const email of emails) {
+        try {
+          const { error } = await supabase.from('project_collaborators').insert({
+            project_id: projectId,
+            email,
+            invited_by: user.id,
+            role: 'member',
+            agent_role: selectedRole,
+            status: 'pending',
+          });
+          if (error) throw error;
+          await supabase.functions.invoke('send-project-invitation', {
+            body: {
+              email,
+              projectTitle: project?.title || 'Untitled Project',
+              projectId,
+              inviterName: profile?.full_name || 'A ThriveIN user',
+            },
+          }).catch((e) => console.warn('email send failed', email, e));
+          ok++;
+        } catch (e) {
+          console.warn('bulk invite failed for', email, e);
+          fail++;
+        }
+      }
+      toast({
+        title: `Sent ${ok} invite${ok === 1 ? '' : 's'}`,
+        description: fail > 0 ? `${fail} couldn't be sent (already invited?)` : 'They\'ll get an email with the studio link.',
+      });
+      setSearchInput("");
+      setOpen(false);
+      onInvite();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
+    } finally {
+      setSending(false);
+    }
+  };
+
   const handleInviteUser = async (userId: string, userName: string) => {
     setSending(true);
     try {

@@ -6,12 +6,24 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { UserPlus, Mail, Loader2, Users, Briefcase, Sparkles, Handshake, Link2, Copy, Check } from "lucide-react";
+import { UserPlus, Mail, Loader2, Users, Briefcase, Sparkles, Handshake, Link2, Copy, Check, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getShareUrl } from "@/lib/constants";
+
+const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+const extractEmails = (text: string): string[] => {
+  const matches = text.match(EMAIL_RE) || [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const m of matches) {
+    const v = m.toLowerCase();
+    if (!seen.has(v)) { seen.add(v); out.push(v); }
+  }
+  return out;
+};
 
 interface InviteCollaboratorDialogProps {
   projectId: string;

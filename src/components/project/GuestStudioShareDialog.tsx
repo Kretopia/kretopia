@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -23,17 +23,26 @@ interface GuestStudioShareDialogProps {
   projectTitle?: string;
 }
 
+type GuestRole = "viewer" | "commenter" | "contributor";
+
 interface GuestLink {
   id: string;
   token: string;
   label: string | null;
   permissions: { comment?: boolean; upload?: boolean; call?: boolean };
+  guest_role?: GuestRole;
   expires_at: string | null;
   max_uses: number | null;
   uses: number;
   revoked_at: string | null;
   created_at: string;
 }
+
+const ROLE_PRESETS: Record<GuestRole, { label: string; hint: string; perms: { comment: boolean; upload: boolean; call: boolean } }> = {
+  viewer: { label: "Viewer", hint: "Read-only. No comments, no uploads.", perms: { comment: false, upload: false, call: false } },
+  commenter: { label: "Commenter", hint: "Can comment + join calls. No uploads.", perms: { comment: true, upload: false, call: true } },
+  contributor: { label: "Contributor", hint: "Full guest seat — comment, upload, calls.", perms: { comment: true, upload: true, call: true } },
+};
 
 const APP_URL = "https://www.thrivein.io";
 
@@ -54,9 +63,7 @@ export const GuestStudioShareDialog = ({
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [label, setLabel] = useState("");
-  const [comment, setComment] = useState(true);
-  const [upload, setUpload] = useState(true);
-  const [call, setCall] = useState(true);
+  const [role, setRole] = useState<GuestRole>("commenter");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const load = async () => {
@@ -90,7 +97,8 @@ export const GuestStudioShareDialog = ({
         token,
         created_by: user.id,
         label: label.trim() || null,
-        permissions: { comment, upload, call },
+        permissions: ROLE_PRESETS[role].perms,
+        guest_role: role,
       });
       if (error) throw error;
       setLabel("");
@@ -168,10 +176,28 @@ export const GuestStudioShareDialog = ({
               onChange={(e) => setLabel(e.target.value)}
             />
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <PermToggle label="Comment" checked={comment} onChange={setComment} />
-            <PermToggle label="Upload" checked={upload} onChange={setUpload} />
-            <PermToggle label="Calls" checked={call} onChange={setCall} />
+          <div className="space-y-1.5">
+            <Label className="text-xs">Access level</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {(Object.keys(ROLE_PRESETS) as GuestRole[]).map((r) => {
+                const active = role === r;
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRole(r)}
+                    className={`rounded-lg border px-2.5 py-2 text-left transition ${
+                      active
+                        ? "border-primary bg-primary/10 ring-1 ring-primary/40"
+                        : "border-border bg-background hover:bg-accent/40"
+                    }`}
+                  >
+                    <div className="text-xs font-semibold">{ROLE_PRESETS[r].label}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-muted-foreground">{ROLE_PRESETS[role].hint}</p>
           </div>
           <Button onClick={create} disabled={creating} className="w-full">
             {creating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Link2 className="h-4 w-4 mr-2" />}
@@ -211,6 +237,9 @@ export const GuestStudioShareDialog = ({
                   </div>
 
                   <div className="flex flex-wrap gap-1">
+                    {l.guest_role && (
+                      <Badge className="text-[9px] capitalize">{l.guest_role}</Badge>
+                    )}
                     {l.permissions?.comment && <Badge variant="secondary" className="text-[9px]">Comment</Badge>}
                     {l.permissions?.upload && <Badge variant="secondary" className="text-[9px]">Upload</Badge>}
                     {l.permissions?.call && <Badge variant="secondary" className="text-[9px]">Calls</Badge>}
@@ -245,17 +274,3 @@ export const GuestStudioShareDialog = ({
   );
 };
 
-const PermToggle = ({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) => (
-  <label className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-2.5 py-2">
-    <span className="text-xs font-medium">{label}</span>
-    <Switch checked={checked} onCheckedChange={onChange} />
-  </label>
-);

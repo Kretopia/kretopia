@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 
     const { data: link, error: linkErr } = await admin
       .from("project_guest_links")
-      .select("id, project_id, expires_at, max_uses, uses, revoked_at, permissions, created_by")
+      .select("id, project_id, expires_at, max_uses, uses, revoked_at, permissions, guest_role, created_by")
       .eq("token", token)
       .maybeSingle();
     if (linkErr || !link) {
@@ -85,11 +85,18 @@ Deno.serve(async (req) => {
       .eq("user_id", user.id)
       .maybeSingle();
 
+    // Map guest_role → collaborator role (commenter/contributor land as full collaborator; viewer stays guest)
+    const guestRole = (link as any).guest_role || "viewer";
+    const collabRole =
+      guestRole === "contributor" ? "collaborator" : guestRole === "commenter" ? "commenter" : "guest";
+
+    const isNewJoin = !existing;
+
     if (!existing) {
       const { error: insertErr } = await admin.from("project_collaborators").insert({
         project_id: link.project_id,
         user_id: user.id,
-        role: "guest",
+        role: collabRole,
         status: "accepted",
         invited_by: link.created_by,
         accepted_at: new Date().toISOString(),
@@ -111,6 +118,22 @@ Deno.serve(async (req) => {
       .from("project_guest_links")
       .update({ uses: link.uses + 1 })
       .eq("id", link.id);
+
+    // Notify the link creator (owner/inviter) when a fresh guest joins
+    if (isNewJoin && link.created_by && link.created_by !== user.id) {
+      const [{ data: project }, { data: joiner }] = await Promise.all([
+        admin.from("projects").select("title").eq("id", link.project_id).maybeSingle(),
+        admin.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
+      ]);
+      await admin.from("notifications").insert({
+        user_id: link.created_by,
+        type: "project_guest_joined",
+        title: "Guest joined your Studio",
+        message: `${joiner?.full_name || "A guest"} joined "${project?.title || "your Studio"}" as ${guestRole}.`,
+        action_url: `/desk/${link.project_id}`,
+        metadata: { project_id: link.project_id, joined_user_id: user.id, guest_role: guestRole },
+      }).then(() => {}, () => {});
+    }
 
     return new Response(
       JSON.stringify({

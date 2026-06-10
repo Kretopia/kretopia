@@ -13013,6 +13013,7 @@ export type Database = {
           created_at: string
           created_by: string
           expires_at: string | null
+          guest_role: string
           id: string
           label: string | null
           max_uses: number | null
@@ -13027,6 +13028,7 @@ export type Database = {
           created_at?: string
           created_by: string
           expires_at?: string | null
+          guest_role?: string
           id?: string
           label?: string | null
           max_uses?: number | null
@@ -13041,6 +13043,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           expires_at?: string | null
+          guest_role?: string
           id?: string
           label?: string | null
           max_uses?: number | null

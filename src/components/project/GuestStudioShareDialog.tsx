@@ -23,17 +23,26 @@ interface GuestStudioShareDialogProps {
   projectTitle?: string;
 }
 
+type GuestRole = "viewer" | "commenter" | "contributor";
+
 interface GuestLink {
   id: string;
   token: string;
   label: string | null;
   permissions: { comment?: boolean; upload?: boolean; call?: boolean };
+  guest_role?: GuestRole;
   expires_at: string | null;
   max_uses: number | null;
   uses: number;
   revoked_at: string | null;
   created_at: string;
 }
+
+const ROLE_PRESETS: Record<GuestRole, { label: string; hint: string; perms: { comment: boolean; upload: boolean; call: boolean } }> = {
+  viewer: { label: "Viewer", hint: "Read-only. No comments, no uploads.", perms: { comment: false, upload: false, call: false } },
+  commenter: { label: "Commenter", hint: "Can comment + join calls. No uploads.", perms: { comment: true, upload: false, call: true } },
+  contributor: { label: "Contributor", hint: "Full guest seat — comment, upload, calls.", perms: { comment: true, upload: true, call: true } },
+};
 
 const APP_URL = "https://www.thrivein.io";
 

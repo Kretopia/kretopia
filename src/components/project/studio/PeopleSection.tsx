@@ -186,10 +186,21 @@ export const PeopleSection = ({
               size="sm"
               variant="outline"
               className="h-8 gap-1 text-xs"
+              onClick={quickShareGuestLink}
+              disabled={quickSharing}
+              title="Share guest link instantly"
+            >
+              {quickSharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Share2 className="h-3.5 w-3.5" />}
+              Share link
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 gap-1 text-xs"
               onClick={() => setShareOpen(true)}
+              title="Guest link settings"
             >
               <Link2 className="h-3.5 w-3.5" />
-              Guest link
             </Button>
             <InviteCollaboratorDialog projectId={projectId} onInvite={onUpdated} />
           </div>

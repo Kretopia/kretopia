@@ -458,7 +458,7 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
                   </div>
                   <Button
                     size="sm"
-                    onClick={() => handleInviteByEmail(searchInput)}
+                    onClick={() => handleInviteByEmail(searchInput.trim())}
                     disabled={sending}
                   >
                     {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}

@@ -74,13 +74,13 @@ serve(async (req) => {
 
     const { data: memories } = await admin
       .from("thrive_memory")
-      .select("kind, mem_key, mem_value")
+      .select("kind, mem_key, label, body")
       .eq("user_id", userId)
-      .in("kind", ["rate_card", "past_win", "client", "vendor", "voice"])
+      .in("kind", ["rate", "client", "vendor", "preference", "fact", "contact"])
       .limit(20);
 
     const memorySnippet = (memories || [])
-      .map((m: any) => `- [${m.kind}] ${m.mem_key}: ${typeof m.mem_value === "string" ? m.mem_value : JSON.stringify(m.mem_value).slice(0, 200)}`)
+      .map((m: any) => `- [${m.kind}] ${m.label || m.mem_key}: ${(m.body ?? "").toString().slice(0, 200)}`)
       .join("\n");
 
     const tools = [

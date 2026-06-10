@@ -65,10 +65,34 @@ const INTENT_SKELETONS: Record<Intent, { slides: string[]; tone: string }> = {
   },
 };
 
-const SYSTEM = (intent: Intent) => `You are Thrive — the user's Executive Producer inside ThriveIN. You're not a generic AI; you run their business.
+// Archetype-specific cover & interior image direction. Keeps each doc type
+// visually distinct without leaking "AI" voice into UI copy.
+const COVER_STYLES: Record<Intent, string> = {
+  sponsor_deck:    "Bold editorial poster. Crowd / event energy, cinematic lighting, large brand-safe negative space top-left for title. No stock-photo vibe.",
+  pitch_deck:      "Clean, premium tech-editorial. Single hero object or abstract gradient field. Confident, calm, investor-grade.",
+  business_plan:   "Minimal corporate cover. Architectural lines, subdued palette, one strong focal mark. Serious, document-like.",
+  client_proposal: "Warm, human, on-brand. Subject matter that mirrors the client's world. Soft natural light. Feels personal, not templated.",
+  treatment:       "Cinematic film still. Strong subject, shallow depth, mood and palette do the talking. Letterboxed feel.",
+  rate_card:       "Premium minimalist. Single object or texture on rich background. Reads like a luxury services menu cover.",
+  moodboard_deck:  "Pure image. No text intent. Striking single frame that sets the entire creative direction.",
+  one_pager:       "Magazine-cover composition. Strong typography zone + one hero visual. High-contrast, scannable.",
+  letter_of_intent:"Branded letterhead — solid colour or subtle paper texture. Logo lockup top, signature block bottom. No imagery in the body.",
+};
+
+const THEME_HINTS: Record<string, string> = {
+  editorial: "Editorial magazine feel. Generous margins, refined typography zone.",
+  bold:      "Brutalist, high-contrast, oversized type zone, single saturated accent.",
+  minimal:   "White space, one element, near-monochrome.",
+  cinematic: "Filmic colour grade, anamorphic feel, atmospheric.",
+  warm:      "Sunlit palette, soft grain, intimate framing.",
+};
+
+const SYSTEM = (intent: Intent, theme: string) => `You are Thrive — the user's Executive Producer inside ThriveIN. You're not a generic AI; you run their business.
 
 You're drafting a ${intent.replace("_", " ")} for a creative professional.
 Tone: ${INTENT_SKELETONS[intent].tone}
+Cover art direction: ${COVER_STYLES[intent]}
+Theme overlay (${theme}): ${THEME_HINTS[theme] || THEME_HINTS.editorial}
 
 RULES:
 - Write like a senior producer who already knows the user. Reference their real credits, co-signs, rates, past work where given.
@@ -79,11 +103,14 @@ RULES:
 - If a BRAND is provided in context, treat it as law: use the brand name, tagline and voice_tone everywhere, honour the do/dont list, surface palette colours by HEX when referring to look-and-feel, and weave the brand's links into the contact slide.
 - If a STUDIO BRAIN is provided (facts, entities), use those real numbers, dates, venues, sponsors, contacts and budgets directly. Never re-ask the user for something already in the brain.
 - If you don't have a real fact, leave a clearly-labelled [PLACEHOLDER: ...] for the user to fill — never invent numbers, dates, or names.
+- cover_prompt MUST follow the Cover art direction + Theme overlay above. Weave the brand palette HEX values in when a brand is provided. Never reference text, logos, or copy inside the image — those are composed by the renderer.
+- image_prompt on interior slides should echo the same theme so the deck feels like one object, not a collage.
 
 Return a single tool call with the structured document.`;
 
 async function generate(intent: Intent, ctx: Record<string, unknown>, apiKey: string) {
   const skeleton = INTENT_SKELETONS[intent];
+  const theme = (ctx.theme as string) || "editorial";
   const userMsg = `BRIEF FROM USER:
 ${ctx.user_brief || "(none — infer from context)"}
 

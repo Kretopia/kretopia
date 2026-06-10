@@ -52,8 +52,10 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
     user.role?.toLowerCase().includes(searchInput.toLowerCase())
   );
 
-  // Check if input looks like an email
-  const isEmailFormat = searchInput.includes("@") && searchInput.includes(".");
+  // Detect emails in input (supports paste of comma/space/newline separated lists)
+  const parsedEmails = extractEmails(searchInput);
+  const isEmailFormat = parsedEmails.length === 1 && /^\s*\S+@\S+\.\S+\s*$/.test(searchInput.trim());
+  const isBulkEmails = parsedEmails.length > 1;
 
   // Load connected users when dialog opens
   useEffect(() => {

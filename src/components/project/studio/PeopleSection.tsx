@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Crown, Hand, Clock, Link2 } from "lucide-react";
+import { Crown, Hand, Clock, Link2, Share2, Loader2 } from "lucide-react";
 import { InviteCollaboratorDialog } from "@/components/project/InviteCollaboratorDialog";
 import { GuestStudioShareDialog } from "@/components/project/GuestStudioShareDialog";
+import { PendingInvitations } from "@/components/project/PendingInvitations";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { getShareUrl } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 interface PeopleSectionProps {

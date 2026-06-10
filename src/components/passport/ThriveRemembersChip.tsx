@@ -39,12 +39,17 @@ export function ThriveRemembersChip() {
 
   useEffect(() => {
     if (!user?.id) return;
-    supabase
-      .from("thrive_memory")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .then(({ count }) => setCount(count || 0))
-      .catch(() => setCount(0));
+    (async () => {
+      try {
+        const { count } = await supabase
+          .from("thrive_memory")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id);
+        setCount(count || 0);
+      } catch {
+        setCount(0);
+      }
+    })();
   }, [user?.id]);
 
   const loadRows = async () => {

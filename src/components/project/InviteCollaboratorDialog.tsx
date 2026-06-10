@@ -6,12 +6,24 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { UserPlus, Mail, Loader2, Users, Briefcase, Sparkles, Handshake, Link2, Copy, Check } from "lucide-react";
+import { UserPlus, Mail, Loader2, Users, Briefcase, Sparkles, Handshake, Link2, Copy, Check, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getShareUrl } from "@/lib/constants";
+
+const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+const extractEmails = (text: string): string[] => {
+  const matches = text.match(EMAIL_RE) || [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const m of matches) {
+    const v = m.toLowerCase();
+    if (!seen.has(v)) { seen.add(v); out.push(v); }
+  }
+  return out;
+};
 
 interface InviteCollaboratorDialogProps {
   projectId: string;
@@ -40,8 +52,10 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
     user.role?.toLowerCase().includes(searchInput.toLowerCase())
   );
 
-  // Check if input looks like an email
-  const isEmailFormat = searchInput.includes("@") && searchInput.includes(".");
+  // Detect emails in input (supports paste of comma/space/newline separated lists)
+  const parsedEmails = extractEmails(searchInput);
+  const isEmailFormat = parsedEmails.length === 1 && /^\s*\S+@\S+\.\S+\s*$/.test(searchInput.trim());
+  const isBulkEmails = parsedEmails.length > 1;
 
   // Load connected users when dialog opens
   useEffect(() => {
@@ -183,6 +197,56 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
         description: error.message || "Failed to send invitation. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleBulkInviteByEmail = async (emails: string[]) => {
+    if (!emails.length) return;
+    setSending(true);
+    let ok = 0;
+    let fail = 0;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { data: profile } = await supabase.from('profiles').select('full_name').eq('user_id', user.id).single();
+      const { data: project } = await supabase.from('projects').select('title').eq('id', projectId).single();
+
+      for (const email of emails) {
+        try {
+          const { error } = await supabase.from('project_collaborators').insert({
+            project_id: projectId,
+            email,
+            invited_by: user.id,
+            role: 'member',
+            agent_role: selectedRole,
+            status: 'pending',
+          });
+          if (error) throw error;
+          await supabase.functions.invoke('send-project-invitation', {
+            body: {
+              email,
+              projectTitle: project?.title || 'Untitled Project',
+              projectId,
+              inviterName: profile?.full_name || 'A ThriveIN user',
+            },
+          }).catch((e) => console.warn('email send failed', email, e));
+          ok++;
+        } catch (e) {
+          console.warn('bulk invite failed for', email, e);
+          fail++;
+        }
+      }
+      toast({
+        title: `Sent ${ok} invite${ok === 1 ? '' : 's'}`,
+        description: fail > 0 ? `${fail} couldn't be sent (already invited?)` : 'They\'ll get an email with the studio link.',
+      });
+      setSearchInput("");
+      setOpen(false);
+      onInvite();
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
     } finally {
       setSending(false);
     }
@@ -394,12 +458,42 @@ export const InviteCollaboratorDialog = ({ projectId, onInvite }: InviteCollabor
                   </div>
                   <Button
                     size="sm"
-                    onClick={() => handleInviteByEmail(searchInput)}
+                    onClick={() => handleInviteByEmail(searchInput.trim())}
                     disabled={sending}
                   >
                     {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {/* Bulk email paste — 2+ emails detected */}
+            {isBulkEmails && (
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  <span className="text-sm">{parsedEmails.length} emails detected</span>
+                </div>
+                <div className="rounded-lg border-2 border-dashed p-3 space-y-2 max-h-32 overflow-y-auto">
+                  {parsedEmails.slice(0, 8).map((e) => (
+                    <p key={e} className="text-xs font-mono text-muted-foreground truncate">{e}</p>
+                  ))}
+                  {parsedEmails.length > 8 && (
+                    <p className="text-[10px] text-muted-foreground">+ {parsedEmails.length - 8} more</p>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  className="w-full gap-1.5"
+                  onClick={() => handleBulkInviteByEmail(parsedEmails)}
+                  disabled={sending}
+                >
+                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                  Send {parsedEmails.length} invites
+                </Button>
+                <p className="text-[10px] text-muted-foreground text-center">
+                  Tip: paste from any spreadsheet or contact list — we'll pull out every valid email.
+                </p>
               </div>
             )}
 
@@ -535,6 +629,18 @@ const GuestLinkPanel = ({ projectId }: { projectId: string }) => {
     }
   };
 
+  const share = async () => {
+    if (!url) return;
+    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+    if (nav.share) {
+      try {
+        await nav.share({ title: "Join my Studio on ThriveIN", text: "I'm bringing you into a studio — tap to see the brief, vault & chat.", url });
+        return;
+      } catch { /* user cancelled */ }
+    }
+    copy();
+  };
+
   if (loading) {
     return <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
   }
@@ -561,9 +667,15 @@ const GuestLinkPanel = ({ projectId }: { projectId: string }) => {
               {copied ? "Copied" : "Copy"}
             </Button>
           </div>
-          <Button size="sm" variant="ghost" className="text-xs h-7" onClick={create} disabled={creating}>
-            {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : "Generate a new link"}
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" className="flex-1 gap-1.5" onClick={share}>
+              <Share2 className="h-3.5 w-3.5" />
+              Share link
+            </Button>
+            <Button size="sm" variant="ghost" className="text-xs h-8" onClick={create} disabled={creating}>
+              {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : "New link"}
+            </Button>
+          </div>
         </div>
       ) : (
         <Button onClick={create} disabled={creating} className="w-full gap-2">

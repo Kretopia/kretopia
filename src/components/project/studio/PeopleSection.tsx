@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Crown, Hand, Clock, Link2 } from "lucide-react";
+import { Crown, Hand, Clock, Link2, Share2, Loader2 } from "lucide-react";
 import { InviteCollaboratorDialog } from "@/components/project/InviteCollaboratorDialog";
 import { GuestStudioShareDialog } from "@/components/project/GuestStudioShareDialog";
+import { PendingInvitations } from "@/components/project/PendingInvitations";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { getShareUrl } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 interface PeopleSectionProps {
@@ -41,6 +44,54 @@ export const PeopleSection = ({
   const [pending, setPending] = useState<PendingPerson[]>([]);
   const [shareOpen, setShareOpen] = useState(false);
   const [projectTitle, setProjectTitle] = useState<string>("");
+  const [quickSharing, setQuickSharing] = useState(false);
+  const { toast } = useToast();
+
+  const quickShareGuestLink = async () => {
+    setQuickSharing(true);
+    try {
+      const { data: existing } = await supabase
+        .from("guest_studio_tokens")
+        .select("token")
+        .eq("project_id", projectId)
+        .is("revoked_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      let token = existing?.token as string | undefined;
+      if (!token) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not signed in");
+        const { data: created, error } = await supabase
+          .from("guest_studio_tokens")
+          .insert({ project_id: projectId, created_by: user.id })
+          .select("token")
+          .single();
+        if (error) throw error;
+        token = created.token;
+      }
+
+      const url = getShareUrl(`/guest/${token}`);
+      const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+      if (nav.share) {
+        try {
+          await nav.share({
+            title: `Join "${projectTitle || 'my Studio'}" on ThriveIN`,
+            text: "I'm bringing you into a studio — tap to see the brief, vault & chat.",
+            url,
+          });
+          return;
+        } catch { /* user cancelled — fall through to copy */ }
+      }
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Guest link copied", description: "Paste it anywhere — they can open the studio instantly." });
+    } catch (e: any) {
+      toast({ title: "Couldn't share link", description: e.message, variant: "destructive" });
+    } finally {
+      setQuickSharing(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -135,10 +186,21 @@ export const PeopleSection = ({
               size="sm"
               variant="outline"
               className="h-8 gap-1 text-xs"
+              onClick={quickShareGuestLink}
+              disabled={quickSharing}
+              title="Share guest link instantly"
+            >
+              {quickSharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Share2 className="h-3.5 w-3.5" />}
+              Share link
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 gap-1 text-xs"
               onClick={() => setShareOpen(true)}
+              title="Guest link settings"
             >
               <Link2 className="h-3.5 w-3.5" />
-              Guest link
             </Button>
             <InviteCollaboratorDialog projectId={projectId} onInvite={onUpdated} />
           </div>
@@ -247,6 +309,7 @@ export const PeopleSection = ({
           ))}
         </div>
       </div>
+      {isOwner && <PendingInvitations projectId={projectId} />}
     </section>
   );
 };

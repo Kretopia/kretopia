@@ -97,7 +97,8 @@ export const GuestStudioShareDialog = ({
         token,
         created_by: user.id,
         label: label.trim() || null,
-        permissions: { comment, upload, call },
+        permissions: ROLE_PRESETS[role].perms,
+        guest_role: role,
       });
       if (error) throw error;
       setLabel("");

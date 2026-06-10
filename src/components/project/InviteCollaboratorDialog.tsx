@@ -667,9 +667,15 @@ const GuestLinkPanel = ({ projectId }: { projectId: string }) => {
               {copied ? "Copied" : "Copy"}
             </Button>
           </div>
-          <Button size="sm" variant="ghost" className="text-xs h-7" onClick={create} disabled={creating}>
-            {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : "Generate a new link"}
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" className="flex-1 gap-1.5" onClick={share}>
+              <Share2 className="h-3.5 w-3.5" />
+              Share link
+            </Button>
+            <Button size="sm" variant="ghost" className="text-xs h-8" onClick={create} disabled={creating}>
+              {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : "New link"}
+            </Button>
+          </div>
         </div>
       ) : (
         <Button onClick={create} disabled={creating} className="w-full gap-2">

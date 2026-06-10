@@ -237,6 +237,9 @@ export const GuestStudioShareDialog = ({
                   </div>
 
                   <div className="flex flex-wrap gap-1">
+                    {l.guest_role && (
+                      <Badge className="text-[9px] capitalize">{l.guest_role}</Badge>
+                    )}
                     {l.permissions?.comment && <Badge variant="secondary" className="text-[9px]">Comment</Badge>}
                     {l.permissions?.upload && <Badge variant="secondary" className="text-[9px]">Upload</Badge>}
                     {l.permissions?.call && <Badge variant="secondary" className="text-[9px]">Calls</Badge>}

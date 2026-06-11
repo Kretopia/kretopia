@@ -4,7 +4,7 @@ import { SEO } from "@/components/SEO";
 import { PageHeader } from "@/components/ui/page-header";
 import { Compass, Users, Briefcase, Radio } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+
 import { SwipeFeature } from "@/components/swipe";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";

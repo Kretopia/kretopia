@@ -104,17 +104,10 @@ export default function Discover() {
           </TabsList>
         </div>
 
-        <TabsContent value="people" className="mt-0 px-3 py-3 accent-match space-y-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/circle?browse=1')}>
-              <LayoutGrid className="h-4 w-4" /> Browse creators
-            </Button>
-            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate('/talent-finder')}>
-              <Sparkles className="h-4 w-4" /> Talent Scout
-            </Button>
-          </div>
+        <TabsContent value="people" className="mt-0 px-3 py-3 accent-match">
           <SwipeFeature />
         </TabsContent>
+
 
         <TabsContent value="opps" className="mt-0 px-3 py-3 accent-scout space-y-6">
           <OpportunitiesFeed />

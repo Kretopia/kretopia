@@ -864,25 +864,86 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
             </div>
           )}
           <div className="relative">
-            {/* @Mention autocomplete */}
-            {showMentions && filteredCollaborators.length > 0 && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-20 max-h-40 overflow-y-auto">
-                {filteredCollaborators.map((collab, i) => (
-                  <button
-                    key={collab.id}
-                    onClick={() => insertMention(collab)}
-                    className={cn(
-                      "flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors",
-                      i === mentionIndex && "bg-accent"
-                    )}
-                  >
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={collab.avatar_url || undefined} />
-                      <AvatarFallback className="text-[10px]">{collab.full_name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">{collab.full_name}</span>
-                  </button>
-                ))}
+            {/* @Mention autocomplete — in-studio members + invite-from-search */}
+            {showMentions && (mentionItems.length > 0 || mentionInviting) && (
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-20 max-h-72 overflow-y-auto">
+                {mentionItems.map((item, i) => {
+                  const isActive = i === mentionIndex;
+                  if (item.kind === "collab") {
+                    return (
+                      <button
+                        key={`c-${item.collab.id}`}
+                        onClick={() => pickMentionItem(item)}
+                        className={cn(
+                          "flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors",
+                          isActive && "bg-accent",
+                        )}
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={item.collab.avatar_url || undefined} />
+                          <AvatarFallback className="text-[10px]">{item.collab.full_name?.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium flex-1 truncate">{item.collab.full_name}</span>
+                        <span className="text-[10px] text-muted-foreground">In studio</span>
+                      </button>
+                    );
+                  }
+                  if (item.kind === "invite-user") {
+                    return (
+                      <button
+                        key={`u-${item.collab.id}`}
+                        onClick={() => pickMentionItem(item)}
+                        disabled={mentionInviting}
+                        className={cn(
+                          "flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors border-t border-border/50",
+                          isActive && "bg-accent",
+                        )}
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={item.collab.avatar_url || undefined} />
+                          <AvatarFallback className="text-[10px]">{item.collab.full_name?.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium flex-1 truncate">{item.collab.full_name}</span>
+                        <span className="text-[10px] font-bold text-primary">+ Add to studio</span>
+                      </button>
+                    );
+                  }
+                  // invite-email
+                  return (
+                    <button
+                      key="invite-email"
+                      onClick={() => pickMentionItem(item)}
+                      disabled={mentionInviting}
+                      className={cn(
+                        "flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors border-t border-border/50",
+                        isActive && "bg-accent",
+                      )}
+                    >
+                      <div className="h-6 w-6 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xs font-bold">@</div>
+                      <span className="flex-1 truncate">
+                        <span className="font-medium">Invite</span>{" "}
+                        <span className="text-muted-foreground">{item.email}</span>
+                      </span>
+                      <span className="text-[10px] font-bold text-primary">+ Email invite</span>
+                    </button>
+                  );
+                })}
+                {mentionInviting && (
+                  <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground border-t border-border/50">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Inviting…
+                  </div>
+                )}
+                {mentionItems.length === 0 && mentionQuery.length >= 2 && !mentionEmail && !mentionInviting && (
+                  <div className="px-3 py-3 text-xs text-muted-foreground">
+                    No one named "{mentionQuery}" — type a full email to invite by mail.
+                  </div>
+                )}
+              </div>
+            )}
+            {showMentions && mentionItems.length === 0 && !mentionInviting && mentionQuery.length >= 2 && (
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border border-border rounded-lg shadow-lg z-20 px-3 py-3 text-xs text-muted-foreground">
+                {mentionEmail ? null : `No one named "${mentionQuery}". Type a full email to invite by mail.`}
               </div>
             )}
 

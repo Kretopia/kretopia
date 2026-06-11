@@ -638,6 +638,11 @@ export const UnifiedHome = () => {
             </div>
           </details>
 
+          {/* Spotlight (Magazine + Podcast) — keeps people discovering stories */}
+          <div className="mb-4">
+            <SpotlightFeedRow />
+          </div>
+
           {/* Push prompt still fires (cooldown-gated) but lives quietly outside the section. */}
           <PushNotificationPrompt trigger="default" />
         </div>

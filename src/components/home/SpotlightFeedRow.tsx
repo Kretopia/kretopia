@@ -100,12 +100,9 @@ export const SpotlightFeedRow = () => {
           </Link>
         </motion.div>
 
-        {articles.map((a, i) => (
-          <motion.div
+        {articles.map((a) => (
+          <div
             key={a.id}
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.05 }}
             className="shrink-0 w-[78%] sm:w-[300px] snap-start"
           >
             <Link

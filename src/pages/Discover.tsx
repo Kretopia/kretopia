@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
+import { PageHeader } from "@/components/ui/page-header";
+import { Compass } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Briefcase, Radio } from "lucide-react";
 import { SwipeFeature } from "@/components/swipe";

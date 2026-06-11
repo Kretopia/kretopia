@@ -136,11 +136,12 @@ const ProjectsList = () => {
     { id: "wrapping", label: "Wrapping" },
     { id: "completed", label: "Delivered" },
   ];
-  const PAY_CHIPS: { id: typeof payFilter; label: string; dot?: string }[] = [
-    { id: "unsent", label: "No invoice", dot: "bg-rose-500" },
-    { id: "invoiced", label: "Invoiced", dot: "bg-amber-500" },
-    { id: "paid", label: "Paid", dot: "bg-emerald-500" },
+  const PAY_CHIPS: { id: typeof payFilter; label: string; dot: string }[] = [
+    { id: "unsent", label: "No invoice", dot: "bg-[hsl(var(--signal-magenta))]" },
+    { id: "invoiced", label: "Invoiced", dot: "bg-[hsl(var(--signal-amber,var(--signal-yellow)))]" },
+    { id: "paid", label: "Paid", dot: "bg-[hsl(var(--pay))]" },
   ];
+
 
   return (
     <div className="accent-studios container max-w-6xl mx-auto py-3 sm:py-4 px-3 sm:px-4 space-y-3 sm:space-y-4 pb-32 md:pb-12 overflow-y-auto">

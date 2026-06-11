@@ -29,6 +29,34 @@ const BottomNav = memo(() => {
 
   const items = isBusiness ? COMPANY_ITEMS : NAV_ITEMS;
 
+  // Hide the nav whenever a Radix dialog/sheet/drawer is open. Two reasons:
+  // 1. The nav and Radix overlay share z-50, so the nav bleeds through the
+  //    modal — confusing visually and (on Android) triggers GPU rasterization
+  //    artifacts on cards near the bottom of the dialog (looks like static).
+  // 2. While a modal owns the screen, the global nav is not actionable.
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const check = () => {
+      const locked =
+        document.body.hasAttribute("data-scroll-locked") ||
+        !!document.querySelector(
+          '[role="dialog"][data-state="open"], [data-radix-dialog-content][data-state="open"]'
+        );
+      setOverlayOpen(locked);
+    };
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-scroll-locked", "style"],
+      childList: true,
+      subtree: true,
+    });
+    return () => obs.disconnect();
+  }, []);
+  if (overlayOpen) return null;
+
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
     if (path === "/discover") {

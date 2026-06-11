@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Compass, LayoutGrid, Sun, BadgeCheck, Briefcase, UserSearch, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
 
 // ThriveIN 2.0 — Daily Driver IA, collapsed to 4 + center FAB (QuickActionFab).

@@ -616,7 +616,7 @@ const GuestLinkPanel = ({ projectId }: { projectId: string }) => {
     }
   };
 
-  const url = token ? getShareUrl(`/guest/${token}`) : "";
+  const url = token ? getShareUrl(`/guest/${encodeURIComponent(token)}`) : "";
 
   const copy = async () => {
     if (!url) return;

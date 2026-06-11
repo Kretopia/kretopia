@@ -72,7 +72,7 @@ export const PeopleSection = ({
         token = created.token;
       }
 
-      const url = getShareUrl(`/guest/${token}`);
+      const url = getShareUrl(`/guest/${encodeURIComponent(token)}`);
       const title = projectTitle || "my Studio";
       const shareText =
 `You're invited to "${title}" on ThriveIN 🎬

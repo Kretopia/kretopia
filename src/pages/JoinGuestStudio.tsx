@@ -37,9 +37,11 @@ const JoinGuestStudio = () => {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      // Send to auth, return here after sign-in
-      const next = encodeURIComponent(`/desk/join/${token}`);
-      navigate(`/auth?redirect=${next}`);
+      // Stash so both post-auth AND post-onboarding flows route back here
+      // to redeem the token (new sign-ups go through /onboarding first).
+      const next = `/desk/join/${token}`;
+      try { sessionStorage.setItem("thrivein_post_auth_redirect", next); } catch {}
+      navigate(`/auth?redirect=${encodeURIComponent(next)}`);
       return;
     }
     if (status === "idle") join();

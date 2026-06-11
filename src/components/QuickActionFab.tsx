@@ -335,9 +335,14 @@ const QuickActionFab = () => {
         </div>
       )}
 
-      {/* The center ＋ — anchored to the middle of the bottom nav */}
+      {/* The center ＋ — anchored to the middle of the bottom nav.
+          Hidden while the Thrive composer/sheet is open so it doesn't
+          cover the chat input. */}
       <div
-        className="fixed left-1/2 -translate-x-1/2 z-[57] lg:hidden"
+        className={cn(
+          "fixed left-1/2 -translate-x-1/2 z-[57] lg:hidden transition-opacity duration-150",
+          overlayOpen && !open ? "opacity-0 pointer-events-none" : "opacity-100"
+        )}
         style={{ bottom: fabBottom }}
       >
         <button

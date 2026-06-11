@@ -1,31 +1,57 @@
-import { useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PageHeader } from "@/components/ui/page-header";
-import { Compass } from "lucide-react";
+import { Compass, Users, Briefcase, LayoutGrid, Sparkles, Radio } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Briefcase, Radio, LayoutGrid, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SwipeFeature } from "@/components/swipe";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
-import { CuratedStagesRail } from "@/components/circle/CuratedStagesRail";
-import { SoundStagesRail } from "@/components/circle/SoundStagesRail";
-import { LiveCallsPanel } from "@/components/circle/LiveCallsPanel";
-import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-type Tab = "people" | "opps" | "live";
-const VALID: Tab[] = ["people", "opps", "live"];
+type Tab = "people" | "opps";
+const VALID: Tab[] = ["people", "opps"];
 
 /**
- * Discover — single hub for People (Match), Opportunities (Scout), Live (Stages).
- * Splits live stages from match (was tangled on /circle).
+ * Discover — daily-driver hub: People (Match) · Opportunities (Scout).
+ * Live stages moved to /circle?tab=live (only surfaced here when something is actually on-air).
+ * Legacy ?tab=live still redirects to /circle for bookmarks.
  */
 export default function Discover() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const initial = (params.get("tab") as Tab) || "people";
-  const tab: Tab = useMemo(() => (VALID.includes(initial) ? initial : "people"), [initial]);
+  const requested = params.get("tab");
+  const tab: Tab = useMemo(() => (VALID.includes(requested as Tab) ? (requested as Tab) : "people"), [requested]);
+
+  // Bookmark redirect: old /discover?tab=live → /circle?tab=live
+  useEffect(() => {
+    if (requested === "live") navigate("/circle?tab=live", { replace: true });
+  }, [requested, navigate]);
+
+  // Live-now pulse: only show the pill when stages are actually on-air.
+  const [liveCount, setLiveCount] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    const check = async () => {
+      const { count } = await supabase
+        .from("sound_stages")
+        .select("id", { count: "exact", head: true })
+        .eq("is_live", true);
+      if (!cancelled) setLiveCount(count ?? 0);
+    };
+    check().catch(() => {});
+    const ch = supabase
+      .channel("discover-live-pulse")
+      .on("postgres_changes", { event: "*", schema: "public", table: "sound_stages" }, () => {
+        check().catch(() => {});
+      })
+      .subscribe();
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(ch);
+    };
+  }, []);
 
   const setTab = (next: Tab) => {
     const p = new URLSearchParams(params);
@@ -36,30 +62,44 @@ export default function Discover() {
   return (
     <div className="min-h-screen bg-background pb-28">
       <SEO
-        title="Discover — People, Opportunities, Live | ThriveIN"
-        description="Meet collaborators, find gigs, and walk on stage — all in one feed."
+        title="Discover — People & Opportunities | ThriveIN"
+        description="Meet collaborators and find gigs — all in one feed."
       />
       <div className="max-w-2xl mx-auto px-4 pt-4">
         <PageHeader
           eyebrow="The Hub"
           title="Discover"
-          subtitle="People · Opportunities · Live — meet collaborators, find gigs, walk on stage."
+          subtitle="Meet collaborators. Find gigs. Move work forward."
           icon={Compass}
           size="sm"
         />
+
+        {liveCount > 0 && (
+          <button
+            onClick={() => navigate("/circle?tab=live")}
+            className="mt-3 w-full flex items-center gap-2.5 rounded-xl border border-[hsl(var(--signal-magenta))]/30 bg-[hsl(var(--signal-magenta))]/5 px-3 py-2.5 text-left hover:border-[hsl(var(--signal-magenta))]/60 transition-colors"
+          >
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[hsl(var(--signal-magenta))] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[hsl(var(--signal-magenta))]" />
+            </span>
+            <Radio className="h-3.5 w-3.5 text-[hsl(var(--signal-magenta))]" />
+            <span className="text-xs font-semibold flex-1">
+              {liveCount} stage{liveCount === 1 ? "" : "s"} on air now
+            </span>
+            <span className="text-[11px] text-muted-foreground">Tap to join →</span>
+          </button>
+        )}
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="w-full">
-        <div className="sticky top-0 z-20 bg-background border-b border-border/60 px-3 py-2">
-          <TabsList className="w-full grid grid-cols-3 h-10">
+        <div className="sticky top-0 z-20 bg-background border-b border-border/60 px-3 py-2 mt-3">
+          <TabsList className="w-full grid grid-cols-2 h-10">
             <TabsTrigger value="people" className="gap-1.5 text-xs">
               <Users className="h-3.5 w-3.5" /> People
             </TabsTrigger>
             <TabsTrigger value="opps" className="gap-1.5 text-xs">
               <Briefcase className="h-3.5 w-3.5" /> Opportunities
-            </TabsTrigger>
-            <TabsTrigger value="live" className="gap-1.5 text-xs">
-              <Radio className="h-3.5 w-3.5" /> Live
             </TabsTrigger>
           </TabsList>
         </div>
@@ -79,18 +119,6 @@ export default function Discover() {
         <TabsContent value="opps" className="mt-0 px-3 py-3 accent-scout space-y-6">
           <OpportunitiesFeed />
           <ScoutedGigsSection />
-        </TabsContent>
-
-        <TabsContent value="live" className="mt-0 px-3 py-3 space-y-5">
-          <section className="space-y-2">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">On air now</h2>
-            <SoundStagesRail onJoin={(s) => navigate(`/circle?stage=${s.id}`)} />
-          </section>
-          <section className="space-y-2">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Curated stages</h2>
-            <CuratedStagesRail />
-          </section>
-          <LiveCallsPanel />
         </TabsContent>
       </Tabs>
     </div>

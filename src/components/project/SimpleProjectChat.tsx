@@ -941,11 +941,6 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
                 )}
               </div>
             )}
-            {showMentions && mentionItems.length === 0 && !mentionInviting && mentionQuery.length >= 2 && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border border-border rounded-lg shadow-lg z-20 px-3 py-3 text-xs text-muted-foreground">
-                {mentionEmail ? null : `No one named "${mentionQuery}". Type a full email to invite by mail.`}
-              </div>
-            )}
 
             <div className="flex gap-2 items-end">
               <input

@@ -267,7 +267,7 @@ const AppContent = () => {
       <PageViewTracker />
       {showNavbar && <Navbar user={user} />}
       {showBottomNav && <BottomNav />}
-      {/* QuickActionFab removed — bottom nav + hamburger cover create flows */}
+      {showBottomNav && <QuickActionFab />}
       <ThriveAgentFab />
       <DesktopCopilotRail />
       {showBottomNav && <ThriveBar />}

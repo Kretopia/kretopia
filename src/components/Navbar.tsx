@@ -268,14 +268,13 @@ const Navbar = memo(({ user }: NavbarProps) => {
 
                       <Separator className="my-3" />
 
-                      {/* WORKSPACE — daily-driver surfaces only */}
+                      {/* WORKSPACE — daily shortcuts only. Today/Desk live in bottom nav; Pay in Passport. */}
                       <p className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Workspace</p>
-                      <MenuButton icon={LayoutDashboard} label="Dashboard" onClick={() => handleNavigation("/dashboard")} path="/dashboard" />
                       <MenuButton icon={DollarSign} label="ThrivePay" onClick={() => handleNavigation("/thrivepay")} path="/thrivepay" />
-                      <MenuButton icon={CalendarDays} label="Events" onClick={() => handleNavigation("/meetup")} path="/meetup" />
                       {isManagerMode && (
                         <MenuButton icon={Users} label="Manager Mode" onClick={() => handleNavigation("/talent-manager")} path="/talent-manager" />
                       )}
+
 
                       <Separator className="my-3" />
 

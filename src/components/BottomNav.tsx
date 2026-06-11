@@ -1,17 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
-import { Compass, LayoutGrid, Sun, BadgeCheck, Theater, Briefcase, UserSearch, Wallet } from "lucide-react";
+import { Compass, LayoutGrid, Sun, BadgeCheck, Briefcase, UserSearch, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { memo } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
 
-// ThriveIN 2.0 — Daily Driver IA.
-// Today · Desk · Scout · Circle · Passport. Daily actions only.
-// Pay absorbed into Passport (#wallet). Hamburger = system/account only.
+// ThriveIN 2.0 — Daily Driver IA, collapsed to 4 + center FAB (QuickActionFab).
+// Today · Desk · [＋] · Discover · Passport. Discover hub = People · Opportunities · Live.
 const NAV_ITEMS = [
   { path: "/", icon: Sun, label: "Today", hint: "Today — what to move forward" },
   { path: "/desk", icon: LayoutGrid, label: "Desk", hint: "Projects, rooms, files, tasks" },
-  { path: "/scout", icon: Compass, label: "Scout", hint: "Opportunities, people, sponsors" },
-  { path: "/circle", icon: Theater, label: "Stages", hint: "Sound Stages — go live, match, browse" },
+  { path: "/discover", icon: Compass, label: "Discover", hint: "People · Opportunities · Live" },
   { path: "/profile", icon: BadgeCheck, label: "Passport", hint: "Stamps, Co-signs, Wallet" },
 ];
 
@@ -33,16 +31,16 @@ const BottomNav = memo(() => {
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
-    if (path === "/scout") {
+    if (path === "/discover") {
       return (
+        location.pathname.startsWith("/discover") ||
         location.pathname.startsWith("/scout") ||
         location.pathname === "/opportunities" ||
-        location.pathname === "/opportunity-dashboard"
+        location.pathname === "/opportunity-dashboard" ||
+        (location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles"))
       );
     }
     if (path === "/desk") return location.pathname.startsWith("/desk");
-    if (path === "/circle")
-      return location.pathname.startsWith("/circle") && !location.pathname.startsWith("/circles");
     if (path === "/profile")
       return (
         location.pathname.startsWith("/profile") ||

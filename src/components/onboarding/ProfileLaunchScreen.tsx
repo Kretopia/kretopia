@@ -124,6 +124,15 @@ export function ProfileLaunchScreen({
 
   const handleContinue = () => {
     onOpenChange(false);
+    // Honor a stashed post-auth redirect (e.g. studio guest invite, event RSVP)
+    const stashed = (() => {
+      try { return sessionStorage.getItem("thrivein_post_auth_redirect"); } catch { return null; }
+    })();
+    if (stashed) {
+      try { sessionStorage.removeItem("thrivein_post_auth_redirect"); } catch {}
+      navigate(stashed);
+      return;
+    }
     const pendingEventJoin = sessionStorage.getItem("pending_event_join");
     if (pendingEventJoin) {
       sessionStorage.removeItem("pending_event_join");

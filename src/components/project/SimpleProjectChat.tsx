@@ -306,11 +306,17 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     }
   };
 
+  const pickMentionItem = (item: typeof mentionItems[number]) => {
+    if (item.kind === "collab") return insertMention(item.collab);
+    if (item.kind === "invite-user") return inviteExistingUserToProject(item.collab);
+    if (item.kind === "invite-email") return inviteByEmailFromMention(item.email);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (showMentions && filteredCollaborators.length > 0) {
+    if (showMentions && mentionItems.length > 0) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setMentionIndex(i => Math.min(i + 1, filteredCollaborators.length - 1));
+        setMentionIndex(i => Math.min(i + 1, mentionItems.length - 1));
         return;
       }
       if (e.key === "ArrowUp") {
@@ -320,7 +326,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
       }
       if (e.key === "Enter" || e.key === "Tab") {
         e.preventDefault();
-        insertMention(filteredCollaborators[mentionIndex]);
+        pickMentionItem(mentionItems[mentionIndex]);
         return;
       }
       if (e.key === "Escape") {

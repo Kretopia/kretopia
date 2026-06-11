@@ -29,7 +29,7 @@ import { AddCreditSection } from "./AddCreditSection";
 import { WrapProjectCard } from "./WrapProjectCard";
 import { CallHistorySection } from "./CallHistorySection";
 import { PadPreviewSection } from "./PadPreviewSection";
-import { ThriveGenerateCard } from "./ThriveGenerateCard";
+// ThriveGenerateCard retired — folded into StudioOutcomeComposer.
 import { StudioOutcomeComposer } from "./StudioOutcomeComposer";
 import { BrandVaultChip } from "@/components/brand-vault/BrandVaultChip";
 import { StudioBrainPanel } from "./StudioBrainPanel";

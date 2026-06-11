@@ -140,6 +140,22 @@ const AcceptInvite = () => {
 
             if (updateError) throw updateError;
 
+            // Notify the inviter (owner) that the email invite was accepted
+            if (invitation.invited_by && invitation.invited_by !== user.id) {
+              const [{ data: projectRow }, { data: joiner }] = await Promise.all([
+                supabase.from("projects").select("title").eq("id", projectId).maybeSingle(),
+                supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
+              ]);
+              await supabase.from("notifications").insert({
+                user_id: invitation.invited_by,
+                type: "project_invite_accepted",
+                title: "Invite accepted",
+                message: `${joiner?.full_name || "Your invitee"} joined "${projectRow?.title || "your Studio"}".`,
+                action_url: `/desk/${projectId}`,
+                metadata: { project_id: projectId, joined_user_id: user.id },
+              }).then(() => {}, () => {});
+            }
+
             toast({
               title: "Welcome to the project!",
               description: "You've successfully joined the project team.",

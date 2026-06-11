@@ -15,6 +15,8 @@ interface Props {
 const QUICK_PROMPTS = [
   { label: "Sponsor deck", prompt: "Create a sponsorship proposal for this project." },
   { label: "Client proposal", prompt: "Draft a client proposal with deliverables, timeline and pricing." },
+  { label: "Treatment", prompt: "Write a creative treatment for this project." },
+  { label: "Moodboard", prompt: "Build a moodboard deck for this project." },
   { label: "Letter of Intent", prompt: "Draft a Letter of Intent on my branded letterhead for this project." },
   { label: "Rate card", prompt: "Build a clean rate card for this engagement." },
   { label: "Find crew", prompt: "Find me crew or collaborators for this project." },

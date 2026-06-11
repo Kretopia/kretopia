@@ -72,6 +72,24 @@ const ACTIVITY_TEMPLATES = [
   (n: string) => `${n} joined the creative community`,
 ];
 
+/**
+ * Sound Stages section — owns its own header so the whole block disappears
+ * when there are no live/scheduled stages (avoids a stranded "this week" header).
+ */
+const SoundStagesSection = () => {
+  const [count, setCount] = useState<number | null>(null);
+  if (count === 0) return null;
+  return (
+    <div className="mt-2 mb-4 space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sound Stages this week</p>
+        <Link to="/circle?tab=live" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
+      </div>
+      <CuratedStagesRail limit={6} hideWhenEmpty onLoad={setCount} />
+    </div>
+  );
+};
+
 export const UnifiedHome = () => {
   const { user, subscriptionInfo } = useAuth();
   const { t } = useTranslation();

@@ -168,6 +168,13 @@ export function StudioOutcomeComposer({ projectId, projectTitle }: Props) {
             <span className="truncate">{preview}</span>
           </div>
         )}
+
+        <button
+          onClick={() => navigate(`/desk/${projectId}/thrive/generate`)}
+          className="mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+        >
+          Open generator <ArrowRight className="h-2.5 w-2.5" />
+        </button>
       </div>
     </section>
   );

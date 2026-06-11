@@ -141,6 +141,49 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     );
   }, [collaborators, mentionQuery]);
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+  const mentionEmail = useMemo(() => {
+    const q = mentionQuery.trim();
+    return EMAIL_RE.test(q) ? q.toLowerCase() : null;
+  }, [mentionQuery]);
+
+  // Debounced search for non-collaborator users when query is 2+ chars
+  useEffect(() => {
+    const q = mentionQuery.trim();
+    if (!showMentions || q.length < 2 || mentionEmail) {
+      setMentionSearchResults([]);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const collabIds = new Set(collaborators.map(c => c.id));
+      const { data } = await supabase
+        .from("public_profiles_safe")
+        .select("user_id, full_name, avatar_url")
+        .ilike("full_name", `%${q}%`)
+        .limit(8);
+      if (cancelled) return;
+      const results = (data || [])
+        .filter((p: any) => p.user_id && !collabIds.has(p.user_id))
+        .map((p: any) => ({ id: p.user_id, full_name: p.full_name || "Someone", avatar_url: p.avatar_url }));
+      setMentionSearchResults(results);
+    }, 220);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [mentionQuery, showMentions, mentionEmail, collaborators]);
+
+  // Flat list driving keyboard nav. Order: existing collaborators → new users → email invite row.
+  const mentionItems = useMemo(() => {
+    const items: Array<
+      | { kind: "collab"; collab: Collaborator }
+      | { kind: "invite-user"; collab: Collaborator }
+      | { kind: "invite-email"; email: string }
+    > = [];
+    filteredCollaborators.forEach(c => items.push({ kind: "collab", collab: c }));
+    mentionSearchResults.forEach(c => items.push({ kind: "invite-user", collab: c }));
+    if (mentionEmail) items.push({ kind: "invite-email", email: mentionEmail });
+    return items;
+  }, [filteredCollaborators, mentionSearchResults, mentionEmail]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setNewMessage(val);
@@ -152,7 +195,9 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     const lastAtIndex = val.lastIndexOf("@");
     if (lastAtIndex !== -1 && (lastAtIndex === 0 || val[lastAtIndex - 1] === " ")) {
       const query = val.slice(lastAtIndex + 1);
-      if (!query.includes(" ")) {
+      // Allow spaces only when typing what looks like an email won't include them.
+      // Accept up to 40 chars without space for name lookups.
+      if (!query.includes(" ") && query.length <= 60) {
         setShowMentions(true);
         setMentionQuery(query);
         setMentionIndex(0);
@@ -168,6 +213,97 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     setNewMessage(`${before}@${collab.full_name} `);
     setShowMentions(false);
     inputRef.current?.focus();
+  };
+
+  const inviteExistingUserToProject = async (collab: Collaborator) => {
+    setMentionInviting(true);
+    try {
+      // Insert pending row. If it already exists (unique constraint), surface a friendly message.
+      const { error } = await supabase.from("project_collaborators").insert({
+        project_id: projectId,
+        user_id: collab.id,
+        invited_by: currentUserId,
+        role: "collaborator",
+        status: "pending",
+      });
+      if (error && !/duplicate|unique/i.test(error.message)) throw error;
+
+      // Notify the invitee in-app
+      const { data: project } = await supabase
+        .from("projects")
+        .select("title")
+        .eq("id", projectId)
+        .maybeSingle();
+      const { data: inviterProfile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", currentUserId)
+        .maybeSingle();
+      await supabase.from("notifications").insert({
+        user_id: collab.id,
+        type: "project_invitation",
+        title: "You've been added to a Studio",
+        message: `${inviterProfile?.full_name || "A teammate"} mentioned you in "${project?.title || "a Studio"}".`,
+        action_url: `/accept-invite/${projectId}`,
+        metadata: { project_id: projectId, invited_by: currentUserId },
+      }).then(() => {}, () => {});
+
+      toast({ title: `${collab.full_name} invited`, description: "They'll see the invite in their inbox." });
+      insertMention(collab);
+    } catch (e: any) {
+      toast({ title: "Couldn't add to studio", description: e.message, variant: "destructive" });
+    } finally {
+      setMentionInviting(false);
+    }
+  };
+
+  const inviteByEmailFromMention = async (email: string) => {
+    setMentionInviting(true);
+    try {
+      const { data: project } = await supabase
+        .from("projects")
+        .select("title")
+        .eq("id", projectId)
+        .maybeSingle();
+      const { data: inviterProfile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", currentUserId)
+        .maybeSingle();
+
+      // Insert pending email-invite row (idempotent)
+      await supabase.from("project_collaborators").insert({
+        project_id: projectId,
+        email,
+        invited_by: currentUserId,
+        role: "collaborator",
+        status: "pending",
+      }).then(() => {}, () => {});
+
+      const { error } = await supabase.functions.invoke("send-project-invitation", {
+        body: {
+          email,
+          projectId,
+          projectTitle: project?.title || "your Studio",
+          inviterName: inviterProfile?.full_name || "A teammate",
+        },
+      });
+      if (error) throw error;
+
+      toast({ title: `Invite sent to ${email}`, description: "They'll get a one-tap link to join." });
+
+      // Replace the @email mention text with @Display so the message reads naturally
+      const lastAtIndex = newMessage.lastIndexOf("@");
+      const before = newMessage.slice(0, lastAtIndex);
+      const label = email.split("@")[0];
+      setNewMessage(`${before}@${label} `);
+      setShowMentions(false);
+      inputRef.current?.focus();
+    } catch (e: any) {
+      toast({ title: "Couldn't send invite", description: e.message, variant: "destructive" });
+    } finally {
+      setMentionInviting(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

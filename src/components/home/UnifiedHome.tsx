@@ -577,14 +577,39 @@ export const UnifiedHome = () => {
             <TodayThreeCards />
           </div>
 
-          {/* Sound Stages discovery */}
-          <div className="mt-2 mb-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sound Stages this week</p>
-              <Link to="/circle?tab=live" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
+          {/* Sound Stages discovery — hidden entirely when no live stages */}
+          <SoundStagesSection />
+
+          {/* People for you — quick rail of AI-matched creators (taps deep into Match) */}
+          {featuredCreators.length > 0 && (
+            <div className="mt-2 mb-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">People for you</p>
+                <Link to="/match" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
+              </div>
+              <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-1 scrollbar-thin">
+                {featuredCreators.slice(0, 10).map((c: any) => (
+                  <Link
+                    key={c.user_id}
+                    to={`/profile/${c.user_id}`}
+                    className="shrink-0 w-40 rounded-2xl border border-border bg-card hover:border-primary/40 transition-colors overflow-hidden"
+                  >
+                    <div
+                      className="h-28 bg-gradient-to-br from-primary/20 via-accent/10 to-background"
+                      style={c.avatar_url ? { backgroundImage: `url(${c.avatar_url})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
+                    />
+                    <div className="p-2.5 space-y-0.5">
+                      <p className="text-xs font-bold leading-tight line-clamp-1">{c.full_name}</p>
+                      <p className="text-[10px] text-muted-foreground line-clamp-1">{c.role || "Creator"}</p>
+                      {c.reason && (
+                        <p className="text-[10px] text-primary line-clamp-2 pt-0.5">{c.reason}</p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-            <CuratedStagesRail limit={6} hideWhenEmpty />
-          </div>
+          )}
 
           {/* Duplicate-account merge prompt */}
           <div className="mb-4 empty:hidden">

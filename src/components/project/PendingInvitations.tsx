@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, UserCheck, UserX, Clock, Users } from "lucide-react";
+import { Mail, UserCheck, UserX, Clock, Users, Send, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface PendingInvitationsProps {
@@ -16,6 +16,7 @@ interface PendingInvitationsProps {
 
 export const PendingInvitations = ({ projectId, showAll = false }: PendingInvitationsProps) => {
   const [invitations, setInvitations] = useState<any[]>([]);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -97,6 +98,47 @@ export const PendingInvitations = ({ projectId, showAll = false }: PendingInvita
         description: error.message,
         variant: "destructive",
       });
+    }
+  };
+
+  const handleRevokeEmailInvite = async (invitationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('project_collaborators')
+        .delete()
+        .eq('id', invitationId);
+      if (error) throw error;
+      toast({ title: "Invite revoked", description: "The email invite has been removed." });
+      fetchInvitations();
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleResendEmailInvite = async (invitation: any) => {
+    if (!invitation.email || !invitation.projects?.id) return;
+    setResendingId(invitation.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user?.id || '')
+        .maybeSingle();
+      const { error } = await supabase.functions.invoke('send-project-invitation', {
+        body: {
+          email: invitation.email,
+          projectId: invitation.projects.id,
+          projectTitle: invitation.projects.title || 'your Studio',
+          inviterName: profile?.full_name || 'A teammate',
+        },
+      });
+      if (error) throw error;
+      toast({ title: "Invite resent", description: `Sent again to ${invitation.email}.` });
+    } catch (e: any) {
+      toast({ title: "Couldn't resend", description: e.message, variant: "destructive" });
+    } finally {
+      setResendingId(null);
     }
   };
 
@@ -185,10 +227,31 @@ export const PendingInvitations = ({ projectId, showAll = false }: PendingInvita
 
                   {!invitation.user_id && (
                     <div className="flex items-center gap-2 pt-2">
-                      <Mail className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        Waiting for email confirmation
-                      </span>
+                      <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <span className="text-xs text-muted-foreground flex-1">Waiting for email confirmation</span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleResendEmailInvite(invitation)}
+                        disabled={resendingId === invitation.id}
+                        className="h-7 text-xs"
+                      >
+                        {resendingId === invitation.id ? (
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        ) : (
+                          <Send className="h-3 w-3 mr-1" />
+                        )}
+                        Resend
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRevokeEmailInvite(invitation.id)}
+                        className="h-7 text-xs text-destructive hover:text-destructive"
+                      >
+                        <UserX className="h-3 w-3 mr-1" />
+                        Revoke
+                      </Button>
                     </div>
                   )}
                 </div>

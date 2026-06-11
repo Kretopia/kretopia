@@ -316,11 +316,11 @@ export function ScoutedGigsSection({ limit }: ScoutedGigsSectionProps = {}) {
                 {/* Body */}
                 <div className="p-3 flex flex-col gap-2 flex-1">
                   {(g.company || g.location) && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                    <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
                       {g.company && <span className="font-medium text-foreground/90">{g.company}</span>}
                       {g.location && <><span>·</span><MapPin className="h-3 w-3" />{g.location}</>}
                       {g.remote && <Badge variant="outline" className="h-4 text-[9px] px-1">Remote</Badge>}
-                    </p>
+                    </div>
                   )}
 
                   {g.fit_reason && (

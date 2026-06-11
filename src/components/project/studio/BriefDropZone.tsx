@@ -323,32 +323,50 @@ export const BriefDropZone = ({
         return { facts: 0, entities: 0 };
       });
 
-      // Phase F — also file the drop into the right Studio section:
-      // images → Moodboard (project_files), so they're not lost to the Brain alone.
-      if (isImage) {
-        try {
-          const { data: userRes } = await supabase.auth.getUser();
-          const me = userRes?.user?.id;
-          if (me) {
-            const ext = file.name.split(".").pop() || "jpg";
-            const path = `${projectId}/drop-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-            const { error: upErr } = await supabase.storage
-              .from("project-files")
-              .upload(path, file, { cacheControl: "3600", upsert: false });
-            if (!upErr) {
-              const { data: pub } = supabase.storage.from("project-files").getPublicUrl(path);
-              await supabase.from("project_files").insert({
+      // Phase F — also file the drop into the Vault so the original lives
+      // alongside the Brain's extracted facts. Without this, PDFs/docs get
+      // parsed into facts/entities and then thrown away — they never appear
+      // in the Vault. Images go in too (as moodboard refs).
+      try {
+        const { data: userRes } = await supabase.auth.getUser();
+        const me = userRes?.user?.id;
+        if (me) {
+          const ext = file.name.split(".").pop() || "bin";
+          const path = `${projectId}/drop-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from("project-files")
+            .upload(path, file, {
+              cacheControl: "3600",
+              upsert: false,
+              contentType: file.type || undefined,
+            });
+          if (!upErr) {
+            const { data: inserted } = await supabase
+              .from("project_files")
+              .insert({
                 project_id: projectId,
                 user_id: me,
                 file_name: file.name,
-                file_url: pub?.publicUrl ?? path,
-                file_type: "image",
-              } as never).then(() => {}, () => {});
+                file_url: path,
+                file_type: isImage ? "image" : (file.type || "application/octet-stream"),
+                file_size: file.size,
+              } as never)
+              .select("id")
+              .maybeSingle();
+            // Route non-image drops into the right Vault folder.
+            if (inserted?.id && !isImage) {
+              supabase.functions
+                .invoke("route-vault-file", {
+                  body: { project_id: projectId, file_id: inserted.id },
+                })
+                .catch(() => {});
             }
+          } else {
+            console.warn("[dropzone] vault upload failed", upErr);
           }
-        } catch (e) {
-          console.warn("[dropzone] moodboard upload failed", e);
         }
+      } catch (e) {
+        console.warn("[dropzone] vault archive failed", e);
       }
 
 

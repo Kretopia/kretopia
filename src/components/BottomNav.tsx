@@ -63,9 +63,9 @@ const BottomNav = memo(() => {
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 10px)" }}
     >
       <div className="flex items-center justify-around px-1 py-1">
-        {items.map((item) => {
+        {items.map((item, idx) => {
           const active = isActive(item.path);
-          return (
+          const link = (
             <Link
               key={item.path + item.label}
               to={item.path}
@@ -88,6 +88,17 @@ const BottomNav = memo(() => {
               )}
             </Link>
           );
+          // Insert a center spacer between item 1 (Desk) and item 2 (Discover)
+          // so the floating ＋ FAB has visual breathing room in the middle.
+          if (!isBusiness && idx === 2) {
+            return (
+              <>
+                <span key="fab-spacer" aria-hidden className="w-14 shrink-0" />
+                {link}
+              </>
+            );
+          }
+          return link;
         })}
       </div>
     </nav>

@@ -139,18 +139,29 @@ export const GuestStudioShareDialog = ({
 
   const share = async (link: GuestLink) => {
     const url = buildUrl(link.token);
-    const text = projectTitle
-      ? `Join my "${projectTitle}" Studio on ThriveIN`
-      : `Join my Studio on ThriveIN`;
+    const title = projectTitle || "my Studio";
+    const text =
+`You're invited to "${title}" on ThriveIN 🎬
+
+I've set up a private Studio for this project — brief, files, references and chat all in one place.
+
+Tap the link, drop your name + email, and you're in. No password, no app to download.
+
+${url}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: text, text, url });
+        await navigator.share({ title: `Join "${title}" on ThriveIN`, text, url });
         return;
       } catch {
         // fall through to copy
       }
     }
-    copy(link);
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Invite copied", description: "Paste it into WhatsApp, iMessage or email." });
+    } catch {
+      copy(link);
+    }
   };
 
   return (

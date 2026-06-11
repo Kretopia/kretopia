@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Sparkles, FileText, Folder, MessageCircle, UserPlus, ShieldCheck, Target, Send, Link2, Download, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { SEO } from "@/components/SEO";
 import { formatDistanceToNow } from "date-fns";
 
 const STORAGE_KEY = (token: string) => `guest_studio:${token}`;
@@ -187,17 +188,36 @@ export default function GuestStudio() {
   if (needsName) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <SEO
+          title={`Join "${project.title}" on ThriveIN`}
+          description={`You've been invited to the "${project.title}" Studio — view the brief, share references and chat with the team.`}
+        />
         <Card className="w-full max-w-sm">
           <CardContent className="p-6 space-y-4">
-            <div className="text-center space-y-1">
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 mb-1">
+            <div className="text-center space-y-1.5">
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 mb-1">
                 <Sparkles className="h-5 w-5 text-primary" />
               </div>
-              <h1 className="text-lg font-bold">Welcome to {project.title}</h1>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
+                You're invited
+              </p>
+              <h1 className="text-xl font-black tracking-tight leading-tight">{project.title}</h1>
               <p className="text-xs text-muted-foreground">
-                Quick intro so the team knows who's in the room.
+                A private Studio on ThriveIN — brief, files, references and chat in one place.
               </p>
             </div>
+
+            <div className="rounded-lg bg-muted/40 border border-border/60 p-3 space-y-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                What you get
+              </p>
+              <ul className="text-xs space-y-1 text-foreground/90">
+                <li>· Read the brief and see the team</li>
+                <li>· Drop links, notes & references for the team</li>
+                <li>· Get updates by email when things move</li>
+              </ul>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="g-name">Your name</Label>
               <Input id="g-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Doe" />
@@ -205,12 +225,15 @@ export default function GuestStudio() {
             <div className="space-y-2">
               <Label htmlFor="g-email">Email</Label>
               <Input id="g-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@company.com" />
+              <p className="text-[10px] text-muted-foreground leading-snug">
+                We use it to send you Studio updates only — no spam, no password to set up.
+              </p>
             </div>
             <Button className="w-full" onClick={handleEnter} disabled={submitting}>
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enter the Studio"}
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enter the Studio →"}
             </Button>
             <p className="text-[10px] text-muted-foreground text-center">
-              No password. Bookmark this link to come back.
+              Bookmark this link to come back any time.
             </p>
           </CardContent>
         </Card>

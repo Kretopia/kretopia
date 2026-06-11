@@ -101,6 +101,47 @@ export const PendingInvitations = ({ projectId, showAll = false }: PendingInvita
     }
   };
 
+  const handleRevokeEmailInvite = async (invitationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('project_collaborators')
+        .delete()
+        .eq('id', invitationId);
+      if (error) throw error;
+      toast({ title: "Invite revoked", description: "The email invite has been removed." });
+      fetchInvitations();
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleResendEmailInvite = async (invitation: any) => {
+    if (!invitation.email || !invitation.projects?.id) return;
+    setResendingId(invitation.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user?.id || '')
+        .maybeSingle();
+      const { error } = await supabase.functions.invoke('send-project-invitation', {
+        body: {
+          email: invitation.email,
+          projectId: invitation.projects.id,
+          projectTitle: invitation.projects.title || 'your Studio',
+          inviterName: profile?.full_name || 'A teammate',
+        },
+      });
+      if (error) throw error;
+      toast({ title: "Invite resent", description: `Sent again to ${invitation.email}.` });
+    } catch (e: any) {
+      toast({ title: "Couldn't resend", description: e.message, variant: "destructive" });
+    } finally {
+      setResendingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <Card>

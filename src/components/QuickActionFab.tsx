@@ -257,7 +257,9 @@ const QuickActionFab = () => {
   const actions = (isCompany ? companyActions : creatorActions).filter((a) => !a.hide);
 
   // Center ＋ — float ABOVE the bottom nav (nav ≈ 66px tall incl. safe area).
-  const fabBottom = "calc(env(safe-area-inset-bottom, 0px) + 56px)";
+  // Sit just above the bottom nav (~66px tall), centered in the spacer slot,
+  // so it doesn't overlap the Thrive composer bar that floats above the nav.
+  const fabBottom = "calc(env(safe-area-inset-bottom, 0px) + 14px)";
 
   return (
     <>

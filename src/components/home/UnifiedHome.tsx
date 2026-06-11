@@ -51,7 +51,7 @@ import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { TodayThreeCards } from "@/components/home/TodayThreeCards";
-import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
+// SpotlightFeedRow removed from Home — lives at /spotlight only.
 import { ChevronDown } from "lucide-react";
 // LiveGigsStrip removed — see Smart Gig Scout
 // ThriveFundShowcase replaced by compact ThriveFundTeaserCard on landing
@@ -657,10 +657,8 @@ export const UnifiedHome = () => {
             </div>
           </details>
 
-          {/* Spotlight (Magazine + Podcast) — keeps people discovering stories */}
-          <div className="mb-4">
-            <SpotlightFeedRow />
-          </div>
+          {/* Spotlight moved off Home — lives at /spotlight (hamburger). Home stays focused on action. */}
+
 
           {/* Push prompt still fires (cooldown-gated) but lives quietly outside the section. */}
           <PushNotificationPrompt trigger="default" />

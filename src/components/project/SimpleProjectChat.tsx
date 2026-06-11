@@ -74,6 +74,8 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
   const [showMentions, setShowMentions] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionIndex, setMentionIndex] = useState(0);
+  const [mentionSearchResults, setMentionSearchResults] = useState<Collaborator[]>([]);
+  const [mentionInviting, setMentionInviting] = useState(false);
   const [showPinned, setShowPinned] = useState(false);
   const [hoveredMessage, setHoveredMessage] = useState<string | null>(null);
   const [pendingAttachments, setPendingAttachments] = useState<Attachment[]>([]);
@@ -139,6 +141,49 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     );
   }, [collaborators, mentionQuery]);
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+  const mentionEmail = useMemo(() => {
+    const q = mentionQuery.trim();
+    return EMAIL_RE.test(q) ? q.toLowerCase() : null;
+  }, [mentionQuery]);
+
+  // Debounced search for non-collaborator users when query is 2+ chars
+  useEffect(() => {
+    const q = mentionQuery.trim();
+    if (!showMentions || q.length < 2 || mentionEmail) {
+      setMentionSearchResults([]);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const collabIds = new Set(collaborators.map(c => c.id));
+      const { data } = await supabase
+        .from("public_profiles_safe")
+        .select("user_id, full_name, avatar_url")
+        .ilike("full_name", `%${q}%`)
+        .limit(8);
+      if (cancelled) return;
+      const results = (data || [])
+        .filter((p: any) => p.user_id && !collabIds.has(p.user_id))
+        .map((p: any) => ({ id: p.user_id, full_name: p.full_name || "Someone", avatar_url: p.avatar_url }));
+      setMentionSearchResults(results);
+    }, 220);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [mentionQuery, showMentions, mentionEmail, collaborators]);
+
+  // Flat list driving keyboard nav. Order: existing collaborators → new users → email invite row.
+  const mentionItems = useMemo(() => {
+    const items: Array<
+      | { kind: "collab"; collab: Collaborator }
+      | { kind: "invite-user"; collab: Collaborator }
+      | { kind: "invite-email"; email: string }
+    > = [];
+    filteredCollaborators.forEach(c => items.push({ kind: "collab", collab: c }));
+    mentionSearchResults.forEach(c => items.push({ kind: "invite-user", collab: c }));
+    if (mentionEmail) items.push({ kind: "invite-email", email: mentionEmail });
+    return items;
+  }, [filteredCollaborators, mentionSearchResults, mentionEmail]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setNewMessage(val);
@@ -150,7 +195,9 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     const lastAtIndex = val.lastIndexOf("@");
     if (lastAtIndex !== -1 && (lastAtIndex === 0 || val[lastAtIndex - 1] === " ")) {
       const query = val.slice(lastAtIndex + 1);
-      if (!query.includes(" ")) {
+      // Allow spaces only when typing what looks like an email won't include them.
+      // Accept up to 40 chars without space for name lookups.
+      if (!query.includes(" ") && query.length <= 60) {
         setShowMentions(true);
         setMentionQuery(query);
         setMentionIndex(0);
@@ -168,11 +215,108 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
     inputRef.current?.focus();
   };
 
+  const inviteExistingUserToProject = async (collab: Collaborator) => {
+    setMentionInviting(true);
+    try {
+      // Insert pending row. If it already exists (unique constraint), surface a friendly message.
+      const { error } = await supabase.from("project_collaborators").insert({
+        project_id: projectId,
+        user_id: collab.id,
+        invited_by: currentUserId,
+        role: "collaborator",
+        status: "pending",
+      });
+      if (error && !/duplicate|unique/i.test(error.message)) throw error;
+
+      // Notify the invitee in-app
+      const { data: project } = await supabase
+        .from("projects")
+        .select("title")
+        .eq("id", projectId)
+        .maybeSingle();
+      const { data: inviterProfile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", currentUserId)
+        .maybeSingle();
+      await supabase.from("notifications").insert({
+        user_id: collab.id,
+        type: "project_invitation",
+        title: "You've been added to a Studio",
+        message: `${inviterProfile?.full_name || "A teammate"} mentioned you in "${project?.title || "a Studio"}".`,
+        action_url: `/accept-invite/${projectId}`,
+        metadata: { project_id: projectId, invited_by: currentUserId },
+      }).then(() => {}, () => {});
+
+      toast({ title: `${collab.full_name} invited`, description: "They'll see the invite in their inbox." });
+      insertMention(collab);
+    } catch (e: any) {
+      toast({ title: "Couldn't add to studio", description: e.message, variant: "destructive" });
+    } finally {
+      setMentionInviting(false);
+    }
+  };
+
+  const inviteByEmailFromMention = async (email: string) => {
+    setMentionInviting(true);
+    try {
+      const { data: project } = await supabase
+        .from("projects")
+        .select("title")
+        .eq("id", projectId)
+        .maybeSingle();
+      const { data: inviterProfile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", currentUserId)
+        .maybeSingle();
+
+      // Insert pending email-invite row (idempotent)
+      await supabase.from("project_collaborators").insert({
+        project_id: projectId,
+        email,
+        invited_by: currentUserId,
+        role: "collaborator",
+        status: "pending",
+      }).then(() => {}, () => {});
+
+      const { error } = await supabase.functions.invoke("send-project-invitation", {
+        body: {
+          email,
+          projectId,
+          projectTitle: project?.title || "your Studio",
+          inviterName: inviterProfile?.full_name || "A teammate",
+        },
+      });
+      if (error) throw error;
+
+      toast({ title: `Invite sent to ${email}`, description: "They'll get a one-tap link to join." });
+
+      // Replace the @email mention text with @Display so the message reads naturally
+      const lastAtIndex = newMessage.lastIndexOf("@");
+      const before = newMessage.slice(0, lastAtIndex);
+      const label = email.split("@")[0];
+      setNewMessage(`${before}@${label} `);
+      setShowMentions(false);
+      inputRef.current?.focus();
+    } catch (e: any) {
+      toast({ title: "Couldn't send invite", description: e.message, variant: "destructive" });
+    } finally {
+      setMentionInviting(false);
+    }
+  };
+
+  const pickMentionItem = (item: typeof mentionItems[number]) => {
+    if (item.kind === "collab") return insertMention(item.collab);
+    if (item.kind === "invite-user") return inviteExistingUserToProject(item.collab);
+    if (item.kind === "invite-email") return inviteByEmailFromMention(item.email);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (showMentions && filteredCollaborators.length > 0) {
+    if (showMentions && mentionItems.length > 0) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setMentionIndex(i => Math.min(i + 1, filteredCollaborators.length - 1));
+        setMentionIndex(i => Math.min(i + 1, mentionItems.length - 1));
         return;
       }
       if (e.key === "ArrowUp") {
@@ -182,7 +326,7 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
       }
       if (e.key === "Enter" || e.key === "Tab") {
         e.preventDefault();
-        insertMention(filteredCollaborators[mentionIndex]);
+        pickMentionItem(mentionItems[mentionIndex]);
         return;
       }
       if (e.key === "Escape") {
@@ -720,25 +864,81 @@ export const SimpleProjectChat = ({ projectId, messages, currentUserId, onMessag
             </div>
           )}
           <div className="relative">
-            {/* @Mention autocomplete */}
-            {showMentions && filteredCollaborators.length > 0 && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-20 max-h-40 overflow-y-auto">
-                {filteredCollaborators.map((collab, i) => (
-                  <button
-                    key={collab.id}
-                    onClick={() => insertMention(collab)}
-                    className={cn(
-                      "flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors",
-                      i === mentionIndex && "bg-accent"
-                    )}
-                  >
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={collab.avatar_url || undefined} />
-                      <AvatarFallback className="text-[10px]">{collab.full_name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium">{collab.full_name}</span>
-                  </button>
-                ))}
+            {/* @Mention autocomplete — in-studio members + invite-from-search */}
+            {showMentions && (mentionItems.length > 0 || mentionInviting) && (
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden z-20 max-h-72 overflow-y-auto">
+                {mentionItems.map((item, i) => {
+                  const isActive = i === mentionIndex;
+                  if (item.kind === "collab") {
+                    return (
+                      <button
+                        key={`c-${item.collab.id}`}
+                        onClick={() => pickMentionItem(item)}
+                        className={cn(
+                          "flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors",
+                          isActive && "bg-accent",
+                        )}
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={item.collab.avatar_url || undefined} />
+                          <AvatarFallback className="text-[10px]">{item.collab.full_name?.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium flex-1 truncate">{item.collab.full_name}</span>
+                        <span className="text-[10px] text-muted-foreground">In studio</span>
+                      </button>
+                    );
+                  }
+                  if (item.kind === "invite-user") {
+                    return (
+                      <button
+                        key={`u-${item.collab.id}`}
+                        onClick={() => pickMentionItem(item)}
+                        disabled={mentionInviting}
+                        className={cn(
+                          "flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors border-t border-border/50",
+                          isActive && "bg-accent",
+                        )}
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={item.collab.avatar_url || undefined} />
+                          <AvatarFallback className="text-[10px]">{item.collab.full_name?.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium flex-1 truncate">{item.collab.full_name}</span>
+                        <span className="text-[10px] font-bold text-primary">+ Add to studio</span>
+                      </button>
+                    );
+                  }
+                  // invite-email
+                  return (
+                    <button
+                      key="invite-email"
+                      onClick={() => pickMentionItem(item)}
+                      disabled={mentionInviting}
+                      className={cn(
+                        "flex items-center gap-2.5 w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors border-t border-border/50",
+                        isActive && "bg-accent",
+                      )}
+                    >
+                      <div className="h-6 w-6 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xs font-bold">@</div>
+                      <span className="flex-1 truncate">
+                        <span className="font-medium">Invite</span>{" "}
+                        <span className="text-muted-foreground">{item.email}</span>
+                      </span>
+                      <span className="text-[10px] font-bold text-primary">+ Email invite</span>
+                    </button>
+                  );
+                })}
+                {mentionInviting && (
+                  <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground border-t border-border/50">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Inviting…
+                  </div>
+                )}
+                {mentionItems.length === 0 && mentionQuery.length >= 2 && !mentionEmail && !mentionInviting && (
+                  <div className="px-3 py-3 text-xs text-muted-foreground">
+                    No one named "{mentionQuery}" — type a full email to invite by mail.
+                  </div>
+                )}
               </div>
             )}
 

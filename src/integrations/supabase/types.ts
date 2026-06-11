@@ -19452,6 +19452,10 @@ export type Database = {
         Args: { _kind: string }
         Returns: Database["public"]["Enums"]["agent_persona"]
       }
+      promote_guest_token_to_collaborator: {
+        Args: { _token: string }
+        Returns: string
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {

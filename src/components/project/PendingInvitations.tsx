@@ -227,10 +227,31 @@ export const PendingInvitations = ({ projectId, showAll = false }: PendingInvita
 
                   {!invitation.user_id && (
                     <div className="flex items-center gap-2 pt-2">
-                      <Mail className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        Waiting for email confirmation
-                      </span>
+                      <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <span className="text-xs text-muted-foreground flex-1">Waiting for email confirmation</span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleResendEmailInvite(invitation)}
+                        disabled={resendingId === invitation.id}
+                        className="h-7 text-xs"
+                      >
+                        {resendingId === invitation.id ? (
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        ) : (
+                          <Send className="h-3 w-3 mr-1" />
+                        )}
+                        Resend
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRevokeEmailInvite(invitation.id)}
+                        className="h-7 text-xs text-destructive hover:text-destructive"
+                      >
+                        <UserX className="h-3 w-3 mr-1" />
+                        Revoke
+                      </Button>
                     </div>
                   )}
                 </div>

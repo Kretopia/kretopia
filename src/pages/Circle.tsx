@@ -56,7 +56,8 @@ export default function Circle() {
 
   useEffect(() => {
     if (tabParam === "match") setShowMatch(true);
-  }, [tabParam]);
+    if (searchParams.get("browse") === "1") setShowBrowse(true);
+  }, [tabParam, searchParams]);
 
   // Welcome handoff
   useEffect(() => {

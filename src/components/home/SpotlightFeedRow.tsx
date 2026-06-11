@@ -100,32 +100,30 @@ export const SpotlightFeedRow = () => {
           </Link>
         </motion.div>
 
-        {articles.map((a, i) => (
-          <motion.div
+        {articles.map((a) => (
+          <div
             key={a.id}
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.05 }}
             className="shrink-0 w-[78%] sm:w-[300px] snap-start"
           >
             <Link
               to={articleHref(a)}
               className="block rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-primary/40 transition-all shadow-sm hover:shadow-md group h-full"
             >
-              <div className="aspect-[16/10] relative overflow-hidden bg-muted">
+              <div className="aspect-[16/10] relative bg-muted">
                 {a.cover_image_url ? (
                   <img
                     src={a.cover_image_url}
                     alt={a.title}
                     loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                    decoding="async"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/15 to-accent/10">
                     <BookOpen className="h-8 w-8 text-primary/40" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
                 <div className="absolute top-2 left-2 flex items-center gap-1.5">
                   <Badge className="bg-background/90 text-foreground border-0 text-[10px] font-semibold gap-1">
                     <BookOpen className="h-2.5 w-2.5" />
@@ -168,7 +166,7 @@ export const SpotlightFeedRow = () => {
                 </div>
               </div>
             </Link>
-          </motion.div>
+          </div>
         ))}
 
       </div>

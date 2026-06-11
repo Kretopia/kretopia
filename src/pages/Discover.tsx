@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
+import { PageHeader } from "@/components/ui/page-header";
+import { Compass } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Briefcase, Radio } from "lucide-react";
 import { SwipeFeature } from "@/components/swipe";
@@ -36,10 +38,15 @@ export default function Discover() {
         title="Discover — People, Opportunities, Live | ThriveIN"
         description="Meet collaborators, find gigs, and walk on stage — all in one feed."
       />
-      <header className="border-b border-border/60 bg-background pt-[env(safe-area-inset-top)] px-4 py-3">
-        <h1 className="text-xl font-bold font-serif">Discover</h1>
-        <p className="text-xs text-muted-foreground">People · Opportunities · Live</p>
-      </header>
+      <div className="max-w-2xl mx-auto px-4 pt-4">
+        <PageHeader
+          eyebrow="The Hub"
+          title="Discover"
+          subtitle="People · Opportunities · Live — meet collaborators, find gigs, walk on stage."
+          icon={Compass}
+          size="sm"
+        />
+      </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="w-full">
         <div className="sticky top-0 z-20 bg-background border-b border-border/60 px-3 py-2">

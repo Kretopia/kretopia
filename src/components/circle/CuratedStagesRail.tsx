@@ -26,13 +26,14 @@ export interface CuratedStage {
 interface CuratedStagesRailProps {
   limit?: number;
   hideWhenEmpty?: boolean;
+  onLoad?: (count: number) => void;
 }
 
 /**
  * Horizontal rail of upcoming Scout & Showcase Stages.
  * Pulls scheduled or live stages starting within the next 14 days.
  */
-export function CuratedStagesRail({ limit = 8, hideWhenEmpty = false }: CuratedStagesRailProps) {
+export function CuratedStagesRail({ limit = 8, hideWhenEmpty = false, onLoad }: CuratedStagesRailProps) {
   const [stages, setStages] = useState<CuratedStage[] | null>(null);
 
   useEffect(() => {
@@ -48,7 +49,11 @@ export function CuratedStagesRail({ limit = 8, hideWhenEmpty = false }: CuratedS
         .gte("starts_at", new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString())
         .order("starts_at", { ascending: true })
         .limit(limit);
-      if (mounted) setStages((data as any) ?? []);
+      if (mounted) {
+        const rows = (data as any) ?? [];
+        setStages(rows);
+        onLoad?.(rows.length);
+      }
     };
 
     load();

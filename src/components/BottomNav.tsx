@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Compass, LayoutGrid, Sun, BadgeCheck, Briefcase, UserSearch, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { useAccountTone } from "@/hooks/useAccountTone";
 
 // ThriveIN 2.0 — Daily Driver IA, collapsed to 4 + center FAB (QuickActionFab).
@@ -28,6 +28,34 @@ const BottomNav = memo(() => {
   if (location.pathname === "/auth") return null;
 
   const items = isBusiness ? COMPANY_ITEMS : NAV_ITEMS;
+
+  // Hide the nav whenever a Radix dialog/sheet/drawer is open. Two reasons:
+  // 1. The nav and Radix overlay share z-50, so the nav bleeds through the
+  //    modal — confusing visually and (on Android) triggers GPU rasterization
+  //    artifacts on cards near the bottom of the dialog (looks like static).
+  // 2. While a modal owns the screen, the global nav is not actionable.
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const check = () => {
+      const locked =
+        document.body.hasAttribute("data-scroll-locked") ||
+        !!document.querySelector(
+          '[role="dialog"][data-state="open"], [data-radix-dialog-content][data-state="open"]'
+        );
+      setOverlayOpen(locked);
+    };
+    check();
+    const obs = new MutationObserver(check);
+    obs.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-scroll-locked", "style"],
+      childList: true,
+      subtree: true,
+    });
+    return () => obs.disconnect();
+  }, []);
+  if (overlayOpen) return null;
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";

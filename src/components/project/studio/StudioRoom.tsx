@@ -29,7 +29,7 @@ import { AddCreditSection } from "./AddCreditSection";
 import { WrapProjectCard } from "./WrapProjectCard";
 import { CallHistorySection } from "./CallHistorySection";
 import { PadPreviewSection } from "./PadPreviewSection";
-import { ThriveGenerateCard } from "./ThriveGenerateCard";
+// ThriveGenerateCard retired — folded into StudioOutcomeComposer.
 import { StudioOutcomeComposer } from "./StudioOutcomeComposer";
 import { BrandVaultChip } from "@/components/brand-vault/BrandVaultChip";
 import { StudioBrainPanel } from "./StudioBrainPanel";
@@ -250,7 +250,7 @@ export const StudioRoom = ({
       {includeBrief && briefBlock}
       {/* Pulse merged into the single Drop Zone at the top of the room. */}
       <DeliverablesSection projectId={project.id} currentUserId={currentUserId} isOwner={isOwner} />
-      {isOwner && <div className="px-4 py-3"><ThriveGenerateCard projectId={project.id} /></div>}
+      {/* ThriveGenerateCard retired — folded into StudioOutcomeComposer at top of room. */}
       <PadPreviewSection projectId={project.id} onOpen={() => onNavigateToTab("notes")} />
       {showPrep && (
         <ProductionPrepSection project={project} tasks={tasks} currentUserId={currentUserId} onOpenTool={(tab) => onNavigateToTab(tab)} onUpdated={onUpdated} />

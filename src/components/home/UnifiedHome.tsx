@@ -51,6 +51,7 @@ import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { TodayThreeCards } from "@/components/home/TodayThreeCards";
+import { SpotlightFeedRow } from "@/components/home/SpotlightFeedRow";
 import { ChevronDown } from "lucide-react";
 // LiveGigsStrip removed — see Smart Gig Scout
 // ThriveFundShowcase replaced by compact ThriveFundTeaserCard on landing
@@ -70,6 +71,24 @@ const ACTIVITY_TEMPLATES = [
   (n: string) => `${n} landed a gig through ThriveIN`,
   (n: string) => `${n} joined the creative community`,
 ];
+
+/**
+ * Sound Stages section — owns its own header so the whole block disappears
+ * when there are no live/scheduled stages (avoids a stranded "this week" header).
+ */
+const SoundStagesSection = () => {
+  const [count, setCount] = useState<number | null>(null);
+  if (count === 0) return null;
+  return (
+    <div className="mt-2 mb-4 space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sound Stages this week</p>
+        <Link to="/circle?tab=live" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
+      </div>
+      <CuratedStagesRail limit={6} hideWhenEmpty onLoad={setCount} />
+    </div>
+  );
+};
 
 export const UnifiedHome = () => {
   const { user, subscriptionInfo } = useAuth();
@@ -577,14 +596,39 @@ export const UnifiedHome = () => {
             <TodayThreeCards />
           </div>
 
-          {/* Sound Stages discovery */}
-          <div className="mt-2 mb-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Sound Stages this week</p>
-              <Link to="/circle?tab=live" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
+          {/* Sound Stages discovery — hidden entirely when no live stages */}
+          <SoundStagesSection />
+
+          {/* People for you — quick rail of AI-matched creators (taps deep into Match) */}
+          {featuredCreators.length > 0 && (
+            <div className="mt-2 mb-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">People for you</p>
+                <Link to="/match" className="text-[11px] font-semibold text-primary hover:underline">See all</Link>
+              </div>
+              <div className="flex gap-3 overflow-x-auto -mx-4 px-4 pb-1 scrollbar-thin">
+                {featuredCreators.slice(0, 10).map((c: any) => (
+                  <Link
+                    key={c.user_id}
+                    to={`/profile/${c.user_id}`}
+                    className="shrink-0 w-40 rounded-2xl border border-border bg-card hover:border-primary/40 transition-colors overflow-hidden"
+                  >
+                    <div
+                      className="h-28 bg-gradient-to-br from-primary/20 via-accent/10 to-background"
+                      style={c.avatar_url ? { backgroundImage: `url(${c.avatar_url})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
+                    />
+                    <div className="p-2.5 space-y-0.5">
+                      <p className="text-xs font-bold leading-tight line-clamp-1">{c.full_name}</p>
+                      <p className="text-[10px] text-muted-foreground line-clamp-1">{c.role || "Creator"}</p>
+                      {c.reason && (
+                        <p className="text-[10px] text-primary line-clamp-2 pt-0.5">{c.reason}</p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-            <CuratedStagesRail limit={6} hideWhenEmpty />
-          </div>
+          )}
 
           {/* Duplicate-account merge prompt */}
           <div className="mb-4 empty:hidden">
@@ -612,6 +656,11 @@ export const UnifiedHome = () => {
               <MoneyBrief variant="compact" />
             </div>
           </details>
+
+          {/* Spotlight (Magazine + Podcast) — keeps people discovering stories */}
+          <div className="mb-4">
+            <SpotlightFeedRow />
+          </div>
 
           {/* Push prompt still fires (cooldown-gated) but lives quietly outside the section. */}
           <PushNotificationPrompt trigger="default" />

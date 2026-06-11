@@ -26,19 +26,20 @@ export interface StatusDef {
 }
 
 export const STATUSES: StatusDef[] = [
-  { value: "backlog",     label: "Backlog",     short: "Backlog", icon: Inbox,         dot: "bg-muted-foreground",  tint: "bg-muted/40" },
-  { value: "todo",        label: "To Do",       short: "Todo",    icon: Circle,        dot: "bg-foreground/60",     tint: "bg-card" },
-  { value: "in_progress", label: "In Progress", short: "Doing",   icon: CircleDot,     dot: "bg-primary",           tint: "bg-primary/5" },
-  { value: "review",      label: "Review",      short: "Review",  icon: Eye,           dot: "bg-amber-500",         tint: "bg-amber-500/5" },
-  { value: "done",        label: "Done",        short: "Done",    icon: CheckCircle2,  dot: "bg-emerald-500",       tint: "bg-emerald-500/5" },
+  { value: "backlog",     label: "Backlog",     short: "Backlog", icon: Inbox,         dot: "bg-muted-foreground",                       tint: "bg-muted/40" },
+  { value: "todo",        label: "To Do",       short: "Todo",    icon: Circle,        dot: "bg-foreground/60",                          tint: "bg-card" },
+  { value: "in_progress", label: "In Progress", short: "Doing",   icon: CircleDot,     dot: "bg-primary",                                tint: "bg-primary/5" },
+  { value: "review",      label: "Review",      short: "Review",  icon: Eye,           dot: "bg-[hsl(var(--signal-amber))]",             tint: "bg-[hsl(var(--signal-amber)/0.06)]" },
+  { value: "done",        label: "Done",        short: "Done",    icon: CheckCircle2,  dot: "bg-[hsl(var(--accent-pay))]",               tint: "bg-[hsl(var(--accent-pay)/0.06)]" },
 ];
 
 export const PRIORITIES: { value: string; label: string; chip: string }[] = [
   { value: "low",    label: "Low",    chip: "bg-muted text-muted-foreground border-border" },
   { value: "normal", label: "Normal", chip: "bg-primary/10 text-primary border-primary/20" },
-  { value: "high",   label: "High",   chip: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30" },
+  { value: "high",   label: "High",   chip: "bg-[hsl(var(--signal-amber)/0.15)] text-[hsl(var(--signal-amber))] border-[hsl(var(--signal-amber)/0.30)]" },
   { value: "urgent", label: "Urgent", chip: "bg-destructive/15 text-destructive border-destructive/30" },
 ];
+
 
 export const startOfToday = () => {
   const d = new Date();

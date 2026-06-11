@@ -16,6 +16,7 @@ interface PendingInvitationsProps {
 
 export const PendingInvitations = ({ projectId, showAll = false }: PendingInvitationsProps) => {
   const [invitations, setInvitations] = useState<any[]>([]);
+  const [resendingId, setResendingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 

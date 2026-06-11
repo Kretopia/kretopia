@@ -119,7 +119,7 @@ const QuickActionFab = () => {
   const ROUTES_WITH_OWN_FAB = ["/thrivepay", "/accounting"];
   if (ROUTES_WITH_OWN_FAB.some((p) => location.pathname.startsWith(p))) return null;
   if (!user) return null;
-  if (dismissed) return null;
+  if (!user) return null;
   // Don't stack the FAB on top of an open dialog/sheet (e.g. hamburger menu)
   if (overlayOpen && !open) return null;
 
@@ -257,8 +257,8 @@ const QuickActionFab = () => {
 
   const actions = (isCompany ? companyActions : creatorActions).filter((a) => !a.hide);
 
-  // Bottom-nav height ≈ 64-72px + safe-area. We place the FAB ~80px above the bottom edge.
-  const fabBottom = "calc(env(safe-area-inset-bottom, 0px) + 80px)";
+  // Centered between the 4 bottom-nav items. Sits ABOVE the nav bar.
+  const fabBottom = "calc(env(safe-area-inset-bottom, 0px) + 28px)";
 
   return (
     <>
@@ -334,9 +334,9 @@ const QuickActionFab = () => {
         </div>
       )}
 
-      {/* The FAB itself */}
+      {/* The center ＋ — anchored to the middle of the bottom nav */}
       <div
-        className="fixed right-4 z-[57] lg:hidden"
+        className="fixed left-1/2 -translate-x-1/2 z-[57] lg:hidden"
         style={{ bottom: fabBottom }}
       >
         <button
@@ -347,30 +347,13 @@ const QuickActionFab = () => {
           className={cn(
             "h-14 w-14 rounded-full flex items-center justify-center",
             "bg-energy text-energy-foreground shadow-[0_8px_24px_-6px_hsl(var(--energy)/0.55)]",
-            "border border-energy/40",
+            "border-4 border-background",
             "transition-transform duration-200 active:scale-95",
             open && "rotate-45"
           )}
         >
           <Plus className="h-7 w-7" strokeWidth={2.5} />
         </button>
-
-        {/* Dismiss badge — hides the FAB until user lands on Home or Match */}
-        {!open && (
-          <button
-            type="button"
-            onClick={dismissFab}
-            aria-label="Hide quick actions"
-            className={cn(
-              "absolute -top-1 -right-1 h-6 w-6 rounded-full",
-              "bg-card text-foreground border border-border shadow-md",
-              "flex items-center justify-center",
-              "hover:bg-muted active:scale-95 transition-all touch-manipulation"
-            )}
-          >
-            <X className="h-3.5 w-3.5" strokeWidth={2.5} />
-          </button>
-        )}
       </div>
 
       {/* Mounted dialogs */}

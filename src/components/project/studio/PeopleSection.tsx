@@ -73,19 +73,28 @@ export const PeopleSection = ({
       }
 
       const url = getShareUrl(`/guest/${token}`);
+      const title = projectTitle || "my Studio";
+      const shareText =
+`You're invited to "${title}" on ThriveIN 🎬
+
+I've set up a private Studio for this project — brief, files, references and chat all in one place.
+
+Tap the link, drop your name + email, and you're in. No password, no app to download.
+
+${url}`;
       const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
       if (nav.share) {
         try {
           await nav.share({
-            title: `Join "${projectTitle || 'my Studio'}" on ThriveIN`,
-            text: "I'm bringing you into a studio — tap to see the brief, vault & chat.",
+            title: `Join "${title}" on ThriveIN`,
+            text: shareText,
             url,
           });
           return;
         } catch { /* user cancelled — fall through to copy */ }
       }
-      await navigator.clipboard.writeText(url);
-      toast({ title: "Guest link copied", description: "Paste it anywhere — they can open the studio instantly." });
+      await navigator.clipboard.writeText(shareText);
+      toast({ title: "Invite copied", description: "Paste it into WhatsApp, iMessage or email — they're one tap from the Studio." });
     } catch (e: any) {
       toast({ title: "Couldn't share link", description: e.message, variant: "destructive" });
     } finally {

@@ -166,7 +166,7 @@ export const SpotlightFeedRow = () => {
                 </div>
               </div>
             </Link>
-          </motion.div>
+          </div>
         ))}
 
       </div>

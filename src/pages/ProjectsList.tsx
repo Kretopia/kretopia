@@ -138,9 +138,10 @@ const ProjectsList = () => {
   ];
   const PAY_CHIPS: { id: typeof payFilter; label: string; dot: string }[] = [
     { id: "unsent", label: "No invoice", dot: "bg-[hsl(var(--signal-magenta))]" },
-    { id: "invoiced", label: "Invoiced", dot: "bg-[hsl(var(--signal-amber,var(--signal-yellow)))]" },
-    { id: "paid", label: "Paid", dot: "bg-[hsl(var(--pay))]" },
+    { id: "invoiced", label: "Invoiced", dot: "bg-[hsl(var(--signal-amber))]" },
+    { id: "paid", label: "Paid", dot: "bg-[hsl(var(--accent-pay))]" },
   ];
+
 
 
   return (

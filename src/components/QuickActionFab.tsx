@@ -119,9 +119,8 @@ const QuickActionFab = () => {
   const ROUTES_WITH_OWN_FAB = ["/thrivepay", "/accounting"];
   if (ROUTES_WITH_OWN_FAB.some((p) => location.pathname.startsWith(p))) return null;
   if (!user) return null;
-  if (!user) return null;
-  // Don't stack the FAB on top of an open dialog/sheet (e.g. hamburger menu)
-  if (overlayOpen && !open) return null;
+  // Note: previously hid when any dialog/sheet was open, but the ＋ is now a
+  // primary nav element so we keep it visible. The sheet itself layers above.
 
   const close = () => setOpen(false);
   const go = (path: string) => {
@@ -257,8 +256,8 @@ const QuickActionFab = () => {
 
   const actions = (isCompany ? companyActions : creatorActions).filter((a) => !a.hide);
 
-  // Centered between the 4 bottom-nav items. Sits ABOVE the nav bar.
-  const fabBottom = "calc(env(safe-area-inset-bottom, 0px) + 28px)";
+  // Center ＋ — float ABOVE the bottom nav (nav ≈ 66px tall incl. safe area).
+  const fabBottom = "calc(env(safe-area-inset-bottom, 0px) + 56px)";
 
   return (
     <>

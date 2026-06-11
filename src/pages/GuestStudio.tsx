@@ -67,6 +67,37 @@ export default function GuestStudio() {
     let active = true;
     (async () => {
       try {
+        // If the viewer is signed in AND this token was minted for their email,
+        // auto-promote them to a real collaborator and send them to the real Studio.
+        // (Guests stay on the read-only preview as before.)
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: promotedProjectId } = await supabase.rpc(
+              "promote_guest_token_to_collaborator",
+              { _token: token },
+            );
+            if (!active) return;
+            if (promotedProjectId) {
+              // Verify membership before redirecting (RPC returns the project_id
+              // even when emails don't match; only redirect when we're really in).
+              const { data: membership } = await supabase
+                .from("project_collaborators")
+                .select("id")
+                .eq("project_id", promotedProjectId)
+                .eq("user_id", user.id)
+                .eq("status", "accepted")
+                .maybeSingle();
+              if (membership) {
+                navigate(`/desk/${promotedProjectId}`, { replace: true });
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("[guest-studio] auto-promote skipped", e);
+        }
+
         const { data, error } = await supabase
           .rpc("get_project_for_guest", { _token: token })
           .maybeSingle();
@@ -101,7 +132,7 @@ export default function GuestStudio() {
     return () => {
       active = false;
     };
-  }, [token]);
+  }, [token, navigate]);
 
   const handleEnter = async () => {
     if (!name.trim() || !email.trim()) {

@@ -1,35 +1,41 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PageHeader } from "@/components/ui/page-header";
-import { Compass, Users, Briefcase, Radio } from "lucide-react";
+import { Compass, Users, Briefcase, Radio, Calendar, TrendingUp, Map, LayoutGrid, Sparkles, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 import { SwipeFeature } from "@/components/swipe";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
+import { LiveCallsPanel } from "@/components/circle/LiveCallsPanel";
+import { SessionsSection } from "@/components/sessions/SessionsSection";
+import { TrendingLane } from "@/components/discover/TrendingLane";
 import { supabase } from "@/integrations/supabase/client";
 
-type Tab = "people" | "opps";
-const VALID: Tab[] = ["people", "opps"];
+type Tab = "people" | "opps" | "live" | "events" | "trending";
+const VALID: Tab[] = ["people", "opps", "live", "events", "trending"];
+
+type PeopleMode = "swipe" | "browse";
 
 /**
- * Discover — daily-driver hub: People (Match) · Opportunities (Scout).
- * Live stages moved to /circle?tab=live (only surfaced here when something is actually on-air).
- * Legacy ?tab=live still redirects to /circle for bookmarks.
+ * Discover — the hub for everything outside your own Desk.
+ * 5 lanes: People · Opportunities · Live · Events · Trending.
  */
 export default function Discover() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const requested = params.get("tab");
-  const tab: Tab = useMemo(() => (VALID.includes(requested as Tab) ? (requested as Tab) : "people"), [requested]);
+  const tab: Tab = useMemo(
+    () => (VALID.includes(requested as Tab) ? (requested as Tab) : "people"),
+    [requested]
+  );
 
-  // Bookmark redirect: old /discover?tab=live → /circle?tab=live
-  useEffect(() => {
-    if (requested === "live") navigate("/circle?tab=live", { replace: true });
-  }, [requested, navigate]);
+  const [peopleMode, setPeopleMode] = useState<PeopleMode>("swipe");
 
-  // Live-now pulse: only show the pill when stages are actually on-air.
+  // Live-now pulse on the Live tab
   const [liveCount, setLiveCount] = useState(0);
   useEffect(() => {
     let cancelled = false;
@@ -62,21 +68,22 @@ export default function Discover() {
   return (
     <div className="min-h-screen bg-background pb-28">
       <SEO
-        title="Discover — People & Opportunities | ThriveIN"
-        description="Meet collaborators and find gigs — all in one feed."
+        title="Discover — People, Gigs, Live & Events | ThriveIN"
+        description="Meet collaborators, find scouted gigs, drop into live stages, catch what's on — all in one feed."
       />
       <div className="max-w-2xl mx-auto px-4 pt-4">
         <PageHeader
           eyebrow="The Hub"
           title="Discover"
-          subtitle="Meet collaborators. Find gigs. Move work forward."
+          subtitle="People · Gigs · Live · Events · Trending."
           icon={Compass}
           size="sm"
         />
 
-        {liveCount > 0 && (
+        {/* Soft live-now pulse — always visible at top when on-air */}
+        {liveCount > 0 && tab !== "live" && (
           <button
-            onClick={() => navigate("/circle?tab=live")}
+            onClick={() => setTab("live")}
             className="mt-3 w-full flex items-center gap-2.5 rounded-xl border border-[hsl(var(--signal-magenta))]/30 bg-[hsl(var(--signal-magenta))]/5 px-3 py-2.5 text-left hover:border-[hsl(var(--signal-magenta))]/60 transition-colors"
           >
             <span className="relative flex h-2 w-2 shrink-0">
@@ -93,27 +100,117 @@ export default function Discover() {
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="w-full">
-        <div className="sticky top-0 z-20 bg-background border-b border-border/60 px-3 py-2 mt-3">
-          <TabsList className="w-full grid grid-cols-2 h-10">
-            <TabsTrigger value="people" className="gap-1.5 text-xs">
+        <div className="sticky top-0 z-20 bg-background border-b border-border/60 px-2 py-2 mt-3">
+          <TabsList className="w-full grid grid-cols-5 h-10">
+            <TabsTrigger value="people" className="gap-1 text-[11px]">
               <Users className="h-3.5 w-3.5" /> People
             </TabsTrigger>
-            <TabsTrigger value="opps" className="gap-1.5 text-xs">
-              <Briefcase className="h-3.5 w-3.5" /> Opportunities
+            <TabsTrigger value="opps" className="gap-1 text-[11px]">
+              <Briefcase className="h-3.5 w-3.5" /> Gigs
+            </TabsTrigger>
+            <TabsTrigger value="live" className="gap-1 text-[11px]">
+              <Radio className="h-3.5 w-3.5" /> Live
+            </TabsTrigger>
+            <TabsTrigger value="events" className="gap-1 text-[11px]">
+              <Calendar className="h-3.5 w-3.5" /> Events
+            </TabsTrigger>
+            <TabsTrigger value="trending" className="gap-1 text-[11px]">
+              <TrendingUp className="h-3.5 w-3.5" /> Trending
             </TabsTrigger>
           </TabsList>
         </div>
 
-        <TabsContent value="people" className="mt-0 px-3 py-3 accent-match">
-          <SwipeFeature />
+        {/* PEOPLE */}
+        <TabsContent value="people" className="mt-0 px-3 py-3 accent-match space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-full border border-border bg-card p-0.5">
+              <button
+                onClick={() => setPeopleMode("swipe")}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
+                  peopleMode === "swipe" ? "bg-[hsl(var(--signal-magenta))] text-white" : "text-muted-foreground"
+                }`}
+              >
+                <Sparkles className="h-3 w-3 inline mr-1" /> Swipe
+              </button>
+              <button
+                onClick={() => setPeopleMode("browse")}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
+                  peopleMode === "browse" ? "bg-[hsl(var(--signal-magenta))] text-white" : "text-muted-foreground"
+                }`}
+              >
+                <LayoutGrid className="h-3 w-3 inline mr-1" /> Browse
+              </button>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/nearby")}
+              className="ml-auto gap-1.5"
+            >
+              <Map className="h-3.5 w-3.5" /> Nearby
+            </Button>
+          </div>
+
+          {peopleMode === "swipe" ? (
+            <SwipeFeature />
+          ) : (
+            <BrowseCreatorsLazy />
+          )}
         </TabsContent>
 
-
+        {/* OPPORTUNITIES */}
         <TabsContent value="opps" className="mt-0 px-3 py-3 accent-scout space-y-6">
-          <OpportunitiesFeed />
           <ScoutedGigsSection />
+          <OpportunitiesFeed />
+          <Card className="border-[hsl(var(--signal-amber))]/30 bg-[hsl(var(--signal-amber))]/5">
+            <CardContent className="p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <Search className="h-4 w-4 text-[hsl(var(--signal-amber))]" />
+                <p className="font-semibold text-sm">Sponsor & client leads</p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Brands and clients that fit your work — surfaced by Thrive.
+              </p>
+              <Link to="/intel" className="text-xs font-semibold text-[hsl(var(--signal-amber))] hover:underline">
+                Open Opportunity Intel →
+              </Link>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* LIVE */}
+        <TabsContent value="live" className="mt-0 px-3 py-3 space-y-3">
+          <LiveCallsPanel />
+        </TabsContent>
+
+        {/* EVENTS */}
+        <TabsContent value="events" className="mt-0 px-3 py-3">
+          <SessionsSection />
+        </TabsContent>
+
+        {/* TRENDING */}
+        <TabsContent value="trending" className="mt-0 px-3 py-3">
+          <TrendingLane />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
+
+// Lazy-load Browse to avoid hitting profiles table when user starts on Swipe
+import { lazy, Suspense } from "react";
+import { Loader2 } from "lucide-react";
+const BrowseCreators = lazy(() =>
+  import("@/components/discover/BrowseCreators").then((m) => ({ default: m.default ?? (m as any).BrowseCreators }))
+);
+const BrowseCreatorsLazy = () => (
+  <Suspense
+    fallback={
+      <div className="flex items-center gap-2 text-xs text-muted-foreground py-10 justify-center">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading creators…
+      </div>
+    }
+  >
+    <BrowseCreators />
+  </Suspense>
+);

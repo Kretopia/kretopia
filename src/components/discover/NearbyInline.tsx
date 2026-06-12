@@ -37,33 +37,41 @@ export const NearbyInline = () => {
   // Bootstrap from saved profile location
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("profiles")
-      .select("latitude, longitude")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("latitude, longitude")
+          .eq("user_id", user.id)
+          .maybeSingle();
         if (data?.latitude && data?.longitude) {
           setLoc({ lat: data.latitude, lng: data.longitude });
         }
-      })
-      .catch(() => {});
+      } catch {
+        /* noop */
+      }
+    })();
   }, [user]);
 
   // Fetch creators when we have a location
   useEffect(() => {
     if (!loc) return;
     setLoading(true);
-    supabase
-      .rpc("get_nearby_creators", {
-        user_lat: loc.lat,
-        user_lon: loc.lng,
-        radius_km: 50,
-        limit_count: 30,
-      })
-      .then(({ data }) => setCreators((data || []) as NearbyCreator[]))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const { data } = await supabase.rpc("get_nearby_creators", {
+          user_lat: loc.lat,
+          user_lon: loc.lng,
+          radius_km: 50,
+          limit_count: 30,
+        });
+        setCreators((data || []) as NearbyCreator[]);
+      } catch {
+        /* noop */
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [loc]);
 
   const detect = useCallback(async () => {
@@ -80,7 +88,11 @@ export const NearbyInline = () => {
       const { latitude, longitude } = pos.coords;
       setLoc({ lat: latitude, lng: longitude });
       if (user) {
-        await supabase.rpc("update_my_location", { lat: latitude, lon: longitude }).catch(() => {});
+        try {
+          await supabase.rpc("update_my_location", { lat: latitude, lon: longitude });
+        } catch {
+          /* noop */
+        }
       }
     } catch (err: any) {
       toast.error(err?.message || "Couldn't get your location");

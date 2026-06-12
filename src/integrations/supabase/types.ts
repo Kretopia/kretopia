@@ -13826,6 +13826,9 @@ export type Database = {
           match_id: string | null
           mood: string | null
           pinned_stage: string | null
+          recap_published: boolean
+          recap_summary: string | null
+          recap_token: string | null
           setup_completed: boolean
           spark_room_id: string | null
           status: string | null
@@ -13860,6 +13863,9 @@ export type Database = {
           match_id?: string | null
           mood?: string | null
           pinned_stage?: string | null
+          recap_published?: boolean
+          recap_summary?: string | null
+          recap_token?: string | null
           setup_completed?: boolean
           spark_room_id?: string | null
           status?: string | null
@@ -13894,6 +13900,9 @@ export type Database = {
           match_id?: string | null
           mood?: string | null
           pinned_stage?: string | null
+          recap_published?: boolean
+          recap_summary?: string | null
+          recap_token?: string | null
           setup_completed?: boolean
           spark_room_id?: string | null
           status?: string | null
@@ -19251,6 +19260,7 @@ export type Database = {
           verification_tier: string
         }[]
       }
+      get_public_studio_recap: { Args: { token: string }; Returns: Json }
       get_retention_cohorts: {
         Args: { _weeks?: number }
         Returns: {

@@ -201,7 +201,7 @@ export default function Discover() {
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 const BrowseCreators = lazy(() =>
-  import("@/components/discover/BrowseCreators").then((m) => ({ default: m.default ?? (m as any).BrowseCreators }))
+  import("@/components/discover/BrowseCreators").then((m) => ({ default: m.BrowseCreators }))
 );
 const BrowseCreatorsLazy = () => (
   <Suspense

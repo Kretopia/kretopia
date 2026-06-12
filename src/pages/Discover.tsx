@@ -74,7 +74,7 @@ export default function Discover() {
         <PageHeader
           eyebrow="The Hub"
           title="Discover"
-          subtitle="People · Gigs · Live · Events · Trending."
+          subtitle="People · Gigs · Live · Events."
           icon={Compass}
           size="sm"
         />

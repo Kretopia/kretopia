@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PageHeader } from "@/components/ui/page-header";
-import { Compass, Users, Briefcase, Radio, Calendar, Map, LayoutGrid, Sparkles, Search } from "lucide-react";
+import { Compass, Users, Briefcase, Radio, Calendar, Map, LayoutGrid, Sparkles, Search, Radar, Store, Plus, Handshake } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -18,10 +20,11 @@ type Tab = "people" | "opps" | "live" | "events";
 const VALID: Tab[] = ["people", "opps", "live", "events"];
 
 type PeopleMode = "swipe" | "browse" | "nearby";
+type OppsMode = "scouted" | "open" | "leads";
 
 /**
  * Discover — the hub for everything outside your own Desk.
- * 5 lanes: People · Opportunities · Live · Events · Trending.
+ * 4 lanes: People · Gigs · Live · Events. Each lane has sub-modes.
  */
 export default function Discover() {
   const [params, setParams] = useSearchParams();
@@ -32,6 +35,8 @@ export default function Discover() {
   );
 
   const [peopleMode, setPeopleMode] = useState<PeopleMode>("swipe");
+  const [oppsMode, setOppsMode] = useState<OppsMode>("scouted");
+  const [postOpen, setPostOpen] = useState(false);
 
   // Live-now pulse on the Live tab
   const [liveCount, setLiveCount] = useState(0);
@@ -145,23 +150,79 @@ export default function Discover() {
         </TabsContent>
 
         {/* OPPORTUNITIES */}
-        <TabsContent value="opps" className="mt-0 px-3 py-3 accent-scout space-y-6">
-          <ScoutedGigsSection />
-          <OpportunitiesFeed />
-          <Card className="border-[hsl(var(--signal-amber))]/30 bg-[hsl(var(--signal-amber))]/5">
-            <CardContent className="p-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <Search className="h-4 w-4 text-[hsl(var(--signal-amber))]" />
-                <p className="font-semibold text-sm">Sponsor & client leads</p>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Brands and clients that fit your work — surfaced by Thrive.
-              </p>
-              <Link to="/intel" className="text-xs font-semibold text-[hsl(var(--signal-amber))] hover:underline">
-                Open Opportunity Intel →
-              </Link>
-            </CardContent>
-          </Card>
+        <TabsContent value="opps" className="mt-0 px-3 py-3 accent-scout space-y-4">
+          {/* Sub-mode toggle — mirrors People */}
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-full border border-border bg-card p-0.5 flex-1">
+              {([
+                { id: "scouted", label: "Scouted", icon: Radar },
+                { id: "open", label: "Open", icon: Store },
+                { id: "leads", label: "Leads", icon: Handshake },
+              ] as const).map((m) => {
+                const Icon = m.icon;
+                const active = oppsMode === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => setOppsMode(m.id)}
+                    className={`flex-1 px-3 py-1.5 text-xs font-semibold rounded-full transition-colors inline-flex items-center justify-center gap-1 ${
+                      active ? "bg-[hsl(var(--signal-amber))] text-black" : "text-muted-foreground"
+                    }`}
+                  >
+                    <Icon className="h-3 w-3" /> {m.label}
+                  </button>
+                );
+              })}
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setPostOpen(true)}
+              className="h-9 px-3 rounded-full bg-foreground text-background hover:bg-foreground/90"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" /> Post
+            </Button>
+          </div>
+
+          {/* Helper strip — explains what lives where */}
+          <p className="text-[11px] text-muted-foreground px-1">
+            {oppsMode === "scouted" && "Real gigs Thrive found for you across the web."}
+            {oppsMode === "open" && "Collabs, barters and freelance gigs posted by the community."}
+            {oppsMode === "leads" && "Brands, sponsors and clients that fit your work."}
+          </p>
+
+          {oppsMode === "scouted" && <ScoutedGigsSection />}
+          {oppsMode === "open" && <OpportunitiesFeed />}
+          {oppsMode === "leads" && (
+            <div className="space-y-3">
+              <Card className="border-[hsl(var(--signal-amber))]/30 bg-[hsl(var(--signal-amber))]/5">
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-[hsl(var(--signal-amber))]" />
+                    <p className="font-semibold text-sm">Sponsor & client leads</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Brands and clients that fit your work — surfaced by Thrive. No Studio required.
+                  </p>
+                  <Link to="/intel" className="inline-block text-xs font-semibold text-[hsl(var(--signal-amber))] hover:underline">
+                    Open Opportunity Intel →
+                  </Link>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 space-y-2">
+                  <p className="font-semibold text-sm">Ask Thrive to find leads</p>
+                  <p className="text-xs text-muted-foreground">
+                    Tell Thrive who you want to work with — sponsors, brands, agencies — and it scouts in the background.
+                  </p>
+                  <Link to="/intel?focus=sponsors" className="inline-block text-xs font-semibold text-primary hover:underline">
+                    Set sponsor radar →
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          <PostOpportunityDialog open={postOpen} onOpenChange={setPostOpen} />
         </TabsContent>
 
         {/* LIVE */}

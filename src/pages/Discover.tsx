@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PageHeader } from "@/components/ui/page-header";
-import { Compass, Users, Briefcase, Radio, Calendar, TrendingUp, Map, LayoutGrid, Sparkles, Search } from "lucide-react";
+import { Compass, Users, Briefcase, Radio, Calendar, Map, LayoutGrid, Sparkles, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 import { SwipeFeature } from "@/components/swipe";
@@ -12,13 +11,13 @@ import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection"
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
 import { LiveCallsPanel } from "@/components/circle/LiveCallsPanel";
 import { SessionsSection } from "@/components/sessions/SessionsSection";
-import { TrendingLane } from "@/components/discover/TrendingLane";
+import { NearbyInline } from "@/components/discover/NearbyInline";
 import { supabase } from "@/integrations/supabase/client";
 
-type Tab = "people" | "opps" | "live" | "events" | "trending";
-const VALID: Tab[] = ["people", "opps", "live", "events", "trending"];
+type Tab = "people" | "opps" | "live" | "events";
+const VALID: Tab[] = ["people", "opps", "live", "events"];
 
-type PeopleMode = "swipe" | "browse";
+type PeopleMode = "swipe" | "browse" | "nearby";
 
 /**
  * Discover — the hub for everything outside your own Desk.
@@ -26,7 +25,6 @@ type PeopleMode = "swipe" | "browse";
  */
 export default function Discover() {
   const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
   const requested = params.get("tab");
   const tab: Tab = useMemo(
     () => (VALID.includes(requested as Tab) ? (requested as Tab) : "people"),
@@ -75,7 +73,7 @@ export default function Discover() {
         <PageHeader
           eyebrow="The Hub"
           title="Discover"
-          subtitle="People · Gigs · Live · Events · Trending."
+          subtitle="People · Gigs · Live · Events."
           icon={Compass}
           size="sm"
         />
@@ -101,7 +99,7 @@ export default function Discover() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="w-full">
         <div className="sticky top-0 z-20 bg-background border-b border-border/60 px-2 py-2 mt-3">
-          <TabsList className="w-full grid grid-cols-5 h-10">
+          <TabsList className="w-full grid grid-cols-4 h-10">
             <TabsTrigger value="people" className="gap-1 text-[11px]">
               <Users className="h-3.5 w-3.5" /> People
             </TabsTrigger>
@@ -114,48 +112,36 @@ export default function Discover() {
             <TabsTrigger value="events" className="gap-1 text-[11px]">
               <Calendar className="h-3.5 w-3.5" /> Events
             </TabsTrigger>
-            <TabsTrigger value="trending" className="gap-1 text-[11px]">
-              <TrendingUp className="h-3.5 w-3.5" /> Trending
-            </TabsTrigger>
           </TabsList>
         </div>
 
         {/* PEOPLE */}
         <TabsContent value="people" className="mt-0 px-3 py-3 accent-match space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-full border border-border bg-card p-0.5">
-              <button
-                onClick={() => setPeopleMode("swipe")}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
-                  peopleMode === "swipe" ? "bg-[hsl(var(--signal-magenta))] text-white" : "text-muted-foreground"
-                }`}
-              >
-                <Sparkles className="h-3 w-3 inline mr-1" /> Swipe
-              </button>
-              <button
-                onClick={() => setPeopleMode("browse")}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors ${
-                  peopleMode === "browse" ? "bg-[hsl(var(--signal-magenta))] text-white" : "text-muted-foreground"
-                }`}
-              >
-                <LayoutGrid className="h-3 w-3 inline mr-1" /> Browse
-              </button>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/nearby")}
-              className="ml-auto gap-1.5"
-            >
-              <Map className="h-3.5 w-3.5" /> Nearby
-            </Button>
+          <div className="inline-flex rounded-full border border-border bg-card p-0.5 w-full sm:w-auto">
+            {([
+              { id: "swipe", label: "Swipe", icon: Sparkles },
+              { id: "browse", label: "Browse", icon: LayoutGrid },
+              { id: "nearby", label: "Nearby", icon: Map },
+            ] as const).map((m) => {
+              const Icon = m.icon;
+              const active = peopleMode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => setPeopleMode(m.id)}
+                  className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-semibold rounded-full transition-colors inline-flex items-center justify-center gap-1 ${
+                    active ? "bg-[hsl(var(--signal-magenta))] text-white" : "text-muted-foreground"
+                  }`}
+                >
+                  <Icon className="h-3 w-3" /> {m.label}
+                </button>
+              );
+            })}
           </div>
 
-          {peopleMode === "swipe" ? (
-            <SwipeFeature />
-          ) : (
-            <BrowseCreatorsLazy />
-          )}
+          {peopleMode === "swipe" && <SwipeFeature />}
+          {peopleMode === "browse" && <BrowseCreatorsLazy />}
+          {peopleMode === "nearby" && <NearbyInline />}
         </TabsContent>
 
         {/* OPPORTUNITIES */}
@@ -186,11 +172,6 @@ export default function Discover() {
         {/* EVENTS */}
         <TabsContent value="events" className="mt-0 px-3 py-3">
           <SessionsSection />
-        </TabsContent>
-
-        {/* TRENDING */}
-        <TabsContent value="trending" className="mt-0 px-3 py-3">
-          <TrendingLane />
         </TabsContent>
       </Tabs>
     </div>

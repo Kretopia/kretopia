@@ -20,9 +20,12 @@ export const BRAND = {
   futurePromise: "Get discovered. Get stamped. Get booked.",
 
   // ── The agent ───────────────────────────────────────────────────────────
-  agentName: "Thrive",
+  // Izzy is the agent. Thrive/ThriveIN is the platform. Always keep them
+  // distinct in user-facing copy. "Thrive Copilot" / "Thrive Agent" are
+  // legacy code-side names only — never show them to users.
+  agentName: "Izzy",
   agentRole: "Your Creative Executive Producer",
-  agentTagline: "Meet Thrive. Your Creative Executive Producer.",
+  agentTagline: "Meet Izzy. Your Creative Executive Producer.",
 
   // ── Profile / EPK ───────────────────────────────────────────────────────
   passport: "Creative Passport",

@@ -20,10 +20,11 @@ type Tab = "people" | "opps" | "live" | "events";
 const VALID: Tab[] = ["people", "opps", "live", "events"];
 
 type PeopleMode = "swipe" | "browse" | "nearby";
+type OppsMode = "scouted" | "open" | "leads";
 
 /**
  * Discover — the hub for everything outside your own Desk.
- * 5 lanes: People · Opportunities · Live · Events · Trending.
+ * 4 lanes: People · Gigs · Live · Events. Each lane has sub-modes.
  */
 export default function Discover() {
   const [params, setParams] = useSearchParams();
@@ -34,6 +35,8 @@ export default function Discover() {
   );
 
   const [peopleMode, setPeopleMode] = useState<PeopleMode>("swipe");
+  const [oppsMode, setOppsMode] = useState<OppsMode>("scouted");
+  const [postOpen, setPostOpen] = useState(false);
 
   // Live-now pulse on the Live tab
   const [liveCount, setLiveCount] = useState(0);

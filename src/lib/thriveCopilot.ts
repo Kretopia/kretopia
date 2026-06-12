@@ -58,7 +58,7 @@ export async function streamCopilot({
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token;
   if (!token) {
-    onError("Please sign in to use Thrive Copilot.");
+    onError("Please sign in to chat with Izzy.");
     return;
   }
 

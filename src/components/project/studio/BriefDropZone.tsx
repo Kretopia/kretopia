@@ -581,7 +581,7 @@ export const BriefDropZone = ({
         </h2>
         <p className="text-[11px] text-muted-foreground mt-0.5">
           Deck · contract · budget · PDF · image · voice · link · idea.
-          Thrive remembers it and routes it to Moodboard, Tasks, Pad or Vault.
+          Izzy remembers it and routes it to Moodboard, Tasks, Pad or Vault.
         </p>
       </header>
 

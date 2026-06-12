@@ -20,9 +20,12 @@ export const BRAND = {
   futurePromise: "Get discovered. Get stamped. Get booked.",
 
   // ── The agent ───────────────────────────────────────────────────────────
-  agentName: "Thrive",
+  // Izzy is the agent. Thrive/ThriveIN is the platform. Always keep them
+  // distinct in user-facing copy. "Thrive Copilot" / "Thrive Agent" are
+  // legacy code-side names only — never show them to users.
+  agentName: "Izzy",
   agentRole: "Your Creative Executive Producer",
-  agentTagline: "Meet Thrive. Your Creative Executive Producer.",
+  agentTagline: "Meet Izzy. Your Creative Executive Producer.",
 
   // ── Profile / EPK ───────────────────────────────────────────────────────
   passport: "Creative Passport",
@@ -100,11 +103,11 @@ export const BRAND_COLLISIONS = {
  */
 export const THRIVE_VOICE = {
   good: [
-    "Thrive noticed something.",
-    "Thrive made a draft.",
-    "Thrive put together a plan.",
-    "Thrive remembers your sponsors.",
-    "Thrive scouted three new Calls for you.",
+    "Izzy noticed something.",
+    "Izzy made a draft.",
+    "Izzy put together a plan.",
+    "Izzy remembers your sponsors.",
+    "Izzy scouted three new Calls for you.",
   ],
   banned: [
     "AI generated",

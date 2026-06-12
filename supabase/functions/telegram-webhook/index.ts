@@ -358,7 +358,7 @@ Deno.serve(async (req) => {
       await tg("sendMessage", {
         chat_id: chatId,
         text:
-          "👋 Hey, I'm Thrive — your creative copilot.\n\n" +
+          "👋 Hey, I'm Izzy — your Creative Executive Producer on ThriveIN.\n\n" +
           "To link this chat to your ThriveIN account, open the app → Settings → Connect Telegram.",
       }, LOVABLE_API_KEY, TELEGRAM_API_KEY);
       return new Response(JSON.stringify({ ok: true }));
@@ -406,7 +406,7 @@ Deno.serve(async (req) => {
     await tg("sendMessage", {
       chat_id: chatId, parse_mode: "HTML",
       text:
-        `✅ Linked! Hey ${name} — I'm Thrive.\n\n` +
+        `✅ Linked! Hey ${name} — I'm Izzy, your Creative EP.\n\n` +
         `Send me anything: a project update, a question, a voice note. ` +
         `When I propose an action, you'll get Approve / Edit / Dismiss buttons right here.\n\n` +
         `Try: <i>"What's my next move today?"</i>`,

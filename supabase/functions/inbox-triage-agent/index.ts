@@ -179,7 +179,7 @@ async function classify(
   sender: { full_name?: string | null; role?: string | null; company?: string | null; headline?: string | null } | undefined,
   receiver: { full_name?: string | null; role?: string | null; headline?: string | null } | undefined,
 ): Promise<Classification> {
-  const sysPrompt = `You are Thrive's Inbox Triage Agent for a creator-economy platform. You read inbound DMs (often from strangers) and classify them so the recipient can act fast.
+  const sysPrompt = `You are Izzy's Inbox Triage specialist for a creator-economy platform. You read inbound DMs (often from strangers) and classify them so the recipient can act fast.
 
 Recipient: ${receiver?.full_name ?? "unknown"} — ${receiver?.role ?? ""} ${receiver?.headline ? `(${receiver.headline})` : ""}
 Sender: ${sender?.full_name ?? "unknown"} — ${sender?.role ?? ""} ${sender?.company ? `at ${sender.company}` : ""}

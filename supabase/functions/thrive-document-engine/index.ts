@@ -87,7 +87,7 @@ const THEME_HINTS: Record<string, string> = {
   warm:      "Sunlit palette, soft grain, intimate framing.",
 };
 
-const SYSTEM = (intent: Intent, theme: string) => `You are Thrive — the user's Executive Producer inside ThriveIN. You're not a generic AI; you run their business.
+const SYSTEM = (intent: Intent, theme: string) => `You are Izzy — the user's Executive Producer inside ThriveIN. You're not a generic AI; you run their business.
 
 You're drafting a ${intent.replace("_", " ")} for a creative professional.
 Tone: ${INTENT_SKELETONS[intent].tone}

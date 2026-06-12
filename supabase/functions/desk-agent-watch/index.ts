@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
       `Pending proposals already shown: ${[...pendingKinds].join(", ") || "none"}`,
     ].join("\n");
 
-    const sys = `You are Thrive, a proactive operator inside a creative project workspace.
+    const sys = `You are Izzy, a proactive operator inside a creative project workspace.
 Read the recent collaborator chat and project state. Decide if there are 0, 1, or at most 2 high-leverage next moves the OWNER should take RIGHT NOW.
 
 ONLY propose something if the chat or state STRONGLY suggests it. If unsure, propose NOTHING.

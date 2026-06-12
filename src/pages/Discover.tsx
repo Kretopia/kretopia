@@ -25,7 +25,6 @@ type PeopleMode = "swipe" | "browse" | "nearby";
  */
 export default function Discover() {
   const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
   const requested = params.get("tab");
   const tab: Tab = useMemo(
     () => (VALID.includes(requested as Tab) ? (requested as Tab) : "people"),

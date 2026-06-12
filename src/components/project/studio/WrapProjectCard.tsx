@@ -12,7 +12,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { CheckCircle2, Sparkles, Loader2 } from "lucide-react";
+import { CheckCircle2, Sparkles, Loader2, Share2 } from "lucide-react";
+import { PublishRecapDialog } from "./PublishRecapDialog";
 
 interface WrapProjectCardProps {
   project: {
@@ -44,6 +45,7 @@ export function WrapProjectCard({
 }: WrapProjectCardProps) {
   const [approvedCount, setApprovedCount] = useState(0);
   const [open, setOpen] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -71,7 +73,43 @@ export function WrapProjectCard({
   const alreadyDone =
     project.status === "completed" || project.status === "archived";
 
-  if (!isOwner || alreadyDone || !hasProgress) return null;
+  // After wrap → show a "Publish recap" card instead of hiding
+  if (!isOwner) return null;
+  if (alreadyDone) {
+    return (
+      <section className="px-4 py-5">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent ring-1 ring-primary/30 p-5 space-y-3">
+          <div className="relative flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary/15 ring-1 ring-primary/30 flex items-center justify-center shrink-0">
+              <Share2 className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                Wrapped 🎉
+              </p>
+              <p className="text-sm font-bold leading-tight mt-0.5">
+                Turn this Studio into a public recap
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                IMDb-style page with the crew, what shipped, and the journey. Share anywhere.
+              </p>
+            </div>
+          </div>
+          <Button onClick={() => setPublishOpen(true)} className="w-full gap-2" size="sm">
+            <Share2 className="h-4 w-4" />
+            Publish recap
+          </Button>
+        </div>
+        <PublishRecapDialog
+          open={publishOpen}
+          onOpenChange={setPublishOpen}
+          projectId={project.id}
+          projectTitle={project.title}
+        />
+      </section>
+    );
+  }
+  if (!hasProgress) return null;
 
   const handleWrap = async () => {
     setSubmitting(true);

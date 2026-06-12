@@ -51,6 +51,7 @@ import { AgentApprovalsTray } from "@/components/agent/AgentApprovalsTray";
 import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { TodayThreeCards } from "@/components/home/TodayThreeCards";
+import { TrendingLane } from "@/components/discover/TrendingLane";
 // SpotlightFeedRow removed from Home — lives at /spotlight only.
 import { ChevronDown } from "lucide-react";
 // LiveGigsStrip removed — see Smart Gig Scout

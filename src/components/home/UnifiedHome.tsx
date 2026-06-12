@@ -655,6 +655,7 @@ export const UnifiedHome = () => {
               <ApprovalsHub limit={4} />
               <ScoutedGigsSection limit={3} />
               <MoneyBrief variant="compact" />
+              <TrendingLane />
             </div>
           </details>
 

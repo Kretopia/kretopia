@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PageHeader } from "@/components/ui/page-header";
 import { Compass, Users, Briefcase, Radio, Calendar, Map, LayoutGrid, Sparkles, Search } from "lucide-react";

@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PageHeader } from "@/components/ui/page-header";
-import { Compass, Users, Briefcase, Radio, Calendar, Map, LayoutGrid, Sparkles, Search } from "lucide-react";
+import { Compass, Users, Briefcase, Radio, Calendar, Map, LayoutGrid, Sparkles, Search, Radar, Store, Plus, Handshake } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PostOpportunityDialog } from "@/components/PostOpportunityDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 

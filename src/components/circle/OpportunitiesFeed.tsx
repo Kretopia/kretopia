@@ -116,9 +116,18 @@ export const OpportunitiesFeed = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      
+
+      // Stale-gig filter: hide if deadline passed, OR (no deadline AND created >30d ago with no recent priority)
+      const now = Date.now();
+      const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+      const fresh = ((data as any[]) || []).filter((o) => {
+        if (o.application_deadline && new Date(o.application_deadline).getTime() < now) return false;
+        if (!o.application_deadline && o.created_at && now - new Date(o.created_at).getTime() > THIRTY_DAYS) return false;
+        return true;
+      });
+
       // Sort priority gigs to the top
-      let sorted = ((data as any[]) || []).sort((a, b) => {
+      let sorted = fresh.sort((a, b) => {
         const aPriority = a.is_priority && a.priority_expires_at && new Date(a.priority_expires_at) > new Date() ? 1 : 0;
         const bPriority = b.is_priority && b.priority_expires_at && new Date(b.priority_expires_at) > new Date() ? 1 : 0;
         return bPriority - aPriority;

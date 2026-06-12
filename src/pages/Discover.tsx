@@ -2,9 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { PageHeader } from "@/components/ui/page-header";
-import { Compass, Users, Briefcase, Radio, Calendar, TrendingUp, Map, LayoutGrid, Sparkles, Search } from "lucide-react";
+import { Compass, Users, Briefcase, Radio, Calendar, Map, LayoutGrid, Sparkles, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 import { SwipeFeature } from "@/components/swipe";
@@ -12,13 +11,13 @@ import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection"
 import { OpportunitiesFeed } from "@/components/circle/OpportunitiesFeed";
 import { LiveCallsPanel } from "@/components/circle/LiveCallsPanel";
 import { SessionsSection } from "@/components/sessions/SessionsSection";
-import { TrendingLane } from "@/components/discover/TrendingLane";
+import { NearbyInline } from "@/components/discover/NearbyInline";
 import { supabase } from "@/integrations/supabase/client";
 
-type Tab = "people" | "opps" | "live" | "events" | "trending";
-const VALID: Tab[] = ["people", "opps", "live", "events", "trending"];
+type Tab = "people" | "opps" | "live" | "events";
+const VALID: Tab[] = ["people", "opps", "live", "events"];
 
-type PeopleMode = "swipe" | "browse";
+type PeopleMode = "swipe" | "browse" | "nearby";
 
 /**
  * Discover — the hub for everything outside your own Desk.

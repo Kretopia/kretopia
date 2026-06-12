@@ -762,7 +762,7 @@ export const ThriveAgentFab = () => {
             <div className="flex items-center justify-between gap-3">
               <SheetTitle className="flex items-center gap-2 text-base">
                 <Sparkles className="h-4 w-4 text-primary" />
-                Thrive
+                Izzy
               </SheetTitle>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
@@ -803,7 +803,7 @@ export const ThriveAgentFab = () => {
             {messages.length === 0 && historyLoaded && !sending && (
               <div className="space-y-3">
                 <div className="text-sm text-muted-foreground">
-                  {firstName ? `Hey ${firstName} — ` : "Hey — "}I'm Thrive.
+                  {firstName ? `Hey ${firstName} — ` : "Hey — "}I'm Izzy, your Creative EP.
                   I know your profile, projects, money and events, and I follow you
                   across the platform. What's up?
                 </div>
@@ -945,7 +945,7 @@ export const ThriveAgentFab = () => {
             {speaking && !voiceMuted && (
               <div className="mr-auto bg-accent/60 rounded-2xl px-3.5 py-2.5 text-xs text-muted-foreground inline-flex items-center gap-2">
                 <Volume2 className="h-3.5 w-3.5 text-primary animate-pulse" />
-                Thrive is speaking…
+                Izzy is speaking…
                 <button
                   className="ml-1 underline text-primary"
                   onClick={() => { stopPlayback(); setSpeaking(false); }}
@@ -1007,7 +1007,7 @@ export const ThriveAgentFab = () => {
                   size="icon"
                   className="h-11 w-11 shrink-0 text-muted-foreground hover:text-foreground"
                   onClick={toggleMute}
-                  aria-label={voiceMuted ? "Unmute Thrive's voice" : "Mute Thrive's voice"}
+                  aria-label={voiceMuted ? "Unmute Izzy's voice" : "Mute Izzy's voice"}
                   title={voiceMuted ? "Voice replies muted" : "Voice replies on"}
                 >
                   {voiceMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4 text-primary" />}
@@ -1019,7 +1019,7 @@ export const ThriveAgentFab = () => {
                   className="h-11 w-11 shrink-0 border-primary/40 text-primary hover:bg-primary/10"
                   onClick={handleStartVoice}
                   disabled={voiceBusy || sending}
-                  aria-label="Talk to Thrive"
+                  aria-label="Talk to Izzy"
                   title="Tap to talk · 60s max"
                 >
                   {voiceBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}

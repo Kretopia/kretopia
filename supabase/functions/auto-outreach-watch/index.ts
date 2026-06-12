@@ -101,7 +101,7 @@ serve(async (req) => {
           user_id: user.user_id,
           type: "outreach_drafts_ready",
           category: "agent",
-          title: `Thrive drafted ${drafted} sponsor pitch${drafted === 1 ? "" : "es"}`,
+          title: `Izzy drafted ${drafted} sponsor pitch${drafted === 1 ? "" : "es"}`,
           message: "Review and approve to send.",
           action_url: "/intel?tab=outbox",
           action_text: "Review",

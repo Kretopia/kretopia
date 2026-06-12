@@ -93,7 +93,7 @@ export function StudioOutcomeComposer({ projectId, projectTitle }: Props) {
       setPrompt("");
     } catch (e: any) {
       toast({
-        title: "Thrive couldn't route that",
+        title: "Izzy couldn't route that",
         description: e?.message || "Try again in a moment.",
         variant: "destructive",
       });
@@ -120,7 +120,7 @@ export function StudioOutcomeComposer({ projectId, projectTitle }: Props) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-              Tell Thrive what you need
+              Tell Izzy what you need
             </p>
             <p className="text-[11px] text-muted-foreground leading-snug">
               One sentence. I'll use what's already in this Studio.

@@ -89,7 +89,7 @@ export function ThriveRemembersChip() {
         className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] text-muted-foreground hover:bg-foreground/[0.04] transition-colors"
       >
         <Sparkle className="h-3 w-3 text-[hsl(var(--signal-teal))]" />
-        Thrive remembers <span className="font-semibold text-foreground">{count}</span> {count === 1 ? "thing" : "things"} about you
+        Izzy remembers <span className="font-semibold text-foreground">{count}</span> {count === 1 ? "thing" : "things"} about you
       </button>
 
       <Sheet open={open} onOpenChange={setOpen}>
@@ -97,7 +97,7 @@ export function ThriveRemembersChip() {
           <SheetHeader className="text-left">
             <SheetTitle className="flex items-center gap-2">
               <Sparkle className="h-4 w-4 text-[hsl(var(--signal-teal))]" />
-              What Thrive remembers
+              What Izzy remembers
             </SheetTitle>
             <SheetDescription>
               The notes, rates, clients and vendors Thrive keeps on hand so you never have to re-explain yourself.

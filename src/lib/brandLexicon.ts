@@ -103,11 +103,11 @@ export const BRAND_COLLISIONS = {
  */
 export const THRIVE_VOICE = {
   good: [
-    "Thrive noticed something.",
-    "Thrive made a draft.",
-    "Thrive put together a plan.",
-    "Thrive remembers your sponsors.",
-    "Thrive scouted three new Calls for you.",
+    "Izzy noticed something.",
+    "Izzy made a draft.",
+    "Izzy put together a plan.",
+    "Izzy remembers your sponsors.",
+    "Izzy scouted three new Calls for you.",
   ],
   banned: [
     "AI generated",

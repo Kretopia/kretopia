@@ -295,11 +295,11 @@ export function DesktopCopilotRail() {
         type="button"
         onClick={() => persistCollapsed(false)}
         className="hidden lg:flex fixed right-3 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-1.5 rounded-full bg-card border border-border shadow-lg px-2.5 py-3 hover:border-primary/40 transition-colors"
-        aria-label="Open Thrive Copilot"
+        aria-label="Open Izzy"
       >
         <Sparkles className="h-4 w-4 text-primary" />
         <span className="[writing-mode:vertical-rl] rotate-180 text-[10px] font-bold uppercase tracking-[0.2em] text-foreground">
-          Thrive
+          Izzy
         </span>
       </button>
     );
@@ -313,7 +313,7 @@ export function DesktopCopilotRail() {
         "hidden lg:flex fixed right-0 top-14 bottom-0 z-30 flex-col border-l border-border bg-background/95",
         fullscreen ? "left-0 w-auto" : "w-[340px] xl:w-[380px]",
       )}
-      aria-label="Thrive Copilot"
+      aria-label="Izzy"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3 h-11 border-b border-border shrink-0">
@@ -322,7 +322,7 @@ export function DesktopCopilotRail() {
             <Sparkles className="h-3.5 w-3.5" />
           </span>
           <div className="min-w-0">
-            <p className="text-xs font-bold leading-tight truncate">Thrive</p>
+            <p className="text-xs font-bold leading-tight truncate">Izzy</p>
             <p className="text-[10px] text-muted-foreground leading-tight truncate">
               On {SURFACE_LABEL[surface]}
             </p>
@@ -334,7 +334,7 @@ export function DesktopCopilotRail() {
             size="icon"
             className="h-7 w-7"
             onClick={() => persistFullscreen(!fullscreen)}
-            aria-label={fullscreen ? "Exit full screen" : "Full screen Thrive"}
+            aria-label={fullscreen ? "Exit full screen" : "Full screen Izzy"}
             title={fullscreen ? "Exit full screen" : "Full screen"}
           >
             {fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
@@ -356,7 +356,7 @@ export function DesktopCopilotRail() {
         {messages.length === 0 && (
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground leading-snug">
-              Hi — I'm Thrive. Ask me anything about your work here.
+              Hi — I'm Izzy, your Creative EP. Ask me anything about your work here.
             </p>
             <div className="flex flex-wrap gap-1.5 pt-1">
               {prompts.map((p) => (
@@ -457,7 +457,7 @@ export function DesktopCopilotRail() {
                 send();
               }
             }}
-            placeholder="Ask Thrive…"
+            placeholder="Ask Izzy…"
             rows={1}
             className="min-h-[40px] max-h-32 resize-none text-[13px]"
           />

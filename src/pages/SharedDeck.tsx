@@ -58,7 +58,7 @@ export default function SharedDeck() {
       <div className="max-w-5xl mx-auto px-4">
         <DeckRenderer doc={content} theme={(doc.theme as DeckTheme) || "editorial"} coverImageUrl={doc.cover_image_url} />
         <div className="mt-8 text-center text-xs text-muted-foreground">
-          Made with <a href="https://www.thrivein.io" className="underline">Thrive</a> — your Creative Executive Producer.
+          Made with Izzy on <a href="https://www.thrivein.io" className="underline">ThriveIN</a> — your Creative Executive Producer.
         </div>
       </div>
     </div>

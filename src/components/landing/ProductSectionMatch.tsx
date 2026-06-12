@@ -97,7 +97,7 @@ export const ProductSectionMatch = () => {
               <div className="px-4 py-3 bg-gradient-to-r from-primary/10 to-energy/10 border-t border-primary/20 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-energy shrink-0" />
                 <p className="text-[11px] text-foreground/90 leading-snug">
-                  <span className="font-black">Thrive scouted these.</span> Tap any card to open the profile or have us draft the intro.
+                  <span className="font-black">Izzy scouted these.</span> Tap any card to open the profile or have us draft the intro.
                 </p>
               </div>
             </div>

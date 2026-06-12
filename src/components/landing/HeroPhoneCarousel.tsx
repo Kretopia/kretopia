@@ -135,7 +135,7 @@ export const MatchScreen = () => (
     <div className="mt-auto rounded-xl bg-gradient-to-r from-primary/15 to-energy/15 border border-primary/30 p-2.5">
       <div className="flex items-center gap-1.5 mb-0.5">
         <Sparkles className="h-3 w-3 text-energy" />
-        <p className="text-[9px] font-black uppercase tracking-wider text-foreground">Thrive scouted these</p>
+        <p className="text-[9px] font-black uppercase tracking-wider text-foreground">Izzy scouted these</p>
       </div>
       <p className="text-[10px] text-muted-foreground leading-snug">"Top 3 of 28 — sorted by past credits + your shoot date."</p>
     </div>

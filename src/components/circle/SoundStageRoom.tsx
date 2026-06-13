@@ -377,6 +377,7 @@ export function SoundStageRoom({
 
         const onAny = () => {
           refreshMembers().catch(() => {});
+          setScreenTick((t) => t + 1);
         };
         call.on("participant-joined", onAny);
         call.on("participant-updated", onAny);
@@ -384,6 +385,9 @@ export function SoundStageRoom({
         call.on("joined-meeting", onAny);
         call.on("track-started", onAny);
         call.on("track-stopped", onAny);
+        // Screen share events — flip local state so the button reflects truth.
+        call.on("local-screen-share-started", () => setSharingScreen(true));
+        call.on("local-screen-share-stopped", () => setSharingScreen(false));
 
         call.on(
           "active-speaker-change",

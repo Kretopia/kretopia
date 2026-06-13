@@ -194,10 +194,10 @@ export default function SpeedSession() {
       try {
         const { data } = await supabase
           .from("profiles")
-          .select("bio, role, primary_role, avatar_url")
+          .select("bio, role, avatar_url")
           .eq("user_id", user.id)
           .maybeSingle();
-        const filled = [data?.bio, data?.role || data?.primary_role, data?.avatar_url].filter(Boolean).length;
+        const filled = [data?.bio, data?.role, data?.avatar_url].filter(Boolean).length;
         setProfileStrong(filled >= 3);
       } catch { setProfileStrong(null); }
     })();

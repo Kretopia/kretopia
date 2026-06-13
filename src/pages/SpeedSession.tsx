@@ -296,6 +296,25 @@ export default function SpeedSession() {
   };
 
 
+  // Host stage: mint the shared room and drop the host into it. Works whether
+  // the night is pair-mode or group-mode — gives the host a place to stand
+  // before/while people arrive (and a fallback "main stage" everyone can hop
+  // into). Safe to call multiple times; create-speed-group-room is idempotent.
+  const openHostStage = async () => {
+    if (!user || !id) return;
+    try {
+      const { data, error } = await supabase.functions.invoke("create-speed-group-room", {
+        body: { session_id: id, user_name: myName },
+      });
+      if (error) throw error;
+      setCallRoom({ url: data.room_url, name: data.room_name, token: data.token });
+      setCallOpen(true);
+    } catch (e: any) {
+      console.error("[SpeedSession] openHostStage", e);
+      toast({ title: "Couldn't open the stage", description: e?.message ?? "Try again in a sec", variant: "destructive" });
+    }
+  };
+
   const goLive = async () => {
     if (!id) return;
     setBusy(true);
@@ -306,8 +325,11 @@ export default function SpeedSession() {
         .eq("id", id);
       if (error) throw error;
       trackDeckEvent("speed_host_went_live", "speed", { session_id: id, rsvps, joined: joinedCount });
-      toast({ title: "We're live", description: "Pairing the room now." });
+      toast({ title: "We're live", description: "Opening the stage…" });
       await supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
+      // Drop the host straight into the stage so they can see the room and
+      // greet people as they arrive.
+      await openHostStage();
       refresh();
     } catch (e: any) {
       toast({ title: "Couldn't go live", description: e?.message, variant: "destructive" });

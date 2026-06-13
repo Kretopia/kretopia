@@ -263,23 +263,6 @@ export default function SpeedSession() {
     refresh();
   };
 
-  const goLive = async () => {
-    if (!id) return;
-    setBusy(true);
-    try {
-      const { error } = await supabase
-        .from("speed_sessions")
-        .update({ status: "live" })
-        .eq("id", id);
-      if (error) throw error;
-      trackDeckEvent("speed_host_went_live", "speed", { session_id: id, rsvps, joined: joinedCount });
-    if (!user || !id) return;
-    await supabase.from("speed_session_rsvps")
-      .upsert({ session_id: id, user_id: user.id, status: "joined", joined_at: new Date().toISOString() },
-        { onConflict: "session_id,user_id" });
-    await supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
-    refresh();
-  };
 
   const goLive = async () => {
     if (!id) return;

@@ -56,6 +56,12 @@ interface VideoCallSheetProps {
   onPeerBlocked?: () => void;
   /** Optional React node rendered as a floating bar over the video (top center) — used for Speed Session connect / save-for-later CTAs. */
   overlayActions?: React.ReactNode;
+  /** When true, expose host-only controls (Mute all). */
+  isHost?: boolean;
+  /** When true, automatically start Daily cloud recording on join (recording must be enabled on the room). */
+  autoStartRecording?: boolean;
+  /** When true, render a "Backstage" badge in the header instead of "Live call". */
+  backstage?: boolean;
 }
 
 type Phase = "lobby" | "live";

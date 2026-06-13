@@ -1,8 +1,7 @@
-// Cron-driven Speed Session reminder dispatcher.
-// Runs every 2 minutes. Idempotent via speed_sessions.reminder_sent_at.
-//
-// 10 minutes before a scheduled session starts, we ping every RSVP'd user
-// with an in-app notification so they remember to show up.
+// Speed Session reminder dispatcher — fires THREE windows:
+//   T-24h (next day),  T-1h,  T-10m.
+// Each window is idempotent via speed_sessions.reminders_sent jsonb flags.
+// Sends a branded transactional email + in-app notification.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -15,64 +14,109 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const APP_URL = "https://www.thrivein.io";
 
+type Window = { key: "tomorrow" | "in_one_hour" | "starting_soon"; loMin: number; hiMin: number };
+const WINDOWS: Window[] = [
+  { key: "tomorrow",       loMin: 23 * 60 + 30, hiMin: 24 * 60 + 30 },
+  { key: "in_one_hour",    loMin: 50,           hiMin: 70 },
+  { key: "starting_soon",  loMin: 8,            hiMin: 12 },
+];
+
+function startsWhenText(starts: Date, key: Window["key"]): string {
+  const opts: Intl.DateTimeFormatOptions = { weekday: "long", hour: "numeric", minute: "2-digit", timeZoneName: "short" };
+  if (key === "tomorrow") return `Tomorrow at ${starts.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" })}`;
+  if (key === "in_one_hour") return `In 1 hour — ${starts.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
+  return `Starting in ~10 min`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const stats = { windows: 0, sessions: 0, emails: 0, pushes: 0, errors: 0 };
+  const now = Date.now();
 
-  const stats = { sessions: 0, sends: 0, errors: 0 };
-  const now = new Date();
-  // Window: 8 to 12 minutes from now, never-reminded, scheduled.
-  const lo = new Date(now.getTime() + 8 * 60_000).toISOString();
-  const hi = new Date(now.getTime() + 12 * 60_000).toISOString();
+  for (const w of WINDOWS) {
+    stats.windows++;
+    const lo = new Date(now + w.loMin * 60_000).toISOString();
+    const hi = new Date(now + w.hiMin * 60_000).toISOString();
 
-  const { data: sessions, error } = await admin
-    .from("speed_sessions")
-    .select("id, title, starts_at, slot_seconds, mode")
-    .eq("status", "scheduled")
-    .is("reminder_sent_at", null)
-    .gte("starts_at", lo)
-    .lte("starts_at", hi);
+    const { data: sessions, error } = await admin
+      .from("speed_sessions")
+      .select("id, title, starts_at, slot_seconds, mode, duration_min, theme, fallback_mode, reminders_sent")
+      .eq("status", "scheduled")
+      .gte("starts_at", lo)
+      .lte("starts_at", hi);
+    if (error) { stats.errors++; console.error("[reminders] fetch", w.key, error); continue; }
 
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+    for (const s of sessions ?? []) {
+      const sent = (s.reminders_sent ?? {}) as Record<string, string>;
+      if (sent[w.key]) continue;
+      stats.sessions++;
 
-  for (const s of sessions ?? []) {
-    stats.sessions++;
-    try {
       const { data: rsvps } = await admin
         .from("speed_session_rsvps")
-        .select("user_id")
+        .select("user_id, profiles:user_id (full_name, email)")
         .eq("session_id", s.id);
+      const link = `${APP_URL}/circle/speed/${s.id}`;
+      const rsvpCount = rsvps?.length ?? 0;
+      const startsAt = new Date(s.starts_at);
+      const startsWhen = startsWhenText(startsAt, w.key);
+      const isGroupMode = s.fallback_mode === "group";
 
-      const userIds = (rsvps ?? []).map((r: { user_id: string }) => r.user_id);
-      if (userIds.length > 0) {
-        const link = `${APP_URL}/circle/speed/${s.id}`;
-        const rows = userIds.map((uid) => ({
-          user_id: uid,
-          type: "speed_session_reminder",
-          title: "Starts in 10 minutes — ready?",
-          message: `"${s.title}" kicks off soon. Open the room and hit "I'm here" to enter the matching pool.`,
-          link,
-          action_url: link,
-          action_text: "Open room",
-          priority: "high",
-          category: "session",
-        }));
-        const { error: insErr } = await admin.from("notifications").insert(rows);
-        if (insErr) { stats.errors++; console.error("[speed-session-reminders] notify", insErr); }
-        else stats.sends += rows.length;
+      // In-app notifications
+      const notifRows = (rsvps ?? []).map((r: any) => ({
+        user_id: r.user_id,
+        type: "speed_session_reminder",
+        title: w.key === "starting_soon" ? "Starts in 10 min" :
+               w.key === "in_one_hour" ? "Starts in 1 hour" : "Tomorrow's Speed Session",
+        message: `"${s.title}" — ${startsWhen}. ${isGroupMode ? "Open group call format tonight." : "Tap to open the room."}`,
+        link, action_url: link, action_text: "Open session",
+        priority: w.key === "starting_soon" ? "high" : "normal",
+        category: "session",
+      }));
+      if (notifRows.length > 0) {
+        const { error: nErr } = await admin.from("notifications").insert(notifRows);
+        if (nErr) { stats.errors++; console.error("[reminders] notify", nErr); }
+        else stats.pushes += notifRows.length;
+      }
+
+      // Branded emails
+      for (const r of rsvps ?? []) {
+        const email = (r as any).profiles?.email;
+        const name  = (r as any).profiles?.full_name;
+        if (!email) continue;
+        try {
+          await admin.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "speed-session-reminder",
+              recipientEmail: email,
+              idempotencyKey: `ss-rem-${s.id}-${w.key}-${(r as any).user_id}`,
+              templateData: {
+                attendeeName: name,
+                sessionTitle: s.title,
+                startsWhen,
+                whenLabel: w.key,
+                durationMin: s.duration_min,
+                slotMinutes: Math.round((s.slot_seconds ?? 300) / 60),
+                mode: s.mode,
+                theme: s.theme,
+                sessionUrl: link,
+                rsvpCount,
+                isGroupMode,
+              },
+            },
+          });
+          stats.emails++;
+        } catch (e) { stats.errors++; console.error("[reminders] email", e); }
       }
 
       await admin
         .from("speed_sessions")
-        .update({ reminder_sent_at: new Date().toISOString() })
+        .update({
+          reminders_sent: { ...sent, [w.key]: new Date().toISOString() },
+          // Keep legacy reminder_sent_at populated on starting_soon for back-compat
+          reminder_sent_at: w.key === "starting_soon" ? new Date().toISOString() : (s as any).reminder_sent_at,
+        })
         .eq("id", s.id);
-    } catch (e) {
-      stats.errors++;
-      console.error("[speed-session-reminders] session", s.id, e);
     }
   }
 

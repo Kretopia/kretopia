@@ -61,6 +61,7 @@ const Circle = lazy(() => import("./pages/Circle"));
 const Discover = lazy(() => import("./pages/Discover"));
 const SpeedSession = lazy(() => import("./pages/SpeedSession"));
 const SpeedIndex = lazy(() => import("./pages/SpeedIndex"));
+const SpeedRecap = lazy(() => import("./pages/SpeedRecap"));
 const CuratedStage = lazy(() => import("./pages/CuratedStage"));
 const CircleDetailPage = lazy(() => import("./pages/CircleDetail"));
 const CircleChatView = lazy(() => import("./pages/CircleChatView"));
@@ -301,6 +302,7 @@ const AppContent = () => {
           <Route path="/circle/speed" element={<SpeedIndex />} />
           {/* Speed Session = public landing for share links; sign-up gating happens inside the page */}
           <Route path="/circle/speed/:id" element={<SpeedSession />} />
+          <Route path="/circle/speed/:id/recap" element={<SpeedRecap />} />
            <Route path="/circle/stage/:id" element={<CuratedStage />}/>
             <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
             <Route path="/circle/:circleId/chat" element={<ProtectedRoute><CircleChatView /></ProtectedRoute>} />

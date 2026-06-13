@@ -25,6 +25,8 @@ import { template as universeScanFindings } from './universe-scan-findings.tsx'
 import { template as reEngagement } from './re-engagement.tsx'
 import { template as welcome } from './welcome.tsx'
 import { template as speedSessionRecap } from './speed-session-recap.tsx'
+import { template as speedSessionReminder } from './speed-session-reminder.tsx'
+import { template as speedSessionRsvpConfirmed } from './speed-session-rsvp-confirmed.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome': welcome,
@@ -43,4 +45,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'event-invite': eventInvite,
   'day2-engagement': day2Engagement,
   'speed-session-recap': speedSessionRecap,
+  'speed-session-reminder': speedSessionReminder,
+  'speed-session-rsvp-confirmed': speedSessionRsvpConfirmed,
 }

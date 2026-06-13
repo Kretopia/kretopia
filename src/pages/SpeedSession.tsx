@@ -14,6 +14,7 @@ import { format as fmt } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { buildGoogleCalendarUrl, downloadIcs as downloadCalendarIcs } from "@/lib/calendarLinks";
 import { APP_URL } from "@/lib/constants";
+import { trackDeckEvent } from "@/lib/deckMetrics";
 
 type Session = {
   id: string; host_user_id: string; title: string; theme: string | null;

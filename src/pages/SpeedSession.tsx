@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import {
-  Users, Mic, Video, Loader2, ArrowLeft, Radio, Check, UserPlus, Bookmark, PlayCircle, StopCircle, Share2, CalendarPlus, Sparkles,
+  Users, Mic, Video, Loader2, ArrowLeft, Radio, Check, UserPlus, Bookmark, PlayCircle, StopCircle, Share2, CalendarPlus, Sparkles, Pencil,
 } from "lucide-react";
 import { format as fmt } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { buildGoogleCalendarUrl, downloadIcs as downloadCalendarIcs } from "@/lib/calendarLinks";
 import { APP_URL } from "@/lib/constants";
 import { trackDeckEvent } from "@/lib/deckMetrics";
+import { SpeedSessionCreateDialog } from "@/components/circle/SpeedSessionCreateDialog";
 
 type Session = {
   id: string; host_user_id: string; title: string; theme: string | null;
@@ -58,6 +59,7 @@ export default function SpeedSession() {
   const [profileStrong, setProfileStrong] = useState<boolean | null>(null);
   const [icePrompts, setIcePrompts] = useState<string[]>([]);
   const [iceIdx, setIceIdx] = useState(0);
+  const [editOpen, setEditOpen] = useState(false);
 
   const myName = useMemo(
     () => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest",
@@ -527,10 +529,22 @@ export default function SpeedSession() {
                 <Button onClick={copyShare} variant="outline" className="rounded-full gap-1.5">
                   <Share2 className="h-4 w-4" /> Share link
                 </Button>
+                {!isLive && (
+                  <Button onClick={() => setEditOpen(true)} variant="ghost" className="rounded-full gap-1.5">
+                    <Pencil className="h-4 w-4" /> Edit
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
         )}
+
+        <SpeedSessionCreateDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          session={session as any}
+          onUpdated={() => refresh().catch(() => {})}
+        />
 
         {isEnded ? (
           <Card>

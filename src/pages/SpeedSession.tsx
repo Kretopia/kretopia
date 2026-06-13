@@ -389,6 +389,7 @@ export default function SpeedSession() {
         .insert({ user_id: user.id, item_type: "creator", item_id: peer.id });
       if (error && error.code !== "23505") throw error;
       setSavedPeer(true);
+      trackDeckEvent("speed_save_for_later", "speed", { session_id: id, pairing_id: myPair?.id, peer_id: peer.id });
       toast({ title: "Saved for later", description: "Find them in your Clipped list." });
     } catch (e: any) {
       toast({ title: "Couldn't save", description: e?.message, variant: "destructive" });

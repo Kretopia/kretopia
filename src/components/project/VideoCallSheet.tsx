@@ -451,20 +451,36 @@ export const VideoCallSheet = ({
                     <span className="text-sm font-medium">{sharing ? "Stop" : "Share"}</span>
                   </Button>
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleRecording}
-                    className={`rounded-full gap-2 h-10 px-4 border ${
-                      recording
-                        ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 border-transparent"
-                        : "bg-white/15 text-white border-white/30 hover:bg-white/25"
-                    }`}
-                  >
-                    <Circle className={`h-3 w-3 ${recording ? "fill-current" : ""}`} />
-                    <span className="text-sm font-medium">{recording ? "Stop" : "Record"}</span>
-                  </Button>
+                  {!backstage && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={toggleRecording}
+                      className={`rounded-full gap-2 h-10 px-4 border ${
+                        recording
+                          ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 border-transparent"
+                          : "bg-white/15 text-white border-white/30 hover:bg-white/25"
+                      }`}
+                    >
+                      <Circle className={`h-3 w-3 ${recording ? "fill-current" : ""}`} />
+                      <span className="text-sm font-medium">{recording ? "Stop" : "Record"}</span>
+                    </Button>
+                  )}
+
+                  {isHost && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={muteAll}
+                      className="rounded-full gap-2 h-10 px-4 border bg-white/15 text-white border-white/30 hover:bg-white/25"
+                      title="Mute every speaker except you"
+                    >
+                      <MicOff className="h-4 w-4" />
+                      <span className="text-sm font-medium">Mute all</span>
+                    </Button>
+                  )}
 
                   <Button
                     type="button"

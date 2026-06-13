@@ -295,6 +295,7 @@ export default function SpeedSession() {
         .update({ ended_at: new Date().toISOString() })
         .eq("session_id", id)
         .is("ended_at", null);
+      trackDeckEvent("speed_host_ended", "speed", { session_id: id, rsvps, joined: joinedCount });
       toast({ title: "Session wrapped" });
       refresh();
     } finally { setBusy(false); }

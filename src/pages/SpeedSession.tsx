@@ -638,6 +638,16 @@ export default function SpeedSession() {
           onUpdated={() => refresh().catch(() => {})}
         />
 
+        {showLobby && myRsvp && (
+          <SpeedLobby
+            sessionId={session.id}
+            startsAt={session.starts_at}
+            theme={session.theme}
+            rsvpCount={rsvps}
+            isGroupMode={isGroupMode}
+          />
+        )}
+
         {isEnded ? (
           <Card>
             <CardContent className="p-5 space-y-3">

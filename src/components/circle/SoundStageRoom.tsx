@@ -58,6 +58,9 @@ interface SoundStageRoomProps {
   hostUserId: string | null;
   userName: string;
   userAvatar?: string | null;
+  /** Host-only soundcheck. Stage is hidden from the rail until host taps
+   *  "Open the doors", which flips sound_stages.is_live = true. */
+  backstage?: boolean;
 }
 
 type Role = "host" | "speaker" | "audience";

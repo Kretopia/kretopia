@@ -64,7 +64,14 @@ serve(async (req) => {
       }
     }
 
-    // Lazy-create Daily room on first go-live
+    // Backstage: only host can rehearse before going live.
+    if (isBackstage && !isHost) {
+      return new Response(JSON.stringify({ error: "Only the host can enter backstage" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Lazy-create Daily room on first go-live (or first backstage entry).
     let roomUrl = stage.room_url;
     let roomName = stage.room_name;
     if (!roomName) {
@@ -91,10 +98,12 @@ serve(async (req) => {
       if (!createRes.ok) throw new Error(`Daily create failed: ${createRes.status}`);
       const room = await createRes.json();
       roomUrl = room.url;
+      // Persist room but only flip to "live" if NOT backstage.
       await admin.from("curated_stages").update({
-        room_url: roomUrl, room_name: roomName, status: "live",
+        room_url: roomUrl, room_name: roomName,
+        ...(isBackstage ? {} : { status: "live" }),
       }).eq("id", stage_id);
-    } else if (isHost && stage.status !== "live") {
+    } else if (isHost && !isBackstage && stage.status !== "live") {
       await admin.from("curated_stages").update({ status: "live" }).eq("id", stage_id);
     }
 

@@ -14,6 +14,7 @@ import {
   Flag,
   Ban,
   ShieldAlert,
+  MicOff,
 } from "lucide-react";
 import {
   DropdownMenu,

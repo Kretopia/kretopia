@@ -15687,12 +15687,51 @@ export type Database = {
         }
         Relationships: []
       }
+      speed_lobby_games: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          payload: Json
+          session_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          session_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          session_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "speed_lobby_games_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "speed_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       speed_session_pairings: {
         Row: {
           a_cosigned: boolean
           b_cosigned: boolean
           created_at: string
           ended_at: string | null
+          ended_reason: string | null
           id: string
           room_name: string
           room_url: string
@@ -15707,6 +15746,7 @@ export type Database = {
           b_cosigned?: boolean
           created_at?: string
           ended_at?: string | null
+          ended_reason?: string | null
           id?: string
           room_name: string
           room_url: string
@@ -15721,6 +15761,7 @@ export type Database = {
           b_cosigned?: boolean
           created_at?: string
           ended_at?: string | null
+          ended_reason?: string | null
           id?: string
           room_name?: string
           room_url?: string
@@ -15785,13 +15826,17 @@ export type Database = {
           created_at: string
           description: string | null
           duration_min: number
+          fallback_mode: string
+          group_room_url: string | null
           host_user_id: string
           id: string
           match_filters: Json
           max_participants: number | null
           mode: string
+          pool_cutoff_minutes: number
           recap_sent_at: string | null
           reminder_sent_at: string | null
+          reminders_sent: Json
           slot_seconds: number
           starts_at: string
           status: string
@@ -15806,13 +15851,17 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_min?: number
+          fallback_mode?: string
+          group_room_url?: string | null
           host_user_id: string
           id?: string
           match_filters?: Json
           max_participants?: number | null
           mode?: string
+          pool_cutoff_minutes?: number
           recap_sent_at?: string | null
           reminder_sent_at?: string | null
+          reminders_sent?: Json
           slot_seconds?: number
           starts_at: string
           status?: string
@@ -15827,13 +15876,17 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_min?: number
+          fallback_mode?: string
+          group_room_url?: string | null
           host_user_id?: string
           id?: string
           match_filters?: Json
           max_participants?: number | null
           mode?: string
+          pool_cutoff_minutes?: number
           recap_sent_at?: string | null
           reminder_sent_at?: string | null
+          reminders_sent?: Json
           slot_seconds?: number
           starts_at?: string
           status?: string

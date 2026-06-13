@@ -108,10 +108,14 @@ export function SoundStageRoom({
   hostUserId,
   userName,
   userAvatar,
+  backstage = false,
 }: SoundStageRoomProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const callRef = useRef<DailyCall | null>(null);
+  // Local backstage flag — flips to false when host taps "Open the doors".
+  const [isBackstage, setIsBackstage] = useState(backstage);
+  const [openingDoors, setOpeningDoors] = useState(false);
   const [joining, setJoining] = useState(false);
   const [phase, setPhase] = useState<"miccheck" | "joining" | "in">("miccheck");
   const [members, setMembers] = useState<Record<string, Member>>({});

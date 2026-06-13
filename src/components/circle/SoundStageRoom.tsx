@@ -153,6 +153,33 @@ export function SoundStageRoom({
     stageIdRef.current = stageId;
   }, [isHost, stageId]);
 
+  // Re-sync backstage when the host re-opens a freshly created stage.
+  useEffect(() => {
+    setIsBackstage(backstage);
+  }, [backstage, stageId]);
+
+  const openTheDoors = useCallback(async () => {
+    if (!stageId || !isHost || openingDoors) return;
+    setOpeningDoors(true);
+    try {
+      const { error } = await supabase
+        .from("sound_stages")
+        .update({ is_live: true, started_at: new Date().toISOString() })
+        .eq("id", stageId);
+      if (error) throw error;
+      setIsBackstage(false);
+      toast({ title: "Doors are open", description: "Your stage is now on the rail." });
+    } catch (e: unknown) {
+      toast({
+        title: "Couldn't open the doors",
+        description: e instanceof Error ? e.message : undefined,
+        variant: "destructive",
+      });
+    } finally {
+      setOpeningDoors(false);
+    }
+  }, [stageId, isHost, openingDoors, toast]);
+
   const cleanupCall = useCallback((endStage: boolean) => {
     const call = callRef.current;
     callRef.current = null;

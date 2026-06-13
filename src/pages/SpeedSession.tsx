@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import {
-  Users, Mic, Video, Loader2, ArrowLeft, Radio, Check, UserPlus, Bookmark, PlayCircle, StopCircle, Share2, CalendarPlus, Sparkles,
+  Users, Mic, Video, Loader2, ArrowLeft, Radio, Check, UserPlus, Bookmark, PlayCircle, StopCircle, Share2, CalendarPlus, Sparkles, Pencil,
 } from "lucide-react";
 import { format as fmt } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { buildGoogleCalendarUrl, downloadIcs as downloadCalendarIcs } from "@/lib/calendarLinks";
 import { APP_URL } from "@/lib/constants";
 import { trackDeckEvent } from "@/lib/deckMetrics";
+import { SpeedSessionCreateDialog } from "@/components/circle/SpeedSessionCreateDialog";
 
 type Session = {
   id: string; host_user_id: string; title: string; theme: string | null;

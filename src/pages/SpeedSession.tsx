@@ -374,6 +374,7 @@ export default function SpeedSession() {
         );
       if (error) throw error;
       setConnectedPeer(true);
+      trackDeckEvent("speed_connect_sent", "speed", { session_id: id, pairing_id: myPair?.id, peer_id: peer.id });
       toast({ title: "Connection sent", description: peer.full_name ?? "We let them know." });
     } catch (e: any) {
       toast({ title: "Couldn't send connect", description: e?.message, variant: "destructive" });

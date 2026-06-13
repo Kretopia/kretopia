@@ -35,6 +35,7 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
 
   const [title, setTitle] = useState("Speed Networking — Creators × Creators");
   const [theme, setTheme] = useState("Meet 6+ creators in 30 mins. 5 min each. Connect or save for later.");
+  const [vertical, setVertical] = useState<SpeedVertical>("open");
   const [startsAt, setStartsAt] = useState(defaultLocal);
   const [duration, setDuration] = useState(30);
   const [slotMin, setSlotMin] = useState(5);

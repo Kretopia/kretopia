@@ -14,6 +14,7 @@ import { format as fmt } from "date-fns";
 import { SEO } from "@/components/SEO";
 import { buildGoogleCalendarUrl, downloadIcs as downloadCalendarIcs } from "@/lib/calendarLinks";
 import { APP_URL } from "@/lib/constants";
+import { trackDeckEvent } from "@/lib/deckMetrics";
 
 type Session = {
   id: string; host_user_id: string; title: string; theme: string | null;
@@ -105,6 +106,26 @@ export default function SpeedSession() {
   }, [id, user?.id]);
 
   useEffect(() => { refresh().catch(() => setLoading(false)); }, [refresh]);
+
+  // Page view (fires once per session id, including guests)
+  useEffect(() => {
+    if (!id) return;
+    trackDeckEvent("speed_session_viewed", "speed", {
+      session_id: id,
+      authed: !!user,
+      is_host: canControl,
+    });
+  }, [id, user, canControl]);
+
+  // Track when a pairing arrives (round started)
+  useEffect(() => {
+    if (!myPair || !user) return;
+    trackDeckEvent("speed_pair_started", "speed", {
+      session_id: id,
+      pairing_id: myPair.id,
+      round: myPair.round,
+    });
+  }, [myPair?.id, user, id]);
 
   useEffect(() => {
     if (!id) return;
@@ -214,13 +235,19 @@ export default function SpeedSession() {
   }, [user]);
 
   const toggleRsvp = async () => {
-    if (!user) { stashReturnAndGoAuth("signup"); return; }
+    if (!user) {
+      trackDeckEvent("speed_rsvp_gated", "speed", { session_id: id });
+      stashReturnAndGoAuth("signup");
+      return;
+    }
     setBusy(true);
     try {
+      const action = myRsvp ? "cancel" : "rsvp";
       const { error } = await supabase.functions.invoke("rsvp-speed-session", {
-        body: { session_id: id, action: myRsvp ? "cancel" : "rsvp" },
+        body: { session_id: id, action },
       });
       if (error) throw error;
+      trackDeckEvent(myRsvp ? "speed_rsvp_canceled" : "speed_rsvp_confirmed", "speed", { session_id: id });
       if (!myRsvp) toast({ title: "Spot saved", description: "We'll ping you 10 min before. Add to your calendar so you don't forget." });
       await refresh();
     } finally { setBusy(false); }
@@ -231,9 +258,11 @@ export default function SpeedSession() {
     await supabase.from("speed_session_rsvps")
       .upsert({ session_id: id, user_id: user.id, status: "joined", joined_at: new Date().toISOString() },
         { onConflict: "session_id,user_id" });
+    trackDeckEvent("speed_joined_pool", "speed", { session_id: id });
     await supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
     refresh();
   };
+
 
   const goLive = async () => {
     if (!id) return;
@@ -244,6 +273,7 @@ export default function SpeedSession() {
         .update({ status: "live" })
         .eq("id", id);
       if (error) throw error;
+      trackDeckEvent("speed_host_went_live", "speed", { session_id: id, rsvps, joined: joinedCount });
       toast({ title: "We're live", description: "Pairing the room now." });
       await supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
       refresh();
@@ -265,6 +295,7 @@ export default function SpeedSession() {
         .update({ ended_at: new Date().toISOString() })
         .eq("session_id", id)
         .is("ended_at", null);
+      trackDeckEvent("speed_host_ended", "speed", { session_id: id, rsvps, joined: joinedCount });
       toast({ title: "Session wrapped" });
       refresh();
     } finally { setBusy(false); }
@@ -295,8 +326,10 @@ export default function SpeedSession() {
     try {
       if (navigator.share) {
         await navigator.share({ title, text, url });
+        trackDeckEvent("speed_share", "speed", { session_id: id, method: "native" });
       } else {
         await navigator.clipboard.writeText(text);
+        trackDeckEvent("speed_share", "speed", { session_id: id, method: "clipboard" });
         toast({ title: "Invite copied", description: "Paste it in WhatsApp, IG, or anywhere." });
       }
     } catch { /* user canceled */ }
@@ -320,10 +353,12 @@ export default function SpeedSession() {
 
   const addToGoogleCalendar = () => {
     if (!calendarEvent) return;
+    trackDeckEvent("speed_calendar_add", "speed", { session_id: id, provider: "google" });
     window.open(buildGoogleCalendarUrl(calendarEvent), "_blank", "noopener,noreferrer");
   };
   const addToAppleCalendar = () => {
     if (!calendarEvent) return;
+    trackDeckEvent("speed_calendar_add", "speed", { session_id: id, provider: "apple_ics" });
     downloadCalendarIcs(calendarEvent, `speed-session-${id}.ics`);
   };
 
@@ -339,6 +374,7 @@ export default function SpeedSession() {
         );
       if (error) throw error;
       setConnectedPeer(true);
+      trackDeckEvent("speed_connect_sent", "speed", { session_id: id, pairing_id: myPair?.id, peer_id: peer.id });
       toast({ title: "Connection sent", description: peer.full_name ?? "We let them know." });
     } catch (e: any) {
       toast({ title: "Couldn't send connect", description: e?.message, variant: "destructive" });
@@ -353,6 +389,7 @@ export default function SpeedSession() {
         .insert({ user_id: user.id, item_type: "creator", item_id: peer.id });
       if (error && error.code !== "23505") throw error;
       setSavedPeer(true);
+      trackDeckEvent("speed_save_for_later", "speed", { session_id: id, pairing_id: myPair?.id, peer_id: peer.id });
       toast({ title: "Saved for later", description: "Find them in your Clipped list." });
     } catch (e: any) {
       toast({ title: "Couldn't save", description: e?.message, variant: "destructive" });

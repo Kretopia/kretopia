@@ -26,10 +26,13 @@ type Session = {
  */
 export function CallSheetUpcoming() {
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const fetchSessions = async () => {
     const { data } = await supabase

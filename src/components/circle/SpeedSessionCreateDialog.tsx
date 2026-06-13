@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Video, Mic } from "lucide-react";
+import { SPEED_VERTICALS, type SpeedVertical } from "@/lib/speedVerticals";
 
 interface Props {
   open: boolean;
@@ -34,6 +35,7 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
 
   const [title, setTitle] = useState("Speed Networking — Creators × Creators");
   const [theme, setTheme] = useState("Meet 6+ creators in 30 mins. 5 min each. Connect or save for later.");
+  const [vertical, setVertical] = useState<SpeedVertical>("open");
   const [startsAt, setStartsAt] = useState(defaultLocal);
   const [duration, setDuration] = useState(30);
   const [slotMin, setSlotMin] = useState(5);
@@ -53,6 +55,7 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
           host_user_id: user.id,
           title: title.trim(),
           theme: theme.trim() || null,
+          vertical,
           mode,
           starts_at: new Date(startsAt).toISOString(),
           duration_min: duration,
@@ -87,6 +90,22 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
           <div>
             <Label htmlFor="ss-title">Title</Label>
             <Input id="ss-title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} />
+          </div>
+          <div>
+            <Label htmlFor="ss-vertical">Themed night</Label>
+            <Select value={vertical} onValueChange={(v) => setVertical(v as SpeedVertical)}>
+              <SelectTrigger id="ss-vertical"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {SPEED_VERTICALS.map((v) => (
+                  <SelectItem key={v.id} value={v.id}>
+                    <span className="mr-2">{v.emoji}</span>{v.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Shown on the public Speed Networking page so the right creators find your night.
+            </p>
           </div>
           <div>
             <Label htmlFor="ss-theme">Theme / who's it for (optional)</Label>

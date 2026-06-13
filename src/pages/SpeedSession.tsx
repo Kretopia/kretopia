@@ -231,13 +231,14 @@ export default function SpeedSession() {
     })();
   }, [myPair, user, session?.theme]);
 
-  // Close stale sheet between rounds
+  // Close stale sheet between rounds — but NOT when the user is standing on
+  // the shared stage (group/host room, names start with `sp-`).
   useEffect(() => {
-    if (!myPair && callOpen) {
+    if (!myPair && callOpen && callRoom && !callRoom.name.startsWith("sp-")) {
       setCallOpen(false);
       setCallRoom(null);
     }
-  }, [myPair, callOpen]);
+  }, [myPair, callOpen, callRoom]);
 
   // Host/admin: while live, re-run matcher every 20s so new joiners get paired and finished rounds re-pair
   useEffect(() => {

@@ -135,6 +135,14 @@ export const VideoCallSheet = ({
       })
       .then(() => {
         if (!cancelled) setJoining(false);
+        // Auto-start recording on host's join when stage opted in pre-show.
+        if (!cancelled && isHost && autoStartRecording && !backstage) {
+          try {
+            void frame.startRecording();
+          } catch (e) {
+            console.warn("[VideoCallSheet] auto-record failed", e);
+          }
+        }
       })
       .catch((err) => {
         console.error("[VideoCallSheet] join failed", err);

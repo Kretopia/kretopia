@@ -50,6 +50,7 @@ export function LiveCallsPanel() {
     isHost: boolean;
     hostUserId: string | null;
     format: "open_1to1" | "open_group" | "audience";
+    backstage: boolean;
   } | null>(null);
 
   const myName = useMemo(
@@ -66,6 +67,7 @@ export function LiveCallsPanel() {
     title: string;
     mode: "audio" | "video";
     format: "open_1to1" | "open_group" | "audience";
+    backstage: boolean;
   }) => {
     setActiveRoom({
       url: data.room_url,
@@ -78,6 +80,7 @@ export function LiveCallsPanel() {
       isHost: true,
       hostUserId: user?.id ?? null,
       format: data.format,
+      backstage: data.backstage,
     });
     setCallOpen(true);
   };

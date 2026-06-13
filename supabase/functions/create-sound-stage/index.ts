@@ -52,6 +52,10 @@ serve(async (req) => {
         ? body.format
         : "open_group";
     const user_name = String(body.user_name ?? "Host").slice(0, 60);
+    // Backstage = host-only soundcheck. Row is created with is_live=false so
+    // it does NOT appear on the "On Air now" rail until the host taps
+    // "Open the doors".
+    const backstage = body.backstage === true;
 
     const maxParticipants = format === "audience" ? 200 : format === "open_1to1" ? 2 : 50;
 

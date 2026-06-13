@@ -55,6 +55,7 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
           host_user_id: user.id,
           title: title.trim(),
           theme: theme.trim() || null,
+          vertical,
           mode,
           starts_at: new Date(startsAt).toISOString(),
           duration_min: duration,

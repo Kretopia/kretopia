@@ -509,6 +509,15 @@ export default function SpeedSession() {
           {savedPeer ? <Check className="h-3 w-3" /> : <Bookmark className="h-3 w-3" />}
           {savedPeer ? "Saved" : "Save"}
         </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="rounded-full h-7 px-2.5 text-[11px] gap-1 text-white hover:bg-white/10"
+          onClick={skipPair}
+          aria-label="Skip to next match"
+        >
+          <SkipForward className="h-3 w-3" /> Skip
+        </Button>
       </div>
     </div>
   ) : null;

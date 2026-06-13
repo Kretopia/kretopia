@@ -44,13 +44,14 @@ const CuratedStage = () => {
   const [myApp, setMyApp] = useState<{ status: string } | null>(null);
   const [applyOpen, setApplyOpen] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
-  const [room, setRoom] = useState<{ url: string; name: string; token: string } | null>(null);
+  const [room, setRoom] = useState<{ url: string; name: string; token: string; recordingEnabled: boolean } | null>(null);
   const [joining, setJoining] = useState(false);
   const [rsvping, setRsvping] = useState(false);
   const [handRaised, setHandRaised] = useState(false);
   const [raising, setRaising] = useState(false);
   const [verifyingTicket, setVerifyingTicket] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [backstageMode, setBackstageMode] = useState(false);
 
   const inviteToken = searchParams.get("invite") || undefined;
 

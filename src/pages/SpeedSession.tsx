@@ -333,16 +333,26 @@ export default function SpeedSession() {
 
   const copyShare = async () => {
     const { title, text, url } = buildShareText();
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, text, url });
-        trackDeckEvent("speed_share", "speed", { session_id: id, method: "native" });
-      } else {
-        await navigator.clipboard.writeText(text);
+    const fallbackCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(`${text}\n${url}`);
         trackDeckEvent("speed_share", "speed", { session_id: id, method: "clipboard" });
         toast({ title: "Invite copied", description: "Paste it in WhatsApp, IG, or anywhere." });
+      } catch {
+        window.prompt("Copy this invite link:", url);
       }
-    } catch { /* user canceled */ }
+    };
+    if (typeof navigator !== "undefined" && (navigator as any).share) {
+      try {
+        await (navigator as any).share({ title, text, url });
+        trackDeckEvent("speed_share", "speed", { session_id: id, method: "native" });
+        return;
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+        // Permission denied / not allowed → fall through to clipboard
+      }
+    }
+    await fallbackCopy();
   };
 
   // Add-to-calendar helpers

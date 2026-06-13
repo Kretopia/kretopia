@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,27 +11,46 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Video, Mic } from "lucide-react";
 import { SPEED_VERTICALS, type SpeedVertical } from "@/lib/speedVerticals";
 
+interface EditingSession {
+  id: string;
+  title: string;
+  theme: string | null;
+  vertical?: string | null;
+  mode: "video" | "audio";
+  starts_at: string;
+  duration_min: number;
+  slot_seconds: number;
+}
+
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onCreated?: (id: string) => void;
+  onUpdated?: (id: string) => void;
+  /** Pass a session to switch into edit mode. */
+  session?: EditingSession | null;
 }
 
 /**
- * Admin-only: schedule a Speed Networking session (video/audio).
- * Inserts into public.speed_sessions. Hosts/admins go-live from the lobby.
+ * Schedule (or edit) a Speed Networking session.
+ * Admins/hosts can update dates, mode, vertical etc. without recreating.
  */
-export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Props) {
+export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated, onUpdated, session }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
+  const isEdit = !!session?.id;
 
-  // Default: tomorrow 7pm local
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(19, 0, 0, 0);
   const defaultLocal = new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60_000)
     .toISOString().slice(0, 16);
+
+  const toLocalInput = (iso: string) => {
+    const d = new Date(iso);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+  };
 
   const [title, setTitle] = useState("Speed Networking — Creators × Creators");
   const [theme, setTheme] = useState("Meet 6+ creators in 30 mins. 5 min each. Connect or save for later.");
@@ -41,6 +60,29 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
   const [slotMin, setSlotMin] = useState(5);
   const [mode, setMode] = useState<"video" | "audio">("video");
 
+  // Hydrate fields when opening in edit mode
+  useEffect(() => {
+    if (!open) return;
+    if (session) {
+      setTitle(session.title ?? "");
+      setTheme(session.theme ?? "");
+      setVertical(((session.vertical as SpeedVertical) ?? "open"));
+      setStartsAt(toLocalInput(session.starts_at));
+      setDuration(session.duration_min ?? 30);
+      setSlotMin(Math.max(1, Math.round((session.slot_seconds ?? 300) / 60)));
+      setMode(session.mode ?? "video");
+    } else {
+      setTitle("Speed Networking — Creators × Creators");
+      setTheme("Meet 6+ creators in 30 mins. 5 min each. Connect or save for later.");
+      setVertical("open");
+      setStartsAt(defaultLocal);
+      setDuration(30);
+      setSlotMin(5);
+      setMode("video");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, session?.id]);
+
   const submit = async () => {
     if (!user) return;
     if (!title.trim() || !startsAt) {
@@ -49,27 +91,46 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
     }
     setBusy(true);
     try {
-      const { data, error } = await supabase
-        .from("speed_sessions")
-        .insert({
-          host_user_id: user.id,
-          title: title.trim(),
-          theme: theme.trim() || null,
-          vertical,
-          mode,
-          starts_at: new Date(startsAt).toISOString(),
-          duration_min: duration,
-          slot_seconds: slotMin * 60,
-          status: "scheduled",
-        })
-        .select("id")
-        .single();
-      if (error) throw error;
-      toast({ title: "Speed Session scheduled", description: "Share the link to fill the room." });
-      onOpenChange(false);
-      onCreated?.(data.id);
+      if (isEdit && session) {
+        const { error } = await supabase
+          .from("speed_sessions")
+          .update({
+            title: title.trim(),
+            theme: theme.trim() || null,
+            vertical,
+            mode,
+            starts_at: new Date(startsAt).toISOString(),
+            duration_min: duration,
+            slot_seconds: slotMin * 60,
+          })
+          .eq("id", session.id);
+        if (error) throw error;
+        toast({ title: "Session updated", description: "Heads up — RSVPs aren't auto-notified yet." });
+        onOpenChange(false);
+        onUpdated?.(session.id);
+      } else {
+        const { data, error } = await supabase
+          .from("speed_sessions")
+          .insert({
+            host_user_id: user.id,
+            title: title.trim(),
+            theme: theme.trim() || null,
+            vertical,
+            mode,
+            starts_at: new Date(startsAt).toISOString(),
+            duration_min: duration,
+            slot_seconds: slotMin * 60,
+            status: "scheduled",
+          })
+          .select("id")
+          .single();
+        if (error) throw error;
+        toast({ title: "Speed Session scheduled", description: "Share the link to fill the room." });
+        onOpenChange(false);
+        onCreated?.(data.id);
+      }
     } catch (e: any) {
-      toast({ title: "Couldn't schedule", description: e?.message ?? String(e), variant: "destructive" });
+      toast({ title: isEdit ? "Couldn't update" : "Couldn't schedule", description: e?.message ?? String(e), variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -79,10 +140,11 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Schedule a Speed Session</DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Speed Session" : "Schedule a Speed Session"}</DialogTitle>
           <DialogDescription>
-            Sweet spot: <strong>6–12 RSVPs</strong> for great matches. Below 4 we'll re-pair the same
-            people. We recommend running it weekly at the same time.
+            {isEdit
+              ? "Change dates, mode, theme or pacing. Existing RSVPs stay attached."
+              : <>Sweet spot: <strong>6–12 RSVPs</strong> for great matches. Below 4 we'll re-pair the same people. Run it weekly at the same time.</>}
           </DialogDescription>
         </DialogHeader>
 
@@ -142,7 +204,7 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>Cancel</Button>
           <Button onClick={submit} disabled={busy}>
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Schedule"}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : isEdit ? "Save changes" : "Schedule"}
           </Button>
         </DialogFooter>
       </DialogContent>

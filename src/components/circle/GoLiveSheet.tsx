@@ -52,6 +52,9 @@ export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {
   const [vibe, setVibe] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("video");
   const [format, setFormat] = useState<Format>("open_group");
+  // Default ON — soundcheck before the doors open. Hosts can flip off for
+  // truly spontaneous "open the doors now" rooms.
+  const [backstage, setBackstage] = useState(true);
   const [busy, setBusy] = useState(false);
 
   const myName =
@@ -76,12 +79,13 @@ export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {
             mode,
             format,
             user_name: myName,
+            backstage,
           },
         },
       );
       if (error) throw error;
       if (!data?.room_url) throw new Error("No room");
-      onCreated({ ...data, title: title.trim(), mode, format });
+      onCreated({ ...data, title: title.trim(), mode, format, backstage });
       onOpenChange(false);
       setTitle("");
       setVibe(null);

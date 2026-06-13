@@ -782,8 +782,24 @@ export function SoundStageRoom({
             </div>
           ) : (
             <>
+              {/* Active screen share — hero tile above the stage */}
+              {activeScreenShare && (
+                <section className="space-y-2">
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-[hsl(var(--signal-teal))] flex items-center gap-1.5">
+                    <ScreenShare className="h-3 w-3" />
+                    {activeScreenShare.isLocal
+                      ? "You're sharing your screen"
+                      : `${activeScreenShare.name.split(" ")[0]} is sharing`}
+                  </h3>
+                  <div className="rounded-2xl overflow-hidden bg-black border-2 border-[hsl(var(--signal-teal))] aspect-video">
+                    <VideoTrackView track={activeScreenShare.track} muted />
+                  </div>
+                </section>
+              )}
+
               {/* On stage — layout adapts to (mode × format) */}
               <section className="space-y-3">
+
                 <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
                   {format === "audience"
                     ? "On stage"

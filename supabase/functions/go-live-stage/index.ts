@@ -132,7 +132,11 @@ serve(async (req) => {
       .update({ status: "attended", joined_at: new Date().toISOString() })
       .eq("stage_id", stage_id).eq("user_id", user.id);
 
-    return new Response(JSON.stringify({ room_url: roomUrl, room_name: roomName, token, is_host: isHost }), {
+    return new Response(JSON.stringify({
+      room_url: roomUrl, room_name: roomName, token, is_host: isHost,
+      backstage: isBackstage,
+      recording_enabled: !!stage.recording_enabled,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
     });
   } catch (e) {

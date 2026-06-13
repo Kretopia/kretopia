@@ -107,6 +107,26 @@ export default function SpeedSession() {
 
   useEffect(() => { refresh().catch(() => setLoading(false)); }, [refresh]);
 
+  // Page view (fires once per session id, including guests)
+  useEffect(() => {
+    if (!id) return;
+    trackDeckEvent("speed_session_viewed", "speed", {
+      session_id: id,
+      authed: !!user,
+      is_host: canControl,
+    });
+  }, [id, user, canControl]);
+
+  // Track when a pairing arrives (round started)
+  useEffect(() => {
+    if (!myPair || !user) return;
+    trackDeckEvent("speed_pair_started", "speed", {
+      session_id: id,
+      pairing_id: myPair.id,
+      round: myPair.round,
+    });
+  }, [myPair?.id, user, id]);
+
   useEffect(() => {
     if (!id) return;
     const ch = supabase

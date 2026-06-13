@@ -17,6 +17,9 @@ import { APP_URL } from "@/lib/constants";
 import { trackDeckEvent } from "@/lib/deckMetrics";
 import { SpeedSessionCreateDialog } from "@/components/circle/SpeedSessionCreateDialog";
 import { SpeedLobby } from "@/components/circle/SpeedLobby";
+import { SpeedRoundTimer } from "@/components/circle/SpeedRoundTimer";
+import { SpeedHostCockpit } from "@/components/circle/SpeedHostCockpit";
+import { SpeedActionRail, type RailPeer } from "@/components/circle/SpeedActionRail";
 import { SkipForward } from "lucide-react";
 
 type Session = {
@@ -68,6 +71,10 @@ export default function SpeedSession() {
   const [icePrompts, setIcePrompts] = useState<string[]>([]);
   const [iceIdx, setIceIdx] = useState(0);
   const [editOpen, setEditOpen] = useState(false);
+  const [stagePresence, setStagePresence] = useState<Set<string>>(new Set());
+  const [groupPeers, setGroupPeers] = useState<RailPeer[]>([]);
+  const [connectedIds, setConnectedIds] = useState<Set<string>>(new Set());
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   const myName = useMemo(
     () => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest",
@@ -165,7 +172,19 @@ export default function SpeedSession() {
       .channel(`speed-session-${id}`)
       .on("postgres_changes",
         { event: "*", schema: "public", table: "speed_session_pairings", filter: `session_id=eq.${id}` },
-        () => { refresh().catch(() => {}); },
+        (payload: any) => {
+          // Detect a peer skipping me → soft toast so it doesn't feel broken.
+          if (payload.eventType === "UPDATE" && user?.id) {
+            const row = payload.new as Pairing & { ended_reason?: string };
+            const reason = row?.ended_reason ?? "";
+            const involvesMe = row?.user_a === user.id || row?.user_b === user.id;
+            const skippedByOther = reason.startsWith("skipped_by_") && reason !== `skipped_by_${user.id}`;
+            if (involvesMe && skippedByOther) {
+              toast({ title: "Your match moved on", description: "Hold tight — finding you a fresh face." });
+            }
+          }
+          refresh().catch(() => {});
+        },
       )
       .on("postgres_changes",
         { event: "*", schema: "public", table: "speed_sessions", filter: `id=eq.${id}` },
@@ -177,7 +196,40 @@ export default function SpeedSession() {
       )
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
-  }, [id, refresh]);
+  }, [id, refresh, user?.id, toast]);
+
+  // Track who's actually present on the stage (Daily room) via Supabase presence.
+  useEffect(() => {
+    if (!callRoom?.name || !user) return;
+    const ch = supabase.channel(`speed-stage:${callRoom.name}`, {
+      config: { presence: { key: user.id } },
+    });
+    ch.on("presence", { event: "sync" }, () => {
+      const state = ch.presenceState();
+      setStagePresence(new Set(Object.keys(state)));
+    }).subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await ch.track({ user_id: user.id, name: myName, at: new Date().toISOString() });
+      }
+    });
+    return () => { void supabase.removeChannel(ch); setStagePresence(new Set()); };
+  }, [callRoom?.name, user?.id, myName, user]);
+
+  // Load profile data for everyone present (group-mode action rail).
+  useEffect(() => {
+    if (!user) { setGroupPeers([]); return; }
+    const otherIds = Array.from(stagePresence).filter((uid) => uid !== user.id);
+    if (!otherIds.length) { setGroupPeers([]); return; }
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, avatar_url")
+        .in("user_id", otherIds);
+      setGroupPeers((data ?? []).map((p: any) => ({
+        id: p.user_id, full_name: p.full_name, avatar_url: p.avatar_url,
+      })));
+    })().catch(() => {});
+  }, [stagePresence, user]);
 
   // Auto-open the room when a new pairing arrives
   useEffect(() => {

@@ -17,6 +17,8 @@ import {
   MoreVertical,
   Captions,
   CaptionsOff,
+  ScreenShare,
+  ScreenShareOff,
 } from "lucide-react";
 import {
   DropdownMenu,

@@ -84,6 +84,9 @@ export const VideoCallSheet = ({
   peerName = null,
   onPeerBlocked,
   overlayActions,
+  isHost = false,
+  autoStartRecording = false,
+  backstage = false,
 }: VideoCallSheetProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();

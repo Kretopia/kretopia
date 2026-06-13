@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { SEO } from "@/components/SEO";
 import { SPEED_VERTICALS, getVerticalMeta, type SpeedVertical } from "@/lib/speedVerticals";
 import { CalendarClock, Video, Mic, Users, ArrowRight, Sparkles } from "lucide-react";
+import { trackDeckEvent } from "@/lib/deckMetrics";
 
 interface Row {
   id: string;

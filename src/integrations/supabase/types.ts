@@ -15789,6 +15789,7 @@ export type Database = {
           match_filters: Json
           max_participants: number | null
           mode: string
+          reminder_sent_at: string | null
           slot_seconds: number
           starts_at: string
           status: string
@@ -15806,6 +15807,7 @@ export type Database = {
           match_filters?: Json
           max_participants?: number | null
           mode?: string
+          reminder_sent_at?: string | null
           slot_seconds?: number
           starts_at: string
           status?: string
@@ -15823,6 +15825,7 @@ export type Database = {
           match_filters?: Json
           max_participants?: number | null
           mode?: string
+          reminder_sent_at?: string | null
           slot_seconds?: number
           starts_at?: string
           status?: string

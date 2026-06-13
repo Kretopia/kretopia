@@ -117,6 +117,28 @@ export default function SpeedSession() {
 
   useEffect(() => { refresh().catch(() => setLoading(false)); }, [refresh]);
 
+  // Consume any pending RSVP intent after sign-up/sign-in lands the user back here.
+  useEffect(() => {
+    if (!user || !id || myRsvp) return;
+    let pending: string | null = null;
+    try { pending = sessionStorage.getItem("pending_speed_session"); } catch {}
+    if (pending !== id) return;
+    try { sessionStorage.removeItem("pending_speed_session"); } catch {}
+    (async () => {
+      const { error } = await supabase.functions.invoke("rsvp-speed-session", {
+        body: { session_id: id, action: "rsvp" },
+      });
+      if (!error) {
+        trackDeckEvent("speed_rsvp_confirmed", "speed", { session_id: id, via: "post_auth" });
+        const when = session?.starts_at
+          ? new Date(session.starts_at).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" })
+          : "the night";
+        toast({ title: "You're in 🎉", description: `Locked in for ${when}. Check your inbox for the calendar invite.` });
+        await refresh().catch(() => {});
+      }
+    })();
+  }, [user, id, myRsvp, session?.starts_at, refresh, toast]);
+
   // Page view (fires once per session id, including guests)
   useEffect(() => {
     if (!id) return;

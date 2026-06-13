@@ -143,7 +143,11 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated, onUpda
           .select("id")
           .single();
         if (error) throw error;
-        toast({ title: "Speed Session scheduled", description: "Share the link to fill the room." });
+        // Auto-RSVP the host so they appear in the roster + get the calendar confirmation email.
+        await supabase.functions.invoke("rsvp-speed-session", {
+          body: { session_id: data.id, action: "rsvp" },
+        }).catch(() => {});
+        toast({ title: "Speed Session scheduled", description: "You're RSVP'd. Share the link to fill the room." });
         onOpenChange(false);
         onCreated?.(data.id);
       }

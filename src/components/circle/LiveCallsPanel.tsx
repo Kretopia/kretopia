@@ -109,6 +109,7 @@ export function LiveCallsPanel() {
         isHost: stage.host_user_id === user.id,
         hostUserId: stage.host_user_id,
         format: stage.format,
+        backstage: false,
       });
       setCallOpen(true);
     } catch (e: unknown) {

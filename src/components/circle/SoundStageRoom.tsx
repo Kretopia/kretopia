@@ -565,6 +565,30 @@ export function SoundStageRoom({
       });
     }
   };
+  const toggleScreenShare = async () => {
+    const call = callRef.current;
+    if (!call) return;
+    try {
+      if (sharingScreen) {
+        await call.stopScreenShare();
+        setSharingScreen(false);
+      } else {
+        await call.startScreenShare();
+        // event handler will flip sharingScreen to true on success
+      }
+    } catch (e: unknown) {
+      console.error("[SoundStageRoom] screen share failed", e);
+      toast({
+        title: "Couldn't share screen",
+        description:
+          e instanceof Error
+            ? e.message
+            : "Your browser may have blocked it, or no display was picked.",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   // Phase 3C — host toggles live captions on/off. Daily routes audio through
   // its transcription provider; success fires "transcription-started" which

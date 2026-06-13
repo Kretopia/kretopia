@@ -296,6 +296,7 @@ export function LiveCallsPanel() {
           hostUserId={activeRoom.hostUserId}
           userName={myName}
           userAvatar={user?.user_metadata?.avatar_url ?? null}
+          backstage={activeRoom.backstage}
         />
       )}
       {activeRoom && activeRoom.kind === "link" && (

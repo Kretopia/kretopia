@@ -34,11 +34,11 @@ const HIDDEN_PATH_PREFIXES = [
 ];
 
 const PLACEHOLDER_BY_SURFACE: Record<string, string> = {
-  desk: "Ask Thrive about this project…",
+  desk: "Ask Izzy about this project…",
   pay: "Draft an invoice, summarise the week…",
   match: "Find a videographer in Trinidad…",
   gigs: "Find gigs that fit my skills…",
-  home: "Ask Thrive anything…",
+  home: "Ask Izzy anything…",
   profile: "Polish my bio, suggest a credit…",
   credit: "Tag collaborators, verify a credit…",
   event: "Draft a recap, plan kickoff post…",
@@ -65,7 +65,7 @@ export const ThriveBar = () => {
       className="fixed left-0 right-0 z-40 lg:hidden px-3"
       style={{ bottom: "calc(env(safe-area-inset-bottom) + 4.25rem)" }}
       role="region"
-      aria-label="Thrive composer"
+      aria-label="Izzy composer"
     >
       <div
         className={cn(
@@ -83,7 +83,7 @@ export const ThriveBar = () => {
           type="button"
           onClick={() => openChat("chat")}
           className="flex-1 min-w-0 text-left text-sm text-muted-foreground truncate active:opacity-70"
-          aria-label="Open Thrive chat"
+          aria-label="Open Izzy chat"
         >
           {placeholder}
         </button>
@@ -91,7 +91,7 @@ export const ThriveBar = () => {
           type="button"
           onClick={() => openChat("voice")}
           className="h-9 w-9 shrink-0 rounded-full text-primary hover:bg-primary/10 active:scale-95 transition-all flex items-center justify-center"
-          aria-label="Talk to Thrive"
+          aria-label="Talk to Izzy"
           title="Tap to talk"
         >
           <Mic className="h-4 w-4" />
@@ -100,7 +100,7 @@ export const ThriveBar = () => {
           type="button"
           onClick={() => openChat("chat")}
           className="h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground active:scale-95 transition-all flex items-center justify-center"
-          aria-label="Open Thrive"
+          aria-label="Open Izzy"
         >
           <ArrowUp className="h-4 w-4" />
         </button>

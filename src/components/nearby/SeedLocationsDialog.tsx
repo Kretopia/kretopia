@@ -57,7 +57,7 @@ export function SeedLocationsDialog({ open, onOpenChange, userLocation, onSeeded
             Smart Spot Discovery
           </DialogTitle>
           <DialogDescription>
-            Let Thrive discover studios, creative spaces, and industry spots near you — like Google Maps for creatives.
+            Let Izzy discover studios, creative spaces, and industry spots near you — like Google Maps for creatives.
           </DialogDescription>
         </DialogHeader>
 

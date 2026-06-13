@@ -27,7 +27,7 @@ export function ThriveDisclaimer({ variant = "inline", className, context }: Pro
         )}
       >
         <Info className="h-3 w-3" />
-        Thrive can make mistakes — double-check{ctx}.
+        Izzy can make mistakes — double-check{ctx}.
       </span>
     );
   }
@@ -42,7 +42,7 @@ export function ThriveDisclaimer({ variant = "inline", className, context }: Pro
       >
         <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
         <p className="text-[11px] text-muted-foreground leading-relaxed">
-          Thrive can make mistakes. Always double-check{ctx} — especially rates,
+          Izzy can make mistakes. Always double-check{ctx} — especially rates,
           totals, dates, currency, and anything you're sending to a client. You're
           the final approver.
         </p>
@@ -59,7 +59,7 @@ export function ThriveDisclaimer({ variant = "inline", className, context }: Pro
     >
       <Info className="h-3 w-3 mt-0.5 shrink-0" />
       <span>
-        Thrive can make mistakes — double-check{ctx} before sending.
+        Izzy can make mistakes — double-check{ctx} before sending.
       </span>
     </p>
   );

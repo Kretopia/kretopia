@@ -55,7 +55,7 @@ export const CopilotPlanCard = ({ plan: initial, onResolved }: Props) => {
 
   // Auto-run on mount when caller marked the plan as autoRun (e.g. opened in
   // explicit "plan & execute" mode from the FAB). Skips the proposed-state UI
-  // entirely so users see "Thrive is working" immediately.
+  // entirely so users see "Izzy is working" immediately.
   useEffect(() => {
     if (!autoRanRef.current && initial.autoRun && plan.status === "proposed") {
       autoRanRef.current = true;

@@ -488,7 +488,7 @@ const FundNew = () => {
                   rows={10}
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  Markdown supported. Thrive uses your title, tagline & goal as context.
+                  Markdown supported. Izzy uses your title, tagline & goal as context.
                 </p>
               </div>
             </Card>

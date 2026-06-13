@@ -480,7 +480,7 @@ const Settings = () => {
             </CardContent>
           </Card>
 
-          {/* Thrive Copilot Memory */}
+          {/* Izzy Memory */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -488,7 +488,7 @@ const Settings = () => {
                 Copilot Memory
               </CardTitle>
               <CardDescription>
-                See and manage what Thrive Copilot has learned about you
+                See and manage what Izzy has learned about you
               </CardDescription>
             </CardHeader>
             <CardContent>

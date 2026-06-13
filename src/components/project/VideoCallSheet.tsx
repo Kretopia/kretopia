@@ -53,6 +53,8 @@ interface VideoCallSheetProps {
   peerName?: string | null;
   /** Optional: called after a successful block so callers can end the call / re-pair. */
   onPeerBlocked?: () => void;
+  /** Optional React node rendered as a floating bar over the video (top center) — used for Speed Session connect / save-for-later CTAs. */
+  overlayActions?: React.ReactNode;
 }
 
 type Phase = "lobby" | "live";
@@ -74,6 +76,7 @@ export const VideoCallSheet = ({
   peerUserId = null,
   peerName = null,
   onPeerBlocked,
+  overlayActions,
 }: VideoCallSheetProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -375,6 +378,11 @@ export const VideoCallSheet = ({
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0b0b0f] text-white gap-3 z-10">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     <p className="text-sm font-medium text-white">Connecting to the room…</p>
+                  </div>
+                )}
+                {overlayActions && (
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+                    {overlayActions}
                   </div>
                 )}
               </div>

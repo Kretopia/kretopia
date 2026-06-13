@@ -1,12 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
-import { Calendar, Users, Mic, Video, Loader2, ArrowLeft, Radio, SkipForward, Check } from "lucide-react";
+import {
+  Users, Mic, Video, Loader2, ArrowLeft, Radio, Check, UserPlus, Bookmark, PlayCircle, StopCircle, Share2,
+} from "lucide-react";
 import { format as fmt } from "date-fns";
 import { SEO } from "@/components/SEO";
 
@@ -21,18 +24,22 @@ type Pairing = {
   room_url: string; room_name: string; started_at: string; ended_at: string | null;
 };
 
+type PeerInfo = { id: string; full_name: string | null; avatar_url: string | null; primary_role: string | null };
+
 /**
- * Hi Right Now-style speed session lobby + live runner.
- * - Scheduled: shows countdown + RSVPs + Save-my-spot
- * - Live: subscribes to speed_session_pairings → auto-launches call when paired
- * - Recap: lists pairings the user had (Co-sign / Rolodex placeholders)
+ * Speed Networking lobby + live runner.
+ * - Scheduled: countdown + RSVP + admin "Go live".
+ * - Live: subscribes to pairings → auto-opens room → in-call Connect / Save-for-later.
+ * - Recap: lists pairings the user had.
  */
 export default function SpeedSession() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const { toast } = useToast();
   const [session, setSession] = useState<Session | null>(null);
   const [rsvps, setRsvps] = useState<number>(0);
+  const [joinedCount, setJoinedCount] = useState<number>(0);
   const [myRsvp, setMyRsvp] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -40,30 +47,34 @@ export default function SpeedSession() {
   const [callOpen, setCallOpen] = useState(false);
   const [callRoom, setCallRoom] = useState<{ url: string; name: string; token: string } | null>(null);
   const [pastPairs, setPastPairs] = useState<Pairing[]>([]);
+  const [peer, setPeer] = useState<PeerInfo | null>(null);
+  const [connectingPeer, setConnectingPeer] = useState(false);
+  const [savedPeer, setSavedPeer] = useState(false);
+  const [connectedPeer, setConnectedPeer] = useState(false);
 
   const myName = useMemo(
     () => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest",
     [user],
   );
 
-  const refresh = async () => {
+  const canControl = isAdmin || (!!session && !!user && session.host_user_id === user.id);
+
+  const refresh = useCallback(async () => {
     if (!id) return;
     const { data: sess } = await supabase
       .from("speed_sessions").select("*").eq("id", id).maybeSingle();
     setSession(sess as any);
 
-    const { count } = await supabase
+    const { data: allRsvps } = await supabase
       .from("speed_session_rsvps")
-      .select("id", { head: true, count: "exact" })
+      .select("user_id, status")
       .eq("session_id", id);
-    setRsvps(count ?? 0);
+    const rows = (allRsvps ?? []) as { user_id: string; status: string }[];
+    setRsvps(rows.length);
+    setJoinedCount(rows.filter((r) => r.status === "joined").length);
+    if (user?.id) setMyRsvp(rows.some((r) => r.user_id === user.id));
 
     if (user?.id) {
-      const { data: mine } = await supabase
-        .from("speed_session_rsvps")
-        .select("id").eq("session_id", id).eq("user_id", user.id).maybeSingle();
-      setMyRsvp(!!mine);
-
       const { data: pairs } = await supabase
         .from("speed_session_pairings")
         .select("*").eq("session_id", id)
@@ -75,9 +86,9 @@ export default function SpeedSession() {
       setPastPairs(all.filter((p) => p.ended_at));
     }
     setLoading(false);
-  };
+  }, [id, user?.id]);
 
-  useEffect(() => { refresh().catch(() => setLoading(false)); }, [id, user?.id]);
+  useEffect(() => { refresh().catch(() => setLoading(false)); }, [refresh]);
 
   useEffect(() => {
     if (!id) return;
@@ -91,13 +102,18 @@ export default function SpeedSession() {
         { event: "*", schema: "public", table: "speed_sessions", filter: `id=eq.${id}` },
         () => { refresh().catch(() => {}); },
       )
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "speed_session_rsvps", filter: `session_id=eq.${id}` },
+        () => { refresh().catch(() => {}); },
+      )
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
-  }, [id]);
+  }, [id, refresh]);
 
   // Auto-open the room when a new pairing arrives
   useEffect(() => {
-    if (!myPair || callRoom?.name === myPair.room_name) return;
+    if (!myPair) return;
+    if (callRoom?.name === myPair.room_name) return;
     (async () => {
       try {
         const { data, error } = await supabase.functions.invoke("join-speed-session", {
@@ -106,12 +122,56 @@ export default function SpeedSession() {
         if (error) throw error;
         setCallRoom({ url: data.room_url, name: data.room_name, token: data.token });
         setCallOpen(true);
+        setSavedPeer(false);
+        setConnectedPeer(false);
         toast({ title: "You're paired!", description: "Quick — say hi." });
       } catch (e: any) {
         console.error("[SpeedSession] join", e);
       }
     })();
   }, [myPair, callRoom?.name, myName, toast]);
+
+  // Load peer profile for overlay actions
+  useEffect(() => {
+    if (!myPair || !user) { setPeer(null); return; }
+    const peerId = myPair.user_a === user.id ? myPair.user_b : myPair.user_a;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("id, full_name, avatar_url")
+          .eq("user_id", peerId)
+          .maybeSingle();
+        setPeer({
+          id: peerId,
+          full_name: data?.full_name ?? null,
+          avatar_url: data?.avatar_url ?? null,
+          primary_role: null,
+        });
+      } catch {
+        setPeer({ id: peerId, full_name: null, avatar_url: null, primary_role: null });
+      }
+    })();
+  }, [myPair, user]);
+
+  // Close stale sheet between rounds
+  useEffect(() => {
+    if (!myPair && callOpen) {
+      setCallOpen(false);
+      setCallRoom(null);
+    }
+  }, [myPair, callOpen]);
+
+  // Host/admin: while live, re-run matcher every 20s so new joiners get paired and finished rounds re-pair
+  useEffect(() => {
+    if (!id || !session || session.status !== "live" || !canControl) return;
+    const tick = () => {
+      supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
+    };
+    tick();
+    const iv = setInterval(tick, 20_000);
+    return () => clearInterval(iv);
+  }, [id, session, canControl]);
 
   const toggleRsvp = async () => {
     if (!user) { toast({ title: "Sign in to save your spot", variant: "destructive" }); return; }
@@ -130,9 +190,83 @@ export default function SpeedSession() {
     await supabase.from("speed_session_rsvps")
       .upsert({ session_id: id, user_id: user.id, status: "joined", joined_at: new Date().toISOString() },
         { onConflict: "session_id,user_id" });
-    // Kick the matcher
     await supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
     refresh();
+  };
+
+  const goLive = async () => {
+    if (!id) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase
+        .from("speed_sessions")
+        .update({ status: "live" })
+        .eq("id", id);
+      if (error) throw error;
+      toast({ title: "We're live", description: "Pairing the room now." });
+      await supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
+      refresh();
+    } catch (e: any) {
+      toast({ title: "Couldn't go live", description: e?.message, variant: "destructive" });
+    } finally { setBusy(false); }
+  };
+
+  const endSession = async () => {
+    if (!id) return;
+    setBusy(true);
+    try {
+      await supabase
+        .from("speed_sessions")
+        .update({ status: "ended" })
+        .eq("id", id);
+      await supabase
+        .from("speed_session_pairings")
+        .update({ ended_at: new Date().toISOString() })
+        .eq("session_id", id)
+        .is("ended_at", null);
+      toast({ title: "Session wrapped" });
+      refresh();
+    } finally { setBusy(false); }
+  };
+
+  const copyShare = async () => {
+    const url = `${window.location.origin}/circle/speed/${id}`;
+    try {
+      if (navigator.share) await navigator.share({ title: session?.title ?? "Speed Session", url });
+      else { await navigator.clipboard.writeText(url); toast({ title: "Link copied" }); }
+    } catch { /* user canceled */ }
+  };
+
+  const connectPeer = async () => {
+    if (!user || !peer) return;
+    setConnectingPeer(true);
+    try {
+      const { error } = await supabase
+        .from("connections")
+        .upsert(
+          { user_id: user.id, connected_user_id: peer.id, status: "pending", context: "speed_session" } as any,
+          { onConflict: "user_id,connected_user_id" } as any,
+        );
+      if (error) throw error;
+      setConnectedPeer(true);
+      toast({ title: "Connection sent", description: peer.full_name ?? "We let them know." });
+    } catch (e: any) {
+      toast({ title: "Couldn't send connect", description: e?.message, variant: "destructive" });
+    } finally { setConnectingPeer(false); }
+  };
+
+  const saveForLater = async () => {
+    if (!user || !peer) return;
+    try {
+      const { error } = await supabase
+        .from("saved_sparks")
+        .insert({ user_id: user.id, item_type: "creator", item_id: peer.id });
+      if (error && error.code !== "23505") throw error;
+      setSavedPeer(true);
+      toast({ title: "Saved for later", description: "Find them in your Clipped list." });
+    } catch (e: any) {
+      toast({ title: "Couldn't save", description: e?.message, variant: "destructive" });
+    }
   };
 
   if (loading) {
@@ -153,6 +287,37 @@ export default function SpeedSession() {
   const isLive = session.status === "live";
   const isEnded = session.status === "ended" || session.status === "canceled";
 
+  const overlayActions = peer ? (
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-sm border border-white/15 shadow-lg">
+      <div className="flex items-center gap-1.5 text-white text-xs font-medium pr-1">
+        {peer.avatar_url && (
+          <img src={peer.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover" />
+        )}
+        <span className="truncate max-w-[120px]">{peer.full_name ?? "Your match"}</span>
+      </div>
+      <Button
+        size="sm"
+        variant="lime"
+        className="rounded-full h-7 px-2.5 text-[11px] gap-1"
+        onClick={connectPeer}
+        disabled={connectingPeer || connectedPeer}
+      >
+        {connectedPeer ? <Check className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
+        {connectedPeer ? "Sent" : "Connect"}
+      </Button>
+      <Button
+        size="sm"
+        variant="secondary"
+        className="rounded-full h-7 px-2.5 text-[11px] gap-1"
+        onClick={saveForLater}
+        disabled={savedPeer}
+      >
+        {savedPeer ? <Check className="h-3 w-3" /> : <Bookmark className="h-3 w-3" />}
+        {savedPeer ? "Saved" : "Save"}
+      </Button>
+    </div>
+  ) : null;
+
   return (
     <div className="min-h-screen pb-28 bg-background">
       <SEO title={`${session.title} · Speed Session`} description={session.theme ?? ""} />
@@ -166,6 +331,9 @@ export default function SpeedSession() {
               <Radio className="h-2.5 w-2.5 animate-pulse" /> Live
             </span>
           )}
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={copyShare} aria-label="Share">
+            <Share2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
@@ -182,26 +350,52 @@ export default function SpeedSession() {
                 <p className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
                   <span className="flex items-center gap-0.5"><ModeIcon className="h-3 w-3" /> {session.mode}</span>
                   <span>· {session.duration_min} min</span>
-                  <span>· {Math.round(session.slot_seconds / 60)} min/slot</span>
+                  <span>· {Math.round(session.slot_seconds / 60)} min/match</span>
                 </p>
               </div>
             </div>
             {session.theme && <p className="text-sm text-muted-foreground">{session.theme}</p>}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Users className="h-3.5 w-3.5" /> {rsvps} {rsvps === 1 ? "person" : "people"} saved a spot
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {rsvps} RSVPs</span>
+              {isLive && <span>· {joinedCount} in the room</span>}
             </div>
           </CardContent>
         </Card>
+
+        {canControl && !isEnded && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="p-4 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">Host controls</p>
+              <p className="text-xs text-muted-foreground">
+                Sweet spot for great matches: <strong>6+ joined</strong>. With under 4, people will re-pair with each other.
+                Currently: <strong>{rsvps}</strong> RSVPs, <strong>{joinedCount}</strong> joined.
+              </p>
+              <div className="flex gap-2">
+                {!isLive ? (
+                  <Button onClick={goLive} disabled={busy} variant="lime" className="rounded-full gap-1.5">
+                    <PlayCircle className="h-4 w-4" /> Go live now
+                  </Button>
+                ) : (
+                  <Button onClick={endSession} disabled={busy} variant="destructive" className="rounded-full gap-1.5">
+                    <StopCircle className="h-4 w-4" /> End session
+                  </Button>
+                )}
+                <Button onClick={copyShare} variant="outline" className="rounded-full gap-1.5">
+                  <Share2 className="h-4 w-4" /> Share link
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {isEnded ? (
           <Card>
             <CardContent className="p-5 space-y-3">
               <p className="font-bold">Session wrapped</p>
               {pastPairs.length > 0 ? (
-                <>
-                  <p className="text-xs text-muted-foreground">You met {pastPairs.length} {pastPairs.length === 1 ? "person" : "people"}. Co-sign anyone you connected with.</p>
-                  <p className="text-[11px] text-muted-foreground">(Recap actions ship in Phase 2.)</p>
-                </>
+                <p className="text-xs text-muted-foreground">
+                  You met {pastPairs.length} {pastPairs.length === 1 ? "person" : "people"}. Find anyone you saved in your Clipped list.
+                </p>
               ) : (
                 <p className="text-xs text-muted-foreground">You didn't get paired this round.</p>
               )}
@@ -214,14 +408,17 @@ export default function SpeedSession() {
                 <Radio className="h-4 w-4 text-destructive animate-pulse" /> Session is live
               </p>
               {myPair ? (
-                <p className="text-xs text-muted-foreground">You're in a room. The call will open automatically.</p>
+                <p className="text-xs text-muted-foreground">You're in a room. The call opens automatically when you're paired.</p>
               ) : myRsvp ? (
                 <>
-                  <p className="text-xs text-muted-foreground">Hit "I'm here" to join the matching pool. We'll pair you in seconds.</p>
+                  <p className="text-xs text-muted-foreground">Hit "I'm here" to join the matching pool. We'll pair you within seconds.</p>
                   <Button onClick={markJoined} variant="lime" className="w-full rounded-full">I'm here — match me</Button>
                 </>
               ) : (
-                <Button onClick={toggleRsvp} disabled={busy} variant="default" className="w-full rounded-full">Jump in</Button>
+                <>
+                  <p className="text-xs text-muted-foreground">Save your spot and jump in.</p>
+                  <Button onClick={toggleRsvp} disabled={busy} variant="default" className="w-full rounded-full">Jump in</Button>
+                </>
               )}
             </CardContent>
           </Card>
@@ -232,7 +429,8 @@ export default function SpeedSession() {
                 {minsTo > 0 ? `Starts in ${minsTo > 60 ? `${Math.floor(minsTo / 60)}h ${minsTo % 60}m` : `${minsTo} min`}` : "Starting soon"}
               </p>
               <p className="text-xs text-muted-foreground">
-                Save your spot — we'll ping you 10 minutes before. You'll get paired with creators 5 minutes at a time. Skip to re-pair anytime.
+                Save your spot — we'll ping you 10 minutes before. You'll meet a fresh creator every {Math.round(session.slot_seconds / 60)} minutes.
+                Tap <strong>Connect</strong> on screen to send a request, or <strong>Save</strong> to revisit them later.
               </p>
               <Button
                 onClick={toggleRsvp}
@@ -243,6 +441,9 @@ export default function SpeedSession() {
               >
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> :
                   myRsvp ? <><Check className="h-4 w-4" /> Saved — change my mind</> : "Save my spot"}
+              </Button>
+              <Button onClick={copyShare} variant="ghost" size="sm" className="w-full rounded-full gap-1.5">
+                <Share2 className="h-3.5 w-3.5" /> Invite a friend (better matches with 6+)
               </Button>
             </CardContent>
           </Card>
@@ -260,12 +461,9 @@ export default function SpeedSession() {
           callId={null}
           userName={myName}
           userAvatar={user?.user_metadata?.avatar_url ?? null}
-          peerUserId={
-            myPair && user?.id
-              ? (myPair.user_a === user.id ? myPair.user_b : myPair.user_a)
-              : null
-          }
-          peerName="your match"
+          peerUserId={peer?.id ?? null}
+          peerName={peer?.full_name ?? "your match"}
+          overlayActions={overlayActions}
           onPeerBlocked={() => {
             toast({ title: "Blocked", description: "You won't be paired with them again." });
             setCallRoom(null);

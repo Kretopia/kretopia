@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Mic, Video, Loader2, Check } from "lucide-react";
+import { Calendar, Users, Mic, Video, Loader2, Check, Plus } from "lucide-react";
 import { format as fmt } from "date-fns";
+import { SpeedSessionCreateDialog } from "./SpeedSessionCreateDialog";
 
 type Session = {
   id: string;
@@ -24,10 +26,13 @@ type Session = {
  */
 export function CallSheetUpcoming() {
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const fetchSessions = async () => {
     const { data } = await supabase
@@ -91,22 +96,44 @@ export function CallSheetUpcoming() {
     );
   }
 
+  const adminCta = isAdmin ? (
+    <Button
+      size="sm"
+      variant="outline"
+      className="rounded-full gap-1.5"
+      onClick={() => setCreateOpen(true)}
+    >
+      <Plus className="h-3.5 w-3.5" /> Schedule Speed Session
+    </Button>
+  ) : null;
+
   if (sessions.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="p-5 text-center space-y-1">
-          <p className="text-sm font-semibold">No Speed Sessions scheduled</p>
-          <p className="text-xs text-muted-foreground">
-            We curate themed sessions weekly (Producers × Vocalists, Editors × Directors, etc).
-            Check back soon — or open an Open Stage instead.
-          </p>
-        </CardContent>
-      </Card>
+      <>
+        <Card className="border-dashed">
+          <CardContent className="p-5 text-center space-y-3">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold">No Speed Sessions scheduled</p>
+              <p className="text-xs text-muted-foreground">
+                We curate themed sessions weekly (Producers × Vocalists, Editors × Directors, etc).
+                Check back soon — or open an Open Stage instead.
+              </p>
+            </div>
+            {adminCta}
+          </CardContent>
+        </Card>
+        <SpeedSessionCreateDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onCreated={(id) => navigate(`/circle/speed/${id}`)}
+        />
+      </>
     );
   }
 
   return (
     <div className="space-y-2">
+      {adminCta && <div className="flex justify-end">{adminCta}</div>}
       {sessions.map((s) => {
         const ModeIcon = s.mode === "audio" ? Mic : Video;
         const date = new Date(s.starts_at);
@@ -142,6 +169,11 @@ export function CallSheetUpcoming() {
           </Card>
         );
       })}
+      <SpeedSessionCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(id) => navigate(`/circle/speed/${id}`)}
+      />
     </div>
   );
 }

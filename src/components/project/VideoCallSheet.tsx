@@ -380,6 +380,11 @@ export const VideoCallSheet = ({
                     <p className="text-sm font-medium text-white">Connecting to the room…</p>
                   </div>
                 )}
+                {overlayActions && (
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-auto">
+                    {overlayActions}
+                  </div>
+                )}
               </div>
 
               {/* Controls */}

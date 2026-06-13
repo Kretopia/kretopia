@@ -656,21 +656,50 @@ export default function SpeedSession() {
             <CardContent className="p-5 space-y-3">
               <p className="font-bold flex items-center gap-2">
                 <Radio className="h-4 w-4 text-destructive animate-pulse" /> Session is live
+                {isGroupMode && (
+                  <span className="ml-auto text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
+                    Group call
+                  </span>
+                )}
               </p>
-              {myPair ? (
+              {isGroupMode ? (
+                <p className="text-xs text-muted-foreground">
+                  Tonight's a small crew — we're running it as one shared room. The call opens automatically.
+                </p>
+              ) : myPair ? (
                 <p className="text-xs text-muted-foreground">You're in a room. The call opens automatically when you're paired.</p>
               ) : myRsvp ? (
-                <>
-                  <p className="text-xs text-muted-foreground">Hit "I'm here" to join the matching pool. We'll pair you within seconds.</p>
-                  <Button onClick={markJoined} variant="lime" className="w-full rounded-full">I'm here — match me</Button>
-                </>
-              ) : (
+                lateJoinOpen ? (
+                  <>
+                    <p className="text-xs text-muted-foreground">Hit "I'm here" to join the matching pool. We'll pair you within seconds.</p>
+                    <Button onClick={markJoined} variant="lime" className="w-full rounded-full">I'm here — match me</Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      Pool's closed for this round so we don't disrupt mid-call matches. Catch the next open night.
+                    </p>
+                    <Button asChild variant="outline" className="w-full rounded-full">
+                      <Link to="/circle?tab=live">See next session</Link>
+                    </Button>
+                  </>
+                )
+              ) : lateJoinOpen ? (
                 <>
                   <p className="text-xs text-muted-foreground">
                     {user ? "Save your spot and jump in." : "Sign up free — takes 60 seconds — and jump in."}
                   </p>
                   <Button onClick={toggleRsvp} disabled={busy} variant="default" className="w-full rounded-full">
                     {user ? "Jump in" : "Sign up & jump in"}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    This round's pool is closed. We'll have another open night soon.
+                  </p>
+                  <Button asChild variant="outline" className="w-full rounded-full">
+                    <Link to="/circle?tab=live">See next session</Link>
                   </Button>
                 </>
               )}

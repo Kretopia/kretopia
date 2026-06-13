@@ -288,13 +288,22 @@ const CuratedStage = () => {
           </Card>
         )}
 
+        {/* Doors-open countdown (RSVPs + host, pre-live only) */}
+        {!isLive && !isEnded && <StageDoorsCountdown startsAt={stage.starts_at} />}
+
         {/* Primary CTA */}
         {isHost ? (
           <div className="space-y-2">
-            <Button onClick={handleJoinLive} disabled={joining} size="lg" className="w-full" variant={isLive ? "destructive" : "default"}>
+            <Button onClick={() => handleJoinLive()} disabled={joining} size="lg" className="w-full" variant={isLive ? "destructive" : "default"}>
               {joining ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Radio className="h-4 w-4 mr-2" />}
-              {isLive ? "Re-enter stage" : isEnded ? "Stage ended" : "Go live now"}
+              {isLive ? "Re-enter stage" : isEnded ? "Stage ended" : "Open doors & go live"}
             </Button>
+            {!isLive && !isEnded && (
+              <Button onClick={() => handleJoinLive({ backstage: true })} disabled={joining} variant="outline" className="w-full">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Rehearse backstage (doors stay closed)
+              </Button>
+            )}
             {(stage.visibility === "private" || stage.visibility === "unlisted") && !isEnded && (
               <Button onClick={() => setInviteOpen(true)} variant="outline" className="w-full">
                 {stage.visibility === "private"
@@ -305,12 +314,12 @@ const CuratedStage = () => {
             <p className="text-[11px] text-center text-muted-foreground flex items-center justify-center gap-1.5">
               {stage.visibility === "private" && <><Lock className="h-3 w-3" /> Private — invite only.</>}
               {stage.visibility === "unlisted" && <><Link2 className="h-3 w-3" /> Unlisted — anyone with the link.</>}
-              {(!stage.visibility || stage.visibility === "public") && <>You're the host. {stage.type === "scout" ? "Review applicants below before going live." : "Doors open when you go live."}</>}
+              {(!stage.visibility || stage.visibility === "public") && <>You're the host. {stage.type === "scout" ? "Review applicants below before going live." : "Rehearse first, then open the doors when you're ready."}</>}
             </p>
           </div>
         ) : isLive ? (
           <div className="space-y-2">
-            <Button onClick={handleJoinLive} disabled={joining} size="lg" variant="lime" className="w-full">
+            <Button onClick={() => handleJoinLive()} disabled={joining} size="lg" variant="lime" className="w-full">
               {joining ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Radio className="h-4 w-4 mr-2" />}
               Walk in
             </Button>

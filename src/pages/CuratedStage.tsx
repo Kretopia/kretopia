@@ -13,7 +13,8 @@ import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import { ApplyToStageSheet } from "@/components/circle/ApplyToStageSheet";
 import { StageHostConsole } from "@/components/circle/StageHostConsole";
 import { InviteToStageDialog } from "@/components/circle/InviteToStageDialog";
-import { ArrowLeft, Calendar, Users, Radio, Mic2, Search, Loader2, CheckCircle2, Hand, Lock, Link2, Send } from "lucide-react";
+import { StageDoorsCountdown } from "@/components/circle/StageDoorsCountdown";
+import { ArrowLeft, Calendar, Users, Radio, Mic2, Search, Loader2, CheckCircle2, Hand, Lock, Link2, Send, Sparkles } from "lucide-react";
 import { formatDistanceToNowStrict, format } from "date-fns";
 
 type Stage = {
@@ -43,13 +44,14 @@ const CuratedStage = () => {
   const [myApp, setMyApp] = useState<{ status: string } | null>(null);
   const [applyOpen, setApplyOpen] = useState(false);
   const [callOpen, setCallOpen] = useState(false);
-  const [room, setRoom] = useState<{ url: string; name: string; token: string } | null>(null);
+  const [room, setRoom] = useState<{ url: string; name: string; token: string; recordingEnabled: boolean } | null>(null);
   const [joining, setJoining] = useState(false);
   const [rsvping, setRsvping] = useState(false);
   const [handRaised, setHandRaised] = useState(false);
   const [raising, setRaising] = useState(false);
   const [verifyingTicket, setVerifyingTicket] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [backstageMode, setBackstageMode] = useState(false);
 
   const inviteToken = searchParams.get("invite") || undefined;
 
@@ -175,15 +177,22 @@ const CuratedStage = () => {
     } finally { setRaising(false); }
   };
 
-  const handleJoinLive = async () => {
+  const handleJoinLive = async (opts?: { backstage?: boolean }) => {
     if (!user || !stage) { navigate("/auth"); return; }
+    const wantsBackstage = !!opts?.backstage;
     setJoining(true);
     try {
       const { data, error } = await supabase.functions.invoke("go-live-stage", {
-        body: { stage_id: stage.id, user_name: myName, invite_token: inviteToken },
+        body: { stage_id: stage.id, user_name: myName, invite_token: inviteToken, backstage: wantsBackstage },
       });
       if (error) throw error;
-      setRoom({ url: data.room_url, name: data.room_name, token: data.token });
+      setBackstageMode(!!data?.backstage);
+      setRoom({
+        url: data.room_url,
+        name: data.room_name,
+        token: data.token,
+        recordingEnabled: !!data.recording_enabled,
+      });
       setCallOpen(true);
     } catch (e: any) {
       const msg = String(e?.message || "");
@@ -197,10 +206,11 @@ const CuratedStage = () => {
 
   const handleCallClose = async (open: boolean) => {
     setCallOpen(open);
-    if (!open && isHost && stage) {
-      // Host ended — wrap stage
+    if (!open && isHost && stage && !backstageMode) {
+      // Host ended a LIVE stage — wrap it. (Backstage exits do not end the stage.)
       supabase.functions.invoke("end-curated-stage", { body: { stage_id: stage.id } }).catch(() => {});
     }
+    if (!open) setBackstageMode(false);
   };
 
   if (loading) return <div className="container max-w-3xl mx-auto p-6 space-y-4"><Skeleton className="h-48 w-full rounded-2xl" /><Skeleton className="h-8 w-2/3" /></div>;
@@ -278,13 +288,22 @@ const CuratedStage = () => {
           </Card>
         )}
 
+        {/* Doors-open countdown (RSVPs + host, pre-live only) */}
+        {!isLive && !isEnded && <StageDoorsCountdown startsAt={stage.starts_at} />}
+
         {/* Primary CTA */}
         {isHost ? (
           <div className="space-y-2">
-            <Button onClick={handleJoinLive} disabled={joining} size="lg" className="w-full" variant={isLive ? "destructive" : "default"}>
+            <Button onClick={() => handleJoinLive()} disabled={joining} size="lg" className="w-full" variant={isLive ? "destructive" : "default"}>
               {joining ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Radio className="h-4 w-4 mr-2" />}
-              {isLive ? "Re-enter stage" : isEnded ? "Stage ended" : "Go live now"}
+              {isLive ? "Re-enter stage" : isEnded ? "Stage ended" : "Open doors & go live"}
             </Button>
+            {!isLive && !isEnded && (
+              <Button onClick={() => handleJoinLive({ backstage: true })} disabled={joining} variant="outline" className="w-full">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Rehearse backstage (doors stay closed)
+              </Button>
+            )}
             {(stage.visibility === "private" || stage.visibility === "unlisted") && !isEnded && (
               <Button onClick={() => setInviteOpen(true)} variant="outline" className="w-full">
                 {stage.visibility === "private"
@@ -295,12 +314,12 @@ const CuratedStage = () => {
             <p className="text-[11px] text-center text-muted-foreground flex items-center justify-center gap-1.5">
               {stage.visibility === "private" && <><Lock className="h-3 w-3" /> Private — invite only.</>}
               {stage.visibility === "unlisted" && <><Link2 className="h-3 w-3" /> Unlisted — anyone with the link.</>}
-              {(!stage.visibility || stage.visibility === "public") && <>You're the host. {stage.type === "scout" ? "Review applicants below before going live." : "Doors open when you go live."}</>}
+              {(!stage.visibility || stage.visibility === "public") && <>You're the host. {stage.type === "scout" ? "Review applicants below before going live." : "Rehearse first, then open the doors when you're ready."}</>}
             </p>
           </div>
         ) : isLive ? (
           <div className="space-y-2">
-            <Button onClick={handleJoinLive} disabled={joining} size="lg" variant="lime" className="w-full">
+            <Button onClick={() => handleJoinLive()} disabled={joining} size="lg" variant="lime" className="w-full">
               {joining ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Radio className="h-4 w-4 mr-2" />}
               Walk in
             </Button>
@@ -378,7 +397,10 @@ const CuratedStage = () => {
           callId={null}
           userName={myName}
           userAvatar={user?.user_metadata?.avatar_url ?? null}
-          lobbyCta={isHost ? "Start stage" : "Walk in"}
+          lobbyCta={isHost ? (backstageMode ? "Enter backstage" : "Start stage") : "Walk in"}
+          isHost={isHost}
+          autoStartRecording={isHost && !backstageMode && room.recordingEnabled}
+          backstage={backstageMode}
         />
       )}
 

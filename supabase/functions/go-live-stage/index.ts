@@ -28,8 +28,9 @@ serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
     if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { stage_id, user_name, invite_token } = await req.json().catch(() => ({}));
+    const { stage_id, user_name, invite_token, backstage } = await req.json().catch(() => ({}));
     if (!stage_id) throw new Error("stage_id required");
+    const isBackstage = backstage === true;
 
     const { data: stage } = await admin.from("curated_stages").select("*").eq("id", stage_id).single();
     if (!stage) throw new Error("Stage not found");
@@ -63,7 +64,14 @@ serve(async (req) => {
       }
     }
 
-    // Lazy-create Daily room on first go-live
+    // Backstage: only host can rehearse before going live.
+    if (isBackstage && !isHost) {
+      return new Response(JSON.stringify({ error: "Only the host can enter backstage" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Lazy-create Daily room on first go-live (or first backstage entry).
     let roomUrl = stage.room_url;
     let roomName = stage.room_name;
     if (!roomName) {
@@ -90,10 +98,12 @@ serve(async (req) => {
       if (!createRes.ok) throw new Error(`Daily create failed: ${createRes.status}`);
       const room = await createRes.json();
       roomUrl = room.url;
+      // Persist room but only flip to "live" if NOT backstage.
       await admin.from("curated_stages").update({
-        room_url: roomUrl, room_name: roomName, status: "live",
+        room_url: roomUrl, room_name: roomName,
+        ...(isBackstage ? {} : { status: "live" }),
       }).eq("id", stage_id);
-    } else if (isHost && stage.status !== "live") {
+    } else if (isHost && !isBackstage && stage.status !== "live") {
       await admin.from("curated_stages").update({ status: "live" }).eq("id", stage_id);
     }
 
@@ -122,7 +132,11 @@ serve(async (req) => {
       .update({ status: "attended", joined_at: new Date().toISOString() })
       .eq("stage_id", stage_id).eq("user_id", user.id);
 
-    return new Response(JSON.stringify({ room_url: roomUrl, room_name: roomName, token, is_host: isHost }), {
+    return new Response(JSON.stringify({
+      room_url: roomUrl, room_name: roomName, token, is_host: isHost,
+      backstage: isBackstage,
+      recording_enabled: !!stage.recording_enabled,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
     });
   } catch (e) {

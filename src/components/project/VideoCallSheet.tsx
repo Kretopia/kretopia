@@ -14,6 +14,7 @@ import {
   Flag,
   Ban,
   ShieldAlert,
+  MicOff,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -55,6 +56,12 @@ interface VideoCallSheetProps {
   onPeerBlocked?: () => void;
   /** Optional React node rendered as a floating bar over the video (top center) — used for Speed Session connect / save-for-later CTAs. */
   overlayActions?: React.ReactNode;
+  /** When true, expose host-only controls (Mute all). */
+  isHost?: boolean;
+  /** When true, automatically start Daily cloud recording on join (recording must be enabled on the room). */
+  autoStartRecording?: boolean;
+  /** When true, render a "Backstage" badge in the header instead of "Live call". */
+  backstage?: boolean;
 }
 
 type Phase = "lobby" | "live";
@@ -77,6 +84,9 @@ export const VideoCallSheet = ({
   peerName = null,
   onPeerBlocked,
   overlayActions,
+  isHost = false,
+  autoStartRecording = false,
+  backstage = false,
 }: VideoCallSheetProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -125,6 +135,14 @@ export const VideoCallSheet = ({
       })
       .then(() => {
         if (!cancelled) setJoining(false);
+        // Auto-start recording on host's join when stage opted in pre-show.
+        if (!cancelled && isHost && autoStartRecording && !backstage) {
+          try {
+            void frame.startRecording();
+          } catch (e) {
+            console.warn("[VideoCallSheet] auto-record failed", e);
+          }
+        }
       })
       .catch((err) => {
         console.error("[VideoCallSheet] join failed", err);
@@ -273,6 +291,26 @@ export const VideoCallSheet = ({
     }
   };
 
+  const muteAll = async () => {
+    const call = callRef.current;
+    if (!call) return;
+    try {
+      const parts = call.participants() as Record<string, { session_id: string; local?: boolean; owner?: boolean }>;
+      const updates: Record<string, { setAudio: false }> = {};
+      Object.values(parts).forEach((p) => {
+        if (!p.local && !p.owner) updates[p.session_id] = { setAudio: false };
+      });
+      if (Object.keys(updates).length === 0) {
+        toast({ title: "No one to mute", description: "Only you are unmuted right now." });
+        return;
+      }
+      await call.updateParticipants(updates);
+      toast({ title: "Muted everyone", description: "Speakers can unmute themselves when they're ready." });
+    } catch (e: any) {
+      toast({ title: "Couldn't mute everyone", description: e?.message, variant: "destructive" });
+    }
+  };
+
   const derivedRoomName = roomName ?? roomUrl?.split("/").pop() ?? "";
 
   return (
@@ -324,7 +362,12 @@ export const VideoCallSheet = ({
                       {projectName}
                     </p>
                     <p className="text-[11px] text-white/50 leading-tight flex items-center gap-1.5">
-                      {recording ? (
+                      {backstage ? (
+                        <>
+                          <Circle className="h-2 w-2 fill-amber-400 text-amber-400" />
+                          <span className="text-amber-400 font-bold uppercase tracking-wide">Backstage · doors closed</span>
+                        </>
+                      ) : recording ? (
                         <>
                           <Circle className="h-2 w-2 fill-destructive text-destructive" />
                           <span className="text-destructive font-medium">Recording</span>
@@ -408,20 +451,36 @@ export const VideoCallSheet = ({
                     <span className="text-sm font-medium">{sharing ? "Stop" : "Share"}</span>
                   </Button>
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleRecording}
-                    className={`rounded-full gap-2 h-10 px-4 border ${
-                      recording
-                        ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 border-transparent"
-                        : "bg-white/15 text-white border-white/30 hover:bg-white/25"
-                    }`}
-                  >
-                    <Circle className={`h-3 w-3 ${recording ? "fill-current" : ""}`} />
-                    <span className="text-sm font-medium">{recording ? "Stop" : "Record"}</span>
-                  </Button>
+                  {!backstage && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={toggleRecording}
+                      className={`rounded-full gap-2 h-10 px-4 border ${
+                        recording
+                          ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 border-transparent"
+                          : "bg-white/15 text-white border-white/30 hover:bg-white/25"
+                      }`}
+                    >
+                      <Circle className={`h-3 w-3 ${recording ? "fill-current" : ""}`} />
+                      <span className="text-sm font-medium">{recording ? "Stop" : "Record"}</span>
+                    </Button>
+                  )}
+
+                  {isHost && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={muteAll}
+                      className="rounded-full gap-2 h-10 px-4 border bg-white/15 text-white border-white/30 hover:bg-white/25"
+                      title="Mute every speaker except you"
+                    >
+                      <MicOff className="h-4 w-4" />
+                      <span className="text-sm font-medium">Mute all</span>
+                    </Button>
+                  )}
 
                   <Button
                     type="button"

@@ -188,13 +188,14 @@ export default function SpeedSession() {
   }, [id, session, canControl]);
 
   const toggleRsvp = async () => {
-    if (!user) { toast({ title: "Sign in to save your spot", variant: "destructive" }); return; }
+    if (!user) { stashReturnAndGoAuth("signup"); return; }
     setBusy(true);
     try {
       const { error } = await supabase.functions.invoke("rsvp-speed-session", {
         body: { session_id: id, action: myRsvp ? "cancel" : "rsvp" },
       });
       if (error) throw error;
+      if (!myRsvp) toast({ title: "Spot saved", description: "We'll ping you 10 min before. Add to your calendar so you don't forget." });
       await refresh();
     } finally { setBusy(false); }
   };

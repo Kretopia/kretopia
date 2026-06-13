@@ -68,7 +68,9 @@ serve(async (req) => {
           exp,
           max_participants: maxParticipants,
           enable_chat: true,
-          enable_screenshare: mode === "video",
+          // Screen share allowed for ALL Open Stages (incl. audio) — speakers
+          // often want to drop slides / a reference even on an "audio" room.
+          enable_screenshare: true,
           enable_knocking: false,
           enable_prejoin_ui: false,
           start_video_off: mode === "audio",

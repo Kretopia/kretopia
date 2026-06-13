@@ -17,6 +17,8 @@ import {
   MoreVertical,
   Captions,
   CaptionsOff,
+  ScreenShare,
+  ScreenShareOff,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -124,6 +126,11 @@ export function SoundStageRoom({
   const [captions, setCaptions] = useState<
     Array<{ id: string; speaker: string; text: string; ts: number }>
   >([]);
+  // Screen share — local toggle + tick counter to re-render when remote
+  // screen tracks update (Daily fires participant-updated which already
+  // triggers refreshMembers, but screen tracks live outside `members`).
+  const [sharingScreen, setSharingScreen] = useState(false);
+  const [screenTick, setScreenTick] = useState(0);
   const localLevelRef = useRef(0);
   const profileCache = useRef<
     Map<string, { name: string; avatar: string | null }>
@@ -370,6 +377,7 @@ export function SoundStageRoom({
 
         const onAny = () => {
           refreshMembers().catch(() => {});
+          setScreenTick((t) => t + 1);
         };
         call.on("participant-joined", onAny);
         call.on("participant-updated", onAny);
@@ -377,6 +385,9 @@ export function SoundStageRoom({
         call.on("joined-meeting", onAny);
         call.on("track-started", onAny);
         call.on("track-stopped", onAny);
+        // Screen share events — flip local state so the button reflects truth.
+        call.on("local-screen-share-started", () => setSharingScreen(true));
+        call.on("local-screen-share-stopped", () => setSharingScreen(false));
 
         call.on(
           "active-speaker-change",
@@ -554,6 +565,30 @@ export function SoundStageRoom({
       });
     }
   };
+  const toggleScreenShare = async () => {
+    const call = callRef.current;
+    if (!call) return;
+    try {
+      if (sharingScreen) {
+        await call.stopScreenShare();
+        setSharingScreen(false);
+      } else {
+        await call.startScreenShare();
+        // event handler will flip sharingScreen to true on success
+      }
+    } catch (e: unknown) {
+      console.error("[SoundStageRoom] screen share failed", e);
+      toast({
+        title: "Couldn't share screen",
+        description:
+          e instanceof Error
+            ? e.message
+            : "Your browser may have blocked it, or no display was picked.",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   // Phase 3C — host toggles live captions on/off. Daily routes audio through
   // its transcription provider; success fires "transcription-started" which
@@ -664,6 +699,29 @@ export function SoundStageRoom({
     return map;
   })();
 
+  // Active screen share — works for both audio and video stages. We pick the
+  // most recent screen track and render it as a hero tile above the stage.
+  // Referencing screenTick keeps this fresh when Daily fires participant-updated.
+  void screenTick;
+  const activeScreenShare: { name: string; track: MediaStreamTrack; isLocal: boolean } | null = (() => {
+    const call = callRef.current;
+    if (!call) return null;
+    const parts = call.participants();
+    for (const p of Object.values(parts) as DailyParticipant[]) {
+      const t =
+        p.tracks?.screenVideo?.persistentTrack || p.tracks?.screenVideo?.track;
+      const state = p.tracks?.screenVideo?.state;
+      if (t && state && state !== "off" && state !== "blocked") {
+        return {
+          name: (p.user_name as string) || "Speaker",
+          track: t,
+          isLocal: !!p.local,
+        };
+      }
+    }
+    return null;
+  })();
+
   const stage = list.filter((m) => m.role === "host" || m.role === "speaker");
   const audience = list.filter((m) => m.role === "audience");
   const raisedHands = audience.filter((m) => m.handRaised);
@@ -724,8 +782,24 @@ export function SoundStageRoom({
             </div>
           ) : (
             <>
+              {/* Active screen share — hero tile above the stage */}
+              {activeScreenShare && (
+                <section className="space-y-2">
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-[hsl(var(--signal-teal))] flex items-center gap-1.5">
+                    <ScreenShare className="h-3 w-3" />
+                    {activeScreenShare.isLocal
+                      ? "You're sharing your screen"
+                      : `${activeScreenShare.name.split(" ")[0]} is sharing`}
+                  </h3>
+                  <div className="rounded-2xl overflow-hidden bg-black border-2 border-[hsl(var(--signal-teal))] aspect-video">
+                    <VideoTrackView track={activeScreenShare.track} muted />
+                  </div>
+                </section>
+              )}
+
               {/* On stage — layout adapts to (mode × format) */}
               <section className="space-y-3">
+
                 <h3 className="text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground">
                   {format === "audience"
                     ? "On stage"
@@ -967,6 +1041,21 @@ export function SoundStageRoom({
             <div className="flex items-center gap-2">
               {meSpeaker ? (
                 <>
+                  {/* Screen share — desktop only (mobile browsers can't capture displays) */}
+                  <Button
+                    variant={sharingScreen ? "lime" : "outline"}
+                    size="icon"
+                    className="rounded-full h-11 w-11 hidden sm:inline-flex"
+                    onClick={toggleScreenShare}
+                    aria-label={sharingScreen ? "Stop sharing screen" : "Share screen"}
+                    title={sharingScreen ? "Stop sharing" : "Share your screen / slides"}
+                  >
+                    {sharingScreen ? (
+                      <ScreenShareOff className="h-4 w-4" />
+                    ) : (
+                      <ScreenShare className="h-4 w-4" />
+                    )}
+                  </Button>
                   {mode === "video" && (
                     <Button
                       variant={myVideo ? "lime" : "outline"}

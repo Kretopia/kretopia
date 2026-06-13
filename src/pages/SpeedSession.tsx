@@ -464,6 +464,12 @@ export default function SpeedSession() {
   const minsTo = Math.round((startsAt.getTime() - Date.now()) / 60_000);
   const isLive = session.status === "live";
   const isEnded = session.status === "ended" || session.status === "canceled";
+  const isGroupMode = session.fallback_mode === "group";
+  // Lobby shows from T-30 until live.
+  const showLobby = !isLive && !isEnded && minsTo <= 30;
+  // Late-join window: open from Go-Live for LATE_JOIN_CUTOFF_MIN minutes.
+  const minsSinceStart = Math.round((Date.now() - startsAt.getTime()) / 60_000);
+  const lateJoinOpen = isLive && minsSinceStart <= LATE_JOIN_CUTOFF_MIN;
 
   const overlayActions = peer ? (
     <div className="flex flex-col items-center gap-2 w-full max-w-[360px]">

@@ -52,6 +52,7 @@ import { ApprovalsHub } from "@/components/agent/ApprovalsHub";
 import { ScoutedGigsSection } from "@/components/opportunity/ScoutedGigsSection";
 import { TodayThreeCards } from "@/components/home/TodayThreeCards";
 import { SpeedTonightCard } from "@/components/home/SpeedTonightCard";
+import { UpcomingSessionsCard } from "@/components/home/UpcomingSessionsCard";
 import { TrendingLane } from "@/components/discover/TrendingLane";
 // SpotlightFeedRow removed from Home — lives at /spotlight only.
 import { ChevronDown } from "lucide-react";
@@ -597,6 +598,8 @@ export const UnifiedHome = () => {
           <div className="mb-4">
             <TodayThreeCards />
           </div>
+
+          <UpcomingSessionsCard />
 
           {/* Sound Stages discovery — hidden entirely when no live stages */}
           <SoundStagesSection />

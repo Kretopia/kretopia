@@ -92,6 +92,21 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated }: Prop
             <Input id="ss-title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} />
           </div>
           <div>
+            <Label htmlFor="ss-vertical">Themed night</Label>
+            <Select value={vertical} onValueChange={(v) => setVertical(v as SpeedVertical)}>
+              <SelectTrigger id="ss-vertical"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {SPEED_VERTICALS.map((v) => (
+                  <SelectItem key={v.id} value={v.id}>
+                    <span className="mr-2">{v.emoji}</span>{v.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Shown on the public Speed Networking page so the right creators find your night.
+            </p>
+          <div>
             <Label htmlFor="ss-theme">Theme / who's it for (optional)</Label>
             <Textarea id="ss-theme" value={theme} onChange={(e) => setTheme(e.target.value)} rows={2} maxLength={240} />
           </div>

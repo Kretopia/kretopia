@@ -135,7 +135,7 @@ export default function SpeedIndex() {
           });
           const live = r.status === "live";
           return (
-            <Link key={r.id} to={`/circle/speed/${r.id}`} className="block group">
+            <Link key={r.id} to={`/circle/speed/${r.id}`} className="block group" onClick={() => trackDeckEvent("speed_index_card_click", "speed", { session_id: r.id, vertical: r.vertical, status: r.status })}>
               <Card className="p-4 sm:p-5 hover:border-primary/60 transition-colors">
                 <div className="flex items-start gap-4">
                   <div className="text-3xl shrink-0" aria-hidden>{meta.emoji}</div>

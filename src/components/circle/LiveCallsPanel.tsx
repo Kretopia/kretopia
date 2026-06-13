@@ -157,6 +157,7 @@ export function LiveCallsPanel() {
       isHost: false,
       hostUserId: null,
       format: "open_group",
+      backstage: false,
     });
     setCallOpen(true);
     setJoining(false);

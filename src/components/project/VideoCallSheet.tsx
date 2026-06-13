@@ -362,7 +362,12 @@ export const VideoCallSheet = ({
                       {projectName}
                     </p>
                     <p className="text-[11px] text-white/50 leading-tight flex items-center gap-1.5">
-                      {recording ? (
+                      {backstage ? (
+                        <>
+                          <Circle className="h-2 w-2 fill-amber-400 text-amber-400" />
+                          <span className="text-amber-400 font-bold uppercase tracking-wide">Backstage · doors closed</span>
+                        </>
+                      ) : recording ? (
                         <>
                           <Circle className="h-2 w-2 fill-destructive text-destructive" />
                           <span className="text-destructive font-medium">Recording</span>

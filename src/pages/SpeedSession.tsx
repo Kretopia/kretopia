@@ -55,6 +55,8 @@ export default function SpeedSession() {
   const [savedPeer, setSavedPeer] = useState(false);
   const [connectedPeer, setConnectedPeer] = useState(false);
   const [profileStrong, setProfileStrong] = useState<boolean | null>(null);
+  const [icePrompts, setIcePrompts] = useState<string[]>([]);
+  const [iceIdx, setIceIdx] = useState(0);
 
   const myName = useMemo(
     () => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest",
@@ -145,9 +147,9 @@ export default function SpeedSession() {
     })();
   }, [myPair, callRoom?.name, myName, toast]);
 
-  // Load peer profile for overlay actions
+  // Load peer profile for overlay actions + fetch ice-breaker prompts
   useEffect(() => {
-    if (!myPair || !user) { setPeer(null); return; }
+    if (!myPair || !user) { setPeer(null); setIcePrompts([]); return; }
     const peerId = myPair.user_a === user.id ? myPair.user_b : myPair.user_a;
     (async () => {
       try {
@@ -165,8 +167,16 @@ export default function SpeedSession() {
       } catch {
         setPeer({ id: peerId, full_name: null, avatar_url: null, primary_role: null });
       }
+      // Personalised conversation prompts
+      setIceIdx(0);
+      try {
+        const { data: ice } = await supabase.functions.invoke("speed-icebreakers", {
+          body: { peer_id: peerId, theme: session?.theme ?? null },
+        });
+        if (Array.isArray(ice?.prompts) && ice.prompts.length) setIcePrompts(ice.prompts);
+      } catch { /* keep empty — UI hides */ }
     })();
-  }, [myPair, user]);
+  }, [myPair, user, session?.theme]);
 
   // Close stale sheet between rounds
   useEffect(() => {
@@ -368,33 +378,50 @@ export default function SpeedSession() {
   const isEnded = session.status === "ended" || session.status === "canceled";
 
   const overlayActions = peer ? (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-sm border border-white/15 shadow-lg">
-      <div className="flex items-center gap-1.5 text-white text-xs font-medium pr-1">
-        {peer.avatar_url && (
-          <img src={peer.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover" />
-        )}
-        <span className="truncate max-w-[120px]">{peer.full_name ?? "Your match"}</span>
+    <div className="flex flex-col items-center gap-2 w-full max-w-[360px]">
+      {icePrompts.length > 0 && (
+        <div className="w-full px-3 py-2 rounded-2xl bg-black/70 backdrop-blur-sm border border-white/15 shadow-lg text-white">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <span className="text-[10px] uppercase tracking-wide text-white/60 font-bold">Try this</span>
+            <button
+              onClick={() => setIceIdx((i) => (i + 1) % icePrompts.length)}
+              className="text-[10px] text-white/70 hover:text-white"
+              aria-label="Next prompt"
+            >
+              Next →
+            </button>
+          </div>
+          <p className="text-[13px] leading-snug">{icePrompts[iceIdx]}</p>
+        </div>
+      )}
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-sm border border-white/15 shadow-lg">
+        <div className="flex items-center gap-1.5 text-white text-xs font-medium pr-1">
+          {peer.avatar_url && (
+            <img src={peer.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover" />
+          )}
+          <span className="truncate max-w-[120px]">{peer.full_name ?? "Your match"}</span>
+        </div>
+        <Button
+          size="sm"
+          variant="lime"
+          className="rounded-full h-7 px-2.5 text-[11px] gap-1"
+          onClick={connectPeer}
+          disabled={connectingPeer || connectedPeer}
+        >
+          {connectedPeer ? <Check className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
+          {connectedPeer ? "Sent" : "Connect"}
+        </Button>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="rounded-full h-7 px-2.5 text-[11px] gap-1"
+          onClick={saveForLater}
+          disabled={savedPeer}
+        >
+          {savedPeer ? <Check className="h-3 w-3" /> : <Bookmark className="h-3 w-3" />}
+          {savedPeer ? "Saved" : "Save"}
+        </Button>
       </div>
-      <Button
-        size="sm"
-        variant="lime"
-        className="rounded-full h-7 px-2.5 text-[11px] gap-1"
-        onClick={connectPeer}
-        disabled={connectingPeer || connectedPeer}
-      >
-        {connectedPeer ? <Check className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
-        {connectedPeer ? "Sent" : "Connect"}
-      </Button>
-      <Button
-        size="sm"
-        variant="secondary"
-        className="rounded-full h-7 px-2.5 text-[11px] gap-1"
-        onClick={saveForLater}
-        disabled={savedPeer}
-      >
-        {savedPeer ? <Check className="h-3 w-3" /> : <Bookmark className="h-3 w-3" />}
-        {savedPeer ? "Saved" : "Save"}
-      </Button>
     </div>
   ) : null;
 

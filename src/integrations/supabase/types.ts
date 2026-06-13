@@ -15780,6 +15780,7 @@ export type Database = {
       }
       speed_sessions: {
         Row: {
+          canceled_reason: string | null
           cover_image_url: string | null
           created_at: string
           description: string | null
@@ -15789,6 +15790,7 @@ export type Database = {
           match_filters: Json
           max_participants: number | null
           mode: string
+          recap_sent_at: string | null
           reminder_sent_at: string | null
           slot_seconds: number
           starts_at: string
@@ -15799,6 +15801,7 @@ export type Database = {
           vertical: string
         }
         Insert: {
+          canceled_reason?: string | null
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
@@ -15808,6 +15811,7 @@ export type Database = {
           match_filters?: Json
           max_participants?: number | null
           mode?: string
+          recap_sent_at?: string | null
           reminder_sent_at?: string | null
           slot_seconds?: number
           starts_at: string
@@ -15818,6 +15822,7 @@ export type Database = {
           vertical?: string
         }
         Update: {
+          canceled_reason?: string | null
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
@@ -15827,6 +15832,7 @@ export type Database = {
           match_filters?: Json
           max_participants?: number | null
           mode?: string
+          recap_sent_at?: string | null
           reminder_sent_at?: string | null
           slot_seconds?: number
           starts_at?: string

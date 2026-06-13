@@ -16,17 +16,25 @@ import { buildGoogleCalendarUrl, downloadIcs as downloadCalendarIcs } from "@/li
 import { APP_URL } from "@/lib/constants";
 import { trackDeckEvent } from "@/lib/deckMetrics";
 import { SpeedSessionCreateDialog } from "@/components/circle/SpeedSessionCreateDialog";
+import { SpeedLobby } from "@/components/circle/SpeedLobby";
+import { SkipForward } from "lucide-react";
 
 type Session = {
   id: string; host_user_id: string; title: string; theme: string | null;
   mode: "video" | "audio"; starts_at: string; duration_min: number;
   slot_seconds: number; status: "scheduled" | "live" | "ended" | "canceled";
+  fallback_mode?: "pair" | "group" | null;
+  group_room_url?: string | null;
 };
 
 type Pairing = {
   id: string; session_id: string; round: number; user_a: string; user_b: string;
   room_url: string; room_name: string; started_at: string; ended_at: string | null;
 };
+
+// Late-joiners can still hop in this many minutes after Go-Live. After this
+// window, the pool is closed so we don't disrupt mid-round matching.
+const LATE_JOIN_CUTOFF_MIN = 10;
 
 type PeerInfo = { id: string; full_name: string | null; avatar_url: string | null; primary_role: string | null };
 
@@ -398,6 +406,47 @@ export default function SpeedSession() {
     }
   };
 
+  // Skip current pair → ends pairing, both return to pool, matcher re-pairs them on next tick.
+  const skipPair = async () => {
+    if (!myPair || !user) return;
+    try {
+      await supabase
+        .from("speed_session_pairings")
+        .update({ ended_at: new Date().toISOString(), ended_reason: `skipped_by_${user.id}` } as any)
+        .eq("id", myPair.id);
+      trackDeckEvent("speed_skip_pair", "speed", { session_id: id, pairing_id: myPair.id, peer_id: peer?.id });
+      setCallOpen(false);
+      setCallRoom(null);
+      toast({ title: "Skipped", description: "Finding you a fresh match…" });
+      await supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
+      refresh().catch(() => {});
+    } catch (e: any) {
+      toast({ title: "Couldn't skip", description: e?.message, variant: "destructive" });
+    }
+  };
+
+  // Group mode: when session flips to group + live, mint shared room and auto-open.
+  useEffect(() => {
+    if (!session || !user) return;
+    if (session.status !== "live") return;
+    if (session.fallback_mode !== "group") return;
+    if (!myRsvp && session.host_user_id !== user.id) return;
+    if (callRoom?.name?.startsWith("sp-")) return; // already joined
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("create-speed-group-room", {
+          body: { session_id: session.id, user_name: myName },
+        });
+        if (error) throw error;
+        setCallRoom({ url: data.room_url, name: data.room_name, token: data.token });
+        setCallOpen(true);
+        trackDeckEvent("speed_group_room_joined", "speed", { session_id: id });
+      } catch (e: any) {
+        console.error("[SpeedSession] group room", e);
+      }
+    })();
+  }, [session, user, myRsvp, callRoom?.name, myName, id]);
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   }
@@ -415,6 +464,12 @@ export default function SpeedSession() {
   const minsTo = Math.round((startsAt.getTime() - Date.now()) / 60_000);
   const isLive = session.status === "live";
   const isEnded = session.status === "ended" || session.status === "canceled";
+  const isGroupMode = session.fallback_mode === "group";
+  // Lobby shows from T-30 until live.
+  const showLobby = !isLive && !isEnded && minsTo <= 30;
+  // Late-join window: open from Go-Live for LATE_JOIN_CUTOFF_MIN minutes.
+  const minsSinceStart = Math.round((Date.now() - startsAt.getTime()) / 60_000);
+  const lateJoinOpen = isLive && minsSinceStart <= LATE_JOIN_CUTOFF_MIN;
 
   const overlayActions = peer ? (
     <div className="flex flex-col items-center gap-2 w-full max-w-[360px]">
@@ -459,6 +514,15 @@ export default function SpeedSession() {
         >
           {savedPeer ? <Check className="h-3 w-3" /> : <Bookmark className="h-3 w-3" />}
           {savedPeer ? "Saved" : "Save"}
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="rounded-full h-7 px-2.5 text-[11px] gap-1 text-white hover:bg-white/10"
+          onClick={skipPair}
+          aria-label="Skip to next match"
+        >
+          <SkipForward className="h-3 w-3" /> Skip
         </Button>
       </div>
     </div>
@@ -574,6 +638,16 @@ export default function SpeedSession() {
           onUpdated={() => refresh().catch(() => {})}
         />
 
+        {showLobby && myRsvp && (
+          <SpeedLobby
+            sessionId={session.id}
+            startsAt={session.starts_at}
+            theme={session.theme}
+            rsvpCount={rsvps}
+            isGroupMode={isGroupMode}
+          />
+        )}
+
         {isEnded ? (
           <Card>
             <CardContent className="p-5 space-y-3">
@@ -592,21 +666,50 @@ export default function SpeedSession() {
             <CardContent className="p-5 space-y-3">
               <p className="font-bold flex items-center gap-2">
                 <Radio className="h-4 w-4 text-destructive animate-pulse" /> Session is live
+                {isGroupMode && (
+                  <span className="ml-auto text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
+                    Group call
+                  </span>
+                )}
               </p>
-              {myPair ? (
+              {isGroupMode ? (
+                <p className="text-xs text-muted-foreground">
+                  Tonight's a small crew — we're running it as one shared room. The call opens automatically.
+                </p>
+              ) : myPair ? (
                 <p className="text-xs text-muted-foreground">You're in a room. The call opens automatically when you're paired.</p>
               ) : myRsvp ? (
-                <>
-                  <p className="text-xs text-muted-foreground">Hit "I'm here" to join the matching pool. We'll pair you within seconds.</p>
-                  <Button onClick={markJoined} variant="lime" className="w-full rounded-full">I'm here — match me</Button>
-                </>
-              ) : (
+                lateJoinOpen ? (
+                  <>
+                    <p className="text-xs text-muted-foreground">Hit "I'm here" to join the matching pool. We'll pair you within seconds.</p>
+                    <Button onClick={markJoined} variant="lime" className="w-full rounded-full">I'm here — match me</Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      Pool's closed for this round so we don't disrupt mid-call matches. Catch the next open night.
+                    </p>
+                    <Button asChild variant="outline" className="w-full rounded-full">
+                      <Link to="/circle?tab=live">See next session</Link>
+                    </Button>
+                  </>
+                )
+              ) : lateJoinOpen ? (
                 <>
                   <p className="text-xs text-muted-foreground">
                     {user ? "Save your spot and jump in." : "Sign up free — takes 60 seconds — and jump in."}
                   </p>
                   <Button onClick={toggleRsvp} disabled={busy} variant="default" className="w-full rounded-full">
                     {user ? "Jump in" : "Sign up & jump in"}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    This round's pool is closed. We'll have another open night soon.
+                  </p>
+                  <Button asChild variant="outline" className="w-full rounded-full">
+                    <Link to="/circle?tab=live">See next session</Link>
                   </Button>
                 </>
               )}

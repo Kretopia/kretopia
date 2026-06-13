@@ -406,6 +406,47 @@ export default function SpeedSession() {
     }
   };
 
+  // Skip current pair → ends pairing, both return to pool, matcher re-pairs them on next tick.
+  const skipPair = async () => {
+    if (!myPair || !user) return;
+    try {
+      await supabase
+        .from("speed_session_pairings")
+        .update({ ended_at: new Date().toISOString(), ended_reason: `skipped_by_${user.id}` } as any)
+        .eq("id", myPair.id);
+      trackDeckEvent("speed_skip_pair", "speed", { session_id: id, pairing_id: myPair.id, peer_id: peer?.id });
+      setCallOpen(false);
+      setCallRoom(null);
+      toast({ title: "Skipped", description: "Finding you a fresh match…" });
+      await supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
+      refresh().catch(() => {});
+    } catch (e: any) {
+      toast({ title: "Couldn't skip", description: e?.message, variant: "destructive" });
+    }
+  };
+
+  // Group mode: when session flips to group + live, mint shared room and auto-open.
+  useEffect(() => {
+    if (!session || !user) return;
+    if (session.status !== "live") return;
+    if (session.fallback_mode !== "group") return;
+    if (!myRsvp && session.host_user_id !== user.id) return;
+    if (callRoom?.name?.startsWith("sp-")) return; // already joined
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("create-speed-group-room", {
+          body: { session_id: session.id, user_name: myName },
+        });
+        if (error) throw error;
+        setCallRoom({ url: data.room_url, name: data.room_name, token: data.token });
+        setCallOpen(true);
+        trackDeckEvent("speed_group_room_joined", "speed", { session_id: id });
+      } catch (e: any) {
+        console.error("[SpeedSession] group room", e);
+      }
+    })();
+  }, [session, user, myRsvp, callRoom?.name, myName, id]);
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   }

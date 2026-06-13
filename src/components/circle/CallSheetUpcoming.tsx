@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Mic, Video, Loader2, Check } from "lucide-react";
+import { Calendar, Users, Mic, Video, Loader2, Check, Plus } from "lucide-react";
 import { format as fmt } from "date-fns";
+import { SpeedSessionCreateDialog } from "./SpeedSessionCreateDialog";
 
 type Session = {
   id: string;

@@ -509,9 +509,21 @@ export default function SpeedSession() {
                 {minsTo > 0 ? `Starts in ${minsTo > 60 ? `${Math.floor(minsTo / 60)}h ${minsTo % 60}m` : `${minsTo} min`}` : "Starting soon"}
               </p>
               <p className="text-xs text-muted-foreground">
-                Save your spot — we'll ping you 10 minutes before. You'll meet a fresh creator every {Math.round(session.slot_seconds / 60)} minutes.
-                Tap <strong>Connect</strong> on screen to send a request, or <strong>Save</strong> to revisit them later.
+                Save your spot — we'll ping you 10 minutes before. You'll meet a fresh creator every {Math.round(session.slot_seconds / 60)} minutes
+                on {session.mode === "audio" ? "audio" : "video"}. Tap <strong>Connect</strong> on screen to send a request,
+                or <strong>Save</strong> to revisit them later.
               </p>
+
+              {!user && (
+                <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs space-y-1">
+                  <p className="font-semibold flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Sign-in required</p>
+                  <p className="text-muted-foreground">
+                    Speed matches use your profile (role, skills, what you're looking for). A 60-second sign-up unlocks the room
+                    and helps us pair you with the right people.
+                  </p>
+                </div>
+              )}
+
               <Button
                 onClick={toggleRsvp}
                 disabled={busy}
@@ -520,10 +532,33 @@ export default function SpeedSession() {
                 className="w-full rounded-full"
               >
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> :
-                  myRsvp ? <><Check className="h-4 w-4" /> Saved — change my mind</> : "Save my spot"}
+                  myRsvp ? <><Check className="h-4 w-4" /> Saved — change my mind</> :
+                  !user ? "Sign up & save my spot" : "Save my spot"}
               </Button>
+
+              {user && profileStrong === false && myRsvp && (
+                <button
+                  onClick={() => navigate("/profile?edit=true")}
+                  className="w-full text-left rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs hover:bg-amber-500/10 transition-colors"
+                >
+                  <p className="font-semibold text-amber-700 dark:text-amber-400">Quick — make your profile shine</p>
+                  <p className="text-muted-foreground mt-0.5">
+                    Add a role, bio, and avatar so people you meet remember you (and Smart Match pairs you better). Tap to edit →
+                  </p>
+                </button>
+              )}
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Button onClick={addToGoogleCalendar} variant="outline" size="sm" className="rounded-full gap-1.5">
+                  <CalendarPlus className="h-3.5 w-3.5" /> Google Cal
+                </Button>
+                <Button onClick={addToAppleCalendar} variant="outline" size="sm" className="rounded-full gap-1.5">
+                  <CalendarPlus className="h-3.5 w-3.5" /> Apple / .ics
+                </Button>
+              </div>
+
               <Button onClick={copyShare} variant="ghost" size="sm" className="w-full rounded-full gap-1.5">
-                <Share2 className="h-3.5 w-3.5" /> Invite a friend (better matches with 6+)
+                <Share2 className="h-3.5 w-3.5" /> Invite a friend — better matches with 6+
               </Button>
             </CardContent>
           </Card>

@@ -811,12 +811,34 @@ export default function SpeedSession() {
             <CardContent className="p-5 space-y-3">
               <p className="font-bold">Session wrapped</p>
               {pastPairs.length > 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  You met {pastPairs.length} {pastPairs.length === 1 ? "person" : "people"}. Find anyone you saved in your Clipped list.
-                </p>
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    You met {pastPairs.length} {pastPairs.length === 1 ? "person" : "people"}. Reconnect with anyone you clicked with:
+                  </p>
+                  <div className="space-y-1.5">
+                    {pastPairs.map((p) => {
+                      const peerId = p.user_a === user?.id ? p.user_b : p.user_a;
+                      return (
+                        <Link
+                          key={p.id}
+                          to={`/profile/${peerId}`}
+                          className="flex items-center gap-2 p-2 rounded-xl border hover:bg-muted/50 transition-colors text-sm"
+                        >
+                          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
+                            R{p.round}
+                          </div>
+                          <span className="flex-1 truncate">View their Creative Passport →</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
               ) : (
                 <p className="text-xs text-muted-foreground">You didn't get paired this round.</p>
               )}
+              <Button asChild variant="lime" className="w-full rounded-full mt-2">
+                <Link to="/circle?tab=live">See the next session</Link>
+              </Button>
             </CardContent>
           </Card>
         ) : isLive ? (

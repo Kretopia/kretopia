@@ -291,6 +291,26 @@ export const VideoCallSheet = ({
     }
   };
 
+  const muteAll = async () => {
+    const call = callRef.current;
+    if (!call) return;
+    try {
+      const parts = call.participants() as Record<string, { session_id: string; local?: boolean; owner?: boolean }>;
+      const updates: Record<string, { setAudio: false }> = {};
+      Object.values(parts).forEach((p) => {
+        if (!p.local && !p.owner) updates[p.session_id] = { setAudio: false };
+      });
+      if (Object.keys(updates).length === 0) {
+        toast({ title: "No one to mute", description: "Only you are unmuted right now." });
+        return;
+      }
+      await call.updateParticipants(updates);
+      toast({ title: "Muted everyone", description: "Speakers can unmute themselves when they're ready." });
+    } catch (e: any) {
+      toast({ title: "Couldn't mute everyone", description: e?.message, variant: "destructive" });
+    }
+  };
+
   const derivedRoomName = roomName ?? roomUrl?.split("/").pop() ?? "";
 
   return (

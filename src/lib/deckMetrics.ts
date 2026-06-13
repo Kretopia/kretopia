@@ -8,7 +8,8 @@ export type DeckEventCategory =
   | "opportunity"
   | "agent"
   | "share"
-  | "money";
+  | "money"
+  | "speed";
 
 export async function trackDeckEvent(
   event_name: string,

@@ -244,12 +244,61 @@ export default function SpeedSession() {
     } finally { setBusy(false); }
   };
 
+  // Warm, intentional share copy — not the bare URL.
+  const buildShareText = useCallback(() => {
+    if (!session) return { title: "Speed Session", text: "", url: `${APP_URL}/circle/speed/${id}` };
+    const url = `${APP_URL}/circle/speed/${id}`;
+    const startsAt = new Date(session.starts_at);
+    const dateStr = startsAt.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const timeStr = startsAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const slotMin = Math.round(session.slot_seconds / 60);
+    const text = [
+      `${session.title} — ${dateStr} at ${timeStr}`,
+      "",
+      `Speed networking for creators. Meet a fresh face every ${slotMin} mins, ${session.mode === "audio" ? "audio" : "video"} only.`,
+      session.theme ? `Vibe: ${session.theme}` : null,
+      "",
+      `Save your spot 👇`,
+      url,
+    ].filter(Boolean).join("\n");
+    return { title: session.title, text, url };
+  }, [session, id]);
+
   const copyShare = async () => {
-    const url = `${window.location.origin}/circle/speed/${id}`;
+    const { title, text, url } = buildShareText();
     try {
-      if (navigator.share) await navigator.share({ title: session?.title ?? "Speed Session", url });
-      else { await navigator.clipboard.writeText(url); toast({ title: "Link copied" }); }
+      if (navigator.share) {
+        await navigator.share({ title, text, url });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast({ title: "Invite copied", description: "Paste it in WhatsApp, IG, or anywhere." });
+      }
     } catch { /* user canceled */ }
+  };
+
+  // Add-to-calendar helpers
+  const calendarEvent = useMemo(() => {
+    if (!session) return null;
+    return {
+      title: session.title,
+      description: [
+        session.theme,
+        "Speed networking for creators on ThriveIN. Show up 2 min early.",
+        `${APP_URL}/circle/speed/${id}`,
+      ].filter(Boolean).join("\n\n"),
+      location: `${APP_URL}/circle/speed/${id}`,
+      startISO: session.starts_at,
+      durationMinutes: session.duration_min,
+    };
+  }, [session, id]);
+
+  const addToGoogleCalendar = () => {
+    if (!calendarEvent) return;
+    window.open(buildGoogleCalendarUrl(calendarEvent), "_blank", "noopener,noreferrer");
+  };
+  const addToAppleCalendar = () => {
+    if (!calendarEvent) return;
+    downloadCalendarIcs(calendarEvent, `speed-session-${id}.ics`);
   };
 
   const connectPeer = async () => {

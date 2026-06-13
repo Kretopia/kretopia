@@ -15796,6 +15796,7 @@ export type Database = {
           theme: string | null
           title: string
           updated_at: string
+          vertical: string
         }
         Insert: {
           cover_image_url?: string | null
@@ -15814,6 +15815,7 @@ export type Database = {
           theme?: string | null
           title: string
           updated_at?: string
+          vertical?: string
         }
         Update: {
           cover_image_url?: string | null
@@ -15832,6 +15834,7 @@ export type Database = {
           theme?: string | null
           title?: string
           updated_at?: string
+          vertical?: string
         }
         Relationships: []
       }

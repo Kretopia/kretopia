@@ -187,6 +187,22 @@ export default function SpeedSession() {
     return () => clearInterval(iv);
   }, [id, session, canControl]);
 
+  // Profile strength → if weak, nudge after RSVP. Match quality depends on it.
+  useEffect(() => {
+    if (!user) { setProfileStrong(null); return; }
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("bio, role, primary_role, avatar_url")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const filled = [data?.bio, data?.role || data?.primary_role, data?.avatar_url].filter(Boolean).length;
+        setProfileStrong(filled >= 3);
+      } catch { setProfileStrong(null); }
+    })();
+  }, [user]);
+
   const toggleRsvp = async () => {
     if (!user) { stashReturnAndGoAuth("signup"); return; }
     setBusy(true);

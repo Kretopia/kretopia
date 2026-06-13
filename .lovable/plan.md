@@ -1,76 +1,72 @@
-## Speed Sessions v2 — Group Fallback, Lobby, Safety, Follow-ups
 
-Big upgrade across the Speed Networking flow. Below is what changes and how it fits together. Six shippable chunks; I'll build them in order and check in after chunks 3 and 6.
+## Audit — what's broken in today's Speed Session
 
----
+I went through the live screenshot, `SpeedSession.tsx`, `SpeedLobby.tsx`, the matcher edge fn, and the room sheet. Here's the real picture:
 
-### 1. Under-5 RSVPs → Group Call (not cancel)
+### Loops & gaps in the current experience
 
-**Concept change:** if fewer than 5 RSVPs at T-30, the session auto-switches to **Group Mode** — one open Zoom-style room everyone joins together, no pair rotation. Better than killing the night.
-
-- New column `speed_sessions.fallback_mode` (`pair` | `group`). Default `pair`.
-- `speed-session-autocancel` rewritten → `speed-session-fallback-check`: if RSVPs < 5 at T-30, set `fallback_mode='group'`, leave session `scheduled`, notify all RSVPs ("Tonight runs as an open group call — same time, same link").
-- `SpeedSession.tsx` host "Go live" branches: pair mode → existing pairing UI; group mode → single Daily room (reuse `create-sound-stage` pattern) with roster + reactions.
-- `SpeedGroupRoom.tsx` new component (reuses `SoundStageRoom` shell).
-
-### 2. Calendar refresh + branded email reminders
-
-- "Re-add to calendar" button on session page (re-renders Google/.ics from current `starts_at`).
-- New transactional template `speed-session-reminder.tsx` — sent at T-24h and T-1h via `speed-session-reminders` cron (extended). Inherits brand from existing templates.
-- New template `speed-session-rsvp-confirmed.tsx` — sent on RSVP w/ calendar links inside the email.
-- New template `speed-session-recap.tsx` already exists → extended to list **connections made** with "Say hi 👋" CTA per person.
-
-### 3. Profile-completeness nudge
-
-- Before joining the matching pool, check `checkProfileCompletion`. If <60%, show a soft sheet: "Boost your matches — 2 mins to fill out your profile" with Skip + Complete buttons. Tracks `speed_pool_gated_low_profile`.
-
-**→ Checkpoint #1: chunks 1–3 demoed, you test the group fallback path**
-
-### 4. Lobby with mini-game
-
-- New `SpeedLobby.tsx` shown between RSVP and Go-Live (T-15min window or while waiting for host).
-- Shows: live RSVP avatars, countdown, host card.
-- Mini-game: **"Two Truths & a Lie"** — each lobbyer drops 3 statements, others guess. Uses new lightweight `speed_lobby_games` table (session_id, user_id, statements jsonb, guesses jsonb). Realtime channel `speed-lobby-${id}`.
-- Alternative if you'd rather: a "Hot Take" rapid-fire prompt wall. Defaulting to Two Truths because it warms strangers up best — say the word if you want Hot Take instead.
-
-### 5. Post-session connections flow
-
-- After session ends, `SpeedRecap.tsx` page at `/circle/speed/:id/recap`:
-  - Lists everyone you tapped Connect or Save with (from `speed_session_pairings` + `connections.context='speed:<id>'`).
-  - Per person: avatar, role, one icebreaker line from their pairing, **Send message** button → opens chat pre-filled w/ icebreaker.
-- Already-sent transactional recap email links here.
-- "Say hi to all" bulk action.
-
-### 6. Late-join window, Skip, Block/Report
-
-- **Late join:** allow `join pool` up to **T+10 minutes** after Go-Live. After that, button disabled w/ "Catch the next night" + link to `/circle/speed`. `speed-session-matcher` already re-checks pool between rounds — confirmed.
-- **Skip in pair:** new "Skip" button in pair view → ends current pair immediately, marks `speed_session_pairings.ended_reason='skipped_by_<uid>'`, both users return to pool. Cooldown 1 round before re-pairing same two.
-- **Block/Report in pair:** `<UserActionMenu>` (existing) embedded in pair header — uses existing `user_reports`/`user_blocks` infra. Block also forces immediate skip.
-
-### Plus: Today surface
-
-- `TodayWorkspace` (Home → Today) gets a `SpeedTonightCard` when user has an upcoming RSVP or there's an open night within 24h. CTA: Open lobby / RSVP.
+1. **Host alone on stage = dead screen.** "Waiting for others…" with no countdown, no RSVP roster, no nudge to share, no way to ping the pool. Host has no reason to keep the tab open.
+2. **No peer action surface in group mode.** Connect/Save/Skip overlay only renders when `myPair` is set (1:1 pair mode). In group rooms, multiple people are present but you can't Connect/Save/Block anyone.
+3. **No Block / Report anywhere.** Only Connect, Save, Skip on the pair overlay. Safety gap — required for a stranger-matching product.
+4. **Skip is silent for the other person.** Their room just closes with no toast. Feels broken.
+5. **No round timer / "next match in 30s" countdown** inside the room. `slot_seconds` exists in DB and is never surfaced.
+6. **Audio mode** still renders the full Daily video iframe — no avatar/visualizer treatment, no "audio-only" affordance.
+7. **Duplicate room mounts.** `goLive` calls `openHostStage()` AND the group-mode auto-open effect can fire on the same tick → relies on the Daily destroy guard. Race-prone.
+8. **Mobile crowding.** The pill with Avatar + Connect + Save + Skip overflows at 360px (especially with long names). Desktop has zero layout difference — wastes the side rails.
+9. **Late-join is gated to RSVPs**, but a curious passer-by has no way to peek at who's in the room before committing.
+10. **Recap is text-only** — "You met 3 people" with no avatars, no "Connect again" buttons, no path back to the people you talked to. Dead end.
+11. **No Host → Guest controls** (mute-all, bring-on-stage, remove). Host is just another attendee with a control panel above.
+12. **Empty-deck guidance for guests is weak.** When pool is closed: just a "see next session" button — no captured intent, no waitlist.
 
 ---
 
-### Technical notes
+## The plan — 5 shippable improvements
 
-**Migrations:**
-- `speed_sessions`: add `fallback_mode text default 'pair'`, `pool_cutoff_minutes int default 10`.
-- `speed_session_pairings`: add `ended_reason text`.
-- New table `speed_lobby_games` (session_id, user_id, kind, payload jsonb, created_at) + RLS by session RSVP membership.
-- Realtime publication add for `speed_lobby_games`.
+### 1. **In-call Action Rail (works in pair AND group mode)**
+Replace the single-pill overlay with a proper roster strip at the bottom of the call (above the Daily controls).
 
-**Edge functions:**
-- Rename `speed-session-autocancel` → `speed-session-fallback-check` (keep old function as no-op for cron continuity, then drop in next pass).
-- Extend `speed-session-reminders` to fire T-24h and T-1h windows (track in `reminder_sent_at` jsonb or add `reminders_sent` jsonb).
-- Extend `speed-session-recap` to include connections list w/ icebreakers.
+- **Pair mode**: shows the one peer card → Connect · Save · Skip · ⋯ (Block/Report).
+- **Group mode**: shows a horizontal scroll of all participants. Tap a face → action sheet (Connect · Save · Block · Report · View profile).
+- Mobile: bottom-sheet on tap. Desktop: right-side rail that's always visible.
+- Adds the missing **Block + Report** path via the existing `UserActionMenu` / `ReportBlockDialog`.
 
-**Frontend:**
-- `SpeedLobby.tsx`, `SpeedGroupRoom.tsx`, `SpeedRecap.tsx`, `SpeedTonightCard.tsx`.
-- `SpeedSession.tsx` gets: late-join cutoff, Skip button, UserActionMenu in pair header, profile-completeness gate.
+### 2. **Host Stage Cockpit (empty-state that earns its keep)**
+When the host enters the stage alone, show an overlay panel inside the call with:
+- Live countdown to start (or "Live since 0:42")
+- RSVP roster (avatars + "12 saved spot, 3 here")
+- Big **Share** button (WhatsApp / IG / copy) — same `buildShareText`
+- **Ping waiting guests** button → sends push to all RSVPs who haven't joined
+- **Start matching now** (only if ≥2 in pool) — kicks the matcher manually
 
-**Analytics added:**
-`speed_fallback_to_group`, `speed_lobby_joined`, `speed_lobby_game_played`, `speed_skip_pair`, `speed_late_join`, `speed_late_join_blocked`, `speed_recap_viewed`, `speed_recap_message_sent`.
+Auto-collapses to a small chip when ≥2 guests join.
 
-All copy stays warm and on-brand (Creative Passport voice, no "AI" language).
+### 3. **Round Timer + "Next match in…" loop**
+- Live `mm:ss` countdown badge in the corner of the call sheet, based on `pairing.started_at + slot_seconds`.
+- At T-10s: subtle pulse + "Wrap it up — next match in 10s".
+- At T-0: matcher rotates; show "Finding next match…" shimmer.
+- Skip → other person gets toast: **"Your match moved on. Hold tight — finding you a fresh face."**
+
+### 4. **Recap with re-connect loop**
+Replace the wrapped-text card with a list of everyone you met (avatar, name, role).
+Each row: **Connect** (or ✓ Connected) · **Save** · **Message**. Top CTA: "Next session is Saturday — save my spot."
+
+### 5. **Safety + Polish**
+- Add `UserActionMenu` to every peer surface (in-call rail, recap rows, lobby roster).
+- Block hides them from your future pairings (matcher already respects `user_blocks` — verify).
+- Mobile composer respects safe-area (the screenshot shows the keyboard bar overlap on Xiaomi).
+- Desktop: 2-column layout when ≥768px — call on left, roster/chat/host cockpit on right.
+- Race fix: gate `openHostStage()` behind `if (callRoom?.name?.startsWith("sp-")) return;` to stop double-mount.
+
+---
+
+## Technical notes
+
+- New file: `src/components/circle/SpeedActionRail.tsx` — handles pair + group roster + action sheet.
+- New file: `src/components/circle/SpeedHostCockpit.tsx` — empty-state overlay with share/ping/start.
+- New file: `src/components/circle/SpeedRoundTimer.tsx` — `mm:ss` based on `pairing.started_at`.
+- Refactor: `SpeedSession.tsx` overlay block → render `<SpeedActionRail>` + `<SpeedHostCockpit>` inside `VideoCallSheet`.
+- Edge fn `notify-speed-pool-ping/index.ts` — new, host-only, fires push to non-joined RSVPs.
+- Existing `speed-session-matcher` already filters by `user_blocks` — confirm and document.
+- DB: no new tables. `skip` already writes `ended_reason`; we'll surface that on the other client via realtime to fire the toast.
+
+Want me to ship all 5, or pick the top items? I'd recommend shipping **1 + 2 + 3** in this pass (the in-call experience), then **4 + 5** as a follow-up.

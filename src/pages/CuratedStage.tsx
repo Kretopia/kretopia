@@ -177,15 +177,22 @@ const CuratedStage = () => {
     } finally { setRaising(false); }
   };
 
-  const handleJoinLive = async () => {
+  const handleJoinLive = async (opts?: { backstage?: boolean }) => {
     if (!user || !stage) { navigate("/auth"); return; }
+    const wantsBackstage = !!opts?.backstage;
     setJoining(true);
     try {
       const { data, error } = await supabase.functions.invoke("go-live-stage", {
-        body: { stage_id: stage.id, user_name: myName, invite_token: inviteToken },
+        body: { stage_id: stage.id, user_name: myName, invite_token: inviteToken, backstage: wantsBackstage },
       });
       if (error) throw error;
-      setRoom({ url: data.room_url, name: data.room_name, token: data.token });
+      setBackstageMode(!!data?.backstage);
+      setRoom({
+        url: data.room_url,
+        name: data.room_name,
+        token: data.token,
+        recordingEnabled: !!data.recording_enabled,
+      });
       setCallOpen(true);
     } catch (e: any) {
       const msg = String(e?.message || "");

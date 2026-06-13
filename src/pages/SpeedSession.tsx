@@ -496,8 +496,12 @@ export default function SpeedSession() {
                 </>
               ) : (
                 <>
-                  <p className="text-xs text-muted-foreground">Save your spot and jump in.</p>
-                  <Button onClick={toggleRsvp} disabled={busy} variant="default" className="w-full rounded-full">Jump in</Button>
+                  <p className="text-xs text-muted-foreground">
+                    {user ? "Save your spot and jump in." : "Sign up free — takes 60 seconds — and jump in."}
+                  </p>
+                  <Button onClick={toggleRsvp} disabled={busy} variant="default" className="w-full rounded-full">
+                    {user ? "Jump in" : "Sign up & jump in"}
+                  </Button>
                 </>
               )}
             </CardContent>

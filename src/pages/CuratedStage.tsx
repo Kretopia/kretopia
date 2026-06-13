@@ -206,10 +206,11 @@ const CuratedStage = () => {
 
   const handleCallClose = async (open: boolean) => {
     setCallOpen(open);
-    if (!open && isHost && stage) {
-      // Host ended — wrap stage
+    if (!open && isHost && stage && !backstageMode) {
+      // Host ended a LIVE stage — wrap it. (Backstage exits do not end the stage.)
       supabase.functions.invoke("end-curated-stage", { body: { stage_id: stage.id } }).catch(() => {});
     }
+    if (!open) setBackstageMode(false);
   };
 
   if (loading) return <div className="container max-w-3xl mx-auto p-6 space-y-4"><Skeleton className="h-48 w-full rounded-2xl" /><Skeleton className="h-8 w-2/3" /></div>;

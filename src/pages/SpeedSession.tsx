@@ -16,17 +16,25 @@ import { buildGoogleCalendarUrl, downloadIcs as downloadCalendarIcs } from "@/li
 import { APP_URL } from "@/lib/constants";
 import { trackDeckEvent } from "@/lib/deckMetrics";
 import { SpeedSessionCreateDialog } from "@/components/circle/SpeedSessionCreateDialog";
+import { SpeedLobby } from "@/components/circle/SpeedLobby";
+import { SkipForward } from "lucide-react";
 
 type Session = {
   id: string; host_user_id: string; title: string; theme: string | null;
   mode: "video" | "audio"; starts_at: string; duration_min: number;
   slot_seconds: number; status: "scheduled" | "live" | "ended" | "canceled";
+  fallback_mode?: "pair" | "group" | null;
+  group_room_url?: string | null;
 };
 
 type Pairing = {
   id: string; session_id: string; round: number; user_a: string; user_b: string;
   room_url: string; room_name: string; started_at: string; ended_at: string | null;
 };
+
+// Late-joiners can still hop in this many minutes after Go-Live. After this
+// window, the pool is closed so we don't disrupt mid-round matching.
+const LATE_JOIN_CUTOFF_MIN = 10;
 
 type PeerInfo = { id: string; full_name: string | null; avatar_url: string | null; primary_role: string | null };
 

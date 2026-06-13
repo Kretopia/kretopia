@@ -355,6 +355,12 @@ export default function SpeedSession() {
   // into). Safe to call multiple times; create-speed-group-room is idempotent.
   const openHostStage = async () => {
     if (!user || !id) return;
+    // Race fix: if we're already standing on a speed-room (sp-*), don't
+    // mint another Daily frame — would race with the group-mode auto-open.
+    if (callRoom?.name?.startsWith("sp-")) {
+      setCallOpen(true);
+      return;
+    }
     try {
       const { data, error } = await supabase.functions.invoke("create-speed-group-room", {
         body: { session_id: id, user_name: myName },

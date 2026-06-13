@@ -59,6 +59,7 @@ export default function SpeedSession() {
   const [profileStrong, setProfileStrong] = useState<boolean | null>(null);
   const [icePrompts, setIcePrompts] = useState<string[]>([]);
   const [iceIdx, setIceIdx] = useState(0);
+  const [editOpen, setEditOpen] = useState(false);
 
   const myName = useMemo(
     () => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest",

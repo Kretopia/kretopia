@@ -297,6 +297,8 @@ const AppContent = () => {
             
             {/* Core Feature Pages - Public browsable, actions gated */}
             <Route path="/circle" element={<Circle />} />
+          {/* Speed Networking — public index of upcoming themed nights */}
+          <Route path="/circle/speed" element={<SpeedIndex />} />
           {/* Speed Session = public landing for share links; sign-up gating happens inside the page */}
           <Route path="/circle/speed/:id" element={<SpeedSession />} />
            <Route path="/circle/stage/:id" element={<CuratedStage />}/>

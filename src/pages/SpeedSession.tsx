@@ -529,10 +529,22 @@ export default function SpeedSession() {
                 <Button onClick={copyShare} variant="outline" className="rounded-full gap-1.5">
                   <Share2 className="h-4 w-4" /> Share link
                 </Button>
+                {!isLive && (
+                  <Button onClick={() => setEditOpen(true)} variant="ghost" className="rounded-full gap-1.5">
+                    <Pencil className="h-4 w-4" /> Edit
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
         )}
+
+        <SpeedSessionCreateDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          session={session as any}
+          onUpdated={() => refresh().catch(() => {})}
+        />
 
         {isEnded ? (
           <Card>

@@ -584,62 +584,97 @@ export default function SpeedSession() {
   const minsSinceStart = Math.round((Date.now() - startsAt.getTime()) / 60_000);
   const lateJoinOpen = isLive && minsSinceStart <= LATE_JOIN_CUTOFF_MIN;
 
-  const overlayActions = peer ? (
-    <div className="flex flex-col items-center gap-2 w-full max-w-[360px]">
-      {icePrompts.length > 0 && (
-        <div className="w-full px-3 py-2 rounded-2xl bg-black/70 backdrop-blur-sm border border-white/15 shadow-lg text-white">
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="text-[10px] uppercase tracking-wide text-white/60 font-bold">Try this</span>
-            <button
-              onClick={() => setIceIdx((i) => (i + 1) % icePrompts.length)}
-              className="text-[10px] text-white/70 hover:text-white"
-              aria-label="Next prompt"
-            >
-              Next →
-            </button>
-          </div>
-          <p className="text-[13px] leading-snug">{icePrompts[iceIdx]}</p>
+  // Group-mode connect/save handlers (per-peer in shared rooms)
+  const connectGroupPeer = async (p: RailPeer) => {
+    if (!user) return;
+    try {
+      await supabase
+        .from("connections")
+        .upsert(
+          { user_id: user.id, connected_user_id: p.id, status: "pending", context: "speed_session" } as any,
+          { onConflict: "user_id,connected_user_id" } as any,
+        );
+      setConnectedIds((prev) => new Set([...prev, p.id]));
+      trackDeckEvent("speed_connect_sent", "speed", { session_id: id, peer_id: p.id, mode: "group" });
+      toast({ title: "Connection sent", description: p.full_name ?? "We let them know." });
+    } catch (e: any) {
+      toast({ title: "Couldn't send connect", description: e?.message, variant: "destructive" });
+    }
+  };
+  const saveGroupPeer = async (p: RailPeer) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from("saved_sparks")
+        .insert({ user_id: user.id, item_type: "creator", item_id: p.id });
+      if (error && error.code !== "23505") throw error;
+      setSavedIds((prev) => new Set([...prev, p.id]));
+      trackDeckEvent("speed_save_for_later", "speed", { session_id: id, peer_id: p.id, mode: "group" });
+      toast({ title: "Saved for later", description: "Find them in your Clipped list." });
+    } catch (e: any) {
+      toast({ title: "Couldn't save", description: e?.message, variant: "destructive" });
+    }
+  };
+
+  const showHostCockpit = canControl && stagePresence.size <= 2;
+
+  const overlayActions = (
+    <>
+      {/* Top-right: round timer (pair mode) */}
+      {myPair && (
+        <div className="absolute top-3 right-3">
+          <SpeedRoundTimer startedAt={myPair.started_at} slotSeconds={session.slot_seconds} />
         </div>
       )}
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-sm border border-white/15 shadow-lg">
-        <div className="flex items-center gap-1.5 text-white text-xs font-medium pr-1">
-          {peer.avatar_url && (
-            <img src={peer.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover" />
-          )}
-          <span className="truncate max-w-[120px]">{peer.full_name ?? "Your match"}</span>
+      {/* Top-left: host cockpit */}
+      {showHostCockpit && (
+        <div className="absolute top-3 left-3 max-w-[calc(100vw-24px)]">
+          <SpeedHostCockpit
+            sessionId={session.id}
+            isLive={isLive}
+            startsAt={session.starts_at}
+            rsvpCount={rsvps}
+            joinedCount={joinedCount}
+            inRoomCount={stagePresence.size}
+            onShare={copyShare}
+            onStartMatching={() => {
+              supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } })
+                .then(() => toast({ title: "Matching…", description: "Pairings will pop in seconds." }))
+                .catch(() => {});
+            }}
+          />
         </div>
-        <Button
-          size="sm"
-          variant="lime"
-          className="rounded-full h-7 px-2.5 text-[11px] gap-1"
-          onClick={connectPeer}
-          disabled={connectingPeer || connectedPeer}
-        >
-          {connectedPeer ? <Check className="h-3 w-3" /> : <UserPlus className="h-3 w-3" />}
-          {connectedPeer ? "Sent" : "Connect"}
-        </Button>
-        <Button
-          size="sm"
-          variant="secondary"
-          className="rounded-full h-7 px-2.5 text-[11px] gap-1"
-          onClick={saveForLater}
-          disabled={savedPeer}
-        >
-          {savedPeer ? <Check className="h-3 w-3" /> : <Bookmark className="h-3 w-3" />}
-          {savedPeer ? "Saved" : "Save"}
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="rounded-full h-7 px-2.5 text-[11px] gap-1 text-white hover:bg-white/10"
-          onClick={skipPair}
-          aria-label="Skip to next match"
-        >
-          <SkipForward className="h-3 w-3" /> Skip
-        </Button>
+      )}
+      {/* Bottom-center: action rail (pair OR group) */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex justify-center px-2">
+        {peer && myPair ? (
+          <SpeedActionRail
+            mode="pair"
+            peer={{ id: peer.id, full_name: peer.full_name, avatar_url: peer.avatar_url }}
+            icePrompts={icePrompts}
+            iceIdx={iceIdx}
+            onCycleIce={() => setIceIdx((i) => (i + 1) % icePrompts.length)}
+            connecting={connectingPeer}
+            connected={connectedPeer}
+            saved={savedPeer}
+            onConnect={connectPeer}
+            onSave={saveForLater}
+            onSkip={skipPair}
+          />
+        ) : groupPeers.length > 0 ? (
+          <SpeedActionRail
+            mode="group"
+            peers={groupPeers}
+            connectedIds={connectedIds}
+            savedIds={savedIds}
+            onConnect={connectGroupPeer}
+            onSave={saveGroupPeer}
+          />
+        ) : null}
       </div>
-    </div>
-  ) : null;
+    </>
+  );
+
 
   return (
     <div className="min-h-screen pb-28 bg-background">

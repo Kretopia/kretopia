@@ -273,6 +273,7 @@ export default function SpeedSession() {
         .update({ status: "live" })
         .eq("id", id);
       if (error) throw error;
+      trackDeckEvent("speed_host_went_live", "speed", { session_id: id, rsvps, joined: joinedCount });
       toast({ title: "We're live", description: "Pairing the room now." });
       await supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
       refresh();

@@ -53,6 +53,8 @@ interface VideoCallSheetProps {
   peerName?: string | null;
   /** Optional: called after a successful block so callers can end the call / re-pair. */
   onPeerBlocked?: () => void;
+  /** Optional React node rendered as a floating bar over the video (top center) — used for Speed Session connect / save-for-later CTAs. */
+  overlayActions?: React.ReactNode;
 }
 
 type Phase = "lobby" | "live";

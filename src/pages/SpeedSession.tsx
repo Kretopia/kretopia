@@ -39,6 +39,7 @@ export default function SpeedSession() {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [rsvps, setRsvps] = useState<number>(0);
   const [joinedCount, setJoinedCount] = useState<number>(0);
@@ -53,6 +54,7 @@ export default function SpeedSession() {
   const [connectingPeer, setConnectingPeer] = useState(false);
   const [savedPeer, setSavedPeer] = useState(false);
   const [connectedPeer, setConnectedPeer] = useState(false);
+  const [profileStrong, setProfileStrong] = useState<boolean | null>(null);
 
   const myName = useMemo(
     () => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest",
@@ -60,6 +62,16 @@ export default function SpeedSession() {
   );
 
   const canControl = isAdmin || (!!session && !!user && session.host_user_id === user.id);
+
+  // Stash intended return path so /auth → onboarding → land back on this session.
+  const stashReturnAndGoAuth = useCallback((tab: "signup" | "signin" = "signup") => {
+    if (!id) return;
+    try {
+      sessionStorage.setItem("thrivein_post_auth_redirect", `/circle/speed/${id}`);
+      sessionStorage.setItem("pending_speed_session", id);
+    } catch {}
+    navigate(`/auth?tab=${tab}&redirect=${encodeURIComponent(`/circle/speed/${id}`)}`);
+  }, [id, navigate]);
 
   const refresh = useCallback(async () => {
     if (!id) return;

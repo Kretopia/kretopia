@@ -96,22 +96,44 @@ export function CallSheetUpcoming() {
     );
   }
 
+  const adminCta = isAdmin ? (
+    <Button
+      size="sm"
+      variant="outline"
+      className="rounded-full gap-1.5"
+      onClick={() => setCreateOpen(true)}
+    >
+      <Plus className="h-3.5 w-3.5" /> Schedule Speed Session
+    </Button>
+  ) : null;
+
   if (sessions.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="p-5 text-center space-y-1">
-          <p className="text-sm font-semibold">No Speed Sessions scheduled</p>
-          <p className="text-xs text-muted-foreground">
-            We curate themed sessions weekly (Producers × Vocalists, Editors × Directors, etc).
-            Check back soon — or open an Open Stage instead.
-          </p>
-        </CardContent>
-      </Card>
+      <>
+        <Card className="border-dashed">
+          <CardContent className="p-5 text-center space-y-3">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold">No Speed Sessions scheduled</p>
+              <p className="text-xs text-muted-foreground">
+                We curate themed sessions weekly (Producers × Vocalists, Editors × Directors, etc).
+                Check back soon — or open an Open Stage instead.
+              </p>
+            </div>
+            {adminCta}
+          </CardContent>
+        </Card>
+        <SpeedSessionCreateDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onCreated={(id) => navigate(`/circle/speed/${id}`)}
+        />
+      </>
     );
   }
 
   return (
     <div className="space-y-2">
+      {adminCta && <div className="flex justify-end">{adminCta}</div>}
       {sessions.map((s) => {
         const ModeIcon = s.mode === "audio" ? Mic : Video;
         const date = new Date(s.starts_at);
@@ -147,6 +169,11 @@ export function CallSheetUpcoming() {
           </Card>
         );
       })}
+      <SpeedSessionCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(id) => navigate(`/circle/speed/${id}`)}
+      />
     </div>
   );
 }

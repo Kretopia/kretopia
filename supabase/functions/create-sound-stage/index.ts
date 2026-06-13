@@ -114,7 +114,7 @@ serve(async (req) => {
         format,
         room_url: room.url,
         room_name: roomName,
-        is_live: true,
+        is_live: !backstage,
         participant_count: 1,
       })
       .select("id")
@@ -127,6 +127,7 @@ serve(async (req) => {
         room_url: room.url,
         room_name: roomName,
         token: meetingToken,
+        backstage,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );

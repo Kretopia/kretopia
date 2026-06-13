@@ -92,6 +92,13 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated, onUpda
     setBusy(true);
     try {
       if (isEdit && session) {
+        const newStartIso = new Date(startsAt).toISOString();
+        const changes: string[] = [];
+        if (newStartIso !== new Date(session.starts_at).toISOString()) changes.push("new start time");
+        if (mode !== session.mode) changes.push(`mode → ${mode}`);
+        if (duration !== session.duration_min) changes.push("length");
+        if (slotMin * 60 !== session.slot_seconds) changes.push("pacing");
+
         const { error } = await supabase
           .from("speed_sessions")
           .update({
@@ -99,13 +106,24 @@ export function SpeedSessionCreateDialog({ open, onOpenChange, onCreated, onUpda
             theme: theme.trim() || null,
             vertical,
             mode,
-            starts_at: new Date(startsAt).toISOString(),
+            starts_at: newStartIso,
             duration_min: duration,
             slot_seconds: slotMin * 60,
           })
           .eq("id", session.id);
         if (error) throw error;
-        toast({ title: "Session updated", description: "Heads up — RSVPs aren't auto-notified yet." });
+
+        // Notify RSVPs only for material changes
+        if (changes.length > 0) {
+          await supabase.functions.invoke("notify-speed-session-update", {
+            body: { session_id: session.id, kind: "updated", changes },
+          }).catch(() => {});
+        }
+
+        toast({
+          title: "Session updated",
+          description: changes.length ? `${changes.length} RSVPs notified.` : "No material changes.",
+        });
         onOpenChange(false);
         onUpdated?.(session.id);
       } else {

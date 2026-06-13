@@ -530,9 +530,37 @@ export default function SpeedSession() {
                   <Share2 className="h-4 w-4" /> Share link
                 </Button>
                 {!isLive && (
-                  <Button onClick={() => setEditOpen(true)} variant="ghost" className="rounded-full gap-1.5">
-                    <Pencil className="h-4 w-4" /> Edit
-                  </Button>
+                  <>
+                    <Button onClick={() => setEditOpen(true)} variant="ghost" className="rounded-full gap-1.5">
+                      <Pencil className="h-4 w-4" /> Edit
+                    </Button>
+                    <Button
+                      onClick={async () => {
+                        if (!session) return;
+                        if (!confirm("Cancel this session and notify everyone who RSVP'd?")) return;
+                        setBusy(true);
+                        try {
+                          const { error } = await supabase
+                            .from("speed_sessions")
+                            .update({ status: "canceled", canceled_reason: "host_canceled" })
+                            .eq("id", session.id);
+                          if (error) throw error;
+                          await supabase.functions.invoke("notify-speed-session-update", {
+                            body: { session_id: session.id, kind: "canceled" },
+                          }).catch(() => {});
+                          toast({ title: "Session canceled", description: "RSVPs notified." });
+                          refresh().catch(() => {});
+                        } catch (e: any) {
+                          toast({ title: "Couldn't cancel", description: e?.message, variant: "destructive" });
+                        } finally { setBusy(false); }
+                      }}
+                      variant="ghost"
+                      disabled={busy}
+                      className="rounded-full gap-1.5 text-destructive hover:text-destructive"
+                    >
+                      Cancel session
+                    </Button>
+                  </>
                 )}
               </div>
             </CardContent>

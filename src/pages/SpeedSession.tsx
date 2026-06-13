@@ -235,19 +235,44 @@ export default function SpeedSession() {
   }, [user]);
 
   const toggleRsvp = async () => {
-    if (!user) { stashReturnAndGoAuth("signup"); return; }
+    if (!user) {
+      trackDeckEvent("speed_rsvp_gated", "speed", { session_id: id });
+      stashReturnAndGoAuth("signup");
+      return;
+    }
     setBusy(true);
     try {
+      const action = myRsvp ? "cancel" : "rsvp";
       const { error } = await supabase.functions.invoke("rsvp-speed-session", {
-        body: { session_id: id, action: myRsvp ? "cancel" : "rsvp" },
+        body: { session_id: id, action },
       });
       if (error) throw error;
+      trackDeckEvent(myRsvp ? "speed_rsvp_canceled" : "speed_rsvp_confirmed", "speed", { session_id: id });
       if (!myRsvp) toast({ title: "Spot saved", description: "We'll ping you 10 min before. Add to your calendar so you don't forget." });
       await refresh();
     } finally { setBusy(false); }
   };
 
   const markJoined = async () => {
+    if (!user || !id) return;
+    await supabase.from("speed_session_rsvps")
+      .upsert({ session_id: id, user_id: user.id, status: "joined", joined_at: new Date().toISOString() },
+        { onConflict: "session_id,user_id" });
+    trackDeckEvent("speed_joined_pool", "speed", { session_id: id });
+    await supabase.functions.invoke("speed-session-matcher", { body: { session_id: id } }).catch(() => {});
+    refresh();
+  };
+
+  const goLive = async () => {
+    if (!id) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase
+        .from("speed_sessions")
+        .update({ status: "live" })
+        .eq("id", id);
+      if (error) throw error;
+      trackDeckEvent("speed_host_went_live", "speed", { session_id: id, rsvps, joined: joinedCount });
     if (!user || !id) return;
     await supabase.from("speed_session_rsvps")
       .upsert({ session_id: id, user_id: user.id, status: "joined", joined_at: new Date().toISOString() },

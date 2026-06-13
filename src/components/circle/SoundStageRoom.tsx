@@ -1041,6 +1041,21 @@ export function SoundStageRoom({
             <div className="flex items-center gap-2">
               {meSpeaker ? (
                 <>
+                  {/* Screen share — desktop only (mobile browsers can't capture displays) */}
+                  <Button
+                    variant={sharingScreen ? "lime" : "outline"}
+                    size="icon"
+                    className="rounded-full h-11 w-11 hidden sm:inline-flex"
+                    onClick={toggleScreenShare}
+                    aria-label={sharingScreen ? "Stop sharing screen" : "Share screen"}
+                    title={sharingScreen ? "Stop sharing" : "Share your screen / slides"}
+                  >
+                    {sharingScreen ? (
+                      <ScreenShareOff className="h-4 w-4" />
+                    ) : (
+                      <ScreenShare className="h-4 w-4" />
+                    )}
+                  </Button>
                   {mode === "video" && (
                     <Button
                       variant={myVideo ? "lime" : "outline"}

@@ -333,16 +333,26 @@ export default function SpeedSession() {
 
   const copyShare = async () => {
     const { title, text, url } = buildShareText();
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, text, url });
-        trackDeckEvent("speed_share", "speed", { session_id: id, method: "native" });
-      } else {
-        await navigator.clipboard.writeText(text);
+    const fallbackCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(`${text}\n${url}`);
         trackDeckEvent("speed_share", "speed", { session_id: id, method: "clipboard" });
         toast({ title: "Invite copied", description: "Paste it in WhatsApp, IG, or anywhere." });
+      } catch {
+        window.prompt("Copy this invite link:", url);
       }
-    } catch { /* user canceled */ }
+    };
+    if (typeof navigator !== "undefined" && (navigator as any).share) {
+      try {
+        await (navigator as any).share({ title, text, url });
+        trackDeckEvent("speed_share", "speed", { session_id: id, method: "native" });
+        return;
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+        // Permission denied / not allowed → fall through to clipboard
+      }
+    }
+    await fallbackCopy();
   };
 
   // Add-to-calendar helpers
@@ -580,7 +590,7 @@ export default function SpeedSession() {
                 Sweet spot for great matches: <strong>6+ joined</strong>. With under 4, people will re-pair with each other.
                 Currently: <strong>{rsvps}</strong> RSVPs, <strong>{joinedCount}</strong> joined.
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {!isLive ? (
                   <Button onClick={goLive} disabled={busy} variant="lime" className="rounded-full gap-1.5">
                     <PlayCircle className="h-4 w-4" /> Go live now

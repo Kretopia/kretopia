@@ -41,6 +41,7 @@ interface Props {
     title: string;
     mode: Mode;
     format: Format;
+    backstage: boolean;
   }) => void;
 }
 

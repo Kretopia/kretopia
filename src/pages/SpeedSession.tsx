@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { VideoCallSheet } from "@/components/project/VideoCallSheet";
 import {
-  Users, Mic, Video, Loader2, ArrowLeft, Radio, Check, UserPlus, Bookmark, PlayCircle, StopCircle, Share2,
+  Users, Mic, Video, Loader2, ArrowLeft, Radio, Check, UserPlus, Bookmark, PlayCircle, StopCircle, Share2, CalendarPlus, Sparkles,
 } from "lucide-react";
 import { format as fmt } from "date-fns";
 import { SEO } from "@/components/SEO";
+import { buildGoogleCalendarUrl, downloadIcs as downloadCalendarIcs } from "@/lib/calendarLinks";
+import { APP_URL } from "@/lib/constants";
 
 type Session = {
   id: string; host_user_id: string; title: string; theme: string | null;
@@ -37,6 +39,7 @@ export default function SpeedSession() {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [rsvps, setRsvps] = useState<number>(0);
   const [joinedCount, setJoinedCount] = useState<number>(0);
@@ -51,6 +54,7 @@ export default function SpeedSession() {
   const [connectingPeer, setConnectingPeer] = useState(false);
   const [savedPeer, setSavedPeer] = useState(false);
   const [connectedPeer, setConnectedPeer] = useState(false);
+  const [profileStrong, setProfileStrong] = useState<boolean | null>(null);
 
   const myName = useMemo(
     () => user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest",
@@ -58,6 +62,16 @@ export default function SpeedSession() {
   );
 
   const canControl = isAdmin || (!!session && !!user && session.host_user_id === user.id);
+
+  // Stash intended return path so /auth → onboarding → land back on this session.
+  const stashReturnAndGoAuth = useCallback((tab: "signup" | "signin" = "signup") => {
+    if (!id) return;
+    try {
+      sessionStorage.setItem("thrivein_post_auth_redirect", `/circle/speed/${id}`);
+      sessionStorage.setItem("pending_speed_session", id);
+    } catch {}
+    navigate(`/auth?tab=${tab}&redirect=${encodeURIComponent(`/circle/speed/${id}`)}`);
+  }, [id, navigate]);
 
   const refresh = useCallback(async () => {
     if (!id) return;
@@ -173,14 +187,31 @@ export default function SpeedSession() {
     return () => clearInterval(iv);
   }, [id, session, canControl]);
 
+  // Profile strength → if weak, nudge after RSVP. Match quality depends on it.
+  useEffect(() => {
+    if (!user) { setProfileStrong(null); return; }
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("bio, role, avatar_url")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        const filled = [data?.bio, data?.role, data?.avatar_url].filter(Boolean).length;
+        setProfileStrong(filled >= 3);
+      } catch { setProfileStrong(null); }
+    })();
+  }, [user]);
+
   const toggleRsvp = async () => {
-    if (!user) { toast({ title: "Sign in to save your spot", variant: "destructive" }); return; }
+    if (!user) { stashReturnAndGoAuth("signup"); return; }
     setBusy(true);
     try {
       const { error } = await supabase.functions.invoke("rsvp-speed-session", {
         body: { session_id: id, action: myRsvp ? "cancel" : "rsvp" },
       });
       if (error) throw error;
+      if (!myRsvp) toast({ title: "Spot saved", description: "We'll ping you 10 min before. Add to your calendar so you don't forget." });
       await refresh();
     } finally { setBusy(false); }
   };
@@ -229,12 +260,61 @@ export default function SpeedSession() {
     } finally { setBusy(false); }
   };
 
+  // Warm, intentional share copy — not the bare URL.
+  const buildShareText = useCallback(() => {
+    if (!session) return { title: "Speed Session", text: "", url: `${APP_URL}/circle/speed/${id}` };
+    const url = `${APP_URL}/circle/speed/${id}`;
+    const startsAt = new Date(session.starts_at);
+    const dateStr = startsAt.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const timeStr = startsAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const slotMin = Math.round(session.slot_seconds / 60);
+    const text = [
+      `${session.title} — ${dateStr} at ${timeStr}`,
+      "",
+      `Speed networking for creators. Meet a fresh face every ${slotMin} mins, ${session.mode === "audio" ? "audio" : "video"} only.`,
+      session.theme ? `Vibe: ${session.theme}` : null,
+      "",
+      `Save your spot 👇`,
+      url,
+    ].filter(Boolean).join("\n");
+    return { title: session.title, text, url };
+  }, [session, id]);
+
   const copyShare = async () => {
-    const url = `${window.location.origin}/circle/speed/${id}`;
+    const { title, text, url } = buildShareText();
     try {
-      if (navigator.share) await navigator.share({ title: session?.title ?? "Speed Session", url });
-      else { await navigator.clipboard.writeText(url); toast({ title: "Link copied" }); }
+      if (navigator.share) {
+        await navigator.share({ title, text, url });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast({ title: "Invite copied", description: "Paste it in WhatsApp, IG, or anywhere." });
+      }
     } catch { /* user canceled */ }
+  };
+
+  // Add-to-calendar helpers
+  const calendarEvent = useMemo(() => {
+    if (!session) return null;
+    return {
+      title: session.title,
+      description: [
+        session.theme,
+        "Speed networking for creators on ThriveIN. Show up 2 min early.",
+        `${APP_URL}/circle/speed/${id}`,
+      ].filter(Boolean).join("\n\n"),
+      location: `${APP_URL}/circle/speed/${id}`,
+      startISO: session.starts_at,
+      durationMinutes: session.duration_min,
+    };
+  }, [session, id]);
+
+  const addToGoogleCalendar = () => {
+    if (!calendarEvent) return;
+    window.open(buildGoogleCalendarUrl(calendarEvent), "_blank", "noopener,noreferrer");
+  };
+  const addToAppleCalendar = () => {
+    if (!calendarEvent) return;
+    downloadCalendarIcs(calendarEvent, `speed-session-${id}.ics`);
   };
 
   const connectPeer = async () => {
@@ -416,8 +496,12 @@ export default function SpeedSession() {
                 </>
               ) : (
                 <>
-                  <p className="text-xs text-muted-foreground">Save your spot and jump in.</p>
-                  <Button onClick={toggleRsvp} disabled={busy} variant="default" className="w-full rounded-full">Jump in</Button>
+                  <p className="text-xs text-muted-foreground">
+                    {user ? "Save your spot and jump in." : "Sign up free — takes 60 seconds — and jump in."}
+                  </p>
+                  <Button onClick={toggleRsvp} disabled={busy} variant="default" className="w-full rounded-full">
+                    {user ? "Jump in" : "Sign up & jump in"}
+                  </Button>
                 </>
               )}
             </CardContent>
@@ -429,9 +513,21 @@ export default function SpeedSession() {
                 {minsTo > 0 ? `Starts in ${minsTo > 60 ? `${Math.floor(minsTo / 60)}h ${minsTo % 60}m` : `${minsTo} min`}` : "Starting soon"}
               </p>
               <p className="text-xs text-muted-foreground">
-                Save your spot — we'll ping you 10 minutes before. You'll meet a fresh creator every {Math.round(session.slot_seconds / 60)} minutes.
-                Tap <strong>Connect</strong> on screen to send a request, or <strong>Save</strong> to revisit them later.
+                Save your spot — we'll ping you 10 minutes before. You'll meet a fresh creator every {Math.round(session.slot_seconds / 60)} minutes
+                on {session.mode === "audio" ? "audio" : "video"}. Tap <strong>Connect</strong> on screen to send a request,
+                or <strong>Save</strong> to revisit them later.
               </p>
+
+              {!user && (
+                <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-xs space-y-1">
+                  <p className="font-semibold flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Sign-in required</p>
+                  <p className="text-muted-foreground">
+                    Speed matches use your profile (role, skills, what you're looking for). A 60-second sign-up unlocks the room
+                    and helps us pair you with the right people.
+                  </p>
+                </div>
+              )}
+
               <Button
                 onClick={toggleRsvp}
                 disabled={busy}
@@ -440,10 +536,33 @@ export default function SpeedSession() {
                 className="w-full rounded-full"
               >
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> :
-                  myRsvp ? <><Check className="h-4 w-4" /> Saved — change my mind</> : "Save my spot"}
+                  myRsvp ? <><Check className="h-4 w-4" /> Saved — change my mind</> :
+                  !user ? "Sign up & save my spot" : "Save my spot"}
               </Button>
+
+              {user && profileStrong === false && myRsvp && (
+                <button
+                  onClick={() => navigate("/profile?edit=true")}
+                  className="w-full text-left rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs hover:bg-amber-500/10 transition-colors"
+                >
+                  <p className="font-semibold text-amber-700 dark:text-amber-400">Quick — make your profile shine</p>
+                  <p className="text-muted-foreground mt-0.5">
+                    Add a role, bio, and avatar so people you meet remember you (and Smart Match pairs you better). Tap to edit →
+                  </p>
+                </button>
+              )}
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Button onClick={addToGoogleCalendar} variant="outline" size="sm" className="rounded-full gap-1.5">
+                  <CalendarPlus className="h-3.5 w-3.5" /> Google Cal
+                </Button>
+                <Button onClick={addToAppleCalendar} variant="outline" size="sm" className="rounded-full gap-1.5">
+                  <CalendarPlus className="h-3.5 w-3.5" /> Apple / .ics
+                </Button>
+              </div>
+
               <Button onClick={copyShare} variant="ghost" size="sm" className="w-full rounded-full gap-1.5">
-                <Share2 className="h-3.5 w-3.5" /> Invite a friend (better matches with 6+)
+                <Share2 className="h-3.5 w-3.5" /> Invite a friend — better matches with 6+
               </Button>
             </CardContent>
           </Card>

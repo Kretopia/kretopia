@@ -296,7 +296,8 @@ const AppContent = () => {
             
             {/* Core Feature Pages - Public browsable, actions gated */}
             <Route path="/circle" element={<Circle />} />
-           <Route path="/circle/speed/:id" element={<ProtectedRoute><SpeedSession /></ProtectedRoute>} />
+          {/* Speed Session = public landing for share links; sign-up gating happens inside the page */}
+          <Route path="/circle/speed/:id" element={<SpeedSession />} />
            <Route path="/circle/stage/:id" element={<CuratedStage />}/>
             <Route path="/circle/:circleId" element={<ProtectedRoute><CircleDetailPage /></ProtectedRoute>} />
             <Route path="/circle/:circleId/chat" element={<ProtectedRoute><CircleChatView /></ProtectedRoute>} />

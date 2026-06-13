@@ -48,7 +48,7 @@ const Notifications = () => {
                 <Badge variant="destructive" className="text-xs">{unreadCount} unread</Badge>
               )}
             </h1>
-            <p className="text-sm text-muted-foreground">Notifications and Thrive approvals — all in one place.</p>
+            <p className="text-sm text-muted-foreground">Notifications and Izzy approvals — all in one place.</p>
           </div>
           {unreadCount > 0 && (
             <Button variant="outline" size="sm" onClick={markAllAsRead} className="gap-1.5">

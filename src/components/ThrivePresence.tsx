@@ -29,14 +29,14 @@ interface ThrivePresenceProps {
   size?: Size;
   tone?: Tone;
   className?: string;
-  label?: string; // accessible label, defaults to "Thrive"
+  label?: string; // accessible label, defaults to "Izzy"
 }
 
 export const ThrivePresence = ({
   size = "md",
   tone = "rest",
   className,
-  label = "Thrive",
+  label = "Izzy",
 }: ThrivePresenceProps) => {
   const s = SIZE[size];
 

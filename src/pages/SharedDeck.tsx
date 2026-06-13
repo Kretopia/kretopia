@@ -54,7 +54,7 @@ export default function SharedDeck() {
 
   return (
     <div className="min-h-screen bg-muted/30 py-6">
-      <SEO title={doc.title} description={content?.subtitle || "Made with Thrive"} />
+      <SEO title={doc.title} description={content?.subtitle || "Made with ThriveIN"} />
       <div className="max-w-5xl mx-auto px-4">
         <DeckRenderer doc={content} theme={(doc.theme as DeckTheme) || "editorial"} coverImageUrl={doc.cover_image_url} />
         <div className="mt-8 text-center text-xs text-muted-foreground">

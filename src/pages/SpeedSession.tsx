@@ -326,8 +326,10 @@ export default function SpeedSession() {
     try {
       if (navigator.share) {
         await navigator.share({ title, text, url });
+        trackDeckEvent("speed_share", "speed", { session_id: id, method: "native" });
       } else {
         await navigator.clipboard.writeText(text);
+        trackDeckEvent("speed_share", "speed", { session_id: id, method: "clipboard" });
         toast({ title: "Invite copied", description: "Paste it in WhatsApp, IG, or anywhere." });
       }
     } catch { /* user canceled */ }

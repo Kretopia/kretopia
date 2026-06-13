@@ -41,6 +41,7 @@ interface Props {
     title: string;
     mode: Mode;
     format: Format;
+    backstage: boolean;
   }) => void;
 }
 
@@ -51,6 +52,9 @@ export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {
   const [vibe, setVibe] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("video");
   const [format, setFormat] = useState<Format>("open_group");
+  // Default ON — soundcheck before the doors open. Hosts can flip off for
+  // truly spontaneous "open the doors now" rooms.
+  const [backstage, setBackstage] = useState(true);
   const [busy, setBusy] = useState(false);
 
   const myName =
@@ -75,12 +79,13 @@ export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {
             mode,
             format,
             user_name: myName,
+            backstage,
           },
         },
       );
       if (error) throw error;
       if (!data?.room_url) throw new Error("No room");
-      onCreated({ ...data, title: title.trim(), mode, format });
+      onCreated({ ...data, title: title.trim(), mode, format, backstage });
       onOpenChange(false);
       setTitle("");
       setVibe(null);
@@ -188,6 +193,38 @@ export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {
             </div>
           </div>
 
+          <button
+            type="button"
+            onClick={() => setBackstage((b) => !b)}
+            className={cn(
+              "w-full flex items-start gap-3 rounded-2xl border p-3 text-left transition-colors",
+              backstage
+                ? "border-[hsl(var(--signal-amber))]/60 bg-[hsl(var(--signal-amber))]/10"
+                : "border-border bg-background hover:border-primary/40",
+            )}
+          >
+            <div
+              className={cn(
+                "h-5 w-5 rounded-md border-2 flex items-center justify-center mt-0.5 shrink-0",
+                backstage
+                  ? "bg-[hsl(var(--signal-amber))] border-[hsl(var(--signal-amber))]"
+                  : "border-muted-foreground/40",
+              )}
+            >
+              {backstage && (
+                <svg className="h-3 w-3 text-background" viewBox="0 0 12 12" fill="none">
+                  <path d="M2.5 6.5 5 9l4.5-5.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-tight">Soundcheck first (backstage)</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                You'll enter alone to check camera + mic. The stage stays hidden until you tap <span className="font-semibold">Open the doors</span>.
+              </p>
+            </div>
+          </button>
+
           <Button
             onClick={submit}
             disabled={busy}
@@ -195,7 +232,7 @@ export function GoLiveSheet({ open, onOpenChange, onCreated }: Props) {
             variant="lime"
             className="w-full rounded-full"
           >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Go live"}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : backstage ? "Enter backstage" : "Go live now"}
           </Button>
         </div>
       </SheetContent>

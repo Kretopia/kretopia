@@ -50,6 +50,7 @@ export function LiveCallsPanel() {
     isHost: boolean;
     hostUserId: string | null;
     format: "open_1to1" | "open_group" | "audience";
+    backstage: boolean;
   } | null>(null);
 
   const myName = useMemo(
@@ -66,6 +67,7 @@ export function LiveCallsPanel() {
     title: string;
     mode: "audio" | "video";
     format: "open_1to1" | "open_group" | "audience";
+    backstage: boolean;
   }) => {
     setActiveRoom({
       url: data.room_url,
@@ -78,6 +80,7 @@ export function LiveCallsPanel() {
       isHost: true,
       hostUserId: user?.id ?? null,
       format: data.format,
+      backstage: data.backstage,
     });
     setCallOpen(true);
   };
@@ -106,6 +109,7 @@ export function LiveCallsPanel() {
         isHost: stage.host_user_id === user.id,
         hostUserId: stage.host_user_id,
         format: stage.format,
+        backstage: false,
       });
       setCallOpen(true);
     } catch (e: unknown) {
@@ -153,6 +157,7 @@ export function LiveCallsPanel() {
       isHost: false,
       hostUserId: null,
       format: "open_group",
+      backstage: false,
     });
     setCallOpen(true);
     setJoining(false);
@@ -291,6 +296,7 @@ export function LiveCallsPanel() {
           hostUserId={activeRoom.hostUserId}
           userName={myName}
           userAvatar={user?.user_metadata?.avatar_url ?? null}
+          backstage={activeRoom.backstage}
         />
       )}
       {activeRoom && activeRoom.kind === "link" && (

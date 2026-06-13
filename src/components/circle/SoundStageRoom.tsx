@@ -58,6 +58,9 @@ interface SoundStageRoomProps {
   hostUserId: string | null;
   userName: string;
   userAvatar?: string | null;
+  /** Host-only soundcheck. Stage is hidden from the rail until host taps
+   *  "Open the doors", which flips sound_stages.is_live = true. */
+  backstage?: boolean;
 }
 
 type Role = "host" | "speaker" | "audience";
@@ -105,10 +108,14 @@ export function SoundStageRoom({
   hostUserId,
   userName,
   userAvatar,
+  backstage = false,
 }: SoundStageRoomProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const callRef = useRef<DailyCall | null>(null);
+  // Local backstage flag — flips to false when host taps "Open the doors".
+  const [isBackstage, setIsBackstage] = useState(backstage);
+  const [openingDoors, setOpeningDoors] = useState(false);
   const [joining, setJoining] = useState(false);
   const [phase, setPhase] = useState<"miccheck" | "joining" | "in">("miccheck");
   const [members, setMembers] = useState<Record<string, Member>>({});
@@ -145,6 +152,33 @@ export function SoundStageRoom({
     isHostRef.current = isHost;
     stageIdRef.current = stageId;
   }, [isHost, stageId]);
+
+  // Re-sync backstage when the host re-opens a freshly created stage.
+  useEffect(() => {
+    setIsBackstage(backstage);
+  }, [backstage, stageId]);
+
+  const openTheDoors = useCallback(async () => {
+    if (!stageId || !isHost || openingDoors) return;
+    setOpeningDoors(true);
+    try {
+      const { error } = await supabase
+        .from("sound_stages")
+        .update({ is_live: true, started_at: new Date().toISOString() })
+        .eq("id", stageId);
+      if (error) throw error;
+      setIsBackstage(false);
+      toast({ title: "Doors are open", description: "Your stage is now on the rail." });
+    } catch (e: unknown) {
+      toast({
+        title: "Couldn't open the doors",
+        description: e instanceof Error ? e.message : undefined,
+        variant: "destructive",
+      });
+    } finally {
+      setOpeningDoors(false);
+    }
+  }, [stageId, isHost, openingDoors, toast]);
 
   const cleanupCall = useCallback((endStage: boolean) => {
     const call = callRef.current;
@@ -739,27 +773,57 @@ export function SoundStageRoom({
         className="p-0 h-[100dvh] sm:h-[92vh] sm:max-w-2xl sm:mx-auto sm:rounded-t-3xl bg-background border-t-0 overflow-hidden flex flex-col [&>button.absolute]:hidden"
       >
         {/* Header */}
-        <div className="px-4 pt-4 pb-3 border-b border-border/60 flex items-center gap-3 shrink-0">
-          <Badge
-            variant="destructive"
-            className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide"
-          >
-            <Radio className="h-2.5 w-2.5 animate-pulse" /> Live
-          </Badge>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm leading-tight truncate">{title}</p>
-            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-              <Users className="h-3 w-3" /> {totalCount} in the room
-            </p>
+        <div className="px-4 pt-4 pb-3 border-b border-border/60 shrink-0 space-y-2">
+          <div className="flex items-center gap-3">
+            {isBackstage ? (
+              <Badge
+                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide bg-[hsl(var(--signal-amber))] text-background hover:bg-[hsl(var(--signal-amber))]"
+              >
+                <Radio className="h-2.5 w-2.5" /> Backstage
+              </Badge>
+            ) : (
+              <Badge
+                variant="destructive"
+                className="gap-1 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide"
+              >
+                <Radio className="h-2.5 w-2.5 animate-pulse" /> Live
+              </Badge>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm leading-tight truncate">{title}</p>
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <Users className="h-3 w-3" />{" "}
+                {isBackstage ? "Doors closed — only you" : `${totalCount} in the room`}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full"
+              onClick={leave}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full"
-            onClick={leave}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          {isBackstage && isHost && (
+            <div className="flex items-center gap-2 rounded-xl bg-[hsl(var(--signal-amber))]/10 border border-[hsl(var(--signal-amber))]/40 px-3 py-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold leading-tight">Soundcheck mode</p>
+                <p className="text-[10px] text-muted-foreground leading-snug">
+                  Check your camera + mic. Nobody can see this stage yet.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="lime"
+                className="rounded-full h-8 text-[11px] font-bold shrink-0"
+                onClick={openTheDoors}
+                disabled={openingDoors}
+              >
+                {openingDoors ? "Opening…" : "Open the doors"}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Body */}

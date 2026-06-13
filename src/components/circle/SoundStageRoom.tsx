@@ -126,6 +126,11 @@ export function SoundStageRoom({
   const [captions, setCaptions] = useState<
     Array<{ id: string; speaker: string; text: string; ts: number }>
   >([]);
+  // Screen share — local toggle + tick counter to re-render when remote
+  // screen tracks update (Daily fires participant-updated which already
+  // triggers refreshMembers, but screen tracks live outside `members`).
+  const [sharingScreen, setSharingScreen] = useState(false);
+  const [screenTick, setScreenTick] = useState(0);
   const localLevelRef = useRef(0);
   const profileCache = useRef<
     Map<string, { name: string; avatar: string | null }>

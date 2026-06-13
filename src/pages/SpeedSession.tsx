@@ -641,13 +641,23 @@ export default function SpeedSession() {
                     <PlayCircle className="h-4 w-4" /> Go live now
                   </Button>
                 ) : (
-                  <Button onClick={endSession} disabled={busy} variant="destructive" className="rounded-full gap-1.5">
-                    <StopCircle className="h-4 w-4" /> End session
-                  </Button>
+                  <>
+                    <Button onClick={openHostStage} variant="default" className="rounded-full gap-1.5">
+                      <Radio className="h-4 w-4" /> Open stage
+                    </Button>
+                    <Button onClick={endSession} disabled={busy} variant="destructive" className="rounded-full gap-1.5">
+                      <StopCircle className="h-4 w-4" /> End session
+                    </Button>
+                  </>
                 )}
                 <Button onClick={copyShare} variant="outline" className="rounded-full gap-1.5">
                   <Share2 className="h-4 w-4" /> Share link
                 </Button>
+                {!isLive && (
+                  <Button onClick={openHostStage} variant="outline" className="rounded-full gap-1.5">
+                    <Radio className="h-4 w-4" /> Preview stage
+                  </Button>
+                )}
                 {!isLive && (
                   <>
                     <Button onClick={() => setEditOpen(true)} variant="ghost" className="rounded-full gap-1.5">

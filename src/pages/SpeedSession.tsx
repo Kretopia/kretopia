@@ -353,10 +353,12 @@ export default function SpeedSession() {
 
   const addToGoogleCalendar = () => {
     if (!calendarEvent) return;
+    trackDeckEvent("speed_calendar_add", "speed", { session_id: id, provider: "google" });
     window.open(buildGoogleCalendarUrl(calendarEvent), "_blank", "noopener,noreferrer");
   };
   const addToAppleCalendar = () => {
     if (!calendarEvent) return;
+    trackDeckEvent("speed_calendar_add", "speed", { session_id: id, provider: "apple_ics" });
     downloadCalendarIcs(calendarEvent, `speed-session-${id}.ics`);
   };
 

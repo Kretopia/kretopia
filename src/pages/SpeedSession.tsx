@@ -135,21 +135,23 @@ export default function SpeedSession() {
   useEffect(() => {
     if (!myPair || !user) { setPeer(null); return; }
     const peerId = myPair.user_a === user.id ? myPair.user_b : myPair.user_a;
-    supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url, primary_role")
-      .eq("user_id", peerId)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) setPeer({
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("id, full_name, avatar_url")
+          .eq("user_id", peerId)
+          .maybeSingle();
+        setPeer({
           id: peerId,
-          full_name: data.full_name ?? null,
-          avatar_url: data.avatar_url ?? null,
-          primary_role: (data as any).primary_role ?? null,
+          full_name: data?.full_name ?? null,
+          avatar_url: data?.avatar_url ?? null,
+          primary_role: null,
         });
-        else setPeer({ id: peerId, full_name: null, avatar_url: null, primary_role: null });
-      })
-      .catch(() => setPeer({ id: peerId, full_name: null, avatar_url: null, primary_role: null }));
+      } catch {
+        setPeer({ id: peerId, full_name: null, avatar_url: null, primary_role: null });
+      }
+    })();
   }, [myPair, user]);
 
   // Close stale sheet between rounds
